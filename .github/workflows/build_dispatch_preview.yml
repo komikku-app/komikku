@@ -16,6 +16,9 @@ on:
 #      - '.github/scripts/**'
 #      - '.github/workflows/**'
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -34,9 +37,8 @@ jobs:
       - name: Prepare build
         id: prepare_build
         run: |
-          set -x
-
           commit_count=$(git rev-list --count HEAD)
+          echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
 
       - name: Create Tag 'r${{ steps.prepare_build.outputs.COMMIT_COUNT }}'
@@ -44,6 +46,7 @@ jobs:
         run: |
           git tag "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
           git push origin "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
+          echo "New tag created: r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
 
       - name: Get branch names
         id: branch_names

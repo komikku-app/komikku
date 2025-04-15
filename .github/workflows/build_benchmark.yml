@@ -24,9 +24,9 @@ jobs:
       - name: Get tag name (${{ github.ref }})
         id: get_tag
         run: |
-          set -x
-          echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}"
-          echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+          version_tag=$(echo ${GITHUB_REF/refs\/tags\//} | sed -r 's/^refs\/(heads|tags)\///' | sed -r 's/[-\/]+/_/g')
+          echo "VERSION_TAG=$version_tag"
+          echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
 
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -36,8 +36,6 @@ jobs:
       - name: Prepare env
         id: prepare_env
         run: |
-          set -x
-
           commit_count=$(git rev-list --count HEAD)
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
@@ -45,8 +43,6 @@ jobs:
       - name: Tag name
         id: tag_name
         run: |
-          set -x
-
           if [ "${{ steps.get_tag.outputs.VERSION_TAG }}" = "master" ]; then
             tag_name=${{ steps.get_tag.outputs.VERSION_TAG }}-r${{ steps.prepare_env.outputs.COMMIT_COUNT }}
             else
@@ -97,7 +93,7 @@ jobs:
       - name: Get SHA & clean up build artifacts
         id: get_sha
         run: |
-          set -ex
+          set -e
           mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-universal-benchmark-signed.apk Komikku-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
           mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-arm64-v8a-benchmark-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
           mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-armeabi-v7a-benchmark-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
@@ -108,4 +104,4 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: "**/*.apk"
-          retention-days: 90
+          retention-days: 30

@@ -6,14 +6,7 @@ on:
       - master
     paths:
       - '**'
-      - '!i18n/src/commonMain/moko-resources/**/strings.xml'
-      - '!i18n/src/commonMain/moko-resources/**/plurals.xml'
-      - 'i18n/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n/src/commonMain/moko-resources/base/plurals.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/plurals.xml'
-      - 'i18n-kmk/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n-kmk/src/commonMain/moko-resources/base/plurals.xml'
+      - '!**.md'
   # pull_request:
   #   paths-ignore:
   #     - '**.md'
@@ -84,8 +77,8 @@ jobs:
       - name: Rename apk
         id: current_commit
         run: |
-          set -ex
-          version_tag=$(echo ${GITHUB_REF/refs\/heads\//} | sed -r 's/[\/]+/_/g')
+          set -e
+          version_tag=$(echo ${GITHUB_REF/refs\/heads\//} | sed -r 's/^refs\/(heads|tags)\///' | sed -r 's/[-\/]+/_/g')
           commit_count=$(git rev-list --count HEAD)
           echo "VERSION_TAG=$version_tag"
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT

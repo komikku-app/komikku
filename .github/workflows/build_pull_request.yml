@@ -8,12 +8,9 @@ on:
   pull_request:
     paths:
       - '**'
-      - '!i18n/src/commonMain/moko-resources/**/strings.xml'
-      - '!i18n/src/commonMain/moko-resources/**/plurals.xml'
-      - 'i18n/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n/src/commonMain/moko-resources/base/plurals.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/plurals.xml'
+      - '!**.md'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/strings.xml'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/plurals.xml'
       - 'i18n-kmk/src/commonMain/moko-resources/base/strings.xml'
       - 'i18n-kmk/src/commonMain/moko-resources/base/plurals.xml'
   # Dispatch or Manual triggers
@@ -98,13 +95,12 @@ jobs:
         id: signed_filename
         if: github.repository == github.event.pull_request.head.repo.full_name
         run: |
-          set -x
           echo "SIGNED_TRAIL=-signed" >> $GITHUB_OUTPUT
 
       - name: Rename apk
         id: current_commit
         run: |
-          set -ex
+          set -e
           echo "The git ref is: ${{ github.ref }}"
           version_tag=p$(echo ${{ github.ref }} | cut -d '/' -f 3)
           commit_count=$(git rev-list --count HEAD)
