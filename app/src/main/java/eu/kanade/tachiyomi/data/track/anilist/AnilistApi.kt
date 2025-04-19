@@ -374,12 +374,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             description = media.description?.htmlDecode()?.ifEmpty { null },
                             authors = media.staff.edges
                                 .filter { "Story" in it.role }
-                                .mapNotNull { it.node.name.userPreferred }
+                                .mapNotNull { it.node.name() }
                                 .joinToString(", ")
                                 .ifEmpty { null },
                             artists = media.staff.edges
                                 .filter { "Art" in it.role }
-                                .mapNotNull { it.node.name.userPreferred }
+                                .mapNotNull { it.node.name() }
                                 .joinToString(", ")
                                 .ifEmpty { null },
                         )
