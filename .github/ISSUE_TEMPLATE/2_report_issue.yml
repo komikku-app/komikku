@@ -1,8 +1,7 @@
 name: 🐞 Issue report
 description: Report an issue in Komikku
-labels: [Bug]
+labels: [bug]
 body:
-
   - type: textarea
     id: reproduce-steps
     attributes:
@@ -53,7 +52,7 @@ body:
       label: Komikku version
       description: You can find your Komikku version in **More → About**.
       placeholder: |
-        Example: "1.12.1"
+        Example: "1.3.1"
     validations:
       required: true
 
@@ -94,11 +93,11 @@ body:
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: I have gone through the [FAQ](https://mihon.app/docs/faq/general) and [troubleshooting guide](https://mihon.app/docs/guides/troubleshooting/).
+        - label: I have gone through the [FAQ](https://komikku-app.github.io/docs/faq/general) and [troubleshooting guide](https://komikku-app.github.io/docs/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.12.1](https://github.com/komikku-app/komikku/releases/latest)**.
+        - label: I have updated the app to version **[latest](https://github.com/komikku-app/komikku/releases/latest)**.
           required: true
         - label: I have filled out all of the requested information in this form, including specific version numbers.
           required: true
-        - label: I understand that **Mihon does not have or fix any extensions**, and I **will not receive help** for any issues related to sources or extensions.
+        - label: I understand that **Komikku does not have or fix any extensions**, and I **will not receive help** for any issues related to sources or extensions.
           required: true
