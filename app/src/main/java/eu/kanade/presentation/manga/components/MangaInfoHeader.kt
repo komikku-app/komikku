@@ -853,6 +853,7 @@ private fun MangaSummary(
         modifier = modifier.clipToBounds(),
         contents = listOf(
             {
+                // shrunk: calculate minimum size when shrunk
                 Text(
                     // Shows at least 3 lines if no notes
                     // when there are notes show 6
@@ -861,6 +862,7 @@ private fun MangaSummary(
                 )
             },
             {
+                // expanded: calculate maximum size when expanded
                 Column {
                     MangaNotesSection(
                         content = notes,
@@ -875,6 +877,7 @@ private fun MangaSummary(
                 }
             },
             {
+                // actual: the actual displayed content
                 Column {
                     MangaNotesSection(
                         content = notes,
@@ -891,6 +894,7 @@ private fun MangaSummary(
                 }
             },
             {
+                // scrim
                 val colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background)
                 Box(
                     modifier = Modifier.background(Brush.verticalGradient(colors = colors)),

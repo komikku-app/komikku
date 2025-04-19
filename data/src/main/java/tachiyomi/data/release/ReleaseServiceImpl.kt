@@ -50,6 +50,7 @@ class ReleaseServiceImpl(
                         info = release.info.replace(gitHubUsernameMentionRegex) { mention ->
                             "[${mention.value}](https://github.com/${mention.value.substring(1)})"
                         }
+                            .replace(checksumRegex, "")
                             // KMK -->
                             .replace(getHubDownloadBadgeRegex, "")
                             .replace(gitHubCommitsCompareRegex) { matchResult ->
@@ -57,7 +58,6 @@ class ReleaseServiceImpl(
                                 val repo = matchResult.groups["repo"]!!.value
                                 val from = matchResult.groups["from"]!!.value
                                 val to = matchResult.groups["to"]!!.value
-
                                 "[$owner/$repo@$from...$to](https://github.com/$owner/$repo/compare/$from...$to)"
                             },
                         // KMK <--
@@ -103,6 +103,8 @@ class ReleaseServiceImpl(
          */
         private val gitHubUsernameMentionRegex = """\B@([a-z0-9](?:-(?=[a-z0-9])|[a-z0-9]){0,38}(?<=[a-z0-9]))"""
             .toRegex(RegexOption.IGNORE_CASE)
+
+        private val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
 
         // KMK -->
         private val getHubDownloadBadgeRegex = """\[!\[GitHub downloads]\(.*\)]\(.*\)"""

@@ -59,13 +59,11 @@ class GetApplicationRelease(
     suspend fun awaitReleaseNotes(arguments: Arguments): Result {
         val releases = service.releaseNotes(arguments)
             .filter { !it.preRelease }
-        val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
 
         val release = releases.firstOrNull()
             ?.copy(
                 info = releases.joinToString("\r---\r") {
-                    "## ${it.version}\r\r" +
-                        it.info.replace(checksumRegex, "")
+                    "## ${it.version}\r\r${it.info}"
                 },
             )
         if (release == null) return Result.NoNewUpdate

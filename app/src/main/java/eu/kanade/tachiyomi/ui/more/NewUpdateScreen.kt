@@ -22,7 +22,7 @@ class NewUpdateScreen(
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val changelogInfoNoChecksum = remember {
-            changelogInfo.replace("""---(\R|.)*Checksums(\R|.)*""".toRegex(), "")
+            changelogInfo
         }
 
         NewUpdateScreen(
