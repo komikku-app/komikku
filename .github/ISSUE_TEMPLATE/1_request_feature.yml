@@ -1,8 +1,7 @@
 name: ⭐ Feature request
 description: Suggest a feature to improve Komikku
-labels: [Feature request]
+labels: [feature request]
 body:
-
   - type: textarea
     id: feature-description
     attributes:
@@ -31,7 +30,7 @@ body:
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: I have updated the app to version **[1.12.1](https://github.com/komikku-app/komikku/releases/latest)**.
+        - label: I have updated the app to version **[latest](https://github.com/komikku-app/komikku/releases/latest)**.
           required: true
         - label: I will fill out all of the requested information in this form.
           required: true
