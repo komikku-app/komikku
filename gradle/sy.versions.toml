@@ -11,6 +11,6 @@ gradleversionsx = "com.github.ben-manes:gradle-versions-plugin:0.52.0"
 
 sqlcipher = "net.zetetic:sqlcipher-android:4.7.2"
 
-exifinterface = "androidx.exifinterface:exifinterface:1.4.0"
+exifinterface = "androidx.exifinterface:exifinterface:1.4.1"
 
 google-api-services-drive = "com.google.apis:google-api-services-drive:v3-rev20250220-2.0.0"
