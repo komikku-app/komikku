@@ -11,6 +11,9 @@ class AndroidStorageFolderProvider(
     private val context: Context,
 ) : FolderProvider {
 
+    /**
+     * This will return File: /storage/emulated/0/<app_name>
+     */
     override fun directory(): File {
         return File(
             Environment.getExternalStorageDirectory().absolutePath + File.separator +
@@ -18,6 +21,9 @@ class AndroidStorageFolderProvider(
         )
     }
 
+    /**
+     * This will return: file:///storage/emulated/0/<app_name>
+     */
     override fun path(): String {
         return directory().toUri().toString()
     }
