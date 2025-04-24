@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
@@ -111,6 +112,13 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
     }
     // SY <--
 
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.pref_viewer_nav_smaller_tap_zone),
+        pref = screenModel.preferences.smallerTapZone(),
+    )
+    // KMK <--
+
     CheckboxItem(
         label = stringResource(MR.strings.pref_crop_borders),
         pref = screenModel.preferences.cropBorders(),
@@ -202,6 +210,13 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         },
         pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
     )
+
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.pref_viewer_nav_smaller_tap_zone),
+        pref = screenModel.preferences.smallerTapZone(),
+    )
+    // KMK <--
 
     CheckboxItem(
         label = stringResource(MR.strings.pref_crop_borders),

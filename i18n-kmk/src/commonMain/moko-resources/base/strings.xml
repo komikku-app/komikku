@@ -19,6 +19,7 @@
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
     <string name="action_copy_to_clipboard_second_page">Copy second page to clipboard</string>
     <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Smaller tap zones</string>
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
