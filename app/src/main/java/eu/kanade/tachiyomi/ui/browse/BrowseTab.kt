@@ -37,6 +37,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
@@ -143,7 +144,9 @@ data object BrowseTab : Tab {
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
             // AM (DISCORD) -->
-            DiscordRPCService.setScreen(context, DiscordScreen.BROWSE)
+            with(DiscordRPCService) {
+                discordScope.launchIO { setScreen(context, DiscordScreen.BROWSE) }
+            }
             // <-- AM (DISCORD)
         }
     }

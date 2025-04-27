@@ -102,7 +102,9 @@ data object MoreTab : Tab {
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
             // AM (DISCORD) -->
-            DiscordRPCService.setScreen(context, DiscordScreen.MORE)
+            with(DiscordRPCService) {
+                discordScope.launchIO { setScreen(context, DiscordScreen.MORE) }
+            }
             // <-- AM (DISCORD)
         }
     }

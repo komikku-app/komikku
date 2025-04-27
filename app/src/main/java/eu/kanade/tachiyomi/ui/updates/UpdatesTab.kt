@@ -120,6 +120,11 @@ data object UpdatesTab : Tab {
         }
 
         LaunchedEffect(Unit) {
+            // AM (DISCORD) -->
+            with(DiscordRPCService) {
+                discordScope.launchIO { setScreen(context, DiscordScreen.UPDATES) }
+            }
+            // <-- AM (DISCORD)
             screenModel.events.collectLatest { event ->
                 when (event) {
                     Event.InternalError -> screenModel.snackbarHostState.showSnackbar(

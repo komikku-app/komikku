@@ -447,7 +447,9 @@ data object LibraryTab : Tab {
             if (!state.isLoading) {
                 (context as? MainActivity)?.ready = true
                 // AM (DISCORD) -->
-                DiscordRPCService.setScreen(context, DiscordScreen.LIBRARY)
+                with(DiscordRPCService) {
+                    discordScope.launchIO { setScreen(context, DiscordScreen.LIBRARY) }
+                }
                 // <-- AM (DISCORD)
             }
         }

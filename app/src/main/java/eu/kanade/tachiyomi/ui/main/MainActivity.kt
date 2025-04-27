@@ -119,6 +119,7 @@ import tachiyomi.core.common.Constants
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.backup.service.BackupPreferences
@@ -368,10 +369,14 @@ class MainActivity : BaseActivity() {
                     connectionsPreferences.discordRPCStatus().changes()
                         .drop(1)
                         .onEach {
-                            DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
-                            DiscordRPCService.start(this@MainActivity.applicationContext)
-                            DiscordRPCService.setScreen(this@MainActivity, DiscordScreen.MORE)
-                        }.launchIn(this)
+                            with(DiscordRPCService) {
+                                discordScope.launchIO {
+                                    stop(this@MainActivity.applicationContext, 0L)
+                                    start(this@MainActivity.applicationContext)
+                                    setScreen(this@MainActivity, DiscordScreen.LIBRARY)
+                                }
+                            }
+                        }
                     // <-- AM (DISCORD)
                 }
 
