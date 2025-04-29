@@ -1,8 +1,6 @@
 package eu.kanade.presentation.more.settings.screen
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import androidx.compose.foundation.layout.Arrangement
@@ -258,25 +256,11 @@ object SettingsTrackingScreen : SearchableSettings {
                             val usernameEditText = binding.usernameEditText
                             val passwordEditText = binding.passwordEditText
 
-                            // Apply color scheme and selection handles
-                            listOf(usernameEditText, passwordEditText).forEach { editText ->
-                                editText.setTextColor(colorScheme.textColor)
-                                editText.highlightColor = colorScheme.textHighlightColor
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    editText.textSelectHandle?.let { drawable ->
-                                        drawable.setTint(colorScheme.primary)
-                                        editText.setTextSelectHandle(drawable)
-                                    }
-                                    editText.textSelectHandleLeft?.let { drawable ->
-                                        drawable.setTint(colorScheme.primary)
-                                        editText.setTextSelectHandleLeft(drawable)
-                                    }
-                                    editText.textSelectHandleRight?.let { drawable ->
-                                        drawable.setTint(colorScheme.primary)
-                                        editText.setTextSelectHandleRight(drawable)
-                                    }
-                                }
+                            listOf(
+                                usernameEditText,
+                                passwordEditText,
+                            ).forEach {
+                                colorScheme.setEditTextColor(it)
                             }
 
                             usernameInputLayout.hint = usernameHint
@@ -306,43 +290,11 @@ object SettingsTrackingScreen : SearchableSettings {
                             val usernameInputLayout = binding.usernameInputLayout
                             val passwordInputLayout = binding.passwordInputLayout
 
-                            val (strokeColorFocused, strokeColorDefault, hintColor, cursorColor) = if (inputError) {
-                                arrayOf(
-                                    colorScheme.error,
-                                    colorScheme.error,
-                                    colorScheme.error,
-                                    colorScheme.error,
-                                )
-                            } else {
-                                arrayOf(
-                                    colorScheme.primary,
-                                    colorScheme.onSurfaceVariant,
-                                    colorScheme.primary,
-                                    colorScheme.primary,
-                                )
-                            }
-
-                            val boxStrokeColorStateList = ColorStateList(
-                                arrayOf(
-                                    intArrayOf(android.R.attr.state_focused),
-                                    intArrayOf(), // Default state
-                                ),
-                                intArrayOf(
-                                    strokeColorFocused,
-                                    strokeColorDefault,
-                                ),
-                            )
-                            val hintTextColorStateList = ColorStateList.valueOf(hintColor)
-                            val endIconTintList = ColorStateList.valueOf(colorScheme.onSurfaceVariant)
-                            val cursorColorStateList = ColorStateList.valueOf(cursorColor)
-
-                            listOf(usernameInputLayout, passwordInputLayout).forEach {
-                                it.setBoxStrokeColorStateList(boxStrokeColorStateList)
-                                it.hintTextColor = hintTextColorStateList
-                                it.setEndIconTintList(endIconTintList)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    it.cursorColor = cursorColorStateList
-                                }
+                            listOf(
+                                usernameInputLayout,
+                                passwordInputLayout,
+                            ).forEach {
+                                colorScheme.setTextInputLayoutColor(it, inputError)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),

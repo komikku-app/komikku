@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
@@ -359,23 +358,7 @@ private fun onViewCreated(
         binding.thumbnailUrl,
         binding.mangaDescription,
     ).forEach {
-        it.setTextColor(colorScheme.textColor)
-        it.highlightColor = colorScheme.textHighlightColor
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            it.textSelectHandle?.let { drawable ->
-                drawable.setTint(colorScheme.iconColor)
-                it.setTextSelectHandle(drawable)
-            }
-            it.textSelectHandleLeft?.let { drawable ->
-                drawable.setTint(colorScheme.iconColor)
-                it.setTextSelectHandleLeft(drawable)
-            }
-            it.textSelectHandleRight?.let { drawable ->
-                drawable.setTint(colorScheme.iconColor)
-                it.setTextSelectHandleRight(drawable)
-            }
-        }
+        colorScheme.setEditTextColor(it)
     }
     listOf(
         binding.titleOutline,
@@ -384,11 +367,7 @@ private fun onViewCreated(
         binding.thumbnailUrlOutline,
         binding.mangaDescriptionOutline,
     ).forEach {
-        it.boxStrokeColor = colorScheme.iconColor
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            it.cursorColor = ColorStateList.valueOf(colorScheme.iconColor)
-        }
+        colorScheme.setTextInputLayoutColor(it)
     }
 
     binding.autofillFromTracker.setTextColor(colorScheme.btnTextColor)
