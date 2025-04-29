@@ -20,7 +20,8 @@
             android:inputType="textEmailAddress"
             android:imeOptions="actionNext"
             android:nextFocusDown="@id/password_edit_text"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:importantForAutofill="yes" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -40,7 +41,8 @@
             android:autofillHints="password"
             android:inputType="textPassword"
             android:imeOptions="actionDone"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:importantForAutofill="yes" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
