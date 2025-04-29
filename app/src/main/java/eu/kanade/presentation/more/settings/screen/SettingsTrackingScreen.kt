@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Close
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doAfterTextChanged
 import dev.icerock.moko.resources.StringResource
@@ -58,6 +60,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -223,82 +226,88 @@ object SettingsTrackingScreen : SearchableSettings {
                 }
             },
             text = {
-                AndroidView(
-                    factory = { factoryContext ->
-                        val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
+                if (processing) {
+                    LoadingScreen(
+                        modifier = Modifier.heightIn(max = 158.dp),
+                    )
+                } else {
+                    AndroidView(
+                        factory = { factoryContext ->
+                            val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
 
-                        val usernameInputLayout = binding.usernameInputLayout
-                        val usernameEditText = binding.usernameEditText
-                        val passwordInputLayout = binding.passwordInputLayout
-                        val passwordEditText = binding.passwordEditText
+                            val usernameInputLayout = binding.usernameInputLayout
+                            val usernameEditText = binding.usernameEditText
+                            val passwordInputLayout = binding.passwordInputLayout
+                            val passwordEditText = binding.passwordEditText
 
-                        listOf(
-                            binding.usernameEditText,
-                            binding.passwordEditText,
-                        ).forEach {
-                            it.setTextColor(colorScheme.textColor)
-                            it.highlightColor = colorScheme.textHighlightColor
+                            listOf(
+                                binding.usernameEditText,
+                                binding.passwordEditText,
+                            ).forEach {
+                                it.setTextColor(colorScheme.textColor)
+                                it.highlightColor = colorScheme.textHighlightColor
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                it.textSelectHandle?.let { drawable ->
-                                    drawable.setTint(colorScheme.iconColor)
-                                    it.setTextSelectHandle(drawable)
-                                }
-                                it.textSelectHandleLeft?.let { drawable ->
-                                    drawable.setTint(colorScheme.iconColor)
-                                    it.setTextSelectHandleLeft(drawable)
-                                }
-                                it.textSelectHandleRight?.let { drawable ->
-                                    drawable.setTint(colorScheme.iconColor)
-                                    it.setTextSelectHandleRight(drawable)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    it.textSelectHandle?.let { drawable ->
+                                        drawable.setTint(colorScheme.iconColor)
+                                        it.setTextSelectHandle(drawable)
+                                    }
+                                    it.textSelectHandleLeft?.let { drawable ->
+                                        drawable.setTint(colorScheme.iconColor)
+                                        it.setTextSelectHandleLeft(drawable)
+                                    }
+                                    it.textSelectHandleRight?.let { drawable ->
+                                        drawable.setTint(colorScheme.iconColor)
+                                        it.setTextSelectHandleRight(drawable)
+                                    }
                                 }
                             }
-                        }
-                        listOf(
-                            binding.usernameInputLayout,
-                            binding.passwordInputLayout,
-                        ).forEach {
-                            it.boxStrokeColor = colorScheme.iconColor
-                            it.hintTextColor = ColorStateList.valueOf(colorScheme.iconColor)
+                            listOf(
+                                binding.usernameInputLayout,
+                                binding.passwordInputLayout,
+                            ).forEach {
+                                it.boxStrokeColor = colorScheme.iconColor
+                                it.hintTextColor = ColorStateList.valueOf(colorScheme.iconColor)
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                it.cursorColor = ColorStateList.valueOf(colorScheme.iconColor)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    it.cursorColor = ColorStateList.valueOf(colorScheme.iconColor)
+                                }
                             }
-                        }
 
-                        usernameInputLayout.hint = usernameHint
-                        usernameEditText.setText(username)
-                        passwordEditText.setText(password)
+                            usernameInputLayout.hint = usernameHint
+                            usernameEditText.setText(username)
+                            passwordEditText.setText(password)
 
-                        // Clear errors when text changes & update Compose state
-                        usernameEditText.doAfterTextChanged {
-                            username = it?.toString() ?: ""
-                            inputError = false
-                        }
-                        passwordEditText.doAfterTextChanged {
-                            password = it?.toString() ?: ""
-                            inputError = false
-                        }
+                            // Clear errors when text changes & update Compose state
+                            usernameEditText.doAfterTextChanged {
+                                username = it?.toString() ?: ""
+                                inputError = false
+                            }
+                            passwordEditText.doAfterTextChanged {
+                                password = it?.toString() ?: ""
+                                inputError = false
+                            }
 
-                        // Function to update view error state (called from update lambda)
-                        fun updateViewErrorState(isError: Boolean) {
-                            val errorText = if (isError) " " else null // Trick to show error color
-                            usernameInputLayout.error = errorText
-                            passwordInputLayout.error = errorText
-                        }
+                            // Function to update view error state (called from update lambda)
+                            fun updateViewErrorState(isError: Boolean) {
+                                val errorText = if (isError) " " else null // Trick to show error color
+                                usernameInputLayout.error = errorText
+                                passwordInputLayout.error = errorText
+                            }
 
-                        // Set the view as tag for the update lambda
-                        binding.root.tag = ::updateViewErrorState
-                        binding.root
-                    },
-                    update = { view ->
-                        // Retrieve the function from tag and call it with the current error state
-                        @Suppress("UNCHECKED_CAST")
-                        val updateErrorState = view.tag as? (Boolean) -> Unit
-                        updateErrorState?.invoke(inputError)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                            // Set the view as tag for the update lambda
+                            binding.root.tag = ::updateViewErrorState
+                            binding.root
+                        },
+                        update = { view ->
+                            // Retrieve the function from tag and call it with the current error state
+                            @Suppress("UNCHECKED_CAST")
+                            val updateErrorState = view.tag as? (Boolean) -> Unit
+                            updateErrorState?.invoke(inputError)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             },
             confirmButton = {
                 Button(
