@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
-import android.os.Build
 import android.view.LayoutInflater
 import android.widget.CompoundButton
 import android.widget.RadioButton
@@ -14,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.isVisible
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
@@ -83,26 +81,7 @@ fun MigrationBottomSheetDialog(
                 binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
                 binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
 
-                with(binding.extraSearchParamText) {
-                    highlightColor = colorScheme.textHighlightColor
-                    backgroundTintList = colorScheme.editTextBackgroundTintList
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        textCursorDrawable = colorScheme.primary.toDrawable()
-                        textSelectHandle?.let { drawable ->
-                            drawable.setTint(colorScheme.primary)
-                            setTextSelectHandle(drawable)
-                        }
-                        textSelectHandleLeft?.let { drawable ->
-                            drawable.setTint(colorScheme.primary)
-                            setTextSelectHandleLeft(drawable)
-                        }
-                        textSelectHandleRight?.let { drawable ->
-                            drawable.setTint(colorScheme.primary)
-                            setTextSelectHandleRight(drawable)
-                        }
-                    }
-                }
+                colorScheme.setEditTextColor(binding.extraSearchParamText)
                 // KMK <--
                 binding.root
             },
