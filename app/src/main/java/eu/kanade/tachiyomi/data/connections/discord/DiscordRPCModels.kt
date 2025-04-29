@@ -20,7 +20,7 @@ const val RICH_PRESENCE_TAG = "discord_rpc"
 internal const val RICH_PRESENCE_APPLICATION_ID = "1365208874440986685"
 
 const val DOWNLOAD_BUTTON_LABEL = "Download"
-const val DOWNLOAD_BUTTON_URL = "https://github.com/komikku-app/komikku/releases"
+const val DOWNLOAD_BUTTON_URL = "https://komikku-app.github.io/download/"
 const val DISCORD_BUTTON_LABEL = "Discord"
 const val DISCORD_BUTTON_URL = "https://discord.gg/85jB7V5AJR"
 
