@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -201,6 +203,8 @@ object SettingsTrackingScreen : SearchableSettings {
     ) {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+
+        // KMK -->
         val usernameHint = stringResource(uNameStringRes)
 
         var username by remember { mutableStateOf(tracker.getUsername()) }
@@ -208,6 +212,10 @@ object SettingsTrackingScreen : SearchableSettings {
         var processing by remember { mutableStateOf(false) }
         var inputError by remember { mutableStateOf(false) }
         val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
+
+        val density = LocalDensity.current
+        var measuredHeightDp by remember { mutableStateOf(0.dp) }
+        // KMK <--
 
         AlertDialog(
             onDismissRequest = onDismissRequest,
@@ -226,51 +234,45 @@ object SettingsTrackingScreen : SearchableSettings {
                 }
             },
             text = {
+                // KMK -->
                 if (processing) {
                     LoadingScreen(
-                        modifier = Modifier.heightIn(max = 158.dp),
+                        modifier = Modifier.heightIn(max = measuredHeightDp),
                     )
                 } else {
                     AndroidView(
                         factory = { factoryContext ->
                             val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
 
+                            // Measure with UNSPECIFIED height and AT_MOST width (e.g., screen width, or a large value)
+                            // Using a fixed large value for simplicity, adjust if needed
+                            val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.AT_MOST)
+                            val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                            binding.root.measure(widthMeasureSpec, heightMeasureSpec)
+                            with(density) { measuredHeightDp = binding.root.measuredHeight.toDp() }
+
                             val usernameInputLayout = binding.usernameInputLayout
                             val usernameEditText = binding.usernameEditText
                             val passwordInputLayout = binding.passwordInputLayout
                             val passwordEditText = binding.passwordEditText
 
-                            listOf(
-                                binding.usernameEditText,
-                                binding.passwordEditText,
-                            ).forEach {
+                            listOf(usernameEditText, passwordEditText).forEach {
                                 it.setTextColor(colorScheme.textColor)
                                 it.highlightColor = colorScheme.textHighlightColor
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                     it.textSelectHandle?.let { drawable ->
-                                        drawable.setTint(colorScheme.iconColor)
+                                        drawable.setTint(colorScheme.primary)
                                         it.setTextSelectHandle(drawable)
                                     }
                                     it.textSelectHandleLeft?.let { drawable ->
-                                        drawable.setTint(colorScheme.iconColor)
+                                        drawable.setTint(colorScheme.primary)
                                         it.setTextSelectHandleLeft(drawable)
                                     }
                                     it.textSelectHandleRight?.let { drawable ->
-                                        drawable.setTint(colorScheme.iconColor)
+                                        drawable.setTint(colorScheme.primary)
                                         it.setTextSelectHandleRight(drawable)
                                     }
-                                }
-                            }
-                            listOf(
-                                binding.usernameInputLayout,
-                                binding.passwordInputLayout,
-                            ).forEach {
-                                it.boxStrokeColor = colorScheme.iconColor
-                                it.hintTextColor = ColorStateList.valueOf(colorScheme.iconColor)
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    it.cursorColor = ColorStateList.valueOf(colorScheme.iconColor)
                                 }
                             }
 
@@ -278,21 +280,55 @@ object SettingsTrackingScreen : SearchableSettings {
                             usernameEditText.setText(username)
                             passwordEditText.setText(password)
 
+                            fun updateViewErrorState(isError: Boolean) {
+                                val (strokeColorFocused, strokeColorDefault, hintColor, cursorColor) = if (isError) {
+                                    arrayOf(
+                                        colorScheme.error,
+                                        colorScheme.error,
+                                        colorScheme.error,
+                                        colorScheme.error,
+                                    )
+                                } else {
+                                    arrayOf(
+                                        colorScheme.primary,
+                                        colorScheme.onSurfaceVariant,
+                                        colorScheme.primary,
+                                        colorScheme.primary,
+                                    )
+                                }
+
+                                val boxStrokeColorStateList = ColorStateList(
+                                    arrayOf(
+                                        intArrayOf(android.R.attr.state_focused),
+                                        intArrayOf(), // Default state
+                                    ),
+                                    intArrayOf(
+                                        strokeColorFocused,
+                                        strokeColorDefault,
+                                    ),
+                                )
+                                val hintTextColorStateList = ColorStateList.valueOf(hintColor)
+                                val endIconTintList = ColorStateList.valueOf(colorScheme.onSurfaceVariant)
+                                val cursorColorStateList = ColorStateList.valueOf(cursorColor)
+
+                                listOf(usernameInputLayout, passwordInputLayout).forEach {
+                                    it.setBoxStrokeColorStateList(boxStrokeColorStateList)
+                                    it.hintTextColor = hintTextColorStateList
+                                    it.setEndIconTintList(endIconTintList)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        it.cursorColor = cursorColorStateList
+                                    }
+                                }
+                            }
+
                             // Clear errors when text changes & update Compose state
                             usernameEditText.doAfterTextChanged {
                                 username = it?.toString() ?: ""
-                                inputError = false
+                                updateViewErrorState(false)
                             }
                             passwordEditText.doAfterTextChanged {
                                 password = it?.toString() ?: ""
-                                inputError = false
-                            }
-
-                            // Function to update view error state (called from update lambda)
-                            fun updateViewErrorState(isError: Boolean) {
-                                val errorText = if (isError) " " else null // Trick to show error color
-                                usernameInputLayout.error = errorText
-                                passwordInputLayout.error = errorText
+                                updateViewErrorState(false)
                             }
 
                             // Set the view as tag for the update lambda
@@ -308,14 +344,17 @@ object SettingsTrackingScreen : SearchableSettings {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+                // KMK <--
             },
             confirmButton = {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !processing && username.isNotBlank() && password.isNotBlank(),
                     onClick = {
+                        // KMK -->
                         processing = true
                         inputError = false // Clear previous error before check
+                        // KMK <--
                         scope.launchIO {
                             val result = checkLogin(
                                 context = context,
