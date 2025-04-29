@@ -1,16 +1,15 @@
 package eu.kanade.presentation.more.settings.screen
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.os.Build
+import android.view.LayoutInflater
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -19,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -32,17 +30,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.widget.doAfterTextChanged
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
@@ -50,6 +45,7 @@ import eu.kanade.tachiyomi.data.track.anilist.AnilistApi
 import eu.kanade.tachiyomi.data.track.bangumi.BangumiApi
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeListApi
 import eu.kanade.tachiyomi.data.track.shikimori.ShikimoriApi
+import eu.kanade.tachiyomi.databinding.DialogTrackingLoginBinding
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -89,7 +85,6 @@ object SettingsTrackingScreen : SearchableSettings {
         val trackPreferences = remember { Injekt.get<TrackPreferences>() }
         val trackerManager = remember { Injekt.get<TrackerManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
-        val autoTrackStatePref = trackPreferences.autoUpdateTrackOnMarkRead()
 
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
@@ -203,11 +198,13 @@ object SettingsTrackingScreen : SearchableSettings {
     ) {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+        val usernameHint = stringResource(uNameStringRes)
 
-        var username by remember { mutableStateOf(TextFieldValue(tracker.getUsername())) }
-        var password by remember { mutableStateOf(TextFieldValue(tracker.getPassword())) }
+        var username by remember { mutableStateOf(tracker.getUsername()) }
+        var password by remember { mutableStateOf(tracker.getPassword()) }
         var processing by remember { mutableStateOf(false) }
         var inputError by remember { mutableStateOf(false) }
+        val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
 
         AlertDialog(
             onDismissRequest = onDismissRequest,
@@ -226,61 +223,96 @@ object SettingsTrackingScreen : SearchableSettings {
                 }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = username,
-                        onValueChange = { username = it },
-                        label = { Text(text = stringResource(uNameStringRes)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        singleLine = true,
-                        isError = inputError && !processing,
-                    )
+                AndroidView(
+                    factory = { factoryContext ->
+                        val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
 
-                    var hidePassword by remember { mutableStateOf(true) }
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text(text = stringResource(MR.strings.password)) },
-                        trailingIcon = {
-                            IconButton(onClick = { hidePassword = !hidePassword }) {
-                                Icon(
-                                    imageVector = if (hidePassword) {
-                                        Icons.Filled.Visibility
-                                    } else {
-                                        Icons.Filled.VisibilityOff
-                                    },
-                                    contentDescription = null,
-                                )
+                        val usernameInputLayout = binding.usernameInputLayout
+                        val usernameEditText = binding.usernameEditText
+                        val passwordInputLayout = binding.passwordInputLayout
+                        val passwordEditText = binding.passwordEditText
+
+                        listOf(
+                            binding.usernameEditText,
+                            binding.passwordEditText,
+                        ).forEach {
+                            it.setTextColor(colorScheme.textColor)
+                            it.highlightColor = colorScheme.textHighlightColor
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                it.textSelectHandle?.let { drawable ->
+                                    drawable.setTint(colorScheme.iconColor)
+                                    it.setTextSelectHandle(drawable)
+                                }
+                                it.textSelectHandleLeft?.let { drawable ->
+                                    drawable.setTint(colorScheme.iconColor)
+                                    it.setTextSelectHandleLeft(drawable)
+                                }
+                                it.textSelectHandleRight?.let { drawable ->
+                                    drawable.setTint(colorScheme.iconColor)
+                                    it.setTextSelectHandleRight(drawable)
+                                }
                             }
-                        },
-                        visualTransformation = if (hidePassword) {
-                            PasswordVisualTransformation()
-                        } else {
-                            VisualTransformation.None
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done,
-                        ),
-                        singleLine = true,
-                        isError = inputError && !processing,
-                    )
-                }
+                        }
+                        listOf(
+                            binding.usernameInputLayout,
+                            binding.passwordInputLayout,
+                        ).forEach {
+                            it.boxStrokeColor = colorScheme.iconColor
+                            it.hintTextColor = ColorStateList.valueOf(colorScheme.iconColor)
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                it.cursorColor = ColorStateList.valueOf(colorScheme.iconColor)
+                            }
+                        }
+
+                        usernameInputLayout.hint = usernameHint
+                        usernameEditText.setText(username)
+                        passwordEditText.setText(password)
+
+                        // Clear errors when text changes & update Compose state
+                        usernameEditText.doAfterTextChanged {
+                            username = it?.toString() ?: ""
+                            inputError = false
+                        }
+                        passwordEditText.doAfterTextChanged {
+                            password = it?.toString() ?: ""
+                            inputError = false
+                        }
+
+                        // Function to update view error state (called from update lambda)
+                        fun updateViewErrorState(isError: Boolean) {
+                            val errorText = if (isError) " " else null // Trick to show error color
+                            usernameInputLayout.error = errorText
+                            passwordInputLayout.error = errorText
+                        }
+
+                        // Set the view as tag for the update lambda
+                        binding.root.tag = ::updateViewErrorState
+                        binding.root
+                    },
+                    update = { view ->
+                        // Retrieve the function from tag and call it with the current error state
+                        @Suppress("UNCHECKED_CAST")
+                        val updateErrorState = view.tag as? (Boolean) -> Unit
+                        updateErrorState?.invoke(inputError)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             },
             confirmButton = {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !processing && username.text.isNotBlank() && password.text.isNotBlank(),
+                    enabled = !processing && username.isNotBlank() && password.isNotBlank(),
                     onClick = {
+                        processing = true
+                        inputError = false // Clear previous error before check
                         scope.launchIO {
-                            processing = true
                             val result = checkLogin(
                                 context = context,
                                 tracker = tracker,
-                                username = username.text,
-                                password = password.text,
+                                username = username,
+                                password = password,
                             )
                             inputError = !result
                             if (result) onDismissRequest()
