@@ -207,8 +207,8 @@ object SettingsTrackingScreen : SearchableSettings {
         // KMK -->
         val usernameHint = stringResource(uNameStringRes)
 
-        var username by remember { mutableStateOf(tracker.getUsername()) }
-        var password by remember { mutableStateOf(tracker.getPassword()) }
+        var username by remember(tracker) { mutableStateOf(tracker.getUsername()) }
+        var password by remember(tracker) { mutableStateOf(tracker.getPassword()) }
         var processing by remember { mutableStateOf(false) }
         var inputError by remember { mutableStateOf(false) }
         val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
@@ -244,9 +244,8 @@ object SettingsTrackingScreen : SearchableSettings {
                         factory = { factoryContext ->
                             val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
 
-                            // Measure with UNSPECIFIED height and AT_MOST width (e.g., screen width, or a large value)
-                            // Using a fixed large value for simplicity, adjust if needed
-                            val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.AT_MOST)
+                            // Measure dialog height for loading state
+                            val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
                             val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
                             binding.root.measure(widthMeasureSpec, heightMeasureSpec)
                             with(density) { measuredHeightDp = binding.root.measuredHeight.toDp() }
@@ -362,14 +361,14 @@ object SettingsTrackingScreen : SearchableSettings {
                         inputError = false // Clear previous error before check
                         // KMK <--
                         scope.launchIO {
-                            val result = checkLogin(
+                            val success = checkLogin(
                                 context = context,
                                 tracker = tracker,
                                 username = username,
                                 password = password,
                             )
-                            inputError = !result
-                            if (result) onDismissRequest()
+                            inputError = !success
+                            if (success) onDismissRequest()
                             processing = false
                         }
                     },
