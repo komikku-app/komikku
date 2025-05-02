@@ -256,22 +256,23 @@ object SettingsTrackingScreen : SearchableSettings {
                             val passwordInputLayout = binding.passwordInputLayout
                             val passwordEditText = binding.passwordEditText
 
-                            listOf(usernameEditText, passwordEditText).forEach {
-                                it.setTextColor(colorScheme.textColor)
-                                it.highlightColor = colorScheme.textHighlightColor
+                            // Apply color scheme and selection handles
+                            listOf(usernameEditText, passwordEditText).forEach { editText ->
+                                editText.setTextColor(colorScheme.textColor)
+                                editText.highlightColor = colorScheme.textHighlightColor
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    it.textSelectHandle?.let { drawable ->
+                                    editText.textSelectHandle?.let { drawable ->
                                         drawable.setTint(colorScheme.primary)
-                                        it.setTextSelectHandle(drawable)
+                                        editText.setTextSelectHandle(drawable)
                                     }
-                                    it.textSelectHandleLeft?.let { drawable ->
+                                    editText.textSelectHandleLeft?.let { drawable ->
                                         drawable.setTint(colorScheme.primary)
-                                        it.setTextSelectHandleLeft(drawable)
+                                        editText.setTextSelectHandleLeft(drawable)
                                     }
-                                    it.textSelectHandleRight?.let { drawable ->
+                                    editText.textSelectHandleRight?.let { drawable ->
                                         drawable.setTint(colorScheme.primary)
-                                        it.setTextSelectHandleRight(drawable)
+                                        editText.setTextSelectHandleRight(drawable)
                                     }
                                 }
                             }
@@ -321,25 +322,30 @@ object SettingsTrackingScreen : SearchableSettings {
                                 }
                             }
 
-                            // Clear errors when text changes & update Compose state
+                            // Clear errors and update Compose state on text change
                             usernameEditText.doAfterTextChanged {
-                                username = it?.toString() ?: ""
-                                updateViewErrorState(false)
+                                val newValue = it?.toString().orEmpty()
+                                if (username != newValue) {
+                                    username = newValue
+                                    updateViewErrorState(false)
+                                }
                             }
                             passwordEditText.doAfterTextChanged {
-                                password = it?.toString() ?: ""
-                                updateViewErrorState(false)
+                                val newValue = it?.toString().orEmpty()
+                                if (password != newValue) {
+                                    password = newValue
+                                    updateViewErrorState(false)
+                                }
                             }
 
-                            // Set the view as tag for the update lambda
+                            // Store error update lambda for Compose update
                             binding.root.tag = ::updateViewErrorState
                             binding.root
                         },
                         update = { view ->
                             // Retrieve the function from tag and call it with the current error state
                             @Suppress("UNCHECKED_CAST")
-                            val updateErrorState = view.tag as? (Boolean) -> Unit
-                            updateErrorState?.invoke(inputError)
+                            (view.tag as? (Boolean) -> Unit)?.invoke(inputError)
                         },
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -368,8 +374,7 @@ object SettingsTrackingScreen : SearchableSettings {
                         }
                     },
                 ) {
-                    val id = if (processing) MR.strings.loading else MR.strings.login
-                    Text(text = stringResource(id))
+                    Text(text = stringResource(if (processing) MR.strings.loading else MR.strings.login))
                 }
             },
         )
