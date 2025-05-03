@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
@@ -213,8 +214,9 @@ object SettingsTrackingScreen : SearchableSettings {
         var inputError by remember { mutableStateOf(false) }
         val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
 
+        val configuration = LocalConfiguration.current
         val density = LocalDensity.current
-        var measuredHeightDp by remember { mutableStateOf(0.dp) }
+        var measuredHeightDp by remember(configuration) { mutableStateOf(0.dp) }
         // KMK <--
 
         AlertDialog(
@@ -245,14 +247,15 @@ object SettingsTrackingScreen : SearchableSettings {
                             val binding = DialogTrackingLoginBinding.inflate(LayoutInflater.from(factoryContext))
 
                             // Measure dialog height for loading state
-                            val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                            val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                            binding.root.measure(widthMeasureSpec, heightMeasureSpec)
-                            with(density) { measuredHeightDp = binding.root.measuredHeight.toDp() }
+                            if (measuredHeightDp == 0.dp) {
+                                val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                                val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                                binding.root.measure(widthMeasureSpec, heightMeasureSpec)
+                                with(density) { measuredHeightDp = binding.root.measuredHeight.toDp() }
+                            }
 
                             val usernameInputLayout = binding.usernameInputLayout
                             val usernameEditText = binding.usernameEditText
-                            val passwordInputLayout = binding.passwordInputLayout
                             val passwordEditText = binding.passwordEditText
 
                             // Apply color scheme and selection handles
@@ -280,71 +283,67 @@ object SettingsTrackingScreen : SearchableSettings {
                             usernameEditText.setText(username)
                             passwordEditText.setText(password)
 
-                            fun updateViewErrorState(isError: Boolean) {
-                                val (strokeColorFocused, strokeColorDefault, hintColor, cursorColor) = if (isError) {
-                                    arrayOf(
-                                        colorScheme.error,
-                                        colorScheme.error,
-                                        colorScheme.error,
-                                        colorScheme.error,
-                                    )
-                                } else {
-                                    arrayOf(
-                                        colorScheme.primary,
-                                        colorScheme.onSurfaceVariant,
-                                        colorScheme.primary,
-                                        colorScheme.primary,
-                                    )
-                                }
-
-                                val boxStrokeColorStateList = ColorStateList(
-                                    arrayOf(
-                                        intArrayOf(android.R.attr.state_focused),
-                                        intArrayOf(), // Default state
-                                    ),
-                                    intArrayOf(
-                                        strokeColorFocused,
-                                        strokeColorDefault,
-                                    ),
-                                )
-                                val hintTextColorStateList = ColorStateList.valueOf(hintColor)
-                                val endIconTintList = ColorStateList.valueOf(colorScheme.onSurfaceVariant)
-                                val cursorColorStateList = ColorStateList.valueOf(cursorColor)
-
-                                listOf(usernameInputLayout, passwordInputLayout).forEach {
-                                    it.setBoxStrokeColorStateList(boxStrokeColorStateList)
-                                    it.hintTextColor = hintTextColorStateList
-                                    it.setEndIconTintList(endIconTintList)
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        it.cursorColor = cursorColorStateList
-                                    }
-                                }
-                            }
-
                             // Clear errors and update Compose state on text change
                             usernameEditText.doAfterTextChanged {
                                 val newValue = it?.toString().orEmpty()
                                 if (username != newValue) {
                                     username = newValue
-                                    updateViewErrorState(false)
+                                    inputError = false
                                 }
                             }
                             passwordEditText.doAfterTextChanged {
                                 val newValue = it?.toString().orEmpty()
                                 if (password != newValue) {
                                     password = newValue
-                                    updateViewErrorState(false)
+                                    inputError = false
                                 }
                             }
 
-                            // Store error update lambda for Compose update
-                            binding.root.tag = ::updateViewErrorState
                             binding.root
                         },
                         update = { view ->
-                            // Retrieve the function from tag and call it with the current error state
-                            @Suppress("UNCHECKED_CAST")
-                            (view.tag as? (Boolean) -> Unit)?.invoke(inputError)
+                            val binding = DialogTrackingLoginBinding.bind(view)
+                            val usernameInputLayout = binding.usernameInputLayout
+                            val passwordInputLayout = binding.passwordInputLayout
+
+                            val (strokeColorFocused, strokeColorDefault, hintColor, cursorColor) = if (inputError) {
+                                arrayOf(
+                                    colorScheme.error,
+                                    colorScheme.error,
+                                    colorScheme.error,
+                                    colorScheme.error,
+                                )
+                            } else {
+                                arrayOf(
+                                    colorScheme.primary,
+                                    colorScheme.onSurfaceVariant,
+                                    colorScheme.primary,
+                                    colorScheme.primary,
+                                )
+                            }
+
+                            val boxStrokeColorStateList = ColorStateList(
+                                arrayOf(
+                                    intArrayOf(android.R.attr.state_focused),
+                                    intArrayOf(), // Default state
+                                ),
+                                intArrayOf(
+                                    strokeColorFocused,
+                                    strokeColorDefault,
+                                ),
+                            )
+                            val hintTextColorStateList = ColorStateList.valueOf(hintColor)
+                            val endIconTintList = ColorStateList.valueOf(colorScheme.onSurfaceVariant)
+                            val cursorColorStateList = ColorStateList.valueOf(cursorColor)
+
+                            listOf(usernameInputLayout, passwordInputLayout).forEach {
+                                it.setBoxStrokeColorStateList(boxStrokeColorStateList)
+                                it.hintTextColor = hintTextColorStateList
+                                it.setEndIconTintList(endIconTintList)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    it.cursorColor = cursorColorStateList
+                                }
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
                     )
