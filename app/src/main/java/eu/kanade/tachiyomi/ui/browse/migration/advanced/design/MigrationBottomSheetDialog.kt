@@ -81,6 +81,7 @@ fun MigrationBottomSheetDialog(
                 binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
                 binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
 
+                colorScheme.setTextInputLayoutColor(binding.extraSearchParamInputLayout)
                 colorScheme.setEditTextColor(binding.extraSearchParamText)
                 // KMK <--
                 binding.root
@@ -119,9 +120,9 @@ class MigrationBottomSheetDialogState(
         binding.migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
 
         binding.useSmartSearch.bindToPreference(preferences.smartMigration())
-        binding.extraSearchParamText.isVisible = false
+        binding.extraSearchParamInputLayout.isVisible = false
         binding.extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
-            binding.extraSearchParamText.isVisible = isChecked
+            binding.extraSearchParamInputLayout.isVisible = isChecked
         }
         binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
@@ -142,8 +143,8 @@ class MigrationBottomSheetDialogState(
             preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
             preferences.showOnlyUpdatesMigration().set(binding.OnlyShowUpdates.isChecked)
             onStartMigration.value(
-                if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
-                    binding.extraSearchParamText.toString()
+                if (binding.useSmartSearch.isChecked && !binding.extraSearchParamText.text.isNullOrBlank()) {
+                    binding.extraSearchParamText.text.toString()
                 } else {
                     null
                 },
@@ -154,7 +155,7 @@ class MigrationBottomSheetDialogState(
         if (!fullSettings) {
             binding.useSmartSearch.isVisible = false
             binding.extraSearchParam.isVisible = false
-            binding.extraSearchParamText.isVisible = false
+            binding.extraSearchParamInputLayout.isVisible = false
             binding.sourceGroup.isVisible = false
             binding.skipStep.isVisible = false
             binding.migrateBtn.text = binding.root.context.stringResource(MR.strings.action_save)

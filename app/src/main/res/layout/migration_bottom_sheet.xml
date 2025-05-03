@@ -182,16 +182,21 @@
                 android:paddingVertical="16dp"
                 android:text="@string/include_extra_search_parameter" />
 
-            <EditText
-                android:id="@+id/extra_search_param_text"
+
+            <com.google.android.material.textfield.TextInputLayout
+                app:boxBackgroundMode="none"
+                android:id="@+id/extra_search_param_input_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:ems="10"
-                android:hint="@string/search_parameter"
-                android:importantForAutofill="no"
-                android:inputType="textPersonName"
-                android:textSize="16sp" />
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/extra_search_param_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search_parameter"
+                    android:importantForAutofill="no"
+                    android:inputType="textPersonName"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/skip_step"
