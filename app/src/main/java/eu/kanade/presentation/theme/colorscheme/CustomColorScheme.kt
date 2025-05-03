@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
-import androidx.core.graphics.drawable.toDrawable
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -236,14 +235,13 @@ class AndroidViewColorScheme(
      * @param editText The EditText to set the color for.
      */
     fun setEditTextColor(
-        editText: EditText,
+        editText: TextInputEditText,
     ) {
         editText.setTextColor(onSurfaceVariant)
         editText.highlightColor = inversePrimary
         editText.backgroundTintList = editTextBackgroundTintList
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            editText.textCursorDrawable = primary.toDrawable()
             editText.textSelectHandle?.let { drawable ->
                 drawable.setTint(primary)
                 editText.setTextSelectHandle(drawable)
