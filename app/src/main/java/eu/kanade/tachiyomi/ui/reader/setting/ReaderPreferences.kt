@@ -143,6 +143,10 @@ class ReaderPreferences(
 
     fun showNavigationOverlayOnStart() = preferenceStore.getBoolean("reader_navigation_overlay_on_start", false)
 
+    // KMK -->
+    fun smallerTapZone() = preferenceStore.getBoolean("reader_navigation_smaller_tap_zone", false)
+    // KMK <--
+
     // endregion
 
     // SY -->

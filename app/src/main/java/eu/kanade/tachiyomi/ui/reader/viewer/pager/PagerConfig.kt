@@ -116,6 +116,12 @@ class PagerConfig(
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)
+        // KMK -->
+        readerPreferences.smallerTapZone().changes()
+            .drop(1)
+            .onEach { updateNavigation(navigationMode) }
+            .launchIn(scope)
+        // KMK <--
 
         readerPreferences.dualPageSplitPaged()
             .register(

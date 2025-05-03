@@ -16,6 +16,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -65,6 +66,12 @@ object SettingsReaderScreen : SearchableSettings {
                 title = stringResource(MR.strings.pref_show_navigation_mode),
                 subtitle = stringResource(MR.strings.pref_show_navigation_mode_summary),
             ),
+            // KMK -->
+            Preference.PreferenceItem.SwitchPreference(
+                preference = readerPref.smallerTapZone(),
+                title = stringResource(KMR.strings.pref_viewer_nav_smaller_tap_zone),
+            ),
+            // KMK <--
             // SY -->
             Preference.PreferenceItem.SwitchPreference(
                 preference = readerPref.forceHorizontalSeekbar(),
