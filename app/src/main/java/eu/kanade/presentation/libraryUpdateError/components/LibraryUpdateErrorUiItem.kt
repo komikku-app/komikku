@@ -35,26 +35,26 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
 ) {
-    uiModels.forEach {
-        when (it) {
+    uiModels.forEach { uiModel ->
+        when (uiModel) {
             is LibraryUpdateErrorUiModel.Header -> {
                 stickyHeader(
-                    key = "$STICKY_HEADER_KEY_PREFIX-errorHeader-${it.hashCode()}",
+                    key = "$STICKY_HEADER_KEY_PREFIX-errorHeader-${uiModel.hashCode()}",
                     contentType = "header",
                 ) {
                     ListGroupHeader(
                         modifier = Modifier.animateItemFastScroll(),
-                        text = it.errorMessage,
+                        text = uiModel.errorMessage,
                         tonalElevation = 1.dp,
                     )
                 }
             }
             is LibraryUpdateErrorUiModel.Item -> {
                 item(
-                    key = "error-${it.item.error.errorId}-${it.item.error.mangaId}",
+                    key = "error-${uiModel.item.error.errorId}-${uiModel.item.error.mangaId}",
                     contentType = "item",
                 ) {
-                    val libraryUpdateErrorItem = it.item
+                    val libraryUpdateErrorItem = uiModel.item
                     LibraryUpdateErrorUiItem(
                         modifier = Modifier.animateItemFastScroll(),
                         error = libraryUpdateErrorItem.error,
