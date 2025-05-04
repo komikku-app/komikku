@@ -27,7 +27,7 @@
     <string name="related_mangas_more">Mga katulad nito...</string>
     <string name="too_many_in_feed">Masyadong maraming source sa iyong feed, hindi maaaring magdagdag ng higit sa 20</string>
     <string name="current_">Kasalukuyan: %1$s</string>
-    <string name="pref_theme_cover_based">Tema base sa cover</string>
+    <string name="pref_theme_cover_based">Tema base sa pabalat</string>
     <string name="pref_theme_cover_based_style_neutral">Neutral</string>
     <string name="pref_theme_cover_based_style_content">Content</string>
     <string name="action_search_for_source">Maghanap ng mga source</string>
@@ -41,12 +41,12 @@
     <string name="pref_show_syncing_progress_banner">Ipakita ng progress ng pag-sync na banner</string>
     <string name="saved_searches_feeds">Mga na-save na Search at mga Feed</string>
     <string name="onboarding_permission_external_storage">Pahintulot sa pag-access ng mga media file</string>
-    <string name="onboarding_permission_external_storage_description">Payagang gumamit ng mga custom na cover sa Pag-edit ng Info ng entry</string>
-    <string name="onboarding_permission_writing_external_storage_description">Payagan mag-save ng mga cover habang ginagamit ang custom na cover sa Pag-edit ng Info ng entry</string>
+    <string name="onboarding_permission_external_storage_description">Payagang gumamit ng mga custom na pabalat sa Pag-edit ng Info ng entry</string>
+    <string name="onboarding_permission_writing_external_storage_description">Payagan mag-save ng mga pabalat habang ginagamit ang custom na pabalat sa Pag-edit ng Info ng entry</string>
     <string name="permission_writing_external_storage_succeed">Napayagan ang permission. Subukang muli ang aksiyon.</string>
     <string name="action_move_up">Mag pataas</string>
     <string name="action_move_down">Mag pababa</string>
-    <string name="preload_library_cover_color">I-preload ang kulay ng cover ng aklatan</string>
+    <string name="preload_library_cover_color">I-preload ang kulay ng pabalat ng aklatan</string>
     <string name="saved_searches_add_feed">Mga na-save na Paghahahap (I-hold para madagdag sa Feed)</string>
     <string name="saved_searches_delete">Mga na-save na Paghahanap (I-hold para alisin)</string>
     <string name="action_display_source_badge">Icon ng source</string>
@@ -68,12 +68,12 @@
     <string name="action_sort_feed">I-sort ang mga feed</string>
     <string name="sort_feed_confirmation">Gusto mo bang i-sort ang mga feed ayon sa alpabeto?</string>
     <string name="pref_custom_theme_style">Estilo ng custom na tema</string>
-    <string name="pref_theme_cover_based_style">Estilo ng tema base sa cover</string>
+    <string name="pref_theme_cover_based_style">Estilo ng tema base sa pabalat</string>
     <string name="custom_color_description">Pumili ng panimulang kulay para sa custom na Tema</string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Itago ang mga nakatagong kategorya</string>
-    <string name="pref_panorama_cover_summary">Ipakita ang cover sa landscape mode kung ito ay isang malawak na imahe</string>
+    <string name="pref_panorama_cover_summary">Ipakita ang pabalat sa landscape mode kung ito ay isang malawak na imahe</string>
     <string name="pref_panorama_cover_flow_summary">Ipakita ang paranorma cover sa Pangkalahatang Paghanap at Mga Suhestiyon</string>
     <string name="pref_auto_sync_progress_from_trackers">Awtomatikong I-sync ang progress mula sa Mga Tracker</string>
     <string name="sync_progress_from_trackers_up_to_chapter">I-sync ang progress mula sa mga tracker hanggang sa Kabanata %d</string>
@@ -103,10 +103,11 @@
     <string name="pref_theme_cover_based_style_vibrant">Makulay</string>
     <string name="pref_theme_cover_based_style_expressive">Masining</string>
     <string name="action_hide">Itago</string>
-    <string name="action_panorama_cover">Pabalat ng panorama</string>
+    <string name="action_panorama_cover">Pabalat na panorama</string>
     <string name="pref_theme_cover_based_style_rainbow">Bahaghari</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
     <string name="action_manual_install">Mano-manong i-install</string>
     <string name="pref_top_align_cover">Ipantay ang Pabalat sa Itaas</string>
     <string name="pref_top_align_cover_summary">Ipakita ang pabalat na pumantay sa itaas sa tabi ng impo ng manga</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Mas maliit na mga tap zone</string>
 </resources>
