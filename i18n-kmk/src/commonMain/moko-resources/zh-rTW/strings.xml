@@ -127,4 +127,5 @@
     <string name="action_manual_install">手動下載</string>
     <string name="pref_top_align_cover">將封面與頂部對齊</string>
     <string name="pref_top_align_cover_summary">將封面與頂部對齊並顯示漫畫資訊</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">較小的點擊區域</string>
 </resources>
