@@ -327,13 +327,9 @@ class Downloader(
      * @param download the chapter to be downloaded.
      */
     private suspend fun downloadChapter(download: Download) {
-        val mangaDir: UniFile
-        try {
-            mangaDir = provider.getMangaDir(/* SY --> */ download.manga.ogTitle /* SY <-- */, download.source)
-        } catch (error: Exception) {
-            logcat(LogPriority.ERROR, error)
+        val mangaDir = provider.getMangaDir(/* SY --> */ download.manga.ogTitle /* SY <-- */, download.source).getOrElse { e ->
             download.status = Download.State.ERROR
-            notifier.onError(error.message, download.chapter.name, download.manga.title, download.manga.id)
+            notifier.onError(e.message, download.chapter.name, download.manga.title, download.manga.id)
             return
         }
 

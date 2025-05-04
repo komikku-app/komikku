@@ -329,7 +329,10 @@ class DownloadManager(
         var cleaned = 0
 
         if (removeNonFavorite && !manga.favorite) {
-            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
+            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source).getOrElse { e ->
+                logcat(LogPriority.ERROR, e) { "Manga download folder doesn't exist." }
+                return 0
+            }
             cleaned += 1 + mangaFolder.listFiles().orEmpty().size
             mangaFolder.delete()
             cache.removeManga(manga)
@@ -350,7 +353,10 @@ class DownloadManager(
         }
 
         if (cache.getDownloadCount(manga) == 0) {
-            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
+            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source).getOrElse { e ->
+                logcat(LogPriority.ERROR, e) { "Manga download folder doesn't exist." }
+                return cleaned
+            }
             if (!mangaFolder.listFiles().isNullOrEmpty()) {
                 mangaFolder.delete()
                 cache.removeManga(manga)
@@ -419,7 +425,10 @@ class DownloadManager(
      */
     suspend fun renameChapter(source: Source, manga: Manga, oldChapter: Chapter, newChapter: Chapter) {
         val oldNames = provider.getValidChapterDirNames(oldChapter.name, oldChapter.scanlator)
-        val mangaDir = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
+        val mangaDir = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source).getOrElse { e ->
+            logcat(LogPriority.ERROR, e) { "Manga download folder doesn't exist. Skipping renaming after source sync" }
+            return
+        }
 
         // Assume there's only 1 version of the chapter name formats present
         val oldDownload = oldNames.asSequence()
