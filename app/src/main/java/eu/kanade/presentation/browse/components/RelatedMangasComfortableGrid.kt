@@ -80,7 +80,7 @@ fun RelatedMangasComfortableGrid(
                     )
                 }
                 items(
-                    key = { "related-comfort-${relatedManga.mangaList[it].id}" },
+                    key = { "related-comfort-${relatedManga.mangaList[it].url.hashCode()}" },
                     count = relatedManga.mangaList.size,
                 ) { index ->
                     val manga by getManga(relatedManga.mangaList[index])

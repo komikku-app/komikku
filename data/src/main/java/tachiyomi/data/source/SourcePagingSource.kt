@@ -92,7 +92,6 @@ abstract class BaseSourcePagingSource(
         val manga = mangasPage.mangas
             .map { it.toDomainManga(source!!.id) }
             .filter { seenManga.add(it.url) }
-            .let { networkToLocalManga(it) }
             // SY -->
             .mapIndexed { index, manga -> manga to metadata.getOrNull(index) }
         // SY <--

@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -19,6 +20,7 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class GlobalSearchScreen(
@@ -47,6 +49,7 @@ class GlobalSearchScreen(
         }
 
         // KMK -->
+        val scope = rememberCoroutineScope()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -66,7 +69,12 @@ class GlobalSearchScreen(
                     is SearchItemResult.Success -> {
                         val manga = result.result.singleOrNull()
                         if (manga != null) {
-                            navigator.replace(MangaScreen(manga.id, true))
+                            // KMK -->
+                            scope.launchIO {
+                                val localManga = screenModel.networkToLocalManga.getLocal(manga)
+                                // KMK <--
+                                navigator.replace(MangaScreen(localManga.id, true))
+                            }
                         } else {
                             // Backoff to result screen
                             showSingleLoadingScreen = false
@@ -87,22 +95,28 @@ class GlobalSearchScreen(
                 onClickSource = {
                     navigator.push(BrowseSourceScreen(it.id, state.searchQuery))
                 },
-                onClickItem = { manga ->
+                onClickItem = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
-                        // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            navigator.push(MangaScreen(manga.id, true))
+                        }
                     }
                 },
-                onLongClickItem = { manga ->
+                onLongClickItem = {
                     // KMK -->
-                    if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                    } else {
-                        // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (!bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                        } else {
+                            // KMK <--
+                            navigator.push(MangaScreen(manga.id, true))
+                        }
                     }
                 },
                 // KMK -->
