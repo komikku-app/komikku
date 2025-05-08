@@ -1,6 +1,7 @@
 // AM (DISCORD) -->
 
 // Taken from Animiru. Thank you Quickdev for permission!
+// Much improved by Cuong-Tran
 
 package eu.kanade.tachiyomi.data.connections.discord
 
@@ -11,7 +12,6 @@ import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.compose.ui.util.fastAny
 import androidx.core.content.ContextCompat
 import eu.kanade.domain.connections.service.ConnectionsPreferences
@@ -20,10 +20,8 @@ import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.network.NetworkHelper
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
@@ -31,6 +29,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -41,17 +40,20 @@ class DiscordRPCService : Service() {
 
     private val connectionsManager: ConnectionsManager by injectLazy()
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
 
         val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
 
+        // KMK -->
         // Create RPC client only if token is valid
         if (token.isBlank()) {
+            Timber.tag(TAG).w("Discord RPC disabled due to missing token")
             connectionsPreferences.enableDiscordRPC().set(false)
+            stopSelf()
             return
         }
+        // KMK <--
 
         val status = when (connectionsPreferences.discordRPCStatus().get()) {
             -1 -> "dnd"
@@ -59,17 +61,28 @@ class DiscordRPCService : Service() {
             else -> "online"
         }
 
-        rpc = DiscordRPC(token, status)
+        try {
+            rpc = DiscordRPC(token, status)
 
-        launchIO {
             try {
+                // KMK -->
                 discordScope.launchIO { setScreen(this@DiscordRPCService) }
+                // KMK <--
             } catch (e: Exception) {
-                Log.e(TAG, "Error setting screen: ${e.message}", e)
+                Timber.tag(TAG).e(e, "Error setting initial screen: ${e.message}")
+                // KMK -->
+                stopSelf()
+                // KMK <--
             }
-        }
 
-        notification(this)
+            notification(this)
+            // KMK -->
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "Failed to initialize Discord RPC: ${e.message}")
+            connectionsPreferences.enableDiscordRPC().set(false)
+            stopSelf()
+        }
+        // KMK <--
     }
 
     override fun onDestroy() {
@@ -84,11 +97,19 @@ class DiscordRPCService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 
     private fun notification(context: Context) {
+        // KMK -->
+        val stopIntent = NotificationReceiver.stopDiscordRPCService(context)
+        // KMK <--
+
         val builder = context.notificationBuilder(Notifications.CHANNEL_DISCORD_RPC) {
             setSmallIcon(R.drawable.ic_discord_24dp)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setContentText(context.resources.getString(R.string.pref_discord_rpc))
+            // KMK -->
+            setContentTitle(context.resources.getString(R.string.app_name))
+            addAction(R.drawable.ic_close_24dp, context.getString(R.string.action_stop), stopIntent)
+            // KMK <--
             setAutoCancel(false)
             setOngoing(true)
             setUsesChronometer(true)
@@ -143,7 +164,6 @@ class DiscordRPCService : Service() {
             context: Context,
             discordScreen: DiscordScreen = lastUsedScreen,
             readerData: ReaderData = ReaderData(),
-            sinceTime: Long = since,
         ) {
             rpc ?: return
             handler.removeCallbacksAndMessages(null)
@@ -247,7 +267,15 @@ class DiscordRPCService : Service() {
             readerData: ReaderData = ReaderData(),
         ) {
             // Early return if any required data is missing
-            if (rpc == null || readerData.thumbnailUrl == null || readerData.mangaId == null) return
+            if (rpc == null) {
+                Timber.tag(TAG).d("RPC client is null, skipping reader activity update")
+                return
+            }
+
+            if (readerData.thumbnailUrl == null || readerData.mangaId == null) {
+                Timber.tag(TAG).d("Missing required data for reader activity: thumbnailUrl=${readerData.thumbnailUrl}, mangaId=${readerData.mangaId}")
+                return
+            }
 
             try {
                 val categories = getCategories(readerData.mangaId)
@@ -274,7 +302,7 @@ class DiscordRPCService : Service() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error setting reader activity: ${e.message}", e)
+                Timber.tag(TAG).e(e, "Error setting reader activity: ${e.message}")
             }
         }
 
@@ -338,7 +366,7 @@ class DiscordRPCService : Service() {
                             ?.let { id -> "$EXTERNAL_PREFIX$id" }
                     }
             } catch (e: Exception) {
-                Log.e(TAG, "Error getting Discord URI: ${e.message}", e)
+                Timber.tag(TAG).e(e, "Error getting Discord URI: ${e.message}")
                 null
             }
         }
