@@ -333,6 +333,10 @@ class LibraryScreenModel(
         val filterCategories = prefs.filterCategories
         val includedCategories = prefs.filterCategoriesInclude
         val excludedCategories = prefs.filterCategoriesExclude
+
+        val categoriesMap = this
+            .flatMap { (category, items) -> items.map { item -> item.libraryManga.id to category } }
+            .groupBy({ it.first }, { it.second })
         // KMK <--
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = {
@@ -390,9 +394,7 @@ class LibraryScreenModel(
         val filterFnCategories: (LibraryItem) -> Boolean = categories@{ item ->
             if (!filterCategories) return@categories true
 
-            val mangaCategories = this.filter { (_, items) ->
-                items.any { it.libraryManga.id == item.libraryManga.id }
-            }.keys.toList().fastMap { it.id }
+            val mangaCategories = categoriesMap[item.libraryManga.id].orEmpty().fastMap { it.id }
 
             val isExcluded = excludedCategories.any { it in mangaCategories }
             val isIncluded = includedCategories.isEmpty() || includedCategories.all { it in mangaCategories }
