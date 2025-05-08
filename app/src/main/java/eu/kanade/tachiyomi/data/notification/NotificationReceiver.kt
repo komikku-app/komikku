@@ -139,7 +139,7 @@ class NotificationReceiver : BroadcastReceiver() {
      * Called to start share intent to share backup file
      *
      * @param context context of application
-     * @param path path of file
+     * @param uri path of file
      */
     private fun shareFile(context: Context, uri: Uri, fileMimeType: String) {
         context.startActivity(uri.toShareIntent(context, fileMimeType))
@@ -263,8 +263,6 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val ACTION_MARK_AS_READ = "$ID.$NAME.MARK_AS_READ"
         private const val ACTION_OPEN_CHAPTER = "$ID.$NAME.ACTION_OPEN_CHAPTER"
         private const val ACTION_DOWNLOAD_CHAPTER = "$ID.$NAME.ACTION_DOWNLOAD_CHAPTER"
-
-        private const val ACTION_OPEN_ENTRY = "$ID.$NAME.ACTION_OPEN_ENTRY"
 
         private const val ACTION_RESUME_DOWNLOADS = "$ID.$NAME.ACTION_RESUME_DOWNLOADS"
         private const val ACTION_PAUSE_DOWNLOADS = "$ID.$NAME.ACTION_PAUSE_DOWNLOADS"
@@ -394,7 +392,6 @@ class NotificationReceiver : BroadcastReceiver() {
          *
          * @param context context of application
          * @param uri location path of file
-         * @param notificationId id of notification
          * @return [PendingIntent]
          */
         internal fun shareImagePendingBroadcast(context: Context, uri: Uri): PendingIntent {
