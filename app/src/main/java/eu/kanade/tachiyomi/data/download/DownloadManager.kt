@@ -5,7 +5,6 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.util.storage.DiskUtil
 import exh.log.xLogE
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -416,6 +415,38 @@ class DownloadManager(
     }
 
     /**
+     * Renames manga download folder
+     *
+     * @param manga the manga
+     * @param newTitle the new manga title.
+     */
+    suspend fun renameManga(manga: Manga, newTitle: String) {
+        val source = sourceManager.getOrStub(manga.source)
+        val oldFolder = provider.findMangaDir(/* KMK --> */ manga.ogTitle /* KMK --> */, source) ?: return
+        val newName = provider.getMangaDirName(newTitle)
+
+        if (oldFolder.name == newName) return
+
+        // just to be safe, don't allow downloads for this manga while renaming it
+        downloader.removeFromQueue(manga)
+
+        val capitalizationChanged = oldFolder.name.equals(newName, ignoreCase = true)
+        if (capitalizationChanged) {
+            val tempName = newName + Downloader.TMP_DIR_SUFFIX
+            if (!oldFolder.renameTo(tempName)) {
+                logcat(LogPriority.ERROR) { "Failed to rename manga download folder: ${oldFolder.name}" }
+                return
+            }
+        }
+
+        if (oldFolder.renameTo(newName)) {
+            cache.renameManga(manga, oldFolder, newTitle)
+        } else {
+            logcat(LogPriority.ERROR) { "Failed to rename manga download folder: ${oldFolder.name}" }
+        }
+    }
+
+    /**
      * Renames an already downloaded chapter
      *
      * @param source the source of the manga.
@@ -516,10 +547,4 @@ class DownloadManager(
                     .asFlow(),
             )
         }
-
-    fun renameMangaDir(oldTitle: String, newTitle: String, source: Long) {
-        val sourceDir = provider.findSourceDir(sourceManager.getOrStub(source)) ?: return
-        val mangaDir = sourceDir.findFile(DiskUtil.buildValidFilename(oldTitle)) ?: return
-        mangaDir.renameTo(DiskUtil.buildValidFilename(newTitle))
-    }
 }
