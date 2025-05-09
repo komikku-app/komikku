@@ -28,7 +28,7 @@ fun BrowseSourceSimpleToolbar(
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
-    toggleSelectionMode: () -> Unit,
+    toggleSelectionMode: (() -> Unit)?,
     isRunning: Boolean,
     // KMK <--
 ) {
@@ -53,6 +53,8 @@ fun BrowseSourceSimpleToolbar(
                                     onClick = { selectingDisplayMode = true },
                                 ),
                             )
+                        }
+                        toggleSelectionMode?.let {
                             add(
                                 bulkSelectionButton(isRunning, toggleSelectionMode),
                             )
