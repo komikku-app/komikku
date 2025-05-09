@@ -77,12 +77,23 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         onSelectAll = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            .forEach { bulkFavoriteScreenModel.select(it) }
+                                    }
+                                }
                         },
                         onReverseSelection = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.reverseSelection(
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                        )
+                                    }
+                                }
                         },
                     )
                 } else {

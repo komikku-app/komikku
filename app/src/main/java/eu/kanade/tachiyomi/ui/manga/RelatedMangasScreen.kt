@@ -58,14 +58,25 @@ fun RelatedMangasScreen(
                         successState.relatedMangasSorted?.let { result ->
                             result.map { it as RelatedManga.Success }
                                 .flatMap { it.mangaList }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            .forEach { bulkFavoriteScreenModel.select(it) }
+                                    }
+                                }
                         }
                     },
                     onReverseSelection = {
                         successState.relatedMangasSorted?.let { result ->
                             result.map { it as RelatedManga.Success }
                                 .flatMap { it.mangaList }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.reverseSelection(
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                        )
+                                    }
+                                }
                         }
                     },
                 )
