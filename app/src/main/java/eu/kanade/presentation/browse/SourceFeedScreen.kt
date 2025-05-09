@@ -124,17 +124,14 @@ fun SourceFeedScreen(
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
-                        items.forEach {
-                            it.results?.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
-                        }
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .forEach { bulkFavoriteScreenModel.select(it) }
                     },
                     onReverseSelection = {
-                        bulkFavoriteScreenModel.reverseSelection(
-                            items.mapNotNull { it.results }
-                                .flatten(),
-                        )
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {

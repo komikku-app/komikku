@@ -54,18 +54,18 @@ fun RelatedMangasScreen(
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
-                        successState.relatedMangasSorted?.forEach {
-                            val relatedManga = it as RelatedManga.Success
-                            relatedManga.mangaList.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
+                        successState.relatedMangasSorted?.let { result ->
+                            result.map { it as RelatedManga.Success }
+                                .flatMap { it.mangaList }
+                                .forEach { bulkFavoriteScreenModel.select(it) }
                         }
                     },
                     onReverseSelection = {
-                        successState.relatedMangasSorted
-                            ?.map { it as RelatedManga.Success }
-                            ?.flatMap { it.mangaList }
-                            ?.let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        successState.relatedMangasSorted?.let { result ->
+                            result.map { it as RelatedManga.Success }
+                                .flatMap { it.mangaList }
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        }
                     },
                 )
             } else {
