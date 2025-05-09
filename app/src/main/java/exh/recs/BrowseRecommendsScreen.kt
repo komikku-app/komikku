@@ -119,7 +119,9 @@ class BrowseRecommendsScreen(
                         onDisplayModeChange = { screenModel.displayMode = it },
                         scrollBehavior = scrollBehavior,
                         // KMK -->
-                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                        toggleSelectionMode = {
+                            bulkFavoriteScreenModel.toggleSelectionMode()
+                        }.takeIf { !isExternalSource },
                         isRunning = bulkFavoriteState.isRunning,
                         // KMK <--
                     )
