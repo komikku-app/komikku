@@ -97,12 +97,23 @@ class BrowseRecommendsScreen(
                         onSelectAll = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            .forEach { bulkFavoriteScreenModel.select(it) }
+                                    }
+                                }
                         },
                         onReverseSelection = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.reverseSelection(
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                        )
+                                    }
+                                }
                         },
                     )
                 } else {
@@ -144,25 +155,33 @@ class BrowseRecommendsScreen(
                 onLocalSourceHelpClick = null,
                 onMangaClick = {
                     // KMK -->
-                    scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
-                        if (bulkFavoriteState.selectionMode) {
-                            bulkFavoriteScreenModel.toggleSelection(manga)
-                        } else {
-                            // KMK <--
-                            onClickItem(manga)
+                    if (isExternalSource) {
+                        onClickItem(it)
+                    } else {
+                        scope.launchIO {
+                            val manga = screenModel.networkToLocalManga.getLocal(it)
+                            if (bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.toggleSelection(manga)
+                            } else {
+                                // KMK <--
+                                onClickItem(manga)
+                            }
                         }
                     }
                 },
                 onMangaLongClick = {
                     // KMK -->
-                    scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
-                        if (!bulkFavoriteState.selectionMode) {
-                            bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                        } else {
-                            // KMK <--
-                            onLongClickItem(manga)
+                    if (isExternalSource) {
+                        onLongClickItem(it)
+                    } else {
+                        scope.launchIO {
+                            val manga = screenModel.networkToLocalManga.getLocal(it)
+                            if (!bulkFavoriteState.selectionMode) {
+                                bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                            } else {
+                                // KMK <--
+                                onLongClickItem(manga)
+                            }
                         }
                     }
                 },
