@@ -10,6 +10,8 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -72,6 +74,8 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
+    private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
@@ -99,6 +103,10 @@ open class SourceFeedScreenModel(
             setFilters(source.getFilterList())
             // KMK -->
             reloadSavedSearches()
+
+            if (!getIncognitoState.await(source.id)) {
+                sourcePreferences.lastUsedSource().set(source.id)
+            }
             // KMK <--
             getFeedSavedSearchBySourceId.subscribe(source.id)
                 .onEach {
