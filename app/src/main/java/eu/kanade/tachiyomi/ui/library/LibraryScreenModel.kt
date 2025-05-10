@@ -16,6 +16,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.core.preference.asState
+import eu.kanade.core.util.combine
 import eu.kanade.core.util.fastFilterNot
 import eu.kanade.core.util.fastPartition
 import eu.kanade.domain.base.BasePreferences
@@ -87,6 +88,7 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetCategoriesPerManga
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -159,6 +161,7 @@ class LibraryScreenModel(
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
+    private val getCategoriesPerManga: GetCategoriesPerManga = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -186,14 +189,24 @@ class LibraryScreenModel(
                     ::Pair,
                 ),
                 // SY <--
-            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, sort) ->
+                // KMK -->
+                combine(
+                    getCategoriesPerManga.subscribe(),
+                    state.map { it.filterCategory }.distinctUntilChanged(),
+                    ::Pair,
+                ),
+                // KMK <--
+            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, sort), (categories, filterCategory) ->
                 library
                     // SY -->
-                    .applyGrouping(groupType)
+                    .applyGrouping(if (filterCategory) LibraryGroup.UNGROUPED else groupType)
                     // SY <--
                     .applyFilters(
                         tracks,
                         trackingFilter,
+                        // KMK -->
+                        categories,
+                        // KMK <--
                     )
                     .applySort(
                         tracks,
@@ -300,6 +313,25 @@ class LibraryScreenModel(
             }
             .launchIn(screenModelScope)
         // SY <--
+
+        // KMK -->
+        libraryPreferences.filterCategories().changes()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(filterCategory = it)
+                }
+            }.launchIn(screenModelScope)
+
+        screenModelScope.launchIO {
+            getCategories
+                .subscribe()
+                .collect { categories ->
+                    mutableState.update { state ->
+                        state.copy(userCategories = categories)
+                    }
+                }
+        }
+        // KMK <--
     }
 
     /**
@@ -308,6 +340,7 @@ class LibraryScreenModel(
     private suspend fun LibraryMap.applyFilters(
         trackMap: Map<Long, List<Track>>,
         trackingFilter: Map<Long, TriState>,
+        categoriesMap: Map<Long, List<Category>>,
     ): LibraryMap {
         val prefs = getLibraryItemPreferencesFlow().first()
         val downloadedOnly = prefs.globalFilterDownloaded
@@ -333,10 +366,6 @@ class LibraryScreenModel(
         val filterCategories = prefs.filterCategories
         val includedCategories = prefs.filterCategoriesInclude
         val excludedCategories = prefs.filterCategoriesExclude
-
-        val categoriesMap = this
-            .flatMap { (category, items) -> items.map { item -> item.libraryManga.id to category } }
-            .groupBy({ it.first }, { it.second })
         // KMK <--
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = {
@@ -402,8 +431,6 @@ class LibraryScreenModel(
             !isExcluded && isIncluded
         }
         // KMK <--
-
-        this
 
         val filterFn: (LibraryItem) -> Boolean = {
             filterFnDownloaded(it) &&
@@ -1501,6 +1528,10 @@ class LibraryScreenModel(
         val ogCategories: List<Category> = emptyList(),
         val groupType: Int = LibraryGroup.BY_DEFAULT,
         // SY <--
+        // KMK -->
+        val userCategories: List<Category> = emptyList(),
+        val filterCategory: Boolean = false,
+        // KMK <--
     ) {
         private val libraryCount by lazy {
             library.values
