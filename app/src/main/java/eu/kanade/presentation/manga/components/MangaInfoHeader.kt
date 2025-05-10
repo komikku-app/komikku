@@ -67,9 +67,11 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -115,6 +117,9 @@ fun MangaInfoBox(
     manga: Manga,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    isSourceIncognito: Boolean,
+    // KMK <--
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -177,6 +182,9 @@ fun MangaInfoBox(
                     manga = manga,
                     sourceName = sourceName,
                     isStubSource = isStubSource,
+                    // KMK -->
+                    isSourceIncognito = isSourceIncognito,
+                    // KMK <--
                     onCoverClick = onCoverClick,
                     doSearch = doSearch,
                     // KMK -->
@@ -194,6 +202,9 @@ fun MangaInfoBox(
                     manga = manga,
                     sourceName = sourceName,
                     isStubSource = isStubSource,
+                    // KMK -->
+                    isSourceIncognito = isSourceIncognito,
+                    // KMK <--
                     onCoverClick = onCoverClick,
                     doSearch = doSearch,
                     // KMK -->
@@ -469,6 +480,9 @@ private fun MangaAndSourceTitlesLarge(
     manga: Manga,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    isSourceIncognito: Boolean,
+    // KMK <--
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
     // KMK -->
@@ -530,6 +544,9 @@ private fun MangaAndSourceTitlesLarge(
             status = manga.status,
             sourceName = sourceName,
             isStubSource = isStubSource,
+            // KMK -->
+            isSourceIncognito = isSourceIncognito,
+            // KMK <--
             doSearch = doSearch,
             textAlign = TextAlign.Center,
             // KMK -->
@@ -546,6 +563,9 @@ private fun MangaAndSourceTitlesSmall(
     manga: Manga,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    isSourceIncognito: Boolean,
+    // KMK <--
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
     // KMK -->
@@ -619,6 +639,9 @@ private fun MangaAndSourceTitlesSmall(
                 status = manga.status,
                 sourceName = sourceName,
                 isStubSource = isStubSource,
+                // KMK -->
+                isSourceIncognito = isSourceIncognito,
+                // KMK <--
                 doSearch = doSearch,
                 // KMK -->
                 librarySearch = librarySearch,
@@ -638,6 +661,9 @@ private fun ColumnScope.MangaContentInfo(
     status: Long,
     sourceName: String,
     isStubSource: Boolean,
+    // KMK -->
+    isSourceIncognito: Boolean,
+    // KMK <--
     doSearch: (query: String, global: Boolean) -> Unit,
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
     // KMK -->
@@ -792,6 +818,19 @@ private fun ColumnScope.MangaContentInfo(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
+            // KMK -->
+            if (isSourceIncognito) {
+                DotSeparatorText()
+                Icon(
+                    painter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp)),
+                    contentDescription = stringResource(MR.strings.pref_incognito_mode),
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            // KMK <--
             DotSeparatorText()
             if (isStubSource) {
                 Icon(
