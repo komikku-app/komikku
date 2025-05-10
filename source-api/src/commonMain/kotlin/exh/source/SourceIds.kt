@@ -6,6 +6,7 @@ const val LEWD_SOURCE_SERIES = 6900L
 // KMK -->
 const val EH_SOURCE_ID = 1713178126840476467 // LEWD_SOURCE_SERIES + 1
 const val EXH_SOURCE_ID = 6225928719850211219 // LEWD_SOURCE_SERIES + 2
+const val EH_PACKAGE = "eu.kanade.tachiyomi.extension.all.ehentai"
 // KMK <--
 
 const val NHENTAI_SOURCE_ID = 7309872737163460316L

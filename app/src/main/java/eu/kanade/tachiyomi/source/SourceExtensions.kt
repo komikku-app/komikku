@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.source
 
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
+import exh.source.EH_PACKAGE
 import exh.source.isEhBasedSource
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
@@ -82,9 +82,8 @@ private fun getMergedSourcesString(
 fun Source.isLocalOrStub(): Boolean = isLocal() || this is StubSource
 
 // KMK -->
-fun Source.isIncognitoModeEnabled(): Boolean {
-    if (isEhBasedSource()) return Injekt.get<UnsortedPreferences>().ehIncognitoMode().get()
-    val extensionPackage = Injekt.get<ExtensionManager>().getExtensionPackage(id)
-    return extensionPackage in Injekt.get<SourcePreferences>().incognitoExtensions().get()
+fun Source.isIncognitoModeEnabled(incognitoExtensions: Set<String>? = null): Boolean {
+    val extensionPackage = if (isEhBasedSource()) EH_PACKAGE else Injekt.get<ExtensionManager>().getExtensionPackage(id)
+    return extensionPackage in (incognitoExtensions ?: Injekt.get<SourcePreferences>().incognitoExtensions().get())
 }
 // KMK <--

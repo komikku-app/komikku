@@ -43,7 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat.startActivity
+import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.presentation.library.components.SyncFavoritesWarningDialog
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
@@ -52,6 +52,7 @@ import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.source.EH_PACKAGE
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
 import kotlinx.collections.immutable.persistentListOf
@@ -197,6 +198,11 @@ object SettingsEhScreen : SearchableSettings {
             preference = unsortedPreferences.ehIncognitoMode(),
             title = stringResource(MR.strings.pref_incognito_mode),
             subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
+            onValueChanged = { newVal ->
+                val toggleIncognito = Injekt.get<ToggleIncognito>()
+                toggleIncognito.await(EH_PACKAGE, newVal)
+                newVal
+            },
         )
     }
     // KMK <--
@@ -296,14 +302,12 @@ object SettingsEhScreen : SearchableSettings {
             subtitle = stringResource(SYMR.strings.watched_tags_summary),
             enabled = exhentaiEnabled,
             onClick = {
-                startActivity(
-                    context,
+                context.startActivity(
                     WebViewActivity.newIntent(
                         context,
                         url = "https://exhentai.org/mytags",
                         title = context.stringResource(SYMR.strings.watched_tags_exh),
                     ),
-                    null,
                 )
             },
         )
