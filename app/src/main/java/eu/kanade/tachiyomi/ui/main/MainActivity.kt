@@ -278,10 +278,10 @@ class MainActivity : BaseActivity() {
                 LaunchedEffect(navigator.lastItem) {
                     (
                         (navigator.lastItem as? BrowseSourceScreen)?.sourceId
-                        // KMK -->
-                        ?:(navigator.lastItem as? SourceFeedScreen)?.sourceId
+                            // KMK -->
+                            ?: (navigator.lastItem as? SourceFeedScreen)?.sourceId
                         // KMK <--
-                    )
+                        )
                         .let(getIncognitoState::subscribe)
                         .collectLatest { incognito = it }
                 }
