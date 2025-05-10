@@ -227,6 +227,7 @@ data class BrowseSourceScreen(
                             onWebViewClick = onWebViewClick,
                             onHelpClick = onHelpClick,
                             // KMK -->
+                            onToggleIncognito = screenModel::toggleIncognitoMode,
                             onSettingsClick = {
                                 when {
                                     screenModel.source.isEhBasedSource() && isHentaiEnabled ->

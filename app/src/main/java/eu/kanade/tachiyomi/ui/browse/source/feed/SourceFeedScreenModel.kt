@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -11,14 +12,18 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
+import exh.source.EH_PACKAGE
 import exh.source.getMainSource
+import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
 import kotlinx.collections.immutable.ImmutableList
@@ -51,6 +56,7 @@ import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -75,6 +81,8 @@ open class SourceFeedScreenModel(
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    private val toggleIncognito: ToggleIncognito = Injekt.get(),
+    private val extensionManager: ExtensionManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
@@ -86,6 +94,10 @@ open class SourceFeedScreenModel(
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
+
+    // KMK -->
+    var incognitoMode = mutableStateOf(getIncognitoState.await(source.id))
+    // KMK <--
 
     init {
         // KMK -->
@@ -104,9 +116,12 @@ open class SourceFeedScreenModel(
             // KMK -->
             reloadSavedSearches()
 
-            if (!getIncognitoState.await(source.id)) {
-                sourcePreferences.lastUsedSource().set(source.id)
-            }
+            getIncognitoState.subscribe(sourceId)
+                .onEach {
+                    if (!it) sourcePreferences.lastUsedSource().set(source.id)
+                    incognitoMode.value = it
+                }
+                .launchIn(screenModelScope)
             // KMK <--
             getFeedSavedSearchBySourceId.subscribe(source.id)
                 .onEach {
@@ -123,6 +138,17 @@ open class SourceFeedScreenModel(
     }
 
     // KMK-->
+    fun toggleIncognitoMode() {
+        val packageName = when {
+            source is StubSource -> null
+            source.isEhBasedSource() -> EH_PACKAGE
+            else -> extensionManager.getExtensionPackage(sourceId)
+        }
+        packageName?.let {
+            toggleIncognito.await(packageName, !incognitoMode.value)
+        }
+    }
+
     fun resetFilters() {
         val source = source
         if (source !is CatalogueSource) return

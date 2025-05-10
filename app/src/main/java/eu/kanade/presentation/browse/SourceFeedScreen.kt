@@ -104,6 +104,7 @@ fun SourceFeedScreen(
     // KMK -->
     navigateUp: () -> Unit,
     onWebViewClick: (() -> Unit)?,
+    onToggleIncognito: () -> Unit,
     onSourceSettingClick: (() -> Unit?)?,
     onSortFeedClick: (() -> Unit)?,
     onLongClickManga: (Manga) -> Unit,
@@ -145,6 +146,7 @@ fun SourceFeedScreen(
                     // KMK -->
                     navigateUp = navigateUp,
                     onWebViewClick = onWebViewClick,
+                    onToggleIncognito = onToggleIncognito,
                     onSourceSettingClick = onSourceSettingClick,
                     onSortFeedClick = onSortFeedClick,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
@@ -298,6 +300,7 @@ fun SourceFeedToolbar(
     // KMK -->
     navigateUp: () -> Unit,
     onWebViewClick: (() -> Unit)?,
+    onToggleIncognito: () -> Unit,
     onSourceSettingClick: (() -> Unit?)?,
     onSortFeedClick: (() -> Unit)?,
     toggleSelectionMode: () -> Unit,
@@ -331,6 +334,15 @@ fun SourceFeedToolbar(
                                 ),
                             )
                         }
+
+                        // KMK -->
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.pref_incognito_mode),
+                                onClick = onToggleIncognito,
+                            ),
+                        )
+                        // KMK <--
 
                         onSortFeedClick?.let {
                             add(
