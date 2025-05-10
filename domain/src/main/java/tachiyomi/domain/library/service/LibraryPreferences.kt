@@ -116,6 +116,17 @@ class LibraryPreferences(
     )
     // SY <--
 
+    // KMK -->
+    fun filterCategories() = preferenceStore.getBoolean(
+        "pref_filter_library_categories",
+        false,
+    )
+
+    fun filterCategoriesInclude() = preferenceStore.getStringSet("pref_filter_library_categories_include", emptySet())
+
+    fun filterCategoriesExclude() = preferenceStore.getStringSet("pref_filter_library_categories_exclude", emptySet())
+    // KMK <--
+
     fun filterTracking(id: Int) = preferenceStore.getEnum(
         "pref_filter_library_tracked_${id}_v2",
         TriState.DISABLED,
