@@ -81,6 +81,7 @@ import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -275,7 +276,12 @@ class MainActivity : BaseActivity() {
                     }
                 }
                 LaunchedEffect(navigator.lastItem) {
-                    (navigator.lastItem as? BrowseSourceScreen)?.sourceId
+                    (
+                        (navigator.lastItem as? BrowseSourceScreen)?.sourceId
+                            // KMK -->
+                            ?: (navigator.lastItem as? SourceFeedScreen)?.sourceId
+                        // KMK <--
+                        )
                         .let(getIncognitoState::subscribe)
                         .collectLatest { incognito = it }
                 }
