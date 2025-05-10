@@ -75,7 +75,10 @@ fun UpdateScreen(
     // KMK -->
     val usePanoramaCover = remember { mutableStateOf(false) }
     // KMK <--
-    BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
+
+    BackHandler(enabled = state.selectionMode) {
+        onSelectAll(false)
+    }
 
     Scaffold(
         topBar = { scrollBehavior ->
