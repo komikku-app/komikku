@@ -824,7 +824,7 @@ private fun ColumnScope.MangaContentInfo(
                     // KMK -->
                     imageVector = ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp),
                     // KMK <--
-                    contentDescription = "Incognito Mode State for Source",
+                    contentDescription = stringResource(MR.strings.pref_incognito_mode),
                     modifier = Modifier
                         .padding(end = 4.dp)
                         .size(16.dp),
