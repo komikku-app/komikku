@@ -20,16 +20,17 @@ class GetIncognitoState(
     fun await(sourceId: Long? = null, mangaId: Long? = null): Boolean {
         if (basePreferences.incognitoMode().get()) return true
         // KMK -->
-        var isIncognito = false
-        if (sourceId != null) {
-            val source = sourceManager.get(sourceId)
-            if (source != null) isIncognito = source.isIncognitoModeEnabled() == true
+        return when {
+            sourceId != null -> {
+                val source = sourceManager.get(sourceId)
+                source?.isIncognitoModeEnabled() == true
+            }
+            mangaId != null -> {
+                val manga = customMangaManager.get(mangaId)
+                manga?.incognitoMode == true
+            }
+            else -> false
         }
-        if (mangaId != null) {
-            val manga = customMangaManager.get(mangaId)
-            if (manga != null) isIncognito = isIncognito || manga.incognitoMode == true
-        }
-        return isIncognito
         // KMK <--
     }
 
@@ -39,11 +40,14 @@ class GetIncognitoState(
         return combine(
             basePreferences.incognitoMode().changes(),
             sourcePreferences.incognitoExtensions().changes(),
-            if (sourceId != null) extensionManager.getExtensionPackageAsFlow(sourceId) else flow { emit(null) },
-            if (sourceId != null) flow { emit(sourceManager.get(sourceId)?.isIncognitoModeEnabled() == true) } else flow { emit(false) },
-            if (mangaId != null) flow { emit(customMangaManager.getIncognitoMode(mangaId)) } else flow { emit(false) },
-        ) { incognito, incognitoExtensions, extensionPackage, isSourceIncognito, isMangaIncognito ->
-            incognito || (extensionPackage in incognitoExtensions) || isSourceIncognito || isMangaIncognito
+        ) { incognito, incognitoExtensions ->
+            // KMK -->
+            incognito ||
+                sourceId != null &&
+                sourceManager.get(sourceId)?.isIncognitoModeEnabled(incognitoExtensions) == true ||
+                mangaId != null &&
+                customMangaManager.getIncognitoMode(mangaId)
+            // KMK <--
         }
             .distinctUntilChanged()
     }
