@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -25,7 +26,10 @@ fun TextPreferenceWidget(
     modifier: Modifier = Modifier,
     title: String? = null,
     subtitle: CharSequence? = null,
-    icon: ImageVector? = null,
+    // KMK -->
+    /** Can be either [ImageVector] or [Painter] */
+    icon: Any? = null,
+    // KMK <--
     iconTint: Color = MaterialTheme.colorScheme.primary,
     widget: @Composable (() -> Unit)? = null,
     onPreferenceClick: (() -> Unit)? = null,
@@ -60,16 +64,22 @@ fun TextPreferenceWidget(
         } else {
             null
         },
-        icon = if (icon != null) {
-            {
+        icon = {
+            if (icon != null && icon is ImageVector) {
                 Icon(
                     imageVector = icon,
                     tint = iconTint,
                     contentDescription = null,
                 )
+                // KMK -->
+            } else if (icon != null && icon is Painter) {
+                Icon(
+                    painter = icon,
+                    tint = iconTint,
+                    contentDescription = null,
+                )
+                // KMK <--
             }
-        } else {
-            null
         },
         onClick = onPreferenceClick,
         widget = widget,
