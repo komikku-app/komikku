@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
@@ -821,9 +822,7 @@ private fun ColumnScope.MangaContentInfo(
             if (isSourceIncognito) {
                 DotSeparatorText()
                 Icon(
-                    // KMK -->
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp),
-                    // KMK <--
+                    painter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp)),
                     contentDescription = stringResource(MR.strings.pref_incognito_mode),
                     modifier = Modifier
                         .padding(end = 4.dp)
