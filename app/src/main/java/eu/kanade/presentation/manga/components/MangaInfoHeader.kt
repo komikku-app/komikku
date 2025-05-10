@@ -817,6 +817,21 @@ private fun ColumnScope.MangaContentInfo(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
+            // KMK -->
+            if (isSourceIncognito) {
+                DotSeparatorText()
+                Icon(
+                    // KMK -->
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp),
+                    // KMK <--
+                    contentDescription = "Incognito Mode State for Source",
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            // KMK <--
             DotSeparatorText()
             if (isStubSource) {
                 Icon(
@@ -844,27 +859,6 @@ private fun ColumnScope.MangaContentInfo(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
-            // KMK -->
-            if (isSourceIncognito) {
-                DotSeparatorText()
-                Icon(
-                    // KMK -->
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_glasses_with_hat_24dp),
-                    // KMK <--
-                    contentDescription = "Incognito Mode State for Source",
-                    modifier = Modifier
-                        .padding(end = 4.dp)
-                        .size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    text = stringResource(MR.strings.pref_incognito_mode),
-                    color = MaterialTheme.colorScheme.primary,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                )
-            }
-            // KMK <--
         }
     }
 }
