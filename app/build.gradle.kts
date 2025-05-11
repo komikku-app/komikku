@@ -327,6 +327,9 @@ dependencies {
 
     // Google drive
     implementation(sylibs.google.api.services.drive)
+
+    // ZXing Android Embedded
+    implementation(sylibs.zxing.android.embedded)
 }
 
 androidComponents {

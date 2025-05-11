@@ -229,6 +229,7 @@
     <string name="pref_sync_interval">Synchronization frequency</string>
     <string name="pref_choose_what_to_sync">Choose what to sync</string>
     <string name="syncyomi">SyncYomi</string>
+    <string name="scan_qr_code">Scan a QR code</string>
     <string name="last_synchronization">Last Synchronization: %1$s</string>
     <string name="google_drive">Google Drive</string>
     <string name="pref_google_drive_sign_in">Sign in</string>

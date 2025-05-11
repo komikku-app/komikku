@@ -406,6 +406,10 @@
                     android:scheme="tachiyomisy" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            tools:remove="screenOrientation" />
     </application>
 
 </manifest>
