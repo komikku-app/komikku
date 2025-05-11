@@ -145,7 +145,7 @@ open class SourceFeedScreenModel(
             else -> extensionManager.getExtensionPackage(sourceId)
         }
         packageName?.let {
-            toggleIncognito.await(packageName, !incognitoMode.value)
+            toggleIncognito.await(it, !incognitoMode.value)
         }
     }
 
