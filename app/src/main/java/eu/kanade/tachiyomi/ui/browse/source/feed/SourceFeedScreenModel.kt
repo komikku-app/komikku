@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
 import exh.source.EH_PACKAGE
+import exh.source.LOCAL_SOURCE_PACKAGE
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
@@ -60,6 +61,7 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -141,6 +143,7 @@ open class SourceFeedScreenModel(
     fun toggleIncognitoMode() {
         val packageName = when {
             source is StubSource -> null
+            source.isLocal() -> LOCAL_SOURCE_PACKAGE
             source.isEhBasedSource() -> EH_PACKAGE
             else -> extensionManager.getExtensionPackage(sourceId)
         }

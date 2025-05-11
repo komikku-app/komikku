@@ -2,7 +2,6 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -17,9 +16,7 @@ import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
-import exh.source.anyIs
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
@@ -51,7 +48,6 @@ fun BrowseSourceToolbar(
     // Avoid capturing unstable source in actions lambda
     val title = source?.name
     val isLocalSource = source is LocalSource
-    val isConfigurableSource = source?.anyIs<ConfigurableSource>() == true
 
     var selectingDisplayMode by remember { mutableStateOf(false) }
 
@@ -81,33 +77,21 @@ fun BrowseSourceToolbar(
                         }
                         // KMK -->
                         add(bulkSelectionButton(isRunning, toggleSelectionMode))
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.pref_incognito_mode),
+                                onClick = onToggleIncognito,
+                            ),
+                        )
                         // KMK <--
                         if (isLocalSource) {
-                            if (isConfigurableSource && displayMode != null) {
-                                add(
-                                    AppBar.OverflowAction(
-                                        title = stringResource(MR.strings.label_help),
-                                        onClick = onHelpClick,
-                                    ),
-                                )
-                            } else {
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.label_help),
-                                        icon = Icons.AutoMirrored.Outlined.Help,
-                                        onClick = onHelpClick,
-                                    ),
-                                )
-                            }
-                        } else {
-                            // KMK -->
                             add(
                                 AppBar.OverflowAction(
-                                    title = stringResource(MR.strings.pref_incognito_mode),
-                                    onClick = onToggleIncognito,
+                                    title = stringResource(MR.strings.label_help),
+                                    onClick = onHelpClick,
                                 ),
                             )
-                            // KMK <--
+                        } else {
                             add(
                                 AppBar.OverflowAction(
                                     title = stringResource(MR.strings.action_web_view),
