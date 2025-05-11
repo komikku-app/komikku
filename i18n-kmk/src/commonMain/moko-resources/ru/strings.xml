@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Поиск источника</string>
+    <string name="action_source_search">Поиск в источнике</string>
     <string name="action_toggle_nsfw_only">Только NSFW</string>
     <string name="action_bulk_select">Режим массового выбора</string>
     <string name="action_faq_and_guides">FAQ и руководства</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 часов</string>
     <string name="download_cache_renew_interval_12hour">12 часов</string>
     <string name="download_cache_renew_interval_24hour">1 день</string>
-    <string name="download_cache_renew_interval_info">Если присвоено значение «вручную», то обновите каждый манга или используйте действие «Индекс непроверенных загрузок» в разделе «Дополнительно»</string>
+    <string name="download_cache_renew_interval_info">Если установлено на «вручную», то обновляйте каждую мангу или используйте действие «Переиндексировать загрузки» в разделе «Дополнительно»</string>
     <string name="pref_clean_invalid_downloads">Очистить некорректные загрузки</string>
     <string name="pref_clean_invalid_downloads_summary">Найти и удалить все загрузки, файлы, папки, которые не сохранены в вашей библиотеке</string>
     <string name="invalid_downloads_cleaned">Некорректные загрузки удалены</string>
@@ -121,4 +121,10 @@
     <string name="auto_update_app_disable_auto_download">Не скачивать автоматически</string>
     <string name="action_remove_merged">Удалить оригинальные записи из библиотеки?</string>
     <string name="batch_add_description">Поддержка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="pref_top_align_cover">Выровнять обложку к верху</string>
+    <string name="pref_top_align_cover_summary">Показать обложку выровненной к вершине рядом с информацией о манге</string>
+    <string name="theme_doom">Фатум</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Меньшие зоны для нажатия</string>
+    <string name="custom_theme_palette_outrun">Гонки</string>
+    <string name="custom_theme_palette_springfield">Весенняя</string>
 </resources>
