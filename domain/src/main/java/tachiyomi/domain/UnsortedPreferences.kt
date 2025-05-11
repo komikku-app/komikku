@@ -36,6 +36,10 @@ class UnsortedPreferences(
 
     fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", false)
 
+    // KMK -->
+    fun ehIncognitoMode() = preferenceStore.getBoolean("eh_incognito_mode", false)
+    // KMK <--
+
     fun enableExhentai() = preferenceStore.getBoolean(Preference.privateKey("enable_exhentai"), false)
 
     fun imageQuality() = preferenceStore.getString("ehentai_quality", "auto")
