@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.ViewModule
-import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -39,6 +38,7 @@ fun BrowseSourceToolbar(
     onWebViewClick: () -> Unit,
     onHelpClick: () -> Unit,
     // KMK -->
+    onToggleIncognito: () -> Unit,
     onSettingsClick: (() -> Unit)?,
     // KMK <--
     onSearch: (String) -> Unit,
@@ -100,22 +100,20 @@ fun BrowseSourceToolbar(
                                 )
                             }
                         } else {
-                            if (isConfigurableSource && displayMode != null) {
-                                add(
-                                    AppBar.OverflowAction(
-                                        title = stringResource(MR.strings.action_web_view),
-                                        onClick = onWebViewClick,
-                                    ),
-                                )
-                            } else {
-                                add(
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.action_web_view),
-                                        icon = Icons.Outlined.Public,
-                                        onClick = onWebViewClick,
-                                    ),
-                                )
-                            }
+                            // KMK -->
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(MR.strings.pref_incognito_mode),
+                                    onClick = onToggleIncognito,
+                                ),
+                            )
+                            // KMK <--
+                            add(
+                                AppBar.OverflowAction(
+                                    title = stringResource(MR.strings.action_web_view),
+                                    onClick = onWebViewClick,
+                                ),
+                            )
                         }
                         // SY <--
                         // KMK -->
