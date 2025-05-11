@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
@@ -28,7 +30,7 @@ import tachiyomi.presentation.core.i18n.stringResource
  * @param dialog the dialog to show.
  */
 @Composable
-fun BulkFavoriteDialogs(
+fun Screen.BulkFavoriteDialogs(
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
     dialog: Dialog?,
 ) {
@@ -84,6 +86,7 @@ fun BulkFavoriteDialogs(
                 dialog = dialog,
                 navigator = navigator,
                 state = bulkFavoriteState,
+                migrateScreenModel = rememberScreenModel { MigrateDialogScreenModel() },
                 onDismiss = bulkFavoriteScreenModel::dismissDialog,
                 stopRunning = bulkFavoriteScreenModel::stopRunning,
                 toggleSelection = bulkFavoriteScreenModel::toggleSelection,
@@ -99,6 +102,7 @@ private fun ShowMigrateDialog(
     dialog: Dialog.Migrate,
     navigator: Navigator?,
     state: BulkFavoriteScreenModel.State,
+    migrateScreenModel: MigrateDialogScreenModel,
     onDismiss: () -> Unit,
     stopRunning: () -> Unit,
     toggleSelection: (Manga, toSelectedState: Boolean) -> Unit,
@@ -109,7 +113,7 @@ private fun ShowMigrateDialog(
     MigrateDialog(
         oldManga = dialog.oldManga,
         newManga = dialog.newManga,
-        screenModel = MigrateDialogScreenModel(),
+        screenModel = migrateScreenModel,
         onDismissRequest = onDismiss,
         onClickTitle = { navigator?.push(MangaScreen(dialog.oldManga.id)) },
         onPopScreen = {
