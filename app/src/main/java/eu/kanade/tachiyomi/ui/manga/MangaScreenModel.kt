@@ -99,6 +99,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -512,6 +513,14 @@ class MangaScreenModel(
             // Initial loading finished
             updateSuccessState { it.copy(isRefreshingData = false) }
         }
+
+        // KMK-->
+        getIncognitoState.subscribe(sourceId = null, mangaId = mangaId)
+            .onEach {
+                mangaIncognitoMode.value = it
+            }
+            .launchIn(screenModelScope)
+        // KMK <--
     }
 
     // KMK -->
@@ -1791,8 +1800,7 @@ class MangaScreenModel(
 
     // KMK -->
     fun toggleMangaIncognitoMode() {
-        mangaIncognitoMode.value = !mangaIncognitoMode.value
-        setCustomMangaInfo.setIncognitoMode(mangaId, mangaIncognitoMode.value)
+        setCustomMangaInfo.setIncognitoMode(mangaId, !mangaIncognitoMode.value)
     }
     // KMK <--
 
