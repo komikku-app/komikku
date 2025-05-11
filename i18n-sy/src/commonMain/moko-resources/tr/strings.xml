@@ -134,7 +134,7 @@
     <string name="bandwidth_hero">Bandwidth Hero (Bandwidth Hero ara sunucusu gerektirir)</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero Ara Sunucusu</string>
-    <string name="clear_db_exclude_read">Okunmuş bölümleri olan girdileri tut</string>
+    <string name="clear_db_exclude_read">Okunmuş bölümleri olan girdileri koru</string>
     <string name="log_minimal">En düşük</string>
     <string name="log_extra">Daha fazla</string>
     <string name="log_extreme">En yüksek</string>

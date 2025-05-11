@@ -617,7 +617,7 @@
     <string name="mangadex_sync_follows_to_library">Синхронизировать серии (MangaDex)</string>
     <string name="mangadex_sync_follows_to_library_summary">Добавляет серии из MangaDex в библиотеку, если они ещё не добавлены.</string>
     <string name="mangadex_preffered_source">Предпочитаемый источник (MangaDex)</string>
-    <string name="mangadex_preffered_source_summary">Установить языковой источник MangaDex. Этот источник будет использовать приложение для некоторых функций.</string>
+    <string name="mangadex_preffered_source_summary">Установить языковой источник MangaDex. Этот источник будет использовать приложение для некоторых функций</string>
     <string name="mangadex_add_to_follows">Добавить отслеживание (MangaDex)</string>
     <string name="mangadex_follows">Отслеживание MangaDex</string>
     <string name="random">Случайная</string>

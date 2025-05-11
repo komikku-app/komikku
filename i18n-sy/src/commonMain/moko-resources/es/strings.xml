@@ -141,7 +141,7 @@
     <string name="bandwidth_hero">Bandwidth Hero ( Requiere un servidor proxy )</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="data_saver_server_summary">Pom aqui la URl del Servidor Proxy de Bandwidth Hero</string>
-    <string name="clear_db_exclude_read">Mantenga las entradas con capitulos leidos</string>
+    <string name="clear_db_exclude_read">Conservar obras con capítulos leídos</string>
     <string name="bandwidth_data_saver_server">Servidor Proxy de Bandwidth Hero</string>
     <string name="log_minimal">Minimo</string>
     <string name="log_extra">Extra</string>

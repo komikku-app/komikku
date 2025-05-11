@@ -134,7 +134,7 @@
     <string name="bandwidth_hero">Bandwidth Hero（需要一个 Bandwidth Hero 代理服务器）</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero 代理服务器</string>
     <string name="data_saver_server_summary">填写 Bandwidth Hero 代理服务器地址到此</string>
-    <string name="clear_db_exclude_read">保留有已阅读章节的作品</string>
+    <string name="clear_db_exclude_read">保留有已读章节的作品</string>
     <!-- Log Level -->
     <string name="log_minimal">最小</string>
     <string name="log_extra">额外</string>
@@ -661,4 +661,20 @@
     <string name="entry_not_tracked">条目还未登录历程。</string>
     <string name="select_tracker">选择一个历程平台</string>
     <string name="favorites_sync_unable_to_add_to_remote">无法将图库新增到远程服务器：“%1$s”（GID: %2$s）！</string>
+    <string name="pref_tracker_resolve_using_source_metadata">选择条目时使用来源元数据</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">如果来源提供记录平台的链接，则会自动选择匹配的标题，目前支持 MangaDex</string>
+    <string name="rec_search">查找共同推荐</string>
+    <string name="rec_hide_library_entries">隐藏已添加到书架中的作品</string>
+    <string name="rec_services_to_search">用于搜索的推荐服务</string>
+    <string name="rec_group_source">来源的推荐</string>
+    <string name="rec_group_tracker">记录平台的推荐</string>
+    <string name="rec_common_recommendations">常见推荐</string>
+    <string name="rec_search_short">查找推荐</string>
+    <string name="rec_no_results">找不到推荐内容</string>
+    <string name="rec_error_title">搜索失败</string>
+    <string name="rec_error_string">搜索过程中发生错误：%1$s</string>
+    <string name="rec_processing_state">正在处理第 %1$d / %2$d 个作品</string>
+    <string name="rec_collecting">正在搜集推荐</string>
+    <string name="rec_initializing">正在初始化</string>
+    <string name="similar_titles">相似标题</string>
 </resources>

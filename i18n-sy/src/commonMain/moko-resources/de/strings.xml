@@ -604,4 +604,19 @@
     <string name="disable_favorites_uploading_summary">Favoriten werden nur von ExHentai heruntergeladen. Alle Änderungen an den Favoriten in der App werden nicht hochgeladen. Verhindert den versehentlichen Verlust von Favoriten auf ExHentai. Beachten Sie, dass entfernte Favoriten weiterhin heruntergeladen werden (wenn Sie einen Favoriten auf ExHentai entfernen, wird er auch in der App entfernt).</string>
     <string name="action_add_tags_message">Wichtig! Tags müssen exakt sein, es gibt keine Teilübereinstimmungen, Sie können nicht netorare verwenden, um female:netorare oder ähnliches herauszufiltern!\nDer Stil für Namespace-Tags ist\n„female: sole female“\nohne Anführungszeichen!\nDas Hinzufügen mehrerer Varianten desselben Tags wird unterstützt, Sie können also „tag: netorare“ für NHentai und „female: netorare“ für E-Hentai verwenden!</string>
     <string name="favorites_sync_notes_message"><![CDATA[1. Änderungen an Kategorienamen in der App werden <b>NICHT</b> synchronisiert! Bitte <i>ändern Sie stattdessen die Kategorienamen auf ExHentai</i>. Die Kategorienamen werden bei jeder Synchronisierung von den ExHentai-Servern kopiert.<br><br>2. Die Favoritenkategorien auf ExHentai entsprechen den <b>ersten 10 Kategorien in der App</b> (ausgenommen die Kategorie \'Standard\'). <i>Galerien in anderen Kategorien werden <b>NICHT</b> synchronisiert!</i><br><br>3. <font color=\'red\'><b>STELLEN SIE SICHER, DASS SIE WÄHREND DER SYNCHRONISATION EINE STABILE INTERNETVERBINDUNG HABEN!</b></font> Wenn die Internetverbindung während der Synchronisierung der App unterbrochen wird, bleiben Ihre Favoriten möglicherweise in einem <i>teilweise synchronisierten Zustand</i>.<br><br>4. Lassen Sie die App geöffnet, während die Favoriten synchronisiert werden. Android schließt manchmal Apps, die im Hintergrund laufen, und das kann problematisch sein, wenn es passiert, während die App synchronisiert wird.<br><br>5. <b>Legen Sie Favoriten NICHT in mehrere Kategorien</b> (die App unterstützt dies). Dies kann den Synchronisierungsalgorithmus verwirren, da ExHentai jedem Favoriten nur eine Kategorie zulässt.<br><br>Dieses Dialogfeld wird nur einmal angezeigt. Sie können diese Hinweise erneut lesen, indem Sie zu \'Einstellungen > E-Hentai > Synchronisierungshinweise für Favoriten anzeigen\' gehen.]]></string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Wählt automatisch den passenden Titel aus, wenn die Quelle Links zu Trackern enthält. Derzeit unterstützt von MangaDex</string>
+    <string name="rec_search_short">Empfehlungen finden</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Auswählen von Einträgen mithilfe von Quellmetadaten</string>
+    <string name="rec_error_string">Während des Suchvorgangs ist ein Fehler aufgetreten: %1$s</string>
+    <string name="rec_search">Suchen allgemeiner Empfehlungen</string>
+    <string name="rec_hide_library_entries">Ausblenden von Ergebnissen, die sich bereits in Ihrer Bibliothek befinden</string>
+    <string name="rec_services_to_search">Empfehlungsdienste für die Suche</string>
+    <string name="rec_group_source">Quellenempfehlungen</string>
+    <string name="rec_group_tracker">Tracker-Empfehlungen</string>
+    <string name="rec_common_recommendations">Allgemeine Empfehlungen</string>
+    <string name="rec_no_results">Keine Empfehlungen gefunden</string>
+    <string name="rec_error_title">Suche fehlgeschlagen</string>
+    <string name="rec_processing_state">Verarbeitungseintrag %1$d von %2$d</string>
+    <string name="rec_collecting">Sammeln von Empfehlungen</string>
+    <string name="rec_initializing">Initialisierend</string>
 </resources>

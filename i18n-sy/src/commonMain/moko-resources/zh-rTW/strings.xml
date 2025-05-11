@@ -135,7 +135,7 @@
     <string name="bandwidth_hero">Bandwidth Hero（需要一個 Bandwidth Hero 代理伺服器）</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero 代理伺服器</string>
     <string name="data_saver_server_summary">填寫 Bandwidth Hero 代理伺服器網址到此</string>
-    <string name="clear_db_exclude_read">保留有已閱讀章節的作品</string>
+    <string name="clear_db_exclude_read">保留有已讀章節的作品</string>
     <!-- Log Level -->
     <string name="log_minimal">最小</string>
     <string name="log_extra">額外</string>

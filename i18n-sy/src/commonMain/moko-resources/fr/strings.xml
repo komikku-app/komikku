@@ -559,7 +559,7 @@
     <string name="google_drive_sync_data_purged">Données de synchronisation supprimées de Google Drive</string>
     <string name="delete_time_range">Supprimer un intervalle de temps</string>
     <string name="delete_cbz_archive_password">Supprimer le mot de passe de l\'archive CBZ</string>
-    <string name="clear_db_exclude_read">Conserver les entrées avec des chapitres lus</string>
+    <string name="clear_db_exclude_read">Conserver les entrées avec les chapitres lus</string>
     <string name="sunday">Dimanche</string>
     <string name="eh_boost_boosted">Page actuelle boostée !</string>
     <string name="pref_show_bottom_bar_labels">Toujours afficher les étiquettes de navigation</string>

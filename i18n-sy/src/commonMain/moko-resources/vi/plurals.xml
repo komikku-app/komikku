@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="humanize_week">
+        <item quantity="other">%1$d tuần trước</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="other">%1$d giây trước</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="other">%d Số lần khóa</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="other">Đang thử lại %1$d trang bị lỗi…</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="other">Sao chép %1$d%2$s mục?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="other">Đã di chuyển %d mục</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="other">%1$d trang</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="other">%1$d năm trước</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="other">%1$d ngày trước</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="other">%1$d phút trước</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="other">%2$s, %1$d trang</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="other">%1$d Tháng trước</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="other">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="other">%1$d tiếng trước</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="other">Xong. Đã xóa %d thư mục khỏi hệ thống</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="other">Di chuyển %1$d%2$s mục?</item>
+    </plurals>
+</resources>
