@@ -105,9 +105,9 @@ class DiscordRPCService : Service() {
             setSmallIcon(R.drawable.ic_discord_24dp)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
-            setContentText(context.resources.getString(R.string.pref_discord_rpc))
+            setContentText(context.getString(R.string.pref_discord_rpc))
             // KMK -->
-            setContentTitle(context.resources.getString(R.string.app_name))
+            setContentTitle(context.getString(R.string.app_name))
             addAction(R.drawable.ic_close_24dp, context.getString(R.string.action_stop), stopIntent)
             // KMK <--
             setAutoCancel(false)
