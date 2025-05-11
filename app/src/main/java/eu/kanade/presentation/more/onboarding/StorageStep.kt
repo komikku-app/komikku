@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,11 +21,13 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.more.settings.screen.SettingsDataScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -43,6 +46,13 @@ internal class StorageStep : OnboardingStep {
         val handler = LocalUriHandler.current
 
         val pickStorageLocation = SettingsDataScreen.storageLocationPicker(storagePref)
+
+        // KMK -->
+        val storageDir by storagePref.collectAsState()
+        var locationValid by remember(storageDir) {
+            mutableStateOf(directoryAccessible(context, storageDir))
+        }
+        // KMK <--
 
         Column(
             modifier = Modifier.padding(16.dp),
@@ -83,9 +93,14 @@ internal class StorageStep : OnboardingStep {
             }
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(/* KMK --> */storageDir/* KMK <-- */) {
             storagePref.changes()
-                .collectLatest { _isComplete = storagePref.isSet() }
+                .collectLatest {
+                    // KMK -->
+                    locationValid = directoryAccessible(context, storageDir)
+                    _isComplete = locationValid
+                    // KMK <--
+                }
         }
     }
 }
