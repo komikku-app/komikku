@@ -101,4 +101,3 @@ fun Source?.isNsfw(): Boolean {
     return sourceUsed.isNsfw
 }
 // <-- AM (DISCORD)
-

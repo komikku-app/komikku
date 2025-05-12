@@ -215,7 +215,7 @@
             android:name="exh.ui.login.EhLoginActivity"
             android:label="EHentaiLogin"
             android:exported="false"/>
-            
+
         <activity android:label="Discord Login"
             android:name=".ui.setting.connections.DiscordLoginActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

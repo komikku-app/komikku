@@ -1552,11 +1552,11 @@ class ReaderActivity : BaseActivity() {
     private fun updateDiscordRPC(exitingReader: Boolean) {
         if (!connectionsPreferences.enableDiscordRPC().get()) return
 
-            DiscordRPCService.discordScope.launchIO {
-                try {
-                    if (!exitingReader) {
-                        val manga = viewModel.currentManga.value ?: return@launchIO
-                        val chapter = viewModel.currentChapter.value ?: return@launchIO
+        DiscordRPCService.discordScope.launchIO {
+            try {
+                if (!exitingReader) {
+                    val manga = viewModel.currentManga.value ?: return@launchIO
+                    val chapter = viewModel.currentChapter.value ?: return@launchIO
 
                     DiscordRPCService.setReaderActivity(
                         context = this@ReaderActivity,
@@ -1578,7 +1578,7 @@ class ReaderActivity : BaseActivity() {
                     }
                 }
             } catch (e: Exception) {
-                    logcat(LogPriority.ERROR) { "Error updating Discord RPC: ${e.message}" }
+                logcat(LogPriority.ERROR) { "Error updating Discord RPC: ${e.message}" }
             }
         }
     }

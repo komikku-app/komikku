@@ -161,7 +161,6 @@ class ReaderViewModel @JvmOverloads constructor(
     private val _currentSource = MutableStateFlow<Source?>(null)
     val currentSource = _currentSource.asStateFlow()
 
-
     /**
      * The chapter id of the currently loaded chapter. Used to restore from process kill.
      */

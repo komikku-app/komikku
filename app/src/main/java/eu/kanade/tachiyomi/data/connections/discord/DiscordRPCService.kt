@@ -287,7 +287,7 @@ class DiscordRPCService : Service() {
                 val discordIncognito = isIncognito(categories, readerData.incognitoMode)
 
                 val mangaTitle = readerData.mangaTitle.takeUnless { discordIncognito }
-                val chapterNumber = getFormattedChapterNumber(readerData, discordIncognito)
+                val chapterNumber = getFormattedChapterNumber(context, readerData, discordIncognito)
 
                 withIOContext {
                     val rpcExternalAsset = getRPCExternalAsset()
@@ -335,9 +335,21 @@ class DiscordRPCService : Service() {
 
             return when {
                 useChapterTitles -> "$chapterNumber $progress"
-                ceil(chapterNumber.toDouble()) == floor(chapterNumber.toDouble()) ->
-                    "Chapter ${chapterNumber.toInt()} $progress"
-                else -> "Chapter $chapterNumber $progress"
+                ceil(chapterNumber.toDouble()) == floor(chapterNumber.toDouble()) -> {
+                    try {
+                        context.getString(R.string.notification_chapters_single).format(
+                            "${chapterNumber.toDouble().toInt()} $progress",
+                        )
+                    } catch (_: NumberFormatException) {
+                        context.getString(R.string.notification_chapters_single).format(
+                            "$chapterNumber $progress",
+                        )
+                    }
+                }
+                else ->
+                    context.getString(R.string.notification_chapters_single).format(
+                        "$chapterNumber $progress",
+                    )
             }
         }
 
