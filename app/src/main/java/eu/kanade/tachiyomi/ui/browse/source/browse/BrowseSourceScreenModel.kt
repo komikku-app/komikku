@@ -84,12 +84,10 @@ import tachiyomi.domain.source.repository.SourcePagingSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.isLocal
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.time.Instant
-import java.util.concurrent.atomic.AtomicInteger
 import eu.kanade.tachiyomi.source.model.Filter as SourceModelFilter
 
 open class BrowseSourceScreenModel(
@@ -109,7 +107,6 @@ open class BrowseSourceScreenModel(
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
@@ -118,6 +115,9 @@ open class BrowseSourceScreenModel(
     private val extensionManager: ExtensionManager = Injekt.get(),
     // KMK <--
 
+    // KMK -->
+    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    // KMK <--
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),
@@ -238,19 +238,12 @@ open class BrowseSourceScreenModel(
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
-            val counter = AtomicInteger()
-            Pager(PagingConfig(pageSize = 25000)) {
+            Pager(PagingConfig(pageSize = 25)) {
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
             }.flow.map { pagingData ->
-                val startTime = System.currentTimeMillis()
                 pagingData.map { (manga, metadata) ->
-                    val idx = counter.incrementAndGet()
-                    if (idx % 2500 == 0) {
-                        val elapsedTime = System.currentTimeMillis() - startTime
-                        Timber.e("Processed $idx items in ${elapsedTime}ms")
-                    }
                     getManga.subscribe(manga.url, manga.source)
                         .map { it ?: manga }
                         // SY -->

@@ -83,6 +83,7 @@ abstract class SearchScreenModel(
     fun getManga(initialManga: Manga): androidx.compose.runtime.State<Manga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
+                /* KMK --> .filterNotNull() KMK <-- */
                 .collectLatest { manga ->
                     value = manga
                         // KMK -->
@@ -191,6 +192,7 @@ abstract class SearchScreenModel(
                         val titles = page.mangas
                             .map { it.toDomainManga(source.id) }
                             .distinctBy { it.url }
+                        /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
 
                         if (isActive) {
                             updateItem(source, SearchItemResult.Success(titles))

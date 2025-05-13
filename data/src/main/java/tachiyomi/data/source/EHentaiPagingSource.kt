@@ -20,6 +20,7 @@ abstract class EHentaiPagingSource(override val source: CatalogueSource) : BaseS
         val manga = mangasPage.mangas
             .map { it.toDomainManga(source.id) }
             .filter { seenManga.add(it.url) }
+            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
             // SY -->
             .mapIndexed { index, manga -> manga to metadata.getOrNull(index) }
         // SY <--

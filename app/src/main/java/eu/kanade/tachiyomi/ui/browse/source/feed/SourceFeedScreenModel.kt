@@ -250,6 +250,7 @@ open class SourceFeedScreenModel(
                     val titles = withIOContext {
                         page.map { it.toDomainManga(source.id) }
                             .distinctBy { it.url }
+                        /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
                     }
 
                     mutableState.update { state ->
@@ -283,6 +284,7 @@ open class SourceFeedScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
+                    /* KMK --> if (manga == null) return@collectLatest KMK <-- */
                     value = manga
                         // KMK -->
                         ?: initialManga

@@ -704,6 +704,7 @@ class MangaScreenModel(
     fun getManga(initialManga: Manga): RuntimeState<Manga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
+                /* KMK --> .filterNotNull() KMK <-- */
                 .flowWithLifecycle(lifecycle)
                 .collectLatest { manga ->
                     value = manga
@@ -1156,6 +1157,7 @@ class MangaScreenModel(
                         mangaList
                             .map { it.toDomainManga(state.source.id) }
                             .distinctBy { it.url }
+                        /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
                     }
 
                     updateSuccessState { successState ->

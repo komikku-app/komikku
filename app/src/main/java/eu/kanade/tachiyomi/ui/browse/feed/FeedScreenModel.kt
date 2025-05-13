@@ -305,6 +305,7 @@ open class FeedScreenModel(
                                 .map { it.toDomainManga(itemUI.source!!.id) }
                                 .distinctBy { it.url }
                                 // KMK -->
+                                // .let { networkToLocalManga(it) }
                                 .filter { !hideInLibraryFeedItems.get() || !it.favorite },
                             // KMK <--
                         )
@@ -342,6 +343,7 @@ open class FeedScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
+                    /* KMK --> if (manga == null) return@collectLatest KMK <-- */
                     value = manga
                         // KMK -->
                         ?: initialManga

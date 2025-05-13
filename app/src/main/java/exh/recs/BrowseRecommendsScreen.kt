@@ -179,10 +179,10 @@ class BrowseRecommendsScreen(
                             if (!bulkFavoriteState.selectionMode) {
                                 bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                             } else {
-                                // KMK <--
                                 onLongClickItem(manga)
                             }
                         }
+                        // KMK <--
                     }
                 },
                 // KMK -->
