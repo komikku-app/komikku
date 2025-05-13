@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Поиск источника</string>
+  <string name="action_toggle_nsfw_only">Только NSFW</string>
+  <string name="action_bulk_select">Режим массового выбора</string>
+  <string name="action_faq_and_guides">FAQ и руководства</string>
+  <string name="download_cache_renew_interval" comment="download_cache_renew_interval Extension repos Downloads section">Загрузить интервал обновления кэша</string>
+  <string name="download_cache_renew_interval_manual">Ручной</string>
+  <string name="download_cache_renew_interval_1hour">1 час</string>
+  <string name="download_cache_renew_interval_2hour">2 часа</string>
+  <string name="download_cache_renew_interval_6hour">6 часов</string>
+  <string name="download_cache_renew_interval_12hour">12 часов</string>
+  <string name="download_cache_renew_interval_24hour">1 день</string>
+  <string name="download_cache_renew_interval_info">Если присвоено значение «вручную», то обновите каждый манга или используйте действие «Индекс непроверенных загрузок» в разделе «Дополнительно»</string>
+  <string name="pref_clean_invalid_downloads" comment="pref_clean_invalid_downloads Advanced section">Очистить некорректные загрузки</string>
+  <string name="pref_clean_invalid_downloads_summary">Найти и удалить все загрузки, файлы, папки, которые не сохранены в вашей библиотеке</string>
+  <string name="invalid_downloads_cleaned">Некорректные загрузки удалены</string>
+  <string name="pref_private_installer_warning">Избегайте использования Приватного Установщика, потому что он ещё не стабильный, приведет к очень медленному запуску/возобновлению приложения.</string>
+  <string name="whats_coming" comment="whats_coming About section">Что будет (скоро)</string>
+  <string name="action_allow_duplicate_manga" comment="action_allow_duplicate_manga Manga info">Разрешить</string>
+  <string name="action_skip_duplicate_manga">Пропустить</string>
+  <string name="action_allow_all_duplicate_manga">Разрешить все</string>
+  <string name="action_skip_all_duplicate_manga">Пропустить все</string>
+  <string name="update_check_try_now" comment="update_check_try_now UpdateCheck">Попробовать</string>
+  <string name="update_check_notification_preview_available" comment="update_check_notification_preview_available UpdateCheck Notifications">Скоро (скоро) обновления!</string>
+  <string name="changelogs" comment="changelogs About">Сменить логи</string>
+  <string name="related_mangas_more">Больше похожих...</string>
+  <string name="too_many_in_feed" comment="too_many_in_feed Feed Tab">Слишком большое количество источников в вашей ленте. Количество не должно превышать 20</string>
+  <string name="current_" comment="current_ Migration">Текущий: %1$s</string>
+  <string name="pref_theme_cover_based">Тема на основе обложки</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Тональная точка</string>
+  <string name="pref_theme_cover_based_style_neutral">Нейтральный</string>
+  <string name="pref_theme_cover_based_style_vibrant">Вибрировать</string>
+  <string name="pref_theme_cover_based_style_expressive">Эксклюзивный</string>
+  <string name="pref_theme_cover_based_style_rainbow">Радуга</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Фруктовый салат</string>
+  <string name="pref_theme_cover_based_style_monochrome">Монохромный</string>
+  <string name="pref_theme_cover_based_style_fidelity">Верность</string>
+  <string name="pref_theme_cover_based_style_content">Содержание</string>
+  <string name="action_search_for_source" comment="action_search_for_source Actions">Поиск источника</string>
+  <string name="action_library_search">Поиск по библиотеке</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Сахарная вата</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Матрица</string>
+  <string name="theme_mocha">Моча</string>
+  <string name="theme_sapphire">Сапфир</string>
+  <string name="pref_show_updating_progress_banner" comment="pref_show_updating_progress_banner Library section">Показать обновление баннера прогресса</string>
+  <string name="pref_show_restoring_progress_banner" comment="pref_show_restoring_progress_banner Sync section">Показать восстановление баннера прогресса</string>
+  <string name="pref_show_syncing_progress_banner">Показать баннер прогресса синхронизации</string>
+  <string name="saved_searches_feeds">Сохраненные запросы &amp; Ленты</string>
+  <string name="onboarding_permission_external_storage" comment="onboarding_permission_external_storage Onboarding section">Доступ к медиафайлам</string>
+  <string name="onboarding_permission_external_storage_description">Разрешить использование пользовательских обложек в редактировании записи</string>
+  <string name="onboarding_permission_writing_external_storage_description">Разрешить сохранение обложек &amp; с помощью пользовательских обложек в записи Изменить информацию</string>
+  <string name="permission_writing_external_storage_succeed">Разрешение предоставлено. Попробуйте снова.</string>
+  <string name="action_move_up">Вверх</string>
+  <string name="action_move_down">Сдвинуть вниз</string>
+  <string name="preload_library_cover_color">Выгрузить цвет обложки библиотеки</string>
+  <string name="saved_searches_add_feed">Сохраненные поиски (Удерживайте, чтобы добавить в Лента)</string>
+  <string name="saved_searches_delete">Сохраненные поиски (удерживаются для удаления)</string>
+  <string name="action_display_source_badge">Иконка источника</string>
+  <string name="action_display_language_icon">Использовать значок языка</string>
+  <string name="action_confirm_color">Подтвердить цвет</string>
+  <string name="pref_custom_color" comment="pref_custom_color Custom Color Picker">Персонализирующий палитры</string>
+  <string name="theme_custom">Пользовательская тема</string>
+  <string name="extensions_page_need_refresh" comment="extensions_page_need_refresh Extension section">Обновите страницу расширения для обновления списка.</string>
+  <string name="extensions_page_more">Больше расширений...</string>
+  <string name="pref_expand_related_mangas">Расширить предложения</string>
+  <string name="pref_expand_related_mangas_summary">Если выключено, предложения не будут автоматически загружаться &amp; показывать в развернутом виде</string>
+  <string name="put_related_mangas_in_overflow">Предложения в переполнении</string>
+  <string name="put_related_mangas_in_overflow_summary">Вставить кнопку предложений в меню переполнения вместо страницы ввода</string>
+  <string name="pref_show_home_on_related_mangas">Домой от предложений</string>
+  <string name="pref_show_home_on_related_mangas_summary">Показывать значок во время просмотра предложений для перехода непосредственно на Домашний экран</string>
+  <string name="pref_source_related_mangas" comment="pref_source_related_mangas Browse settings">Предложения</string>
+  <string name="pref_source_related_mangas_summary">Показывать подсказки сайта при просмотре записи</string>
+  <string name="related_mangas_website_suggestions">Предложения сайта</string>
+  <string name="action_hide">Скрыть</string>
+  <string name="action_sort_feed">Сортировка каналов</string>
+  <string name="sort_feed_confirmation">Вы хотите сортировать каналы в алфавитном порядке?</string>
+  <string name="pref_custom_theme_style" comment="pref_custom_theme_style Preferences Appearance section">Пользовательский стиль темы</string>
+  <string name="pref_theme_cover_based_style">Стиль темы на основе обложки</string>
+  <string name="custom_color_description">Выберите цвет ключа для пользовательской темы</string>
+  <string name="custom_theme_palette_casual">Обычный</string>
+  <string name="custom_theme_palette_sunset">Закат</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Малина</string>
+  <string name="custom_theme_palette_pop">Поп</string>
+  <string name="custom_theme_palette_cathode">Катоде</string>
+  <string name="custom_theme_palette_bubblegum">Бубблегум</string>
+  <string name="custom_theme_palette_night_at_the_beach">Ночь на пляже</string>
+  <string name="custom_theme_palette_spectral">Спектр</string>
+  <string name="custom_theme_palette_patagonia">Патагония</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Показать скрытые категории</string>
+  <string name="action_display_comfortable_grid_panorama">Удобная сетка для панорамы</string>
+  <string name="action_panorama_cover">Обложка панорамы</string>
+  <string name="pref_panorama_cover">Покрытие Панорамы</string>
+  <string name="pref_panorama_cover_summary">Показывать обложку в альбомном режиме, если это широкое изображение</string>
+  <string name="pref_panorama_cover_flow">Покрытие Панорамы</string>
+  <string name="pref_panorama_cover_flow_summary">Показывать обложку панорамы в глобальном поиске &amp; Предложения</string>
+  <string name="pref_auto_sync_progress_from_trackers" comment="pref_auto_sync_progress_from_trackers Tracking section">Автосинхронизация прогресса от трекеров</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Синхронизировать прогресс трекеров до главы %d</string>
+  <string name="option_label_library_update_errors" comment="option_label_library_update_errors Error Screen">Ошибки обновления библиотеки</string>
+  <string name="label_library_update_errors">Ошибки обновления библиотеки (%d)</string>
+  <string name="info_empty_library_update_errors">У вас нет ошибок обновления библиотеки.</string>
+  <string name="action_scroll_to_top">Прокрутка вверх</string>
+  <string name="action_scroll_to_bottom">Прокрутка вниз</string>
+  <string name="action_scroll_to_previous">Прокрутка до предыдущей</string>
+  <string name="action_scroll_to_next">Прокрутка до следующего</string>
+  <string name="migrating_all_entries">Миграция всех записей из источника</string>
+  <string name="label_to_be_updated" comment="label_to_be_updated Misc">Будет обновлено</string>
+  <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Ручная загрузка</string>
+  <string name="auto_update_app">Автообновление</string>
+  <string name="update_completed">Обновление завершено</string>
+  <string name="open">Открыть</string>
+  <string name="release_page">Страница релиза</string>
+  <string name="could_not_install_update">Не удалось установить обновление</string>
+  <string name="action_copy_to_clipboard_first_page" comment="action_copy_to_clipboard_first_page Reader Reader Actions">Скопировать первую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_second_page">Копировать вторую страницу в буфер обмена</string>
+  <string name="action_copy_to_clipboard_combined_page">Скопировать объединенную страницу в буфер обмена</string>
+  <string name="auto_update_app_disable_auto_download">Не скачивать автоматически</string>
+  <string name="action_remove_merged">Удалить оригинальные записи из библиотеки?</string>
+  <string name="batch_add_description">Поддержка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+</resources>
