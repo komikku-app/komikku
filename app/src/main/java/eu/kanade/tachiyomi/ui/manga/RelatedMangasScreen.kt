@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import kotlinx.coroutines.CoroutineScope
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.presentation.core.components.material.Scaffold
 import uy.kohesive.injekt.Injekt
@@ -57,14 +58,25 @@ fun RelatedMangasScreen(
                         successState.relatedMangasSorted?.let { result ->
                             result.map { it as RelatedManga.Success }
                                 .flatMap { it.mangaList }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            .forEach { bulkFavoriteScreenModel.select(it) }
+                                    }
+                                }
                         }
                     },
                     onReverseSelection = {
                         successState.relatedMangasSorted?.let { result ->
                             result.map { it as RelatedManga.Success }
                                 .flatMap { it.mangaList }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.reverseSelection(
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                        )
+                                    }
+                                }
                         }
                     },
                 )
@@ -88,18 +100,24 @@ fun RelatedMangasScreen(
             columns = getColumnsPreference(LocalConfiguration.current.orientation),
             displayMode = displayMode,
             contentPadding = paddingValues,
-            onMangaClick = { manga ->
-                if (bulkFavoriteState.selectionMode) {
-                    bulkFavoriteScreenModel.toggleSelection(manga)
-                } else {
-                    navigator.push(MangaScreen(manga.id, true))
+            onMangaClick = {
+                scope.launchIO {
+                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    if (bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.toggleSelection(manga)
+                    } else {
+                        navigator.push(MangaScreen(manga.id, true))
+                    }
                 }
             },
-            onMangaLongClick = { manga ->
-                if (!bulkFavoriteState.selectionMode) {
-                    bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
-                } else {
-                    navigator.push(MangaScreen(manga.id, true))
+            onMangaLongClick = {
+                scope.launchIO {
+                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    if (!bulkFavoriteState.selectionMode) {
+                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                    } else {
+                        navigator.push(MangaScreen(manga.id, true))
+                    }
                 }
             },
             onKeywordClick = { query ->

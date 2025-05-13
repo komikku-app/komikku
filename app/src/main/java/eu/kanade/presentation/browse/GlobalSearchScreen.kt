@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
@@ -21,6 +22,7 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableMap
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.domain.source.model.Source as DomainSource
@@ -43,6 +45,7 @@ fun GlobalSearchScreen(
     // KMK <--
 ) {
     // KMK -->
+    val scope = rememberCoroutineScope()
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     // KMK <--
 
@@ -59,13 +62,24 @@ fun GlobalSearchScreen(
                         state.filteredItems.values
                             .filterIsInstance<SearchItemResult.Success>()
                             .flatMap { it.result }
-                            .forEach { bulkFavoriteScreenModel.select(it) }
+                            .let {
+                                scope.launchIO {
+                                    bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                        .forEach { bulkFavoriteScreenModel.select(it) }
+                                }
+                            }
                     },
                     onReverseSelection = {
                         state.filteredItems.values
                             .filterIsInstance<SearchItemResult.Success>()
                             .flatMap { it.result }
-                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                            .let {
+                                scope.launchIO {
+                                    bulkFavoriteScreenModel.reverseSelection(
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                    )
+                                }
+                            }
                     },
                 )
             } else {

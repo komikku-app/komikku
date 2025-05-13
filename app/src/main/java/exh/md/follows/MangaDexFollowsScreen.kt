@@ -77,12 +77,23 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         onSelectAll = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            .forEach { bulkFavoriteScreenModel.select(it) }
+                                    }
+                                }
                         },
                         onReverseSelection = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                                .let {
+                                    scope.launchIO {
+                                        bulkFavoriteScreenModel.reverseSelection(
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                        )
+                                    }
+                                }
                         },
                     )
                 } else {
@@ -117,22 +128,26 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onWebViewClick = null,
                 onHelpClick = null,
                 onLocalSourceHelpClick = null,
-                onMangaClick = { manga ->
+                onMangaClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(manga)
-                    } else {
-                        // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            bulkFavoriteScreenModel.toggleSelection(manga)
+                        } else {
+                            // KMK <--
+                            navigator.push(MangaScreen(manga.id, true))
+                        }
                     }
                 },
-                onMangaLongClick = { manga ->
+                onMangaLongClick = {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        navigator.push(MangaScreen(manga.id, true))
-                    } else {
-                        // KMK <--
-                        scope.launchIO {
+                    scope.launchIO {
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        if (bulkFavoriteState.selectionMode) {
+                            navigator.push(MangaScreen(manga.id, true))
+                        } else {
+                            // KMK <--
                             val duplicates = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))

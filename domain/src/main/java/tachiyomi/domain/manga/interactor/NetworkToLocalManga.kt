@@ -14,4 +14,22 @@ class NetworkToLocalManga(
     suspend operator fun invoke(manga: List<Manga>): List<Manga> {
         return mangaRepository.insertNetworkManga(manga)
     }
+
+    // KMK -->
+    suspend fun getLocal(manga: Manga): Manga = if (manga.id <= 0) {
+        invoke(manga)
+    } else {
+        manga
+    }
+
+    suspend fun getLocal(mangas: List<Manga>): List<Manga> {
+        return mangas.map { manga ->
+            if (manga.id <= 0) {
+                invoke(manga)
+            } else {
+                manga
+            }
+        }
+    }
+    // KMK <--
 }

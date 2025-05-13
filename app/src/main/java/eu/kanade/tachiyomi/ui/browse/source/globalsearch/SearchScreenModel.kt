@@ -19,7 +19,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -39,7 +39,7 @@ abstract class SearchScreenModel(
     sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
-    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val preferences: SourcePreferences = Injekt.get(),
 ) : StateScreenModel<SearchScreenModel.State>(initialState) {
@@ -83,9 +83,12 @@ abstract class SearchScreenModel(
     fun getManga(initialManga: Manga): androidx.compose.runtime.State<Manga> {
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
-                .filterNotNull()
+                /* KMK --> .filterNotNull() KMK <-- */
                 .collectLatest { manga ->
                     value = manga
+                        // KMK -->
+                        ?: initialManga
+                    // KMK <--
                 }
         }
     }
@@ -189,7 +192,7 @@ abstract class SearchScreenModel(
                         val titles = page.mangas
                             .map { it.toDomainManga(source.id) }
                             .distinctBy { it.url }
-                            .let { networkToLocalManga(it) }
+                        /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
 
                         if (isActive) {
                             updateItem(source, SearchItemResult.Success(titles))
