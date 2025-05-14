@@ -204,7 +204,7 @@ data class BrowseSourceScreen(
                                     .map { it.value.first }
                                     .let {
                                         scope.launchIO {
-                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                            bulkFavoriteScreenModel.networkToLocalManga(it)
                                                 .forEach { bulkFavoriteScreenModel.select(it) }
                                         }
                                     }
@@ -215,7 +215,7 @@ data class BrowseSourceScreen(
                                     .let {
                                         scope.launchIO {
                                             bulkFavoriteScreenModel.reverseSelection(
-                                                bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                                bulkFavoriteScreenModel.networkToLocalManga(it),
                                             )
                                         }
                                     }
@@ -370,7 +370,7 @@ data class BrowseSourceScreen(
                 onMangaClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        val manga = screenModel.networkToLocalManga(it)
                         if (bulkFavoriteState.selectionMode) {
                             bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
@@ -392,7 +392,7 @@ data class BrowseSourceScreen(
                 onMangaLongClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga.getLocal(it)
+                        val manga = screenModel.networkToLocalManga(it)
                         if (bulkFavoriteState.selectionMode) {
                             navigator.push(MangaScreen(manga.id, true))
                         } else {

@@ -60,7 +60,7 @@ fun RelatedMangasScreen(
                                 .flatMap { it.mangaList }
                                 .let {
                                     scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                        bulkFavoriteScreenModel.networkToLocalManga(it)
                                             .forEach { bulkFavoriteScreenModel.select(it) }
                                     }
                                 }
@@ -73,7 +73,7 @@ fun RelatedMangasScreen(
                                 .let {
                                     scope.launchIO {
                                         bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                            bulkFavoriteScreenModel.networkToLocalManga(it),
                                         )
                                     }
                                 }
@@ -102,7 +102,7 @@ fun RelatedMangasScreen(
             contentPadding = paddingValues,
             onMangaClick = {
                 scope.launchIO {
-                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    val manga = screenModel.networkToLocalManga(it)
                     if (bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.toggleSelection(manga)
                     } else {
@@ -112,7 +112,7 @@ fun RelatedMangasScreen(
             },
             onMangaLongClick = {
                 scope.launchIO {
-                    val manga = screenModel.networkToLocalManga.getLocal(it)
+                    val manga = screenModel.networkToLocalManga(it)
                     if (!bulkFavoriteState.selectionMode) {
                         bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                     } else {

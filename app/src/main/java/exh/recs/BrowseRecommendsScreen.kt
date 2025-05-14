@@ -99,7 +99,7 @@ class BrowseRecommendsScreen(
                                 .map { it.value.first }
                                 .let {
                                     scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                        bulkFavoriteScreenModel.networkToLocalManga(it)
                                             .forEach { bulkFavoriteScreenModel.select(it) }
                                     }
                                 }
@@ -110,7 +110,7 @@ class BrowseRecommendsScreen(
                                 .let {
                                     scope.launchIO {
                                         bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                            bulkFavoriteScreenModel.networkToLocalManga(it),
                                         )
                                     }
                                 }
@@ -159,7 +159,7 @@ class BrowseRecommendsScreen(
                         onClickItem(it)
                     } else {
                         scope.launchIO {
-                            val manga = screenModel.networkToLocalManga.getLocal(it)
+                            val manga = screenModel.networkToLocalManga(it)
                             if (bulkFavoriteState.selectionMode) {
                                 bulkFavoriteScreenModel.toggleSelection(manga)
                             } else {
@@ -175,7 +175,7 @@ class BrowseRecommendsScreen(
                         onLongClickItem(it)
                     } else {
                         scope.launchIO {
-                            val manga = screenModel.networkToLocalManga.getLocal(it)
+                            val manga = screenModel.networkToLocalManga(it)
                             if (!bulkFavoriteState.selectionMode) {
                                 bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                             } else {
