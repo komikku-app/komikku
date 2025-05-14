@@ -8,7 +8,9 @@ import exh.metadata.metadata.RaisedSearchMetadata
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 
-abstract class EHentaiPagingSource(override val source: CatalogueSource) : BaseSourcePagingSource(source) {
+abstract class EHentaiPagingSource(
+    override val source: CatalogueSource,
+) : BaseSourcePagingSource(source) {
 
     override suspend fun getPageLoadResult(
         params: LoadParams<Long>,
@@ -18,12 +20,11 @@ abstract class EHentaiPagingSource(override val source: CatalogueSource) : BaseS
         val metadata = mangasPage.mangasMetadata
 
         val manga = mangasPage.mangas
-            .map { it.toDomainManga(source.id) }
-            .filter { seenManga.add(it.url) }
-            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
-            // SY -->
-            .mapIndexed { index, manga -> manga to metadata.getOrNull(index) }
-        // SY <--
+            .mapIndexed { index, sManga -> sManga.toDomainManga(source.id) to metadata.getOrNull(index) }
+            .filter { seenManga.add(it.first.url) }
+        // KMK -->
+        // .let { pairs -> pairs.zip(networkToLocalManga(pairs.map { it.first })).map { it.second to it.first.second } }
+        // KMK <--
 
         return LoadResult.Page(
             data = manga,
