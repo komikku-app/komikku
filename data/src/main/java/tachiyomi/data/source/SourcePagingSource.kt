@@ -90,11 +90,12 @@ abstract class BaseSourcePagingSource(
         // SY <--
 
         val manga = mangasPage.mangas
-            .map { it.toDomainManga(source!!.id) }
-            .filter { seenManga.add(it.url) }
-            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
             // SY -->
-            .mapIndexed { index, manga -> manga to metadata.getOrNull(index) }
+            .mapIndexed { index, sManga -> sManga.toDomainManga(source!!.id) to metadata.getOrNull(index) }
+            .filter { seenManga.add(it.first.url) }
+        // KMK -->
+        // .let { pairs -> pairs.zip(networkToLocalManga(pairs.map { it.first })).map { it.second to it.first.second } }
+        // KMK <--
         // SY <--
 
         return LoadResult.Page(

@@ -8,7 +8,9 @@ import exh.metadata.metadata.RaisedSearchMetadata
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 
-abstract class EHentaiPagingSource(override val source: CatalogueSource) : BaseSourcePagingSource(source) {
+abstract class EHentaiPagingSource(
+    override val source: CatalogueSource,
+) : BaseSourcePagingSource(source) {
 
     override suspend fun getPageLoadResult(
         params: LoadParams<Long>,
