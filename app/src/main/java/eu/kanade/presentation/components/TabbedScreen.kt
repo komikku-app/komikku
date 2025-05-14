@@ -71,7 +71,7 @@ fun TabbedScreen(
                                 .flatten()
                                 .let {
                                     scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
+                                        bulkFavoriteScreenModel.networkToLocalManga(it)
                                             .forEach { bulkFavoriteScreenModel.select(it) }
                                     }
                                 }
@@ -84,7 +84,7 @@ fun TabbedScreen(
                                 .let {
                                     scope.launchIO {
                                         bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
+                                            bulkFavoriteScreenModel.networkToLocalManga(it),
                                         )
                                     }
                                 }

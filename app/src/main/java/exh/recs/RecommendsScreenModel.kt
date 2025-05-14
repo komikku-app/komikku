@@ -83,8 +83,8 @@ open class RecommendsScreenModel(
                             // If the recommendation is associated with a source, resolve it
                             // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
                             it.toDomainManga(recSourceId ?: RECOMMENDS_SOURCE)
-                            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
                         }
+                            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
                             // KMK <--
                             .distinctBy { it.url }
 
