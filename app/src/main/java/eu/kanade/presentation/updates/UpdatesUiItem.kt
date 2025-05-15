@@ -54,6 +54,7 @@ import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
+import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.UpdateSelectionOptions
 import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import mihon.feature.upcoming.DateHeading
 import tachiyomi.domain.updates.model.UpdatesWithRelations
@@ -91,7 +92,7 @@ internal fun LazyListScope.updatesUiItems(
     // SY -->
     preserveReadingPosition: Boolean,
     // SY <--
-    onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
+    onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onClickCover: (UpdatesItem) -> Unit,
     onClickUpdate: (UpdatesItem) -> Unit,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
@@ -124,10 +125,10 @@ internal fun LazyListScope.updatesUiItems(
             }
             is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
+                // KMK -->
                 val isLeader = item is UpdatesUiModel.Leader
                 val isExpanded = expandedState.contains(updatesItem.update.groupByDateAndManga())
 
-                // KMK -->
                 AnimatedVisibility(
                     visible = isLeader || isExpanded,
                     enter = fadeIn() + expandVertically(),
@@ -153,11 +154,33 @@ internal fun LazyListScope.updatesUiItems(
                                 )
                             },
                         onLongClick = {
-                            onUpdateSelected(updatesItem, !updatesItem.selected, true, true)
+                            onUpdateSelected(
+                                updatesItem,
+                                // KMK -->
+                                UpdateSelectionOptions(
+                                    selected = !updatesItem.selected,
+                                    userSelected = true,
+                                    fromLongPress = true,
+                                    isGroup = isLeader && item.isExpandable,
+                                    isExpanded = isExpanded,
+                                ),
+                                // KMK <--
+                            )
                         },
                         onClick = {
                             when {
-                                selectionMode -> onUpdateSelected(updatesItem, !updatesItem.selected, true, false)
+                                selectionMode -> onUpdateSelected(
+                                    updatesItem,
+                                    // KMK -->
+                                    UpdateSelectionOptions(
+                                        selected = !updatesItem.selected,
+                                        userSelected = true,
+                                        fromLongPress = false,
+                                        isGroup = isLeader && item.isExpandable,
+                                        isExpanded = isExpanded,
+                                    ),
+                                    // KMK <--
+                                )
                                 else -> onClickUpdate(updatesItem)
                             }
                         },
