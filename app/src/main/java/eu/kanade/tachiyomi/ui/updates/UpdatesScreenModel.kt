@@ -317,14 +317,19 @@ class UpdatesScreenModel(
                 // KMK -->
                 if (isGroup && !isExpanded) {
                     val selectedItemDate = selectedItem.update.dateFetch.toLocalDate()
-                    state.items.forEachIndexed { index, it ->
-                        if (it.update.mangaId == selectedItem.update.mangaId &&
-                            it.update.dateFetch.toLocalDate() == selectedItemDate
-                        ) {
-                            set(index, it.copy(selected = selected))
-                            selectedChapterIds.addOrRemove(it.update.chapterId, selected)
+                    val zone = java.time.ZoneId.systemDefault()
+                    val dayStartMillis = selectedItemDate.atStartOfDay(zone).toInstant().toEpochMilli()
+                    val dayEndMillis = selectedItemDate.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+
+                    state.items.mapIndexed { index, item -> index to item }
+                        .filter {
+                            it.second.update.mangaId == selectedItem.update.mangaId &&
+                                it.second.update.dateFetch in dayStartMillis..<dayEndMillis
                         }
-                    }
+                        .forEach { (index, item) ->
+                            set(index, item.copy(selected = selected))
+                            selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+                        }
                 }
                 // KMK <--
 
