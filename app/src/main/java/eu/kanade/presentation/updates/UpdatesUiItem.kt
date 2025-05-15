@@ -364,6 +364,11 @@ fun CollapseButton(
     collapseToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val painter = rememberAnimatedVectorPainter(
+        AnimatedImageVector.animatedVectorResource(R.drawable.anim_caret_down),
+        !expanded,
+    )
+
     Box(
         modifier = modifier
             .size(IndicatorSize + MaterialTheme.padding.extraSmall),
@@ -374,10 +379,7 @@ fun CollapseButton(
             modifier = Modifier.size(IndicatorSize),
         ) {
             Icon(
-                painter = rememberAnimatedVectorPainter(
-                    AnimatedImageVector.animatedVectorResource(R.drawable.anim_caret_down),
-                    !expanded,
-                ),
+                painter = painter,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
             )
