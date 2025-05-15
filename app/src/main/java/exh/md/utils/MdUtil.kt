@@ -19,7 +19,6 @@ import exh.source.getMainSource
 import exh.util.dropBlank
 import exh.util.floor
 import exh.util.nullIfZero
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Headers
@@ -28,7 +27,6 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.jsoup.parser.Parser
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -234,9 +232,9 @@ class MdUtil {
             return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
         }
 
-        fun getEnabledMangaDex(preferences: UnsortedPreferences, sourcePreferences: SourcePreferences = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
+        fun getEnabledMangaDex(sourcePreferences: SourcePreferences = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
             return getEnabledMangaDexs(sourcePreferences, sourceManager).let { mangadexs ->
-                preferences.preferredMangaDexId().get().toLongOrNull()?.nullIfZero()
+                sourcePreferences.preferredMangaDexId().get().toLongOrNull()?.nullIfZero()
                     ?.let { preferredMangaDexId ->
                         mangadexs.firstOrNull { it.id == preferredMangaDexId }
                     }

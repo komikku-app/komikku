@@ -24,6 +24,7 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
@@ -37,13 +38,12 @@ import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
-import tachiyomi.domain.history.interactor.GetHistoryByMangaId
+import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.manga.model.Manga
@@ -151,13 +151,13 @@ internal fun MigrateDialog(
 internal class MigrateDialogScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     // KMK -->
-    preferences: UnsortedPreferences = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<MigrateDialogScreenModel.State>(State()) {
 
     val migrateFlags: Preference<Int> by lazy {
         // KMK -->
-        preferences.migrateFlags()
+        sourcePreferences.migrateFlags()
         // KMK <--
     }
 
@@ -210,14 +210,14 @@ internal class MigrateDialogScreenModel(
             // KMK -->
             if (oldManga.id == newManga.id) return // Nothing to migrate
 
-            val preferences: UnsortedPreferences = Injekt.get()
+            val sourcePreferences: SourcePreferences = Injekt.get()
             val downloadManager: DownloadManager = Injekt.get()
             val coverCache: CoverCache = Injekt.get()
             val updateManga: UpdateManga = Injekt.get()
             val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
             val updateChapter: UpdateChapter = Injekt.get()
             val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get()
-            val getHistoryByMangaId: GetHistoryByMangaId = Injekt.get()
+            val getHistory: GetHistory = Injekt.get()
             val upsertHistory: UpsertHistory = Injekt.get()
             val getCategories: GetCategories = Injekt.get()
             val setMangaCategories: SetMangaCategories = Injekt.get()
@@ -227,7 +227,7 @@ internal class MigrateDialogScreenModel(
                 Injekt.get<TrackerManager>().trackers.filterIsInstance<EnhancedTracker>()
             }
 
-            val flags = presetFlags ?: preferences.migrateFlags().get()
+            val flags = presetFlags ?: sourcePreferences.migrateFlags().get()
             // KMK <--
 
             val migrateChapters = MigrationFlags.hasChapters(flags)
@@ -256,7 +256,7 @@ internal class MigrateDialogScreenModel(
                     .maxOfOrNull { it.chapterNumber }
 
                 // SY -->
-                val prevHistoryList = getHistoryByMangaId.await(oldManga.id)
+                val prevHistoryList = getHistory.await(oldManga.id)
                     // KMK -->
                     .associateBy { it.chapterId }
                 // KMK <--

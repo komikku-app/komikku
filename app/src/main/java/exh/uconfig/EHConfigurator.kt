@@ -8,19 +8,19 @@ import exh.log.maybeInjectEHLogger
 import exh.log.xLogD
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.source.ExhPreferences
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class EHConfigurator(val context: Context) {
-    private val prefs: UnsortedPreferences by injectLazy()
-    private val sources: SourceManager by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
+    private val sourceManager: SourceManager by injectLazy()
 
     private val configuratorClient = OkHttpClient.Builder()
         .maybeInjectEHLogger()
@@ -52,8 +52,8 @@ class EHConfigurator(val context: Context) {
     private val EHentai.uconfigUrl get() = baseUrl + UCONFIG_URL
 
     suspend fun configureAll() {
-        val ehSource = sources.get(EH_SOURCE_ID) as EHentai
-        val exhSource = sources.get(EXH_SOURCE_ID) as EHentai
+        val ehSource = sourceManager.get(EH_SOURCE_ID) as EHentai
+        val exhSource = sourceManager.get(EXH_SOURCE_ID) as EHentai
 
         // Get hath perks
         val perksPage = configuratorClient.newCall(
@@ -146,13 +146,13 @@ class EHConfigurator(val context: Context) {
         }?.removePrefix("hath_perks=")?.substringBefore(';')
 
         if (keyCookie != null) {
-            prefs.exhSettingsKey().set(keyCookie)
+            exhPreferences.exhSettingsKey().set(keyCookie)
         }
         if (sessionCookie != null) {
-            prefs.exhSessionCookie().set(sessionCookie)
+            exhPreferences.exhSessionCookie().set(sessionCookie)
         }
         if (hathPerksCookie != null) {
-            prefs.exhHathPerksCookies().set(hathPerksCookie)
+            exhPreferences.exhHathPerksCookies().set(hathPerksCookie)
         }
     }
 

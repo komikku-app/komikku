@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.libraryUpdateError.LibraryUpdateErrorScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -26,7 +26,7 @@ class LibraryUpdateErrorScreen : Screen() {
             state = state,
             onClick = { item ->
                 PreMigrationScreen.navigateToMigration(
-                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
                     navigator,
                     listOf(item.error.mangaId),
                 )
@@ -34,7 +34,7 @@ class LibraryUpdateErrorScreen : Screen() {
             onClickCover = { item -> navigator.push(MangaScreen(item.error.mangaId)) },
             onMultiMigrateClicked = {
                 PreMigrationScreen.navigateToMigration(
-                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
                     navigator,
                     state.selected.map { it.error.mangaId },
                 )

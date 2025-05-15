@@ -25,7 +25,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.ResetCategoryFlags
 import tachiyomi.domain.category.model.Category
@@ -62,9 +61,6 @@ object SettingsLibraryScreen : SearchableSettings {
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
-        // SY -->
-        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
-        // SY <--
 
         return listOf(
             getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
@@ -72,7 +68,6 @@ object SettingsLibraryScreen : SearchableSettings {
             getBehaviorGroup(libraryPreferences),
             // SY -->
             getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
-            getMigrationCategory(unsortedPreferences),
             // SY <--
         )
     }
@@ -315,23 +310,6 @@ object SettingsLibraryScreen : SearchableSettings {
                     onClick = {
                         navigator.push(SortTagScreen())
                     },
-                ),
-            ),
-        )
-    }
-
-    @Composable
-    fun getMigrationCategory(unsortedPreferences: UnsortedPreferences): Preference.PreferenceGroup {
-        val skipPreMigration by unsortedPreferences.skipPreMigration().collectAsState()
-        val migrationSources by unsortedPreferences.migrationSources().collectAsState()
-        return Preference.PreferenceGroup(
-            stringResource(SYMR.strings.migration),
-            enabled = skipPreMigration || migrationSources.isNotEmpty(),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = unsortedPreferences.skipPreMigration(),
-                    title = stringResource(SYMR.strings.skip_pre_migration),
-                    subtitle = stringResource(SYMR.strings.pref_skip_pre_migration_summary),
                 ),
             ),
         )
