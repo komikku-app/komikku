@@ -297,6 +297,10 @@ class UpdatesScreenModel(
         selected: Boolean,
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
+        // KMK -->
+        isGroup: Boolean = false,
+        isExpanded: Boolean = false,
+        // KMK <--
     ) {
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
@@ -309,6 +313,20 @@ class UpdatesScreenModel(
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+
+                // KMK -->
+                if (isGroup && !isExpanded) {
+                    val selectedItemDate = selectedItem.update.dateFetch.toLocalDate()
+                    state.items.forEachIndexed { index, it ->
+                        if (it.update.mangaId == selectedItem.update.mangaId &&
+                            it.update.dateFetch.toLocalDate() == selectedItemDate
+                        ) {
+                            set(index, it.copy(selected = selected))
+                            selectedChapterIds.addOrRemove(it.update.chapterId, selected)
+                        }
+                    }
+                }
+                // KMK <--
 
                 if (selected && userSelected && fromLongPress) {
                     if (firstSelection) {

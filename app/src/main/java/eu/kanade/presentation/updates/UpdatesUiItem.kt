@@ -91,7 +91,7 @@ internal fun LazyListScope.updatesUiItems(
     // SY -->
     preserveReadingPosition: Boolean,
     // SY <--
-    onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
+    onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit,
     onClickCover: (UpdatesItem) -> Unit,
     onClickUpdate: (UpdatesItem) -> Unit,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
@@ -124,10 +124,10 @@ internal fun LazyListScope.updatesUiItems(
             }
             is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
+                // KMK -->
                 val isLeader = item is UpdatesUiModel.Leader
                 val isExpanded = expandedState.contains(updatesItem.update.groupByDateAndManga())
 
-                // KMK -->
                 AnimatedVisibility(
                     visible = isLeader || isExpanded,
                     enter = fadeIn() + expandVertically(),
@@ -153,11 +153,29 @@ internal fun LazyListScope.updatesUiItems(
                                 )
                             },
                         onLongClick = {
-                            onUpdateSelected(updatesItem, !updatesItem.selected, true, true)
+                            onUpdateSelected(
+                                updatesItem,
+                                !updatesItem.selected,
+                                true,
+                                true,
+                                // KMK -->
+                                isLeader && item.isExpandable,
+                                isExpanded,
+                                // KMK <--
+                            )
                         },
                         onClick = {
                             when {
-                                selectionMode -> onUpdateSelected(updatesItem, !updatesItem.selected, true, false)
+                                selectionMode -> onUpdateSelected(
+                                    updatesItem,
+                                    !updatesItem.selected,
+                                    true,
+                                    false,
+                                    // KMK -->
+                                    isLeader && item.isExpandable,
+                                    isExpanded,
+                                    // KMK <--
+                                )
                                 else -> onClickUpdate(updatesItem)
                             }
                         },
