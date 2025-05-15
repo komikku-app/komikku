@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
@@ -63,6 +64,8 @@ fun LibraryUpdateErrorScreen(
     onMultiMigrateClicked: (() -> Unit),
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    onErrorsDelete: () -> Unit,
+    onErrorDelete: (Long) -> Unit,
     onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
     navigateUp: () -> Unit,
 ) {
@@ -112,6 +115,7 @@ fun LibraryUpdateErrorScreen(
                 onClickUnselectAll = { onSelectAll(false) },
                 onClickSelectAll = { onSelectAll(true) },
                 onClickInvertSelection = onInvertSelection,
+                onClickDeleteErrors = onErrorsDelete,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -173,6 +177,7 @@ fun LibraryUpdateErrorScreen(
                         onErrorSelected = onErrorSelected,
                         onClick = onClick,
                         onClickCover = onClickCover,
+                        onDelete = onErrorDelete,
                     )
                 }
             }
@@ -303,6 +308,7 @@ private fun LibraryUpdateErrorAppBar(
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
+    onClickDeleteErrors: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     AppBar(
@@ -326,6 +332,11 @@ private fun LibraryUpdateErrorAppBar(
         actionModeActions = {
             AppBarActions(
                 persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_delete),
+                        icon = Icons.Outlined.DeleteOutline,
+                        onClick = onClickDeleteErrors,
+                    ),
                     AppBar.Action(
                         title = stringResource(MR.strings.action_select_all),
                         icon = Icons.Outlined.SelectAll,

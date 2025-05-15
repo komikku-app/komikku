@@ -655,7 +655,7 @@ class LibraryUpdateJob(private val context: Context, private val workerParams: W
 
     // KMK -->
     private suspend fun clearErrorFromDB(mangaId: Long) {
-        deleteLibraryUpdateErrors.deleteMangaError(mangaId = mangaId)
+        deleteLibraryUpdateErrors.deleteMangaError(mangaIds = listOf(mangaId))
     }
 
     private suspend fun writeErrorToDB(error: Pair<Manga, String?>) {

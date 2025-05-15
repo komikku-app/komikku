@@ -5,9 +5,12 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.presentation.libraryUpdateError.components.LibraryUpdateErrorUiModel
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
 import tachiyomi.domain.libraryUpdateError.interactor.GetLibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateErrorMessage.interactor.GetLibraryUpdateErrorMessages
@@ -18,6 +21,7 @@ import uy.kohesive.injekt.api.get
 class LibraryUpdateErrorScreenModel(
     private val getLibraryUpdateErrorWithRelations: GetLibraryUpdateErrorWithRelations = Injekt.get(),
     private val getLibraryUpdateErrorMessages: GetLibraryUpdateErrorMessages = Injekt.get(),
+    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get(),
 ) : StateScreenModel<LibraryUpdateErrorScreenState>(LibraryUpdateErrorScreenState()) {
 
     // First and last selected index in list
@@ -138,6 +142,26 @@ class LibraryUpdateErrorScreenModel(
         }
         selectedPositions[0] = -1
         selectedPositions[1] = -1
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun deleteSelected() {
+        launchIO {
+            deleteLibraryUpdateErrors.delete(selectedErrorIds.toList())
+            withUIContext {
+                selectedErrorIds.clear()
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun delete(errorId: Long) {
+        launchIO {
+            deleteLibraryUpdateErrors.delete(listOf(errorId))
+            withUIContext {
+                selectedErrorIds.remove(errorId)
+            }
+        }
     }
 }
 

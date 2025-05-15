@@ -6,11 +6,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
+import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.ListGroupHeader
@@ -34,6 +42,7 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
     onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
+    onDelete: (Long) -> Unit,
 ) {
     uiModels.forEach { uiModel ->
         when (uiModel) {
@@ -80,6 +89,7 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                             )
                         },
                         onClickCover = { onClickCover(libraryUpdateErrorItem) }.takeIf { !selectionMode },
+                        onSwipe = { onDelete(libraryUpdateErrorItem.error.errorId) },
                     )
                 }
             }
@@ -95,55 +105,93 @@ private fun LibraryUpdateErrorUiItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onClickCover: (() -> Unit)?,
+    onSwipe: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
 
-    Row(
-        modifier = modifier
-            .selectedBackground(selected)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = {
-                    onLongClick()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-            )
-            .padding(horizontal = MaterialTheme.padding.medium),
-        verticalAlignment = Alignment.Top,
+    val swipeAction = swipeAction(
+        icon = Icons.Outlined.Delete,
+        background = MaterialTheme.colorScheme.primaryContainer,
+        onSwipe = onSwipe,
+    )
+
+    SwipeableActionsBox(
+        modifier = Modifier.clipToBounds(),
+        startActions = listOfNotNull(swipeAction),
+        endActions = listOfNotNull(swipeAction),
+        swipeThreshold = swipeActionThreshold,
+        backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
-        MangaCover.Square(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .height(48.dp),
-            data = error.mangaCover,
-            onClick = onClickCover,
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(horizontal = MaterialTheme.padding.medium, vertical = 5.dp)
-                .weight(1f),
+        Row(
+            modifier = modifier
+                .selectedBackground(selected)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = {
+                        onLongClick()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
+                )
+                .padding(horizontal = MaterialTheme.padding.medium),
+            verticalAlignment = Alignment.Top,
         ) {
-            Text(
-                text = error.mangaTitle,
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Visible,
+            MangaCover.Square(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .height(48.dp),
+                data = error.mangaCover,
+                onClick = onClickCover,
             )
 
-            Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.padding.medium, vertical = 5.dp)
+                    .weight(1f),
+            ) {
                 Text(
-                    text = Injekt.get<SourceManager>().getOrStub(error.mangaSource).name,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = error.mangaTitle,
+                    style = MaterialTheme.typography.bodyMedium,
                     overflow = TextOverflow.Visible,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .secondaryItemAlpha()
-                        .weight(weight = 1f, fill = false),
                 )
+
+                Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = Injekt.get<SourceManager>().getOrStub(error.mangaSource).name,
+                        style = MaterialTheme.typography.bodySmall,
+                        overflow = TextOverflow.Visible,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .secondaryItemAlpha()
+                            .weight(weight = 1f, fill = false),
+                    )
+                }
             }
         }
     }
 }
+
+private fun swipeAction(
+    onSwipe: () -> Unit,
+    icon: ImageVector,
+    background: Color,
+    isUndo: Boolean = false,
+): me.saket.swipe.SwipeAction {
+    return me.saket.swipe.SwipeAction(
+        icon = {
+            Icon(
+                modifier = Modifier.padding(16.dp),
+                imageVector = icon,
+                tint = contentColorFor(background),
+                contentDescription = null,
+            )
+        },
+        background = background,
+        onSwipe = onSwipe,
+        isUndo = isUndo,
+    )
+}
+
+private val swipeActionThreshold = 56.dp
 
 sealed class LibraryUpdateErrorUiModel {
 
