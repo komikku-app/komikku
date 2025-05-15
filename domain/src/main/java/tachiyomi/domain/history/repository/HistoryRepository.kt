@@ -25,7 +25,5 @@ interface HistoryRepository {
 
     // SY -->
     suspend fun upsertHistory(historyUpdates: List<HistoryUpdate>)
-
-    suspend fun getByMangaId(mangaId: Long): List<History>
     // SY <--
 }

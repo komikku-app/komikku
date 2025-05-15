@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.log.xLogD
-import tachiyomi.domain.UnsortedPreferences
+import exh.source.ExhPreferences
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
@@ -31,7 +31,7 @@ import java.util.Locale
  * LoginController
  */
 class EhLoginActivity : BaseActivity() {
-    private val preferenceManager: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -106,7 +106,7 @@ class EhLoginActivity : BaseActivity() {
         } else if (parsedUrl.host.equals("exhentai.org", ignoreCase = true)) {
             // At ExHentai, check that everything worked out...
             if (applyExHentaiCookies(url, customIgneous)) {
-                preferenceManager.enableExhentai().set(true)
+                exhPreferences.enableExhentai().set(true)
                 setResult(RESULT_OK)
                 finish()
             }
@@ -155,9 +155,9 @@ class EhLoginActivity : BaseActivity() {
             if (memberId == null || passHash == null || igneous == null) return false
 
             // Update prefs
-            preferenceManager.memberIdVal().set(memberId!!)
-            preferenceManager.passHashVal().set(passHash!!)
-            preferenceManager.igneousVal().set(igneous!!)
+            exhPreferences.memberIdVal().set(memberId!!)
+            exhPreferences.passHashVal().set(passHash!!)
+            exhPreferences.igneousVal().set(igneous!!)
 
             return true
         }

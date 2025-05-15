@@ -16,14 +16,16 @@ class MangaDexLoginActivity : BaseOAuthLoginActivity() {
         val code = uri.getQueryParameter("code")
         if (code != null) {
             lifecycleScope.launchIO {
-                Injekt.get<SourceManager>().isInitialized.first { it }
-                MdUtil.getEnabledMangaDex(Injekt.get())?.login(code)
+                val sourceManager = Injekt.get<SourceManager>()
+                sourceManager.isInitialized.first { it }
+                MdUtil.getEnabledMangaDex(sourceManager = sourceManager)?.login(code)
                 returnToSettings()
             }
         } else {
             lifecycleScope.launchIO {
-                Injekt.get<SourceManager>().isInitialized.first { it }
-                MdUtil.getEnabledMangaDex(Injekt.get())?.logout()
+                val sourceManager = Injekt.get<SourceManager>()
+                sourceManager.isInitialized.first { it }
+                MdUtil.getEnabledMangaDex(sourceManager = sourceManager)?.logout()
                 returnToSettings()
             }
         }
