@@ -1,7 +1,8 @@
 CREATE TABLE libraryUpdateError (
     _id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     manga_id INTEGER NOT NULL UNIQUE,
-    message_id INTEGER NOT NULL
+    message_id INTEGER NOT NULL,
+    last_update INTEGER NOT NULL DEFAULT 0
 );
 
 getAllErrors:
@@ -9,15 +10,16 @@ SELECT *
 FROM libraryUpdateError;
 
 insert:
-INSERT INTO libraryUpdateError(manga_id, message_id) VALUES (:mangaId, :messageId);
+INSERT INTO libraryUpdateError(manga_id, message_id, last_update) VALUES (:mangaId, :messageId, strftime('%s', 'now'));
 
 upsert:
-INSERT INTO libraryUpdateError(manga_id, message_id)
-VALUES (:mangaId, :messageId)
+INSERT INTO libraryUpdateError(manga_id, message_id, last_update)
+VALUES (:mangaId, :messageId, strftime('%s', 'now'))
 ON CONFLICT(manga_id)
 DO UPDATE
 SET
-    message_id = :messageId
+    message_id = :messageId,
+    last_update = strftime('%s', 'now')
 WHERE manga_id = :mangaId;
 
 deleteAllErrors:

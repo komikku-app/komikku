@@ -47,6 +47,7 @@ class LibraryUpdateErrorScreenModel(
                 selected = error.errorId in selectedErrorIds,
             )
         }
+            // The list should already be sorted by last_update
             .sortedBy { it.error.messageId }
     }
 
