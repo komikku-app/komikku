@@ -292,16 +292,26 @@ class UpdatesScreenModel(
         setDialog(Dialog.DeleteConfirmation(updatesItem))
     }
 
+    // KMK -->
+    /** Bundles all of the boolean flags for update‐selection into one type */
+    data class UpdateSelectionOptions(
+        val selected: Boolean,
+        val userSelected: Boolean = false,
+        val fromLongPress: Boolean = false,
+        val isGroup: Boolean = false,
+        val isExpanded: Boolean = false,
+    )
+    // KMK <--
+
     fun toggleSelection(
         item: UpdatesItem,
-        selected: Boolean,
-        userSelected: Boolean = false,
-        fromLongPress: Boolean = false,
         // KMK -->
-        isGroup: Boolean = false,
-        isExpanded: Boolean = false,
+        selectionOptions: UpdateSelectionOptions,
         // KMK <--
     ) {
+        // KMK -->
+        val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
