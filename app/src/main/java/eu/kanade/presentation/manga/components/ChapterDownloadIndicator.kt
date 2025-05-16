@@ -268,7 +268,7 @@ private fun Modifier.commonClickable(
     ),
 )
 
-private val IndicatorSize = 26.dp
+internal val IndicatorSize = 26.dp
 private val IndicatorPadding = 2.dp
 
 // To match composable parameter name when used later

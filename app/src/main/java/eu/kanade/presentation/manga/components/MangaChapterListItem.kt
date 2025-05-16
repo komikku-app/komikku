@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
@@ -200,7 +201,7 @@ fun MangaChapterListItem(
     }
 }
 
-private fun getSwipeAction(
+internal fun getSwipeAction(
     action: LibraryPreferences.ChapterSwipeAction,
     read: Boolean,
     bookmark: Boolean,
@@ -243,7 +244,9 @@ private fun swipeAction(
     return me.saket.swipe.SwipeAction(
         icon = {
             Icon(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .size(IndicatorSize),
                 imageVector = icon,
                 tint = contentColorFor(background),
                 contentDescription = null,
@@ -255,4 +258,4 @@ private fun swipeAction(
     )
 }
 
-private val swipeActionThreshold = 56.dp
+internal val swipeActionThreshold = 56.dp

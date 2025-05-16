@@ -432,6 +432,52 @@ class UpdatesScreenModel(
             )
         }
     }
+
+    val chapterSwipeStartAction by libraryPreferences.swipeToEndAction().asState(screenModelScope)
+    val chapterSwipeEndAction by libraryPreferences.swipeToStartAction().asState(screenModelScope)
+
+    /**
+     * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
+     */
+    fun updateSwipe(updateItem: UpdatesItem, swipeAction: LibraryPreferences.ChapterSwipeAction) {
+        screenModelScope.launch {
+            executeUpdateSwipeAction(updateItem, swipeAction)
+        }
+    }
+
+    /**
+     * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
+     */
+    private fun executeUpdateSwipeAction(
+        updateItem: UpdatesItem,
+        swipeAction: LibraryPreferences.ChapterSwipeAction,
+    ) {
+        val update = updateItem.update
+        when (swipeAction) {
+            LibraryPreferences.ChapterSwipeAction.ToggleRead -> {
+                markUpdatesRead(listOf(updateItem), !update.read)
+            }
+            LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> {
+                bookmarkUpdates(listOf(updateItem), !update.bookmark)
+            }
+            LibraryPreferences.ChapterSwipeAction.Download -> {
+                val downloadAction = when (updateItem.downloadStateProvider()) {
+                    Download.State.ERROR,
+                    Download.State.NOT_DOWNLOADED,
+                    -> ChapterDownloadAction.START_NOW
+                    Download.State.QUEUE,
+                    Download.State.DOWNLOADING,
+                    -> ChapterDownloadAction.CANCEL
+                    Download.State.DOWNLOADED -> ChapterDownloadAction.DELETE
+                }
+                downloadChapters(
+                    items = listOf(updateItem),
+                    action = downloadAction,
+                )
+            }
+            LibraryPreferences.ChapterSwipeAction.Disabled -> throw IllegalStateException()
+        }
+    }
     // KMK <--
 
     @Immutable
