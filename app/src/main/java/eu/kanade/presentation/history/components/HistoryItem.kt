@@ -27,10 +27,12 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.MangaCoverHide
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.util.lang.toTimestampString
+import exh.debug.DebugToggles
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
@@ -63,37 +65,46 @@ fun HistoryItem(
         val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
         val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
         val onBgColor = mangaCover.dominantCoverColors?.second
-        if (usePanoramaCover && coverIsWide) {
-            MangaCover.Panorama(
+        if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+            MangaCoverHide.Book(
                 modifier = Modifier.fillMaxHeight(),
-                data = mangaCover,
-                onClick = onClickCover,
-                // KMK -->
                 bgColor = bgColor,
                 tint = onBgColor,
                 size = MangaCover.Size.Medium,
-                onCoverLoaded = { _, result ->
-                    val image = result.result.image
-                    coverRatio.floatValue = image.height.toFloat() / image.width
-                },
-                // KMK <--
             )
         } else {
-            // KMK <--
-            MangaCover.Book(
-                modifier = Modifier.fillMaxHeight(),
-                data = mangaCover,
-                onClick = onClickCover,
-                // KMK -->
-                bgColor = bgColor,
-                tint = onBgColor,
-                size = MangaCover.Size.Medium,
-                onCoverLoaded = { _, result ->
-                    val image = result.result.image
-                    coverRatio.floatValue = image.height.toFloat() / image.width
-                },
+            if (usePanoramaCover && coverIsWide) {
+                MangaCover.Panorama(
+                    modifier = Modifier.fillMaxHeight(),
+                    data = mangaCover,
+                    onClick = onClickCover,
+                    // KMK -->
+                    bgColor = bgColor,
+                    tint = onBgColor,
+                    size = MangaCover.Size.Medium,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                    // KMK <--
+                )
+            } else {
                 // KMK <--
-            )
+                MangaCover.Book(
+                    modifier = Modifier.fillMaxHeight(),
+                    data = mangaCover,
+                    onClick = onClickCover,
+                    // KMK -->
+                    bgColor = bgColor,
+                    tint = onBgColor,
+                    size = MangaCover.Size.Medium,
+                    onCoverLoaded = { _, result ->
+                        val image = result.result.image
+                        coverRatio.floatValue = image.height.toFloat() / image.width
+                    },
+                    // KMK <--
+                )
+            }
         }
         Column(
             modifier = Modifier

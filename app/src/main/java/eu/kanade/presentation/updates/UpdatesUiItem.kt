@@ -49,6 +49,7 @@ import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.MangaCoverHide
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.manga.components.getSwipeAction
 import eu.kanade.presentation.manga.components.swipeActionThreshold
@@ -59,6 +60,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.UpdateSelectionOptions
 import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
+import exh.debug.DebugToggles
 import me.saket.swipe.SwipeableActionsBox
 import mihon.feature.upcoming.DateHeading
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -285,6 +287,7 @@ private fun UpdatesUiItem(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                 )
+                .padding(top = if (isLeader) MaterialTheme.padding.small else 0.dp)
                 .padding(
                     // KMK -->
                     vertical = if (isLeader) MaterialTheme.padding.extraSmall else 0.dp,
@@ -299,42 +302,50 @@ private fun UpdatesUiItem(
             val bgColor = mangaCover.dominantCoverColors?.first?.let { Color(it) }
             val onBgColor = mangaCover.dominantCoverColors?.second
             if (isLeader) {
-                if (usePanoramaCover && coverIsWide) {
-                    MangaCover.Panorama(
+                if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
+                    MangaCoverHide.Book(
                         modifier = Modifier
-                            .padding(top = MaterialTheme.padding.small)
-                            .width(UpdateItemPanoramaWidth),
-                        data = mangaCover,
-                        onClick = onClickCover,
-                        // KMK -->
-                        bgColor = bgColor,
+                            .width(UpdateItemWidth),
+                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { selected }),
                         tint = onBgColor,
                         size = MangaCover.Size.Medium,
-                        onCoverLoaded = { _, result ->
-                            val image = result.result.image
-                            coverRatio.floatValue = image.height.toFloat() / image.width
-                        },
-                        // KMK <--
                     )
                 } else {
-                    // KMK <--
-                    MangaCover.Book(
-                        modifier = Modifier
+                    if (usePanoramaCover && coverIsWide) {
+                        MangaCover.Panorama(
+                            modifier = Modifier
+                                .width(UpdateItemPanoramaWidth),
+                            data = mangaCover,
+                            onClick = onClickCover,
                             // KMK -->
-                            .padding(top = MaterialTheme.padding.small)
-                            .width(UpdateItemWidth),
+                            bgColor = bgColor,
+                            tint = onBgColor,
+                            size = MangaCover.Size.Medium,
+                            onCoverLoaded = { _, result ->
+                                val image = result.result.image
+                                coverRatio.floatValue = image.height.toFloat() / image.width
+                            },
+                            // KMK <--
+                        )
+                    } else {
                         // KMK <--
-                        data = mangaCover,
-                        onClick = onClickCover,
-                        // KMK -->
-                        bgColor = bgColor,
-                        tint = onBgColor,
-                        size = MangaCover.Size.Medium,
-                        onCoverLoaded = { _, result ->
-                            val image = result.result.image
-                            coverRatio.floatValue = image.height.toFloat() / image.width
-                        },
-                    )
+                        MangaCover.Book(
+                            modifier = Modifier
+                                // KMK -->
+                                .width(UpdateItemWidth),
+                            // KMK <--
+                            data = mangaCover,
+                            onClick = onClickCover,
+                            // KMK -->
+                            bgColor = bgColor,
+                            tint = onBgColor,
+                            size = MangaCover.Size.Medium,
+                            onCoverLoaded = { _, result ->
+                                val image = result.result.image
+                                coverRatio.floatValue = image.height.toFloat() / image.width
+                            },
+                        )
+                    }
                 }
             } else {
                 Box(
@@ -457,6 +468,6 @@ fun CollapseButton(
 
 private val IndicatorSize = MaterialTheme.padding.large
 
-private val UpdateItemPanoramaWidth = 126.dp // Book cover
-private val UpdateItemWidth = 56.dp
+private val UpdateItemPanoramaWidth = 108.dp // Book cover
+private val UpdateItemWidth = 48.dp
 // KMK <--
