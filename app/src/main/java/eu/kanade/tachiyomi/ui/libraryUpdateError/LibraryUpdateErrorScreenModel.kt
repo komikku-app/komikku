@@ -32,7 +32,7 @@ class LibraryUpdateErrorScreenModel(
                     mutableState.update {
                         it.copy(
                             isLoading = false,
-                            items = toLibraryUpdateErrorItems(errors),
+                            items = errors.toLibraryUpdateErrorItems(),
                             messages = errorMessages,
                         )
                     }
@@ -40,13 +40,15 @@ class LibraryUpdateErrorScreenModel(
         }
     }
 
-    private fun toLibraryUpdateErrorItems(errors: List<LibraryUpdateErrorWithRelations>): List<LibraryUpdateErrorItem> {
-        return errors.map { error ->
+    private fun List<LibraryUpdateErrorWithRelations>.toLibraryUpdateErrorItems(): List<LibraryUpdateErrorItem> {
+        return map { error ->
             LibraryUpdateErrorItem(
                 error = error,
                 selected = error.errorId in selectedErrorIds,
             )
         }
+            // Sort by messageId to group errors by type, preserving last_update order within groups (from DB)
+            .sortedBy { it.error.messageId }
     }
 
     fun toggleSelection(

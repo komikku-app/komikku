@@ -1,3 +1,8 @@
+ALTER TABLE libraryUpdateError
+ADD COLUMN last_update INTEGER NOT NULL DEFAULT 0;
+
+DROP VIEW IF EXISTS libraryUpdateErrorView;
+
 CREATE VIEW libraryUpdateErrorView AS
 SELECT
     mangas._id AS mangaId,
@@ -13,7 +18,3 @@ FROM mangas JOIN libraryUpdateError
 ON mangas._id = libraryUpdateError.manga_id
 WHERE favorite = 1
 ORDER BY lastUpdate DESC;
-
-errors:
-SELECT *
-FROM libraryUpdateErrorView;
