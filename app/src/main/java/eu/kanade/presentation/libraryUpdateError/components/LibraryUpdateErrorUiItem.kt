@@ -8,21 +8,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.manga.components.swipeAction
+import eu.kanade.presentation.manga.components.swipeActionThreshold
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
 import me.saket.swipe.SwipeableActionsBox
@@ -109,21 +108,24 @@ private fun LibraryUpdateErrorUiItem(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    val swipeAction = swipeAction(
-        icon = Icons.Outlined.Delete,
-        background = MaterialTheme.colorScheme.primaryContainer,
-        onSwipe = onSwipe,
-    )
+    val swipeBackground = MaterialTheme.colorScheme.primaryContainer
+    val swipeAction = remember {
+        swipeAction(
+            icon = Icons.Outlined.Delete,
+            background = swipeBackground,
+            onSwipe = onSwipe,
+        )
+    }
 
     SwipeableActionsBox(
-        modifier = Modifier.clipToBounds(),
+        modifier = modifier.clipToBounds(),
         startActions = listOfNotNull(swipeAction),
         endActions = listOfNotNull(swipeAction),
         swipeThreshold = swipeActionThreshold,
         backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .selectedBackground(selected)
                 .combinedClickable(
                     onClick = onClick,
@@ -169,29 +171,6 @@ private fun LibraryUpdateErrorUiItem(
         }
     }
 }
-
-private fun swipeAction(
-    onSwipe: () -> Unit,
-    icon: ImageVector,
-    background: Color,
-    isUndo: Boolean = false,
-): me.saket.swipe.SwipeAction {
-    return me.saket.swipe.SwipeAction(
-        icon = {
-            Icon(
-                modifier = Modifier.padding(16.dp),
-                imageVector = icon,
-                tint = contentColorFor(background),
-                contentDescription = null,
-            )
-        },
-        background = background,
-        onSwipe = onSwipe,
-        isUndo = isUndo,
-    )
-}
-
-private val swipeActionThreshold = 56.dp
 
 sealed class LibraryUpdateErrorUiModel {
 
