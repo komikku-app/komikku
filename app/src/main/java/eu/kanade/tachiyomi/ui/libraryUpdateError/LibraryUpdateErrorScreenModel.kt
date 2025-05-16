@@ -184,7 +184,7 @@ data class LibraryUpdateErrorScreenState(
         val errorMap = items.groupBy { it.error.messageId }
         errorMap.forEach { (messageId, errors) ->
             val message = messages.find { it.id == messageId }
-            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message))
+            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message, errors.size))
             uiModels.addAll(errors.map { LibraryUpdateErrorUiModel.Item(it) })
         }
         return uiModels

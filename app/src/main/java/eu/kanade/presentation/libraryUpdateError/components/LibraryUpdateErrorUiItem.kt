@@ -51,6 +51,7 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                         modifier = Modifier.animateItemFastScroll(),
                         text = uiModel.errorMessage,
                         tonalElevation = 1.dp,
+                        count = uiModel.count,
                     )
                 }
             }
@@ -175,7 +176,7 @@ private fun LibraryUpdateErrorUiItem(
 
 sealed class LibraryUpdateErrorUiModel {
 
-    data class Header(val errorMessage: String) : LibraryUpdateErrorUiModel()
+    data class Header(val errorMessage: String, val count: Int) : LibraryUpdateErrorUiModel()
 
     data class Item(val item: LibraryUpdateErrorItem) : LibraryUpdateErrorUiModel()
 }
