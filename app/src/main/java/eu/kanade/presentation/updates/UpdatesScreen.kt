@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
@@ -60,6 +61,11 @@ fun UpdateScreen(
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
+    // KMK -->
+    updateSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
+    updateSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
+    onUpdateSwipe: (UpdatesItem, LibraryPreferences.ChapterSwipeAction) -> Unit,
+    // KMK <--
     onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdatesScreenModel.UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
     // KMK -->
@@ -143,6 +149,11 @@ fun UpdateScreen(
                             onClickCover = onClickCover,
                             onClickUpdate = onOpenChapter,
                             onDownloadChapter = onDownloadChapter,
+                            // KMK -->
+                            updateSwipeStartAction = updateSwipeStartAction,
+                            updateSwipeEndAction = updateSwipeEndAction,
+                            onUpdateSwipe = onUpdateSwipe,
+                            // KMK <--
                         )
                     }
                 }

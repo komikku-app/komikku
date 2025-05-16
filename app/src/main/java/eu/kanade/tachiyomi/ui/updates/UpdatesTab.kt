@@ -88,6 +88,11 @@ data object UpdatesTab : Tab {
             onMultiBookmarkClicked = screenModel::bookmarkUpdates,
             onMultiMarkAsReadClicked = screenModel::markUpdatesRead,
             onMultiDeleteClicked = screenModel::showConfirmDeleteChapters,
+            // KMK -->
+            updateSwipeStartAction = screenModel.chapterSwipeStartAction,
+            updateSwipeEndAction = screenModel.chapterSwipeEndAction,
+            onUpdateSwipe = screenModel::updateSwipe,
+            // KMK <--
             onUpdateSelected = screenModel::toggleSelection,
             onOpenChapter = {
                 val intent = ReaderActivity.newIntent(context, it.update.mangaId, it.update.chapterId)
