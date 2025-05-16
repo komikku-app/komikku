@@ -69,27 +69,36 @@ fun MangaChapterListItem(
     onChapterSwipe: (LibraryPreferences.ChapterSwipeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val start = getSwipeAction(
-        action = chapterSwipeStartAction,
-        read = read,
-        bookmark = bookmark,
-        downloadState = downloadStateProvider(),
-        background = MaterialTheme.colorScheme.primaryContainer,
-        onSwipe = { onChapterSwipe(chapterSwipeStartAction) },
-    )
-    val end = getSwipeAction(
-        action = chapterSwipeEndAction,
-        read = read,
-        bookmark = bookmark,
-        downloadState = downloadStateProvider(),
-        background = MaterialTheme.colorScheme.primaryContainer,
-        onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
-    )
+    // KMK -->
+    val swipeBackground = MaterialTheme.colorScheme.primaryContainer
+    val swipeStart = remember(chapterSwipeStartAction, read, bookmark, downloadStateProvider()) {
+        // KMK <--
+        getSwipeAction(
+            action = chapterSwipeStartAction,
+            read = read,
+            bookmark = bookmark,
+            downloadState = downloadStateProvider(),
+            background = swipeBackground,
+            onSwipe = { onChapterSwipe(chapterSwipeStartAction) },
+        )
+    }
+    // KMK -->
+    val swipeEnd = remember(chapterSwipeEndAction, read, bookmark, downloadStateProvider()) {
+        // KMK <--
+        getSwipeAction(
+            action = chapterSwipeEndAction,
+            read = read,
+            bookmark = bookmark,
+            downloadState = downloadStateProvider(),
+            background = swipeBackground,
+            onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
+        )
+    }
 
     SwipeableActionsBox(
         modifier = Modifier.clipToBounds(),
-        startActions = listOfNotNull(start),
-        endActions = listOfNotNull(end),
+        startActions = listOfNotNull(swipeStart),
+        endActions = listOfNotNull(swipeEnd),
         swipeThreshold = swipeActionThreshold,
         backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {

@@ -252,27 +252,32 @@ private fun UpdatesUiItem(
     val textAlpha = if (update.read) DISABLED_ALPHA else 1f
 
     // KMK -->
-    val start = getSwipeAction(
-        action = updateSwipeStartAction,
-        read = update.read,
-        bookmark = update.bookmark,
-        downloadState = downloadStateProvider(),
-        background = MaterialTheme.colorScheme.primaryContainer,
-        onSwipe = { onUpdateSwipe(updateSwipeStartAction) },
-    )
-    val end = getSwipeAction(
-        action = updateSwipeEndAction,
-        read = update.read,
-        bookmark = update.bookmark,
-        downloadState = downloadStateProvider(),
-        background = MaterialTheme.colorScheme.primaryContainer,
-        onSwipe = { onUpdateSwipe(updateSwipeEndAction) },
-    )
+    val swipeBackground = MaterialTheme.colorScheme.primaryContainer
+    val swipeStart = remember(updateSwipeStartAction, update.read, update.bookmark, downloadStateProvider()) {
+        getSwipeAction(
+            action = updateSwipeStartAction,
+            read = update.read,
+            bookmark = update.bookmark,
+            downloadState = downloadStateProvider(),
+            background = swipeBackground,
+            onSwipe = { onUpdateSwipe(updateSwipeStartAction) },
+        )
+    }
+    val swipeEnd = remember(updateSwipeEndAction, update.read, update.bookmark, downloadStateProvider()) {
+        getSwipeAction(
+            action = updateSwipeEndAction,
+            read = update.read,
+            bookmark = update.bookmark,
+            downloadState = downloadStateProvider(),
+            background = swipeBackground,
+            onSwipe = { onUpdateSwipe(updateSwipeEndAction) },
+        )
+    }
 
     SwipeableActionsBox(
         modifier = modifier.clipToBounds(),
-        startActions = listOfNotNull(start),
-        endActions = listOfNotNull(end),
+        startActions = listOfNotNull(swipeStart),
+        endActions = listOfNotNull(swipeEnd),
         swipeThreshold = swipeActionThreshold,
         backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
