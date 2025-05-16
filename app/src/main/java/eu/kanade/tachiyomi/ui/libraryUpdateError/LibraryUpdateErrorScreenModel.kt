@@ -47,7 +47,7 @@ class LibraryUpdateErrorScreenModel(
                 selected = error.errorId in selectedErrorIds,
             )
         }
-            // The list should already be sorted by last_update
+            // Sort by messageId to group errors by type, preserving last_update order within groups (from DB)
             .sortedBy { it.error.messageId }
     }
 
