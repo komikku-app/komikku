@@ -26,14 +26,11 @@ import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
-import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.util.selectedBackground
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 internal fun LazyListScope.libraryUpdateErrorUiItems(
     uiModels: List<LibraryUpdateErrorUiModel>,
@@ -66,6 +63,8 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                     LibraryUpdateErrorUiItem(
                         modifier = Modifier.animateItemFastScroll(),
                         error = libraryUpdateErrorItem.error,
+                        mangaCover = libraryUpdateErrorItem.mangaCover,
+                        sourceName = libraryUpdateErrorItem.sourceName,
                         selected = libraryUpdateErrorItem.selected,
                         onClick = {
                             when {
@@ -100,6 +99,8 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
 private fun LibraryUpdateErrorUiItem(
     modifier: Modifier,
     error: LibraryUpdateErrorWithRelations,
+    mangaCover: tachiyomi.domain.manga.model.MangaCover,
+    sourceName: String,
     selected: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -141,7 +142,7 @@ private fun LibraryUpdateErrorUiItem(
                 modifier = Modifier
                     .padding(vertical = 6.dp)
                     .height(48.dp),
-                data = error.mangaCover,
+                data = mangaCover,
                 onClick = onClickCover,
             )
 
@@ -158,7 +159,7 @@ private fun LibraryUpdateErrorUiItem(
 
                 Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = Injekt.get<SourceManager>().getOrStub(error.mangaSource).name,
+                        text = sourceName,
                         style = MaterialTheme.typography.bodySmall,
                         overflow = TextOverflow.Visible,
                         maxLines = 1,

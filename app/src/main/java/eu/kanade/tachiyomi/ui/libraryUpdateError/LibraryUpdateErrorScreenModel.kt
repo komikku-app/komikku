@@ -15,6 +15,8 @@ import tachiyomi.domain.libraryUpdateError.interactor.GetLibraryUpdateErrorWithR
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateErrorMessage.interactor.GetLibraryUpdateErrorMessages
 import tachiyomi.domain.libraryUpdateErrorMessage.model.LibraryUpdateErrorMessage
+import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -22,6 +24,7 @@ class LibraryUpdateErrorScreenModel(
     private val getLibraryUpdateErrorWithRelations: GetLibraryUpdateErrorWithRelations = Injekt.get(),
     private val getLibraryUpdateErrorMessages: GetLibraryUpdateErrorMessages = Injekt.get(),
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<LibraryUpdateErrorScreenState>(LibraryUpdateErrorScreenState()) {
 
     // First and last selected index in list
@@ -48,6 +51,7 @@ class LibraryUpdateErrorScreenModel(
         return map { error ->
             LibraryUpdateErrorItem(
                 error = error,
+                sourceName = sourceManager.getOrStub(error.mangaSource).name,
                 selected = error.errorId in selectedErrorIds,
             )
         }
@@ -195,5 +199,14 @@ data class LibraryUpdateErrorScreenState(
 @Immutable
 data class LibraryUpdateErrorItem(
     val error: LibraryUpdateErrorWithRelations,
+    val sourceName: String,
     val selected: Boolean,
-)
+) {
+    val mangaCover = MangaCover(
+        mangaId = error.mangaId,
+        sourceId = error.mangaSource,
+        isMangaFavorite = error.favorite,
+        ogUrl = error.mangaThumbnail,
+        lastModified = error.coverLastModified,
+    )
+}
