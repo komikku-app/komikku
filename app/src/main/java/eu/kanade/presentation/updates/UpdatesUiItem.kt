@@ -270,7 +270,7 @@ private fun UpdatesUiItem(
     )
 
     SwipeableActionsBox(
-        modifier = Modifier.clipToBounds(),
+        modifier = modifier.clipToBounds(),
         startActions = listOfNotNull(start),
         endActions = listOfNotNull(end),
         swipeThreshold = swipeActionThreshold,
@@ -278,7 +278,7 @@ private fun UpdatesUiItem(
     ) {
         // KMK <--
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .selectedBackground(selected)
                 .combinedClickable(
                     onClick = onClick,
