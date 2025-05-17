@@ -1,30 +1,37 @@
 package eu.kanade.presentation.libraryUpdateError.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue.EndToStart
+import androidx.compose.material3.SwipeToDismissBoxValue.Settled
+import androidx.compose.material3.SwipeToDismissBoxValue.StartToEnd
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
-import eu.kanade.presentation.manga.components.swipeAction
-import eu.kanade.presentation.manga.components.swipeActionThreshold
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
-import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
@@ -110,24 +117,27 @@ private fun LibraryUpdateErrorUiItem(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    val swipeBackground = MaterialTheme.colorScheme.primaryContainer
-    val swipeAction = remember {
-        swipeAction(
-            icon = Icons.Outlined.Delete,
-            background = swipeBackground,
-            onSwipe = onSwipe,
-        )
-    }
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = {
+            when (it) {
+                StartToEnd -> onSwipe()
+                EndToStart -> onSwipe()
+                Settled -> return@rememberSwipeToDismissBoxState false
+            }
+            return@rememberSwipeToDismissBoxState true
+        },
+        // Set threshold to 25% of the width
+        positionalThreshold = { totalDistance -> totalDistance * 0.25f },
+    )
 
-    SwipeableActionsBox(
-        modifier = modifier.clipToBounds(),
-        startActions = listOfNotNull(swipeAction),
-        endActions = listOfNotNull(swipeAction),
-        swipeThreshold = swipeActionThreshold,
-        backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
+    SwipeToDismissBox(
+        state = dismissState,
+        modifier = modifier,
+        backgroundContent = { DismissBackground(dismissState) },
     ) {
         Row(
             modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
                 .selectedBackground(selected)
                 .combinedClickable(
                     onClick = onClick,
@@ -171,6 +181,44 @@ private fun LibraryUpdateErrorUiItem(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DismissBackground(dismissState: SwipeToDismissBoxState) {
+    val direction = dismissState.dismissDirection
+    val targetState = dismissState.targetValue
+
+    val backgroundColor by animateColorAsState(
+        when (direction) {
+            Settled ->
+                MaterialTheme.colorScheme.surface
+            StartToEnd ->
+                MaterialTheme.colorScheme.errorContainer
+                    .copy(alpha = if (targetState == Settled) 0.45f else 1f)
+            EndToStart ->
+                MaterialTheme.colorScheme.errorContainer
+                    .copy(alpha = if (targetState == Settled) 0.45f else 1f)
+        },
+    )
+    val alignment = when (direction) {
+        StartToEnd -> Alignment.CenterStart
+        EndToStart -> Alignment.CenterEnd
+        else -> Alignment.Center
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+            .padding(horizontal = 20.dp),
+        contentAlignment = alignment,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Delete,
+            contentDescription = "Delete",
+            tint = MaterialTheme.colorScheme.onErrorContainer,
+        )
     }
 }
 
