@@ -1,5 +1,8 @@
 package eu.kanade.presentation.manga.components
 
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FilterList
@@ -23,6 +26,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -39,8 +43,14 @@ import uy.kohesive.injekt.api.get
 @Composable
 fun MangaToolbar(
     title: String,
+    // KMK -->
+    incognitoMode: Boolean?,
+    // KMK <--
     hasFilters: Boolean,
     navigateUp: () -> Unit,
+    // KMK -->
+    onToggleMangaIncognito: (() -> Unit)?,
+    // KMK <--
     onClickFilter: () -> Unit,
     onClickShare: (() -> Unit)?,
     onClickDownload: ((DownloadAction) -> Unit)?,
@@ -145,6 +155,22 @@ fun MangaToolbar(
                             ),
                         )
                     }
+                    // KMK -->
+                    if (onToggleMangaIncognito != null) {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.pref_incognito_mode),
+                                icon = null,
+                                iconPainter = rememberAnimatedVectorPainter(
+                                    AnimatedImageVector.animatedVectorResource(R.drawable.anim_incognito),
+                                    incognitoMode == true,
+                                ),
+                                iconTint = if (incognitoMode == true) MaterialTheme.colorScheme.primary else null,
+                                onClick = onToggleMangaIncognito,
+                            ),
+                        )
+                    }
+                    // KMK <--
                     add(
                         AppBar.Action(
                             title = stringResource(MR.strings.action_filter),
