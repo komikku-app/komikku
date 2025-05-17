@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">搜尋來源</string>
+  <string name="action_toggle_nsfw_only">切換僅 NSFW</string>
+  <string name="action_bulk_select">批量選擇模式</string>
+  <string name="action_faq_and_guides">常見問題和指南</string>
+  <string name="download_cache_renew_interval" comment="download_cache_renew_interval Extension repos Downloads section">下載快取更新間隔</string>
+  <string name="download_cache_renew_interval_manual">手動</string>
+  <string name="download_cache_renew_interval_1hour">每 1 小時</string>
+  <string name="download_cache_renew_interval_2hour">每 2 小時</string>
+  <string name="download_cache_renew_interval_6hour">每 6 小時</string>
+  <string name="download_cache_renew_interval_12hour">每 12 小時</string>
+  <string name="download_cache_renew_interval_24hour">每 24 小時</string>
+  <string name="download_cache_renew_interval_info">如果設置為「手動」，則需刷新每本漫畫或在「進階」選項中使用「清除下載索引」功能</string>
+  <string name="pref_clean_invalid_downloads" comment="pref_clean_invalid_downloads Advanced section">清理無效下載</string>
+  <string name="pref_clean_invalid_downloads_summary">查找並刪除所有未儲存在您的書櫃中的下載、文件和資料夾</string>
+  <string name="invalid_downloads_cleaned">已清理無效下載</string>
+  <string name="pref_private_installer_warning">避免使用 Private 安裝選項，因為它尚不穩定，會導致應用程式啟動和恢復速度非常緩慢</string>
+  <string name="whats_coming" comment="whats_coming About section">即將到來</string>
+  <string name="action_allow_duplicate_manga" comment="action_allow_duplicate_manga Manga info">允許</string>
+  <string name="action_skip_duplicate_manga">跳過</string>
+  <string name="action_allow_all_duplicate_manga">全部允許</string>
+  <string name="action_skip_all_duplicate_manga">全部跳過</string>
+  <string name="update_check_try_now" comment="update_check_try_now UpdateCheck">立即嘗試</string>
+  <string name="update_check_notification_preview_available" comment="update_check_notification_preview_available UpdateCheck Notifications">即將更新！</string>
+  <string name="changelogs" comment="changelogs About">更新紀錄</string>
+  <string name="related_mangas_more">更多類似這些...</string>
+  <string name="too_many_in_feed" comment="too_many_in_feed Feed Tab">您的訂閱來源過多，不能多於 20 個</string>
+  <string name="current_" comment="current_ Migration">當前：%1$s</string>
+  <string name="pref_theme_cover_based">基於封面的主題</string>
+  <string name="pref_theme_cover_based_style_tonalspot">音調點</string>
+  <string name="pref_theme_cover_based_style_neutral">中性</string>
+  <string name="pref_theme_cover_based_style_vibrant">繽紛</string>
+  <string name="pref_theme_cover_based_style_expressive">生動</string>
+  <string name="pref_theme_cover_based_style_rainbow">彩虹</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">水果沙拉</string>
+  <string name="pref_theme_cover_based_style_monochrome">單色</string>
+  <string name="pref_theme_cover_based_style_fidelity">精確</string>
+  <string name="pref_theme_cover_based_style_content">心滿意足</string>
+  <string name="action_search_for_source" comment="action_search_for_source Actions">搜尋來源</string>
+  <string name="action_library_search">搜尋書櫃</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">棉花糖</string>
+  <string name="theme_doom">末日</string>
+  <string name="theme_matrix">駭客</string>
+  <string name="theme_mocha">抹茶</string>
+  <string name="theme_sapphire">藍寶石</string>
+  <string name="pref_show_updating_progress_banner" comment="pref_show_updating_progress_banner Library section">顯示更新進度橫幅</string>
+  <string name="pref_show_restoring_progress_banner" comment="pref_show_restoring_progress_banner Sync section">顯示恢復進度橫幅</string>
+  <string name="pref_show_syncing_progress_banner">顯示同步進度橫幅</string>
+  <string name="saved_searches_feeds">儲存的搜尋 &amp; 訂閱</string>
+  <string name="onboarding_permission_external_storage" comment="onboarding_permission_external_storage Onboarding section">媒體檔案存取權限</string>
+  <string name="onboarding_permission_external_storage_description">允許在條目的編輯資訊中使用自訂封面</string>
+  <string name="onboarding_permission_writing_external_storage_description">允許保存封面 &amp; 在條目的編輯資訊中使用自訂封面</string>
+  <string name="permission_writing_external_storage_succeed">權限已授予，請再次執行</string>
+  <string name="action_move_up">上移</string>
+  <string name="action_move_down">下移</string>
+  <string name="preload_library_cover_color">預載入書櫃的封面顏色</string>
+  <string name="saved_searches_add_feed">儲存搜尋 (按住以新增至訂閱)</string>
+  <string name="saved_searches_delete">儲存搜尋 (按住以刪除訂閱)</string>
+  <string name="action_display_source_badge">來源圖示</string>
+  <string name="action_display_language_icon">使用語言圖示</string>
+  <string name="action_confirm_color">確認顏色</string>
+  <string name="pref_custom_color" comment="pref_custom_color Custom Color Picker">調色盤個性化工具</string>
+  <string name="theme_custom">自訂主題</string>
+  <string name="extensions_page_need_refresh" comment="extensions_page_need_refresh Extension section">刷新擴充套件頁面以更新列表</string>
+  <string name="extensions_page_more">更多擴充套件...</string>
+  <string name="pref_expand_related_mangas">展開建議</string>
+  <string name="pref_expand_related_mangas_summary">如果關閉，建議將不會自動加載 &amp; 展開顯示</string>
+  <string name="put_related_mangas_in_overflow">在選單顯示建議</string>
+  <string name="put_related_mangas_in_overflow_summary">將建議按鈕放在彈出選單而不是作品頁面</string>
+  <string name="pref_show_home_on_related_mangas">從網站建議返回首頁</string>
+  <string name="pref_show_home_on_related_mangas_summary">在瀏覽網站建議時顯示可返回首頁的圖示</string>
+  <string name="pref_source_related_mangas" comment="pref_source_related_mangas Browse settings">網站建議</string>
+  <string name="pref_source_related_mangas_summary">查看條目時顯示來源網站的建議</string>
+  <string name="related_mangas_website_suggestions">網站建議</string>
+  <string name="action_hide">隱藏</string>
+  <string name="action_sort_feed">排序訂閱</string>
+  <string name="sort_feed_confirmation">您想要將訂閱來源按字母順序排列嗎？</string>
+  <string name="pref_custom_theme_style" comment="pref_custom_theme_style Preferences Appearance section">自訂主題風格</string>
+  <string name="pref_theme_cover_based_style">基於封面的主題風格</string>
+  <string name="custom_color_description">為自訂主題選擇子顏色</string>
+  <string name="custom_theme_palette_casual">休閒</string>
+  <string name="custom_theme_palette_sunset">日落</string>
+  <string name="custom_theme_palette_outrun">復古未來</string>
+  <string name="custom_theme_palette_raspberry">覆盆子</string>
+  <string name="custom_theme_palette_pop">流行</string>
+  <string name="custom_theme_palette_cathode">陰極</string>
+  <string name="custom_theme_palette_bubblegum">泡泡糖</string>
+  <string name="custom_theme_palette_night_at_the_beach">海灘之夜</string>
+  <string name="custom_theme_palette_spectral">光譜</string>
+  <string name="custom_theme_palette_patagonia">巴塔哥尼亞</string>
+  <string name="custom_theme_palette_springfield">春田</string>
+  <string name="custom_theme_palette_lcd">液晶顯示器</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">顯示隱藏的分類</string>
+  <string name="action_display_comfortable_grid_panorama">全景鬆散格狀</string>
+  <string name="action_panorama_cover">全景封面</string>
+  <string name="pref_panorama_cover">全景封面</string>
+  <string name="pref_panorama_cover_summary">如果是寬幅圖片，則以橫向模式顯示封面</string>
+  <string name="pref_panorama_cover_flow">全景封面流設置</string>
+  <string name="pref_panorama_cover_flow_summary">在全部搜尋 &amp; 建議中顯示全景封面</string>
+  <string name="pref_auto_sync_progress_from_trackers" comment="pref_auto_sync_progress_from_trackers Tracking section">自動從歷程平臺同步進度</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">進度同步到第 %d 章</string>
+  <string name="option_label_library_update_errors" comment="option_label_library_update_errors Error Screen">書櫃更新失敗</string>
+  <string name="label_library_update_errors">書櫃更新失敗 (%d)</string>
+  <string name="info_empty_library_update_errors">你的書櫃沒有更新失敗</string>
+  <string name="action_scroll_to_top">移至頂部</string>
+  <string name="action_scroll_to_bottom">移至底部</string>
+  <string name="action_scroll_to_previous">移至上一類</string>
+  <string name="action_scroll_to_next">移至下一類</string>
+  <string name="migrating_all_entries">正在從來源遷移所有項目</string>
+  <string name="label_to_be_updated" comment="label_to_be_updated Misc">待更新</string>
+  <string name="pref_manga_info">漫畫資訊</string>
+  <string name="manual_download">手動下載</string>
+  <string name="auto_update_app">自動更新應用</string>
+  <string name="update_completed">更新完成</string>
+  <string name="open">開啟</string>
+  <string name="release_page">發佈頁面</string>
+  <string name="could_not_install_update">無法安裝更新</string>
+  <string name="action_copy_to_clipboard_first_page" comment="action_copy_to_clipboard_first_page Reader Reader Actions">將第一頁複製到剪貼簿</string>
+  <string name="action_copy_to_clipboard_second_page">將第二頁複製到剪貼簿</string>
+  <string name="action_copy_to_clipboard_combined_page">將雙頁複製到剪貼簿</string>
+  <string name="auto_update_app_disable_auto_download">不自動下載更新</string>
+  <string name="action_remove_merged">要從書櫃移除原始條目嗎？</string>
+  <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses、Tsumino</string>
+</resources>
