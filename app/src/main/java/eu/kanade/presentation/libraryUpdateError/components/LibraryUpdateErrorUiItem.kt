@@ -33,9 +33,11 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.util.selectedBackground
 
@@ -216,7 +218,7 @@ fun DismissBackground(dismissState: SwipeToDismissBoxState) {
     ) {
         Icon(
             imageVector = Icons.Outlined.Delete,
-            contentDescription = "Delete",
+            contentDescription = stringResource(MR.strings.action_delete),
             tint = MaterialTheme.colorScheme.onErrorContainer,
         )
     }

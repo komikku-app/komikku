@@ -32,7 +32,7 @@ fun ListGroupHeader(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         ) {
             // KMK <--
             Text(
