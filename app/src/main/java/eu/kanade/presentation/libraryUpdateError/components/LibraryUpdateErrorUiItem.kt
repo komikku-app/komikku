@@ -124,7 +124,7 @@ private fun LibraryUpdateErrorUiItem(
             when (it) {
                 StartToEnd -> onSwipe()
                 EndToStart -> onSwipe()
-                Settled -> return@rememberSwipeToDismissBoxState false
+                else -> {}
             }
             return@rememberSwipeToDismissBoxState true
         },
