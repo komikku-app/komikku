@@ -41,6 +41,8 @@ class LibraryUpdateErrorScreen : Screen() {
             },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
+            onErrorsDelete = screenModel::deleteSelected,
+            onErrorDelete = screenModel::delete,
             onErrorSelected = screenModel::toggleSelection,
             navigateUp = navigator::pop,
         )
