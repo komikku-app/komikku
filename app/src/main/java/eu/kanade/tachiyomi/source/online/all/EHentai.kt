@@ -1391,7 +1391,7 @@ class EHentai(
         private const val BLANK_PREVIEW_THUMB = "https://$THUMB_DOMAIN/g/$BLANK_THUMB"
 
         private val MATCH_YEAR_REGEX = "^\\d{4}\$".toRegex()
-        private val MATCH_SEEK_REGEX = "^\\d{2,4}-\\d{1,2}".toRegex()
+        private val MATCH_SEEK_REGEX = "^\\d{2,4}-\\d{1,2}(-\\d{1,2})?".toRegex()
         private val MATCH_JUMP_REGEX = "^\\d+(\$|d\$|w\$|m\$|y\$|-\$)".toRegex()
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
