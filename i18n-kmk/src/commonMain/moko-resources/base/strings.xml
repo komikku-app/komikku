@@ -14,6 +14,7 @@
     <string name="action_hide">Hide</string>
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
+    <string name="action_open_folder">Open folder</string>
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
