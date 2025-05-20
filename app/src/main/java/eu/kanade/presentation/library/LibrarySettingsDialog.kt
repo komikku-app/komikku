@@ -96,7 +96,9 @@ fun LibrarySettingsDialog(
             when (page) {
                 0 -> FilterPage(
                     screenModel = screenModel,
+                    // KMK -->
                     categories = categories,
+                    // KMK <--
                 )
                 1 -> SortPage(
                     category = category,

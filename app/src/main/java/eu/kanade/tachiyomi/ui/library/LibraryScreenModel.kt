@@ -203,7 +203,7 @@ class LibraryScreenModel(
             ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory) ->
                 library
                     // SY -->
-                    .applyGrouping(if (filterCategory) LibraryGroup.UNGROUPED else groupType)
+                    .applyGrouping(/* KMK --> */ if (filterCategory) LibraryGroup.UNGROUPED else /* KMK <-- */ groupType)
                     // SY <--
                     .applyFilters(
                         tracks,
@@ -344,7 +344,9 @@ class LibraryScreenModel(
     private suspend fun LibraryMap.applyFilters(
         trackMap: Map<Long, List<Track>>,
         trackingFilter: Map<Long, TriState>,
+        // KMK -->
         categoriesPerManga: Map<Long, Set<Long>>,
+        // KMK <--
     ): LibraryMap {
         val prefs = getLibraryItemPreferencesFlow().first()
         val downloadedOnly = prefs.globalFilterDownloaded

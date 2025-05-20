@@ -284,8 +284,10 @@ class LibraryPreferences(
             DEFAULT_CATEGORY_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY,
+            // KMK -->
             FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY,
             FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY,
+            // KMK <--
         )
     }
 }
