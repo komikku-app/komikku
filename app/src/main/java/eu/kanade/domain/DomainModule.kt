@@ -48,7 +48,7 @@ import tachiyomi.data.updates.UpdatesRepositoryImpl
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.category.interactor.GetCategoriesPerManga
+import tachiyomi.domain.category.interactor.GetCategoriesPerLibraryManga
 import tachiyomi.domain.category.interactor.HideCategory
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
@@ -117,7 +117,7 @@ class DomainModule : InjektModule {
         addFactory { DeleteCategory(get(), get(), get()) }
         // KMK -->
         addFactory { HideCategory(get()) }
-        addFactory { GetCategoriesPerManga(get(), get()) }
+        addFactory { GetCategoriesPerLibraryManga(get()) }
         // KMK <--
 
         addSingletonFactory<MangaRepository> { MangaRepositoryImpl(get()) }

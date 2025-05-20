@@ -89,7 +89,7 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.category.interactor.GetCategoriesPerManga
+import tachiyomi.domain.category.interactor.GetCategoriesPerLibraryManga
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -162,7 +162,7 @@ class LibraryScreenModel(
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
-    private val getCategoriesPerManga: GetCategoriesPerManga = Injekt.get(),
+    private val getCategoriesPerLibraryManga: GetCategoriesPerLibraryManga = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -195,12 +195,12 @@ class LibraryScreenModel(
                 // SY <--
                 // KMK -->
                 combine(
-                    getCategoriesPerManga.subscribe(),
+                    getCategoriesPerLibraryManga.subscribe(),
                     state.map { it.filterCategory }.distinctUntilChanged(),
                     ::Pair,
                 ),
                 // KMK <--
-            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categories, filterCategory) ->
+            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory) ->
                 library
                     // SY -->
                     .applyGrouping(if (filterCategory) LibraryGroup.UNGROUPED else groupType)
@@ -209,7 +209,7 @@ class LibraryScreenModel(
                         tracks,
                         trackingFilter,
                         // KMK -->
-                        categories,
+                        categoriesPerManga,
                         // KMK <--
                     )
                     .applySort(
@@ -344,7 +344,7 @@ class LibraryScreenModel(
     private suspend fun LibraryMap.applyFilters(
         trackMap: Map<Long, List<Track>>,
         trackingFilter: Map<Long, TriState>,
-        categoriesMap: Map<Long, List<Category>>,
+        categoriesPerManga: Map<Long, Set<Long>>,
     ): LibraryMap {
         val prefs = getLibraryItemPreferencesFlow().first()
         val downloadedOnly = prefs.globalFilterDownloaded
@@ -427,7 +427,7 @@ class LibraryScreenModel(
         val filterFnCategories: (LibraryItem) -> Boolean = categories@{ item ->
             if (!filterCategories) return@categories true
 
-            val mangaCategories = categoriesMap[item.libraryManga.id].orEmpty().fastMap { it.id }
+            val mangaCategories = categoriesPerManga[item.libraryManga.id].orEmpty()
 
             val isExcluded = excludedCategories.any { it in mangaCategories }
             val isIncluded = includedCategories.isEmpty() || includedCategories.all { it in mangaCategories }
