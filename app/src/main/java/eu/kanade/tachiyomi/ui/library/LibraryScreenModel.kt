@@ -16,7 +16,6 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.core.preference.asState
-import eu.kanade.core.util.combine
 import eu.kanade.core.util.fastFilterNot
 import eu.kanade.core.util.fastPartition
 import eu.kanade.domain.base.BasePreferences
@@ -174,12 +173,15 @@ class LibraryScreenModel(
     init {
         screenModelScope.launchIO {
             combine(
-                state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
-                getLibraryFlow(),
-                getTracksPerManga.subscribe(),
                 combine(
-                    getTrackingFilterFlow(),
+                    state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                    getLibraryFlow(),
                     downloadCache.changes,
+                    ::Triple,
+                ),
+                combine(
+                    getTracksPerManga.subscribe(),
+                    getTrackingFilterFlow(),
                     ::Pair,
                 ),
                 // SY -->
@@ -196,7 +198,7 @@ class LibraryScreenModel(
                     ::Pair,
                 ),
                 // KMK <--
-            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, sort), (categories, filterCategory) ->
+            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categories, filterCategory) ->
                 library
                     // SY -->
                     .applyGrouping(if (filterCategory) LibraryGroup.UNGROUPED else groupType)
