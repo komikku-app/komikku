@@ -329,7 +329,7 @@ data object LibraryTab : Tab {
                     hasCategories = state.categories.fastAny { !it.isSystemCategory },
                     // SY <--
                     // KMK -->
-                    categories = state.userCategories,
+                    categories = state.libraryCategories,
                     // KMK <--
                 )
             }

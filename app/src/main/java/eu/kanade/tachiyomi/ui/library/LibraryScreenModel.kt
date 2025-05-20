@@ -329,7 +329,7 @@ class LibraryScreenModel(
                 .subscribe()
                 .collect { categories ->
                     mutableState.update { state ->
-                        state.copy(userCategories = categories)
+                        state.copy(libraryCategories = categories.filterNot(Category::isSystemCategory))
                     }
                 }
         }
@@ -1531,7 +1531,7 @@ class LibraryScreenModel(
         val groupType: Int = LibraryGroup.BY_DEFAULT,
         // SY <--
         // KMK -->
-        val userCategories: List<Category> = emptyList(),
+        val libraryCategories: List<Category> = emptyList(),
         val filterCategory: Boolean = false,
         // KMK <--
     ) {
