@@ -16,6 +16,10 @@ interface CategoryRepository {
 
     fun getCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>>
 
+    // KMK -->
+    fun getCategoriesPerLibraryMangaAsFlow(): Flow<Map<Long, Set<Long>>>
+    // KMK <--
+
     // SY -->
     suspend fun insert(category: Category): Long
     // SY <--
