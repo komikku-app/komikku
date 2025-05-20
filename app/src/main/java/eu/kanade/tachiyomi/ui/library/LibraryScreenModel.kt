@@ -57,10 +57,12 @@ import exh.util.cancellable
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -612,10 +614,8 @@ class LibraryScreenModel(
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
                 filterCategories = it[15] as Boolean,
-                filterCategoriesInclude = (it[16] as? Set<*>)?.filterIsInstance<String>()?.map { it.toLong() }?.toSet()
-                    ?: emptySet(),
-                filterCategoriesExclude = (it[17] as? Set<*>)?.filterIsInstance<String>()?.map { it.toLong() }?.toSet()
-                    ?: emptySet(),
+                filterCategoriesInclude = (it[16] as Set<*>).filterIsInstance<String>().mapNotNull(String::toLongOrNull).toImmutableSet(),
+                filterCategoriesExclude = (it[17] as Set<*>).filterIsInstance<String>().mapNotNull(String::toLongOrNull).toImmutableSet(),
                 // KMK <--
             )
         }
@@ -1508,8 +1508,8 @@ class LibraryScreenModel(
         // SY <--
         // KMK -->
         val filterCategories: Boolean,
-        val filterCategoriesInclude: Set<Long>,
-        val filterCategoriesExclude: Set<Long>,
+        val filterCategoriesInclude: ImmutableSet<Long>,
+        val filterCategoriesExclude: ImmutableSet<Long>,
         // KMK <--
     )
 
