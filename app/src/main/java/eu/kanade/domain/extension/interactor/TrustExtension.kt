@@ -3,6 +3,7 @@ package eu.kanade.domain.extension.interactor
 import android.content.pm.PackageInfo
 import androidx.core.content.pm.PackageInfoCompat
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo
 import mihon.domain.extensionrepo.repository.ExtensionRepoRepository
 import tachiyomi.core.common.preference.getAndSet
@@ -14,6 +15,7 @@ class TrustExtension(
 
     suspend fun isTrusted(pkgInfo: PackageInfo, fingerprints: List<String>): Boolean {
         // KMK -->
+        if (isDebugBuildType) return true
         if (fingerprints.contains(CreateExtensionRepo.KOMIKKU_SIGNATURE)) return true
         // KMK <--
         val trustedFingerprints = extensionRepoRepository.getAll().map { it.signingKeyFingerprint }.toHashSet()
