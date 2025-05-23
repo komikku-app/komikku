@@ -155,6 +155,7 @@ import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -905,7 +906,7 @@ class MangaScreenModel(
             context.startActivity(intent)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
-            context.toast(e.message ?: "Failed to open folder")
+            context.toast(e.message ?: context.stringResource(KMR.strings.error_opening_folder))
         }
     }
 
