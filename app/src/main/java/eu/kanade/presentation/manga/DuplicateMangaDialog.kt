@@ -92,6 +92,7 @@ fun DuplicateMangaDialog(
     onMigrate: (manga: Manga) -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    targetManga: Manga,
     bulkFavoriteManga: Manga? = null,
     onAllowAllDuplicate: () -> Unit = {},
     onSkipAllDuplicate: () -> Unit = {},
@@ -127,6 +128,14 @@ fun DuplicateMangaDialog(
                     .then(horizontalPaddingModifier)
                     .padding(top = MaterialTheme.padding.small),
             )
+
+            // KMK -->
+            Text(
+                text = targetManga.title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.then(horizontalPaddingModifier),
+            )
+            // KMK <--
 
             Text(
                 text = stringResource(MR.strings.possible_duplicates_summary),

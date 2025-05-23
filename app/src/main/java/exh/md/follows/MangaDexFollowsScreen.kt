@@ -175,6 +175,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     // KMK -->
+                    targetManga = dialog.manga,
                     onMigrate = { screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(dialog.manga, it)) },
                     // KMK <--
                 )

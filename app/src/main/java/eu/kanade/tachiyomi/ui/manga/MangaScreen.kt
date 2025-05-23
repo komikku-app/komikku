@@ -470,6 +470,9 @@ class MangaScreen(
                     onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = { screenModel.showMigrateDialog(it) },
+                    // KMK -->
+                    targetManga = dialog.manga,
+                    // KMK <--
                 )
             }
 
