@@ -47,7 +47,6 @@ data class ALStaff(
 @Serializable
 data class ALEdge(
     val role: String,
-    val id: Int,
     val node: ALStaffNode,
 )
 
