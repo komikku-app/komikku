@@ -201,6 +201,7 @@ fun MangaScreen(
     // KMK -->
     getMangaState: @Composable (Manga) -> State<Manga>,
     onClickSourceSettingsClicked: (() -> Unit)?,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -268,6 +269,7 @@ fun MangaScreen(
             // KMK -->
             getMangaState = getMangaState,
             onClickSourceSettingsClicked = onClickSourceSettingsClicked,
+            onOpenMangaFolder = onOpenMangaFolder,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -328,6 +330,7 @@ fun MangaScreen(
             // KMK -->
             getMangaState = getMangaState,
             onClickSourceSettingsClicked = onClickSourceSettingsClicked,
+            onOpenMangaFolder = onOpenMangaFolder,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -405,6 +408,7 @@ private fun MangaScreenSmallImpl(
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickSourceSettingsClicked: (() -> Unit)?,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -487,6 +491,7 @@ private fun MangaScreenSmallImpl(
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
                 onClickSourceSettings = onClickSourceSettingsClicked,
+                onOpenMangaFolder = onOpenMangaFolder,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
@@ -870,6 +875,7 @@ private fun MangaScreenLargeImpl(
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickSourceSettingsClicked: (() -> Unit)?,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -944,6 +950,7 @@ private fun MangaScreenLargeImpl(
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
                 onClickSourceSettings = onClickSourceSettingsClicked,
+                onOpenMangaFolder = onOpenMangaFolder,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
