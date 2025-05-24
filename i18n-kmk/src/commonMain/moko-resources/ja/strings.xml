@@ -118,4 +118,6 @@
     <string name="auto_update_app_disable_auto_download">更新プログラムを自動的にダウンロードしない</string>
     <string name="action_remove_merged">ライブラリから元のエントリを削除しますか？</string>
     <string name="batch_add_description">サポート: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_open_folder">フォルダーを開く</string>
+    <string name="error_opening_folder">フォルダーを開けませんでした</string>
 </resources>

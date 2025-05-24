@@ -69,4 +69,5 @@
     <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
     <string name="action_remove_merged">Remove original entries from library?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_hide">Sembunyikan</string>
 </resources>
