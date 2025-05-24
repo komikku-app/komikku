@@ -122,6 +122,9 @@ data object HistoryTab : Tab {
                     },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = { screenModel.showMigrateDialog(dialog.manga, it) },
+                    // KMK -->
+                    targetManga = dialog.manga,
+                    // KMK <--
                 )
             }
             is HistoryScreenModel.Dialog.ChangeCategory -> {

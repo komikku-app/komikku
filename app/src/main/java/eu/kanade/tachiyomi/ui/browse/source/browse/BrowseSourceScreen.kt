@@ -471,6 +471,9 @@ data class BrowseSourceScreen(
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = { screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(dialog.manga, it)) },
+                    // KMK -->
+                    targetManga = dialog.manga,
+                    // KMK <--
                 )
             }
 
