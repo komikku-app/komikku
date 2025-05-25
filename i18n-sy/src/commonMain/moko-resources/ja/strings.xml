@@ -142,7 +142,7 @@
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">ここに Bandwidth Hero Proxy server のurlを入力して下さい</string>
-    <string name="clear_db_exclude_read">既読の章がある作品を保留</string>
+    <string name="clear_db_exclude_read">既読の章がある作品は保持</string>
     <!-- Log Level -->
     <string name="log_minimal">最小</string>
     <string name="log_extra">最大</string>

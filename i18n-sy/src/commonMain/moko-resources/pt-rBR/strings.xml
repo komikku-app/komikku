@@ -631,4 +631,22 @@
     <string name="feed_add">Adicionar %1$s ao feed?</string>
     <string name="delete_tag">Excluir tag</string>
     <string name="action_stop">Parar</string>
+    <string name="rec_services_to_search">Serviços de recomendação para busca</string>
+    <string name="rec_hide_library_entries">Ocultar resultados já existentes em sua biblioteca</string>
+    <string name="scan_qr_code">Escanear um código QR</string>
+    <string name="rec_search">Encontre recomendações comuns</string>
+    <string name="rec_group_source">Recomendações de fontes</string>
+    <string name="rec_group_tracker">Recomendações do rastreador</string>
+    <string name="rec_common_recommendations">Recomendações comuns</string>
+    <string name="rec_search_short">Encontre recomendações</string>
+    <string name="rec_error_title">Falha na busca</string>
+    <string name="rec_error_string">Ocorreu um erro durante o processo de busca: %1$s</string>
+    <string name="rec_collecting">Coletando recomendações</string>
+    <string name="rec_initializing">Inicializando</string>
+    <string name="similar_titles">Títulos similares</string>
+    <string name="relation_sequel">Sequência</string>
+    <string name="feed">Feed</string>
+    <string name="rec_no_results">Nenhuma recomendação encontrada</string>
+    <string name="failed_merge">Falha ao mesclar a entrada: %1$s</string>
+    <string name="select_tracker">Selecione um rastreador</string>
 </resources>

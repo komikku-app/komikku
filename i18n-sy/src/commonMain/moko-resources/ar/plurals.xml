@@ -80,4 +80,60 @@
         <item quantity="many">منذُ %1$d دقيقة</item>
         <item quantity="other">منذُ %1$d دقيقة</item>
     </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">العلامات في هذه القائمة . تعطيك خيار الترتيب حسب الأولوية في هذه القائمة، مما يعني أن المدخلات سيتم توزيعها حسب اختيارك</item>
+        <item quantity="one">هاذا الخيار يعطيك إمكانية فرز المدخلات في هذه القائمة حسب اختيارك</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="zero">وقت الإنغلاق</item>
+        <item quantity="one">‬وقت الإغلاق</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="zero">ترحيل ....... المدخل؟</item>
+        <item quantity="one">نقل ...... المدخلات؟</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="zero">%1$d شهر مضى</item>
+        <item quantity="one">%1$dشهور مضت</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="zero">....،.... الصفحة</item>
+        <item quantity="one">.....،... الصفحات</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="zero">...... سنة مضت</item>
+        <item quantity="one">..... سنوات مضت</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="zero">"%1$d  اسبوع الفائت"</item>
+        <item quantity="one">%1$d اسابيع الماضية</item>
+        <item quantity="two"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
 </resources>

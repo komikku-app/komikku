@@ -261,7 +261,7 @@
     <string name="download_threads">Потоки загрузки</string>
     <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут спровоцировать блокировку источников для Komikku. Рекомендуемое значение - 2 или 3. Текущее значение: %s</string>
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
-    <string name="aggressively_load_pages_summary">Медленно загружать всю главу во время чтения вместо загрузки в текущий момент просматреваемых страниц</string>
+    <string name="aggressively_load_pages_summary">Медленно загружать всю главу во время чтения вместо загрузки в текущий момент просматреваемых страниц.</string>
     <string name="skip_queue_on_retry">Пропускать очередь при повторной попытке</string>
     <string name="skip_queue_on_retry_summary">Обычно нажатие кнопки «Повторить» при неудачной загрузке будет ждать, пока загрузчик закончит загрузку последней страницы, прежде чем начать перезагрузку неудачной страницы. Включение этого режима заставит загрузчик немедленно начать перезагрузку неудачной страницы, как только будет нажата кнопка «Повторить».</string>
     <string name="reader_preload_amount">Количество страниц с предзагрузкой</string>
@@ -671,7 +671,7 @@
     <string name="alt_titles">Альт. названия</string>
     <string name="select_tracker">Выбрать сервис отслеживания</string>
     <string name="fill_from_tracker">Заполнить из сервиса</string>
-    <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания</string>
+    <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания.</string>
     <string name="favorites_sync_unable_to_add_to_remote">Невозможно добавить галерею на удалённый сервер: \'%1$s\' (GID: %2$s)!</string>
     <string name="similar_titles">Похожие имена</string>
     <string name="rec_hide_library_entries">Скрыть серии которые находятся в библиотеке</string>
@@ -689,4 +689,5 @@
     <string name="rec_search">Найти общие рекомендации</string>
     <string name="rec_initializing">Идёт подготовка</string>
     <string name="rec_common_recommendations">Общие рекомендации</string>
+    <string name="scan_qr_code">Сканировать QR-код</string>
 </resources>

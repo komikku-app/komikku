@@ -646,4 +646,5 @@
     <string name="rec_processing_state">Pinoprosesong entry %1$d ng %2$d</string>
     <string name="rec_collecting">Nangongolekta ng mga rekomendasyon</string>
     <string name="rec_initializing">Sinisimulan</string>
+    <string name="scan_qr_code">Mag-scan ng QR code</string>
 </resources>

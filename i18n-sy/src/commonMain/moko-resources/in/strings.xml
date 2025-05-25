@@ -159,7 +159,7 @@
     <string name="library_group_updates_all_but_ungrouped">Jalankan pembaruan global hanya untuk yang tidak dikelompokkan, pembaruan kategori untuk yang lainnya</string>
     <string name="library_group_updates_all">Hanya jalankan pembaruan kategori</string>
     <!-- Browse settings -->
-    <string name="pref_source_source_filtering">Filter Sumber dalam kategori</string>
+    <string name="pref_source_source_filtering">Filter sumber dalam kategori</string>
     <string name="pref_source_source_filtering_summery">Saring sumber-sumber yang ada dalam kategori, agar sumber-sumber tersebut tidak dimasukkan ke dalam kategori bahasa jika berada dalam suatu kategori</string>
     <string name="pref_source_navigation">Ganti tombol Terbaru</string>
     <string name="pref_source_navigation_summery">Ganti tombol Terbaru dengan tampilan penelusuran khusus yang mencakup bab terbaru dan daftar manga</string>
@@ -540,7 +540,7 @@
     <string name="pref_library_mark_duplicate_chapters">Tandai bagian baru yang sudah terbaca sebagai terbaca</string>
     <string name="update_3hour">Setiap 3 jam</string>
     <string name="label_triggers">Pemicu</string>
-    <string name="sync_complete">Berhasil Menyinkronkan perpustakaan</string>
+    <string name="sync_complete">Berhasil menyinkronkan perpustakaan</string>
     <string name="label_sync">Sinkronisasi</string>
     <string name="pref_sync_host">Host</string>
     <string name="pref_sync_host_summ">Masukkan alamat host untuk menyinkronkan perpustakaan Anda</string>
@@ -665,4 +665,5 @@
     <string name="rec_processing_state">Memproses entri %1$d dari %2$d</string>
     <string name="rec_collecting">Mengumpulkan rekomendasi</string>
     <string name="rec_initializing">Inisialisasi</string>
+    <string name="scan_qr_code">Pindai kode QR</string>
 </resources>
