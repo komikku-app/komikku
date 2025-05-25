@@ -628,4 +628,5 @@
     <string name="rec_hide_library_entries">Ocultar elementos que ya estén en la biblioteca</string>
     <string name="pref_tracker_resolve_using_source_metadata_summary">Encuentra el título automáticamente si la fuente ya enlaza con el servicio de seguimiento. De momento solo funciona en MangaDex</string>
     <string name="pref_tracker_resolve_using_source_metadata">Elegir títulos a través de los metadatos de la fuente</string>
+    <string name="scan_qr_code">Escanear un código QR</string>
 </resources>

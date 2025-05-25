@@ -62,7 +62,7 @@
     <string name="pref_enhanced_e_hentai_view_summary">E/ExHentai için gelişmiş arama menüsü modunu açın/kapatın</string>
     <string name="favorites_sync">E-Hentai Favorileri eşitleme</string>
     <string name="disable_favorites_uploading">Favorilerin gönderilmesini kapat</string>
-    <string name="disable_favorites_uploading_summary">Favoriler yalnızca ExHentai üzerinden indirilir. Uygulama favorilere yapılan değişiklikler gönderilmeyecektir. ExHentai üzerinde favorilerin yanlışlıkla kaybolmasını önler. Silinenlerin yine de indirileceğini unutmayın (ExHentai üzerinde bir favoriyi silersemiz uygulamada da silinecektir).</string>
+    <string name="disable_favorites_uploading_summary">Favoriler yalnızca ExHentai üzerinden indirilir. Uygulamada favorilere yapılan değişiklikler gönderilmeyecektir. ExHentai üzerinde favorilerin yanlışlıkla kaybolmasını önler. Silinenlerin yine de indirileceğini unutmayın (ExHentai üzerinde bir favoriyi silerseniz uygulamada da silinecektir).</string>
     <string name="show_favorite_sync_notes">Favorilerin eşitleme notlarını göster</string>
     <string name="show_favorite_sync_notes_summary">Favori eşitleme özelliği ile ilgili çeşitli bilgiler gösterir</string>
     <string name="please_login">Lütfen giriş yapın!</string>
@@ -112,7 +112,7 @@
     <string name="log_level_summary">Bunu değiştirmek uygulama performansını etkileyebilir. Değiştirdikten sonra uygulamayı yeniden başlatın. Şu anki değer: %s</string>
     <string name="enable_source_blacklist">Kaynak kara listesini etkinleştir</string>
     <string name="enable_source_blacklist_summary">%1$s ile uyumsuz uzantıları/kaynakları gizle. Değiştirdikten sonra uygulamayı yeniden başlatın.</string>
-    <string name="open_debug_menu_summary"><![CDATA[NE YAPTIĞINIZI BİLMİYORSANIZ BU MENÜYE DOKUNMAYIN! <font color=\'red\'>KİTAPLIPINIZI KULLANILMAZ YAPABİLİR!</font>]]></string>
+    <string name="open_debug_menu_summary"><![CDATA[NE YAPTIĞINIZI BİLMİYORSANIZ BU MENÜYE DOKUNMAYIN! <font color=\'red\'>KİTAPLIĞINIZI KULLANILMAZ YAPABİLİR!</font>]]></string>
     <string name="starting_cleanup">Temizleme başlatılıyor</string>
     <string name="delete_unused_chapters">Var olmayan, yarım yüklenmiş veya okunmuş bölümleri silin</string>
     <string name="no_folders_to_cleanup">Temizlenecek klasör yok</string>
@@ -261,7 +261,7 @@
     <string name="reader_preload_amount_16_pages">16 sayfa</string>
     <string name="reader_preload_amount_20_pages">20 sayfa</string>
     <string name="reader_cache_size">Okuyucu önbellek boyutu</string>
-    <string name="reader_cache_size_summary">Okurken cihazda kaydedilecek görsel sayısı. Daha yüksek değerler daha rahat bir okuma deneyimi sağlar ancak kullanılan disk alanını artırır</string>
+    <string name="reader_cache_size_summary">Okurken cihazda kaydedilecek görsel miktarı. Daha yüksek değerler daha rahat bir okuma deneyimi sağlar ancak kullanılan disk alanını artırır</string>
     <string name="preserve_reading_position">Okunmuş girdilerde okuma konumunu koru</string>
     <string name="auto_webtoon_mode">Otomatik Webtoon Modu</string>
     <string name="auto_webtoon_mode_summary">Muhtemelen uzun şerit formatını kullandığı algılanan girdiler için otomatik webtoon modunu kullan</string>
@@ -619,4 +619,5 @@
     <string name="rec_processing_state">%2$d girdiden %1$d. girdi işleniyor</string>
     <string name="rec_collecting">Öneriler toplanıyor</string>
     <string name="rec_initializing">Başlatılıyor</string>
+    <string name="scan_qr_code">QR kod tarayın</string>
 </resources>
