@@ -344,7 +344,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                             return super.generateFileName(
                                 logLevel,
                                 timestamp,
-                            ) + "-${BuildConfig.BUILD_TYPE}.log"
+                            ) + "-${BuildConfig.BUILD_TYPE}.txt"
                         }
                     }
                     flattener { timeMillis, level, tag, message ->
