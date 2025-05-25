@@ -51,4 +51,5 @@ val migrations: List<Migration>
         // KMK <--
         TrustExtensionRepositoryMigration(),
         CategoryPreferencesCleanupMigration(),
+        RemoveDuplicateReaderPreferenceMigration(),
     )
