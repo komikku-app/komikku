@@ -226,20 +226,23 @@ private fun BulkAllowDuplicateDialog(
 fun bulkSelectionButton(
     isRunning: Boolean,
     toggleSelectionMode: () -> Unit,
-) = if (isRunning) {
-    AppBar.ActionCompose(
-        title = stringResource(KMR.strings.action_bulk_select),
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .size(24.dp),
-            strokeWidth = 2.dp,
+): AppBar.AppBarAction {
+    val title = stringResource(KMR.strings.action_bulk_select)
+    return if (isRunning) {
+        AppBar.ActionCompose(
+            title = title,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(24.dp),
+                strokeWidth = 2.dp,
+            )
+        }
+    } else {
+        AppBar.Action(
+            title = title,
+            icon = Icons.Outlined.Checklist,
+            onClick = toggleSelectionMode,
         )
     }
-} else {
-    AppBar.Action(
-        title = stringResource(KMR.strings.action_bulk_select),
-        icon = Icons.Outlined.Checklist,
-        onClick = toggleSelectionMode,
-    )
 }
