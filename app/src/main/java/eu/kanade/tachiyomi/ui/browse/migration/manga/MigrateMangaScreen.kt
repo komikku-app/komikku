@@ -47,7 +47,7 @@ data class MigrateMangaScreen(
                 PreMigrationScreen.navigateToMigration(
                     Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                     navigator,
-                    listOf(it.manga.id),
+                    listOf(it.id),
                 )
                 // SY <--
             },
