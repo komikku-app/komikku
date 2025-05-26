@@ -30,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -44,8 +43,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
@@ -75,11 +72,13 @@ class SettingsDebugScreen : Screen() {
 
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
-        DisposableEffect(Unit) {
-            onDispose { navigator.pop() }
-        }
+        // KMK -->
+        // val navigator = LocalNavigator.currentOrThrow
+        // DisposableEffect(Unit) {
+        //     onDispose { navigator.pop() }
+        // }
+        // KMK <--
         val functions by produceState<ImmutableList<Pair<KFunction<*>, String>>?>(initialValue = null) {
             value = withContext(Dispatchers.Default) {
                 DebugFunctions::class.declaredFunctions.filter {
