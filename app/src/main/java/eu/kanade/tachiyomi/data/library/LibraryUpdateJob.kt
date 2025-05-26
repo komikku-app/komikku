@@ -660,10 +660,9 @@ class LibraryUpdateJob(private val context: Context, private val workerParams: W
 
     private suspend fun writeErrorToDB(error: Pair<Manga, String?>) {
         val errorMessage = error.second ?: "???"
-        val errorMessageId = insertLibraryUpdateErrorMessages.get(errorMessage)
-            ?: insertLibraryUpdateErrorMessages.insert(
-                libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
-            )
+        val errorMessageId = insertLibraryUpdateErrorMessages.insert(
+            libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
+        )
 
         insertLibraryUpdateErrors.upsert(
             LibraryUpdateError(id = -1L, mangaId = error.first.id, messageId = errorMessageId),

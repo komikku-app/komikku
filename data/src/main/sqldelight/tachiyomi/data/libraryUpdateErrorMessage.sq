@@ -13,9 +13,8 @@ FROM libraryUpdateErrorMessage WHERE message == :message;
 
 insertAndGet {
     -- Insert the message if it doesn't exist already
-    INSERT INTO libraryUpdateErrorMessage(message)
-    SELECT :message
-    WHERE NOT EXISTS(SELECT 0 FROM libraryUpdateErrorMessage WHERE message = :message);
+    INSERT OR IGNORE INTO libraryUpdateErrorMessage(message)
+    VALUES (:message);
 
     -- Finally return the message ID
     SELECT _id
@@ -26,6 +25,3 @@ insertAndGet {
 
 deleteAllErrorMessages:
 DELETE FROM libraryUpdateErrorMessage;
-
-selectLastInsertedRowId:
-SELECT last_insert_rowid();
