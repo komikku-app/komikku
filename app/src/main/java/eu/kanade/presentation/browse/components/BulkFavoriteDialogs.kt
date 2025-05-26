@@ -1,11 +1,14 @@
 package eu.kanade.presentation.browse.components
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checklist
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -223,9 +226,23 @@ private fun BulkAllowDuplicateDialog(
 fun bulkSelectionButton(
     isRunning: Boolean,
     toggleSelectionMode: () -> Unit,
-) = AppBar.Action(
-    title = stringResource(KMR.strings.action_bulk_select),
-    icon = Icons.Outlined.Checklist,
-    iconTint = MaterialTheme.colorScheme.primary.takeIf { isRunning },
-    onClick = toggleSelectionMode,
-)
+): AppBar.AppBarAction {
+    val title = stringResource(KMR.strings.action_bulk_select)
+    return if (isRunning) {
+        AppBar.ActionCompose(
+            title = title,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(24.dp),
+                strokeWidth = 2.dp,
+            )
+        }
+    } else {
+        AppBar.Action(
+            title = title,
+            icon = Icons.Outlined.Checklist,
+            onClick = toggleSelectionMode,
+        )
+    }
+}
