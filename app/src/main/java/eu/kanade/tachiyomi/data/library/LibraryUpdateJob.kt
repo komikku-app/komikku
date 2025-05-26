@@ -105,7 +105,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
 
 @OptIn(ExperimentalAtomicApi::class)
-class LibraryUpdateJob(private val context: Context, private val workerParams: WorkerParameters) :
+class LibraryUpdateJob(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     private val sourceManager: SourceManager = Injekt.get()
@@ -659,7 +659,7 @@ class LibraryUpdateJob(private val context: Context, private val workerParams: W
     }
 
     private suspend fun writeErrorToDB(error: Pair<Manga, String?>) {
-        val errorMessage = error.second ?: "???"
+        val errorMessage = error.second ?: context.stringResource(MR.strings.unknown_error)
         val errorMessageId = insertLibraryUpdateErrorMessages.insert(
             libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
         )

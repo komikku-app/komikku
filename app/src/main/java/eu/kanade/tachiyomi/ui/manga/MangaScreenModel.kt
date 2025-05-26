@@ -646,7 +646,7 @@ class MangaScreenModel(
     }
 
     private suspend fun writeErrorToDB(error: Pair<Manga, String?>) {
-        val errorMessage = error.second ?: "???"
+        val errorMessage = error.second ?: context.stringResource(MR.strings.unknown_error)
         val errorMessageId = insertLibraryUpdateErrorMessages.insert(
             libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
         )
