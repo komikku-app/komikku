@@ -60,7 +60,7 @@ fun MigrateMangaScreen(
     navigateUp: () -> Unit,
     title: String,
     state: MigrateMangaScreenModel.State,
-    onClickItem: (MigrateMangaItem) -> Unit,
+    onClickItem: (Manga) -> Unit,
     onClickCover: (Manga) -> Unit,
     // KMK -->
     onMultiMigrateClicked: (() -> Unit),
@@ -145,7 +145,7 @@ fun MigrateMangaScreen(
 private fun MigrateMangaContent(
     contentPadding: PaddingValues,
     state: MigrateMangaScreenModel.State,
-    onClickItem: (MigrateMangaItem) -> Unit,
+    onClickItem: (Manga) -> Unit,
     onClickCover: (Manga) -> Unit,
     // KMK -->
     onMangaSelected: (MigrateMangaItem, Boolean, Boolean, Boolean) -> Unit,
@@ -156,23 +156,21 @@ private fun MigrateMangaContent(
         state = listState,
     ) {
         // KMK <--
-        items(items = state.titles) {
+        items(items = state.titles) { item ->
             MigrateMangaItem(
-                manga = it.manga,
+                manga = item.manga,
                 onClickItem = {
                     // KMK -->
                     when {
-                        state.selectionMode -> onMangaSelected(it, !it.selected, true, false)
+                        state.selectionMode -> onMangaSelected(item, !item.selected, true, false)
                         // KMK <--
                         else -> onClickItem(it)
                     }
                 },
-                onClickCover = {
-                    onClickCover(it.manga)
-                    // KMK -->
-                }.takeIf { !state.selectionMode },
-                onLongClick = { onMangaSelected(it, !it.selected, true, true) },
-                selected = it.selected,
+                onClickCover = onClickCover,
+                // KMK -->
+                onLongClick = { onMangaSelected(item, !item.selected, true, true) },
+                selected = item.selected,
                 modifier = Modifier.animateItemFastScroll(),
                 // KMK <--
             )
@@ -183,8 +181,8 @@ private fun MigrateMangaContent(
 @Composable
 private fun MigrateMangaItem(
     manga: Manga,
-    onClickItem: () -> Unit,
-    onClickCover: (() -> Unit)?,
+    onClickItem: (Manga) -> Unit,
+    onClickCover: (Manga) -> Unit,
     // KMK -->
     onLongClick: () -> Unit,
     selected: Boolean,
@@ -194,8 +192,8 @@ private fun MigrateMangaItem(
     BaseMangaListItem(
         modifier = modifier,
         manga = manga,
-        onClickItem = onClickItem,
-        onClickCover = { onClickCover?.invoke() },
+        onClickItem = { onClickItem(manga) },
+        onClickCover = { onClickCover(manga) },
         // KMK -->
         onLongClick = onLongClick,
         selected = selected,
