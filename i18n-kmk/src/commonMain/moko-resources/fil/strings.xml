@@ -110,4 +110,6 @@
     <string name="pref_top_align_cover">Ipantay ang Pabalat sa Itaas</string>
     <string name="pref_top_align_cover_summary">Ipakita ang pabalat na pumantay sa itaas sa tabi ng impo ng manga</string>
     <string name="pref_viewer_nav_smaller_tap_zone">Mas maliit na mga tap zone</string>
+    <string name="action_open_folder">Buksan ang folder</string>
+    <string name="error_opening_folder">Bigong mabuksan ang folder</string>
 </resources>
