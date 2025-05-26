@@ -11,11 +11,17 @@ getErrorMessages:
 SELECT *
 FROM libraryUpdateErrorMessage WHERE message == :message;
 
-insert:
-INSERT INTO libraryUpdateErrorMessage(message) VALUES (:message);
+insertAndGet {
+    -- Insert the message if it doesn't exist already
+    INSERT OR IGNORE INTO libraryUpdateErrorMessage(message)
+    VALUES (:message);
+
+    -- Finally return the message ID
+    SELECT _id
+    FROM libraryUpdateErrorMessage
+    WHERE message = :message
+    LIMIT 1;
+}
 
 deleteAllErrorMessages:
 DELETE FROM libraryUpdateErrorMessage;
-
-selectLastInsertedRowId:
-SELECT last_insert_rowid();
