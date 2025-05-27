@@ -25,7 +25,7 @@ class SyncNotifier(private val context: Context) {
     // KMK <--
 
     private val progressNotificationBuilder = context.notificationBuilder(
-        Notifications.CHANNEL_BACKUP_RESTORE_PROGRESS,
+        Notifications.CHANNEL_SYNC_LIBRARY,
     ) {
         setSmallIcon(R.drawable.ic_komikku)
         setColor(ContextCompat.getColor(context, R.color.ic_launcher))
@@ -36,7 +36,7 @@ class SyncNotifier(private val context: Context) {
     }
 
     private val completeNotificationBuilder = context.notificationBuilder(
-        Notifications.CHANNEL_BACKUP_RESTORE_COMPLETE,
+        Notifications.CHANNEL_SYNC_LIBRARY,
     ) {
         setSmallIcon(R.drawable.ic_komikku)
         setColor(ContextCompat.getColor(context, R.color.ic_launcher))
@@ -70,34 +70,34 @@ class SyncNotifier(private val context: Context) {
             addAction(
                 R.drawable.ic_close_24dp,
                 context.getString(R.string.action_cancel),
-                NotificationReceiver.cancelSyncPendingBroadcast(context, Notifications.ID_RESTORE_PROGRESS),
+                NotificationReceiver.cancelSyncPendingBroadcast(context, Notifications.ID_SYNC_PROGRESS),
             )
         }
 
-        builder.show(Notifications.ID_RESTORE_PROGRESS)
+        builder.show(Notifications.ID_SYNC_PROGRESS)
 
         return builder
     }
 
     fun showSyncError(error: String?) {
-        context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+        context.cancelNotification(Notifications.ID_SYNC_PROGRESS)
 
         with(completeNotificationBuilder) {
             setContentTitle(context.getString(R.string.sync_error))
             setContentText(error)
 
-            show(Notifications.ID_RESTORE_COMPLETE)
+            show(Notifications.ID_SYNC_COMPLETE)
         }
     }
 
     fun showSyncSuccess(message: String?) {
-        context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+        context.cancelNotification(Notifications.ID_SYNC_PROGRESS)
 
         with(completeNotificationBuilder) {
             setContentTitle(context.getString(R.string.sync_complete))
             setContentText(message)
 
-            show(Notifications.ID_RESTORE_COMPLETE)
+            show(Notifications.ID_SYNC_COMPLETE)
         }
     }
 }

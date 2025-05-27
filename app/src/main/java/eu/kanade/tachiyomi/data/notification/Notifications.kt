@@ -51,7 +51,7 @@ object Notifications {
     const val GROUP_NEW_CHAPTERS = "eu.kanade.tachiyomi.NEW_CHAPTERS"
 
     /**
-     * Notification channel and ids used by the backup/restore system.
+     * Notification channel and ids used by the backup/restore/sync system.
      */
     private const val GROUP_BACKUP_RESTORE = "group_backup_restore"
     const val CHANNEL_BACKUP_RESTORE_PROGRESS = "backup_restore_progress_channel"
@@ -60,6 +60,9 @@ object Notifications {
     const val CHANNEL_BACKUP_RESTORE_COMPLETE = "backup_restore_complete_channel_v2"
     const val ID_BACKUP_COMPLETE = -502
     const val ID_RESTORE_COMPLETE = -504
+    const val CHANNEL_SYNC_LIBRARY = "syncing_library_channel"
+    const val ID_SYNC_PROGRESS = -505
+    const val ID_SYNC_COMPLETE = -506
 
     /**
      * Notification channel used for Incognito Mode
@@ -164,6 +167,11 @@ object Notifications {
                     setGroup(GROUP_BACKUP_RESTORE)
                     setShowBadge(false)
                     setSound(null, null)
+                },
+                buildNotificationChannel(CHANNEL_SYNC_LIBRARY, IMPORTANCE_LOW) {
+                    setName(context.stringResource(MR.strings.syncing_library))
+                    setGroup(GROUP_BACKUP_RESTORE)
+                    setShowBadge(false)
                 },
                 buildNotificationChannel(CHANNEL_INCOGNITO_MODE, IMPORTANCE_LOW) {
                     setName(context.stringResource(MR.strings.pref_incognito_mode))

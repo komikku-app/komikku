@@ -15,7 +15,6 @@ import androidx.work.WorkerParameters
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.SyncStatus
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
@@ -61,7 +60,6 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             notifier.showSyncError(e.message)
             Result.success() // try again next time
         } finally {
-            context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
             // KMK -->
             syncStatus.stop()
             // KMK <--
@@ -70,7 +68,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return ForegroundInfo(
-            Notifications.ID_RESTORE_PROGRESS,
+            Notifications.ID_SYNC_PROGRESS,
             notifier.showSyncProgress().build(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
