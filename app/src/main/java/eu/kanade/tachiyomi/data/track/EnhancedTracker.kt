@@ -17,11 +17,16 @@ interface EnhancedTracker {
      * This tracker will only work with the sources that are accepted by this filter function.
      */
     fun accept(source: Source): Boolean {
-        if (source.id == MERGED_SOURCE_ID) {
-            val sources = (source as MergedSource).getSources()
-            return sources.any { it::class.qualifiedName in getAcceptedSources() }
-        }
         return source::class.qualifiedName in getAcceptedSources()
+    }
+
+    fun accept(source: Source, id: Long): Boolean {
+        if (source.id == MERGED_SOURCE_ID) {
+            val sources = (source as MergedSource).getMergedSources(id)
+            return sources.any { accept(it) }
+        } else {
+            return accept(source)
+        }
     }
 
     /**
