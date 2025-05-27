@@ -74,7 +74,11 @@ class SyncNotifier(private val context: Context) {
             )
         }
 
-        builder.show(Notifications.ID_SYNC_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_SYNC_PROGRESS)
+        // KMK <--
 
         return builder
     }

@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.FeedRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
+import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
@@ -139,12 +140,17 @@ class BackupRestorer(
         categoriesRestorer(backupCategories)
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.categories),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.categories),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     // SY -->
@@ -161,12 +167,17 @@ class BackupRestorer(
         // KMK <--
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(KMR.strings.saved_searches_feeds),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(KMR.strings.saved_searches_feeds),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
     // SY <--
 
@@ -186,7 +197,12 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                notifier.showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
+                with(notifier) {
+                    showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
+                        // KMK -->
+                        .show(Notifications.ID_RESTORE_PROGRESS)
+                    // KMK <--
+                }
             }
     }
 
@@ -201,12 +217,17 @@ class BackupRestorer(
         )
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.app_settings),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.app_settings),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     private fun CoroutineScope.restoreSourcePreferences(preferences: List<BackupSourcePreferences>) = launch {
@@ -214,12 +235,17 @@ class BackupRestorer(
         preferenceRestorer.restoreSource(preferences)
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.source_settings),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.source_settings),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     private fun CoroutineScope.restoreExtensionRepos(
@@ -236,12 +262,17 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                notifier.showRestoreProgress(
-                    context.stringResource(MR.strings.extensionRepo_settings),
-                    restoreProgress,
-                    restoreAmount,
-                    isSync,
-                )
+                with(notifier) {
+                    showRestoreProgress(
+                        context.stringResource(MR.strings.extensionRepo_settings),
+                        restoreProgress,
+                        restoreAmount,
+                        isSync,
+                    )
+                        // KMK -->
+                        .show(Notifications.ID_RESTORE_PROGRESS)
+                    // KMK <--
+                }
             }
     }
 
