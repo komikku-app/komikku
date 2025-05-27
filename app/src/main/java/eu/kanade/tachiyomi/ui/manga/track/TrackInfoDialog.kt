@@ -254,16 +254,16 @@ data class TrackInfoDialogHomeScreen(
         fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedTracker
             screenModelScope.launchNonCancellable {
-                var manga = if (sourceId == MERGED_SOURCE_ID) {
-                    Injekt.get<GetMergedReferencesById>().await(mangaId).first {
-                        Injekt.get<SourceManager>().get(it.mangaSourceId)?.name?.startsWith(
-                            item.tracker.name,
-                            true,
-                        ) == true
-                    }.mangaId?.let { Injekt.get<GetManga>().await(it) } ?: return@launchNonCancellable
+                val manga = if (sourceId == MERGED_SOURCE_ID) {
+                    val references = Injekt.get<GetMergedReferencesById>().await(mangaId)
+                    val mergedManga = references.firstOrNull {
+                        val source = Injekt.get<SourceManager>().get(it.mangaSourceId)
+                        source?.name?.startsWith(item.tracker.name, true) == true
+                    }
+                    mergedManga?.mangaId?.let { Injekt.get<GetManga>().await(it) }
                 } else {
-                    Injekt.get<GetManga>().await(mangaId) ?: return@launchNonCancellable
-                }
+                    Injekt.get<GetManga>().await(mangaId)
+                } ?: return@launchNonCancellable
                 try {
                     val matchResult = item.tracker.match(manga) ?: throw Exception()
                     item.tracker.register(matchResult, mangaId)
