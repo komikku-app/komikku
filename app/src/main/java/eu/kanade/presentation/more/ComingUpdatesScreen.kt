@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import eu.kanade.presentation.manga.components.MarkdownRender
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -46,7 +47,10 @@ fun ComingUpdatesScreen(
                 .fillMaxWidth()
                 .padding(vertical = MaterialTheme.padding.large),
         ) {
-            MarkdownRender(content = changelogInfo)
+            MarkdownRender(
+                content = changelogInfo.trimIndent(),
+                flavour = GFMFlavourDescriptor(),
+            )
 
             TextButton(
                 onClick = onOpenInBrowser,

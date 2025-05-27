@@ -47,7 +47,7 @@ fun NewUpdateScreen(
                 .padding(vertical = MaterialTheme.padding.large),
         ) {
             MarkdownRender(
-                content = changelogInfo,
+                content = changelogInfo.trimIndent(),
                 flavour = GFMFlavourDescriptor(),
             )
 
