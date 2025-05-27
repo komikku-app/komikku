@@ -32,7 +32,7 @@ internal class AppUpdateNotifier(private val context: Context) {
      *
      * @param id id of the notification channel.
      */
-    private fun NotificationCompat.Builder.show(id: Int = Notifications.ID_APP_UPDATER) {
+    internal fun NotificationCompat.Builder.show(id: Int = Notifications.ID_APP_UPDATER) {
         context.notify(id, build())
     }
 
@@ -102,7 +102,13 @@ internal class AppUpdateNotifier(private val context: Context) {
                 NotificationReceiver.cancelDownloadAppUpdatePendingBroadcast(context),
             )
         }
-        notificationBuilder.show()
+
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // notificationBuilder.show()
+        // KMK <--
+
         return notificationBuilder
     }
 

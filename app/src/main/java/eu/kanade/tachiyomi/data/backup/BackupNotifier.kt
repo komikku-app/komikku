@@ -52,7 +52,7 @@ class BackupNotifier(private val context: Context) {
         setAutoCancel(false)
     }
 
-    private fun NotificationCompat.Builder.show(id: Int) {
+    internal fun NotificationCompat.Builder.show(id: Int) {
         context.notify(id, build())
     }
 
@@ -63,7 +63,11 @@ class BackupNotifier(private val context: Context) {
             setProgress(0, 0, true)
         }
 
-        builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK <--
 
         return builder
     }
@@ -129,7 +133,11 @@ class BackupNotifier(private val context: Context) {
             )
         }
 
-        builder.show(Notifications.ID_RESTORE_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_RESTORE_PROGRESS)
+        // KMK <--
 
         return builder
     }
