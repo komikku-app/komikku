@@ -1823,7 +1823,9 @@ class MangaScreenModel(
                 trackerManager.loggedInTrackersFlow(),
             ) { mangaTracks, loggedInTrackers ->
                 // Show only if the service supports this manga's source
-                val supportedTrackers = loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(source!!,manga.id) ?: true }
+                val supportedTrackers = loggedInTrackers.filter {
+                    (it as? EnhancedTracker)?.accept(source!!, manga.id) ?: true
+                }
                 val supportedTrackerIds = supportedTrackers.map { it.id }.toHashSet()
                 val supportedTrackerTracks = mangaTracks.filter { it.trackerId in supportedTrackerIds }
                 supportedTrackerTracks to supportedTrackers

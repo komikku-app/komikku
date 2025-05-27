@@ -379,7 +379,7 @@ data class TrackInfoDialogHomeScreen(
                 // Map to TrackItem
                 .map { service -> TrackItem(find { it.trackerId == service.id }, service) }
                 // Show only if the service supports this manga's source
-                .filter { (it.tracker as? EnhancedTracker)?.accept(source,mangaId) ?: true }
+                .filter { (it.tracker as? EnhancedTracker)?.accept(source, mangaId) ?: true }
         }
 
         @Immutable
