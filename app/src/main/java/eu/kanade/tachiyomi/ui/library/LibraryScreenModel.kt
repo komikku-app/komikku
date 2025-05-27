@@ -337,6 +337,12 @@ class LibraryScreenModel(
                     }
                 }
         }
+
+        screenModelScope.launchIO {
+            if (mangaDexDmcaUuids.isEmpty()) {
+                mangaDexDmcaUuids = loadMangaDexDmcaUuids(context = Injekt.get<Application>())
+            }
+        }
         // KMK <--
     }
 
@@ -1058,11 +1064,6 @@ class LibraryScreenModel(
         }
     }
 
-    // AZ -->
-    /** List of MangaDex UUIDs subject to DMCA takedowns */
-    private val mangaDexDmcaUuids by lazy { loadMangaDexDmcaUuids(context = Injekt.get<Application>()) }
-    // AZ <--
-
     private suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // AZ -->
@@ -1624,18 +1625,22 @@ class LibraryScreenModel(
         }
     }
 
-    // AZ -->
+    // KMK -->
     companion object {
+        /** List of MangaDex UUIDs subject to DMCA takedowns */
+        @Volatile
+        private var mangaDexDmcaUuids = hashSetOf<String>()
+
         /**
          * Loads the list of MangaDex UUIDs subject to DMCA takedowns from an external file.
          * The file should be placed at res/raw/mangadex_dmca_uuids.txt, one UUID per line.
          */
-        fun loadMangaDexDmcaUuids(context: Context): HashSet<String> {
+        private suspend fun loadMangaDexDmcaUuids(context: Context): HashSet<String> = withIOContext {
             try {
                 val inputStream = context.resources.openRawResource(
                     eu.kanade.tachiyomi.R.raw.mangadex_dmca_uuids,
                 )
-                return inputStream.bufferedReader().useLines { lines ->
+                inputStream.bufferedReader().useLines { lines ->
                     lines.map { it.trim().lowercase() }
                         .filter { it.isNotEmpty() && !it.startsWith("#") }
                         .toHashSet()
@@ -1643,9 +1648,9 @@ class LibraryScreenModel(
             } catch (e: Exception) {
                 // Log the error and return an empty set if the file cannot be read.
                 Log.e("LibraryScreenModel", "Error loading MangaDex DMCA UUIDs", e)
-                return hashSetOf()
+                hashSetOf()
             }
         }
     }
-    // AZ <--
+    // KMK <--
 }
