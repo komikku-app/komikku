@@ -86,7 +86,7 @@ class SyncNotifier(private val context: Context) {
             setContentTitle(context.getString(R.string.sync_error))
             setContentText(error)
 
-            show(Notifications.ID_RESTORE_COMPLETE)
+            show(Notifications.ID_SYNC_COMPLETE)
         }
     }
 
