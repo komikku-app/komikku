@@ -178,6 +178,10 @@ class MergedSource : HttpSource() {
         return LoadedMangaSource(source, manga, this)
     }
 
+    fun getSources(): List<Source> {
+        return sourceManager.getOnlineSources()
+    }
+
     data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
 
     override val lang = "all"

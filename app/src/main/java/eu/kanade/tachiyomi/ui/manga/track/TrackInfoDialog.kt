@@ -66,6 +66,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import exh.metadata.metadata.base.TrackerIdMetadata
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.catch
@@ -83,6 +84,7 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
@@ -252,7 +254,16 @@ data class TrackInfoDialogHomeScreen(
         fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedTracker
             screenModelScope.launchNonCancellable {
-                val manga = Injekt.get<GetManga>().await(mangaId) ?: return@launchNonCancellable
+                var manga = if (sourceId == MERGED_SOURCE_ID) {
+                    Injekt.get<GetMergedReferencesById>().await(mangaId).first {
+                        Injekt.get<SourceManager>().get(it.mangaSourceId)?.name?.startsWith(
+                            item.tracker.name,
+                            true,
+                        ) == true
+                    }.mangaId?.let { Injekt.get<GetManga>().await(it) } ?: return@launchNonCancellable
+                } else {
+                    Injekt.get<GetManga>().await(mangaId) ?: return@launchNonCancellable
+                }
                 try {
                     val matchResult = item.tracker.match(manga) ?: throw Exception()
                     item.tracker.register(matchResult, mangaId)
