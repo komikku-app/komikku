@@ -258,7 +258,7 @@ data class TrackInfoDialogHomeScreen(
                     val references = Injekt.get<GetMergedReferencesById>().await(mangaId)
                     val mergedManga = references.firstOrNull {
                         val source = Injekt.get<SourceManager>().get(it.mangaSourceId)
-                        source?.name?.startsWith(item.tracker.name, true) == true
+                        source?.let { item.tracker.accept(it) } == true
                     }
                     mergedManga?.mangaId?.let { Injekt.get<GetManga>().await(it) }
                 } else {
