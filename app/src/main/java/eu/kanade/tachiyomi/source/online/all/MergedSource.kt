@@ -15,6 +15,7 @@ import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -178,8 +179,12 @@ class MergedSource : HttpSource() {
         return LoadedMangaSource(source, manga, this)
     }
 
-    fun getSources(): List<Source> {
-        return sourceManager.getOnlineSources()
+    fun getMergedSources(id: Long): List<Source> {
+        val sources = runBlocking {
+            val mergedManga = requireNotNull(getManga.await(id)) { "merged manga not in db" }
+            getMergedReferencesById.await(mergedManga.id)
+        }
+        return sources.map { sourceManager.getOrStub(it.mangaSourceId) }
     }
 
     data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
