@@ -88,11 +88,6 @@ fun MoreScreen(
             item {
                 LogoHeader()
             }
-            // KMK -->
-            item {
-                Sponsor()
-            }
-            // KMK <--
             item {
                 SwitchPreferenceWidget(
                     title = stringResource(MR.strings.label_downloaded_only),
@@ -234,6 +229,11 @@ fun MoreScreen(
                     onPreferenceClick = { uriHandler.openUri(Constants.URL_HELP) },
                 )
             }
+            // KMK -->
+            item {
+                Sponsor()
+            }
+            // KMK <--
         }
     }
 }
