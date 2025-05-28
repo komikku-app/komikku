@@ -103,7 +103,6 @@
     <string name="action_scroll_to_bottom">Nach unten scrollen</string>
     <string name="action_scroll_to_previous">Zum Vorherigen scrollen</string>
     <string name="action_scroll_to_next">Zum Nächsten scrollen</string>
-    <string name="migrating_all_entries">Alle Einträge aus der Quelle migrieren</string>
     <string name="label_to_be_updated">Zu aktualisieren</string>
     <string name="pref_manga_info">Manga-Info</string>
     <string name="manual_download">Manueller Download</string>

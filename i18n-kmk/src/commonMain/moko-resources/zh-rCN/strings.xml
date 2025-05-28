@@ -109,7 +109,6 @@
     <string name="action_scroll_to_bottom">滚动到底部</string>
     <string name="action_scroll_to_previous">滚动到上一个</string>
     <string name="action_scroll_to_next">滚动到下一个</string>
-    <string name="migrating_all_entries">从源代码迁移所有条目</string>
     <string name="label_to_be_updated">待更新</string>
     <string name="pref_manga_info">漫画信息</string>
     <string name="manual_download">手动下载</string>

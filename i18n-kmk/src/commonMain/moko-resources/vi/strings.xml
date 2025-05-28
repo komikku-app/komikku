@@ -109,7 +109,6 @@
     <string name="action_scroll_to_bottom">Cuộn xuống dưới cùng</string>
     <string name="action_scroll_to_previous">Nhảy tới nhóm trước</string>
     <string name="action_scroll_to_next">Nhảy tới nhóm sau</string>
-    <string name="migrating_all_entries">Di chuyển tất cả truyện của nguồn</string>
     <string name="label_to_be_updated">Truyện sẽ được cập nhật</string>
     <string name="pref_manga_info">Trang thông tin truyện</string>
     <string name="manual_download">Tải về thủ công</string>

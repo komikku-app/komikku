@@ -101,7 +101,6 @@
     <string name="action_scroll_to_bottom">Défiler vers le bas</string>
     <string name="action_scroll_to_previous">Défiler vers le précédent</string>
     <string name="action_scroll_to_next">Défiler vers le suivant</string>
-    <string name="migrating_all_entries">Migrer toutes les entrées de la source</string>
     <string name="label_to_be_updated">A mettre à jour</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Téléchargement manuel</string>

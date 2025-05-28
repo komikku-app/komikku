@@ -108,7 +108,6 @@
     <string name="action_scroll_to_bottom">التمرير إلى الأسفل</string>
     <string name="action_scroll_to_previous">التمرير إلى السابق</string>
     <string name="action_scroll_to_next">التمرير إلى التالي</string>
-    <string name="migrating_all_entries">ترحيل جميع المدخلات من المصدر</string>
     <string name="label_to_be_updated">سيتم تحديثها</string>
     <string name="pref_manga_info">معلومات المانجا</string>
     <string name="manual_download">تنزيل يدوي</string>

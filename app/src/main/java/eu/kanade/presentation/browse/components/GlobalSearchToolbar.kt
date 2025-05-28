@@ -42,6 +42,7 @@ fun GlobalSearchToolbar(
     navigateUp: () -> Unit,
     onChangeSearchQuery: (String?) -> Unit,
     onSearch: (String) -> Unit,
+    hideSourceFilter: Boolean,
     sourceFilter: SourceFilter,
     onChangeSearchFilter: (SourceFilter) -> Unit,
     onlyShowHasResults: Boolean,
@@ -89,42 +90,44 @@ fun GlobalSearchToolbar(
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         ) {
             // TODO: make this UX better; it only applies when triggering a new search
-            // KMK -->
-            if (hasPinnedSources) {
-                // KMK <--
+            if (!hideSourceFilter) {
+                // KMK -->
+                if (hasPinnedSources) {
+                    // KMK <--
+                    FilterChip(
+                        selected = sourceFilter == SourceFilter.PinnedOnly,
+                        onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.PushPin,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(FilterChipDefaults.IconSize),
+                            )
+                        },
+                        label = {
+                            Text(text = stringResource(MR.strings.pinned_sources))
+                        },
+                    )
+                }
                 FilterChip(
-                    selected = sourceFilter == SourceFilter.PinnedOnly,
-                    onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
+                    selected = sourceFilter == SourceFilter.All,
+                    onClick = { onChangeSearchFilter(SourceFilter.All) },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Outlined.PushPin,
+                            imageVector = Icons.Outlined.DoneAll,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(FilterChipDefaults.IconSize),
                         )
                     },
                     label = {
-                        Text(text = stringResource(MR.strings.pinned_sources))
+                        Text(text = stringResource(MR.strings.all))
                     },
                 )
-            }
-            FilterChip(
-                selected = sourceFilter == SourceFilter.All,
-                onClick = { onChangeSearchFilter(SourceFilter.All) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.DoneAll,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(FilterChipDefaults.IconSize),
-                    )
-                },
-                label = {
-                    Text(text = stringResource(MR.strings.all))
-                },
-            )
 
-            VerticalDivider()
+                VerticalDivider()
+            }
 
             FilterChip(
                 selected = onlyShowHasResults,

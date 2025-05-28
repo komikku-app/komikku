@@ -15,13 +15,13 @@ import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.util.overEq
 import exh.util.underEq
 import kotlinx.collections.immutable.persistentListOf
+import mihon.feature.migration.MigrateMangaConfigScreen
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
@@ -76,7 +76,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                             val newStack = navigator.items.filter {
                                 it !is MangaScreen &&
                                     it !is MigrationListScreen &&
-                                    it !is PreMigrationScreen
+                                    it !is MigrateMangaConfigScreen
                             } + MangaScreen(mangaId)
                             navigator replaceAll newStack.first()
                             navigator.push(newStack.drop(1))
@@ -113,14 +113,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             openMigrationOptionsDialog = screenModel::openMigrationOptionsDialog,
             // KMK <--
             searchManually = { migrationItem ->
-                val sources = screenModel.getMigrationSources()
-                val validSources = if (sources.size == 1) {
-                    sources
-                } else {
-                    sources.filter { it.id != migrationItem.manga.source }
-                }
-                val searchScreen = MigrateSearchScreen(migrationItem.manga.id, validSources.map { it.id })
-                navigator push searchScreen
+                navigator push MigrateSearchScreen(migrationItem.manga.id)
             },
             migrateNow = { screenModel.migrateManga(it, true) },
             copyNow = { screenModel.migrateManga(it, false) },
