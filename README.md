@@ -9,7 +9,7 @@
 
 *Requires Android 8.0 or higher.*
 
-[![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/Nft8MxpR)
+[![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
 [![CI](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_push.yml?labelColor=27303D&label=CI)](https://github.com/komikku-app/komikku/actions/workflows/build_push.yml)
 [![License: Apache-2.0](https://img.shields.io/github/license/komikku-app/komikku?labelColor=27303D&color=0877d2)](/LICENSE)
 [![Translation status](https://img.shields.io/weblate/progress/komikku-app?labelColor=27303D&color=946300)](https://hosted.weblate.org/engage/komikku-app/)
@@ -18,6 +18,11 @@
 A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachiyomi. This fork is meant to provide new & useful features while regularly take features/updates from Mihon or other forks like SY, J2K and Neko...
 
 ![screenshots of app](./.github/readme-images/screens.png)
+
+<div align="center">
+<a href="https://www.buymeacoffee.com/cuongtrantm"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=cuongtrantm&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"  alt="Buy me a coffee"/></a>
+
+<div align="left">
 
 ## Features
 
@@ -121,8 +126,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 <details><summary>Issues</summary>
 
+[Website](https://komikku-app.github.io/)
+
 1. **Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://github.com/komikku-app/komikku/releases) and the already opened [issues](https://github.com/komikku-app/komikku/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/Nft8MxpR)
+2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
 
 </details>
 
@@ -164,15 +171,11 @@ Thank you to all the people who have contributed!
     <img src="https://contrib.rocks/image?repo=komikku-app/komikku" alt="Komikku app contributors" title="Komikku app contributors" width="800"/>
 </a>
 
+![Visitor Count](https://count.getloli.com/get/@komikku-app?theme=capoo-2)
+
 ### Disclaimer
 
 The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
-
-## FAQ
-
-* Komikku [website](https://komikku-app.github.io/) / [Discord](https://discord.gg/85jB7V5AJR)
-
-* Mihon [website](https://mihon.app/) / [Discord](https://discord.gg/Nft8MxpR)
 
 ## License
 
