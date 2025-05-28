@@ -15,6 +15,7 @@ enum class AppTheme(val titleRes: StringResource?) {
     COTTONCANDY(KMR.strings.theme_cottoncandy),
     MOCHA(KMR.strings.theme_mocha),
 
+    CATPPUCCIN(MR.strings.theme_catppuccin),
     GREEN_APPLE(MR.strings.theme_greenapple),
     LAVENDER(MR.strings.theme_lavender),
     MIDNIGHT_DUSK(MR.strings.theme_midnightdusk),
