@@ -253,7 +253,7 @@ fun Sponsor() {
             contentDescription = "Buy me a coffee",
             tint = Color.Unspecified,
             modifier = Modifier
-                .clickable { context.openInBrowser(Constants.BUY_ME_A_COFFEE) },
+                .clickable { context.openInBrowser(Constants.URL_BUY_ME_A_COFFEE) },
         )
     }
 }
