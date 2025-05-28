@@ -11,7 +11,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel.Companion.migrateMangaInternal
 import eu.kanade.tachiyomi.util.system.toast
@@ -130,9 +129,8 @@ class MigrationListScreenModel(
     }
     fun getSourceName(manga: Manga) = sourceManager.getOrStub(manga.source).getNameForMangaInfo()
 
-    fun getMigrationSources() = preferences.migrationSources().get().split("/").mapNotNull {
-        val value = it.toLongOrNull() ?: return@mapNotNull null
-        sourceManager.get(value) as? CatalogueSource
+    fun getMigrationSources() = preferences.migrationSources().get().mapNotNull {
+        sourceManager.get(it) as? CatalogueSource
     }
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {

@@ -171,7 +171,6 @@
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
-    <string name="migrating_all_entries">Migrating all entries from source</string>
     <!-- Misc -->
     <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
     <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>
