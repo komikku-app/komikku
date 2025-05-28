@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
@@ -238,7 +239,7 @@ open class SourceFeedScreenModel(
                                 is SourceFeedUI.Latest -> source.getLatestUpdates(1)
                                 is SourceFeedUI.SourceSavedSearch -> source.getSearchManga(
                                     page = 1,
-                                    query = sourceFeed.savedSearch.query.orEmpty(),
+                                    query = sourceFeed.savedSearch.query?.sanitize().orEmpty(),
                                     filters = getFilterList(sourceFeed.savedSearch, source),
                                 )
                             }

@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import exh.metadata.metadata.RaisedSearchMetadata
 import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.domain.manga.model.Manga
 
 abstract class EHentaiPagingSource(
@@ -40,7 +41,7 @@ class EHentaiSearchPagingSource(
     val filters: FilterList,
 ) : EHentaiPagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        return source.getSearchManga(currentPage, query, filters)
+        return source.getSearchManga(currentPage, query.sanitize(), filters)
     }
 }
 

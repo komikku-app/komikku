@@ -66,6 +66,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
@@ -714,7 +715,7 @@ data class TrackerSearchScreen(
 
                 val result = withIOContext {
                     try {
-                        val results = tracker.search(query)
+                        val results = tracker.search(query.sanitize())
                         Result.success(results)
                     } catch (e: Throwable) {
                         Result.failure(e)

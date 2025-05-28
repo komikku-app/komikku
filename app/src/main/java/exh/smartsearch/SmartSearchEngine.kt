@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.domain.manga.model.Manga
 import java.util.Locale
 
@@ -30,7 +31,7 @@ class SmartSearchEngine(
                         query
                     }
 
-                    val searchResults = source.getSearchManga(1, builtQuery, FilterList())
+                    val searchResults = source.getSearchManga(1, builtQuery.sanitize(), FilterList())
 
                     searchResults.mangas.map {
                         val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
@@ -53,7 +54,7 @@ class SmartSearchEngine(
             } else {
                 title
             }
-            val searchResults = source.getSearchManga(1, searchQuery, FilterList())
+            val searchResults = source.getSearchManga(1, searchQuery.sanitize(), FilterList())
 
             if (searchResults.mangas.size == 1) {
                 return@supervisorScope listOf(SearchEntry(searchResults.mangas.first(), 0.0))
