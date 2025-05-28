@@ -19,6 +19,11 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
+<div align="center">
+<a href="https://www.buymeacoffee.com/cuongtrantm"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=cuongtrantm&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"  alt="Buy me a coffee"/></a>
+
+<div align="left">
+
 ## Features
 
 ### Komikku's unique features:
@@ -165,6 +170,8 @@ Thank you to all the people who have contributed!
 <a href="https://github.com/komikku-app/komikku/graphs/contributors">
     <img src="https://contrib.rocks/image?repo=komikku-app/komikku" alt="Komikku app contributors" title="Komikku app contributors" width="800"/>
 </a>
+
+![Visitor Count](https://count.getloli.com/get/@komikku-app?theme=capoo-2)
 
 ### Disclaimer
 
