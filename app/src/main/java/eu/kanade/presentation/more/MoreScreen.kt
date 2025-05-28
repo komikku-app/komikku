@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -262,13 +263,15 @@ fun Sponsor() {
                     width = 2.dp,
                     color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.small,
-                )
-                .clickable { context.openInBrowser(Constants.URL_BUY_ME_A_COFFEE) },
+                ),
         ) {
             Icon(
                 painter = painter,
                 contentDescription = "Buy me a coffee",
                 tint = Color.Unspecified,
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { context.openInBrowser(Constants.URL_BUY_ME_A_COFFEE) },
             )
         }
     }
