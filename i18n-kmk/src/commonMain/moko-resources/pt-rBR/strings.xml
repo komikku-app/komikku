@@ -105,7 +105,6 @@
     <string name="action_scroll_to_bottom">Rolar para o final</string>
     <string name="action_scroll_to_previous">Rolar para o anterior</string>
     <string name="action_scroll_to_next">Rolar para o próximo</string>
-    <string name="migrating_all_entries">Migrando todas as entradas da fonte</string>
     <string name="label_to_be_updated">A ser atualizado</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Download Manual</string>

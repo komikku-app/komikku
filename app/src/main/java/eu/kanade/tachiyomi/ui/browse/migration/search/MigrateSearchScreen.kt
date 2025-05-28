@@ -14,16 +14,13 @@ import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
-/**
- * Manual search [validSources] for manga to migrate to.
- */
-class MigrateSearchScreen(private val mangaId: Long, private val validSources: List<Long>) : Screen() {
+class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel =
-            rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId, validSources = validSources) }
+            rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId) }
         val state by screenModel.state.collectAsState()
 
         val dialogScreenModel = rememberScreenModel { MigrateSearchScreenDialogScreenModel(mangaId = mangaId) }

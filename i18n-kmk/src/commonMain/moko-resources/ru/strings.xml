@@ -106,7 +106,6 @@
     <string name="action_scroll_to_bottom">Прокрутка вниз</string>
     <string name="action_scroll_to_previous">Прокрутка до предыдущей</string>
     <string name="action_scroll_to_next">Прокрутка до следующего</string>
-    <string name="migrating_all_entries">Миграция всех записей из источника</string>
     <string name="label_to_be_updated">Будет обновлено</string>
     <string name="pref_manga_info">Информация о манге</string>
     <string name="manual_download">Ручная загрузка</string>

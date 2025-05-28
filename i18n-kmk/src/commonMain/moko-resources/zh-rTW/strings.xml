@@ -109,7 +109,6 @@
     <string name="action_scroll_to_bottom">移至底部</string>
     <string name="action_scroll_to_previous">移至上一類</string>
     <string name="action_scroll_to_next">移至下一類</string>
-    <string name="migrating_all_entries">正在從來源遷移所有項目</string>
     <string name="label_to_be_updated">待更新</string>
     <string name="pref_manga_info">漫畫資訊</string>
     <string name="manual_download">手動下載</string>

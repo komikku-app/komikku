@@ -84,7 +84,6 @@
     <string name="action_scroll_to_bottom">Mag-scroll paibaba</string>
     <string name="action_scroll_to_previous">Mag-scroll sa nakaraan</string>
     <string name="action_scroll_to_next">Mag-scroll sa susunod</string>
-    <string name="migrating_all_entries">Nililipat ang lahat ng entry mula sa source</string>
     <string name="label_to_be_updated">Para ma-update</string>
     <string name="pref_manga_info">Impo ng Manga</string>
     <string name="manual_download">Mano-manong I-downloa</string>

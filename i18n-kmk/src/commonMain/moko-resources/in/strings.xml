@@ -146,7 +146,6 @@
     <string name="action_scroll_to_previous">Gulir ke sebelumnya</string>
     <string name="action_sort_feed">Urutkan feed</string>
     <string name="sort_feed_confirmation">Apakah Anda ingin mengurutkan feed berdasarkan abjad?</string>
-    <string name="migrating_all_entries">Memigrasikan semua entri dari sumber</string>
     <string name="job_failed_schedule_update_check">Gagal menjadwalkan pembaruan perpustakaan otomatis: %s</string>
     <string name="job_failed_schedule_backup_check">Gagal menjadwalkan pencadangan otomatis: %s</string>
     <string name="label_to_be_updated">Untuk diperbarui</string>

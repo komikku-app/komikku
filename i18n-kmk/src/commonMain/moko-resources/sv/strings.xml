@@ -103,7 +103,6 @@
     <string name="action_scroll_to_bottom">Rulla till botten</string>
     <string name="action_scroll_to_previous">Bläddra till föregående</string>
     <string name="action_scroll_to_next">Bläddra till nästa</string>
-    <string name="migrating_all_entries">Migrerar alla poster från källan</string>
     <string name="label_to_be_updated">Att uppdateras</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Manuell nedladdning</string>
