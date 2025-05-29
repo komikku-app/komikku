@@ -20,7 +20,8 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 ![screenshots of app](./.github/readme-images/screens.png)
 
 <div align="center">
-<a href="https://www.buymeacoffee.com/cuongtrantm"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=cuongtrantm&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"  alt="Buy me a coffee"/></a>
+
+[![Buy me a coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=cuongtrantm&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://github.com/komikku-app/komikku/releases/latest)
 
 <div align="left">
 
