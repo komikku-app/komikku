@@ -64,7 +64,7 @@ fun GlobalSearchScreen(
                             .flatMap { it.result }
                             .let {
                                 scope.launchIO {
-                                    bulkFavoriteScreenModel.networkToLocalManga(it)
+                                    bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
                                         .forEach { bulkFavoriteScreenModel.select(it) }
                                 }
                             }
@@ -76,7 +76,7 @@ fun GlobalSearchScreen(
                             .let {
                                 scope.launchIO {
                                     bulkFavoriteScreenModel.reverseSelection(
-                                        bulkFavoriteScreenModel.networkToLocalManga(it),
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
                                     )
                                 }
                             }

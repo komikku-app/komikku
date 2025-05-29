@@ -79,7 +79,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                                 .map { it.value.first }
                                 .let {
                                     scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga(it)
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
                                             .forEach { bulkFavoriteScreenModel.select(it) }
                                     }
                                 }
@@ -90,7 +90,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                                 .let {
                                     scope.launchIO {
                                         bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga(it),
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
                                         )
                                     }
                                 }
@@ -131,7 +131,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onMangaClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         if (bulkFavoriteState.selectionMode) {
                             bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
@@ -143,7 +143,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 onMangaLongClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         if (bulkFavoriteState.selectionMode) {
                             navigator.push(MangaScreen(manga.id, true))
                         } else {

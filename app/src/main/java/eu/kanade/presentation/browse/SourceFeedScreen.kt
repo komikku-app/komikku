@@ -132,7 +132,7 @@ fun SourceFeedScreen(
                             .flatten()
                             .let {
                                 scope.launchIO {
-                                    bulkFavoriteScreenModel.networkToLocalManga(it)
+                                    bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
                                         .forEach { bulkFavoriteScreenModel.select(it) }
                                 }
                             }
@@ -143,7 +143,7 @@ fun SourceFeedScreen(
                             .let {
                                 scope.launchIO {
                                     bulkFavoriteScreenModel.reverseSelection(
-                                        bulkFavoriteScreenModel.networkToLocalManga(it),
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
                                     )
                                 }
                             }

@@ -94,7 +94,7 @@ data class SourceSearchScreen(
                                 .map { it.value.first }
                                 .let {
                                     scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga(it)
+                                        bulkFavoriteScreenModel.networkToLocalManga.getLocal(it)
                                             .forEach { bulkFavoriteScreenModel.select(it) }
                                     }
                                 }
@@ -105,7 +105,7 @@ data class SourceSearchScreen(
                                 .let {
                                     scope.launchIO {
                                         bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga(it),
+                                            bulkFavoriteScreenModel.networkToLocalManga.getLocal(it),
                                         )
                                     }
                                 }
@@ -178,7 +178,7 @@ data class SourceSearchScreen(
                 onMangaClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         if (bulkFavoriteState.selectionMode) {
                             bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
@@ -190,7 +190,7 @@ data class SourceSearchScreen(
                 onMangaLongClick = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         // KMK <--
                         navigator.push(MangaScreen(manga.id, true))
                     }

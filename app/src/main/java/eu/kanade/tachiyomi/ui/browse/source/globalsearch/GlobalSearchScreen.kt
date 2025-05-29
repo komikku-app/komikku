@@ -71,7 +71,7 @@ class GlobalSearchScreen(
                         if (manga != null) {
                             // KMK -->
                             scope.launchIO {
-                                val localManga = screenModel.networkToLocalManga(manga)
+                                val localManga = screenModel.networkToLocalManga.getLocal(manga)
                                 // KMK <--
                                 navigator.replace(MangaScreen(localManga.id, true))
                             }
@@ -98,7 +98,7 @@ class GlobalSearchScreen(
                 onClickItem = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         if (bulkFavoriteState.selectionMode) {
                             bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
@@ -110,7 +110,7 @@ class GlobalSearchScreen(
                 onLongClickItem = {
                     // KMK -->
                     scope.launchIO {
-                        val manga = screenModel.networkToLocalManga(it)
+                        val manga = screenModel.networkToLocalManga.getLocal(it)
                         if (!bulkFavoriteState.selectionMode) {
                             bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                         } else {
