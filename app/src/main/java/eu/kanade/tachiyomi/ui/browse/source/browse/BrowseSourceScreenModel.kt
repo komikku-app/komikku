@@ -70,7 +70,6 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
-import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.toMangaUpdate
@@ -115,9 +114,6 @@ open class BrowseSourceScreenModel(
     private val extensionManager: ExtensionManager = Injekt.get(),
     // KMK <--
 
-    // KMK -->
-    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    // KMK <--
     // SY -->
     unsortedPreferences: UnsortedPreferences = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),

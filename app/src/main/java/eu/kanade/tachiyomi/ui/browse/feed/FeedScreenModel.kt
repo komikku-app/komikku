@@ -61,7 +61,7 @@ open class FeedScreenModel(
     val sourceManager: SourceManager = Injekt.get(),
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
-    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
     private val countFeedSavedSearchGlobal: CountFeedSavedSearchGlobal = Injekt.get(),
@@ -305,8 +305,8 @@ open class FeedScreenModel(
                             results = page
                                 .map { it.toDomainManga(itemUI.source!!.id) }
                                 .distinctBy { it.url }
+                                .let { networkToLocalManga(it) }
                                 // KMK -->
-                                // .let { networkToLocalManga(it) }
                                 .filter { !hideInLibraryFeedItems.get() || !it.favorite },
                             // KMK <--
                         )
@@ -344,11 +344,8 @@ open class FeedScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
-                    /* KMK --> if (manga == null) return@collectLatest KMK <-- */
+                    if (manga == null) return@collectLatest
                     value = manga
-                        // KMK -->
-                        ?: initialManga
-                    // KMK <--
                 }
         }
     }
