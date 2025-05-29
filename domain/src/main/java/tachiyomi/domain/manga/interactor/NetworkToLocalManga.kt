@@ -7,11 +7,11 @@ class NetworkToLocalManga(
     private val mangaRepository: MangaRepository,
 ) {
 
-    suspend operator fun invoke(manga: Manga): Manga {
-        return invoke(listOf(manga)).single()
+    suspend operator fun invoke(manga: Manga, updateInfo: Boolean = true): Manga {
+        return invoke(listOf(manga), updateInfo).single()
     }
 
-    suspend operator fun invoke(manga: List<Manga>): List<Manga> {
-        return mangaRepository.insertNetworkManga(manga)
+    suspend operator fun invoke(manga: List<Manga>, updateInfo: Boolean = true): List<Manga> {
+        return mangaRepository.insertNetworkManga(manga, updateInfo)
     }
 }

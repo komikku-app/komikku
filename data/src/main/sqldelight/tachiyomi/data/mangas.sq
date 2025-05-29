@@ -242,7 +242,7 @@ insertNetworkManga {
         status = CASE WHEN :updateDetails THEN :status ELSE status END,
         update_strategy = CASE WHEN :updateDetails THEN :updateStrategy ELSE update_strategy END,
         initialized = :updateDetails
-    WHERE source = :source
+    WHERE source = :source AND :updateInfo
     AND url = :url
     AND favorite = 0;
 
