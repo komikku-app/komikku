@@ -31,6 +31,8 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
+import exh.log.LogLevel
+import exh.log.xLog
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.launchIO
@@ -183,9 +185,12 @@ internal class MigrateDialogScreenModel(
                 replace = replace,
                 presetFlags = flags,
             )
-        } catch (_: Throwable) {
-            // Explicitly stop if an error occurred; the dialog normally gets popped at the end
-            // anyway
+        } catch (e: Throwable) {
+            // Explicitly stop if an error occurred; the dialog normally gets popped at the end anyway
+            // KMK -->
+            xLog(LogLevel.Error, "Failed to migrate manga ${oldManga.title} to ${newManga.title}", e)
+        } finally {
+            // KMK <--
             mutableState.update { it.copy(isMigrating = false) }
         }
     }
