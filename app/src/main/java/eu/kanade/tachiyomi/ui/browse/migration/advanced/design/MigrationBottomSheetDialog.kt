@@ -5,7 +5,11 @@ import android.widget.CompoundButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -50,44 +54,49 @@ fun MigrationBottomSheetDialog(
     // KMK <--
 
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
-        AndroidView(
-            factory = { factoryContext ->
-                val binding = MigrationBottomSheetBinding.inflate(LayoutInflater.from(factoryContext))
-                state.initPreferences(binding)
-                // KMK -->
-                binding.migrateBtn.setBackgroundColor(colorScheme.primary)
-                binding.dataLabel.setTextColor(colorScheme.primary)
-                binding.optionsLabel.setTextColor(colorScheme.primary)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Wrap AndroidView in a scrollable Column using verticalScroll
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                AndroidView(
+                    factory = { factoryContext ->
+                        val binding = MigrationBottomSheetBinding.inflate(LayoutInflater.from(factoryContext))
+                        state.initPreferences(binding)
+                        // KMK -->
+                        binding.migrateBtn.setBackgroundColor(colorScheme.primary)
+                        binding.dataLabel.setTextColor(colorScheme.primary)
+                        binding.optionsLabel.setTextColor(colorScheme.primary)
 
-                binding.migChapters.buttonTintList = colorScheme.checkboxTintList
-                binding.migCategories.buttonTintList = colorScheme.checkboxTintList
-                binding.migTracking.buttonTintList = colorScheme.checkboxTintList
-                binding.migCustomCover.buttonTintList = colorScheme.checkboxTintList
-                binding.migExtra.buttonTintList = colorScheme.checkboxTintList
-                binding.migDeleteDownloaded.buttonTintList = colorScheme.checkboxTintList
+                        binding.migChapters.buttonTintList = colorScheme.checkboxTintList
+                        binding.migCategories.buttonTintList = colorScheme.checkboxTintList
+                        binding.migTracking.buttonTintList = colorScheme.checkboxTintList
+                        binding.migCustomCover.buttonTintList = colorScheme.checkboxTintList
+                        binding.migExtra.buttonTintList = colorScheme.checkboxTintList
+                        binding.migDeleteDownloaded.buttonTintList = colorScheme.checkboxTintList
 
-                binding.radioButton.buttonTintList = colorScheme.checkboxTintList
-                binding.radioButton2.buttonTintList = colorScheme.checkboxTintList
+                        binding.radioButton.buttonTintList = colorScheme.checkboxTintList
+                        binding.radioButton2.buttonTintList = colorScheme.checkboxTintList
 
-                binding.useSmartSearch.trackTintList = colorScheme.trackTintList
-                binding.extraSearchParam.trackTintList = colorScheme.trackTintList
-                binding.skipStep.trackTintList = colorScheme.trackTintList
-                binding.HideNotFoundManga.trackTintList = colorScheme.trackTintList
-                binding.OnlyShowUpdates.trackTintList = colorScheme.trackTintList
+                        binding.useSmartSearch.trackTintList = colorScheme.trackTintList
+                        binding.extraSearchParam.trackTintList = colorScheme.trackTintList
+                        binding.skipStep.trackTintList = colorScheme.trackTintList
+                        binding.HideNotFoundManga.trackTintList = colorScheme.trackTintList
+                        binding.OnlyShowUpdates.trackTintList = colorScheme.trackTintList
 
-                binding.useSmartSearch.thumbTintList = colorScheme.thumbTintList
-                binding.extraSearchParam.thumbTintList = colorScheme.thumbTintList
-                binding.skipStep.thumbTintList = colorScheme.thumbTintList
-                binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
-                binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
+                        binding.useSmartSearch.thumbTintList = colorScheme.thumbTintList
+                        binding.extraSearchParam.thumbTintList = colorScheme.thumbTintList
+                        binding.skipStep.thumbTintList = colorScheme.thumbTintList
+                        binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
+                        binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
 
-                colorScheme.setTextInputLayoutColor(binding.extraSearchParamInputLayout)
-                colorScheme.setEditTextColor(binding.extraSearchParamText)
-                // KMK <--
-                binding.root
-            },
-            modifier = Modifier.fillMaxWidth(),
-        )
+                        colorScheme.setTextInputLayoutColor(binding.extraSearchParamInputLayout)
+                        colorScheme.setEditTextColor(binding.extraSearchParamText)
+                        // KMK <--
+                        binding.root
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
     }
 }
 
