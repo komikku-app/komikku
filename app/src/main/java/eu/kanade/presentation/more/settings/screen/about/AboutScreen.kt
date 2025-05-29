@@ -229,8 +229,7 @@ class AboutScreen : Screen() {
                         title = stringResource(MR.strings.help_translate),
                         onPreferenceClick = {
                             uriHandler.openUri(
-                                "https://crowdin.com/project/komikku/" +
-                                    "invite?h=f922abd4193e77309b084a08c74b89872112170",
+                                "https://hosted.weblate.org/engage/komikku-app/",
                             )
                         },
                     )
