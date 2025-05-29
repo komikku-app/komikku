@@ -246,13 +246,12 @@ insertNetworkManga {
     AND url = :url
     AND favorite = 0;
 
--- KMK : Disabled the following SELECT as it will cause `getMangaByUrlAndSource` flow not triggered
---     -- Finally return the manga
---     SELECT *
---     FROM mangas
---     WHERE source = :source
---     AND url = :url
---     LIMIT 1;
+    -- Finally return the manga
+    SELECT *
+    FROM mangas
+    WHERE source = :source
+    AND url = :url
+    LIMIT 1;
 }
 
 getEhMangaWithMetadata:

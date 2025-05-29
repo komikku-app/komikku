@@ -149,11 +149,8 @@ class MangaRepositoryImpl(
                     updateCover = !it.ogThumbnailUrl.isNullOrBlank(),
                     // SY <--
                     updateDetails = it.initialized,
-                    // KMK -->
-                    // mapper = MangaMapper::mapManga,
+                    mapper = MangaMapper::mapManga,
                 )
-                mangasQueries.getMangaByUrlAndSource(it.url, it.source, MangaMapper::mapManga)
-                    // KMK <--
                     .executeAsOne()
             }
         }
