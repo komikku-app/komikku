@@ -3,6 +3,7 @@ package eu.kanade.domain.source.service
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
@@ -13,7 +14,7 @@ class SourcePreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
-    fun sourceDisplayMode() = preferenceStore.getObject(
+    fun sourceDisplayMode() = preferenceStore.getObjectFromString(
         "pref_display_mode_catalogue",
         LibraryDisplayMode.default,
         LibraryDisplayMode.Serializer::serialize,
@@ -70,6 +71,13 @@ class SourcePreferences(
         false,
     )
 
+    fun migrationFlags() = preferenceStore.getObjectFromInt(
+        key = "migrate_flags",
+        defaultValue = MigrationFlag.entries.toSet(),
+        serializer = { MigrationFlag.toBit(it) },
+        deserializer = { value: Int -> MigrationFlag.fromBit(value) },
+    )
+
     // KMK -->
     fun globalSearchPinnedState() = preferenceStore.getEnum(
         Preference.appStateKey("global_search_pinned_toggle_state"),
@@ -111,8 +119,6 @@ class SourcePreferences(
         BANDWIDTH_HERO,
         WSRV_NL,
     }
-
-    fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
 
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 

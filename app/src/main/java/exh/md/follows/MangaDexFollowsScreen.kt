@@ -24,11 +24,10 @@ import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.i18n.sy.SYMR
@@ -167,13 +166,12 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
             }
             // KMK -->
             is BrowseSourceScreenModel.Dialog.Migrate -> {
-                MigrateDialog(
-                    oldManga = dialog.oldManga,
-                    newManga = dialog.newManga,
-                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    // Initiated from the context of [dialog.target] so we show [dialog.current].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
                     onDismissRequest = onDismissRequest,
-                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = { onDismissRequest() },
                 )
             }
             // KMK <--

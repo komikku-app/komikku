@@ -27,7 +27,7 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
 
 /**
- * Screen showing a list of pair of source-dest manga entries being migrated.
+ * Screen showing a list of pair of current-target manga entries being migrated.
  */
 class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
 
