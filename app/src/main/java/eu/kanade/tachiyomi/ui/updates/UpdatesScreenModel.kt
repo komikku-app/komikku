@@ -99,12 +99,15 @@ class UpdatesScreenModel(
                             isLoading = false,
                             items = updates.toUpdateItems()
                                 // KMK -->
-                                .groupBy { it.update.mangaId }
-                                .values
-                                .flatMap { mangaChapters ->
-                                    val (unread, read) = mangaChapters.partition { !it.update.read }
-                                    unread.sortedBy { it.update.dateFetch } +
-                                        read.sortedByDescending { it.update.dateFetch }
+                                .groupBy { it.update.dateFetch.toLocalDate() }
+                                .flatMap { (_, mangas) ->
+                                    mangas.groupBy { it.update.mangaId }
+                                        .values
+                                        .flatMap { mangaChapters ->
+                                            val (unread, read) = mangaChapters.partition { !it.update.read }
+                                            unread.sortedBy { it.update.dateFetch } +
+                                                read.sortedByDescending { it.update.dateFetch }
+                                        }
                                 }
                                 .toPersistentList(),
                             // KMK <--
