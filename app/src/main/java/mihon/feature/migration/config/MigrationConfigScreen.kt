@@ -1,4 +1,4 @@
-package mihon.feature.migration
+package mihon.feature.migration.config
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -38,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,7 +65,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.flow.update
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
@@ -79,7 +78,6 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.Pill
-import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -96,7 +94,7 @@ import uy.kohesive.injekt.api.get
  *
  * @param mangaIds IDs of the manga that will be migrated using the sources configured on this screen.
  */
-class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
+class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
     @Composable
     override fun Content() {
@@ -174,6 +172,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                             text = { Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText)) },
                             icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
                             onClick = {
+                                screenModel.saveSources()
                                 // KMK -->
                                 screenModel.onMigrationSheet(true)
                                 // KMK <--
@@ -232,9 +231,8 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                             SourceItemContainer(
                                 firstItem = index == 0,
                                 lastItem = index == (sources.size - 1),
-                                source = item.source,
+                                source = item,
                                 showLanguage = showLanguage,
-                                isSelected = item.isSelected,
                                 dragEnabled = selectedSourceList && sources.size > 1,
                                 state = reorderableState,
                                 key = { if (selectedSourceList) it.id else "available-${it.id}" },
@@ -289,12 +287,11 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
     private fun LazyItemScope.SourceItemContainer(
         firstItem: Boolean,
         lastItem: Boolean,
-        source: Source,
+        source: MigrationSource,
         showLanguage: Boolean,
-        isSelected: Boolean,
         dragEnabled: Boolean,
         state: ReorderableLazyListState,
-        key: (Source) -> Any,
+        key: (MigrationSource) -> Any,
         onClick: () -> Unit,
     ) {
         val shape = remember(firstItem, lastItem) {
@@ -317,7 +314,6 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 SourceItem(
                     source = source,
                     showLanguage = showLanguage,
-                    isSelected = isSelected,
                     dragEnabled = dragEnabled,
                     scope = this@ReorderableItem,
                     onClick = onClick,
@@ -332,9 +328,8 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
     @Composable
     private fun SourceItem(
-        source: Source,
+        source: MigrationSource,
         showLanguage: Boolean,
-        isSelected: Boolean,
         dragEnabled: Boolean,
         scope: ReorderableCollectionItemScope,
         onClick: () -> Unit,
@@ -345,7 +340,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    SourceIcon(source = source)
+                    SourceIcon(source = source.source)
                     Text(
                         text = source.name,
                         maxLines = 1,
@@ -355,7 +350,9 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                     )
                     if (showLanguage) {
                         Pill(
-                            text = FlagEmoji.getEmojiLangFlag(source.lang) + " (${LocaleHelper.getLocalizedDisplayName(source.lang)})",
+                            // KMK -->
+                            text = FlagEmoji.getEmojiLangFlag(source.shortLanguage) + " (${source.upperShortLanguage})",
+                            // KMK <--
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
@@ -377,9 +374,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent,
             ),
-            modifier = Modifier
-                .clickable(onClick = onClick)
-                .alpha(if (isSelected) 1f else DISABLED_ALPHA),
+            modifier = Modifier.clickable(onClick = onClick),
         )
     }
 
@@ -414,12 +409,12 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 // { !it.isSelected },
                 { includedSources[it.source.id] ?: Int.MAX_VALUE },
                 // KMK <--
-                { with(it.source) { "$name (${LocaleHelper.getLocalizedDisplayName(lang)})" } },
+                { with(it) { "$name ($shortLanguage)" } },
             )
         }
 
         private fun updateSources(save: Boolean = true, action: (List<MigrationSource>) -> List<MigrationSource>) {
-            val state = mutableState.updateAndGet { state ->
+            mutableState.update { state ->
                 val updatedSources = action(state.sources)
                 val includedSources = updatedSources.mapNotNull { if (!it.isSelected) null else it.id }
                     // KMK -->
@@ -427,11 +422,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 // KMK <--
                 state.copy(sources = updatedSources.sortedWith(sourcesComparator(includedSources)))
             }
-            if (!save) return
-            state.sources
-                .filter { source -> source.isSelected }
-                .map { source -> source.source.id }
-                .let { sources -> sourcePreferences.migrationSources().set(sources) }
+            if (save) saveSources()
         }
 
         private fun initSources() {
@@ -506,6 +497,13 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
             }
         }
 
+        fun saveSources() {
+            state.value.sources
+                .filter { source -> source.isSelected }
+                .map { source -> source.source.id }
+                .let { sources -> sourcePreferences.migrationSources().set(sources) }
+        }
+
         data class State(
             val sources: List<MigrationSource> = emptyList(),
         )
@@ -521,8 +519,15 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
     data class MigrationSource(
         val source: Source,
         val isSelected: Boolean,
+        // KMK -->
+        val shortLanguage: String = LocaleHelper.getShortDisplayName(source.lang),
+        val upperShortLanguage: String = shortLanguage.uppercase(),
+        // KMK <--
     ) {
-        val id = source.id
-        val visualName = source.visualName
+        val id: Long
+            inline get() = source.id
+
+        val name: String
+            inline get() = source.name
     }
 }
