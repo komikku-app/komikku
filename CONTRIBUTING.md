@@ -30,7 +30,7 @@ Before you start, please note that the ability to use following technologies is 
 
 # Translations
 
-Translations are done externally via [Weblate](https://hosted.weblate.org/engage/komikku-app/).
+Translations are done externally via [Weblate](https://hosted.weblate.org/engage/komikku-app/). See [our website](https://komikku-app.github.io/docs/contribute#translation) for more details.
 
 
 # Forks
