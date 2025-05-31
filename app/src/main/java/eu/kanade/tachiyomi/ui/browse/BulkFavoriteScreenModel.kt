@@ -378,7 +378,7 @@ class BulkFavoriteScreenModel(
     }
 
     internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
-        setDialog(Dialog.Migrate(newManga = manga, oldManga = duplicate))
+        setDialog(Dialog.Migrate(target = manga, current = duplicate))
     }
 
     private fun setDialog(dialog: Dialog?) {
@@ -406,7 +406,7 @@ class BulkFavoriteScreenModel(
     }
 
     sealed interface Dialog {
-        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<MangaWithChapterCount>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog

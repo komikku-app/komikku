@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel.Companion.migrateMangaInternal
 import eu.kanade.tachiyomi.util.system.toast
 import exh.smartsearch.SmartSourceSearchEngine
 import exh.source.MERGED_SOURCE_ID
@@ -32,6 +31,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
+import mihon.domain.migration.usecases.MigrateMangaUseCase
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
@@ -57,6 +57,7 @@ class MigrationListScreenModel(
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
+    private val migrateManga: MigrateMangaUseCase = Injekt.get(),
 ) : ScreenModel {
 
     private val smartSearchEngine = SmartSourceSearchEngine(config.extraSearchParams)
@@ -383,33 +384,18 @@ class MigrationListScreenModel(
             migratingProgress.value = 0f
             val items = migratingItems.value.orEmpty()
             try {
-                items.forEachIndexed { index, oldManga ->
+                items.forEachIndexed { index, current ->
                     try {
                         ensureActive()
-                        val newManga = oldManga.searchResult.value.let {
+                        val target = current.searchResult.value.let {
                             if (it is SearchResult.Result) {
                                 getManga.await(it.id)
                             } else {
                                 null
                             }
                         }
-                        if (newManga != null) {
-                            val source = sourceManager.get(newManga.source) ?: return@launchIO
-                            val prevSource = sourceManager.get(oldManga.manga.source)
-
-                            try {
-                                val chapters = source.getChapterList(newManga.toSManga())
-
-                                migrateMangaInternal(
-                                    oldSource = prevSource,
-                                    newSource = source,
-                                    oldManga = oldManga.manga,
-                                    newManga = newManga,
-                                    sourceChapters = chapters,
-                                    replace = replace,
-                                )
-                            } catch (_: Throwable) {
-                            }
+                        if (target != null) {
+                            migrateManga(current.manga, target, replace)
                         }
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
@@ -438,28 +424,13 @@ class MigrationListScreenModel(
     fun migrateManga(mangaId: Long, replace: Boolean) {
         manualMigrations.value++
         screenModelScope.launchIO {
-            val oldManga = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
+            val current = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
 
-            val newManga = getManga.await((oldManga.searchResult.value as? SearchResult.Result)?.id ?: return@launchIO)
+            val target = getManga.await((current.searchResult.value as? SearchResult.Result)?.id ?: return@launchIO)
                 ?: return@launchIO
 
-            val source = sourceManager.get(newManga.source) ?: return@launchIO
-            val prevSource = sourceManager.get(oldManga.manga.source)
-
-            try {
-                val chapters = source.getChapterList(newManga.toSManga())
-
-                migrateMangaInternal(
-                    oldSource = prevSource,
-                    newSource = source,
-                    oldManga = oldManga.manga,
-                    newManga = newManga,
-                    sourceChapters = chapters,
-                    replace = replace,
-                )
-            } catch (_: Throwable) {
-            }
+            migrateManga(current.manga, target, replace)
             removeManga(mangaId)
         }
     }

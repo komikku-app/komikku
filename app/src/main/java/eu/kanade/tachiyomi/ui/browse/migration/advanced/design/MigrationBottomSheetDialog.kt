@@ -21,8 +21,8 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
-import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
+import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.toLong
@@ -116,15 +116,15 @@ class MigrationBottomSheetDialogState(
      * Init general reader preferences.
      */
     fun initPreferences(binding: MigrationBottomSheetBinding) {
-        val flags = preferences.migrateFlags().get()
+        val flags = preferences.migrationFlags().get()
 
         with(binding) {
-            migChapters.isChecked = MigrationFlags.hasChapters(flags)
-            migCategories.isChecked = MigrationFlags.hasCategories(flags)
-            migTracking.isChecked = MigrationFlags.hasTracks(flags)
-            migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
-            migExtra.isChecked = MigrationFlags.hasExtra(flags)
-            migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteDownloaded(flags)
+            migChapters.isChecked = MigrationFlag.CHAPTER in flags
+            migCategories.isChecked = MigrationFlag.CATEGORY in flags
+            migTracking.isChecked = MigrationFlag.TRACK in flags
+            migCustomCover.isChecked = MigrationFlag.CUSTOM_COVER in flags
+            migExtra.isChecked = MigrationFlag.EXTRA in flags
+            migDeleteDownloaded.isChecked = MigrationFlag.REMOVE_DOWNLOAD in flags
 
             listOf(
                 migChapters,
@@ -183,17 +183,16 @@ class MigrationBottomSheetDialogState(
     }
 
     private fun setFlags(binding: MigrationBottomSheetBinding) {
-        var flags = 0
+        val flags = mutableSetOf<MigrationFlag>()
         with(binding) {
-            @Suppress("KotlinConstantConditions")
-            if (migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
-            if (migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
-            if (migTracking.isChecked) flags = flags or MigrationFlags.TRACK
-            if (migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
-            if (migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
-            if (migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_DOWNLOADED
+            if (migChapters.isChecked) flags.add(MigrationFlag.CHAPTER)
+            if (migCategories.isChecked) flags.add(MigrationFlag.CATEGORY)
+            if (migTracking.isChecked) flags.add(MigrationFlag.TRACK)
+            if (migCustomCover.isChecked) flags.add(MigrationFlag.CUSTOM_COVER)
+            if (migExtra.isChecked) flags.add(MigrationFlag.EXTRA)
+            if (migDeleteDownloaded.isChecked) flags.add(MigrationFlag.REMOVE_DOWNLOAD)
         }
-        preferences.migrateFlags().set(flags)
+        preferences.migrationFlags().set(flags)
     }
 
     /**

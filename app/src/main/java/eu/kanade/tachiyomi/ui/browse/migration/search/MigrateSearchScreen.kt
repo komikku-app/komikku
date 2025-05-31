@@ -19,12 +19,9 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel =
-            rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId) }
-        val state by screenModel.state.collectAsState()
 
-        val dialogScreenModel = rememberScreenModel { MigrateSearchScreenDialogScreenModel(mangaId = mangaId) }
-        val dialogState by dialogScreenModel.state.collectAsState()
+        val screenModel = rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId) }
+        val state by screenModel.state.collectAsState()
 
         // KMK -->
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
@@ -37,18 +34,14 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
         MigrateSearchScreen(
             state = state,
-            fromSourceId = state.fromSourceId,
+            fromSourceId = state.from?.source,
             navigateUp = navigator::pop,
             onChangeSearchQuery = screenModel::updateSearchQuery,
             onSearch = { screenModel.search() },
             getManga = { screenModel.getManga(it) },
             onChangeSearchFilter = screenModel::setSourceFilter,
             onToggleResults = screenModel::toggleFilterResults,
-            onClickSource = {
-                // SY -->
-                navigator.push(SourceSearchScreen(dialogState.manga!!, it.id, state.searchQuery))
-                // SY <--
-            },
+            onClickSource = { navigator.push(MigrateSourceSearchScreen(state.from!!, it.id, state.searchQuery)) },
             onClickItem = { manga ->
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
