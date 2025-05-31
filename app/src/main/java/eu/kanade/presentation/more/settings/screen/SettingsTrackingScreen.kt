@@ -145,6 +145,11 @@ object SettingsTrackingScreen : SearchableSettings {
                 preference = trackPreferences.autoSyncProgressFromTrackers(),
                 title = stringResource(KMR.strings.pref_auto_sync_progress_from_trackers),
             ),
+            Preference.PreferenceItem.SwitchPreference(
+                preference = trackPreferences.deleteChaptersAfterAutoTracking(),
+                title = stringResource(KMR.strings.pref_delete_chapters_after_auto_tracking),
+                subtitle = stringResource(KMR.strings.pref_delete_chapters_after_auto_tracking_summary),
+            ),
             // KMK <--
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.services),
