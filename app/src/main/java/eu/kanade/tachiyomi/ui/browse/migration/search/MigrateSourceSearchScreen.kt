@@ -43,8 +43,8 @@ import tachiyomi.source.local.LocalSource
 /**
  * Opened when click on a source in [MigrateSearchScreen] while doing manual search for migration
  */
-data class SourceSearchScreen(
-    private val oldManga: Manga,
+data class MigrateSourceSearchScreen(
+    private val currentManga: Manga,
     private val sourceId: Long,
     private val query: String?,
 ) : Screen() {
@@ -135,7 +135,7 @@ data class SourceSearchScreen(
                 navigator.items
                     .filterIsInstance<MigrationListScreen>()
                     .last()
-                    .newSelectedItem = oldManga.id to it.id
+                    .newSelectedItem = currentManga.id to it.id
                 navigator.popUntil { it is MigrationListScreen }
                 // SY <--
             }
