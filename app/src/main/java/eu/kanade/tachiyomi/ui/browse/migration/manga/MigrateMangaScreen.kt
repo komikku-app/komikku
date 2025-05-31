@@ -13,7 +13,7 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.screens.LoadingScreen
 
@@ -38,14 +38,14 @@ data class MigrateMangaScreen(
             navigateUp = navigator::pop,
             title = state.source?.name ?: "???",
             state = state,
-            onClickItem = { navigator.push(MigrateMangaConfigScreen(listOf(it.id))) },
+            onClickItem = { navigator.push(MigrationConfigScreen(listOf(it.id))) },
             onClickCover = { navigator.push(MangaScreen(it.id)) },
             // KMK -->
             onMultiMigrateClicked = {
                 if (state.selectionMode) {
-                    navigator.push(MigrateMangaConfigScreen(state.selected.map { it.manga.id }))
+                    navigator.push(MigrationConfigScreen(state.selected.map { it.manga.id }))
                 } else {
-                    navigator.push(MigrateMangaConfigScreen(state.titles.map { it.manga.id }))
+                    navigator.push(MigrationConfigScreen(state.titles.map { it.manga.id }))
                 }
             },
             onSelectAll = screenModel::toggleAllSelection,

@@ -103,7 +103,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
@@ -366,7 +366,7 @@ class MangaScreen(
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                navigator.push(MigrateMangaConfigScreen(listOf(successState.manga.id)))
+                navigator.push(MigrationConfigScreen(listOf(successState.manga.id)))
             }.takeIf { successState.manga.favorite },
             // SY -->
             previewsRowCount = successState.previewsRowCount,

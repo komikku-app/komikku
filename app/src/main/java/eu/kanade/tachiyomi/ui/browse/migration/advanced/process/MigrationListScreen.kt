@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.util.overEq
 import exh.util.underEq
 import kotlinx.collections.immutable.persistentListOf
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
@@ -76,7 +76,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                             val newStack = navigator.items.filter {
                                 it !is MangaScreen &&
                                     it !is MigrationListScreen &&
-                                    it !is MigrateMangaConfigScreen
+                                    it !is MigrationConfigScreen
                             } + MangaScreen(mangaId)
                             navigator replaceAll newStack.first()
                             navigator.push(newStack.drop(1))

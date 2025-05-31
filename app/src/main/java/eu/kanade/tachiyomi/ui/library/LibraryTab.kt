@@ -66,7 +66,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.category.model.Category
@@ -210,7 +210,7 @@ data object LibraryTab : Tab {
                             .map { it.id }
                         screenModel.clearSelection()
                         if (selectedMangaIds.isNotEmpty()) {
-                            navigator.push(MigrateMangaConfigScreen(selectedMangaIds))
+                            navigator.push(MigrationConfigScreen(selectedMangaIds))
                         } else {
                             context.toast(SYMR.strings.no_valid_entry)
                         }

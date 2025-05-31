@@ -9,7 +9,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.libraryUpdateError.LibraryUpdateErrorScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 
 class LibraryUpdateErrorScreen : Screen() {
 
@@ -22,11 +22,11 @@ class LibraryUpdateErrorScreen : Screen() {
         LibraryUpdateErrorScreen(
             state = state,
             onClick = { item ->
-                navigator.push(MigrateMangaConfigScreen(listOf(item.error.mangaId)))
+                navigator.push(MigrationConfigScreen(listOf(item.error.mangaId)))
             },
             onClickCover = { item -> navigator.push(MangaScreen(item.error.mangaId)) },
             onMultiMigrateClicked = {
-                navigator.push(MigrateMangaConfigScreen(state.selected.map { it.error.mangaId }))
+                navigator.push(MigrationConfigScreen(state.selected.map { it.error.mangaId }))
             },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
