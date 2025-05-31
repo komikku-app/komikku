@@ -45,5 +45,7 @@ class TrackPreferences(
 
     // KMK -->
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
+
+    fun deleteChaptersAfterAutoTracking() = preferenceStore.getBoolean("pref_delete_chapters_after_auto_tracking_key", false)
     // KMK <--
 }
