@@ -118,7 +118,7 @@ class MangaRepositoryImpl(
         }
     }
 
-    override suspend fun insertNetworkManga(manga: List<Manga>): List<Manga> {
+    override suspend fun insertNetworkManga(manga: List<Manga>, updateInfo: Boolean): List<Manga> {
         return handler.await(inTransaction = true) {
             manga.map {
                 mangasQueries.insertNetworkManga(
@@ -150,10 +150,10 @@ class MangaRepositoryImpl(
                     // SY <--
                     updateDetails = it.initialized,
                     // KMK -->
-                    // mapper = MangaMapper::mapManga,
-                )
-                mangasQueries.getMangaByUrlAndSource(it.url, it.source, MangaMapper::mapManga)
+                    updateInfo = updateInfo,
                     // KMK <--
+                    mapper = MangaMapper::mapManga,
+                )
                     .executeAsOne()
             }
         }

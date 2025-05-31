@@ -94,8 +94,8 @@ abstract class BaseSourcePagingSource(
             // SY -->
             .mapIndexed { index, sManga -> sManga.toDomainManga(source!!.id) to metadata.getOrNull(index) }
             .filter { seenManga.add(it.first.url) }
-        // KMK -->
-        // .let { pairs -> pairs.zip(networkToLocalManga(pairs.map { it.first })).map { it.second to it.first.second } }
+            // KMK -->
+            .let { pairs -> networkToLocalManga(pairs.map { it.first }).zip(pairs.map { it.second }) }
         // KMK <--
         // SY <--
 

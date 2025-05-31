@@ -32,7 +32,7 @@ open class RecommendsScreenModel(
     val mangaId: Long,
     val sourceId: Long,
     private val getManga: GetManga = Injekt.get(),
-    val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
+    protected val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
 ) : StateScreenModel<RecommendsScreenModel.State>(State()) {
 
     // KMK -->
@@ -78,14 +78,14 @@ open class RecommendsScreenModel(
                         }
 
                         val recSourceId = recSource.associatedSourceId
-                        // KMK -->
-                        val titles = page.mangas.map {
+                        val titles = if (recSourceId != null) {
                             // If the recommendation is associated with a source, resolve it
+                            page.mangas.map { it.toDomainManga(recSourceId) }
+                                .let { networkToLocalManga(it) }
+                        } else {
                             // Otherwise, skip this step. The user will be prompted to choose a source via SmartSearch
-                            it.toDomainManga(recSourceId ?: RECOMMENDS_SOURCE)
+                            page.mangas.map { it.toDomainManga(RECOMMENDS_SOURCE) }
                         }
-                            /* KMK --> .let { networkToLocalManga(it) } KMK <-- */
-                            // KMK <--
                             .distinctBy { it.url }
 
                         if (isActive) {

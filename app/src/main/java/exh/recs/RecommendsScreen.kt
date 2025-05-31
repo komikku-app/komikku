@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -18,7 +17,6 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import exh.recs.components.RecommendsScreen
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.screens.LoadingScreen
 
@@ -40,7 +38,6 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         val state by screenModel.state.collectAsState()
 
         // KMK -->
-        val scope = rememberCoroutineScope()
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
@@ -52,21 +49,12 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
         // KMK <--
 
         val onClickItem = { manga: Manga ->
-            when (manga.source) {
-                RECOMMENDS_SOURCE -> navigator.push(
-                    SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle)),
-                )
-                else -> {
-                    // KMK -->
-                    scope.launchIO {
-                        val localManga = screenModel.networkToLocalManga(manga)
-                        navigator.push(
-                            // KMK <--
-                            MangaScreen(localManga.id, true),
-                        )
-                    }
-                }
-            }
+            navigator.push(
+                when (manga.source) {
+                    RECOMMENDS_SOURCE -> SourcesScreen(SourcesScreen.SmartSearchConfig(manga.ogTitle))
+                    else -> MangaScreen(manga.id, true)
+                },
+            )
         }
 
         val onLongClickItem = { manga: Manga ->
@@ -74,13 +62,11 @@ class RecommendsScreen(val mangaId: Long, val sourceId: Long) : Screen() {
                 RECOMMENDS_SOURCE -> WebViewActivity.newIntent(context, manga.url, title = manga.title).let(context::startActivity)
                 else -> {
                     // KMK -->
-                    scope.launchIO {
-                        val localManga = screenModel.networkToLocalManga(manga)
-                        bulkFavoriteScreenModel.addRemoveManga(
-                            localManga,
-                            haptic,
-                        )
-                    }
+                    // Add to favorite
+                    bulkFavoriteScreenModel.addRemoveManga(
+                        manga,
+                        haptic,
+                    )
                     // KMK <--
                 }
             }

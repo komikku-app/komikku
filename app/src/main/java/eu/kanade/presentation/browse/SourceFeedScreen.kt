@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
@@ -27,7 +26,6 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
@@ -114,7 +112,6 @@ fun SourceFeedScreen(
     // KMK <--
 ) {
     // KMK -->
-    val scope = rememberCoroutineScope()
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     // KMK <--
 
@@ -130,23 +127,12 @@ fun SourceFeedScreen(
                     onSelectAll = {
                         items.mapNotNull { it.results }
                             .flatten()
-                            .let {
-                                scope.launchIO {
-                                    bulkFavoriteScreenModel.networkToLocalManga(it)
-                                        .forEach { bulkFavoriteScreenModel.select(it) }
-                                }
-                            }
+                            .forEach { bulkFavoriteScreenModel.select(it) }
                     },
                     onReverseSelection = {
                         items.mapNotNull { it.results }
                             .flatten()
-                            .let {
-                                scope.launchIO {
-                                    bulkFavoriteScreenModel.reverseSelection(
-                                        bulkFavoriteScreenModel.networkToLocalManga(it),
-                                    )
-                                }
-                            }
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {

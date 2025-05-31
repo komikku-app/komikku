@@ -242,17 +242,16 @@ insertNetworkManga {
         status = CASE WHEN :updateDetails THEN :status ELSE status END,
         update_strategy = CASE WHEN :updateDetails THEN :updateStrategy ELSE update_strategy END,
         initialized = :updateDetails
-    WHERE source = :source
+    WHERE source = :source AND :updateInfo
     AND url = :url
     AND favorite = 0;
 
--- KMK : Disabled the following SELECT as it will cause `getMangaByUrlAndSource` flow not triggered
---     -- Finally return the manga
---     SELECT *
---     FROM mangas
---     WHERE source = :source
---     AND url = :url
---     LIMIT 1;
+    -- Finally return the manga
+    SELECT *
+    FROM mangas
+    WHERE source = :source
+    AND url = :url
+    LIMIT 1;
 }
 
 getEhMangaWithMetadata:

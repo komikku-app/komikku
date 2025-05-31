@@ -29,7 +29,6 @@ import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
@@ -69,25 +68,14 @@ fun TabbedScreen(
                         feedState.items?.let { result ->
                             result.mapNotNull { it.results }
                                 .flatten()
-                                .let {
-                                    scope.launchIO {
-                                        bulkFavoriteScreenModel.networkToLocalManga(it)
-                                            .forEach { bulkFavoriteScreenModel.select(it) }
-                                    }
-                                }
+                                .forEach { bulkFavoriteScreenModel.select(it) }
                         }
                     },
                     onReverseSelection = {
                         feedState.items?.let { result ->
                             result.mapNotNull { it.results }
                                 .flatten()
-                                .let {
-                                    scope.launchIO {
-                                        bulkFavoriteScreenModel.reverseSelection(
-                                            bulkFavoriteScreenModel.networkToLocalManga(it),
-                                        )
-                                    }
-                                }
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
                         }
                     },
                 )
