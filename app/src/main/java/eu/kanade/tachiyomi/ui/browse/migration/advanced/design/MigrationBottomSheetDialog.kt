@@ -144,7 +144,7 @@ class MigrationBottomSheetDialogState(
             }
             sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
-            skipStep.isChecked = preferences.skipPreMigration().get()
+            skipStep.isChecked = preferences.skipMigrationConfig().get()
             hideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
             onlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
             skipStep.setOnCheckedChangeListener { _, isChecked ->
@@ -157,7 +157,7 @@ class MigrationBottomSheetDialogState(
             }
 
             migrateBtn.setOnClickListener {
-                preferences.skipPreMigration().set(skipStep.isChecked)
+                preferences.skipMigrationConfig().set(skipStep.isChecked)
                 preferences.hideNotFoundMigration().set(hideNotFoundManga.isChecked)
                 preferences.showOnlyUpdatesMigration().set(onlyShowUpdates.isChecked)
                 onStartMigration.value(
