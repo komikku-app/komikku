@@ -78,6 +78,8 @@ class SourcePreferences(
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 
+    fun skipMigrationConfig() = preferenceStore.getBoolean(Preference.appStateKey("skip_migration_config"), false)
+
     // KMK -->
     fun globalSearchPinnedState() = preferenceStore.getEnum(
         Preference.appStateKey("global_search_pinned_toggle_state"),
@@ -123,8 +125,6 @@ class SourcePreferences(
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 
     fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)
-
-    fun skipPreMigration() = preferenceStore.getBoolean(Preference.appStateKey("skip_pre_migration"), false)
 
     fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
 
