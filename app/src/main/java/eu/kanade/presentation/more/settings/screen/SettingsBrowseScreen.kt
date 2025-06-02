@@ -30,6 +30,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsBrowseScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsBrowseScreen
 
     @ReadOnlyComposable
@@ -171,16 +172,14 @@ object SettingsBrowseScreen : SearchableSettings {
 
     @Composable
     fun getMigrationCategory(sourcePreferences: SourcePreferences): Preference.PreferenceGroup {
-        val skipPreMigration by sourcePreferences.skipPreMigration().collectAsState()
-        val migrationSources by sourcePreferences.migrationSources().collectAsState()
         return Preference.PreferenceGroup(
-            stringResource(SYMR.strings.migration),
-            enabled = skipPreMigration || migrationSources.isNotEmpty(),
+            stringResource(MR.strings.browseSettingsScreen_migrationCategoryHeader),
+            enabled = sourcePreferences.skipMigrationConfig().isSet(),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = sourcePreferences.skipPreMigration(),
-                    title = stringResource(SYMR.strings.skip_pre_migration),
-                    subtitle = stringResource(SYMR.strings.pref_skip_pre_migration_summary),
+                    preference = sourcePreferences.skipMigrationConfig(),
+                    title = stringResource(MR.strings.browseSettingsScreen_skipMigrationConfigTitle),
+                    subtitle = stringResource(MR.strings.browseSettingsScreen_skipMigrationConfigSubtitle),
                 ),
             ),
         )

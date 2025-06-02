@@ -27,11 +27,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +62,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedu
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationType
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
@@ -78,6 +78,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
+import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.shouldExpandFAB
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -87,6 +88,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+
         val screenModel = rememberScreenModel { ScreenModel() }
         // KMK -->
         var searchQuery by remember { mutableStateOf("") }
@@ -95,6 +97,44 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
         // KMK <--
         val state by screenModel.state.collectAsState()
+
+        var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
+        // KMK -->
+        var migrationBottomSheetDialog by rememberSaveable { mutableStateOf(false) }
+
+        fun continueMigrationBottom(openSheet: Boolean, extraParam: String? = null) {
+            if (openSheet) {
+                migrationBottomSheetDialog = true
+                return
+            }
+            navigator.replace(
+                // KMK -->
+                MigrationListScreen(
+                    MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParam),
+                ),
+                // KMK <--
+            )
+        }
+        // KMK <--
+
+        fun continueMigration(openSheet: Boolean) {
+            if (openSheet) {
+                migrationSheetOpen = true
+                return
+            }
+            // KMK -->
+            continueMigrationBottom(true)
+            // KMK <--
+        }
+
+        if (state.isLoading) {
+            LaunchedEffect(state.skipMigrationConfig) {
+                if (state.skipMigrationConfig) continueMigration(openSheet = false)
+            }
+            LoadingScreen()
+            return
+        }
+
         val (selectedSources, availableSources) = state.sources
             // KMK -->
             .filter { sources ->
@@ -154,9 +194,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
                     icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
                     onClick = {
                         screenModel.saveSources()
-                        // KMK -->
-                        screenModel.onMigrationSheet(true)
-                        // KMK <--
+                        continueMigration(openSheet = true)
                     },
                     expanded = lazyListState.shouldExpandFAB(),
                 )
@@ -242,20 +280,24 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
             }
         }
 
-        // KMK -->
-        val migrationSheetOpen by screenModel.migrationSheetOpen.collectAsState()
         if (migrationSheetOpen) {
+            MigrationConfigScreenSheet(
+                preferences = screenModel.sourcePreferences,
+                onDismissRequest = { migrationSheetOpen = false },
+                onStartMigration = {
+                    migrationSheetOpen = false
+                    continueMigration(openSheet = false)
+                },
+            )
+        }
+
+        // KMK -->
+        if (migrationBottomSheetDialog) {
             MigrationBottomSheetDialog(
-                onDismissRequest = { screenModel.onMigrationSheet(false) },
+                onDismissRequest = { migrationBottomSheetDialog = false },
                 onStartMigration = { extraParam ->
-                    screenModel.onMigrationSheet(false)
-                    navigator.replace(
-                        // KMK -->
-                        MigrationListScreen(
-                            MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParam),
-                        ),
-                        // KMK <--
-                    )
+                    migrationBottomSheetDialog = false
+                    continueMigrationBottom(openSheet = false, extraParam)
                 },
             )
         }
@@ -356,24 +398,19 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
     }
 
     private class ScreenModel(
+        val sourcePreferences: SourcePreferences = Injekt.get(),
         private val sourceManager: SourceManager = Injekt.get(),
-        private val sourcePreferences: SourcePreferences = Injekt.get(),
     ) : StateScreenModel<ScreenModel.State>(State()) {
 
         init {
             screenModelScope.launchIO {
+                val skipMigrationConfig = sourcePreferences.skipMigrationConfig().get()
+                mutableState.update { it.copy(skipMigrationConfig = skipMigrationConfig) }
+                if (skipMigrationConfig) return@launchIO
                 initSources()
+                mutableState.update { it.copy(isLoading = false) }
             }
         }
-
-        // KMK -->
-        private val _migrationSheetOpen = MutableStateFlow(false)
-        val migrationSheetOpen = _migrationSheetOpen.asStateFlow()
-
-        fun onMigrationSheet(isOpen: Boolean) {
-            _migrationSheetOpen.value = isOpen
-        }
-        // KMK <--
 
         private val sourcesComparator = { includedSources: List<Long> ->
             compareBy<MigrationSource>(
@@ -468,6 +505,8 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         data class State(
+            val isLoading: Boolean = true,
+            val skipMigrationConfig: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 
