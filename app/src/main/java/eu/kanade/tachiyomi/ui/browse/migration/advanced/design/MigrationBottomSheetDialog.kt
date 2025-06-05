@@ -99,7 +99,6 @@ fun MigrationBottomSheetDialog(
                     // KMK <--
                     binding.root
                 },
-                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -127,12 +126,16 @@ class MigrationBottomSheetDialogState(
             migExtra.isChecked = MigrationFlags.hasExtra(flags)
             migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteDownloaded(flags)
 
-            migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-            migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-            migTracking.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-            migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-            migExtra.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-            migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            listOf(
+                migChapters,
+                migCategories,
+                migTracking,
+                migCustomCover,
+                migExtra,
+                migDeleteDownloaded,
+            ).forEach { checkBox ->
+                checkBox.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            }
 
             useSmartSearch.bindToPreference(preferences.smartMigration())
             extraSearchParamInputLayout.isVisible = false
