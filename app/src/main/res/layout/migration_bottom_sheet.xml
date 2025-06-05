@@ -27,7 +27,7 @@
         android:paddingHorizontal="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/data_label">
+        app:layout_constraintTop_toBottomOf="@id/data_label">
 
         <androidx.constraintlayout.helper.widget.Flow
             android:layout_width="0dp"
@@ -106,7 +106,7 @@
         android:textAppearance="?attr/textAppearanceTitleMedium"
         android:textColor="?attr/colorPrimary"
         app:layout_constraintStart_toStartOf="@id/migration_data_group"
-        app:layout_constraintTop_toBottomOf="@+id/migration_data_divider" />
+        app:layout_constraintTop_toBottomOf="@id/migration_data_divider" />
 
     <RadioGroup
         android:id="@+id/sourceGroup"
@@ -115,8 +115,8 @@
         android:layout_marginEnd="8dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/options_label"
-        app:layout_constraintTop_toBottomOf="@+id/options_label">
+        app:layout_constraintStart_toStartOf="@id/options_label"
+        app:layout_constraintTop_toBottomOf="@id/options_label">
 
         <RadioButton
             android:id="@+id/radioButton"
@@ -153,7 +153,7 @@
         android:paddingEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sourceGroup_divider">
+        app:layout_constraintTop_toBottomOf="@id/sourceGroup_divider">
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/use_smart_search"
@@ -226,7 +226,7 @@
         android:background="?android:attr/divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switches" />
+        app:layout_constraintTop_toBottomOf="@id/switches" />
 
     <Button
         android:id="@+id/migrate_btn"
