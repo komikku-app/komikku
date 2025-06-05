@@ -5,7 +5,6 @@ import android.widget.CompoundButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -54,48 +53,54 @@ fun MigrationBottomSheetDialog(
     // KMK <--
 
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            // Wrap AndroidView in a scrollable Column using verticalScroll
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                AndroidView(
-                    factory = { factoryContext ->
-                        val binding = MigrationBottomSheetBinding.inflate(LayoutInflater.from(factoryContext))
-                        state.initPreferences(binding)
-                        // KMK -->
-                        binding.migrateBtn.setBackgroundColor(colorScheme.primary)
-                        binding.dataLabel.setTextColor(colorScheme.primary)
-                        binding.optionsLabel.setTextColor(colorScheme.primary)
+        // Wrap AndroidView in a scrollable Column using verticalScroll
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(),
+        ) {
+            AndroidView(
+                factory = { factoryContext ->
+                    val binding = MigrationBottomSheetBinding.inflate(LayoutInflater.from(factoryContext))
+                    state.initPreferences(binding)
+                    // KMK -->
+                    with(binding) {
+                        migrateBtn.setBackgroundColor(colorScheme.primary)
+                        dataLabel.setTextColor(colorScheme.primary)
+                        optionsLabel.setTextColor(colorScheme.primary)
 
-                        binding.migChapters.buttonTintList = colorScheme.checkboxTintList
-                        binding.migCategories.buttonTintList = colorScheme.checkboxTintList
-                        binding.migTracking.buttonTintList = colorScheme.checkboxTintList
-                        binding.migCustomCover.buttonTintList = colorScheme.checkboxTintList
-                        binding.migExtra.buttonTintList = colorScheme.checkboxTintList
-                        binding.migDeleteDownloaded.buttonTintList = colorScheme.checkboxTintList
+                        listOf(
+                            migChapters,
+                            migCategories,
+                            migTracking,
+                            migCustomCover,
+                            migExtra,
+                            migDeleteDownloaded,
+                            radioButton,
+                            radioButton2,
+                        ).forEach {
+                            it.buttonTintList = colorScheme.checkboxTintList
+                        }
 
-                        binding.radioButton.buttonTintList = colorScheme.checkboxTintList
-                        binding.radioButton2.buttonTintList = colorScheme.checkboxTintList
+                        listOf(
+                            useSmartSearch,
+                            extraSearchParam,
+                            skipStep,
+                            hideNotFoundManga,
+                            onlyShowUpdates,
+                        ).forEach {
+                            it.trackTintList = colorScheme.trackTintList
+                            it.thumbTintList = colorScheme.thumbTintList
+                        }
 
-                        binding.useSmartSearch.trackTintList = colorScheme.trackTintList
-                        binding.extraSearchParam.trackTintList = colorScheme.trackTintList
-                        binding.skipStep.trackTintList = colorScheme.trackTintList
-                        binding.HideNotFoundManga.trackTintList = colorScheme.trackTintList
-                        binding.OnlyShowUpdates.trackTintList = colorScheme.trackTintList
-
-                        binding.useSmartSearch.thumbTintList = colorScheme.thumbTintList
-                        binding.extraSearchParam.thumbTintList = colorScheme.thumbTintList
-                        binding.skipStep.thumbTintList = colorScheme.thumbTintList
-                        binding.HideNotFoundManga.thumbTintList = colorScheme.thumbTintList
-                        binding.OnlyShowUpdates.thumbTintList = colorScheme.thumbTintList
-
-                        colorScheme.setTextInputLayoutColor(binding.extraSearchParamInputLayout)
-                        colorScheme.setEditTextColor(binding.extraSearchParamText)
-                        // KMK <--
-                        binding.root
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+                        colorScheme.setTextInputLayoutColor(extraSearchParamInputLayout)
+                        colorScheme.setEditTextColor(extraSearchParamText)
+                    }
+                    // KMK <--
+                    binding.root
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -114,72 +119,77 @@ class MigrationBottomSheetDialogState(
     fun initPreferences(binding: MigrationBottomSheetBinding) {
         val flags = preferences.migrateFlags().get()
 
-        binding.migChapters.isChecked = MigrationFlags.hasChapters(flags)
-        binding.migCategories.isChecked = MigrationFlags.hasCategories(flags)
-        binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
-        binding.migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
-        binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
-        binding.migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteDownloaded(flags)
+        with(binding) {
+            migChapters.isChecked = MigrationFlags.hasChapters(flags)
+            migCategories.isChecked = MigrationFlags.hasCategories(flags)
+            migTracking.isChecked = MigrationFlags.hasTracks(flags)
+            migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
+            migExtra.isChecked = MigrationFlags.hasExtra(flags)
+            migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteDownloaded(flags)
 
-        binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migExtra.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migTracking.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migExtra.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
+            migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
 
-        binding.useSmartSearch.bindToPreference(preferences.smartMigration())
-        binding.extraSearchParamInputLayout.isVisible = false
-        binding.extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
-            binding.extraSearchParamInputLayout.isVisible = isChecked
-        }
-        binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
+            useSmartSearch.bindToPreference(preferences.smartMigration())
+            extraSearchParamInputLayout.isVisible = false
+            extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
+                extraSearchParamInputLayout.isVisible = isChecked
+            }
+            sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
-        binding.skipStep.isChecked = preferences.skipPreMigration().get()
-        binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
-        binding.OnlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
-        binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                binding.root.context.toast(
-                    SYMR.strings.pre_migration_skip_toast,
-                    Toast.LENGTH_LONG,
+            skipStep.isChecked = preferences.skipPreMigration().get()
+            hideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
+            onlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
+            skipStep.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    root.context.toast(
+                        SYMR.strings.pre_migration_skip_toast,
+                        Toast.LENGTH_LONG,
+                    )
+                }
+            }
+
+            migrateBtn.setOnClickListener {
+                preferences.skipPreMigration().set(skipStep.isChecked)
+                preferences.hideNotFoundMigration().set(hideNotFoundManga.isChecked)
+                preferences.showOnlyUpdatesMigration().set(onlyShowUpdates.isChecked)
+                onStartMigration.value(
+                    if (useSmartSearch.isChecked && !extraSearchParamText.text.isNullOrBlank()) {
+                        extraSearchParamText.text.toString()
+                    } else {
+                        null
+                    },
                 )
             }
-        }
 
-        binding.migrateBtn.setOnClickListener {
-            preferences.skipPreMigration().set(binding.skipStep.isChecked)
-            preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
-            preferences.showOnlyUpdatesMigration().set(binding.OnlyShowUpdates.isChecked)
-            onStartMigration.value(
-                if (binding.useSmartSearch.isChecked && !binding.extraSearchParamText.text.isNullOrBlank()) {
-                    binding.extraSearchParamText.text.toString()
-                } else {
-                    null
-                },
-            )
+            // KMK -->
+            if (!fullSettings) {
+                useSmartSearch.isVisible = false
+                extraSearchParam.isVisible = false
+                extraSearchParamInputLayout.isVisible = false
+                sourceGroup.isVisible = false
+                skipStep.isVisible = false
+                migrateBtn.text = root.context.stringResource(MR.strings.action_save)
+            }
+            // KMK <--
         }
-
-        // KMK -->
-        if (!fullSettings) {
-            binding.useSmartSearch.isVisible = false
-            binding.extraSearchParam.isVisible = false
-            binding.extraSearchParamInputLayout.isVisible = false
-            binding.sourceGroup.isVisible = false
-            binding.skipStep.isVisible = false
-            binding.migrateBtn.text = binding.root.context.stringResource(MR.strings.action_save)
-        }
-        // KMK <--
     }
 
     private fun setFlags(binding: MigrationBottomSheetBinding) {
         var flags = 0
-        if (binding.migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
-        if (binding.migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
-        if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
-        if (binding.migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
-        if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
-        if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_DOWNLOADED
+        with(binding) {
+            @Suppress("KotlinConstantConditions")
+            if (migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
+            if (migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
+            if (migTracking.isChecked) flags = flags or MigrationFlags.TRACK
+            if (migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
+            if (migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
+            if (migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_DOWNLOADED
+        }
         preferences.migrateFlags().set(flags)
     }
 
