@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Bron zoeken</string>
+  <string name="action_toggle_nsfw_only">Alleen NSFW in-/uitschakelen</string>
+  <string name="action_bulk_select">Bulk selectiemodus</string>
+  <string name="action_faq_and_guides">FAQ en handleidingen</string>
+  <string name="download_cache_renew_interval" comment="download_cache_renew_interval Extension repos Downloads section">Download de cache vernieuwingsinterval</string>
+  <string name="download_cache_renew_interval_manual">Handleiding</string>
+  <string name="download_cache_renew_interval_1hour">1 uur</string>
+  <string name="download_cache_renew_interval_2hour">2 uur</string>
+  <string name="download_cache_renew_interval_6hour">6 uur</string>
+  <string name="download_cache_renew_interval_12hour">12 uur</string>
+  <string name="download_cache_renew_interval_24hour">1 dag</string>
+  <string name="download_cache_renew_interval_info">Indien ingesteld op \"handmatig\", verververs manga of gebruik de \"Ongevalideer downloads index\" actie in \"Geavanceerd\"</string>
+  <string name="pref_clean_invalid_downloads" comment="pref_clean_invalid_downloads Advanced section">Ongeldige downloads opschonen</string>
+  <string name="pref_clean_invalid_downloads_summary">Zoek en verwijder alle downloads, bestanden, mappen die niet worden opgeslagen in uw bibliotheek</string>
+  <string name="invalid_downloads_cleaned">Ongeldige downloads opgeschoond</string>
+  <string name="pref_private_installer_warning">Vermijd het gebruik van Private Installer omdat het nog niet stabiel is, zal leiden tot een zeer trage start / hervatten app.</string>
+  <string name="whats_coming" comment="whats_coming About section">Wat komt er (binnenkort)</string>
+  <string name="action_allow_duplicate_manga" comment="action_allow_duplicate_manga Manga info">Sta toe</string>
+  <string name="action_skip_duplicate_manga">Sla het over</string>
+  <string name="action_allow_all_duplicate_manga">Alles toestaan</string>
+  <string name="action_skip_all_duplicate_manga">Alles overslaan</string>
+  <string name="update_check_try_now" comment="update_check_try_now UpdateCheck">Probeer het nu</string>
+  <string name="update_check_notification_preview_available" comment="update_check_notification_preview_available UpdateCheck Notifications">Komt (binnenkort) updates!</string>
+  <string name="changelogs" comment="changelogs About">Logboek wijzigen</string>
+  <string name="related_mangas_more">Meer van deze...</string>
+  <string name="too_many_in_feed" comment="too_many_in_feed Feed Tab">Te veel bronnen in je feed, kan niet meer dan beperkt toevoegen (20)</string>
+  <string name="current_" comment="current_ Migration">Huidige: %1$s</string>
+  <string name="pref_theme_cover_based">Thema gebaseerd op cover</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Tonale Spot</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutraal</string>
+  <string name="pref_theme_cover_based_style_vibrant">Levendig</string>
+  <string name="pref_theme_cover_based_style_expressive">Expressief</string>
+  <string name="pref_theme_cover_based_style_rainbow">Regenboog</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Fruit salade</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochroom</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fideliteit</string>
+  <string name="pref_theme_cover_based_style_content">Inhoud</string>
+  <string name="action_search_for_source" comment="action_search_for_source Actions">Bron zoeken</string>
+  <string name="action_library_search">Bibliotheek zoeken</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Katoen Snoep</string>
+  <string name="theme_doom">Domme</string>
+  <string name="theme_matrix">Matrix</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner" comment="pref_show_updating_progress_banner Library section">Update voortgangs banner tonen</string>
+  <string name="pref_show_restoring_progress_banner" comment="pref_show_restoring_progress_banner Sync section">Toon terugzetten van voortgang banner</string>
+  <string name="pref_show_syncing_progress_banner">Synchroniseer voortgangs banner weergeven</string>
+  <string name="saved_searches_feeds">Opgeslagen zoekopdrachten &amp; Feeds</string>
+  <string name="onboarding_permission_external_storage" comment="onboarding_permission_external_storage Onboarding section">Toegang tot mediabestanden</string>
+  <string name="onboarding_permission_external_storage_description">Sta het gebruik van aangepaste covers toe in de Invoer Bewerken Info</string>
+  <string name="onboarding_permission_writing_external_storage_description">Omslagfoto &amp; opslaan met aangepaste omslagen in entry\'s Info bewerken</string>
+  <string name="permission_writing_external_storage_succeed">Toestemming verleend. Probeer opnieuw.</string>
+  <string name="action_move_up">Verplaats omhoog</string>
+  <string name="action_move_down">Verplaats naar beneden</string>
+  <string name="preload_library_cover_color">Voorladen albumhoes cover kleur</string>
+  <string name="saved_searches_add_feed">Opgeslagen zoekopdrachten (houd vast om toe te voegen aan Feed)</string>
+  <string name="saved_searches_delete">Opgeslagen zoekopdrachten (Houd om te verwijderen)</string>
+  <string name="action_display_source_badge">Bron pictogram</string>
+  <string name="action_display_language_icon">Gebruik taalpictogram</string>
+  <string name="action_confirm_color">Kleur bevestigen</string>
+  <string name="pref_custom_color" comment="pref_custom_color Custom Color Picker">Personalisator palet</string>
+  <string name="theme_custom">Aangepast Thema</string>
+  <string name="extensions_page_need_refresh" comment="extensions_page_need_refresh Extension section">Vernieuw de extensie pagina om de lijst bij te werken.</string>
+  <string name="extensions_page_more">Meer extensies...</string>
+  <string name="pref_expand_related_mangas">Suggesties uitbreiden</string>
+  <string name="pref_expand_related_mangas_summary">Suggesties zullen niet automatisch laden &amp; weergeven als ze zijn uitgeschakeld</string>
+  <string name="put_related_mangas_in_overflow">Suggesties in overflow</string>
+  <string name="put_related_mangas_in_overflow_summary">Plaats de Suggestie knop in het overloop menu in plaats van op de item pagina</string>
+  <string name="pref_show_home_on_related_mangas">Huis van Suggesties</string>
+  <string name="pref_show_home_on_related_mangas_summary">Toon een pictogram tijdens het browsen van suggesties om direct terug te gaan naar Home</string>
+  <string name="pref_source_related_mangas" comment="pref_source_related_mangas Browse settings">Suggesties</string>
+  <string name="pref_source_related_mangas_summary">Suggesties van bron-website weergeven tijdens het bekijken van invoer</string>
+  <string name="related_mangas_website_suggestions">Website Suggesties</string>
+  <string name="action_hide">Verbergen</string>
+  <string name="action_sort_feed">Sorteer feeds</string>
+  <string name="sort_feed_confirmation">Wilt u het voeder alfabetisch sorteren?</string>
+  <string name="pref_custom_theme_style" comment="pref_custom_theme_style Preferences Appearance section">Aangepast thema</string>
+  <string name="pref_theme_cover_based_style">Cover gebaseerde thema stijl</string>
+  <string name="custom_color_description">Kies een seed kleur voor het aangepaste thema</string>
+  <string name="custom_theme_palette_casual">Vrijblijvend</string>
+  <string name="custom_theme_palette_sunset">Zonsondergang</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Framboos</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Katholiek</string>
+  <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+  <string name="custom_theme_palette_night_at_the_beach">Nacht op het strand</string>
+  <string name="custom_theme_palette_spectral">Spectraal</string>
+  <string name="custom_theme_palette_patagonia">Patagonië</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Toon verborgen categorieën</string>
+  <string name="action_display_comfortable_grid_panorama">Panorama comfortabel raster</string>
+  <string name="action_panorama_cover">Panorama omslag</string>
+  <string name="pref_panorama_cover">Panorama Omslag</string>
+  <string name="pref_panorama_cover_summary">Toon omslag in liggende modus als het breed beeld is</string>
+  <string name="pref_panorama_cover_flow">Panorama omslag Flow</string>
+  <string name="pref_panorama_cover_flow_summary">Toon panorama omslag in Globaal Zoeken &amp; Suggesties</string>
+  <string name="pref_auto_sync_progress_from_trackers" comment="pref_auto_sync_progress_from_trackers Tracking section">Automatisch synchroniseren van trackers</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchroniseer de voortgang van trackers tot hoofdstuk %d</string>
+  <string name="option_label_library_update_errors" comment="option_label_library_update_errors Error Screen">Bibliotheek update fouten</string>
+  <string name="label_library_update_errors">Bibliotheek update fouten (%d)</string>
+  <string name="info_empty_library_update_errors">U hebt geen update fouten in de bibliotheek.</string>
+  <string name="action_scroll_to_top">Scroll naar boven</string>
+  <string name="action_scroll_to_bottom">Scroll naar beneden</string>
+  <string name="action_scroll_to_previous">Scroll naar vorige</string>
+  <string name="action_scroll_to_next">Scroll naar volgende</string>
+  <string name="migrating_all_entries">Alle invoergegevens vanuit bron migreren</string>
+  <string name="label_to_be_updated" comment="label_to_be_updated Misc">Te updaten</string>
+  <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Handmatige download</string>
+  <string name="auto_update_app">Auto-update app</string>
+  <string name="update_completed">Update voltooid</string>
+  <string name="open">Open</string>
+  <string name="release_page">Pagina vrijgeven</string>
+  <string name="could_not_install_update">Update kon niet worden geïnstalleerd</string>
+  <string name="action_copy_to_clipboard_first_page" comment="action_copy_to_clipboard_first_page Reader Reader Actions">Eerste pagina naar klembord kopiëren</string>
+  <string name="action_copy_to_clipboard_second_page">Tweede pagina naar klembord kopiëren</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopieer gecombineerde pagina naar klembord</string>
+  <string name="auto_update_app_disable_auto_download">Update niet automatisch downloaden</string>
+  <string name="action_remove_merged">Originele invoergegevens uit bibliotheek verwijderen?</string>
+  <string name="batch_add_description">Ondersteuning: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+</resources>
