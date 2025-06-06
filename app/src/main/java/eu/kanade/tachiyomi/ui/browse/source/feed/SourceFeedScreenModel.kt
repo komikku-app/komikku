@@ -221,6 +221,10 @@ open class SourceFeedScreenModel(
             .toImmutableList()
     }
 
+    // KMK -->
+    private val hideInLibraryFeedItems = sourcePreferences.hideInLibraryFeedItems().get()
+    // KMK <--
+
     /**
      * Initiates get manga per feed.
      */
@@ -252,6 +256,9 @@ open class SourceFeedScreenModel(
                         page.map { it.toDomainManga(source.id) }
                             .distinctBy { it.url }
                             .let { networkToLocalManga(it) }
+                            // KMK -->
+                            .filter { !hideInLibraryFeedItems || !it.favorite }
+                        // KMK <--
                     }
 
                     mutableState.update { state ->
