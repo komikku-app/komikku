@@ -27,6 +27,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import tachiyomi.core.common.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -204,7 +205,7 @@ class MangaUpdatesApi(
         }
     }
 
-    suspend fun convertToNewId(legacyId: Int): String? =
+    suspend fun convertToNewId(legacyId: Int): String? = withIOContext {
         client.newBuilder()
             .followRedirects(false)
             .build()
@@ -221,6 +222,7 @@ class MangaUpdatesApi(
                             ?.value
                     }
             }
+    }
     // SY <--
 
     companion object {
