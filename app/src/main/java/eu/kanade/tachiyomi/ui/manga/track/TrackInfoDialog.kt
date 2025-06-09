@@ -225,10 +225,14 @@ data class TrackInfoDialogHomeScreen(
         private val mangaId: Long,
         private val sourceId: Long,
         private val getTracks: GetTracks = Injekt.get(),
-        /* SY --> */
+        // SY -->
         private val trackerManager: TrackerManager = Injekt.get(),
         private val trackPreferences: TrackPreferences = Injekt.get(),
-        /* SY <-- */
+        // SY <--
+        // KMK -->
+        val sourceManager: SourceManager = Injekt.get<SourceManager>(),
+        val getFlatMetadataById: GetFlatMetadataById = Injekt.get<GetFlatMetadataById>(),
+        // KMK <--
     ) : StateScreenModel<Model.State>(State()) {
 
         init {
@@ -293,13 +297,11 @@ data class TrackInfoDialogHomeScreen(
 
         suspend fun getTrackerIdFromMetadata(trackerId: Long): String? {
             try {
-                val sourceManager = Injekt.get<SourceManager>()
-                val getFlatMetadataById = Injekt.get<GetFlatMetadataById>()
-
                 val metadataSource = sourceManager.get(sourceId)
                     ?.getMainSource<MetadataSource<*, *>>() ?: return null
 
                 return getFlatMetadataById.await(mangaId)?.run {
+                    // Use 'raise' to dynamically obtain the specific metadata type and then attempt to cast
                     raise(metadataSource.metaClass) as? TrackerIdMetadata
                 }?.let { metadata ->
                     when (trackerId) {
@@ -311,7 +313,7 @@ data class TrackInfoDialogHomeScreen(
                     }
                 }
             } catch (e: Throwable) {
-                logcat(LogPriority.ERROR, e) { "Failed to search manga on tracker by id" }
+                logcat(LogPriority.ERROR, e) { "Failed to get tracker ID from metadata" }
                 return null
             }
         }
