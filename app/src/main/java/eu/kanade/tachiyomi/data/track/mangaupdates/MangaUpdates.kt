@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.track.mangaupdates.dto.toTrackSearch
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.lang.htmlDecode
+import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
@@ -134,6 +135,34 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
             )
         }
     }
+
+    // SY -->
+    override suspend fun searchById(id: String): TrackSearch? {
+        /*
+         * MangaUpdates uses newer base36 IDs (in URLs displayed as an encoded string, internally as a long)
+         * as well as older sequential numeric IDs, which were phased out to prevent heavy load caused by
+         * database scraping. Unfortunately, sites like MD sometimes still provides links with the old IDs,
+         * so we need to convert them.
+         * Because the API only accepts the newer IDs, we are forced to access the legacy non-API website
+         * (ex. https://www.mangaupdates.com/series.html?id=15), which is a permanent redirect (HTTP 308) to the new one.
+         */
+
+        val base36Id = if (id.matches(Regex("""^\d+$"""))) {
+            api.convertToNewId(id.toInt()) ?: return null
+        } else {
+            id
+        }
+
+        return try {
+            base36Id.toLong(36).let { longId ->
+                api.getSeries(longId).toTrackSearch(this.id)
+            }
+        } catch (e: Exception) {
+            xLogW("Error during searchById '$id': ${e.message}", e)
+            null
+        }
+    }
+    // SY <--
 
     fun restoreSession(): String? {
         return trackPreferences.trackPassword(this).get().ifBlank { null }

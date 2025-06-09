@@ -90,6 +90,8 @@ interface Tracker {
 
     // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
+
+    suspend fun searchById(id: String): TrackSearch?
     // SY <--
 
     // KMK -->

@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -237,6 +238,17 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
     override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return api.getMangaMetadata(track)
     }
+
+    // SY -->
+    override suspend fun searchById(id: String): TrackSearch? {
+        return try {
+            api.searchById(id)
+        } catch (e: Exception) {
+            xLogW("Error during searchById '$id': ${e.message}", e)
+            null
+        }
+    }
+    // SY <--
 
     fun saveOAuth(alOAuth: ALOAuth?) {
         trackPreferences.trackToken(this).set(json.encodeToString(alOAuth))
