@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
+import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.json.Json
@@ -161,8 +162,18 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
     }
 
     // SY -->
-    override suspend fun searchById(id: String): TrackSearch {
-        return api.getMangaDetails(id.toInt())
+    override suspend fun searchById(id: String): TrackSearch? {
+        val searchId = id.toIntOrNull()
+            ?: run {
+                xLogW("Invalid ID format for searchById: $id")
+                return null
+            }
+        return try {
+            api.getMangaDetails(searchId)
+        } catch (e: Exception) {
+            xLogW("Error during searchById '$id': ${e.message}", e)
+            null
+        }
     }
     // SY <--
 

@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.track.mangaupdates.dto.toTrackSearch
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.lang.htmlDecode
+import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
@@ -152,8 +153,13 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
             id
         }
 
-        return base36Id.toLong(36).let { longId ->
-            api.getSeries(longId).toTrackSearch(this.id)
+        return try {
+            base36Id.toLong(36).let { longId ->
+                api.getSeries(longId).toTrackSearch(this.id)
+            }
+        } catch (e: Exception) {
+            xLogW("Error during searchById '$id': ${e.message}", e)
+            null
         }
     }
     // SY <--
