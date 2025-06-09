@@ -215,7 +215,7 @@ class MangaUpdatesApi(
                     ?.header("Location")
                     ?.let { location ->
                         // Extract the new id from the redirected URL
-                        Regex("""/series/(\w+)(/([\w-]+)?)?/?${'$'}""")
+                        Regex("""/series/(\w+)""")
                             .find(location)
                             ?.groups?.get(1)
                             ?.value
