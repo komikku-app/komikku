@@ -210,14 +210,16 @@ class MangaUpdatesApi(
             .build()
             .newCall(GET("https://www.mangaupdates.com/series.html?id=$legacyId"))
             .await()
-            .takeIf(Response::isRedirect)
-            ?.header("Location")
-            ?.let {
-                // Extract the new id from the redirected URL
-                Regex("""/series/(\w+)(/([\w-]+)?)?/?${'$'}""")
-                    .find(it)
-                    ?.groups?.get(1)
-                    ?.value
+            .use { response ->
+                response.takeIf(Response::isRedirect)
+                    ?.header("Location")
+                    ?.let { location ->
+                        // Extract the new id from the redirected URL
+                        Regex("""/series/(\w+)(/([\w-]+)?)?/?${'$'}""")
+                            .find(location)
+                            ?.groups?.get(1)
+                            ?.value
+                    }
             }
     // SY <--
 
