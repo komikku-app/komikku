@@ -180,7 +180,7 @@ private fun ColumnScope.FilterPage(
     )
     // SY <--
 
-    // KMY -->
+    // KMK -->
     CategoriesFilter(
         libraryPreferences = screenModel.libraryPreferences,
         categories = categories,

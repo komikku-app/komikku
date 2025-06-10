@@ -188,7 +188,7 @@ interface CatalogueSource : Source {
             words.map { keyword ->
                 launch {
                     runCatching {
-                        getSearchManga(1, keyword.sanitize(), FilterList()).mangas
+                        getSearchManga(1, keyword.sanitize(), getFilterList()).mangas
                     }
                         .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
                         .onFailure { e ->

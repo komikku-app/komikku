@@ -1,7 +1,6 @@
 package exh.smartsearch
 
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +30,7 @@ class SmartSearchEngine(
                         query
                     }
 
-                    val searchResults = source.getSearchManga(1, builtQuery.sanitize(), FilterList())
+                    val searchResults = source.getSearchManga(1, builtQuery.sanitize(), source.getFilterList())
 
                     searchResults.mangas.map {
                         val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
@@ -54,7 +53,7 @@ class SmartSearchEngine(
             } else {
                 title
             }
-            val searchResults = source.getSearchManga(1, searchQuery.sanitize(), FilterList())
+            val searchResults = source.getSearchManga(1, searchQuery.sanitize(), source.getFilterList())
 
             if (searchResults.mangas.size == 1) {
                 return@supervisorScope listOf(SearchEntry(searchResults.mangas.first(), 0.0))
