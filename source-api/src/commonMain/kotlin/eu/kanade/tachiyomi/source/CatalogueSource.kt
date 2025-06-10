@@ -185,10 +185,11 @@ interface CatalogueSource : Source {
         if (words.isEmpty()) return
 
         coroutineScope {
+            val filterList = getFilterList()
             words.map { keyword ->
                 launch {
                     runCatching {
-                        getSearchManga(1, keyword.sanitize(), FilterList()).mangas
+                        getSearchManga(1, keyword.sanitize(), filterList).mangas
                     }
                         .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
                         .onFailure { e ->
