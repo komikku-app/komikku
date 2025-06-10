@@ -603,7 +603,7 @@ object SettingsReaderScreen : SearchableSettings {
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.pageLayout(),
                     entries = ReaderPreferences.PageLayouts
-                        .mapIndexed { index, it -> index + 1 to stringResource(it) }
+                        .mapIndexed { index, it -> index to stringResource(it) }
                         .toMap()
                         .toImmutableMap(),
                     title = stringResource(SYMR.strings.page_layout),
