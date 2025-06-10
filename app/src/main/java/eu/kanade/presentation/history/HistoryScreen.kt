@@ -165,6 +165,7 @@ private fun HistoryScreenContent(
                         onClickDelete = { onClickDelete(value) },
                         onClickFavorite = { onClickFavorite(value) },
                         // KMK -->
+                        hasUnread = value.unreadCount > 0,
                         usePanoramaCover = usePanoramaCover,
                         // KMK <--
                     )
