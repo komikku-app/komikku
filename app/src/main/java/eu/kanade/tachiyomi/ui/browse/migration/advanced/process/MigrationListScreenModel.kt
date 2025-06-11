@@ -69,10 +69,10 @@ class MigrationListScreenModel(
 
     val manualMigrations = MutableStateFlow(0)
 
-    var hideNotFound = preferences.hideNotFoundMigration().get()
-    private var showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
-    private var useSourceWithMost = preferences.useSourceWithMost().get()
-    private var useSmartSearch = preferences.smartMigration().get()
+    var hideNotFound = preferences.migrationHideUnmatched().get()
+    private var showOnlyUpdates = preferences.migrationHideWithoutUpdates().get()
+    private var useSourceWithMost = preferences.migrationPrioritizeByChapters().get()
+    private var useSmartSearch = preferences.migrationDeepSearchMode().get()
 
     val navigateOut = MutableSharedFlow<Unit>()
 
@@ -498,10 +498,10 @@ class MigrationListScreenModel(
     }
 
     fun updateOptions() {
-        hideNotFound = preferences.hideNotFoundMigration().get()
-        showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
-        useSourceWithMost = preferences.useSourceWithMost().get()
-        useSmartSearch = preferences.smartMigration().get()
+        hideNotFound = preferences.migrationHideUnmatched().get()
+        showOnlyUpdates = preferences.migrationHideWithoutUpdates().get()
+        useSourceWithMost = preferences.migrationPrioritizeByChapters().get()
+        useSmartSearch = preferences.migrationDeepSearchMode().get()
     }
     // KMK <--
 

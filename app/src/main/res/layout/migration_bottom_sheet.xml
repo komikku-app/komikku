@@ -190,15 +190,6 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/skip_step"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="16dp"
-            android:text="@string/skip_this_step_next_time" />
-
-        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/hide_not_found_manga"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

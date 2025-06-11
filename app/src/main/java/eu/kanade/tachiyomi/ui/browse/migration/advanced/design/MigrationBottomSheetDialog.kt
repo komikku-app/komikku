@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.widget.CompoundButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -21,13 +20,11 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
-import eu.kanade.tachiyomi.util.system.toast
 import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.injectLazy
 
 @Composable
@@ -85,7 +82,6 @@ fun MigrationBottomSheetDialog(
                         listOf(
                             useSmartSearch,
                             extraSearchParam,
-                            skipStep,
                             hideNotFoundManga,
                             onlyShowUpdates,
                         ).forEach {
@@ -137,29 +133,19 @@ class MigrationBottomSheetDialogState(
                 checkBox.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
             }
 
-            useSmartSearch.bindToPreference(preferences.smartMigration())
+            useSmartSearch.bindToPreference(preferences.migrationDeepSearchMode())
             extraSearchParamInputLayout.isVisible = false
             extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
                 extraSearchParamInputLayout.isVisible = isChecked
             }
-            sourceGroup.bindToPreference(preferences.useSourceWithMost())
+            sourceGroup.bindToPreference(preferences.migrationPrioritizeByChapters())
 
-            skipStep.isChecked = preferences.skipMigrationConfig().get()
-            hideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
-            onlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
-            skipStep.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    root.context.toast(
-                        SYMR.strings.pre_migration_skip_toast,
-                        Toast.LENGTH_LONG,
-                    )
-                }
-            }
+            hideNotFoundManga.isChecked = preferences.migrationHideUnmatched().get()
+            onlyShowUpdates.isChecked = preferences.migrationHideWithoutUpdates().get()
 
             migrateBtn.setOnClickListener {
-                preferences.skipMigrationConfig().set(skipStep.isChecked)
-                preferences.hideNotFoundMigration().set(hideNotFoundManga.isChecked)
-                preferences.showOnlyUpdatesMigration().set(onlyShowUpdates.isChecked)
+                preferences.migrationHideUnmatched().set(hideNotFoundManga.isChecked)
+                preferences.migrationHideWithoutUpdates().set(onlyShowUpdates.isChecked)
                 onStartMigration.value(
                     if (useSmartSearch.isChecked && !extraSearchParamText.text.isNullOrBlank()) {
                         extraSearchParamText.text.toString()
@@ -175,7 +161,6 @@ class MigrationBottomSheetDialogState(
                 extraSearchParam.isVisible = false
                 extraSearchParamInputLayout.isVisible = false
                 sourceGroup.isVisible = false
-                skipStep.isVisible = false
                 migrateBtn.text = root.context.stringResource(MR.strings.action_save)
             }
             // KMK <--
