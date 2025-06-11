@@ -30,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -59,7 +58,6 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationType
@@ -111,38 +109,24 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         val state by screenModel.state.collectAsState()
 
         var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
-        // KMK -->
-        var migrationBottomSheetDialog by rememberSaveable { mutableStateOf(false) }
 
-        fun continueMigrationBottom(openSheet: Boolean, extraParam: String? = null) {
-            if (openSheet) {
-                migrationBottomSheetDialog = true
-                return
-            }
-            navigator.replace(
-                // KMK -->
-                MigrationListScreen(
-                    MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParam),
-                ),
-                // KMK <--
-            )
-        }
-        // KMK <--
-
-        fun continueMigration(openSheet: Boolean) {
+        fun continueMigration(openSheet: Boolean, extraSearchQuery: String?) {
             if (openSheet) {
                 migrationSheetOpen = true
                 return
             }
-            // KMK -->
-            continueMigrationBottom(true)
-            // KMK <--
+
+            navigator.replace(
+                // KMK -->
+                // MigrateSearchScreen(mangaId)
+                MigrationListScreen(
+                    MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraSearchQuery),
+                ),
+                // KMK <--
+            )
         }
 
         if (state.isLoading) {
-            LaunchedEffect(state.skipMigrationConfig) {
-                if (state.skipMigrationConfig) continueMigration(openSheet = false)
-            }
             LoadingScreen()
             return
         }
@@ -213,7 +197,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
                             icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
                             onClick = {
                                 screenModel.saveSources()
-                                continueMigration(openSheet = true)
+                                continueMigration(openSheet = true, extraSearchQuery = null)
                             },
                             expanded = lazyListState.shouldExpandFAB(),
                         )
@@ -305,24 +289,12 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
             MigrationConfigScreenSheet(
                 preferences = screenModel.sourcePreferences,
                 onDismissRequest = { migrationSheetOpen = false },
-                onStartMigration = {
+                onStartMigration = { extraSearchQuery ->
                     migrationSheetOpen = false
-                    continueMigration(openSheet = false)
+                    continueMigration(openSheet = false, extraSearchQuery = extraSearchQuery)
                 },
             )
         }
-
-        // KMK -->
-        if (migrationBottomSheetDialog) {
-            MigrationBottomSheetDialog(
-                onDismissRequest = { migrationBottomSheetDialog = false },
-                onStartMigration = { extraParam ->
-                    migrationBottomSheetDialog = false
-                    continueMigrationBottom(openSheet = false, extraParam)
-                },
-            )
-        }
-        // KMK <--
     }
 
     @Composable
@@ -432,9 +404,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         init {
             screenModelScope.launchIO {
-                val skipMigrationConfig = sourcePreferences.skipMigrationConfig().get()
-                mutableState.update { it.copy(skipMigrationConfig = skipMigrationConfig) }
-                if (skipMigrationConfig) return@launchIO
                 initSources()
                 mutableState.update { it.copy(isLoading = false) }
             }
@@ -543,7 +512,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         data class State(
             val isLoading: Boolean = true,
-            val skipMigrationConfig: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 

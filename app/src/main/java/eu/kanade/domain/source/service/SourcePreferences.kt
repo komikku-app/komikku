@@ -23,8 +23,6 @@ class SourcePreferences(
 
     fun enabledLanguages() = preferenceStore.getStringSet("source_languages", LocaleHelper.getDefaultEnabledLanguages())
 
-    fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
-
     fun disabledSources() = preferenceStore.getStringSet("hidden_catalogues", emptySet())
 
     fun incognitoExtensions() = preferenceStore.getStringSet("incognito_extensions", emptySet())
@@ -71,14 +69,22 @@ class SourcePreferences(
         false,
     )
 
+    fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
+
     fun migrationFlags() = preferenceStore.getObjectFromInt(
-        key = "migrate_flags",
+        key = "migration_flags",
         defaultValue = MigrationFlag.entries.toSet(),
         serializer = { MigrationFlag.toBit(it) },
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 
-    fun skipMigrationConfig() = preferenceStore.getBoolean(Preference.appStateKey("skip_migration_config"), false)
+    fun migrationDeepSearchMode() = preferenceStore.getBoolean("migration_deep_search", false)
+
+    fun migrationPrioritizeByChapters() = preferenceStore.getBoolean("migration_prioritize_by_chapters", false)
+
+    fun migrationHideUnmatched() = preferenceStore.getBoolean("migration_hide_unmatched", false)
+
+    fun migrationHideWithoutUpdates() = preferenceStore.getBoolean("migration_hide_without_updates", false)
 
     // KMK -->
     fun globalSearchPinnedState() = preferenceStore.getEnum(
@@ -121,14 +127,6 @@ class SourcePreferences(
         BANDWIDTH_HERO,
         WSRV_NL,
     }
-
-    fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
-
-    fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)
-
-    fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
-
-    fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
 
     fun allowLocalSourceHiddenFolders() = preferenceStore.getBoolean("allow_local_source_hidden_folders", false)
 
