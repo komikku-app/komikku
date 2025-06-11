@@ -29,7 +29,7 @@ import uy.kohesive.injekt.injectLazy
  */
 abstract class RecommendationPagingSource(
     protected val manga: Manga,
-    source: CatalogueSource = RecommendSource(RECOMMENDS_SOURCE),
+    source: RecommendationSource = RecommendationSource(),
 ) : BaseSourcePagingSource(source) {
     // Display name
     abstract val name: String
@@ -145,34 +145,44 @@ abstract class TrackerRecommendationPagingSource(
 }
 
 // KMK -->
-internal class RecommendationSource(
-    internal val sourceId: Long,
+class RecommendationSource(
+    override val id: Long = RECOMMENDS_SOURCE,
     sourceManager: SourceManager = Injekt.get(),
-) {
-    val source = sourceManager.get(sourceId)
-        ?.let { it as CatalogueSource }
-        ?: RecommendSource(sourceId)
-
-    fun isComickSource(): Boolean = sourceId in COMICK_IDS
-
-    fun isMangaDexSource(): Boolean = sourceId in MANGADEX_IDS
-}
-
-internal class RecommendSource(
-    override val id: Long,
 ) : CatalogueSource {
-    override val name: String = "Recommends Source"
-    override val lang: String = "all"
-    override val supportsLatest: Boolean = false
+    private val delegate by lazy {
+        sourceManager.get(id)
+            ?.let { it as CatalogueSource }
+    }
 
-    override suspend fun getMangaDetails(manga: SManga) = throw UnsupportedOperationException()
-    override suspend fun getChapterList(manga: SManga) = throw UnsupportedOperationException()
-    override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException()
+    fun isComickSource(): Boolean = id in COMICK_IDS
+    fun isMangaDexSource(): Boolean = id in MANGADEX_IDS
 
-    override suspend fun getPopularManga(page: Int) = throw UnsupportedOperationException()
-    override suspend fun getLatestUpdates(page: Int) = throw UnsupportedOperationException()
-    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
-    override fun getFilterList() = throw UnsupportedOperationException()
+    override val name: String by lazy { delegate?.name ?: "Recommends Source" }
+    override val lang: String by lazy { delegate?.lang ?: "all" }
+    override val supportsLatest by lazy { delegate?.supportsLatest ?: false }
+
+    override suspend fun getMangaDetails(manga: SManga) =
+        delegate?.getMangaDetails(manga)
+            ?: throw UnsupportedOperationException()
+    override suspend fun getChapterList(manga: SManga) =
+        delegate?.getChapterList(manga)
+            ?: throw UnsupportedOperationException()
+    override suspend fun getPageList(chapter: SChapter) =
+        delegate?.getPageList(chapter)
+            ?: throw UnsupportedOperationException()
+
+    override suspend fun getPopularManga(page: Int) =
+        delegate?.getPopularManga(page)
+            ?: throw UnsupportedOperationException()
+    override suspend fun getLatestUpdates(page: Int) =
+        delegate?.getLatestUpdates(page)
+            ?: throw UnsupportedOperationException()
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList) =
+        delegate?.getSearchManga(page, query, filters)
+            ?: throw UnsupportedOperationException()
+    override fun getFilterList() =
+        delegate?.getFilterList()
+            ?: throw UnsupportedOperationException()
 }
 
 const val RECOMMENDS_SOURCE = -1L

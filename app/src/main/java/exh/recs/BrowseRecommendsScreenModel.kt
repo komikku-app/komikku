@@ -41,7 +41,7 @@ class BrowseRecommendsScreenModel(
         }
     }
 
-    val recommendationSource: RecommendationPagingSource
+    val recommendationPagingSource: RecommendationPagingSource
         get() = when (args) {
             is BrowseRecommendsScreen.Args.MergedSourceMangas -> StaticResultPagingSource(args.results)
             is BrowseRecommendsScreen.Args.SingleSourceManga -> RecommendationPagingSource.createSources(
@@ -54,7 +54,7 @@ class BrowseRecommendsScreenModel(
             }
         }
 
-    override fun createSourcePagingSource(query: String, filters: FilterList) = recommendationSource
+    override fun createSourcePagingSource(query: String, filters: FilterList) = recommendationPagingSource
 
     override fun Flow<Manga>.combineMetadata(metadata: RaisedSearchMetadata?): Flow<Pair<Manga, RaisedSearchMetadata?>> {
         // Overridden to prevent our custom metadata from being replaced from a cache

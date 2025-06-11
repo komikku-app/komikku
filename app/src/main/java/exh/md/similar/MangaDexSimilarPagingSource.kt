@@ -31,7 +31,7 @@ internal class MangaDexSimilarPagingSource(
 ) : RecommendationPagingSource(
     manga,
     // KMK -->
-    recommendationSource.source,
+    recommendationSource,
     // KMK <--
 ) {
 
@@ -43,12 +43,12 @@ internal class MangaDexSimilarPagingSource(
 
     override val associatedSourceId: Long
         // KMK -->
-        get() = recommendationSource.sourceId
+        get() = recommendationSource.id
 
     private val client by lazy { Injekt.get<NetworkHelper>().client }
 
     private val mdLang by lazy {
-        recommendationSource.source.lang.let { lang ->
+        recommendationSource.lang.let { lang ->
             MdLang.fromExt(lang)
         } ?: MdLang.ENGLISH
     }

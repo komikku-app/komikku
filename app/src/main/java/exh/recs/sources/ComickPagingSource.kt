@@ -30,7 +30,7 @@ internal class ComickPagingSource(
 ) : RecommendationPagingSource(
     manga,
     // KMK -->
-    recommendationSource.source,
+    recommendationSource,
     // KMK <--
 ) {
 
@@ -42,7 +42,7 @@ internal class ComickPagingSource(
 
     override val associatedSourceId: Long
         // KMK -->
-        get() = recommendationSource.sourceId
+        get() = recommendationSource.id
     // KMK <--
 
     private val client by lazy { Injekt.get<NetworkHelper>().client }
