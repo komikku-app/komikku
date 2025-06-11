@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import eu.kanade.presentation.util.ioCoroutineScope
+import exh.recs.sources.RECOMMENDS_SOURCE
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
 import exh.recs.sources.StaticResultPagingSource
@@ -163,5 +164,3 @@ sealed interface RecommendationItemResult {
         return !onlyShowHasResults || (this is Success && !this.isEmpty)
     }
 }
-
-const val RECOMMENDS_SOURCE = -1L

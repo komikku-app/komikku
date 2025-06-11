@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import exh.metadata.metadata.RaisedSearchMetadata
+import exh.recs.sources.RECOMMENDS_SOURCE
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
 import exh.recs.sources.StaticResultPagingSource

@@ -4,7 +4,9 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.similar.MangaDexSimilarPagingSource
 import exh.source.COMICK_IDS
@@ -27,7 +29,7 @@ import uy.kohesive.injekt.injectLazy
  */
 abstract class RecommendationPagingSource(
     protected val manga: Manga,
-    source: CatalogueSource? = null,
+    source: CatalogueSource = RecommendSource(RECOMMENDS_SOURCE),
 ) : BaseSourcePagingSource(source) {
     // Display name
     abstract val name: String
@@ -149,9 +151,29 @@ internal class RecommendationSource(
 ) {
     val source = sourceManager.get(sourceId)
         ?.let { it as CatalogueSource }
+        ?: RecommendSource(sourceId)
 
     fun isComickSource(): Boolean = sourceId in COMICK_IDS
 
     fun isMangaDexSource(): Boolean = sourceId in MANGADEX_IDS
 }
+
+internal class RecommendSource(
+    override val id: Long,
+) : CatalogueSource {
+    override val name: String = "Recommends Source"
+    override val lang: String = "all"
+    override val supportsLatest: Boolean = false
+
+    override suspend fun getMangaDetails(manga: SManga) = throw UnsupportedOperationException()
+    override suspend fun getChapterList(manga: SManga) = throw UnsupportedOperationException()
+    override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException()
+
+    override suspend fun getPopularManga(page: Int) = throw UnsupportedOperationException()
+    override suspend fun getLatestUpdates(page: Int) = throw UnsupportedOperationException()
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun getFilterList() = throw UnsupportedOperationException()
+}
+
+const val RECOMMENDS_SOURCE = -1L
 // KMK <--

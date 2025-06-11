@@ -48,7 +48,7 @@ internal class MangaDexSimilarPagingSource(
     private val client by lazy { Injekt.get<NetworkHelper>().client }
 
     private val mdLang by lazy {
-        recommendationSource.source?.lang?.let { lang ->
+        recommendationSource.source.lang.let { lang ->
             MdLang.fromExt(lang)
         } ?: MdLang.ENGLISH
     }
