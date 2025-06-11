@@ -1015,10 +1015,16 @@
     <string name="migrationConfigScreen.selectEnabledLabel">Select enabled sources</string>
     <string name="migrationConfigScreen.selectPinnedLabel">Select pinned sources</string>
     <string name="migrationConfigScreen.continueButtonText">Continue</string>
-    <string name="migrationConfigScreen.skipMigrationConfigTitle">Skip migration config</string>
-    <string name="migrationConfigScreen.skipMigrationConfigSubtitle">To show this screen again in the future, disable skipping in Settings → Browse</string>
-
-    <string name="browseSettingsScreen.migrationCategoryHeader">Migration</string>
-    <string name="browseSettingsScreen.skipMigrationConfigTitle">Skip migration config</string>
-    <string name="browseSettingsScreen.skipMigrationConfigSubtitle">Use last used sources and preferences for migration</string>
+    <string name="migrationConfigScreen.dataToMigrateHeader">Data to migrate</string>
+    <string name="migrationConfigScreen.removeDownloadsTitle">Delete downloads of current entry after migration</string>
+    <string name="migrationConfigScreen.additionalSearchQueryLabel">Additional keywords (optional)</string>
+    <string name="migrationConfigScreen.additionalSearchQuerySupportingText">Helps narrow down search results by adding additional keywords</string>
+    <string name="migrationConfigScreen.hideUnmatchedTitle">Hide entries without a match</string>
+    <string name="migrationConfigScreen.hideWithoutUpdatesTitle">Hide entries without newer chapters</string>
+    <string name="migrationConfigScreen.hideWithoutUpdatesSubtitle">Only show entry if the match has additional chapters</string>
+    <string name="migrationConfigScreen.enhancedOptionsWarning">These options are slow and dangerous and may lead to restrictions from sources</string>
+    <string name="migrationConfigScreen.deepSearchModeTitle">Advanced search mode</string>
+    <string name="migrationConfigScreen.deepSearchModeSubtitle">Breaks down the title into keywords for a wider search</string>
+    <string name="migrationConfigScreen.prioritizeByChaptersTitle">Match based on chapter number</string>
+    <string name="migrationConfigScreen.prioritizeByChaptersSubtitle">If enabled, chooses the match furthest ahead. Otherwise, picks the first match by source priority.</string>
 </resources>
