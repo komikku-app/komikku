@@ -5,7 +5,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.recs.sources.RecommendationPagingSource
-import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.RecommendationSource
 import exh.recs.sources.StaticResultPagingSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +46,7 @@ class BrowseRecommendsScreenModel(
             is BrowseRecommendsScreen.Args.SingleSourceManga -> RecommendationPagingSource.createSources(
                 manga ?: runBlocking(Dispatchers.IO) { getManga.await(args.mangaId)!! },
                 // KMK -->
-                SourceCatalogue(sourceId),
+                RecommendationSource(sourceId),
                 // KMK <--
             ).first {
                 it::class.qualifiedName == args.recommendationSourceName

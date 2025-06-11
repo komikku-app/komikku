@@ -6,7 +6,7 @@ import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import eu.kanade.presentation.util.ioCoroutineScope
 import exh.recs.sources.RecommendationPagingSource
-import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.RecommendationSource
 import exh.recs.sources.StaticResultPagingSource
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.mutate
@@ -55,7 +55,7 @@ open class RecommendsScreenModel(
                     RecommendationPagingSource.createSources(
                         manga,
                         // KMK -->
-                        SourceCatalogue(args.sourceId),
+                        RecommendationSource(args.sourceId),
                         // KMK <--
                     )
                 }

@@ -28,12 +28,12 @@ fun CatalogueSource.isComickSource() = name == "Comick"
 internal class ComickPagingSource(
     manga: Manga,
     // KMK -->
-    private val sourceCatalogue: SourceCatalogue,
+    private val recommendationSource: RecommendationSource,
     // KMK <--
 ) : RecommendationPagingSource(
     manga,
     // KMK -->
-    sourceCatalogue.source,
+    recommendationSource.source,
     // KMK <--
 ) {
 
@@ -45,7 +45,7 @@ internal class ComickPagingSource(
 
     override val associatedSourceId: Long
         // KMK -->
-        get() = sourceCatalogue.sourceId
+        get() = recommendationSource.sourceId
     // KMK <--
 
     private val client by lazy { Injekt.get<NetworkHelper>().client }

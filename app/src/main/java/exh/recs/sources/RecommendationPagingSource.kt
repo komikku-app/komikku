@@ -7,10 +7,8 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.similar.MangaDexSimilarPagingSource
-import exh.pref.DelegateSourcePreferences
 import exh.source.COMICK_IDS
 import exh.source.MANGADEX_IDS
-import exh.source.isMdBasedSource
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
@@ -49,12 +47,9 @@ abstract class RecommendationPagingSource(
         internal fun createSources(
             manga: Manga,
             // KMK -->
-            sourceCatalogue: SourceCatalogue,
+            recommendationSource: RecommendationSource,
             // KMK <--
         ): List<RecommendationPagingSource> {
-            // KMK -->
-            val source = sourceCatalogue.source
-            // KMK <--
             return buildList {
                 add(AniListPagingSource(manga))
                 add(MangaUpdatesCommunityPagingSource(manga))
@@ -64,16 +59,14 @@ abstract class RecommendationPagingSource(
                 // Only include MangaDex if the delegate sources are enabled and the source is MD-based
                 if (
                     // KMK -->
-                    sourceCatalogue.isMangaDexSource() ||
+                    recommendationSource.isMangaDexSource()
                     // KMK <--
-                    source?.isMdBasedSource() /* KMK --> */ == true /* KMK <-- */ &&
-                    Injekt.get<DelegateSourcePreferences>().delegateSources().get()
                 ) {
                     add(
                         MangaDexSimilarPagingSource(
                             manga,
                             // KMK -->
-                            sourceCatalogue,
+                            recommendationSource,
                             // KMK <--
                         ),
                     )
@@ -82,15 +75,14 @@ abstract class RecommendationPagingSource(
                 // Only include Comick if the source manga is from there
                 if (
                     // KMK -->
-                    sourceCatalogue.isComickSource() ||
+                    recommendationSource.isComickSource()
                     // KMK <--
-                    source?.isComickSource() /* KMK --> */ == true /* KMK <-- */
                 ) {
                     add(
                         ComickPagingSource(
                             manga,
                             // KMK -->
-                            sourceCatalogue,
+                            recommendationSource,
                             // KMK <--
                         ),
                     )
@@ -151,7 +143,7 @@ abstract class TrackerRecommendationPagingSource(
 }
 
 // KMK -->
-internal class SourceCatalogue(
+internal class RecommendationSource(
     internal val sourceId: Long,
     sourceManager: SourceManager = Injekt.get(),
 ) {

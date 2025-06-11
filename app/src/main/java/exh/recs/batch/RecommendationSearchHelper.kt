@@ -9,7 +9,7 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLog
 import exh.recs.sources.RecommendationPagingSource
-import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.RecommendationSource
 import exh.recs.sources.TrackerRecommendationPagingSource
 import exh.smartsearch.SmartLibrarySearchEngine
 import exh.util.ThrottleManager
@@ -101,7 +101,7 @@ class RecommendationSearchHelper(val context: Context) {
                 val jobs = RecommendationPagingSource.createSources(
                     sourceManga,
                     // KMK -->
-                    SourceCatalogue(sourceManga.source),
+                    RecommendationSource(sourceManga.source),
                     // KMK <--
                 ).mapNotNull { source ->
                     // Apply source filters
