@@ -198,13 +198,14 @@ class RecommendationSearchHelper(val context: Context) {
             return this
         }
 
-        return filterNot { manga ->
-            // Source recommendations can be directly resolved, if the recommendation is from the same source
-            recSource.associatedSourceId?.let { srcId ->
-                return@filterNot networkToLocalManga(manga.toDomainManga(srcId))
-                    .let { local -> libraryManga.any { it.id == local.id } }
-            }
+        // Source recommendations can be directly resolved, if the recommendation is from the same source
+        recSource.associatedSourceId?.let { srcId ->
+            return networkToLocalManga(map { it.toDomainManga(srcId) })
+                .filterNot { local -> libraryManga.any { it.id == local.id } }
+                .map { it.toSManga() }
+        }
 
+        return filterNot { manga ->
             // Tracker recommendations can be resolved by checking if the tracker is attached to the recommendation
             if (recSource is TrackerRecommendationPagingSource) {
                 recSource.associatedTrackerId?.let { trackerId ->
