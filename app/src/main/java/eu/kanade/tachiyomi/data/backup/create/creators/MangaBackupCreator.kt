@@ -77,6 +77,10 @@ class MangaBackupCreator(
                 chaptersQueries.getChaptersByMangaId(
                     mangaId = manga.id,
                     applyScanlatorFilter = 0, // false
+                    // KMK -->
+                    Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                    Manga.CHAPTER_SHOW_BOOKMARKED,
+                    // KMK <--
                     mapper = backupChapterMapper,
                 )
             }
