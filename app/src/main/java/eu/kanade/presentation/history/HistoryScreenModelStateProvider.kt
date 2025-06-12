@@ -100,6 +100,7 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
                         chapterNumber = Random.nextDouble(),
                         // KMK -->
                         read = Random.nextBoolean(),
+                        lastPageRead = Random.nextLong(1, 10),
                         totalChapters = Random.nextLong(1, 100),
                         readCount = 1,
                         // KMK <--

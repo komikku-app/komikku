@@ -11,6 +11,7 @@ SELECT
     chapters.chapter_number AS chapterNumber,
     -- KMK -->
     chapters.read AS read,
+    chapters.last_page_read AS lastPageRead,
     coalesce(C.total, 0) AS totalCount,
     coalesce(C.readCount, 0) AS readCount,
     -- KMK <--
@@ -60,6 +61,7 @@ cover_last_modified,
 chapterNumber,
 -- KMK -->
 read,
+lastPageRead,
 totalCount,
 readCount,
 -- KMK <--
@@ -83,6 +85,7 @@ favorite,
 cover_last_modified,
 chapterNumber,
 read,
+lastPageRead,
 totalCount,
 readCount,
 readAt,

@@ -16,6 +16,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         chapterNumber = 10.2,
         // KMK -->
         read = true,
+        lastPageRead = 5,
         totalChapters = 5L,
         readCount = 3L,
         // KMK <--
@@ -40,6 +41,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         chapterNumber = 10.2,
         // KMK -->
         read = false,
+        lastPageRead = 5,
         totalChapters = 5L,
         readCount = 3L,
         // KMK <--
@@ -64,6 +66,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         chapterNumber = -2.0,
         // KMK -->
         read = true,
+        lastPageRead = 5,
         totalChapters = 5L,
         readCount = 3L,
         // KMK <--

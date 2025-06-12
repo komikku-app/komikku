@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.MangaCoverHide
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
@@ -52,6 +53,7 @@ fun HistoryItem(
     onClickFavorite: () -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    readProgress: String?,
     hasUnread: Boolean,
     usePanoramaCover: Boolean,
     coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
@@ -160,6 +162,17 @@ fun HistoryItem(
                     style = MaterialTheme.typography.bodySmall,
                     // KMK <--
                 )
+                // KMK -->
+                if (readProgress != null) {
+                    DotSeparatorText()
+                    Text(
+                        text = readProgress,
+                        maxLines = 1,
+                        color = LocalContentColor.current.copy(alpha = textAlpha),
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                // KMK <--
             }
         }
 
@@ -197,6 +210,7 @@ private fun HistoryItemPreviews(
                 onClickResume = {},
                 onClickDelete = {},
                 onClickFavorite = {},
+                readProgress = "Page 5",
                 hasUnread = true,
                 usePanoramaCover = false,
             )
