@@ -8,6 +8,9 @@ SELECT
     coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
     coalesce(C.lastRead, 0) AS lastRead,
     coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+    -- KMK -->
+    coalesce(C.bookmarkReadCount, 0) AS bookmarkedReadCount,
+    -- KMK <--
     coalesce(MC.category_id, 0) AS category
 FROM mangas M
 LEFT JOIN(
@@ -19,6 +22,9 @@ LEFT JOIN(
         coalesce(max(history.last_read), 0) AS lastRead,
         coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
         sum(chapters.bookmark) AS bookmarkCount,
+        -- KMK -->
+        sum(CASE WHEN chapters.bookmark = 1 AND chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
+        -- KMK <--
         excluded_scanlators.scanlator AS ex_scanlator
     FROM chapters
     LEFT JOIN excluded_scanlators
@@ -42,6 +48,9 @@ SELECT
     coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
     coalesce(C.lastRead, 0) AS lastRead,
     coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+    -- KMK -->
+    coalesce(C.bookmarkReadCount, 0) AS bookmarkedReadCount,
+    -- KMK <--
     coalesce(MC.category_id, 0) AS category
 FROM mangas M
 LEFT JOIN (
@@ -59,6 +68,9 @@ LEFT JOIN(
         coalesce(max(history.last_read), 0) AS lastRead,
         coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
         sum(chapters.bookmark) AS bookmarkCount,
+        -- KMK -->
+        sum(CASE WHEN chapters.bookmark = 1 AND chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
+        -- KMK <--
         excluded_scanlators.scanlator AS ex_scanlator
     FROM chapters
     LEFT JOIN excluded_scanlators
