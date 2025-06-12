@@ -8,6 +8,7 @@ import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.history.repository.HistoryRepository
+import tachiyomi.domain.manga.model.Manga
 
 class HistoryRepositoryImpl(
     private val handler: DatabaseHandler,
@@ -15,13 +16,22 @@ class HistoryRepositoryImpl(
 
     override fun getHistory(query: String): Flow<List<HistoryWithRelations>> {
         return handler.subscribeToList {
-            historyViewQueries.history(query, HistoryMapper::mapHistoryWithRelations)
+            historyViewQueries.history(
+                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                Manga.CHAPTER_SHOW_BOOKMARKED,
+                query,
+                HistoryMapper::mapHistoryWithRelations,
+            )
         }
     }
 
     override suspend fun getLastHistory(): HistoryWithRelations? {
         return handler.awaitOneOrNull {
-            historyViewQueries.getLatestHistory(HistoryMapper::mapHistoryWithRelations)
+            historyViewQueries.getLatestHistory(
+                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                Manga.CHAPTER_SHOW_BOOKMARKED,
+                HistoryMapper::mapHistoryWithRelations,
+            )
         }
     }
 

@@ -12,10 +12,13 @@ SELECT
     mangas.cover_last_modified,
     chapters.chapter_number AS chapterNumber,
     -- KMK -->
+    mangas.chapter_flags AS chapterFlags,
     chapters.read AS read,
     chapters.last_page_read AS lastPageRead,
     coalesce(C.total, 0) AS totalCount,
     coalesce(C.readCount, 0) AS readCount,
+    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+    coalesce(C.bookmarkReadCount, 0) AS bookmarkReadCount,
     -- KMK <--
     history.last_read AS readAt,
     history.time_read AS readDuration,
@@ -39,6 +42,8 @@ LEFT JOIN(
         chapters.manga_id,
         count(*) AS total,
         sum(read) AS readCount,
+        sum(bookmark) AS bookmarkCount,
+        sum(CASE WHEN bookmark = 1 AND read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
         excluded_scanlators.scanlator AS ex_scanlator
     FROM chapters
     LEFT JOIN excluded_scanlators

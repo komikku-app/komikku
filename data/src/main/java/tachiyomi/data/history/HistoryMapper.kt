@@ -31,7 +31,7 @@ object HistoryMapper {
         // KMK -->
         read: Boolean,
         lastPageRead: Long,
-        totalCount: Long,
+        totalCount: Double,
         readCount: Double,
         // KMK <--
         readAt: Date?,
@@ -47,7 +47,7 @@ object HistoryMapper {
         // KMK -->
         read = read,
         lastPageRead = lastPageRead,
-        totalChapters = totalCount,
+        totalChapters = totalCount.toLong(),
         readCount = readCount.toLong(),
         // KMK <--
         readAt = readAt,
