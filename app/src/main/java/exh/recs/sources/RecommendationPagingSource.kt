@@ -29,7 +29,9 @@ import uy.kohesive.injekt.injectLazy
  */
 abstract class RecommendationPagingSource(
     protected val manga: Manga,
+    // KMK -->
     source: RecommendationSource = RecommendationSource(),
+    // KMK <--
 ) : BaseSourcePagingSource(source) {
     // Display name
     abstract val name: String
