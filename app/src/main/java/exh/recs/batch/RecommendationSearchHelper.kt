@@ -9,7 +9,7 @@ import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLog
 import exh.recs.sources.RecommendationPagingSource
-import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.RecommendationSource
 import exh.recs.sources.TrackerRecommendationPagingSource
 import exh.smartsearch.SmartLibrarySearchEngine
 import exh.util.ThrottleManager
@@ -101,7 +101,7 @@ class RecommendationSearchHelper(val context: Context) {
                 val jobs = RecommendationPagingSource.createSources(
                     sourceManga,
                     // KMK -->
-                    SourceCatalogue(sourceManga.source),
+                    RecommendationSource(sourceManga.source),
                     // KMK <--
                 ).mapNotNull { source ->
                     // Apply source filters
@@ -198,13 +198,16 @@ class RecommendationSearchHelper(val context: Context) {
             return this
         }
 
-        return filterNot { manga ->
-            // Source recommendations can be directly resolved, if the recommendation is from the same source
-            recSource.associatedSourceId?.let { srcId ->
-                return@filterNot networkToLocalManga(manga.toDomainManga(srcId))
-                    .let { local -> libraryManga.any { it.id == local.id } }
-            }
+        // KMK -->
+        // Source recommendations can be directly resolved, if the recommendation is from the same source
+        recSource.associatedSourceId?.let { srcId ->
+            return networkToLocalManga(map { it.toDomainManga(srcId) })
+                .filterNot { local -> libraryManga.any { it.id == local.id } }
+                .map { it.toSManga() }
+        }
+        // KMK <--
 
+        return filterNot { manga ->
             // Tracker recommendations can be resolved by checking if the tracker is attached to the recommendation
             if (recSource is TrackerRecommendationPagingSource) {
                 recSource.associatedTrackerId?.let { trackerId ->

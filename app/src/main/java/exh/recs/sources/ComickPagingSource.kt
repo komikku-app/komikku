@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.coroutines.coroutineScope
@@ -23,17 +22,15 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
-fun CatalogueSource.isComickSource() = name == "Comick"
-
 internal class ComickPagingSource(
     manga: Manga,
     // KMK -->
-    private val sourceCatalogue: SourceCatalogue,
+    private val recommendationSource: RecommendationSource,
     // KMK <--
 ) : RecommendationPagingSource(
     manga,
     // KMK -->
-    sourceCatalogue.source,
+    recommendationSource,
     // KMK <--
 ) {
 
@@ -45,7 +42,7 @@ internal class ComickPagingSource(
 
     override val associatedSourceId: Long
         // KMK -->
-        get() = sourceCatalogue.sourceId
+        get() = recommendationSource.id
     // KMK <--
 
     private val client by lazy { Injekt.get<NetworkHelper>().client }

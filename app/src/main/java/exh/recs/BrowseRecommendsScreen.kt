@@ -112,7 +112,7 @@ class BrowseRecommendsScreen(
                 } else {
                     // KMK <--
                     val title = remember {
-                        val recSource = screenModel.recommendationSource
+                        val recSource = screenModel.recommendationPagingSource
                         "${recSource.name} (${recSource.category.getString(context)})"
                     }
 

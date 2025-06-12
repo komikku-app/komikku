@@ -11,7 +11,7 @@ import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
 import exh.md.utils.MdLang
 import exh.recs.sources.RecommendationPagingSource
-import exh.recs.sources.SourceCatalogue
+import exh.recs.sources.RecommendationSource
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import tachiyomi.data.source.NoResultsException
@@ -26,12 +26,12 @@ import uy.kohesive.injekt.api.get
 internal class MangaDexSimilarPagingSource(
     manga: Manga,
     // KMK -->
-    private val sourceCatalogue: SourceCatalogue,
+    private val recommendationSource: RecommendationSource,
     // KMK <--
 ) : RecommendationPagingSource(
     manga,
     // KMK -->
-    sourceCatalogue.source,
+    recommendationSource,
     // KMK <--
 ) {
 
@@ -43,12 +43,12 @@ internal class MangaDexSimilarPagingSource(
 
     override val associatedSourceId: Long
         // KMK -->
-        get() = sourceCatalogue.sourceId
+        get() = recommendationSource.id
 
     private val client by lazy { Injekt.get<NetworkHelper>().client }
 
     private val mdLang by lazy {
-        sourceCatalogue.source?.lang?.let { lang ->
+        recommendationSource.lang.let { lang ->
             MdLang.fromExt(lang)
         } ?: MdLang.ENGLISH
     }

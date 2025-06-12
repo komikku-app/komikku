@@ -20,6 +20,7 @@ import exh.recs.RecommendsScreen.Args.MergedSourceMangas
 import exh.recs.RecommendsScreen.Args.SingleSourceManga
 import exh.recs.batch.RankedSearchResults
 import exh.recs.components.RecommendsScreen
+import exh.recs.sources.RECOMMENDS_SOURCE
 import exh.recs.sources.StaticResultPagingSource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
