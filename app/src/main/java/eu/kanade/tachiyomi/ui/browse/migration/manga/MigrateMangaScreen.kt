@@ -38,7 +38,7 @@ data class MigrateMangaScreen(
             navigateUp = navigator::pop,
             title = state.source?.name ?: "???",
             state = state,
-            onClickItem = { navigator.push(MigrationConfigScreen(listOf(it.id))) },
+            onClickItem = { navigator.push(MigrationConfigScreen(it.id)) },
             onClickCover = { navigator.push(MangaScreen(it.id)) },
             // KMK -->
             onMultiMigrateClicked = {

@@ -1,6 +1,6 @@
 package mihon.feature.migration.list.search
 
-import info.debatty.java.stringsimilarity.NormalizedLevenshtein
+import com.aallam.similarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
@@ -17,59 +17,62 @@ abstract class BaseSmartSearchEngine<T>(
 
     protected abstract fun getTitle(result: T): String
 
+    protected suspend fun regularSearch(searchAction: SearchAction<T>, title: String): T? {
+        return baseSearch(searchAction, listOf(title)) {
+            normalizedLevenshtein.similarity(title, getTitle(it))
+        }
+    }
+
     protected suspend fun deepSearch(searchAction: SearchAction<T>, title: String): T? {
-        val cleanedTitle = cleanSmartSearchTitle(title)
+        val cleanedTitle = cleanDeepSearchTitle(title)
 
         val queries = getDeepSearchQueries(cleanedTitle)
 
+        return baseSearch(searchAction, queries) {
+            val cleanedMangaTitle = cleanDeepSearchTitle(getTitle(it))
+            normalizedLevenshtein.similarity(cleanedTitle, cleanedMangaTitle)
+        }
+    }
+
+    private suspend fun baseSearch(
+        searchAction: SearchAction<T>,
+        queries: List<String>,
+        calculateDistance: (T) -> Double,
+    ): T? {
         val eligibleManga = supervisorScope {
             queries.map { query ->
                 async(Dispatchers.Default) {
-                    val builtQuery = if (extraSearchParams != null) {
+                    val builtQuery = if (!extraSearchParams.isNullOrBlank()) {
                         "$query ${extraSearchParams.trim()}"
                     } else {
                         query
                     }
 
-                    searchAction(builtQuery.sanitize()).map {
-                        val cleanedMangaTitle = cleanSmartSearchTitle(getTitle(it))
-                        val normalizedDistance = normalizedLevenshtein.similarity(cleanedTitle, cleanedMangaTitle)
-                        SearchEntry(it, normalizedDistance)
-                    }.filter { (_, normalizedDistance) ->
-                        normalizedDistance >= eligibleThreshold
-                    }
+                    val candidates = searchAction(
+                        builtQuery
+                            // KMK -->
+                            .sanitize(),
+                        // KMK <--
+                    )
+                    candidates
+                        .map {
+                            val distance = if (queries.size > 1 || candidates.size > 1) {
+                                calculateDistance(it)
+                            } else {
+                                1.0
+                            }
+                            SearchEntry(it, distance)
+                        }
+                        .filter { it.distance >= eligibleThreshold }
                 }
-            }.flatMap { it.await() }
+            }
+                .flatMap { it.await() }
         }
 
         return eligibleManga.maxByOrNull { it.distance }?.entry
     }
 
-    protected suspend fun regularSearch(searchAction: SearchAction<T>, title: String): T? {
-        val eligibleManga = supervisorScope {
-            val searchQuery = if (extraSearchParams != null) {
-                "$title ${extraSearchParams.trim()}"
-            } else {
-                title
-            }
-            val searchResults = searchAction(searchQuery.sanitize())
-
-            if (searchResults.size == 1) {
-                return@supervisorScope listOf(SearchEntry(searchResults.first(), 0.0))
-            }
-
-            searchResults.map {
-                val normalizedDistance = normalizedLevenshtein.similarity(title, getTitle(it))
-                SearchEntry(it, normalizedDistance)
-            }.filter { (_, normalizedDistance) ->
-                normalizedDistance >= eligibleThreshold
-            }
-        }
-
-        return eligibleManga.maxByOrNull { it.distance }?.entry
-    }
-
-    private fun cleanSmartSearchTitle(title: String): String {
+    private fun cleanDeepSearchTitle(title: String): String {
         val preTitle = title.lowercase(Locale.getDefault())
 
         // Remove text in brackets
@@ -98,48 +101,28 @@ abstract class BaseSmartSearchEngine<T>(
     }
 
     private fun removeTextInBrackets(text: String, readForward: Boolean): String {
-        val bracketPairs = listOf(
-            '(' to ')',
-            '[' to ']',
-            '<' to '>',
-            '{' to '}',
-        )
-        var openingBracketPairs = bracketPairs.mapIndexed { index, (opening, _) ->
-            opening to index
-        }.toMap()
-        var closingBracketPairs = bracketPairs.mapIndexed { index, (_, closing) ->
-            closing to index
-        }.toMap()
+        val openingChars = if (readForward) "([<{" else ")]}>"
+        val closingChars = if (readForward) ")]}>" else "([<{"
+        var depth = 0
 
-        // Reverse pairs if reading backwards
-        if (!readForward) {
-            val tmp = openingBracketPairs
-            openingBracketPairs = closingBracketPairs
-            closingBracketPairs = tmp
-        }
-
-        val depthPairs = bracketPairs.map { 0 }.toMutableList()
-
-        val result = StringBuilder()
-        for (c in if (readForward) text else text.reversed()) {
-            val openingBracketDepthIndex = openingBracketPairs[c]
-            if (openingBracketDepthIndex != null) {
-                depthPairs[openingBracketDepthIndex]++
-            } else {
-                val closingBracketDepthIndex = closingBracketPairs[c]
-                if (closingBracketDepthIndex != null) {
-                    depthPairs[closingBracketDepthIndex]--
-                } else {
-                    if (depthPairs.all { it <= 0 }) {
-                        result.append(c)
-                    } else {
-                        // In brackets, do not append to result
+        // KMK -->
+        val result = buildString {
+            for (char in (if (readForward) text else text.reversed())) {
+                when {
+                    char in openingChars -> depth++
+                    char in closingChars && depth > 0 -> {
+                        depth-- // Avoid depth going negative on mismatched closing
+                        // Unmatched closing bracket (depth = 0) -> treat as normal text
+                    }
+                    else -> if (depth == 0) {
+                        append(char)
                     }
                 }
             }
         }
-
-        return result.toString()
+        // If reading backward, the result is reversed
+        return if (readForward) result else result.reversed()
+        // KMK <--
     }
 
     private fun getDeepSearchQueries(cleanedTitle: String): List<String> {
@@ -163,9 +146,9 @@ abstract class BaseSmartSearchEngine<T>(
             splitCleanedTitle.take(1),
         )
 
-        return searchQueries.map {
-            it.joinToString(" ").trim()
-        }.distinct()
+        return searchQueries
+            .map { it.joinToString(" ").trim() }
+            .distinct()
     }
 
     companion object {
