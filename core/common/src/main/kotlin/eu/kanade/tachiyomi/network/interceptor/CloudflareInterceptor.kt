@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.network.interceptor
 
 import android.content.Context
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -15,6 +15,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import org.jsoup.Jsoup
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import java.io.IOException
@@ -30,7 +31,18 @@ class CloudflareInterceptor(
 
     override fun shouldIntercept(response: Response): Boolean {
         // Check if Cloudflare anti-bot is on
-        return response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK
+        return if (response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK) {
+            val document = Jsoup.parse(
+                response.peekBody(Long.MAX_VALUE).string(),
+                response.request.url.toString(),
+            )
+
+            // solve with webview only on captcha, not on geo block
+            document.getElementById("challenge-error-title") != null ||
+                document.getElementById("challenge-error-text") != null
+        } else {
+            false
+        }
     }
 
     override fun intercept(
@@ -92,9 +104,13 @@ class CloudflareInterceptor(
                     }
                 }
 
-                override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-                    if (request.isForMainFrame) {
-                        if (error.errorCode in ERROR_CODES) {
+                override fun onReceivedHttpError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    errorResponse: WebResourceResponse?,
+                ) {
+                    if (request?.isForMainFrame == true) {
+                        if (errorResponse?.statusCode in ERROR_CODES) {
                             // Found the Cloudflare challenge page.
                             challengeFound = true
                         } else {
