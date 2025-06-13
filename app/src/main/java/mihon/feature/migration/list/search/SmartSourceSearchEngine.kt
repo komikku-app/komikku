@@ -5,22 +5,23 @@ import eu.kanade.tachiyomi.source.model.SManga
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 
-class SmartSourceSearchEngine(
-    extraSearchParams: String? = null,
-) : BaseSmartSearchEngine<SManga>(extraSearchParams) {
+class SmartSourceSearchEngine(extraSearchParams: String?) : BaseSmartSearchEngine<SManga>(extraSearchParams) {
 
     override fun getTitle(result: SManga) = result.originalTitle
 
-    suspend fun regularSearch(source: CatalogueSource, title: String): Manga? =
-        regularSearch(makeSearchAction(source), title).let {
+    suspend fun regularSearch(source: CatalogueSource, title: String): Manga? {
+        return regularSearch(makeSearchAction(source), title).let {
             it?.toDomainManga(source.id)
         }
+    }
 
-    suspend fun deepSearch(source: CatalogueSource, title: String): Manga? =
-        deepSearch(makeSearchAction(source), title).let {
+    suspend fun deepSearch(source: CatalogueSource, title: String): Manga? {
+        return deepSearch(makeSearchAction(source), title).let {
             it?.toDomainManga(source.id)
         }
+    }
 
-    private fun makeSearchAction(source: CatalogueSource): SearchAction<SManga> =
-        { query -> source.getSearchManga(1, query, source.getFilterList()).mangas }
+    private fun makeSearchAction(source: CatalogueSource): SearchAction<SManga> = { query ->
+        source.getSearchManga(1, query, source.getFilterList()).mangas
+    }
 }

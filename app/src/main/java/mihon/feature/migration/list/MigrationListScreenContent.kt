@@ -37,8 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,28 +47,26 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
+import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
 import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import mihon.feature.migration.list.models.MigratingManga
-import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
@@ -78,9 +76,6 @@ fun MigrationListScreenContent(
     items: ImmutableList<MigratingManga>,
     migrationComplete: Boolean,
     finishedCount: Int,
-    getManga: suspend (MigratingManga.SearchResult.Success) -> Manga?,
-    getChapterInfo: suspend (MigratingManga.SearchResult.Success) -> MigratingManga.ChapterInfo,
-    getSourceName: (Manga) -> String,
     onItemClick: (Manga) -> Unit,
     onSearchManually: (MigratingManga) -> Unit,
     onSkip: (Long) -> Unit,
@@ -89,23 +84,17 @@ fun MigrationListScreenContent(
     openMigrationDialog: (Boolean) -> Unit,
     // KMK -->
     onCancel: (Long) -> Unit,
-    navigateUp: () -> Unit,
     openOptionsDialog: () -> Unit,
     // KMK <--
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            val titleString = stringResource(SYMR.strings.migration)
-            val title by produceState(initialValue = titleString, items, finishedCount, titleString) {
-                withIOContext {
-                    value = "$titleString ($finishedCount/${items.size})"
-                }
-            }
             AppBar(
-                title = title,
-                // KMK -->
-                navigateUp = navigateUp,
-                // KMK <--
+                title = if (items.isNotEmpty()) {
+                    stringResource(MR.strings.migrationListScreenTitleWithProgress, finishedCount, items.size)
+                } else {
+                    stringResource(MR.strings.migrationListScreenTitle)
+                },
                 actions = {
                     AppBarActions(
                         persistentListOf(
@@ -117,13 +106,13 @@ fun MigrationListScreenContent(
                             ),
                             // KMK <--
                             AppBar.Action(
-                                title = stringResource(MR.strings.copy),
+                                title = stringResource(MR.strings.migrationListScreen_copyActionLabel),
                                 icon = if (items.size == 1) Icons.Outlined.ContentCopy else Icons.Outlined.CopyAll,
                                 onClick = { openMigrationDialog(true) },
                                 enabled = migrationComplete,
                             ),
                             AppBar.Action(
-                                title = stringResource(MR.strings.migrate),
+                                title = stringResource(MR.strings.migrationListScreen_migrateActionLabel),
                                 icon = if (items.size == 1) Icons.Outlined.Done else Icons.Outlined.DoneAll,
                                 onClick = { openMigrationDialog(false) },
                                 enabled = migrationComplete,
@@ -136,52 +125,49 @@ fun MigrationListScreenContent(
         },
     ) { contentPadding ->
         FastScrollLazyColumn(contentPadding = contentPadding + topSmallPaddingValues) {
-            items(items, key = { "migration-list-${it.manga.id}" }) { item ->
+            items(items, key = { it.manga.id }) { item ->
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .animateItemFastScroll()
-                        .padding(horizontal = 16.dp)
+                        .padding(
+                            start = MaterialTheme.padding.medium,
+                            end = MaterialTheme.padding.small,
+                        )
                         .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     MigrationListItem(
                         modifier = Modifier
-                            .padding(top = 8.dp)
                             .weight(1f)
                             .align(Alignment.Top)
                             .fillMaxHeight(),
                         manga = item.manga,
                         source = item.source,
-                        chapterInfo = item.chapterInfo,
+                        chapterCount = item.chapterCount,
+                        latestChapter = item.latestChapter,
                         onClick = { onItemClick(item.manga) },
                     )
 
                     Icon(
-                        Icons.AutoMirrored.Outlined.ArrowForward,
-                        contentDescription = stringResource(SYMR.strings.migrating_to),
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
                         modifier = Modifier.weight(0.2f),
                     )
 
                     val result by item.searchResult.collectAsState()
                     MigrationListItemResult(
                         modifier = Modifier
-                            .padding(top = 8.dp)
                             .weight(1f)
                             .align(Alignment.Top)
                             .fillMaxHeight(),
-                        migrationItem = item,
                         result = result,
-                        getManga = getManga,
-                        getChapterInfo = getChapterInfo,
-                        getSourceName = getSourceName,
                         onItemClick = onItemClick,
                     )
 
                     MigrationListItemAction(
-                        modifier = Modifier
-                            .weight(0.2f),
+                        modifier = Modifier.weight(0.2f),
                         result = result,
                         onSearchManually = { onSearchManually(item) },
                         onSkip = { onSkip(item.manga.id) },
@@ -202,162 +188,140 @@ fun MigrationListItem(
     modifier: Modifier,
     manga: Manga,
     source: String,
-    chapterInfo: MigratingManga.ChapterInfo,
+    chapterCount: Int,
+    latestChapter: Double?,
     onClick: () -> Unit,
 ) {
     Column(
-        modifier
+        modifier = modifier
             .widthIn(max = 150.dp)
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
             .clickable(onClick = onClick)
             .padding(4.dp),
     ) {
-        val context = LocalContext.current
         Box(
-            Modifier.Companion.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .aspectRatio(MangaCover.Book.ratio),
         ) {
             MangaCover.Book(
-                modifier = Modifier.Companion
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 data = manga,
             )
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
                     .background(
-                        Brush.Companion.verticalGradient(
-                            0f to Color.Companion.Transparent,
+                        Brush.verticalGradient(
+                            0f to Color.Transparent,
                             1f to Color(0xAA000000),
                         ),
                     )
                     .fillMaxHeight(0.33f)
                     .fillMaxWidth()
-                    .align(Alignment.Companion.BottomCenter),
+                    .align(Alignment.BottomCenter),
             )
             Text(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(8.dp)
-                    .align(Alignment.Companion.BottomStart),
-                text = manga.title.ifBlank { stringResource(MR.strings.unknown) },
-                fontSize = 12.sp,
-                lineHeight = 18.sp,
+                    .align(Alignment.BottomStart),
+                text = manga.title,
+                overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
-                overflow = TextOverflow.Companion.Ellipsis,
-                style = MaterialTheme.typography.titleSmall.copy(
-                    color = Color.Companion.White,
-                    shadow = Shadow(
-                        color = Color.Companion.Black,
-                        blurRadius = 4f,
-                    ),
-                ),
+                style = MaterialTheme.typography.labelMedium
+                    .merge(shadow = Shadow(color = Color.Black, blurRadius = 4f)),
             )
-            BadgeGroup(modifier = Modifier.Companion.padding(4.dp)) {
-                Badge(text = "${chapterInfo.chapterCount}")
+            BadgeGroup(modifier = Modifier.padding(4.dp)) {
+                Badge(text = "$chapterCount")
             }
         }
-        Text(
-            text = source,
-            modifier = Modifier.Companion.padding(top = 4.dp, bottom = 1.dp, start = 8.dp),
-            overflow = TextOverflow.Companion.Ellipsis,
-            maxLines = 1,
-            style = MaterialTheme.typography.titleSmall,
-        )
 
-        val formattedLatestChapter by produceState(initialValue = "") {
-            value = withIOContext {
-                chapterInfo.getFormattedLatestChapter(context)
+        Column(
+            modifier = Modifier
+                .padding(MaterialTheme.padding.extraSmall),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = source,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            val formattedLatestChapters = remember(latestChapter) {
+                latestChapter?.let(::formatChapterNumber)
             }
+            Text(
+                text = stringResource(
+                    MR.strings.migrationListScreen_latestChapterLabel,
+                    formattedLatestChapters ?: stringResource(MR.strings.migrationListScreen_unknownLatestChapter),
+                ),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
-        Text(
-            text = formattedLatestChapter,
-            modifier = Modifier.Companion.padding(top = 1.dp, bottom = 4.dp, start = 8.dp),
-            overflow = TextOverflow.Companion.Ellipsis,
-            maxLines = 1,
-            style = MaterialTheme.typography.bodyMedium,
-        )
     }
 }
 
 @Composable
 fun MigrationListItemResult(
     modifier: Modifier,
-    migrationItem: MigratingManga,
     result: MigratingManga.SearchResult,
-    getManga: suspend (MigratingManga.SearchResult.Success) -> Manga?,
-    getChapterInfo: suspend (MigratingManga.SearchResult.Success) -> MigratingManga.ChapterInfo,
-    getSourceName: (Manga) -> String,
     onItemClick: (Manga) -> Unit,
 ) {
     Box(modifier.height(IntrinsicSize.Min)) {
         when (result) {
-            MigratingManga.SearchResult.Searching -> Box(
-                modifier = Modifier.Companion
-                    .widthIn(max = 150.dp)
-                    .fillMaxSize()
-                    .aspectRatio(MangaCover.Book.ratio),
-                contentAlignment = Alignment.Companion.Center,
-            ) {
-                CircularProgressIndicator()
-            }
-
-            MigratingManga.SearchResult.NotFound -> Column(
-                Modifier.Companion
-                    .widthIn(max = 150.dp)
-                    .fillMaxSize()
-                    .padding(top = 4.dp),
-            ) {
-                Image(
-                    painter = rememberResourceBitmapPainter(id = R.drawable.cover_error),
-                    contentDescription = null,
-                    modifier = Modifier.Companion
-                        .fillMaxWidth()
-                        .aspectRatio(MangaCover.Book.ratio)
-                        .clip(MaterialTheme.shapes.extraSmall),
-                    contentScale = ContentScale.Companion.Crop,
-                )
-                Text(
-                    text = stringResource(SYMR.strings.no_alternatives_found),
-                    modifier = Modifier.Companion.padding(top = 4.dp, bottom = 1.dp, start = 8.dp),
-                    style = MaterialTheme.typography.titleSmall,
-                )
-            }
-
-            is MigratingManga.SearchResult.Success -> {
-                val item by produceState<Triple<Manga, MigratingManga.ChapterInfo, String>?>(
-                    initialValue = null,
-                    migrationItem,
-                    result,
+            MigratingManga.SearchResult.Searching -> {
+                Box(
+                    modifier = Modifier
+                        .widthIn(max = 150.dp)
+                        .fillMaxSize()
+                        .aspectRatio(MangaCover.Book.ratio),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    value = withIOContext {
-                        val manga = getManga(result) ?: return@withIOContext null
-                        Triple(
-                            manga,
-                            getChapterInfo(result),
-                            getSourceName(manga),
-                        )
-                    }
+                    CircularProgressIndicator()
                 }
-                if (item != null) {
-                    val (manga, chapterInfo, source) = item!!
-                    MigrationListItem(
-                        modifier = Modifier.Companion.fillMaxSize(),
-                        manga = manga,
-                        source = source,
-                        chapterInfo = chapterInfo,
-                        onClick = {
-                            onItemClick(manga)
-                        },
+            }
+            MigratingManga.SearchResult.NotFound -> {
+                Column(
+                    Modifier
+                        .widthIn(max = 150.dp)
+                        .fillMaxSize()
+                        .padding(4.dp),
+                ) {
+                    Image(
+                        painter = rememberResourceBitmapPainter(id = R.drawable.cover_error),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(MangaCover.Book.ratio)
+                            .clip(MaterialTheme.shapes.extraSmall),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Text(
+                        text = stringResource(MR.strings.migrationListScreen_noMatchFoundText),
+                        modifier = Modifier.padding(MaterialTheme.padding.extraSmall),
+                        style = MaterialTheme.typography.titleSmall,
                     )
                 }
+            }
+            is MigratingManga.SearchResult.Success -> {
+                MigrationListItem(
+                    modifier = Modifier.fillMaxSize(),
+                    manga = result.manga,
+                    source = result.source,
+                    chapterCount = result.chapterCount,
+                    latestChapter = result.latestChapter,
+                    onClick = { onItemClick(result.manga) },
+                )
             }
         }
     }
 }
 
 @Composable
-fun MigrationListItemAction(
+private fun MigrationListItemAction(
     modifier: Modifier,
     result: MigratingManga.SearchResult,
     onSearchManually: () -> Unit,
@@ -368,8 +332,8 @@ fun MigrationListItemAction(
     onCancel: () -> Unit,
     // KMK <--
 ) {
-    var moreExpanded by remember { mutableStateOf(false) }
-    val closeMenu = { moreExpanded = false }
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
+    val closeMenu = { menuExpanded = false }
     Box(modifier) {
         when (result) {
             MigratingManga.SearchResult.Searching -> {
@@ -378,49 +342,49 @@ fun MigrationListItemAction(
                     // KMK <--
                     Icon(
                         imageVector = Icons.Outlined.Close,
-                        contentDescription = stringResource(SYMR.strings.action_stop),
+                        contentDescription = null,
                     )
                 }
             }
             MigratingManga.SearchResult.NotFound, is MigratingManga.SearchResult.Success -> {
-                IconButton(onClick = { moreExpanded = !moreExpanded }) {
+                IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         imageVector = Icons.Outlined.MoreVert,
-                        contentDescription = stringResource(MR.strings.action_menu_overflow_description),
+                        contentDescription = null,
                     )
                 }
                 DropdownMenu(
-                    expanded = moreExpanded,
+                    expanded = menuExpanded,
                     onDismissRequest = closeMenu,
                     offset = DpOffset(8.dp, (-56).dp),
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(SYMR.strings.action_search_manually)) },
+                        text = { Text(stringResource(MR.strings.migrationListScreen_searchManuallyActionLabel)) },
                         onClick = {
-                            onSearchManually()
                             closeMenu()
+                            onSearchManually()
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(SYMR.strings.action_skip_entry)) },
+                        text = { Text(stringResource(MR.strings.migrationListScreen_skipActionLabel)) },
                         onClick = {
-                            onSkip()
                             closeMenu()
+                            onSkip()
                         },
                     )
                     if (result is MigratingManga.SearchResult.Success) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(SYMR.strings.action_migrate_now)) },
+                            text = { Text(stringResource(MR.strings.migrationListScreen_migrateNowActionLabel)) },
                             onClick = {
-                                onMigrate()
                                 closeMenu()
+                                onMigrate()
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(SYMR.strings.action_copy_now)) },
+                            text = { Text(stringResource(MR.strings.migrationListScreen_copyNowActionLabel)) },
                             onClick = {
-                                onCopy()
                                 closeMenu()
+                                onCopy()
                             },
                         )
                     }

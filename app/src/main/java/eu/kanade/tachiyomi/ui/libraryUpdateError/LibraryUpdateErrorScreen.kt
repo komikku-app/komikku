@@ -22,7 +22,7 @@ class LibraryUpdateErrorScreen : Screen() {
         LibraryUpdateErrorScreen(
             state = state,
             onClick = { item ->
-                navigator.push(MigrationConfigScreen(listOf(item.error.mangaId)))
+                navigator.push(MigrationConfigScreen(item.error.mangaId))
             },
             onClickCover = { item -> navigator.push(MangaScreen(item.error.mangaId)) },
             onMultiMigrateClicked = {

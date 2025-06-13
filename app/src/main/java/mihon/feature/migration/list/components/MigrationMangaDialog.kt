@@ -5,7 +5,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -15,37 +14,50 @@ fun MigrationMangaDialog(
     copy: Boolean,
     totalCount: Int,
     skippedCount: Int,
-    copyManga: () -> Unit,
     onMigrate: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        text = {
+        title = {
             Text(
                 text = pluralStringResource(
-                    if (copy) SYMR.plurals.copy_entry else SYMR.plurals.migrate_entry,
+                    resource = if (copy) {
+                        MR.plurals.migrationListScreen_migrateDialog_copyTitle
+                    } else {
+                        MR.plurals.migrationListScreen_migrateDialog_migrateTitle
+                    },
                     count = totalCount,
                     totalCount,
-                    (if (skippedCount > 0) " " + stringResource(SYMR.strings.skipping_, skippedCount) else ""),
                 ),
             )
         },
+        text = {
+            if (skippedCount > 0) {
+                Text(
+                    text = pluralStringResource(
+                        resource = MR.plurals.migrationListScreen_migrateDialog_skipText,
+                        count = skippedCount,
+                        skippedCount,
+                    ),
+                )
+            }
+        },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    if (copy) {
-                        copyManga()
-                    } else {
-                        onMigrate()
-                    }
-                },
-            ) {
-                Text(text = stringResource(if (copy) MR.strings.copy else MR.strings.migrate))
+            TextButton(onClick = onMigrate) {
+                Text(
+                    text = stringResource(
+                        resource = if (copy) {
+                            MR.strings.migrationListScreen_migrateDialog_copyLabel
+                        } else {
+                            MR.strings.migrationListScreen_migrateDialog_migrateLabel
+                        },
+                    ),
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
+                Text(text = stringResource(MR.strings.migrationListScreen_migrateDialog_cancelLabel))
             }
         },
     )

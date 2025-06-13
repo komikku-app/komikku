@@ -81,6 +81,8 @@ import uy.kohesive.injekt.api.get
 
 class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
+    constructor(mangaId: Long) : this(listOf(mangaId))
+
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -98,17 +100,22 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
 
         fun continueMigration(openSheet: Boolean, extraSearchQuery: String?) {
+            // KMK -->
+            // val mangaId = mangaIds.singleOrNull()
+            // if (mangaId == null && openSheet) {
             if (openSheet) {
+                // KMK <--
                 migrationSheetOpen = true
                 return
             }
-
-            navigator.replace(
-                // KMK -->
-                // MigrateSearchScreen(mangaId)
-                MigrationListScreen(mangaIds, extraSearchQuery),
-                // KMK <--
-            )
+            val screen = // KMK --> if (mangaId == null) {
+                MigrationListScreen(mangaIds, extraSearchQuery)
+            // KMK -->
+            // } else {
+            //     MigrateSearchScreen(mangaId)
+            // }
+            // KMK <--
+            navigator.replace(screen)
         }
 
         if (state.isLoading) {

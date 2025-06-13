@@ -305,6 +305,9 @@ dependencies {
     // Shizuku
     implementation(libs.bundles.shizuku)
 
+    // String similarity
+    implementation(libs.stringSimilarity)
+
     // Tests
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)
@@ -316,9 +319,6 @@ dependencies {
     testImplementation(kotlinx.coroutines.test)
 
     // SY -->
-    // Text distance (EH)
-    implementation(sylibs.similarity)
-
     // Better logging (EH)
     implementation(sylibs.xlog)
 

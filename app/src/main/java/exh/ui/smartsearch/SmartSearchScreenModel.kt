@@ -19,7 +19,7 @@ class SmartSearchScreenModel(
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<SmartSearchScreenModel.SearchResults?>(null) {
-    private val smartSearchEngine = SmartSourceSearchEngine()
+    private val smartSearchEngine = SmartSourceSearchEngine(null)
 
     val source = sourceManager.get(sourceId) as CatalogueSource
 
