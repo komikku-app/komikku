@@ -1,7 +1,6 @@
 [versions]
 
 [libraries]
-similarity = "info.debatty:java-string-similarity:2.0.0"
 xlog = "com.elvishew:xlog:1.11.1"
 
 ratingbar = "me.zhanghai.android.materialratingbar:library:1.4.0"

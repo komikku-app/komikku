@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -33,10 +34,13 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.feature.migration.list.MigrationListScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
@@ -66,6 +70,7 @@ data class MigrateSourceSearchScreen(
 
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
 
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
@@ -142,13 +147,16 @@ data class MigrateSourceSearchScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
             val openMigrateDialog: (Manga) -> Unit = {
-                // SY -->
-                navigator.items
+                val migrateListScreen = navigator.items
                     .filterIsInstance<MigrationListScreen>()
-                    .last()
-                    .matchOverride = currentManga.id to it.id
-                navigator.popUntil { it is MigrationListScreen }
-                // SY <--
+                    .lastOrNull()
+
+                if (migrateListScreen == null) {
+                    screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(target = it, current = currentManga))
+                } else {
+                    migrateListScreen.addMatchOverride(current = currentManga.id, target = it.id)
+                    navigator.popUntil { screen -> screen is MigrationListScreen }
+                }
             }
             BrowseSourceContent(
                 source = screenModel.source,
@@ -189,7 +197,7 @@ data class MigrateSourceSearchScreen(
         }
 
         val onDismissRequest = { screenModel.setDialog(null) }
-        when (state.dialog) {
+        when (val dialog = state.dialog) {
             is BrowseSourceScreenModel.Dialog.Filter -> {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
@@ -214,6 +222,22 @@ data class MigrateSourceSearchScreen(
                     openMangaDexRandom = null,
                     openMangaDexFollows = null,
                     // SY <--
+                )
+            }
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateMangaDialog(
+                    current = currentManga,
+                    target = dialog.target,
+                    // Initiated from the context of [currentManga] so we show [dialog.target].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.target.id)) },
+                    onDismissRequest = onDismissRequest,
+                    onComplete = {
+                        scope.launch {
+                            navigator.popUntilRoot()
+                            HomeScreen.openTab(HomeScreen.Tab.Browse())
+                            navigator.push(MangaScreen(dialog.target.id))
+                        }
+                    },
                 )
             }
             else -> {}

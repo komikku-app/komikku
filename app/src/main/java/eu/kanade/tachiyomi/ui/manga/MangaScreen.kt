@@ -365,7 +365,7 @@ class MangaScreen(
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                navigator.push(MigrationConfigScreen(listOf(successState.manga.id)))
+                navigator.push(MigrationConfigScreen(successState.manga.id))
             }.takeIf { successState.manga.favorite },
             // SY -->
             previewsRowCount = successState.previewsRowCount,

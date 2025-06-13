@@ -1,57 +1,37 @@
 package mihon.feature.migration.list.models
 
-import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import tachiyomi.core.common.i18n.stringResource
+import mihon.feature.migration.list.MigrationListScreenModel.ChapterInfo
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
-import java.text.DecimalFormat
 import kotlin.coroutines.CoroutineContext
 
 class MigratingManga(
     val manga: Manga,
-    val chapterInfo: ChapterInfo,
+    val chapterCount: Int,
+    val latestChapter: Double?,
     val source: String,
     parentContext: CoroutineContext,
 ) {
     val migrationScope = CoroutineScope(parentContext + SupervisorJob() + Dispatchers.Default)
 
     // KMK -->
-    var searchingJob: Deferred<Manga?>? = null
+    var searchingJob: Deferred<Pair<Manga, ChapterInfo>?>? = null
     // KMK <--
 
     val searchResult = MutableStateFlow<SearchResult>(SearchResult.Searching)
 
-    // <MAX, PROGRESS>
-    val progress = MutableStateFlow(1 to 0)
-
-    sealed class SearchResult {
-        data object Searching : SearchResult()
-        data object NotFound : SearchResult()
-        data class Success(val id: Long) : SearchResult()
-    }
-
-    data class ChapterInfo(
-        val latestChapter: Double?,
-        val chapterCount: Int,
-    ) {
-        fun getFormattedLatestChapter(context: Context): String {
-            return if (latestChapter != null && latestChapter > 0.0) {
-                context.stringResource(
-                    SYMR.strings.latest_,
-                    DecimalFormat("#.#").format(latestChapter),
-                )
-            } else {
-                context.stringResource(
-                    SYMR.strings.latest_,
-                    context.stringResource(MR.strings.unknown),
-                )
-            }
-        }
+    sealed interface SearchResult {
+        data object Searching : SearchResult
+        data object NotFound : SearchResult
+        data class Success(
+            val manga: Manga,
+            val chapterCount: Int,
+            val latestChapter: Double?,
+            val source: String,
+        ) : SearchResult
     }
 }
