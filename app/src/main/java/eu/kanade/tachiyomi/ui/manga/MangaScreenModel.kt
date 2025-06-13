@@ -309,10 +309,10 @@ class MangaScreenModel(
 
     init {
         screenModelScope.launchIO {
-            getMangaAndChapters.subscribe(mangaId, applyScanlatorFilter = true).distinctUntilChanged()
+            getMangaAndChapters.subscribe(mangaId, applyFilter = true).distinctUntilChanged()
                 // SY -->
                 .combine(
-                    getMergedChaptersByMangaId.subscribe(mangaId, true, applyScanlatorFilter = true)
+                    getMergedChaptersByMangaId.subscribe(mangaId, true, applyFilter = true)
                         .distinctUntilChanged(),
                 ) { (manga, chapters), mergedChapters ->
                     if (manga.source == MERGED_SOURCE_ID) {
@@ -445,9 +445,9 @@ class MangaScreenModel(
                 if (manga.source ==
                     MERGED_SOURCE_ID
                 ) {
-                    getMergedChaptersByMangaId.await(mangaId, applyScanlatorFilter = true)
+                    getMergedChaptersByMangaId.await(mangaId, applyFilter = true)
                 } else {
-                    getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true)
+                    getMangaAndChapters.awaitChapters(mangaId, applyFilter = true)
                 }
                 )
                 .toChapterListItems(manga, mergedData)

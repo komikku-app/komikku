@@ -76,7 +76,7 @@ class MangaBackupCreator(
             handler.awaitList {
                 chaptersQueries.getChaptersByMangaId(
                     mangaId = manga.id,
-                    applyScanlatorFilter = 0, // false
+                    applyFilter = 0, // false
                     // KMK -->
                     Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                     Manga.CHAPTER_SHOW_BOOKMARKED,

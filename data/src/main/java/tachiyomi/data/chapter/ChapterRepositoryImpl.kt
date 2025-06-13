@@ -81,11 +81,11 @@ class ChapterRepositoryImpl(
         }
     }
 
-    override suspend fun getChapterByMangaId(mangaId: Long, applyScanlatorFilter: Boolean): List<Chapter> {
+    override suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getChaptersByMangaId(
                 mangaId,
-                applyScanlatorFilter.toLong(),
+                applyFilter.toLong(),
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
@@ -120,11 +120,11 @@ class ChapterRepositoryImpl(
         return handler.awaitOneOrNull { chaptersQueries.getChapterById(id, ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyScanlatorFilter: Boolean): Flow<List<Chapter>> {
+    override suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyFilter: Boolean): Flow<List<Chapter>> {
         return handler.subscribeToList {
             chaptersQueries.getChaptersByMangaId(
                 mangaId,
-                applyScanlatorFilter.toLong(),
+                applyFilter.toLong(),
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
@@ -149,11 +149,15 @@ class ChapterRepositoryImpl(
         return handler.awaitList { chaptersQueries.getChapterByUrl(url, ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getMergedChapterByMangaId(mangaId: Long, applyScanlatorFilter: Boolean): List<Chapter> {
+    override suspend fun getMergedChapterByMangaId(mangaId: Long, applyFilter: Boolean): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getMergedChaptersByMangaId(
                 mangaId,
-                applyScanlatorFilter.toLong(),
+                applyFilter.toLong(),
+                // KMK -->
+                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                Manga.CHAPTER_SHOW_BOOKMARKED,
+                // KMK <--
                 ChapterMapper::mapChapter,
             )
         }
@@ -161,12 +165,16 @@ class ChapterRepositoryImpl(
 
     override suspend fun getMergedChapterByMangaIdAsFlow(
         mangaId: Long,
-        applyScanlatorFilter: Boolean,
+        applyFilter: Boolean,
     ): Flow<List<Chapter>> {
         return handler.subscribeToList {
             chaptersQueries.getMergedChaptersByMangaId(
                 mangaId,
-                applyScanlatorFilter.toLong(),
+                applyFilter.toLong(),
+                // KMK -->
+                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                Manga.CHAPTER_SHOW_BOOKMARKED,
+                // KMK <--
                 ChapterMapper::mapChapter,
             )
         }
