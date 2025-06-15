@@ -29,9 +29,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var mediaId: String? = null
 
-    // AZ -->
     var mediaServer: Int? = null
-    // AZ <--
 
     var japaneseTitle by titleDelegate(TITLE_TYPE_JAPANESE)
     var englishTitle by titleDelegate(TITLE_TYPE_ENGLISH)
@@ -49,10 +47,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         val key = nhId?.let { nhIdToPath(it) }
 
         val cover = if (mediaId != null) {
-            // AZ -->
             // Default media server for cover is always 1 (see in page header)
             val server = mediaServer ?: 1
-            // AZ <--
             typeToExtension(coverImageType)?.let {
                 "https://t$server.nhentai.net/galleries/$mediaId/cover.$it"
             }

@@ -72,11 +72,9 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        // AZ -->
-        val strdata = input.body.string()
-        val server = MEDIA_SERVER_REGEX.find(strdata)?.groupValues?.get(1)?.toInt() ?: 1
-        // AZ <--
-        val json = GALLERY_JSON_REGEX.find(strdata)!!.groupValues[1].replace(
+        val body = input.body.string()
+        val server = MEDIA_SERVER_REGEX.find(body)?.groupValues?.get(1)?.toInt() ?: 1
+        val json = GALLERY_JSON_REGEX.find(body)!!.groupValues[1].replace(
             UNICODE_ESCAPE_REGEX,
         ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
         val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)
@@ -90,9 +88,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
             mediaId = jsonResponse.mediaId
 
-            // AZ -->
             mediaServer = server
-            // AZ <--
 
             jsonResponse.title?.let { title ->
                 japaneseTitle = title.japanese
@@ -103,7 +99,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
             preferredTitle = this@NHentai.preferredTitle
 
             jsonResponse.images?.let { images ->
-                coverImageType = input.asJsoup(strdata).parseCoverType()
+                coverImageType = input.asJsoup(body).parseCoverType()
                     ?: images.cover?.type
                 images.pages.mapNotNull {
                     it.type
@@ -217,9 +213,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
                     index + 1,
                     imageUrl = thumbnailUrlFromType(
                         metadata.mediaId!!,
-                        // AZ -->
                         metadata.mediaServer ?: 1,
-                        // AZ <--
                         index + 1,
                         s,
                     )!!,
@@ -232,9 +226,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     private fun thumbnailUrlFromType(
         mediaId: String,
-        // AZ -->
         mediaServer: Int,
-        // AZ <--
         page: Int,
         t: String,
     ) = NHentaiSearchMetadata.typeToExtension(t)?.let {
@@ -258,11 +250,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
 
         private val GALLERY_JSON_REGEX = Regex(".parse\\(\"(.*)\"\\);")
-
-        // AZ -->
         private val MEDIA_SERVER_REGEX = Regex("media_server\\s*:\\s*(\\d+)")
-
-        // AZ <--
         private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
         private const val TITLE_PREF = "Display manga title as:"
     }
