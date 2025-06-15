@@ -24,7 +24,13 @@ JOIN (
     ON chapters._id = history.chapter_id
     GROUP BY chapters.manga_id
 ) AS max_last_read
-ON chapters.manga_id = max_last_read.manga_id;
+ON chapters.manga_id = max_last_read.manga_id
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM mangas_categories MC
+  JOIN categories c ON MC.category_id = c._id
+  WHERE MC.manga_id = mangas._id AND c.hidden = 1
+);
 
 history:
 SELECT
