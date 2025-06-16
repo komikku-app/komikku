@@ -88,16 +88,22 @@ class AniListPagingSource(manga: Manga) : TrackerRecommendationPagingSource(
             .ifEmpty { throw NoResultsException() }
             .filter()
 
-        return media.flatMap { it.jsonObject["recommendations"]!!.jsonObject["edges"]!!.jsonArray }.map {
-            val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
-            val recTitle = getTitle(rec)
-            logcat { "ANILIST > RECOMMENDATION: $recTitle" }
-            SManga(
-                title = recTitle,
-                thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content,
-                initialized = true,
-                url = rec["siteUrl"]!!.jsonPrimitive.content,
-            )
+        return media.flatMap { it.jsonObject["recommendations"]!!.jsonObject["edges"]!!.jsonArray }.mapNotNull { edge ->
+            edge.jsonObject["node"]?.let { node ->
+                node.jsonObject["mediaRecommendation"]?.takeIf { it is JsonObject }?.let { media ->
+                    val rec = media.jsonObject
+                    val recTitle = getTitle(rec)
+                    logcat { "ANILIST > RECOMMENDATION: $recTitle" }
+                    rec["siteUrl"]?.jsonPrimitive?.contentOrNull?.let { url ->
+                        SManga(
+                            title = recTitle,
+                            thumbnail_url = rec["coverImage"]?.jsonObject?.get("large")?.jsonPrimitive?.contentOrNull,
+                            initialized = true,
+                            url = url,
+                        )
+                    }
+                }
+            }
         }
     }
 
