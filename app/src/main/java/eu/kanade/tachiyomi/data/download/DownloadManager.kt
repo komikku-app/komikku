@@ -27,6 +27,7 @@ import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -278,6 +279,8 @@ class DownloadManager(
             cache.removeManga(manga)
 
             // Delete source directory if empty
+            if (source.isLocal()) return@launchIO
+
             val sourceDir = provider.findSourceDir(source)
             if (sourceDir?.listFiles()?.isEmpty() == true) {
                 sourceDir.delete()

@@ -1528,6 +1528,7 @@ class MangaScreenModel(
                     )
                     // KMK -->
                     if (source?.isLocal() == true) {
+                        // Refresh chapters state for Local source
                         fetchChaptersFromSource()
                     }
                     // KMK <--
@@ -1546,7 +1547,7 @@ class MangaScreenModel(
         if (deleteDownload) {
             deleteDownloadedData()
         }
-        if (removeChapters || successState?.source?.isLocal() == true) {
+        if (removeChapters) {
             removeChaptersDatabase()
         }
     }
@@ -1560,6 +1561,10 @@ class MangaScreenModel(
                         source = state.source,
                         removeQueued = true,
                     )
+                    if (source?.isLocal() == true) {
+                        // Refresh chapters state for Local source
+                        fetchChaptersFromSource()
+                    }
                 }
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
