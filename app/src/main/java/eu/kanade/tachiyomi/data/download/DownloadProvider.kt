@@ -74,9 +74,11 @@ class DownloadProvider(
      * @param source the source to query.
      */
     fun findSourceDir(source: Source): UniFile? {
+        // KMK -->
         return if (source.isLocal()) {
             storageManager.getLocalSourceDirectory()
         } else {
+            // KMK <--
             downloadsDir?.findFile(getSourceDirName(source))
         }
     }
@@ -117,11 +119,13 @@ class DownloadProvider(
     fun findChapterDirs(chapters: List<Chapter>, manga: Manga, source: Source): Pair<UniFile?, List<UniFile>> {
         val mangaDir = findMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source) ?: return null to emptyList()
         return mangaDir to chapters.mapNotNull { chapter ->
+            // KMK -->
             if (source.isLocal()) {
                 val (mangaDirName, chapterDirName) = chapter.url.split('/', limit = 2)
                 mangaDir.findFile(chapterDirName)
                     ?: storageManager.getLocalSourceDirectory()?.findFile(mangaDirName)?.findFile(chapterDirName)
             } else {
+                // KMK <--
                 getValidChapterDirNames(chapter.name, chapter.scanlator).asSequence()
                     .mapNotNull { mangaDir.findFile(it) }
                     .firstOrNull()
