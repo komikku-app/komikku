@@ -1524,6 +1524,11 @@ class MangaScreenModel(
                         ignoreCategoryExclusion = true,
                         // KMK <--
                     )
+                    // KMK -->
+                    if (source?.isLocal() == true) {
+                        fetchChaptersFromSource()
+                    }
+                    // KMK <--
                 }
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
