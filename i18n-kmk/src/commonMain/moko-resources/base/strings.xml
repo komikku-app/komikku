@@ -15,6 +15,7 @@
     <string name="action_show_hidden_categories">Show hidden categories</string>
     <string name="action_panorama_cover">Panorama cover</string>
     <string name="action_open_folder">Open folder</string>
+    <string name="action_clear_manga">Clear manga</string>
     <string name="action_update">Update</string>
     <!-- Reader -->
       <!-- Reader Actions -->
@@ -121,6 +122,8 @@
     <string name="action_skip_duplicate_manga">Skip it</string>
     <string name="action_allow_all_duplicate_manga">Allow all</string>
     <string name="action_skip_all_duplicate_manga">Skip all</string>
+    <string name="downloaded_data">Downloaded data</string>
+    <string name="chapters_from_database">Chapters &amp; History from Database</string>
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
     <string name="update_completed">Update completed</string>

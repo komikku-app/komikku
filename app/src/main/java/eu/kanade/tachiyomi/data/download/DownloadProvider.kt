@@ -12,6 +12,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
@@ -121,9 +122,14 @@ class DownloadProvider(
         return mangaDir to chapters.mapNotNull { chapter ->
             // KMK -->
             if (source.isLocal()) {
-                val (mangaDirName, chapterDirName) = chapter.url.split('/', limit = 2)
-                mangaDir.findFile(chapterDirName)
-                    ?: storageManager.getLocalSourceDirectory()?.findFile(mangaDirName)?.findFile(chapterDirName)
+                val splitUrl = chapter.url.split('/', limit = 2)
+                if (splitUrl.size < 2) {
+                    null
+                } else {
+                    val (mangaDirName, chapterDirName) = splitUrl
+                    mangaDir.findFile(chapterDirName)
+                        ?: storageManager.getLocalSourceDirectory()?.findFile(mangaDirName)?.findFile(chapterDirName)
+                }
             } else {
                 // KMK <--
                 getValidChapterDirNames(chapter.name, chapter.scanlator).asSequence()
