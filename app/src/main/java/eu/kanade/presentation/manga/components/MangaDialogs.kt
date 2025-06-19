@@ -108,8 +108,7 @@ fun ClearMangaDialog(
         },
         text = {
             Column {
-                list.forEach { state ->
-                    val index = list.indexOf(state)
+                list.forEachIndexed { index, state ->
                     LabeledCheckbox(
                         label = stringResource(state.value),
                         checked = state.isChecked,
