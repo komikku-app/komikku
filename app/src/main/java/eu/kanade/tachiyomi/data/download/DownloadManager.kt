@@ -278,9 +278,11 @@ class DownloadManager(
             provider.findMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)?.delete()
             cache.removeManga(manga)
 
-            // Delete source directory if empty
+            // KMK -->
             if (source.isLocal()) return@launchIO
+            // KMK <--
 
+            // Delete source directory if empty
             val sourceDir = provider.findSourceDir(source)
             if (sourceDir?.listFiles()?.isEmpty() == true) {
                 sourceDir.delete()
