@@ -302,8 +302,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 when {
                     it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> {
                         skippedUpdates.add(
-                            it.manga to
-                                    context.stringResource(MR.strings.skipped_reason_not_always_update),
+                            it.manga to context.stringResource(MR.strings.skipped_reason_not_always_update),
                         )
                         false
                     }
