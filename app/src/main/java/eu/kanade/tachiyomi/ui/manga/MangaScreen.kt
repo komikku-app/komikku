@@ -51,6 +51,7 @@ import eu.kanade.presentation.manga.ChapterSettingsDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
+import eu.kanade.presentation.manga.components.ClearMangaDialog
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
@@ -64,6 +65,7 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
@@ -383,8 +385,9 @@ class MangaScreen(
                     else -> {}
                 }
             }.takeIf { isConfigurableSource },
+            onClearManga = { screenModel.showClearMangaDialog(successState.source is MergedSource) },
             onOpenMangaFolder = { screenModel.openMangaFolder() }
-                .takeIf { successState.source !is StubSource },
+                .takeIf { successState.source !is StubSource && successState.source !is MergedSource },
             onRelatedMangasScreenClick = {
                 if (successState.isRelatedMangasFetched == null) {
                     scope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
@@ -593,6 +596,15 @@ class MangaScreen(
                 )
             }
             // SY <--
+            // KMK -->
+            is MangaScreenModel.Dialog.ClearManga -> {
+                ClearMangaDialog(
+                    isMergedSource = dialog.isMergedSource,
+                    onDismissRequest = onDismissRequest,
+                    onConfirm = screenModel::clearManga,
+                )
+            }
+            // KMK <--
         }
 
         if (showScanlatorsDialog) {
