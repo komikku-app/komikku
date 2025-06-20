@@ -17,6 +17,7 @@
     <string name="action_open_folder">Open folder</string>
     <string name="action_clear_manga">Clear manga</string>
     <string name="action_update">Update</string>
+
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
@@ -124,6 +125,7 @@
     <string name="action_skip_all_duplicate_manga">Skip all</string>
     <string name="downloaded_data">Downloaded data</string>
     <string name="chapters_from_database">Chapters &amp; History from Database</string>
+
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
     <string name="update_completed">Update completed</string>
