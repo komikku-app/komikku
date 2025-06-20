@@ -916,7 +916,6 @@
     <string name="notification_cover_update_failed">Failed to update cover</string>
     <string name="notification_first_add_to_library">Please add the entry to your library before doing this</string>
     <string name="library_errors_help">For help on how to fix library update errors, see %1$s</string>
-    <string name="skipped_reason_only_fetch_once_chapters_exist">Skipped because series strategy is ONLY_FETCH_ONCE and chapter already exist</string>
     <string name="skipped_reason_completed">Skipped because series is complete</string>
     <string name="skipped_reason_not_caught_up">Skipped because there are unread chapters</string>
     <string name="skipped_reason_not_started">Skipped because no chapters are read</string>
