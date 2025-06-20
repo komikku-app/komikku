@@ -38,6 +38,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Update Facebook and Reddit icons ([@Joehuu](https://github.com/Joehuu)) ([#1994](https://github.com/mihonapp/mihon/pull/1994))
 - Switch default user agent to Android Chrome ([@AntsyLich](https://github.com/AntsyLich)) ([#2048](https://github.com/mihonapp/mihon/pull/2048))
 - Changed log in button text when processing tracker login ([@AntsyLich](https://github.com/AntsyLich)) ([#2069](https://github.com/mihonapp/mihon/pull/2069))
+- Update manga without chapters even if restricted by source ([@Manavchaudhary1](https://github.com/manavchaudhary1)) ([#1018](https://github.com/komikku-app/komikku/pull/1018))
 - Disable reader's 'Keep screen on' setting by default ([@AntsyLich](https://github.com/AntsyLich)) ([#2095](https://github.com/mihonapp/mihon/pull/2095))
 
 ### Fixes
