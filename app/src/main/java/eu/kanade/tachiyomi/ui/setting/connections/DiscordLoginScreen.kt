@@ -70,11 +70,7 @@ private const val JS_TOKEN_NULL = "null"
 private const val JS_TOKEN_ERROR = "error"
 
 @SuppressLint("SetJavaScriptEnabled")
-class DiscordLoginScreen(
-    private val connectionsManager: ConnectionsManager = Injekt.get(),
-    private val connectionsPreferences: ConnectionsPreferences = Injekt.get(),
-    private val networkHelper: NetworkHelper = Injekt.get(),
-) : Screen() {
+class DiscordLoginScreen : Screen() {
 
     @Composable
     override fun Content() {
@@ -95,12 +91,9 @@ class DiscordLoginScreen(
                             view.evaluateJavascript(
                                 """
                                 (function() {
-                                    try {
-                                        var token = localStorage.getItem("token");
-                                        if (token) {
-                                            Android.onRetrieveToken(token.slice(1, -1));
-                                        } else {
-                                            // fallback to alert (kizzy's logic)
+                                    function fallbackTokenAlert() {
+                                        // fallback to alert (kizzy's logic)
+                                        try {
                                             var i = document.createElement('iframe');
                                             document.body.appendChild(i);
                                             setTimeout(function() {
@@ -115,9 +108,19 @@ class DiscordLoginScreen(
                                                     alert("$JS_TOKEN_ERROR");
                                                 }
                                             }, 1000);
+                                        } catch (e) {
+                                            alert("$JS_TOKEN_ERROR");
+                                        }
+                                    }
+                                    try {
+                                        var token = localStorage.getItem("token");
+                                        if (token) {
+                                            Android.onRetrieveToken(token.slice(1, -1));
+                                        } else {
+                                            fallbackTokenAlert();
                                         }
                                     } catch (e) {
-                                        alert("$JS_TOKEN_ERROR");
+                                        fallbackTokenAlert();
                                     }
                                 })();
                                 """.trimIndent(),
@@ -184,7 +187,7 @@ class DiscordLoginScreen(
                 Box {
                     Column {
                         AppBar(
-                            title = stringResource(MR.strings.login_title, stringResource(connectionsManager.discord.nameStrRes())),
+                            title = stringResource(MR.strings.login_title, stringResource(AMR.strings.connections_discord)),
                             subtitle = currentUrl,
                             navigateUp = { navigator.pop() },
                             actions = {
@@ -265,6 +268,10 @@ class DiscordLoginScreen(
     }
 
     private fun login(token: String, context: Context) {
+        val connectionsManager: ConnectionsManager by lazy { Injekt.get() }
+        val connectionsPreferences: ConnectionsPreferences by lazy { Injekt.get() }
+        val networkHelper: NetworkHelper by lazy { Injekt.get() }
+
         @Suppress("OPT_IN_USAGE")
         launchIO {
             try {
@@ -307,6 +314,8 @@ class DiscordLoginScreen(
     }
 
     private fun clearCookies(url: String) {
+        val networkHelper: NetworkHelper by lazy { Injekt.get() }
+
         url.toHttpUrlOrNull()?.let {
             val cleared = networkHelper.cookieJar.remove(it)
             logcat { "Cleared $cleared cookies for: $url" }
