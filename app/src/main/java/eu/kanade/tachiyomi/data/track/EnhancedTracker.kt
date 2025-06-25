@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.data.track
 
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.all.MergedSource
+import exh.source.MERGED_SOURCE_ID
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.model.Track
 
@@ -16,6 +18,15 @@ interface EnhancedTracker {
      */
     fun accept(source: Source): Boolean {
         return source::class.qualifiedName in getAcceptedSources()
+    }
+
+    fun accept(source: Source, id: Long): Boolean {
+        if (source.id == MERGED_SOURCE_ID) {
+            val sources = (source as MergedSource).getMergedSources(id)
+            return sources.any { accept(it) }
+        } else {
+            return accept(source)
+        }
     }
 
     /**
