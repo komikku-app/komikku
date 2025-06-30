@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">在源上搜索</string>
+    <string name="action_source_search">在源中搜索</string>
     <string name="action_toggle_nsfw_only">切换至仅 NSFW</string>
     <string name="action_bulk_select">批量选择模式</string>
     <string name="action_faq_and_guides">常见问题和指南</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 小时</string>
     <string name="download_cache_renew_interval_12hour">12 小时</string>
     <string name="download_cache_renew_interval_24hour">1天</string>
-    <string name="download_cache_renew_interval_info">如果设置为“手动”，请刷新每部漫画或使用“高级”中的“清除下载索引”</string>
+    <string name="download_cache_renew_interval_info">如果设置为“手动”，请刷新每部漫画或使用“高级”中的“重建下载索引”</string>
     <string name="pref_clean_invalid_downloads">清除无效的下载</string>
     <string name="pref_clean_invalid_downloads_summary">查找并删除所有未保存到您的书架中的下载、文件和文件夹</string>
     <string name="invalid_downloads_cleaned">已清理无效的下载</string>
@@ -122,6 +122,11 @@
     <string name="action_copy_to_clipboard_second_page">复制第二页到剪贴板</string>
     <string name="action_copy_to_clipboard_combined_page">复制合并页面到剪贴板</string>
     <string name="auto_update_app_disable_auto_download">不自动下载更新</string>
-    <string name="action_remove_merged">Remove original entries from library?</string>
+    <string name="action_remove_merged">从书架删除原始条目?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_open_folder">打开文件夹</string>
+    <string name="error_opening_folder">打开文件夹时出错</string>
+    <string name="action_manual_install">手动安装</string>
+    <string name="sponsor_me">赞助</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">较小的点击区域</string>
 </resources>
