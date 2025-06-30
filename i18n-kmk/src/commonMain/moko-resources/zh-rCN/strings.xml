@@ -45,9 +45,9 @@
     <string name="theme_matrix">黑客</string>
     <string name="theme_mocha">摩卡</string>
     <string name="theme_sapphire">蓝宝石</string>
-    <string name="pref_show_updating_progress_banner">显示更新进度横幅广告</string>
+    <string name="pref_show_updating_progress_banner">显示更新进度</string>
     <string name="pref_show_restoring_progress_banner">显示恢复进度横幅广告</string>
-    <string name="pref_show_syncing_progress_banner">显示同步进度横幅广告</string>
+    <string name="pref_show_syncing_progress_banner">显示同步进度</string>
     <string name="saved_searches_feeds">保存搜索 &amp; 订阅</string>
     <string name="onboarding_permission_external_storage">访问媒体文件权限</string>
     <string name="onboarding_permission_external_storage_description">允许在条目编辑信息中使用自定义封面</string>
@@ -128,5 +128,5 @@
     <string name="error_opening_folder">打开文件夹时出错</string>
     <string name="action_manual_install">手动安装</string>
     <string name="sponsor_me">赞助</string>
-    <string name="pref_viewer_nav_smaller_tap_zone">较小的点击区域</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">较小的点按区域</string>
 </resources>
