@@ -128,4 +128,8 @@
     <string name="pref_top_align_cover">將封面與頂部對齊</string>
     <string name="pref_top_align_cover_summary">將封面與頂部對齊並顯示漫畫資訊</string>
     <string name="pref_viewer_nav_smaller_tap_zone">較小的點擊區域</string>
+    <string name="action_open_folder">打開資料夾</string>
+    <string name="error_opening_folder">無法開啟資料夾</string>
+    <string name="pref_library_filter_categories_details">即使排除類別中的項目也包含在包含類別中，也不會顯示。</string>
+    <string name="sponsor_me">贊助我</string>
 </resources>
