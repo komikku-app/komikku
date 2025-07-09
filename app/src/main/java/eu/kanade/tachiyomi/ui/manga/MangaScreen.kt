@@ -41,6 +41,7 @@ import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
@@ -290,20 +291,38 @@ class MangaScreen(
                         screenModel.source,
                     )
                 } else {
-                    openMergedMangaWebview(
+                    mergedMangaAction(
                         context,
                         navigator,
                         successState.mergedData,
+                        // KMK -->
+                        action = { _, nav, manga, source -> openMangaInWebView(nav, manga, source) },
+                        titleRes = MR.strings.action_open_in_web_view,
+                        // KMK <--
                     )
                 }
             }.takeIf { isHttpSource },
             // SY <--
             onWebViewLongClicked = {
-                copyMangaUrl(
-                    context,
-                    screenModel.manga,
-                    screenModel.source,
-                )
+                // KMK -->
+                if (successState.mergedData == null) {
+                    // KMK <--
+                    copyMangaUrl(
+                        context,
+                        screenModel.manga,
+                        screenModel.source,
+                    )
+                    // KMK -->
+                } else {
+                    mergedMangaAction(
+                        context,
+                        navigator,
+                        successState.mergedData,
+                        action = { ctx, _, manga, source -> copyMangaUrl(ctx, manga, source) },
+                        titleRes = MR.strings.action_copy_link,
+                    )
+                    // KMK <--
+                }
             }.takeIf { isHttpSource },
             onTrackingClicked = {
                 if (!successState.hasLoggedInTrackers) {
@@ -323,7 +342,23 @@ class MangaScreen(
             },
             // KMK <--
             onCoverClicked = screenModel::showCoverDialog,
-            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
+            onShareClicked = {
+                // KMK -->
+                if (successState.mergedData == null) {
+                    // KMK <--
+                    shareManga(context, screenModel.manga, screenModel.source)
+                    // KMK -->
+                } else {
+                    mergedMangaAction(
+                        context,
+                        navigator,
+                        successState.mergedData,
+                        action = { ctx, _, manga, source -> shareManga(ctx, manga, source) },
+                        titleRes = MR.strings.action_share,
+                    )
+                    // KMK <--
+                }
+            }.takeIf { isHttpSource },
             onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
@@ -756,6 +791,7 @@ class MangaScreen(
         context.copyToClipboard(url, url)
     }
 
+    // SY -->
     private fun openMetadataViewer(
         navigator: Navigator,
         manga: Manga,
@@ -766,18 +802,36 @@ class MangaScreen(
         navigator.push(MetadataViewScreen(manga.id, manga.source, seedColor?.toArgb()))
     }
 
-    private fun openMergedMangaWebview(context: Context, navigator: Navigator, mergedMangaData: MergedMangaData) {
+    private fun mergedMangaAction(
+        context: Context,
+        navigator: Navigator,
+        mergedMangaData: MergedMangaData,
+        // KMK -->
+        action: (Context, Navigator, Manga, HttpSource?) -> Unit,
+        titleRes: StringResource,
+        // KMK <--
+    ) {
         val sourceManager: SourceManager = Injekt.get()
-        val mergedManga = mergedMangaData.manga.values.filterNot { it.source == MERGED_SOURCE_ID }
-        val sources = mergedManga.map { sourceManager.getOrStub(it.source) }
+        // KMK -->
+        val mergedMangaAndSources = mergedMangaData.manga.values
+            .filterNot { it.source == MERGED_SOURCE_ID }
+            .map { manga -> manga to sourceManager.getOrStub(manga.source) }
+        // KMK <--
         MaterialAlertDialogBuilder(context)
-            .setTitle(MR.strings.action_open_in_web_view.getString(context))
+            .setTitle(titleRes.getString(context))
             .setSingleChoiceItems(
-                Array(mergedManga.size) { index -> sources[index].toString() },
+                Array(mergedMangaAndSources.size) { index ->
+                    // KMK -->
+                    mergedMangaAndSources[index].second.toString()
+                    // KMK <--
+                },
                 -1,
             ) { dialog, index ->
                 dialog.dismiss()
-                openMangaInWebView(navigator, mergedManga[index], sources[index] as? HttpSource)
+                // KMK -->
+                val (manga, source) = mergedMangaAndSources[index]
+                action(context, navigator, manga, source as? HttpSource)
+                // KMK <--
             }
             .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
