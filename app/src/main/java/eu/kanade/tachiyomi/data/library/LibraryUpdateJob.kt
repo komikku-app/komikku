@@ -230,6 +230,38 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         val groupLibraryUpdateType = libraryPreferences.groupLibraryUpdateType().get()
         // SY <--
 
+        // KMK -->
+        // Check if specific manga IDs are provided for targeted update
+        val targetMangaIds = inputData.getLongArray(KEY_MANGA_IDS)?.toList()
+        if (targetMangaIds != null) {
+            // Filter to only the specified manga IDs
+            mangaToUpdate = libraryManga
+                .filter { it.manga.id in targetMangaIds }
+                .distinctBy { it.manga.id }
+
+            // Apply update restrictions even for targeted updates
+            val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
+            val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
+            val (_, fetchWindowUpperBound) = fetchInterval.getWindow(ZonedDateTime.now())
+
+            mangaToUpdate = mangaToUpdate.filter {
+                when {
+                    it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> {
+                        skippedUpdates.add(
+                            it.manga to context.stringResource(MR.strings.skipped_reason_not_always_update),
+                        )
+                        false
+                    }
+                    // Skip other restrictions for targeted updates to allow forced refresh
+                    else -> true
+                }
+            }
+
+            notifier.showQueueSizeWarningNotificationIfNeeded(mangaToUpdate)
+            return
+        }
+        // KMK <--
+
         val listToUpdate = if (categoryId != -1L) {
             libraryManga.filter { it.category == categoryId }
         } else if (
@@ -724,6 +756,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         const val KEY_GROUP_EXTRA = "group_extra"
         // SY <--
 
+        // KMK -->
+        /**
+         * Key for specific manga IDs to update.
+         */
+        private const val KEY_MANGA_IDS = "manga_ids"
+        // KMK <--
+
         fun cancelAllWorks(context: Context) {
             context.workManager.cancelAllWorkByTag(TAG)
         }
@@ -785,6 +824,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             group: Int = LibraryGroup.BY_DEFAULT,
             groupExtra: String? = null,
             // SY <--
+            // KMK -->
+            mangaIds: List<Long>? = null,
+            // KMK <--
         ): Boolean {
             val wm = context.workManager
             // Check if the LibraryUpdateJob is already running
@@ -800,6 +842,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 KEY_GROUP to group,
                 KEY_GROUP_EXTRA to groupExtra,
                 // SY <--
+                // KMK -->
+                KEY_MANGA_IDS to mangaIds?.toLongArray(),
+                // KMK <--
             )
 
             val syncPreferences: SyncPreferences = Injekt.get()
