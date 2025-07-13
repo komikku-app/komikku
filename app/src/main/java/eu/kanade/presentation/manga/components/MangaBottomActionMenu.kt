@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material3.DropdownMenuItem
@@ -81,6 +82,7 @@ fun MangaBottomActionMenu(
     onMarkPreviousAsReadClicked: (() -> Unit)? = null,
     onDownloadClicked: (() -> Unit)? = null,
     onDeleteClicked: (() -> Unit)? = null,
+    onClickRefreshSelected: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -94,11 +96,11 @@ fun MangaBottomActionMenu(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false, false) }
             var resetJob: Job? = remember { null }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<7).forEach { i -> confirm[i] = i == toConfirmIndex }
+                (0..<8).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
@@ -175,6 +177,15 @@ fun MangaBottomActionMenu(
                         toConfirm = confirm[6],
                         onLongClick = { onLongClickItem(6) },
                         onClick = onDeleteClicked,
+                    )
+                }
+                if (onClickRefreshSelected != null) {
+                    Button(
+                        title = stringResource(MR.strings.action_update_category),
+                        icon = Icons.Outlined.Refresh,
+                        toConfirm = confirm[7],
+                        onLongClick = { onLongClickItem(7) },
+                        onClick = onClickRefreshSelected,
                     )
                 }
             }
@@ -266,6 +277,7 @@ fun LibraryBottomActionMenu(
     // SY <--
     // KMK -->
     onClickMerge: (() -> Unit)?,
+    onClickRefreshSelected: (() -> Unit)? = null,
     // KMK <--
     modifier: Modifier = Modifier,
 ) {
@@ -283,12 +295,12 @@ fun LibraryBottomActionMenu(
             val haptic = LocalHapticFeedback.current
             val confirm =
                 remember {
-                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false /* SY <-- */)
+                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false, false /* SY <-- */)
                 }
             var resetJob: Job? = remember { null }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<8).forEach { i -> confirm[i] = i == toConfirmIndex }
+                (0..<9).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
@@ -361,6 +373,16 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(2) },
                     onClick = onMarkAsUnreadClicked,
                 )
+                // Add refresh button here
+                if (onClickRefreshSelected != null) {
+                    Button(
+                        title = stringResource(MR.strings.action_update_category),
+                        icon = Icons.Outlined.Refresh,
+                        toConfirm = confirm[8],
+                        onLongClick = { onLongClickItem(8) },
+                        onClick = onClickRefreshSelected,
+                    )
+                }
                 // SY -->
                 if (showOverflow) {
                     if (isTabletUi) {
