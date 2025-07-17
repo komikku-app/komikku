@@ -85,6 +85,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
@@ -251,19 +252,24 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
+        private suspend fun getMangaForTracking(item: TrackItem): Manga? {
+            item.tracker as EnhancedTracker
+            if (sourceId != MERGED_SOURCE_ID) {
+                return Injekt.get<GetManga>().await(mangaId)
+            }
+            val references = Injekt.get<GetMergedReferencesById>().await(mangaId)
+            val sourceManager = Injekt.get<SourceManager>()
+
+            val reference = references.firstOrNull {
+                sourceManager.get(it.mangaSourceId)?.let { source -> item.tracker.accept(source) } == true
+            }
+            return reference?.mangaId?.let { Injekt.get<GetManga>().await(it) }
+        }
+
         fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedTracker
             screenModelScope.launchNonCancellable {
-                val manga = if (sourceId == MERGED_SOURCE_ID) {
-                    val references = Injekt.get<GetMergedReferencesById>().await(mangaId)
-                    val mergedManga = references.firstOrNull {
-                        val source = Injekt.get<SourceManager>().get(it.mangaSourceId)
-                        source?.let { item.tracker.accept(it) } == true
-                    }
-                    mergedManga?.mangaId?.let { Injekt.get<GetManga>().await(it) }
-                } else {
-                    Injekt.get<GetManga>().await(mangaId)
-                } ?: return@launchNonCancellable
+                val manga = getMangaForTracking(item) ?: return@launchNonCancellable
                 try {
                     val matchResult = item.tracker.match(manga) ?: throw Exception()
                     item.tracker.register(matchResult, mangaId)
@@ -372,7 +378,7 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
-        private fun List<Track>.mapToTrackItem(): List<TrackItem> {
+        private suspend fun List<Track>.mapToTrackItem(): List<TrackItem> {
             val loggedInTrackers = Injekt.get<TrackerManager>().loggedInTrackers()
             val source = Injekt.get<SourceManager>().getOrStub(sourceId)
             return loggedInTrackers

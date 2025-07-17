@@ -20,7 +20,7 @@ interface EnhancedTracker {
         return source::class.qualifiedName in getAcceptedSources()
     }
 
-    fun accept(source: Source, id: Long): Boolean {
+    suspend fun accept(source: Source, id: Long): Boolean {
         if (source.id == MERGED_SOURCE_ID) {
             val sources = (source as MergedSource).getMergedSources(id)
             return sources.any { accept(it) }
