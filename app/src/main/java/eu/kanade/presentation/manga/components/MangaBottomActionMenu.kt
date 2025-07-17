@@ -66,6 +66,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -266,8 +267,9 @@ fun LibraryBottomActionMenu(
     // SY <--
     // KMK -->
     onClickMerge: (() -> Unit)?,
-    // KMK <--
     modifier: Modifier = Modifier,
+    onClickRefreshSelected: (() -> Unit)? = null,
+    // KMK <--
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -302,6 +304,7 @@ fun LibraryBottomActionMenu(
                 // KMK -->
                 onClickMigrate != null ||
                 onClickMerge != null ||
+                onClickRefreshSelected != null ||
                 // KMK <--
                 onClickCollectRecommendations != null
             val configuration = LocalConfiguration.current
@@ -399,6 +402,14 @@ fun LibraryBottomActionMenu(
                         offset = DpOffset((-10).dp, 0.dp),
                         // KMK <--
                     ) {
+                        // KMK -->
+                        if (onClickRefreshSelected != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(KMR.strings.action_update)) },
+                                onClick = onClickRefreshSelected,
+                            )
+                        }
+                        // KMK <--
                         if (!isTabletUi) {
                             if (onClickMigrate != null) {
                                 DropdownMenuItem(

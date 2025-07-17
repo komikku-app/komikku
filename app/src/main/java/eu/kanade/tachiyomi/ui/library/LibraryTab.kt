@@ -261,6 +261,20 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
+                    onClickRefreshSelected = {
+                        val started = screenModel.refreshSelectedManga()
+                        scope.launch {
+                            val msgRes = if (started) {
+                                KMR.strings.updating
+                            } else {
+                                MR.strings.update_already_running
+                            }
+                            snackbarHostState.showSnackbar(context.stringResource(msgRes))
+                            if (started) {
+                                screenModel.clearSelection()
+                            }
+                        }
+                    },
                     // KMK <--
                 )
             },
