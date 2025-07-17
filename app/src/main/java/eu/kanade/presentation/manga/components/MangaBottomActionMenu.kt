@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material3.DropdownMenuItem
@@ -304,6 +303,7 @@ fun LibraryBottomActionMenu(
                 // KMK -->
                 onClickMigrate != null ||
                 onClickMerge != null ||
+                onClickUpdateSelected != null ||
                 // KMK <--
                 onClickCollectRecommendations != null
             val configuration = LocalConfiguration.current
@@ -363,17 +363,6 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(2) },
                     onClick = onMarkAsUnreadClicked,
                 )
-                // KMK -->
-                if (onClickUpdateSelected != null) {
-                    Button(
-                        title = stringResource(MR.strings.ext_update),
-                        icon = Icons.Outlined.Refresh,
-                        toConfirm = confirm[8],
-                        onLongClick = { onLongClickItem(8) },
-                        onClick = onClickUpdateSelected,
-                    )
-                }
-                // KMK <--
                 // SY -->
                 if (showOverflow) {
                     if (isTabletUi) {
@@ -412,6 +401,14 @@ fun LibraryBottomActionMenu(
                         offset = DpOffset((-10).dp, 0.dp),
                         // KMK <--
                     ) {
+                        // KMK -->
+                        if (onClickUpdateSelected != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(MR.strings.ext_update)) },
+                                onClick = onClickUpdateSelected,
+                            )
+                        }
+                        // KMK <--
                         if (!isTabletUi) {
                             if (onClickMigrate != null) {
                                 DropdownMenuItem(
