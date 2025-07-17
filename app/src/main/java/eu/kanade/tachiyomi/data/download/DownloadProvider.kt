@@ -12,6 +12,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
@@ -74,7 +75,13 @@ class DownloadProvider(
      * @param source the source to query.
      */
     fun findSourceDir(source: Source): UniFile? {
-        return downloadsDir?.findFile(getSourceDirName(source))
+        // KMK -->
+        return if (source.isLocal()) {
+            storageManager.getLocalSourceDirectory()
+        } else {
+            // KMK <--
+            downloadsDir?.findFile(getSourceDirName(source))
+        }
     }
 
     /**
@@ -113,9 +120,22 @@ class DownloadProvider(
     fun findChapterDirs(chapters: List<Chapter>, manga: Manga, source: Source): Pair<UniFile?, List<UniFile>> {
         val mangaDir = findMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source) ?: return null to emptyList()
         return mangaDir to chapters.mapNotNull { chapter ->
-            getValidChapterDirNames(chapter.name, chapter.scanlator).asSequence()
-                .mapNotNull { mangaDir.findFile(it) }
-                .firstOrNull()
+            // KMK -->
+            if (source.isLocal()) {
+                val splitUrl = chapter.url.split('/', limit = 2)
+                if (splitUrl.size < 2) {
+                    null
+                } else {
+                    val (mangaDirName, chapterDirName) = splitUrl
+                    mangaDir.findFile(chapterDirName)
+                        ?: storageManager.getLocalSourceDirectory()?.findFile(mangaDirName)?.findFile(chapterDirName)
+                }
+            } else {
+                // KMK <--
+                getValidChapterDirNames(chapter.name, chapter.scanlator).asSequence()
+                    .mapNotNull { mangaDir.findFile(it) }
+                    .firstOrNull()
+            }
         }
     }
 
