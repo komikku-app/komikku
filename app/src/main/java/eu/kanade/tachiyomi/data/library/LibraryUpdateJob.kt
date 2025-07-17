@@ -237,7 +237,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             // Filter to only the specified manga IDs
             mangaToUpdate = libraryManga
                 .filter {
-                    (it.manga.id in targetMangaIds) &&
+                    it.manga.id in targetMangaIds &&
                         when {
                             // Apply update restrictions even for targeted updates
                             it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
