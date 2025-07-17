@@ -232,21 +232,19 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         // KMK -->
         // Check if specific manga IDs are provided for targeted update
-        val targetMangaIds = inputData.getLongArray(KEY_MANGA_IDS)?.toList()
+        val targetMangaIds = inputData.getLongArray(KEY_MANGA_IDS)?.toSet()
         if (targetMangaIds != null) {
             // Filter to only the specified manga IDs
             mangaToUpdate = libraryManga
-                .filter { it.manga.id in targetMangaIds }
-                .distinctBy { it.manga.id }
-
-            mangaToUpdate = mangaToUpdate.filter {
-                when {
-                    // Apply update restrictions even for targeted updates
-                    it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
-                    // Skip other restrictions for targeted updates to allow forced refresh
-                    else -> true
+                .filter {
+                    (it.manga.id in targetMangaIds) &&
+                        when {
+                            // Apply update restrictions even for targeted updates
+                            it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
+                            // Skip other restrictions for targeted updates to allow forced refresh
+                            else -> true
+                        }
                 }
-            }
 
             notifier.showQueueSizeWarningNotificationIfNeeded(mangaToUpdate)
             return

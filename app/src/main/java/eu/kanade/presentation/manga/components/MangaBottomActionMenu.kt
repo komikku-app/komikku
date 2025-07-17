@@ -66,6 +66,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -284,12 +285,12 @@ fun LibraryBottomActionMenu(
             val haptic = LocalHapticFeedback.current
             val confirm =
                 remember {
-                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false, false /* SY <-- */)
+                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false /* SY <-- */)
                 }
             var resetJob: Job? = remember { null }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<9).forEach { i -> confirm[i] = i == toConfirmIndex }
+                (0..<8).forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
@@ -404,7 +405,7 @@ fun LibraryBottomActionMenu(
                         // KMK -->
                         if (onClickRefreshSelected != null) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(MR.strings.ext_update)) },
+                                text = { Text(stringResource(KMR.strings.action_update)) },
                                 onClick = onClickRefreshSelected,
                             )
                         }
