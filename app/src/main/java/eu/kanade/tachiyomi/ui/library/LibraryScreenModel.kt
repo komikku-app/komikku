@@ -31,6 +31,7 @@ import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
@@ -932,25 +933,26 @@ class LibraryScreenModel(
         }
         clearSelection()
     }
+    // SY <--
 
+    // KMK -->
     /**
-     *Update Selected Mangas
+     * Update Selected Mangas
      */
-    fun refreshSelectedManga(): Boolean {
-        val selectedMangas = state.value.selection.map { it.manga }
+    fun updateSelectedManga(): Boolean {
         val wm = WorkManager.getInstance(preferences.context)
         val isUpdateRunning = wm.isRunning("LibraryUpdate")
         if (isUpdateRunning) {
             return false
         }
-        val mangaIds = selectedMangas.map { it.id }
-        return eu.kanade.tachiyomi.data.library.LibraryUpdateJob.startNow(
+        val mangaIds = state.value.selection.map { it.manga.id }
+        return LibraryUpdateJob.startNow(
             context = preferences.context,
             mangaIds = mangaIds,
-            target = eu.kanade.tachiyomi.data.library.LibraryUpdateJob.Target.CHAPTERS,
+            target = LibraryUpdateJob.Target.CHAPTERS,
         )
     }
-    // SY <--
+    // KMK <--
 
     /**
      * Marks mangas' chapters read status.

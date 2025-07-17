@@ -240,9 +240,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 .distinctBy { it.manga.id }
 
             // Apply update restrictions even for targeted updates
-            val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
             val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
-            val (_, fetchWindowUpperBound) = fetchInterval.getWindow(ZonedDateTime.now())
 
             mangaToUpdate = mangaToUpdate.filter {
                 when {
