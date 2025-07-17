@@ -122,7 +122,7 @@
     <string name="action_copy_to_clipboard_second_page">复制第二页到剪贴板</string>
     <string name="action_copy_to_clipboard_combined_page">复制合并页面到剪贴板</string>
     <string name="auto_update_app_disable_auto_download">不自动下载更新</string>
-    <string name="action_remove_merged">从书架删除原始条目?</string>
+    <string name="action_remove_merged">从书架删除原始条目？</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_open_folder">打开文件夹</string>
     <string name="error_opening_folder">打开文件夹时出错</string>
