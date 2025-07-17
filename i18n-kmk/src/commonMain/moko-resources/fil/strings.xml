@@ -115,4 +115,5 @@
     <string name="custom_theme_palette_night_at_the_beach">Gabi sa tabing dagat</string>
     <string name="custom_theme_palette_sunset">Dapit-hapon</string>
     <string name="pref_library_filter_categories_details">Ang mga entry sa mga ibinukod na kategorya ay hindi ipapakita kahit na sila ay nasa mga kasamang kategorya din.</string>
+    <string name="sponsor_me">Suportahan Ako</string>
 </resources>
