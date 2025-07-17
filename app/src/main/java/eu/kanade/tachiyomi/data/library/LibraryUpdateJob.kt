@@ -239,17 +239,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 .filter { it.manga.id in targetMangaIds }
                 .distinctBy { it.manga.id }
 
-            // Apply update restrictions even for targeted updates
-            val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
-
             mangaToUpdate = mangaToUpdate.filter {
                 when {
-                    it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> {
-                        skippedUpdates.add(
-                            it.manga to context.stringResource(MR.strings.skipped_reason_not_always_update),
-                        )
-                        false
-                    }
+                    // Apply update restrictions even for targeted updates
+                    it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
                     // Skip other restrictions for targeted updates to allow forced refresh
                     else -> true
                 }

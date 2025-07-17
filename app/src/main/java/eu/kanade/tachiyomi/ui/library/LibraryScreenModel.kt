@@ -12,7 +12,6 @@ import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapNotNull
-import androidx.work.WorkManager
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.PreferenceMutableState
@@ -40,7 +39,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
-import eu.kanade.tachiyomi.util.system.isRunning
 import exh.favorites.FavoritesSyncHelper
 import exh.log.xLogE
 import exh.md.utils.FollowStatus
@@ -939,12 +937,7 @@ class LibraryScreenModel(
     /**
      * Update Selected Mangas
      */
-    fun updateSelectedManga(): Boolean {
-        val wm = WorkManager.getInstance(preferences.context)
-        val isUpdateRunning = wm.isRunning("LibraryUpdate")
-        if (isUpdateRunning) {
-            return false
-        }
+    fun refreshSelectedManga(): Boolean {
         val mangaIds = state.value.selection.map { it.manga.id }
         return LibraryUpdateJob.startNow(
             context = preferences.context,

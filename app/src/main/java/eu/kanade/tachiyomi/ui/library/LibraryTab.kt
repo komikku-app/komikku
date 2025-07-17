@@ -256,15 +256,15 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
-                    onClickUpdateSelected = {
+                    onClickRefreshSelected = {
+                        val started = screenModel.refreshSelectedManga()
                         scope.launch {
-                            val started = screenModel.updateSelectedManga()
-                            val message = if (started) {
-                                context.stringResource(KMR.strings.updating)
+                            val msgRes = if (started) {
+                                KMR.strings.updating
                             } else {
-                                context.stringResource(MR.strings.update_already_running)
+                                MR.strings.update_already_running
                             }
-                            snackbarHostState.showSnackbar(message)
+                            snackbarHostState.showSnackbar(context.stringResource(msgRes))
                             if (started) {
                                 screenModel.clearSelection()
                             }

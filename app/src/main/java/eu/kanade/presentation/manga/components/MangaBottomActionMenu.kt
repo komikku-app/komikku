@@ -267,7 +267,7 @@ fun LibraryBottomActionMenu(
     // KMK -->
     onClickMerge: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    onClickUpdateSelected: (() -> Unit)? = null,
+    onClickRefreshSelected: (() -> Unit)? = null,
     // KMK <--
 ) {
     AnimatedVisibility(
@@ -303,7 +303,7 @@ fun LibraryBottomActionMenu(
                 // KMK -->
                 onClickMigrate != null ||
                 onClickMerge != null ||
-                onClickUpdateSelected != null ||
+                onClickRefreshSelected != null ||
                 // KMK <--
                 onClickCollectRecommendations != null
             val configuration = LocalConfiguration.current
@@ -402,10 +402,10 @@ fun LibraryBottomActionMenu(
                         // KMK <--
                     ) {
                         // KMK -->
-                        if (onClickUpdateSelected != null) {
+                        if (onClickRefreshSelected != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(MR.strings.ext_update)) },
-                                onClick = onClickUpdateSelected,
+                                onClick = onClickRefreshSelected,
                             )
                         }
                         // KMK <--
