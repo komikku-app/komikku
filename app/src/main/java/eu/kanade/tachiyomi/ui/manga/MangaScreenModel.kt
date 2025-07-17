@@ -269,6 +269,11 @@ class MangaScreenModel(
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
 
+    internal var showTrackDialogAfterCategorySelection: Boolean = false
+
+    internal val autoOpenTrack: Boolean
+        get() = successState?.hasLoggedInTrackers == true && trackPreferences.trackOnAddingToLibrary().get()
+
     // EXH -->
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
@@ -850,11 +855,17 @@ class MangaScreenModel(
                     }
 
                     // Choose a category
-                    else -> showChangeCategoryDialog()
+                    else -> {
+                        showTrackDialogAfterCategorySelection = true
+                        showChangeCategoryDialog()
+                    }
                 }
 
                 // Finally match with enhanced tracking when available
                 addTracks.bindEnhancedTrackers(manga, state.source)
+                if (autoOpenTrack && !showTrackDialogAfterCategorySelection) {
+                    showTrackDialog()
+                }
             }
         }
     }
