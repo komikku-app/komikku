@@ -267,9 +267,9 @@ fun LibraryBottomActionMenu(
     // SY <--
     // KMK -->
     onClickMerge: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    onClickRefreshSelected: (() -> Unit)? = null,
+    onClickRefreshSelected: (() -> Unit)?,
     // KMK <--
+    modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -406,7 +406,10 @@ fun LibraryBottomActionMenu(
                         if (onClickRefreshSelected != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(KMR.strings.action_update)) },
-                                onClick = onClickRefreshSelected,
+                                onClick = {
+                                    overFlowOpen = false
+                                    onClickRefreshSelected()
+                                },
                             )
                         }
                         // KMK <--
