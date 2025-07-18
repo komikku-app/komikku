@@ -269,10 +269,10 @@ data object LibraryTab : Tab {
                             } else {
                                 MR.strings.update_already_running
                             }
-                            snackbarHostState.showSnackbar(context.stringResource(msgRes))
                             if (started) {
                                 screenModel.clearSelection()
                             }
+                            snackbarHostState.showSnackbar(context.stringResource(msgRes))
                         }
                     },
                     // KMK <--
