@@ -98,6 +98,7 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -234,10 +235,14 @@ data class TrackInfoDialogHomeScreen(
         private val trackPreferences: TrackPreferences = Injekt.get(),
         // SY <--
         // KMK -->
-        val sourceManager: SourceManager = Injekt.get<SourceManager>(),
-        val getFlatMetadataById: GetFlatMetadataById = Injekt.get<GetFlatMetadataById>(),
+        val sourceManager: SourceManager = Injekt.get(),
         // KMK <--
     ) : StateScreenModel<Model.State>(State()) {
+        // KMK -->
+        private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
+        private val getMangaById: GetManga by injectLazy()
+        private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+        // KMK <--
 
         init {
             screenModelScope.launch {
@@ -253,19 +258,19 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
+        // KMK -->
         private suspend fun getMangaForTracking(item: TrackItem): Manga? {
-            item.tracker as EnhancedTracker
             if (sourceId != MERGED_SOURCE_ID) {
-                return Injekt.get<GetManga>().await(mangaId)
+                return getMangaById.await(mangaId)
             }
-            val references = Injekt.get<GetMergedReferencesById>().await(mangaId)
-            val sourceManager = Injekt.get<SourceManager>()
-
-            val reference = references.firstOrNull {
+            item.tracker as EnhancedTracker
+            val references = getMergedReferencesById.await(mangaId)
+            val reference = references.distinctBy { it.mangaSourceId }.firstOrNull {
                 sourceManager.get(it.mangaSourceId)?.let { source -> item.tracker.accept(source) } == true
             }
-            return reference?.mangaId?.let { Injekt.get<GetManga>().await(it) }
+            return reference?.mangaId?.let { getMangaById.await(it) }
         }
+        // KMK <--
 
         fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedTracker
@@ -380,8 +385,8 @@ data class TrackInfoDialogHomeScreen(
         }
 
         private suspend fun List<Track>.mapToTrackItem(): List<TrackItem> {
-            val loggedInTrackers = Injekt.get<TrackerManager>().loggedInTrackers()
-            val source = Injekt.get<SourceManager>().getOrStub(sourceId)
+            val loggedInTrackers = trackerManager.loggedInTrackers()
+            val source = sourceManager.getOrStub(sourceId)
             return loggedInTrackers
                 // Map to TrackItem
                 .map { service -> TrackItem(find { it.trackerId == service.id }, service) }
