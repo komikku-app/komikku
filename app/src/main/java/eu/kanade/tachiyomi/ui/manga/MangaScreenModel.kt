@@ -1823,9 +1823,16 @@ class MangaScreenModel(
                 trackerManager.loggedInTrackersFlow(),
             ) { mangaTracks, loggedInTrackers ->
                 // Show only if the service supports this manga's source
-                val supportedTrackers = loggedInTrackers.filter {
-                    (it as? EnhancedTracker)?.accept(source!!, manga.id) ?: true
-                }
+                // KMK -->
+                val supportedTrackers = source?.let { source ->
+                    val sources = if (source is MergedSource) {
+                        state.mergedData?.sources ?: emptyList()
+                    } else {
+                        listOf(source)
+                    }
+                    loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(sources) ?: true }
+                } ?: loggedInTrackers.filterNot { it is EnhancedTracker }
+                // KMK <--
                 val supportedTrackerIds = supportedTrackers.map { it.id }.toHashSet()
                 val supportedTrackerTracks = mangaTracks.filter { it.trackerId in supportedTrackerIds }
                 supportedTrackerTracks to supportedTrackers

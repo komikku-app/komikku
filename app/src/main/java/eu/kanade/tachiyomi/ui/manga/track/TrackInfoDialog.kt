@@ -60,6 +60,7 @@ import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.convertEpochMillisZone
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -385,7 +386,16 @@ data class TrackInfoDialogHomeScreen(
                 // Map to TrackItem
                 .map { service -> TrackItem(find { it.trackerId == service.id }, service) }
                 // Show only if the service supports this manga's source
-                .filter { (it.tracker as? EnhancedTracker)?.accept(source, mangaId) ?: true }
+                // KMK -->
+                .let { trackers ->
+                    val sources = if (source is MergedSource) {
+                        source.getMergedSources(mangaId)
+                    } else {
+                        listOf(source)
+                    }
+                    trackers.filter { (it.tracker as? EnhancedTracker)?.accept(sources) ?: true }
+                }
+            // KMK <--
         }
 
         @Immutable

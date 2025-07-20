@@ -178,12 +178,13 @@ class MergedSource : HttpSource() {
         return LoadedMangaSource(source, manga, this)
     }
 
-    suspend fun getMergedSources(id: Long): List<Source> {
-        val mergedManga = requireNotNull(getManga.await(id)) { "merged manga not in db" }
-        val sources = getMergedReferencesById.await(mergedManga.id)
-
-        return sources.map { sourceManager.getOrStub(it.mangaSourceId) }
+    // KMK -->
+    suspend fun getMergedSources(mangaId: Long): List<Source> {
+        val sources = getMergedReferencesById.await(mangaId)
+        return sources.map { it.mangaSourceId }.distinct()
+            .map { sourceManager.getOrStub(it) }
     }
+    // KMK <--
 
     data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
 

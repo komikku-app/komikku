@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.data.track
 
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.online.all.MergedSource
-import exh.source.MERGED_SOURCE_ID
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.model.Track
 
@@ -20,14 +18,14 @@ interface EnhancedTracker {
         return source::class.qualifiedName in getAcceptedSources()
     }
 
-    suspend fun accept(source: Source, id: Long): Boolean {
-        if (source.id == MERGED_SOURCE_ID) {
-            val sources = (source as MergedSource).getMergedSources(id)
-            return sources.any { accept(it) }
-        } else {
-            return accept(source)
-        }
+    // KMK -->
+    /**
+     * This tracker will only work with the sources that are accepted by this filter function.
+     */
+    fun accept(sources: List<Source>): Boolean {
+        return sources.any { accept(it) }
     }
+    // KMK <--
 
     /**
      * Fully qualified source classes that this tracker is compatible with.
