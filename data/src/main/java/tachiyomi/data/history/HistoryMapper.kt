@@ -28,6 +28,12 @@ object HistoryMapper {
         isFavorite: Boolean,
         coverLastModified: Long,
         chapterNumber: Double,
+        // KMK -->
+        read: Boolean,
+        lastPageRead: Long,
+        totalCount: Double,
+        readCount: Double,
+        // KMK <--
         readAt: Date?,
         readDuration: Long,
     ): HistoryWithRelations = HistoryWithRelations(
@@ -38,6 +44,12 @@ object HistoryMapper {
         ogTitle = title,
         // SY <--
         chapterNumber = chapterNumber,
+        // KMK -->
+        read = read,
+        lastPageRead = lastPageRead,
+        totalChapters = totalCount.toLong(),
+        readCount = readCount.toLong(),
+        // KMK <--
         readAt = readAt,
         readDuration = readDuration,
         coverData = MangaCover(

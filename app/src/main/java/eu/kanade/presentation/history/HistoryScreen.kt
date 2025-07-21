@@ -165,6 +165,15 @@ private fun HistoryScreenContent(
                         onClickDelete = { onClickDelete(value) },
                         onClickFavorite = { onClickFavorite(value) },
                         // KMK -->
+                        readProgress = value.lastPageRead
+                            .takeIf { !value.read && it > 0L }
+                            ?.let {
+                                stringResource(
+                                    MR.strings.chapter_progress,
+                                    it + 1,
+                                )
+                            },
+                        hasUnread = value.unreadCount > 0,
                         usePanoramaCover = usePanoramaCover,
                         // KMK <--
                     )

@@ -20,7 +20,7 @@ class FetchInterval(
         window: Pair<Long, Long>,
     ): MangaUpdate {
         val interval = manga.fetchInterval.takeIf { it < 0 } ?: calculateInterval(
-            chapters = getChaptersByMangaId.await(manga.id, applyScanlatorFilter = true),
+            chapters = getChaptersByMangaId.await(manga.id, applyFilter = true),
             zone = dateTime.zone,
         )
         val currentWindow = if (window.first == 0L && window.second == 0L) {
