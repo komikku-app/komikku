@@ -57,17 +57,14 @@ fun DeleteLibraryMangaDialog(
         },
         text = {
             Column {
-                list.forEach { state ->
+                list.forEachIndexed { index, state ->
                     LabeledCheckbox(
                         label = stringResource(state.value),
                         checked = state.isChecked,
                         onCheckedChange = {
-                            val index = list.indexOf(state)
-                            if (index != -1) {
-                                val mutableList = list.toMutableList()
-                                mutableList[index] = state.next() as CheckboxState.State<StringResource>
-                                list = mutableList.toList()
-                            }
+                            val mutableList = list.toMutableList()
+                            mutableList[index] = state.next() as CheckboxState.State<StringResource>
+                            list = mutableList.toList()
                         },
                     )
                 }
