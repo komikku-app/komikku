@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -33,7 +32,6 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
-import eu.kanade.presentation.library.components.GlobalSearchItem
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
@@ -141,12 +139,6 @@ data object LibraryTab : Tab {
             }
             started
         }
-
-        // KMK -->
-        val onGlobalSearchClicked = {
-            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
-        }
-        // KMK <--
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -290,13 +282,10 @@ data object LibraryTab : Tab {
         ) { contentPadding ->
             when {
                 state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
-                state.isLibraryEmpty -> {
+                state.searchQuery.isNullOrEmpty() && !state.hasActiveFilters && state.isLibraryEmpty -> {
                     val handler = LocalUriHandler.current
-                    // KMK -->
-                    val isFilteringOrSearching = state.hasActiveFilters || !state.searchQuery.isNullOrBlank()
-                    // KMK <--
                     EmptyScreen(
-                        stringRes = /* KMK --> */ if (isFilteringOrSearching) MR.strings.no_results_found else /* KMK <-- */ MR.strings.information_empty_library,
+                        stringRes = MR.strings.information_empty_library,
                         modifier = Modifier.padding(contentPadding),
                         actions = persistentListOf(
                             EmptyScreenAction(
@@ -305,17 +294,6 @@ data object LibraryTab : Tab {
                                 onClick = { handler.openUri(GETTING_STARTED_URL) },
                             ),
                         ),
-                        // KMK -->
-                        topInfo = {
-                            state.searchQuery?.takeIf { it.isNotBlank() }?.let { query ->
-                                GlobalSearchItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    searchQuery = query,
-                                    onClick = onGlobalSearchClicked,
-                                )
-                            }
-                        },
-                        // KMK <--
                     )
                 }
                 else -> {
@@ -348,7 +326,9 @@ data object LibraryTab : Tab {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         },
                         onRefresh = onClickRefresh,
-                        onGlobalSearchClicked = onGlobalSearchClicked,
+                        onGlobalSearchClicked = {
+                            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
+                        },
                         getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
                         getDisplayMode = { screenModel.getDisplayMode() },
                         getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
@@ -361,6 +341,10 @@ data object LibraryTab : Tab {
         when (val dialog = state.dialog) {
             is LibraryScreenModel.Dialog.SettingsSheet -> run {
                 val category = state.categories.getOrNull(screenModel.activeCategoryIndex)
+                if (category == null) {
+                    onDismissRequest()
+                    return@run
+                }
                 LibrarySettingsDialog(
                     onDismissRequest = onDismissRequest,
                     screenModel = settingsScreenModel,

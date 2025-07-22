@@ -243,6 +243,20 @@ class LibraryScreenModel(
                     .filter {
                         noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
+                    .let {
+                        it.ifEmpty {
+                            // If no manga is left after filtering, return an empty map
+                            mapOf(
+                                Category(
+                                    0,
+                                    preferences.context.stringResource(MR.strings.default_category),
+                                    0,
+                                    0,
+                                    false,
+                                ) to emptyList(),
+                            )
+                        }
+                    }
                 // KMK <--
             }
                 .collectLatest {

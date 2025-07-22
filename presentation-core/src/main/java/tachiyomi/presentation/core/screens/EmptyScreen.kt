@@ -42,24 +42,16 @@ fun EmptyScreen(
     actions: ImmutableList<EmptyScreenAction>? = null,
     // KMK -->
     help: @Composable (() -> Unit)? = null,
-    topInfo: @Composable (() -> Unit)? = null,
     // KMK <--
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
+    EmptyScreen(
+        message = stringResource(stringRes),
+        modifier = modifier,
+        actions = actions,
         // KMK -->
-    ) {
-        topInfo?.invoke()
-
-        EmptyScreen(
-            message = stringResource(stringRes),
-            modifier = Modifier.weight(1f),
-            actions = actions,
-            // KMK -->
-            help = help,
-            // KMK <--
-        )
-    }
+        help = help,
+        // KMK <--
+    )
 }
 
 @Composable
