@@ -42,6 +42,7 @@ fun EmptyScreen(
     actions: ImmutableList<EmptyScreenAction>? = null,
     // KMK -->
     help: @Composable (() -> Unit)? = null,
+    topInfo: @Composable (() -> Unit)? = null,
     // KMK <--
 ) {
     EmptyScreen(
@@ -50,6 +51,7 @@ fun EmptyScreen(
         actions = actions,
         // KMK -->
         help = help,
+        topInfo = topInfo,
         // KMK <--
     )
 }
@@ -61,51 +63,60 @@ fun EmptyScreen(
     actions: ImmutableList<EmptyScreenAction>? = null,
     // KMK -->
     help: @Composable (() -> Unit)? = null,
+    topInfo: @Composable (() -> Unit)? = null,
     // KMK <--
 ) {
     val face = remember { getRandomErrorFace() }
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Text(
-                text = face,
-                modifier = Modifier.secondaryItemAlpha(),
-                style = MaterialTheme.typography.displayMedium,
-            )
-        }
-
-        Text(
-            text = message,
-            modifier = Modifier
-                .paddingFromBaseline(top = 24.dp)
-                .secondaryItemAlpha(),
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-
+        modifier = modifier.fillMaxSize(),
         // KMK -->
-        help?.let { help() }
-        // KMK <--
+    ) {
+        topInfo?.let { topInfo() }
 
-        if (!actions.isNullOrEmpty()) {
-            Row(
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                // KMK <--
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Text(
+                    text = face,
+                    modifier = Modifier.secondaryItemAlpha(),
+                    style = MaterialTheme.typography.displayMedium,
+                )
+            }
+
+            Text(
+                text = message,
                 modifier = Modifier
-                    .padding(top = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-            ) {
-                actions.fastForEach {
-                    ActionButton(
-                        modifier = Modifier.weight(1f),
-                        title = stringResource(it.stringRes),
-                        icon = it.icon,
-                        onClick = it.onClick,
-                    )
+                    .paddingFromBaseline(top = 24.dp)
+                    .secondaryItemAlpha(),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+            )
+
+            // KMK -->
+            help?.let { help() }
+            // KMK <--
+
+            if (!actions.isNullOrEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                ) {
+                    actions.fastForEach {
+                        ActionButton(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(it.stringRes),
+                            icon = it.icon,
+                            onClick = it.onClick,
+                        )
+                    }
                 }
             }
         }

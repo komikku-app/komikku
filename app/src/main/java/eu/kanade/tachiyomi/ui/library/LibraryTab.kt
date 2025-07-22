@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -32,6 +33,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
+import eu.kanade.presentation.library.components.GlobalSearchItem
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
@@ -139,6 +141,12 @@ data object LibraryTab : Tab {
             }
             started
         }
+
+        // KMK -->
+        val onGlobalSearchClicked = {
+            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
+        }
+        // KMK <--
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -294,6 +302,19 @@ data object LibraryTab : Tab {
                                 onClick = { handler.openUri(GETTING_STARTED_URL) },
                             ),
                         ),
+                        // KMK -->
+                        topInfo = {
+                            state.searchQuery.let {
+                                if (!it.isNullOrBlank()) {
+                                    GlobalSearchItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        searchQuery = it,
+                                        onClick = onGlobalSearchClicked,
+                                    )
+                                }
+                            }
+                        },
+                        // KMK <--
                     )
                 }
                 else -> {
@@ -326,9 +347,7 @@ data object LibraryTab : Tab {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         },
                         onRefresh = onClickRefresh,
-                        onGlobalSearchClicked = {
-                            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
-                        },
+                        onGlobalSearchClicked = onGlobalSearchClicked,
                         getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
                         getDisplayMode = { screenModel.getDisplayMode() },
                         getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
