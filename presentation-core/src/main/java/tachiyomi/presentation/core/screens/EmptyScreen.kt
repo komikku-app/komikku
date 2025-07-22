@@ -45,15 +45,21 @@ fun EmptyScreen(
     topInfo: @Composable (() -> Unit)? = null,
     // KMK <--
 ) {
-    EmptyScreen(
-        message = stringResource(stringRes),
-        modifier = modifier,
-        actions = actions,
+    Column(
+        modifier = modifier.fillMaxSize(),
         // KMK -->
-        help = help,
-        topInfo = topInfo,
-        // KMK <--
-    )
+    ) {
+        topInfo?.invoke()
+
+        EmptyScreen(
+            message = stringResource(stringRes),
+            modifier = Modifier.weight(1f),
+            actions = actions,
+            // KMK -->
+            help = help,
+            // KMK <--
+        )
+    }
 }
 
 @Composable
@@ -63,60 +69,51 @@ fun EmptyScreen(
     actions: ImmutableList<EmptyScreenAction>? = null,
     // KMK -->
     help: @Composable (() -> Unit)? = null,
-    topInfo: @Composable (() -> Unit)? = null,
     // KMK <--
 ) {
     val face = remember { getRandomErrorFace() }
     Column(
-        modifier = modifier.fillMaxSize(),
-        // KMK -->
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        topInfo?.invoke()
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                // KMK <--
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                Text(
-                    text = face,
-                    modifier = Modifier.secondaryItemAlpha(),
-                    style = MaterialTheme.typography.displayMedium,
-                )
-            }
-
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Text(
-                text = message,
-                modifier = Modifier
-                    .paddingFromBaseline(top = 24.dp)
-                    .secondaryItemAlpha(),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
+                text = face,
+                modifier = Modifier.secondaryItemAlpha(),
+                style = MaterialTheme.typography.displayMedium,
             )
+        }
 
-            // KMK -->
-            help?.invoke()
-            // KMK <--
+        Text(
+            text = message,
+            modifier = Modifier
+                .paddingFromBaseline(top = 24.dp)
+                .secondaryItemAlpha(),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+        )
 
-            if (!actions.isNullOrEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .padding(top = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                ) {
-                    actions.fastForEach {
-                        ActionButton(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(it.stringRes),
-                            icon = it.icon,
-                            onClick = it.onClick,
-                        )
-                    }
+        // KMK -->
+        help?.invoke()
+        // KMK <--
+
+        if (!actions.isNullOrEmpty()) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                actions.fastForEach {
+                    ActionButton(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(it.stringRes),
+                        icon = it.icon,
+                        onClick = it.onClick,
+                    )
                 }
             }
         }

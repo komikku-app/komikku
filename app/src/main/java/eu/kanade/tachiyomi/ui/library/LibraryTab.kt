@@ -292,8 +292,11 @@ data object LibraryTab : Tab {
                 state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
                 state.isLibraryEmpty -> {
                     val handler = LocalUriHandler.current
+                    // KMK -->
+                    val isFilteringOrSearching = state.hasActiveFilters || !state.searchQuery.isNullOrBlank()
+                    // KMK <--
                     EmptyScreen(
-                        stringRes = MR.strings.information_empty_library,
+                        stringRes = /* KMK --> */ if (isFilteringOrSearching) MR.strings.no_results_found else /* KMK <-- */ MR.strings.information_empty_library,
                         modifier = Modifier.padding(contentPadding),
                         actions = persistentListOf(
                             EmptyScreenAction(
@@ -304,14 +307,12 @@ data object LibraryTab : Tab {
                         ),
                         // KMK -->
                         topInfo = {
-                            state.searchQuery.let {
-                                if (!it.isNullOrBlank()) {
-                                    GlobalSearchItem(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        searchQuery = it,
-                                        onClick = onGlobalSearchClicked,
-                                    )
-                                }
+                            state.searchQuery?.takeIf { it.isNotBlank() }?.let { query ->
+                                GlobalSearchItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    searchQuery = query,
+                                    onClick = onGlobalSearchClicked,
+                                )
                             }
                         },
                         // KMK <--

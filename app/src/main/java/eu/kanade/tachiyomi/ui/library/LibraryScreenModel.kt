@@ -209,7 +209,7 @@ class LibraryScreenModel(
                     ::Triple,
                 ),
                 // KMK <--
-            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory, isNotFiltering) ->
+            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory, noActiveFilterOrSearch) ->
                 library
                     // SY -->
                     .applyGrouping(/* KMK --> */ if (filterCategory) LibraryGroup.UNGROUPED else /* KMK <-- */ groupType)
@@ -241,7 +241,7 @@ class LibraryScreenModel(
                     }
                     // KMK -->
                     .filter {
-                        isNotFiltering || it.value.isNotEmpty()
+                        noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                 // KMK <--
             }
