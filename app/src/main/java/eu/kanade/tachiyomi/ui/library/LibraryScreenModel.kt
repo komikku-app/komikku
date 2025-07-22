@@ -205,10 +205,11 @@ class LibraryScreenModel(
                 combine(
                     getCategoriesPerLibraryManga.subscribe(),
                     state.map { it.filterCategory }.distinctUntilChanged(),
-                    ::Pair,
+                    state.map { it.searchQuery.isNullOrBlank() && !it.hasActiveFilters }.distinctUntilChanged(),
+                    ::Triple,
                 ),
                 // KMK <--
-            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory) ->
+            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory, isNotFiltering) ->
                 library
                     // SY -->
                     .applyGrouping(/* KMK --> */ if (filterCategory) LibraryGroup.UNGROUPED else /* KMK <-- */ groupType)
@@ -240,7 +241,7 @@ class LibraryScreenModel(
                     }
                     // KMK -->
                     .filter {
-                        mutableState.value.searchQuery.isNullOrBlank() && !mutableState.value.hasActiveFilters || it.value.isNotEmpty()
+                        isNotFiltering || it.value.isNotEmpty()
                     }
                 // KMK <--
             }
