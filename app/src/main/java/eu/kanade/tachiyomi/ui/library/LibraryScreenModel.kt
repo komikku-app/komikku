@@ -245,7 +245,6 @@ class LibraryScreenModel(
                     }
                     .let {
                         it.ifEmpty {
-                            // If no manga is left after filtering, return an empty map
                             mapOf(
                                 Category(
                                     0,
