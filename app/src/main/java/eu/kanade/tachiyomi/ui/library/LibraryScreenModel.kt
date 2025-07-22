@@ -240,11 +240,7 @@ class LibraryScreenModel(
                     }
                     // KMK -->
                     .filter {
-                        if (!mutableState.value.searchQuery.isNullOrBlank() || mutableState.value.hasActiveFilters) {
-                            it.value.isNotEmpty()
-                        } else {
-                            true
-                        }
+                        mutableState.value.searchQuery.isNullOrBlank() && !mutableState.value.hasActiveFilters || it.value.isNotEmpty()
                     }
                 // KMK <--
             }

@@ -71,7 +71,7 @@ fun EmptyScreen(
         modifier = modifier.fillMaxSize(),
         // KMK -->
     ) {
-        topInfo?.let { topInfo() }
+        topInfo?.invoke()
 
         Column(
             modifier = Modifier
@@ -100,7 +100,7 @@ fun EmptyScreen(
             )
 
             // KMK -->
-            help?.let { help() }
+            help?.invoke()
             // KMK <--
 
             if (!actions.isNullOrEmpty()) {
