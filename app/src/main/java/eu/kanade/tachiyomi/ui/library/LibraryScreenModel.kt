@@ -238,6 +238,15 @@ class LibraryScreenModel(
                             value
                         }
                     }
+                    // KMK -->
+                    .filter {
+                        if (!mutableState.value.searchQuery.isNullOrBlank() || mutableState.value.hasActiveFilters) {
+                            it.value.isNotEmpty()
+                        } else {
+                            true
+                        }
+                    }
+                // KMK <--
             }
                 .collectLatest {
                     mutableState.update { state ->
