@@ -367,18 +367,21 @@ class LibraryScreenModel(
 
         // KMK -->
         libraryPreferences.filterCategories().changes()
+            .distinctUntilChanged()
             .onEach {
                 mutableState.update { state ->
                     state.copy(filterCategory = it)
                 }
             }.launchIn(screenModelScope)
         libraryPreferences.filterCategoriesInclude().changes()
+            .distinctUntilChanged()
             .onEach {
                 mutableState.update { state ->
                     state.copy(includedCategories = it.mapNotNull(String::toLongOrNull).toImmutableSet())
                 }
             }.launchIn(screenModelScope)
         libraryPreferences.filterCategoriesExclude().changes()
+            .distinctUntilChanged()
             .onEach {
                 mutableState.update { state ->
                     state.copy(excludedCategories = it.mapNotNull(String::toLongOrNull).toImmutableSet())
