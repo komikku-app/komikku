@@ -440,13 +440,13 @@ private fun ColumnScope.GroupPage(
             if (trackers.isNotEmpty()) {
                 add(LibraryGroup.BY_TRACK_STATUS)
             }
-            if (hasCategories) {
+            if (hasCategories || screenModel.grouping == LibraryGroup.UNGROUPED) {
                 add(LibraryGroup.UNGROUPED)
             }
         }.map {
             GroupMode(
                 it,
-                LibraryGroup.groupTypeStringRes(it, hasCategories),
+                LibraryGroup.groupTypeStringRes(it),
                 groupTypeDrawableRes(it),
             )
         }.toImmutableList()
