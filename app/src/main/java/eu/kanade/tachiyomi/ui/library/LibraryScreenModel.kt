@@ -322,7 +322,7 @@ class LibraryScreenModel(
                 ) + trackFilter.values
                 ).any { it != TriState.DISABLED } ||
                 // KMK -->
-                state.value.filterCategory
+                prefs.filterCategories
             // KMK <--
         }
             .distinctUntilChanged()
@@ -650,6 +650,7 @@ class LibraryScreenModel(
             // KMK -->
             libraryPreferences.sourceBadge().changes(),
             libraryPreferences.useLangIcon().changes(),
+            libraryPreferences.filterCategories().changes(),
             // KMK <--
         ) {
             ItemPreferences(
@@ -671,6 +672,7 @@ class LibraryScreenModel(
                 // KMK -->
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
+                filterCategories = it[15] as Boolean,
             )
         }
     }
@@ -1602,6 +1604,9 @@ class LibraryScreenModel(
         // SY -->
         val filterLewd: TriState,
         // SY <--
+        // KMK -->
+        val filterCategories: Boolean,
+        // KMK <--
     )
 
     @Immutable
