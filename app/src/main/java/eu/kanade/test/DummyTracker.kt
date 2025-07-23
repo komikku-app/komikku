@@ -105,7 +105,7 @@ data class DummyTracker(
     override suspend fun setRemoteLastChapterRead(
         track: eu.kanade.tachiyomi.data.database.models.Track,
         chapterNumber: Int,
-    ) = Unit
+    ) /* KMK --> */ = track /* KMK <-- */
 
     override suspend fun setRemoteScore(
         track: eu.kanade.tachiyomi.data.database.models.Track,
