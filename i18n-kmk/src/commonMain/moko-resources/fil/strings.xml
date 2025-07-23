@@ -116,4 +116,10 @@
     <string name="custom_theme_palette_sunset">Dapit-hapon</string>
     <string name="pref_library_filter_categories_details">Ang mga entry sa mga ibinukod na kategorya ay hindi ipapakita kahit na sila ay nasa mga kasamang kategorya din.</string>
     <string name="sponsor_me">Suportahan Ako</string>
+    <string name="action_clear_manga">Linisin ang manga</string>
+    <string name="action_update">I-update</string>
+    <string name="updating">Nag-a-update</string>
+    <string name="pref_track_on_add_library">Buksan ang menu sa pag-track na naka-on sa padaragdag sa aklatan</string>
+    <string name="downloaded_data">Nadownload na datos</string>
+    <string name="chapters_from_database">Mga Kabanata at Kasaysayan mula sa Database</string>
 </resources>
