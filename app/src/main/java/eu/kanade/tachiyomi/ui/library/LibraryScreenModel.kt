@@ -65,6 +65,7 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -198,21 +199,41 @@ class LibraryScreenModel(
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
                     libraryPreferences.sortingMode().changes(),
-                    ::Pair,
+                    // KMK -->
+                    state.map { it.searchQuery.isNullOrBlank() && !it.hasActiveFilters }.distinctUntilChanged(),
+                    ::Triple,
+                    // KMK <--
                 ),
                 // SY <--
                 // KMK -->
                 combine(
-                    getCategoriesPerLibraryManga.subscribe(),
-                    state.map { it.filterCategory }.distinctUntilChanged(),
-                    state.map { it.searchQuery.isNullOrBlank() && !it.hasActiveFilters }.distinctUntilChanged(),
-                    ::Triple,
+                    combine(
+                        getCategoriesPerLibraryManga.subscribe(),
+                        state.map { it.filterCategory }.distinctUntilChanged(),
+                        ::Pair,
+                    ),
+                    combine(
+                        state.map { it.includedCategories }.distinctUntilChanged(),
+                        state.map { it.excludedCategories }.distinctUntilChanged(),
+                        ::Pair,
+                    ),
+                    ::Pair,
                 ),
                 // KMK <--
-            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort), (categoriesPerManga, filterCategory, noActiveFilterOrSearch) ->
+            ) { (searchQuery, library, _), (tracks, trackingFilter), (groupType, sort, noActiveFilterOrSearch), (categoryFilters, filteredCategories) ->
+                val (categoriesPerManga, filterCategory) = categoryFilters
+                val (includedCategories, _) = filteredCategories
                 library
                     // SY -->
-                    .applyGrouping(/* KMK --> */ if (filterCategory) LibraryGroup.UNGROUPED else /* KMK <-- */ groupType)
+                    .applyGrouping(
+                        // KMK -->
+                        if (filterCategory && includedCategories.isNotEmpty()) {
+                            LibraryGroup.UNGROUPED
+                        } else {
+                            // KMK <--
+                            groupType
+                        },
+                    )
                     // SY <--
                     .applyFilters(
                         tracks,
@@ -347,9 +368,24 @@ class LibraryScreenModel(
 
         // KMK -->
         libraryPreferences.filterCategories().changes()
+            .distinctUntilChanged()
             .onEach {
                 mutableState.update { state ->
                     state.copy(filterCategory = it)
+                }
+            }.launchIn(screenModelScope)
+        libraryPreferences.filterCategoriesInclude().changes()
+            .distinctUntilChanged()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(includedCategories = it.mapNotNull(String::toLongOrNull).toImmutableSet())
+                }
+            }.launchIn(screenModelScope)
+        libraryPreferences.filterCategoriesExclude().changes()
+            .distinctUntilChanged()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(excludedCategories = it.mapNotNull(String::toLongOrNull).toImmutableSet())
                 }
             }.launchIn(screenModelScope)
 
@@ -400,12 +436,6 @@ class LibraryScreenModel(
         // SY -->
         val filterLewd = prefs.filterLewd
         // SY <--
-
-        // KMK -->
-        val filterCategories = prefs.filterCategories
-        val includedCategories = prefs.filterCategoriesInclude
-        val excludedCategories = prefs.filterCategoriesExclude
-        // KMK <--
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = {
             applyFilter(filterDownloaded) {
@@ -460,12 +490,12 @@ class LibraryScreenModel(
 
         // KMK -->
         val filterFnCategories: (LibraryItem) -> Boolean = categories@{ item ->
-            if (!filterCategories) return@categories true
+            if (!state.value.filterCategory) return@categories true
 
             val mangaCategories = categoriesPerManga[item.libraryManga.id].orEmpty()
 
-            val isExcluded = excludedCategories.any { it in mangaCategories }
-            val isIncluded = includedCategories.isEmpty() || includedCategories.all { it in mangaCategories }
+            val isExcluded = state.value.excludedCategories.any { it in mangaCategories }
+            val isIncluded = state.value.includedCategories.isEmpty() || state.value.includedCategories.all { it in mangaCategories }
 
             !isExcluded && isIncluded
         }
@@ -625,8 +655,6 @@ class LibraryScreenModel(
             libraryPreferences.sourceBadge().changes(),
             libraryPreferences.useLangIcon().changes(),
             libraryPreferences.filterCategories().changes(),
-            libraryPreferences.filterCategoriesInclude().changes(),
-            libraryPreferences.filterCategoriesExclude().changes(),
             // KMK <--
         ) {
             ItemPreferences(
@@ -649,9 +677,6 @@ class LibraryScreenModel(
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
                 filterCategories = it[15] as Boolean,
-                filterCategoriesInclude = (it[16] as Set<*>).filterIsInstance<String>().mapNotNull(String::toLongOrNull).toImmutableSet(),
-                filterCategoriesExclude = (it[17] as Set<*>).filterIsInstance<String>().mapNotNull(String::toLongOrNull).toImmutableSet(),
-                // KMK <--
             )
         }
     }
@@ -1585,8 +1610,6 @@ class LibraryScreenModel(
         // SY <--
         // KMK -->
         val filterCategories: Boolean,
-        val filterCategoriesInclude: ImmutableSet<Long>,
-        val filterCategoriesExclude: ImmutableSet<Long>,
         // KMK <--
     )
 
@@ -1610,6 +1633,8 @@ class LibraryScreenModel(
         // KMK -->
         val libraryCategories: List<Category> = emptyList(),
         val filterCategory: Boolean = false,
+        val includedCategories: ImmutableSet<Long> = persistentSetOf(),
+        val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
         // KMK <--
     ) {
         private val libraryCount by lazy {
