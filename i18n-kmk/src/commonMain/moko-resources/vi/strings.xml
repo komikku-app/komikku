@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 tiếng</string>
     <string name="download_cache_renew_interval_12hour">12 tiếng</string>
     <string name="download_cache_renew_interval_24hour">1 ngày</string>
-    <string name="download_cache_renew_interval_info">Nếu đặt thành \"thủ công\", cần làm mới từng truyện hoặc sử dụng \"Vô hiệu hóa chỉ mục tải xuống\" trong \"Nâng cao\"</string>
+    <string name="download_cache_renew_interval_info">Nếu đặt thành \"thủ công\", cần làm mới từng truyện hoặc sử dụng \"Reindex tải xuống\" tong \"Nâng cao\"</string>
     <string name="pref_clean_invalid_downloads">Dọn dẹp các dữ liệu tải xuống không hợp lệ</string>
     <string name="pref_clean_invalid_downloads_summary">Tìm và xóa các dữ liệu, tệp và thư mục tải xuống mà không nằm trong thư viện</string>
     <string name="invalid_downloads_cleaned">Đã dọn dẹp giữ liệu tải xuống không hợp lệ</string>
@@ -125,4 +125,17 @@
     <string name="action_remove_merged">Xóa các truyện gốc ra khỏi thư viện?</string>
     <string name="batch_add_description">Hỗ trợ: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_manual_install">Cài đặt thủ công</string>
+    <string name="action_open_folder">Mở thư mục</string>
+    <string name="action_clear_manga">Xóa manga</string>
+    <string name="action_update">Cập nhật</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Khu vực nhấn nhỏ hơn</string>
+    <string name="error_opening_folder">Không mở được thư mục</string>
+    <string name="pref_top_align_cover">Căn chỉnh bìa với đầu trang</string>
+    <string name="pref_top_align_cover_summary">Hiển thị bìa được căn chỉnh ở trên cùng, cùng với thông tin về manga</string>
+    <string name="pref_library_filter_categories_details">Các mục nhập trong danh mục bị loại trừ sẽ không được hiển thị ngay cả khi chúng cũng nằm trong danh mục được bao gồm.</string>
+    <string name="updating">Đang cập nhật</string>
+    <string name="pref_track_on_add_library">Mở menu theo dõi khi thêm vào thư viện</string>
+    <string name="downloaded_data">Dữ liệu đã tải xuống</string>
+    <string name="chapters_from_database">Chương &amp; Lịch sử từ cơ sở dữ liệu</string>
+    <string name="sponsor_me">Tài trợ cho tôi</string>
 </resources>
