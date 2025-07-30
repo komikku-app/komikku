@@ -265,6 +265,10 @@ object SettingsAppearanceScreen : SearchableSettings {
                         formattedNow,
                     ),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = uiPreferences.imagesInDescription(),
+                    title = stringResource(MR.strings.pref_display_images_description),
+                ),
             ),
         )
     }
