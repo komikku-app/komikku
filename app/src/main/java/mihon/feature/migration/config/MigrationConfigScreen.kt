@@ -91,7 +91,7 @@ import uy.kohesive.injekt.api.get
  *
  * @param mangaIds IDs of the manga that will be migrated using the sources configured on this screen.
  */
-class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
+class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
 
     constructor(mangaId: Long) : this(listOf(mangaId))
 
