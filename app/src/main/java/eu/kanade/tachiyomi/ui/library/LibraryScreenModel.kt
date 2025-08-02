@@ -1012,9 +1012,9 @@ class LibraryScreenModel(
     }
 
     fun resetInfo() {
-        state.value.selectedManga.fastForEach { manga ->
+        state.value.selection.forEach { id ->
             val mangaInfo = CustomMangaInfo(
-                id = manga.id,
+                id = id,
                 title = null,
                 author = null,
                 artist = null,
@@ -1034,7 +1034,7 @@ class LibraryScreenModel(
     /**
      * Update Selected Mangas
      */
-    fun refreshSelectedManga(): Boolean {
+    fun updateSelectedManga(): Boolean {
         val mangaIds = state.value.selection.toList()
         return LibraryUpdateJob.startNow(
             context = preferences.context,
