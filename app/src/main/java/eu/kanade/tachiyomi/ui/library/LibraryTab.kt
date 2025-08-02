@@ -202,23 +202,23 @@ data object LibraryTab : Tab {
                     onDownloadClicked = screenModel::performDownloadAction
                         .takeIf { state.selectedManga.fastAll { !it.isLocal() } },
                     onDeleteClicked = screenModel::openDeleteMangaDialog,
-                    // SY -->
-                    onClickCleanTitles = screenModel::cleanTitles.takeIf { state.showCleanTitles },
-                    onClickMigrate = {
-                        val selectedMangaIds = state.selectedManga
+                    onMigrateClicked = {
+                        val selection = state
+                            // KMK -->
+                            .selectedManga
                             .filterNot { it.source == MERGED_SOURCE_ID }
                             .map { it.id }
+                        // KMK <--
                         screenModel.clearSelection()
-                        if (selectedMangaIds.isNotEmpty()) {
-                            navigator.push(MigrationConfigScreen(selectedMangaIds))
-                        } else {
+                        // KMK -->
+                        if (selection.isEmpty()) {
                             context.toast(SYMR.strings.no_valid_entry)
+                        } else {
+                            // KMK <--
+                            navigator.push(MigrationConfigScreen(selection))
                         }
+                        navigator.push(MigrationConfigScreen(selection))
                     },
-                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
-                    onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
-                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
-                    // SY <--
                     // KMK -->
                     onClickMerge = {
                         if (state.selection.size == 1) {
@@ -258,7 +258,7 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
-                    onClickRefreshSelected = {
+                    onClickUpdateSelected = {
                         val started = screenModel.refreshSelectedManga()
                         scope.launch {
                             val msgRes = if (started) {
@@ -273,6 +273,12 @@ data object LibraryTab : Tab {
                         }
                     },
                     // KMK <--
+                    // SY -->
+                    onClickCleanTitles = screenModel::cleanTitles.takeIf { state.showCleanTitles },
+                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
+                    onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
+                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
+                    // SY <--
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

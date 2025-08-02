@@ -25,7 +25,7 @@ import tachiyomi.i18n.MR
 /**
  * Screen showing a list of pair of current-target manga entries being migrated.
  */
-class MigrationListScreen(private val mangaIds: List<Long>, private val extraSearchQuery: String?) : Screen() {
+class MigrationListScreen(private val mangaIds: Collection<Long>, private val extraSearchQuery: String?) : Screen() {
 
     private var matchOverride: Pair<Long, Long>? = null
 
