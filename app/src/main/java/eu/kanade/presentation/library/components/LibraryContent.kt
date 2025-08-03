@@ -31,7 +31,7 @@ fun LibraryContent(
     searchQuery: String?,
     selection: Set<Long>,
     contentPadding: PaddingValues,
-    currentPage: () -> Int,
+    currentPage: Int,
     hasActiveFilters: Boolean,
     showPageTabs: Boolean,
     onChangeCurrentPage: (Int) -> Unit,
@@ -53,10 +53,7 @@ fun LibraryContent(
             end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ),
     ) {
-        // SY -->
-        val coercedCurrentPage = remember(categories) { currentPage().coerceIn(0, categories.lastIndex) }
-        // SY <--
-        val pagerState = rememberPagerState(coercedCurrentPage) { categories.size }
+        val pagerState = rememberPagerState(currentPage) { categories.size }
 
         val scope = rememberCoroutineScope()
         var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
