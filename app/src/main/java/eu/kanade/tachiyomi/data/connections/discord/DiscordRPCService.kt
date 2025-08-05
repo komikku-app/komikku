@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.compose.ui.util.fastAny
+import androidx.core.content.ContextCompat
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
@@ -73,8 +74,9 @@ class DiscordRPCService : Service() {
 
     private fun notification(context: Context) {
         val builder = context.notificationBuilder(Notifications.CHANNEL_DISCORD_RPC) {
-            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
             setSmallIcon(R.drawable.ic_discord_24dp)
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setContentText(context.resources.getString(R.string.pref_discord_rpc))
             setAutoCancel(false)
             setOngoing(true)
