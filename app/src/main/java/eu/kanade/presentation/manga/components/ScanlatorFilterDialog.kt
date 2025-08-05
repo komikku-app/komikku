@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
@@ -55,43 +56,45 @@ fun ScanlatorFilterDialog(
             Box {
                 val state = rememberLazyListState()
                 LazyColumn(state = state) {
-                    sortedAvailableScanlators.forEach { scanlator ->
-                        item {
-                            val isExcluded = mutableExcludedScanlators.contains(scanlator)
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .clickable {
-                                        if (isExcluded) {
-                                            mutableExcludedScanlators.remove(scanlator)
-                                        } else {
-                                            mutableExcludedScanlators.add(scanlator)
-                                        }
+                    items(
+                        items = sortedAvailableScanlators,
+                        contentType = { "item" },
+                        key = { it },
+                    ) { scanlator ->
+                        val isExcluded = mutableExcludedScanlators.contains(scanlator)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clickable {
+                                    if (isExcluded) {
+                                        mutableExcludedScanlators.remove(scanlator)
+                                    } else {
+                                        mutableExcludedScanlators.add(scanlator)
                                     }
-                                    .minimumInteractiveComponentSize()
-                                    .clip(MaterialTheme.shapes.small)
-                                    .fillMaxWidth()
-                                    .padding(horizontal = MaterialTheme.padding.small),
-                            ) {
-                                Icon(
-                                    imageVector = if (isExcluded) {
-                                        Icons.Rounded.DisabledByDefault
-                                    } else {
-                                        Icons.Rounded.CheckBoxOutlineBlank
-                                    },
-                                    tint = if (isExcluded) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        LocalContentColor.current
-                                    },
-                                    contentDescription = null,
-                                )
-                                Text(
-                                    text = scanlator,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(start = 24.dp),
-                                )
-                            }
+                                }
+                                .minimumInteractiveComponentSize()
+                                .clip(MaterialTheme.shapes.small)
+                                .fillMaxWidth()
+                                .padding(horizontal = MaterialTheme.padding.small),
+                        ) {
+                            Icon(
+                                imageVector = if (isExcluded) {
+                                    Icons.Rounded.DisabledByDefault
+                                } else {
+                                    Icons.Rounded.CheckBoxOutlineBlank
+                                },
+                                tint = if (isExcluded) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    LocalContentColor.current
+                                },
+                                contentDescription = null,
+                            )
+                            Text(
+                                text = scanlator,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 24.dp),
+                            )
                         }
                     }
                 }
