@@ -609,10 +609,12 @@ class MangaRestorer(
         if (excludedScanlators.isEmpty()) return
         val existingExcludedScanlators = handler.awaitList {
             excluded_scanlatorsQueries.getExcludedScanlatorsByMangaId(manga.id)
-        }
-        val toInsert = excludedScanlators.filter { it !in existingExcludedScanlators }
+            // KMK -->
+        }.toSet()
+        val toInsert = excludedScanlators.toSet().subtract(existingExcludedScanlators)
         if (toInsert.isNotEmpty()) {
-            handler.await {
+            handler.await(inTransaction = true) {
+                // KMK <--
                 toInsert.forEach {
                     excluded_scanlatorsQueries.insert(manga.id, it)
                 }
