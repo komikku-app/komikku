@@ -25,6 +25,9 @@ data class MangaUpdate(
     val initialized: Boolean? = null,
     val version: Long? = null,
     val notes: String? = null,
+    // SY -->
+    val filteredScanlators: List<String>? = null,
+    // SY <--
 )
 
 fun Manga.toMangaUpdate(): MangaUpdate {

@@ -33013,6 +33013,7 @@ Ltachiyomi/domain/manga/interactor/SetFetchInterval;
 HSPLtachiyomi/domain/manga/interactor/SetFetchInterval;-><init>(Ltachiyomi/domain/chapter/interactor/GetChapterByMangaId;)V
 PLtachiyomi/domain/manga/interactor/SetFetchInterval;-><init>(Ltachiyomi/domain/chapter/interactor/GetChapterByMangaId;)V
 Ltachiyomi/domain/manga/interactor/SetMangaChapterFlags;
+Ltachiyomi/domain/manga/interactor/SetMangaFilteredScanlators;
 Ltachiyomi/domain/manga/interactor/UpdateMergedSettings;
 Ltachiyomi/domain/manga/repository/CustomMangaRepository;
 Ltachiyomi/domain/manga/repository/FavoritesEntryRepository;
