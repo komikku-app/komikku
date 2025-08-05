@@ -22,7 +22,6 @@ CREATE TABLE mangas(
     chapter_flags INTEGER NOT NULL,
     cover_last_modified INTEGER NOT NULL,
     date_added INTEGER NOT NULL,
-    filtered_scanlators TEXT,
     update_strategy INTEGER AS UpdateStrategy NOT NULL DEFAULT 0,
     calculate_interval INTEGER DEFAULT 0 NOT NULL,
     last_modified_at INTEGER NOT NULL DEFAULT 0,

@@ -1,0 +1,3 @@
+-- Remove filtered_scanlators column
+ALTER TABLE mangas
+DROP COLUMN filtered_scanlators;
