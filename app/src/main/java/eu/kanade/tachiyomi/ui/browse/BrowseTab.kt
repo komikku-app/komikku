@@ -24,6 +24,8 @@ import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.extensionsTab
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.feedTab
+import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
 import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.sourcesTab
@@ -138,6 +140,9 @@ data object BrowseTab : Tab {
 
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
+            // AM (DISCORD) -->
+            DiscordRPCService.setScreen(context, DiscordScreen.BROWSE)
+            // <-- AM (DISCORD)
         }
     }
 }

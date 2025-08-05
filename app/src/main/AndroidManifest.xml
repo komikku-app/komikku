@@ -215,6 +215,33 @@
             android:name="exh.ui.login.EhLoginActivity"
             android:label="EHentaiLogin"
             android:exported="false"/>
+            
+        <activity android:label="Discord Login"
+            android:name=".ui.setting.connection.DiscordLoginActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false"
+            tools:ignore="AppLinkUrlError">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="account.samsung.com" android:path="/accounts/oauth/callback"/>
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".data.connection.discord.DiscordRPCService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"
+                    android:host="account.samsung.com"
+                    android:path="/accounts/oauth/callback"/>
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".data.notification.NotificationReceiver"

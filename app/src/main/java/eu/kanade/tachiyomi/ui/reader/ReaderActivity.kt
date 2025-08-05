@@ -56,6 +56,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
@@ -65,6 +66,7 @@ import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
@@ -80,6 +82,8 @@ import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connection.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
@@ -134,6 +138,7 @@ import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.MangaCover
@@ -174,6 +179,10 @@ class ReaderActivity : BaseActivity() {
     private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
     private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
     // KMK <--
+
+    // AM (CONNECTIONS) -->
+    private val connectionPreferences: ConnectionPreferences = Injekt.get()
+    // <-- AM (CONNECTIONS)
 
     lateinit var binding: ReaderActivityBinding
 
@@ -302,6 +311,11 @@ class ReaderActivity : BaseActivity() {
                 }
             }
             .launchIn(lifecycleScope)
+        viewModel.viewModelScope.launchIO {
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
+        }
     }
 
     /**
@@ -313,10 +327,12 @@ class ReaderActivity : BaseActivity() {
         config = null
         menuToggleToast?.cancel()
         readingModeToast?.cancel()
+        updateDiscordRPC(exitingReader = true)
     }
 
     override fun onPause() {
         viewModel.flushReadTimer()
+        updateDiscordRPC(exitingReader = false)
         super.onPause()
     }
 
@@ -327,6 +343,7 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
+        updateDiscordRPC(exitingReader = false)
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -1103,6 +1120,7 @@ class ReaderActivity : BaseActivity() {
                 assistUrl = url
             }
         }
+        updateDiscordRPC(exitingReader = false)
     }
 
     /**
@@ -1520,6 +1538,40 @@ class ReaderActivity : BaseActivity() {
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
             val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
+        }
+    }
+
+    /**
+     * Updates the Discord Rich Presence (RPC) status based on the current reader activity.
+     *
+     * @param exitingReader A boolean flag indicating whether the user is exiting the reader.
+     * If true, the Discord RPC status is set to the last used screen.
+     * If false, the Discord RPC status is set to the current reader activity, displaying details such as the manga title, chapter number, and chapter title.
+     */
+    private fun updateDiscordRPC(exitingReader: Boolean) {
+        if (connectionPreferences.enableDiscordRPC().get()) {
+            viewModel.viewModelScope.launchIO {
+                if (!exitingReader) {
+                    val currentChapter = viewModel.state.value.currentChapter?.chapter
+                    DiscordRPCService.setReaderActivity(
+                        context = this@ReaderActivity,
+                        ReaderData(
+                            incognitoMode = viewModel.currentSource.value?.isNsfw() == true || viewModel.incognitoMode,
+                            mangaId = viewModel.currentManga.value?.id ?: -1,
+                            mangaTitle = viewModel.currentManga.value?.ogTitle ?: "",
+                            thumbnailUrl = viewModel.currentManga.value?.thumbnailUrl ?: ""
+                            chapterNumber = if (connectionPreferences.useChapterTitles().get()) {
+                                viewModel.currentChapter.value?.name.toString()
+                            } else {
+                                viewModel.currentChapter.value?.chapter_number.toString()
+                            },
+                        ),
+                    )
+                } else {
+                    val lastUsedScreen = DiscordRPCService.lastUsedScreen
+                    DiscordRPCService.setScreen(this@ReaderActivity, lastUsedScreen)
+                }
+            }
         }
     }
 }

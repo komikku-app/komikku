@@ -36,6 +36,8 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
 
 data object UpdatesTab : Tab {
     private fun readResolve(): Any = UpdatesTab
@@ -131,6 +133,12 @@ data object UpdatesTab : Tab {
                     }
                 }
             }
+        }
+
+        LaunchedEffect(Unit) {
+            // AM (DISCORD) -->
+            DiscordRPCService.setScreen(context, DiscordScreen.UPDATES)
+            // <-- AM (DISCORD)
         }
 
         LaunchedEffect(state.selectionMode) {

@@ -92,3 +92,13 @@ fun Source.isIncognitoModeEnabled(incognitoExtensions: Set<String>? = null): Boo
     return extensionPackage in (incognitoExtensions ?: Injekt.get<SourcePreferences>().incognitoExtensions().get())
 }
 // KMK <--
+
+// AM (DISCORD) -->
+fun Source?.isNsfw(): Boolean {
+    if (this == null || this.isLocalOrStub()) return false
+    val sourceUsed = Injekt.get<ExtensionManager>().installedExtensionsFlow.value
+        .find { ext -> ext.sources.any { it.id == this.id } }!!
+    return sourceUsed.isNsfw
+}
+// <-- AM (DISCORD)
+

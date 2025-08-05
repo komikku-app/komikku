@@ -54,6 +54,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
 import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
@@ -82,6 +83,8 @@ import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
+import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -152,6 +155,10 @@ class MainActivity : BaseActivity() {
     var ready = false
 
     private var navigator: Navigator? = null
+
+    // AM (CONNECTIONS) -->
+    private val connectionPreferences: ConnectionPreferences by injectLazy()
+    // <-- AM (CONNECTIONS)
 
     init {
         registerSecureActivity(this)
@@ -344,6 +351,26 @@ class MainActivity : BaseActivity() {
                             }
                         }
                         .launchIn(this)
+
+                    // AM (DISCORD) -->
+                    connectionPreferences.enableDiscordRPC().changes()
+                        .drop(1)
+                        .onEach {
+                            if (it) {
+                                DiscordRPCService.start(this@MainActivity.applicationContext)
+                            } else {
+                                DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
+                            }
+                        }.launchIn(this)
+
+                    connectionPreferences.discordRPCStatus().changes()
+                        .drop(1)
+                        .onEach {
+                            DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
+                            DiscordRPCService.start(this@MainActivity.applicationContext)
+                            DiscordRPCService.setScreen(this@MainActivity, DiscordScreen.MORE)
+                        }.launchIn(this)
+                    // <-- AM (DISCORD)
                 }
 
                 HandleOnNewIntent(context = context, navigator = navigator)
