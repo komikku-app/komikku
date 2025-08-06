@@ -173,9 +173,6 @@ class DiscordRPCService : Service() {
             rpc ?: return
             handler.removeCallbacksAndMessages(null)
 
-            // FIXME: Should not change screen if in PIP mode
-            // if (PipState.mode == PipState.ON && discordScreen != DiscordScreen.VIDEO) return
-
             lastUsedScreen = discordScreen
 
             // KMK -->
