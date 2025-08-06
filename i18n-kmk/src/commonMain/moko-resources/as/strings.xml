@@ -16,8 +16,8 @@
     <string name="pref_theme_cover_based_style_tonalspot">ট’নেল স্পট</string>
     <string name="action_display_comfortable_grid_panorama">পেনোৰামা আৰামদায়ক গ্ৰিড</string>
     <string name="action_source_search">উৎসত সন্ধান</string>
-    <string name="action_move_up">ওপৰলৈ নিয়ক</string>
-    <string name="action_move_down">তললৈ নিয়ক</string>
+    <string name="action_move_up">ওপৰলৈ যোৱা</string>
+    <string name="action_move_down">তললৈ যোৱা</string>
     <string name="action_remove_merged">পুথিভঁৰালৰ পৰা মূল এণ্ট্ৰি আঁতৰাওক?</string>
     <string name="action_copy_to_clipboard_second_page">দ্বিতীয় পৃষ্ঠা ক্লিপব’ৰ্ডলৈ কপি কৰক</string>
     <string name="action_copy_to_clipboard_combined_page">সংযুক্ত পৃষ্ঠা ক্লিপব’ৰ্ডলৈ কপি কৰক</string>
