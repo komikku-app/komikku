@@ -325,7 +325,7 @@ class DiscordRPCService : Service() {
             return discordIncognitoMode || incognitoMode || incognitoCategory
         }
 
-        private fun getFormattedChapterNumber(readerData: ReaderData, discordIncognito: Boolean): String? {
+        private fun getFormattedChapterNumber(context: Context, readerData: ReaderData, discordIncognito: Boolean): String? {
             if (discordIncognito) return null
 
             val chapterNumber = readerData.chapterNumber ?: return null

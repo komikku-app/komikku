@@ -187,7 +187,7 @@ class DiscordLoginScreen : Screen() {
                 Box {
                     Column {
                         AppBar(
-                            title = stringResource(MR.strings.login_title, stringResource(AMR.strings.connections_discord)),
+                            title = stringResource(MR.strings.login_title, stringResource(KMR.strings.connections_discord)),
                             subtitle = currentUrl,
                             navigateUp = { navigator.pop() },
                             actions = {
