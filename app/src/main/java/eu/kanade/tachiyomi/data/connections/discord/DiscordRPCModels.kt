@@ -184,11 +184,11 @@ private const val KOMIKKU_PREVIEW_IMAGE_URL = "emojis/1401732831314575401.webp?q
 
 @Suppress("SimplifyBooleanWithConstants")
 private val KOMIKKU_IMAGE = if (isPreviewBuildType == true) KOMIKKU_PREVIEW_IMAGE_URL else KOMIKKU_IMAGE_URL
-private const val LIBRARY_IMAGE_URL = "emojis/1365262809050644591.webp?quality=lossless"
-private const val UPDATES_IMAGE_URL = "emojis/1365261957883625492.webp?quality=lossless"
-private const val HISTORY_IMAGE_URL = "emojis/1365262076787949598.webp?quality=lossless"
-private const val BROWSE_IMAGE_URL = "emojis/1365263374992146576.webp?quality=lossless"
-private const val MORE_IMAGE_URL = "emojis/1365261438276599849.webp?quality=lossless"
-private const val WEBVIEW_IMAGE_URL = "emojis/1365262268811579443.webp?quality=lossless"
-private const val MANGA_IMAGE_URL = "emojis/1365263962622529576.webp?quality=lossless"
+private const val LIBRARY_IMAGE_URL = "emojis/1401723992963940443.webp?quality=lossless"
+private const val UPDATES_IMAGE_URL = "emojis/1401723857571938424.webp?quality=lossless"
+private const val HISTORY_IMAGE_URL = "emojis/1401724070369689620.webp?quality=lossless"
+private const val BROWSE_IMAGE_URL = "emojis/1401723924764688465.webp?quality=lossless"
+private const val MORE_IMAGE_URL = "emojis/1401723775174578176.webp?quality=lossless"
+private const val WEBVIEW_IMAGE_URL = "emojis/1401725215465275412.webp?quality=lossless"
+private const val MANGA_IMAGE_URL = "emojis/1401724681731444858.webp?quality=lossless"
 // <-- AM (DISCORD)
