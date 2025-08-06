@@ -12,9 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clickableNoIndication
 
 @Composable
@@ -38,7 +38,7 @@ fun ConnectionLogoIcon(
     ) {
         Image(
             painter = painterResource(service.getLogo()),
-            contentDescription = stringResource(service.nameRes()),
+            contentDescription = stringResource(service.nameStrRes()),
         )
     }
 }

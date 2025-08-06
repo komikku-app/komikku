@@ -187,6 +187,7 @@
     <string name="discord_accounts">Discord Accounts</string>
     <string name="active_account">Active Account</string>
     <string name="no_accounts_found">No accounts found</string>
+    <string name="login_failed">Failed to login</string>
 
     <!-- Discord section -->
     <string name="browsing">Browsing</string>

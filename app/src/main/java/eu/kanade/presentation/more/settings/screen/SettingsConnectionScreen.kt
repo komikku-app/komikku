@@ -2,7 +2,6 @@
 package eu.kanade.presentation.more.settings.screen
 
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,17 +39,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
-import eu.kanade.tachiyomi.util.system.openDiscordLoginActivity
+import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -63,7 +62,6 @@ object SettingsConnectionScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
-        val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
         val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
 
@@ -82,21 +80,21 @@ object SettingsConnectionScreen : SearchableSettings {
 
         return listOf(
             Preference.PreferenceGroup(
-                title = stringResource(R.string.special_services),
+                title = stringResource(KMR.strings.special_services),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.ConnectionPreference(
-                        title = stringResource(connectionsManager.discord.nameRes()),
+                        title = stringResource(connectionsManager.discord.nameStrRes()),
                         service = connectionsManager.discord,
                         login = {
-                            context.openDiscordLoginActivity()
+                            navigator.push(DiscordLoginScreen())
                         },
                         openSettings = { navigator.push(SettingsDiscordScreen) },
                     ),
                     Preference.PreferenceItem.InfoPreference(
-                        stringResource(R.string.connections_discord_info),
+                        stringResource(KMR.strings.connections_discord_info),
                     ),
                     Preference.PreferenceItem.InfoPreference(
-                        stringResource(R.string.connections_info),
+                        stringResource(KMR.strings.connections_info),
                     ),
                 ),
             ),
@@ -107,7 +105,7 @@ object SettingsConnectionScreen : SearchableSettings {
     @Suppress("LongMethod")
     private fun ConnectionsLoginDialog(
         service: ConnectionsService,
-        @StringRes uNameStringRes: Int,
+        uNameStringRes: StringResource,
         onDismissRequest: () -> Unit,
     ) {
         val context = LocalContext.current
@@ -124,15 +122,15 @@ object SettingsConnectionScreen : SearchableSettings {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(
-                            R.string.login_title,
-                            stringResource(service.nameRes()),
+                            MR.strings.login_title,
+                            service.nameStrRes(),
                         ),
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(onClick = onDismissRequest) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(R.string.action_close),
+                            contentDescription = stringResource(MR.strings.action_close),
                         )
                     }
                 }
@@ -154,7 +152,7 @@ object SettingsConnectionScreen : SearchableSettings {
                         modifier = Modifier.fillMaxWidth(),
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text(text = stringResource(R.string.password)) },
+                        label = { Text(text = stringResource(MR.strings.password)) },
                         trailingIcon = {
                             IconButton(onClick = { hidePassword = !hidePassword }) {
                                 Icon(
@@ -204,8 +202,8 @@ object SettingsConnectionScreen : SearchableSettings {
                         }
                     },
                 ) {
-                    val id = if (processing) R.string.loading else R.string.login
-                    Text(text = stringResource(id))
+                    val strRes = if (processing) MR.strings.loading else MR.strings.login
+                    Text(text = stringResource(strRes))
                 }
             },
         )
@@ -232,16 +230,18 @@ object SettingsConnectionScreen : SearchableSettings {
 
 @Composable
 internal fun ConnectionsLogoutDialog(
-    service: ConnectionsService,
+    // KMK -->
+    serviceName: String,
+    onConfirmation: () -> Unit,
+    // KMK <--
     onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
-    val navigator = LocalNavigator.currentOrThrow
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
             Text(
-                text = stringResource(R.string.logout_title, stringResource(service.nameRes())),
+                text = stringResource(MR.strings.logout_title, serviceName),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -252,32 +252,32 @@ internal fun ConnectionsLogoutDialog(
                     modifier = Modifier.weight(1f),
                     onClick = onDismissRequest,
                 ) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(text = stringResource(MR.strings.action_cancel))
                 }
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        service.logout()
+                        // KMK -->
+                        onConfirmation()
+                        // KMK <--
                         onDismissRequest()
                         context.toast(MR.strings.logout_success)
-                        navigator.pop()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
                     ),
                 ) {
-                    Text(text = stringResource(R.string.logout))
+                    Text(text = stringResource(MR.strings.logout))
                 }
             }
         },
     )
 }
 
-@Suppress("UnusedPrivateClass")
 private data class LoginConnectionDialog(
     val service: ConnectionsService,
-    @StringRes val uNameStringRes: Int,
+    val uNameStringRes: StringResource,
 )
 
 internal data class LogoutConnectionDialog(

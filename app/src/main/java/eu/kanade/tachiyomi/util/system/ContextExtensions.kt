@@ -75,17 +75,6 @@ fun Context.openInBrowser(uri: Uri, forceDefaultBrowser: Boolean = false) {
     }
 }
 
-// AM (DISCORD) -->
-fun Context.openDiscordLoginActivity() {
-    try {
-        val intent = Intent(this, DiscordLoginActivity::class.java)
-        startActivity(intent)
-    } catch (e: Exception) {
-        toast(e.message)
-    }
-}
-// <-- AM (DISCORD)
-
 private fun Context.defaultBrowserPackageName(): String? {
     val browserIntent = Intent(Intent.ACTION_VIEW, "http://".toUri())
     val resolveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

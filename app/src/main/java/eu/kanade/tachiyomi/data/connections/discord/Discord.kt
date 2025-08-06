@@ -5,19 +5,18 @@
 package eu.kanade.tachiyomi.data.connections.discord
 
 import android.graphics.Color
-import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class Discord(id: Long) : ConnectionsService(id) {
 
-    @StringRes
-    override fun nameRes() = R.string.connections_discord
+    override fun nameStrRes() = KMR.strings.connections_discord
 
     override fun getLogo() = R.drawable.ic_discord_24dp
 

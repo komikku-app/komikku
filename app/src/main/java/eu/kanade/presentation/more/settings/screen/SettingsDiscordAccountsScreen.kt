@@ -1,9 +1,5 @@
 package eu.kanade.presentation.more.settings.screen
 
-import android.app.Activity
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -43,7 +38,7 @@ import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.connections.discord.DiscordAccount
-import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginActivity
+import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginScreen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
@@ -73,20 +68,11 @@ data class DiscordAccountsScreenState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DiscordAccountsScreenContent() {
-    val context = LocalContext.current
     val navigator = LocalNavigator.currentOrThrow
     val screenModel = remember { DiscordAccountsScreenModel() }
     val state by screenModel.state.collectAsState()
 
     val noAccountsFoundString = stringResource(KMR.strings.no_accounts_found)
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            screenModel.refreshAccounts()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -96,7 +82,7 @@ private fun DiscordAccountsScreenContent() {
                 actions = {
                     IconButton(
                         onClick = {
-                            launcher.launch(Intent(context, DiscordLoginActivity::class.java))
+                            navigator.push(DiscordLoginScreen())
                         },
                     ) {
                         Icon(

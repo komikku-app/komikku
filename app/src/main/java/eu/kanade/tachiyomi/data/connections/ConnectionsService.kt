@@ -4,7 +4,7 @@ package eu.kanade.tachiyomi.data.connections
 import androidx.annotation.CallSuper
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.tachiyomi.network.NetworkHelper
 import okhttp3.OkHttpClient
@@ -19,8 +19,7 @@ abstract class ConnectionsService(val id: Long) {
         get() = networkService.client
 
     // Name of the connection service to display
-    @StringRes
-    abstract fun nameRes(): Int
+    abstract fun nameStrRes(): StringResource
 
     @DrawableRes
     abstract fun getLogo(): Int
