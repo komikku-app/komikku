@@ -169,12 +169,12 @@
     <string name="special_services">Special Services</string>
     <string name="pref_category_connections">Connections</string>
     <string name="pref_connections_summary">Discord, more to come..</string>
-    <string name="connections_info">Special Services that are unique to Anikku and enhance the way you use the app</string>
+    <string name="connections_info">Special Services that are unique to Komikku and enhance the way you use the app</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and Anikku does not share it anywhere else</string>
+    <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and Komikku does not share it anywhere else</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
-    <string name="show_chapters_titles_title">Show Episodes Titles</string>
-    <string name="show_chapters_titles_subtitle">Show the title of the episode you are watching</string>
+    <string name="show_chapters_titles_title">Show Chapter Titles</string>
+    <string name="show_chapters_titles_subtitle">Show the title of the chapter you are reading</string>
     <string name="pref_enable_discord_rpc">Enable Discord Rich Presence</string>
     <string name="pref_discord_status">Discord Status</string>
     <string name="pref_discord_dnd">⛔ Do Not Disturb</string>
@@ -200,7 +200,7 @@
     <string name="pref_discord_custom_message">Custom Message</string>
     <string name="pref_discord_custom_message_summary">Custom message that will be displayed on Discord</string>
     <string name="pref_discord_show_progress">Show Progress</string>
-    <string name="pref_discord_show_progress_summary">Display the current episode progress</string>
+    <string name="pref_discord_show_progress_summary">Display the current chapter progress</string>
     <string name="pref_discord_show_timestamp">Show Time</string>
     <string name="pref_discord_show_timestamp_summary">Display elapsed/remaining time</string>
     <string name="pref_discord_show_buttons">Show Buttons</string>
