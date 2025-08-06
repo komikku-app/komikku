@@ -333,7 +333,6 @@ class ReaderActivity : BaseActivity() {
 
     override fun onPause() {
         viewModel.flushReadTimer()
-        updateDiscordRPC(exitingReader = false)
         super.onPause()
     }
 
@@ -344,7 +343,6 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
-        updateDiscordRPC(exitingReader = false)
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -936,6 +934,9 @@ class ReaderActivity : BaseActivity() {
         viewModel.state.value.viewerChapters?.let {
             viewer.setChaptersInternal(it)
         }
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     private fun setDoublePageMode(viewer: PagerViewer) {
@@ -1039,6 +1040,9 @@ class ReaderActivity : BaseActivity() {
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     private fun openMangaScreen() {
@@ -1146,6 +1150,9 @@ class ReaderActivity : BaseActivity() {
         } else {
             viewModel.closeDialog()
         }
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1167,6 +1174,9 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadNextChapter()
             moveToPageIndex(0)
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -1178,6 +1188,9 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadPreviousChapter()
             moveToPageIndex(0)
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -1202,6 +1215,10 @@ class ReaderActivity : BaseActivity() {
         }
         viewModel.onPageSelected(page, currentPageText, hasExtraPage)
         // SY <--
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1565,6 +1582,7 @@ class ReaderActivity : BaseActivity() {
                             mangaId = manga.id,
                             mangaTitle = manga.ogTitle,
                             thumbnailUrl = manga.thumbnailUrl ?: "",
+                            chapterProgress = Pair(viewModel.state.value.currentPage, viewModel.state.value.totalPages),
                             chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
                                 chapter.name
                             } else {
