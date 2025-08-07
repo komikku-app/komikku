@@ -262,7 +262,8 @@ class LibraryScreenModel(
                     }
                     // KMK -->
                     .filter {
-                        noActiveFilterOrSearch || it.value.isNotEmpty()
+                        libraryPreferences.showEmptyCategoriesSearch()
+                            .get() || noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                     .let {
                         it.ifEmpty {
