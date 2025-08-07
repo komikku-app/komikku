@@ -312,7 +312,7 @@ class ReaderActivity : BaseActivity() {
                 }
             }
             .launchIn(lifecycleScope)
-        viewModel.viewModelScope.launchUI {
+        viewModel.viewModelScope.launchIO {
             // AM (DISCORD) -->
             updateDiscordRPC(exitingReader = false)
             // <-- AM (DISCORD)
@@ -333,6 +333,7 @@ class ReaderActivity : BaseActivity() {
 
     override fun onPause() {
         viewModel.flushReadTimer()
+        updateDiscordRPC(exitingReader = false)
         super.onPause()
     }
 
@@ -343,6 +344,7 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
+        updateDiscordRPC(exitingReader = false)
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -368,6 +370,7 @@ class ReaderActivity : BaseActivity() {
      */
     override fun finish() {
         viewModel.onActivityFinish()
+        updateDiscordRPC(exitingReader = false)
         super.finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
