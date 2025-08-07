@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Nach Quelle suchen</string>
+    <string name="action_source_search">In Quelle suchen</string>
     <string name="action_toggle_nsfw_only">Nur NSFW umschalten</string>
     <string name="action_bulk_select">Massenauswahlmodus</string>
     <string name="action_faq_and_guides">FAQ und Anleitungen</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 Stunden</string>
     <string name="download_cache_renew_interval_12hour">12 Stunden</string>
     <string name="download_cache_renew_interval_24hour">1 Tag</string>
-    <string name="download_cache_renew_interval_info">Wenn auf \"Handbuch\" gesetzt, aktualisieren Sie entweder jede Manga oder verwenden Sie die Aktion \"Ungültiger Download-Index\" in \"Erweitert\"</string>
+    <string name="download_cache_renew_interval_info">Wenn auf \"Manuell\" gesetzt, aktualisieren Sie entweder jedes Manga oder verwenden Sie die Aktion \"Downloads neu indizieren\" in \"Erweitert\"</string>
     <string name="pref_clean_invalid_downloads">Ungültige Downloads bereinigen</string>
     <string name="pref_clean_invalid_downloads_summary">Finden und entfernen Sie alle Downloads, Dateien, Ordner die nicht in Ihrer Bibliothek gespeichert sind</string>
     <string name="invalid_downloads_cleaned">Ungültige Downloads bereinigt</string>
@@ -23,11 +23,11 @@
     <string name="action_skip_all_duplicate_manga">Alle überspringen</string>
     <string name="update_check_try_now">Jetzt versuchen</string>
     <string name="update_check_notification_preview_available">Kommt (bald) Updates!</string>
-    <string name="changelogs">Log ändern</string>
+    <string name="changelogs">Änderungsprotokoll</string>
     <string name="related_mangas_more">Mehr davon...</string>
-    <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed, kann nicht mehr als begrenzt hinzufügen (20)</string>
+    <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed, kann nicht mehr als 20 hinzufügen</string>
     <string name="current_">Aktuell: %1$s</string>
-    <string name="pref_theme_cover_based">Theme basierend auf Cover</string>
+    <string name="pref_theme_cover_based">Design basierend auf Cover</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonaler Spot</string>
     <string name="pref_theme_cover_based_style_neutral">Neutral</string>
     <string name="pref_theme_cover_based_style_vibrant">Vibriert</string>
@@ -37,7 +37,7 @@
     <string name="pref_theme_cover_based_style_monochrome">Monochrom</string>
     <string name="pref_theme_cover_based_style_fidelity">Fidelität</string>
     <string name="pref_theme_cover_based_style_content">Inhalt</string>
-    <string name="action_search_for_source">Nach Quelle suchen</string>
+    <string name="action_search_for_source">Nach Quellen suchen</string>
     <string name="action_library_search">Bibliothekssuche</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Zuckerwatte</string>
@@ -55,16 +55,16 @@
     <string name="action_move_up">Nach oben</string>
     <string name="action_move_down">Nach unten</string>
     <string name="preload_library_cover_color">Titelfarbe der Bibliothek vorladen</string>
-    <string name="saved_searches_add_feed">Gespeicherte Suche (zum Feed hinzufügen)</string>
-    <string name="saved_searches_delete">Gespeicherte Suchanfragen (zum Löschen warten)</string>
+    <string name="saved_searches_add_feed">Gespeicherte Suche (Halten, um zum Feed hinzuzufügen)</string>
+    <string name="saved_searches_delete">Gespeicherte Suchanfragen (Halten, um zu löschen)</string>
     <string name="action_display_source_badge">Quell-Symbol</string>
     <string name="action_display_language_icon">Sprachsymbol verwenden</string>
     <string name="action_confirm_color">Farbe bestätigen</string>
     <string name="theme_custom">Eigene Themes</string>
     <string name="extensions_page_need_refresh">Erweiterungs-Seite aktualisieren, um Liste zu aktualisieren.</string>
-    <string name="extensions_page_more">Weitere Erweiterungen...</string>
+    <string name="extensions_page_more">Mehr Erweiterungen...</string>
     <string name="pref_expand_related_mangas">Vorschläge erweitern</string>
-    <string name="pref_expand_related_mangas_summary">Wenn ausgeschaltet, werden Vorschläge nicht automatisch &amp; Show Expansion laden</string>
+    <string name="pref_expand_related_mangas_summary">Wenn ausgeschaltet, werden Vorschläge nicht automatisch laden &amp; expandiert angezeigt</string>
     <string name="put_related_mangas_in_overflow">Vorschläge im Überlauf</string>
     <string name="put_related_mangas_in_overflow_summary">Setzen Sie die Schaltfläche Vorschläge in das Überlaufmenü anstatt auf der Einstiegsseite</string>
     <string name="pref_show_home_on_related_mangas">Home von Vorschlägen</string>
@@ -78,7 +78,7 @@
     <string name="pref_custom_theme_style">Benutzerdefiniertes Design</string>
     <string name="pref_theme_cover_based_style">Cover-basierte Design-Stil</string>
     <string name="custom_color_description">Wähle eine Seed-Farbe für das benutzerdefinierte Theme</string>
-    <string name="custom_theme_palette_casual">Gelassene</string>
+    <string name="custom_theme_palette_casual">Gelassen</string>
     <string name="custom_theme_palette_sunset">Sonnenuntergang</string>
     <string name="custom_theme_palette_raspberry">Himbeere</string>
     <string name="custom_theme_palette_cathode">Kathode</string>
@@ -101,11 +101,11 @@
     <string name="info_empty_library_update_errors">Sie haben keine Bibliotheks-Aktualisierungsfehler.</string>
     <string name="action_scroll_to_top">Nach oben scrollen</string>
     <string name="action_scroll_to_bottom">Nach unten scrollen</string>
-    <string name="action_scroll_to_previous">Zum vorherigen scrollen</string>
-    <string name="action_scroll_to_next">Zum nächsten scrollen</string>
+    <string name="action_scroll_to_previous">Zum Vorherigen scrollen</string>
+    <string name="action_scroll_to_next">Zum Nächsten scrollen</string>
     <string name="migrating_all_entries">Alle Einträge aus der Quelle migrieren</string>
     <string name="label_to_be_updated">Zu aktualisieren</string>
-    <string name="pref_manga_info">Manga Info</string>
+    <string name="pref_manga_info">Manga-Info</string>
     <string name="manual_download">Manueller Download</string>
     <string name="auto_update_app">App automatisch aktualisieren</string>
     <string name="update_completed">Update abgeschlossen</string>
@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_second_page">Zweite Seite in Zwischenablage kopieren</string>
     <string name="action_copy_to_clipboard_combined_page">Kombinierte Seite in Zwischenablage kopieren</string>
     <string name="auto_update_app_disable_auto_download">Update nicht automatisch herunterladen</string>
-    <string name="action_remove_merged">Originaleinträge aus der Bibliothek entfernen?</string>
+    <string name="action_remove_merged">Originale Einträge aus der Bibliothek entfernen?</string>
     <string name="batch_add_description">Unterstützung: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="pref_panorama_cover_flow">Panorama-Cover Flow</string>
     <string name="theme_doom">Untergang</string>
@@ -125,4 +125,17 @@
     <string name="custom_theme_palette_pop">Pop</string>
     <string name="custom_theme_palette_springfield">Frühlingsfeld</string>
     <string name="action_manual_install">Manuelle Installation</string>
+    <string name="action_open_folder">Ordner öffnen</string>
+    <string name="action_clear_manga">Manga löschen</string>
+    <string name="action_update">Aktualisieren</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Kleinere Tippzonen</string>
+    <string name="error_opening_folder">Ordner konnte nicht geöffnet werden</string>
+    <string name="pref_top_align_cover">Cover oben ausrichten</string>
+    <string name="pref_top_align_cover_summary">Zeige das Cover oben neben den Manga-Informationen ausgerichtet an</string>
+    <string name="pref_library_filter_categories_details">Einträge in ausgeschlossenen Kategorien werden nicht angezeigt, auch wenn sie ebenfalls in eingeschlossenen Kategorien enthalten sind.</string>
+    <string name="updating">Aktualisiere</string>
+    <string name="pref_track_on_add_library">Öffne das Tracking-Menü beim Hinzufügen zur Bibliothek</string>
+    <string name="downloaded_data">Heruntergeladene Daten</string>
+    <string name="chapters_from_database">Kapitel &amp; Verlauf aus der Datenbank</string>
+    <string name="sponsor_me">Unterstütze mich</string>
 </resources>
