@@ -11,6 +11,19 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - `Other` - for technical stuff.
 
 ## [Unreleased]
+### Changed
+- LocalSource now reads ComicInfo.xml file for chapter (if available) to display chapter title, number and scanlator ([@raxod502](https://github.com/radian-software)) ([#2332](https://github.com/mihonapp/mihon/pull/2332))
+
+### Removed
+- Predictive back support ([@AntsyLich](https://github.com/AntsyLich)) ([#2362](https://github.com/mihonapp/mihon/pull/2362))
+
+### Fixes
+- Fix scrollbar sometimes not showing during scroll or not reaching the bottom with few items ([@anirudhsnayak](https://github.com/anirudhsnayak)) ([#2304](https://github.com/mihonapp/mihon/pull/2304))
+- Fix local source EPUB files not loading ([@AntsyLich](https://github.com/AntsyLich)) ([#2369](https://github.com/mihonapp/mihon/pull/2369))
+- Fix title text color in light mode on mass migration list ([@AntsyLich](https://github.com/AntsyLich)) ([#2370](https://github.com/mihonapp/mihon/pull/2370))
+- Fix 'Default' category showing in library with no user-added categories ([@AntsyLich](https://github.com/AntsyLich)) ([#2371](https://github.com/mihonapp/mihon/pull/2371))
+
+## [v0.19.0] - 2025-08-04
 ### Added
 - Add more Kaomoji for empty/error screens ([@ianfhunter](https://github.com/ianfhunter/)) ([#1909](https://github.com/mihonapp/mihon/pull/1909))
 - Add user manga notes ([@imkunet](https://github.com/imkunet), [@AntsyLich](https://github.com/AntsyLich)) ([#428](https://github.com/mihonapp/mihon/pull/428))
@@ -24,6 +37,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Add advanced option to always update manga title from source ([@FlaminSarge](https://github.com/FlaminSarge)) ([#1182](https://github.com/mihonapp/mihon/pull/1182))
 - Full predictive back support ([@AntsyLich](https://github.com/AntsyLich)) ([#2085](https://github.com/mihonapp/mihon/pull/2085))
 - Add Catppuccin theme (mocha for dark and latte for light, mauve accent) ([@claymorwan](https://github.com/claymorwan/)) ([#2117](https://github.com/mihonapp/mihon/pull/2117))
+- Manga mass migration ([@AntsyLich](https://github.com/AntsyLich), [@jobobby04](https://github.com/jobobby04)) ([#2110](https://github.com/mihonapp/mihon/pull/2110), [#2336](https://github.com/mihonapp/mihon/pull/2336), [#2338](https://github.com/mihonapp/mihon/pull/2338), [`f119386`](https://github.com/mihonapp/mihon/commit/f119386))
 
 ### Improved
 - Significantly improve browsing speed (near instantaneous) ([@AntsyLich](https://github.com/AntsyLich)) ([#1946](https://github.com/mihonapp/mihon/pull/1946))
@@ -34,7 +48,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Added autofill support to tracker login dialog ([@AntsyLich](https://github.com/AntsyLich)) ([#2069](https://github.com/mihonapp/mihon/pull/2069))
 - Added option to hide missing chapter count ([@User826](https://github.com/User826), [@AntsyLich](https://github.com/AntsyLich)) ([#2108](https://github.com/mihonapp/mihon/pull/2108))
 - Use median to determine smart update interval, making it more resilient to long hiatuses ([@Kladki](https://github.com/Kladki)) ([#2251](https://github.com/mihonapp/mihon/pull/2251))
-- Optimize library code to potentially better handle big user libraries ([@AntsyLich](https://github.com/AntsyLich)) ([#2329](https://github.com/mihonapp/mihon/pull/2329))
+- Optimize library code to potentially better handle big user libraries ([@AntsyLich](https://github.com/AntsyLich)) ([#2329](https://github.com/mihonapp/mihon/pull/2329), [#2341](https://github.com/mihonapp/mihon/pull/2341))
 
 ### Changed
 - Display all similarly named duplicates in duplicate manga dialogue ([@NarwhalHorns](https://github.com/NarwhalHorns), [@AntsyLich](https://github.com/AntsyLich)) ([#1861](https://github.com/mihonapp/mihon/pull/1861))
@@ -379,7 +393,8 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Branding to Mihon ([@AntsyLich](https://github.com/AntsyLich))
 - Minimum supported Android version to 8 ([@AntsyLich](https://github.com/AntsyLich)) ([`dfb3091`](https://github.com/mihonapp/mihon/commit/dfb3091e380dda3e9bfb64bf5c9a685cf3a03d0e))
 
-[unreleased]: https://github.com/mihonapp/mihon/compare/v0.18.0...main
+[unreleased]: https://github.com/mihonapp/mihon/compare/v0.19.0...main
+[v0.19.0]: https://github.com/mihonapp/mihon/compare/v0.18.0...v0.19.0
 [v0.18.0]: https://github.com/mihonapp/mihon/compare/v0.17.1...v0.18.0
 [v0.17.1]: https://github.com/mihonapp/mihon/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/mihonapp/mihon/compare/v0.16.5...v0.17.0
