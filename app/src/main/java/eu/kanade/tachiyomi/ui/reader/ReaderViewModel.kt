@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.data.saver.Image
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -151,6 +152,15 @@ class ReaderViewModel @JvmOverloads constructor(
     val manga: Manga?
         get() = state.value.manga
 
+    private val _currentChapter = MutableStateFlow<Chapter?>(null)
+    val currentChapter = _currentChapter.asStateFlow()
+
+    private val _currentManga = MutableStateFlow<Manga?>(null)
+    val currentManga = _currentManga.asStateFlow()
+
+    private val _currentSource = MutableStateFlow<Source?>(null)
+    val currentSource = _currentSource.asStateFlow()
+
     /**
      * The chapter id of the currently loaded chapter. Used to restore from process kill.
      */
@@ -270,7 +280,7 @@ class ReaderViewModel @JvmOverloads constructor(
             .map(::ReaderChapter)
     }
 
-    private val incognitoMode: Boolean by lazy { getIncognitoState.await(manga?.source) }
+    val incognitoMode: Boolean by lazy { getIncognitoState.await(currentSource.value?.id) }
     private val downloadAheadAmount = downloadPreferences.autoDownloadWhileReading().get()
 
     init {
@@ -1348,7 +1358,9 @@ class ReaderViewModel @JvmOverloads constructor(
 
     @Immutable
     data class State(
+        val chapter: Chapter? = null,
         val manga: Manga? = null,
+        val source: Source? = null,
         val viewerChapters: ViewerChapters? = null,
         val bookmarked: Boolean = false,
         val isLoadingAdjacentChapter: Boolean = false,

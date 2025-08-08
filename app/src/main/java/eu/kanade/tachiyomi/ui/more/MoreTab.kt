@@ -4,6 +4,7 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -22,11 +23,14 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.MoreScreen
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorScreen
+import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.stats.StatsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
@@ -92,6 +96,15 @@ data object MoreTab : Tab {
             onClickLibraryUpdateErrors = { navigator.push(LibraryUpdateErrorScreen()) },
             // KMK <--
         )
+
+        LaunchedEffect(Unit) {
+            (context as? MainActivity)?.ready = true
+            // AM (DISCORD) -->
+            with(DiscordRPCService) {
+                discordScope.launchIO { setScreen(context, DiscordScreen.MORE) }
+            }
+            // <-- AM (DISCORD)
+        }
     }
 }
 
