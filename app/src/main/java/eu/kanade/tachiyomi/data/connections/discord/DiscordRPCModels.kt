@@ -32,7 +32,6 @@ data class Activity(
     val details: String? = null,
     val state: String? = null,
     val type: Int? = null,
-    val timestamps: Timestamps? = null,
     val assets: Assets? = null,
     val buttons: List<String>? = null,
     val metadata: Metadata? = null,
@@ -53,13 +52,6 @@ data class Activity(
     data class Metadata(
         @SerialName("button_urls")
         val buttonUrls: List<String>,
-    )
-
-    @Serializable
-    data class Timestamps(
-        val start: Long? = null,
-        val end: Long? = null,
-        val stop: Long? = null,
     )
 }
 
@@ -158,8 +150,6 @@ data class ReaderData(
     val chapterProgress: Pair<Int, Int> = Pair(0, 0),
     val chapterNumber: String? = null,
     val thumbnailUrl: String? = null,
-    val startTimestamp: Long? = null,
-    val endTimestamp: Long? = null,
 )
 
 // Enum class for standard Rich Presence in-app screens
