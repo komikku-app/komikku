@@ -71,6 +71,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -923,6 +924,7 @@ private fun MangaSummary(
         targetValue = if (expanded) 1f else 0f,
         label = "summary",
     )
+    var infoHeight by remember { mutableIntStateOf(0) }
     Layout(
         modifier = modifier.clipToBounds(),
         contents = listOf(
@@ -936,27 +938,12 @@ private fun MangaSummary(
                 )
             },
             {
-                // expanded: calculate maximum size when expanded
-                Column {
-                    MangaNotesSection(
-                        content = notes,
-                        expanded = true,
-                        onEditNotes = onEditNotesClicked,
-                    )
-                    MarkdownRender(
-                        content = description,
-                        modifier = Modifier.secondaryItemAlpha(),
-                        annotator = descriptionAnnotator(
-                            loadImages = loadImages,
-                            linkStyle = getMarkdownLinkStyle().toSpanStyle(),
-                        ),
-                        loadImages = loadImages,
-                    )
-                }
-            },
-            {
                 // actual: the actual displayed content
-                Column {
+                Column(
+                    modifier = Modifier.onSizeChanged { size ->
+                        infoHeight = size.height
+                    },
+                ) {
                     MangaNotesSection(
                         content = notes,
                         expanded = expanded,
@@ -996,14 +983,11 @@ private fun MangaSummary(
                 }
             },
         ),
-    ) { (shrunk, expanded, actual, scrim), constraints ->
+    ) { (shrunk, actual, scrim), constraints ->
         val shrunkHeight = shrunk.single()
             .measure(constraints)
             .height
-        val expandedHeight = expanded.single()
-            .measure(constraints)
-            .height
-        val heightDelta = expandedHeight - shrunkHeight
+        val heightDelta = infoHeight - shrunkHeight
         val scrimHeight = 24.dp.roundToPx()
 
         val actualPlaceable = actual.single()

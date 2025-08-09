@@ -11,12 +11,23 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - `Other` - for technical stuff.
 
 ## [Unreleased]
+### Fixes
+- Fix height of description not being calculated correctly if images are present ([@Secozzi](https://github.com/Secozzi)) ([#2382](https://github.com/mihonapp/mihon/pull/2382))
+
+## [v0.19.1] - 2025-08-07
 ### Changed
 - LocalSource now reads ComicInfo.xml file for chapter (if available) to display chapter title, number and scanlator ([@raxod502](https://github.com/radian-software)) ([#2332](https://github.com/mihonapp/mihon/pull/2332))
+
+### Removed
+- Predictive back support ([@AntsyLich](https://github.com/AntsyLich)) ([#2362](https://github.com/mihonapp/mihon/pull/2362))
 
 ### Fixes
 - Fix scrollbar sometimes not showing during scroll or not reaching the bottom with few items ([@anirudhsnayak](https://github.com/anirudhsnayak)) ([#2304](https://github.com/mihonapp/mihon/pull/2304))
 - Fix local source EPUB files not loading ([@AntsyLich](https://github.com/AntsyLich)) ([#2369](https://github.com/mihonapp/mihon/pull/2369))
+- Fix title text color in light mode on mass migration list ([@AntsyLich](https://github.com/AntsyLich)) ([#2370](https://github.com/mihonapp/mihon/pull/2370))
+- Fix 'Default' category showing in library with no user-added categories ([@AntsyLich](https://github.com/AntsyLich)) ([#2371](https://github.com/mihonapp/mihon/pull/2371))
+- Fix crash when opening filter sheet with an empty library ([@krysanify](https://github.com/krysanify/)) ([#2355](https://github.com/mihonapp/mihon/pull/2355))
+- Fix mark as read/unread not working for selected library items ([@krysanify](https://github.com/krysanify/)) ([#2355](https://github.com/mihonapp/mihon/pull/2355))
 
 ## [v0.19.0] - 2025-08-04
 ### Added
@@ -388,8 +399,9 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Branding to Mihon ([@AntsyLich](https://github.com/AntsyLich))
 - Minimum supported Android version to 8 ([@AntsyLich](https://github.com/AntsyLich)) ([`dfb3091`](https://github.com/mihonapp/mihon/commit/dfb3091e380dda3e9bfb64bf5c9a685cf3a03d0e))
 
-[unreleased]: https://github.com/mihonapp/mihon/compare/v0.19.0...main
-[v0.18.0]: https://github.com/mihonapp/mihon/compare/v0.18.0...v0.19.0
+[unreleased]: https://github.com/mihonapp/mihon/compare/v0.19.1...main
+[v0.19.1]: https://github.com/mihonapp/mihon/compare/v0.19.0...v0.19.1
+[v0.19.0]: https://github.com/mihonapp/mihon/compare/v0.18.0...v0.19.0
 [v0.18.0]: https://github.com/mihonapp/mihon/compare/v0.17.1...v0.18.0
 [v0.17.1]: https://github.com/mihonapp/mihon/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/mihonapp/mihon/compare/v0.16.5...v0.17.0
