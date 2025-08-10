@@ -63,6 +63,7 @@ import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
@@ -420,8 +421,10 @@ open class BrowseSourceScreenModel(
             updateManga.await(new.toMangaUpdate())
             // KMK -->
             if (new.favorite) {
-                val chapters = source.getChapterList(new.toSManga())
-                syncChaptersWithSource.await(chapters, new, source, false)
+                withIOContext {
+                    val chapters = source.getChapterList(new.toSManga())
+                    syncChaptersWithSource.await(chapters, new, source, false)
+                }
             }
             // KMK <--
         }
