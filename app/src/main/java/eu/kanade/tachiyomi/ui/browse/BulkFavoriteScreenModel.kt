@@ -36,7 +36,6 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
-import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.toMangaUpdate
@@ -57,7 +56,6 @@ class BulkFavoriteScreenModel(
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
     // KMK -->
-    private val getManga: GetManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
@@ -334,12 +332,12 @@ class BulkFavoriteScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
-
+            // KMK -->
             if (new.favorite) {
                 val chapters = source.getChapterList(new.toSManga())
-                val dbManga = getManga.await(new.id)?.takeIf { it.favorite }!!
-                syncChaptersWithSource.await(chapters, dbManga, source, false)
+                syncChaptersWithSource.await(chapters, new, source, false)
             }
+            // KMK <--
         }
     }
 

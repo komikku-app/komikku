@@ -418,11 +418,12 @@ open class BrowseSourceScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
+            // KMK -->
             if (new.favorite) {
                 val chapters = source.getChapterList(new.toSManga())
-                val dbManga = getManga.await(new.id)?.takeIf { it.favorite }!!
-                syncChaptersWithSource.await(chapters, dbManga, source, false)
+                syncChaptersWithSource.await(chapters, new, source, false)
             }
+            // KMK <--
         }
     }
 
