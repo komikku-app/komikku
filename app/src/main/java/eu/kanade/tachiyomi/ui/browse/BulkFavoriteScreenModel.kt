@@ -9,7 +9,9 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -34,6 +36,7 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.toMangaUpdate
@@ -53,6 +56,10 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    // KMK -->
+    private val getManga: GetManga = Injekt.get(),
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -327,6 +334,12 @@ class BulkFavoriteScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
+
+            if (new.favorite) {
+                val chapters = source.getChapterList(new.toSManga())
+                val dbManga = getManga.await(new.id)?.takeIf { it.favorite }!!
+                syncChaptersWithSource.await(chapters, dbManga, source, false)
+            }
         }
     }
 

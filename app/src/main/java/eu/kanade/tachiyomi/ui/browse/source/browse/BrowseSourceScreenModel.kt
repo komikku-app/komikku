@@ -16,7 +16,9 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
@@ -113,6 +115,7 @@ open class BrowseSourceScreenModel(
     // KMK -->
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     // KMK <--
 
     // SY -->
@@ -415,6 +418,11 @@ open class BrowseSourceScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
+            if (new.favorite) {
+                val chapters = source.getChapterList(new.toSManga())
+                val dbManga = getManga.await(new.id)?.takeIf { it.favorite }!!
+                syncChaptersWithSource.await(chapters, dbManga, source, false)
+            }
         }
     }
 
