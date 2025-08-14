@@ -291,6 +291,9 @@ private val settingScreens = listOf(
     SettingsReaderScreen,
     SettingsDownloadScreen,
     SettingsTrackingScreen,
+    // AM (CONNECTIONS) -->
+    SettingsConnectionScreen,
+    // <-- AM (CONNECTIONS)
     SettingsBrowseScreen,
     SettingsDataScreen,
     SettingsSecurityScreen,

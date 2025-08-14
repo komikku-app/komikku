@@ -56,6 +56,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
@@ -65,6 +66,7 @@ import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
@@ -80,6 +82,8 @@ import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
@@ -174,6 +178,10 @@ class ReaderActivity : BaseActivity() {
     private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
     private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
     // KMK <--
+
+    // AM (CONNECTIONS) -->
+    private val connectionsPreferences: ConnectionsPreferences = Injekt.get()
+    // <-- AM (CONNECTIONS)
 
     lateinit var binding: ReaderActivityBinding
 
@@ -302,6 +310,12 @@ class ReaderActivity : BaseActivity() {
                 }
             }
             .launchIn(lifecycleScope)
+
+        // AM (DISCORD) -->
+        viewModel.viewModelScope.launchIO {
+            updateDiscordRPC(exitingReader = false)
+        }
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -313,10 +327,19 @@ class ReaderActivity : BaseActivity() {
         config = null
         menuToggleToast?.cancel()
         readingModeToast?.cancel()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = true)
+        // <-- AM (DISCORD)
     }
 
     override fun onPause() {
         viewModel.flushReadTimer()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
+
         super.onPause()
     }
 
@@ -327,6 +350,11 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
+
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -338,6 +366,14 @@ class ReaderActivity : BaseActivity() {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
             setMenuVisibility(viewModel.state.value.menuVisible)
+
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
+        } else {
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = true)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -352,6 +388,11 @@ class ReaderActivity : BaseActivity() {
      */
     override fun finish() {
         viewModel.onActivityFinish()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = true)
+        // <-- AM (DISCORD)
+
         super.finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
@@ -918,6 +959,10 @@ class ReaderActivity : BaseActivity() {
         viewModel.state.value.viewerChapters?.let {
             viewer.setChaptersInternal(it)
         }
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     private fun setDoublePageMode(viewer: PagerViewer) {
@@ -1021,6 +1066,10 @@ class ReaderActivity : BaseActivity() {
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     private fun openMangaScreen() {
@@ -1103,6 +1152,10 @@ class ReaderActivity : BaseActivity() {
                 assistUrl = url
             }
         }
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1127,6 +1180,10 @@ class ReaderActivity : BaseActivity() {
         } else {
             viewModel.closeDialog()
         }
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1148,6 +1205,10 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadNextChapter()
             moveToPageIndex(0)
+
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -1159,6 +1220,10 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadPreviousChapter()
             moveToPageIndex(0)
+
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -1183,6 +1248,10 @@ class ReaderActivity : BaseActivity() {
         }
         viewModel.onPageSelected(page, currentPageText, hasExtraPage)
         // SY <--
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1520,6 +1589,48 @@ class ReaderActivity : BaseActivity() {
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
             val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
+        }
+    }
+
+    /**
+     * Updates the Discord Rich Presence (RPC) status based on the current reader activity.
+     *
+     * @param exitingReader A boolean flag indicating whether the user is exiting the reader.
+     * If true, the Discord RPC status is set to the last used screen.
+     * If false, the Discord RPC status is set to the current reader activity, displaying details such as the manga title, chapter number, and chapter title.
+     */
+    private fun updateDiscordRPC(exitingReader: Boolean) {
+        if (!connectionsPreferences.enableDiscordRPC().get()) return
+
+        DiscordRPCService.discordScope.launchIO {
+            try {
+                if (!exitingReader) {
+                    val manga = viewModel.manga ?: return@launchIO
+                    val chapter = viewModel.currentChapter ?: return@launchIO
+
+                    DiscordRPCService.setReaderActivity(
+                        context = this@ReaderActivity,
+                        ReaderData(
+                            incognitoMode = viewModel.incognitoMode,
+                            mangaId = manga.id,
+                            mangaTitle = manga.ogTitle,
+                            thumbnailUrl = manga.thumbnailUrl ?: "",
+                            chapterProgress = Pair(viewModel.state.value.currentPage, viewModel.state.value.totalPages),
+                            chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
+                                chapter.name
+                            } else {
+                                chapter.chapterNumber.toString()
+                            },
+                        ),
+                    )
+                } else {
+                    with(DiscordRPCService) {
+                        setScreen(this@ReaderActivity)
+                    }
+                }
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR) { "Error updating Discord RPC: ${e.message}" }
+            }
         }
     }
 }
