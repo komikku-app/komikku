@@ -154,6 +154,9 @@ private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* 
             backupManga.customDescription = it.description
             backupManga.customGenre = it.genre
             backupManga.customStatus = it.status?.toInt() ?: 0
+            // KMK -->
+            backupManga.incognitoMode = it.incognitoMode ?: false
+            // KMK <--
         }
     }
 // SY <--

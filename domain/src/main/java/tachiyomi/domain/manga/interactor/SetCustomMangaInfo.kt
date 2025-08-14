@@ -8,4 +8,11 @@ class SetCustomMangaInfo(
 ) {
 
     fun set(mangaInfo: CustomMangaInfo) = customMangaRepository.set(mangaInfo)
+
+    // KMK -->
+    fun setIncognitoMode(mangaId: Long, incognitoMode: Boolean?) {
+        val mangaInfo = customMangaRepository.get(mangaId) ?: CustomMangaInfo(mangaId, null)
+        set(mangaInfo.copy(incognitoMode = incognitoMode))
+    }
+    // KMK <--
 }
