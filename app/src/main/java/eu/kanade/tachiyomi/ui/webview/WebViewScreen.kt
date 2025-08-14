@@ -11,7 +11,6 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.webview.WebViewScreenContent
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
-import eu.kanade.tachiyomi.ui.main.MainActivity
 import tachiyomi.core.common.util.lang.launchIO
 
 class WebViewScreen(
@@ -41,13 +40,12 @@ class WebViewScreen(
             onClearCookies = screenModel::clearCookies,
         )
 
+        // KMK -->
         LaunchedEffect(Unit) {
-            (context as? MainActivity)?.ready = true
-            // KMK -->
             with(DiscordRPCService) {
                 discordScope.launchIO { setScreen(context, DiscordScreen.WEBVIEW) }
             }
-            // <-- KMK
         }
+        // <-- KMK
     }
 }

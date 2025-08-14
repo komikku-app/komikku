@@ -45,7 +45,6 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.connections.discord.DiscordAccount
 import eu.kanade.tachiyomi.network.NetworkHelper
-import eu.kanade.tachiyomi.util.defaultJson
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
@@ -53,6 +52,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import tachiyomi.core.common.util.lang.launchIO
@@ -283,7 +283,7 @@ class DiscordLoginScreen : Screen() {
                 ).execute().use { response ->
                     if (response.isSuccessful) {
                         val body = response.body.string()
-                        val account = defaultJson.decodeFromString<DiscordAccount>(body)
+                        val account = Json.decodeFromString<DiscordAccount>(body)
                             .copy(
                                 token = token,
                                 isActive = true,

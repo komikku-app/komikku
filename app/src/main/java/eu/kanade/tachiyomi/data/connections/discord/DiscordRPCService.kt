@@ -26,10 +26,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import tachiyomi.i18n.MR
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -326,27 +328,17 @@ class DiscordRPCService : Service() {
             if (discordIncognito) return null
 
             val chapterNumber = readerData.chapterNumber ?: return null
+            val chapterNumberDouble = chapterNumber.toDoubleOrNull()
             val (current, total) = readerData.chapterProgress
             val useChapterTitles = connectionsPreferences.useChapterTitles().get()
             val progress = "($current/$total)"
 
             return when {
-                useChapterTitles -> "$chapterNumber $progress"
-                ceil(chapterNumber.toDouble()) == floor(chapterNumber.toDouble()) -> {
-                    try {
-                        context.getString(R.string.notification_chapters_single).format(
-                            "${chapterNumber.toDouble().toInt()} $progress",
-                        )
-                    } catch (_: NumberFormatException) {
-                        context.getString(R.string.notification_chapters_single).format(
-                            "$chapterNumber $progress",
-                        )
-                    }
+                useChapterTitles || chapterNumberDouble == null -> "$chapterNumber $progress"
+                ceil(chapterNumberDouble) == floor(chapterNumberDouble) -> {
+                    context.stringResource(MR.strings.notification_chapters_single, "${chapterNumberDouble.toInt()} $progress")
                 }
-                else ->
-                    context.getString(R.string.notification_chapters_single).format(
-                        "$chapterNumber $progress",
-                    )
+                else -> context.stringResource(MR.strings.notification_chapters_single, "$chapterNumber $progress")
             }
         }
 

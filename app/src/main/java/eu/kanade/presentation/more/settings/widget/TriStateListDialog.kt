@@ -38,7 +38,6 @@ private enum class State {
 }
 
 @Composable
-@Suppress("LongMethod", "CyclomaticComplexMethod")
 fun <T> TriStateListDialog(
     title: String,
     message: String? = null,
@@ -48,8 +47,9 @@ fun <T> TriStateListDialog(
     itemLabel: @Composable (T) -> String,
     onDismissRequest: () -> Unit,
     onValueChanged: (newIncluded: List<T>, newExcluded: List<T>) -> Unit,
-    // AM (DISCORD)>
+    // AM (DISCORD) -->
     onlyChecked: Boolean = false,
+    // AM (DISCORD) <--
 ) {
     val selected = remember {
         items

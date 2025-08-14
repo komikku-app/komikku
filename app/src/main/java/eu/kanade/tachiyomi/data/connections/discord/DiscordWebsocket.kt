@@ -5,7 +5,7 @@
 // https://github.com/saikou-app/saikou
 package eu.kanade.tachiyomi.data.connections.discord
 
-import android.util.Log
+import exh.log.xLogI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -162,7 +162,7 @@ open class DiscordWebSocketImpl(
     }
 
     private fun log(message: String) {
-        Log.i("discord_rpc_komikku", message)
+        xLogI(message)
     }
 }
 // <-- AM (DISCORD)

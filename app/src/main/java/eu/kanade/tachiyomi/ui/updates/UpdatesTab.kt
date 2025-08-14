@@ -119,11 +119,6 @@ data object UpdatesTab : Tab {
         }
 
         LaunchedEffect(Unit) {
-            // AM (DISCORD) -->
-            with(DiscordRPCService) {
-                discordScope.launchIO { setScreen(context, DiscordScreen.UPDATES) }
-            }
-            // <-- AM (DISCORD)
             screenModel.events.collectLatest { event ->
                 when (event) {
                     Event.InternalError -> screenModel.snackbarHostState.showSnackbar(
@@ -141,12 +136,6 @@ data object UpdatesTab : Tab {
             }
         }
 
-        LaunchedEffect(Unit) {
-            // AM (DISCORD) -->
-            DiscordRPCService.setScreen(context, DiscordScreen.UPDATES)
-            // <-- AM (DISCORD)
-        }
-
         LaunchedEffect(state.selectionMode) {
             HomeScreen.showBottomNav(!state.selectionMode)
         }
@@ -154,6 +143,12 @@ data object UpdatesTab : Tab {
         LaunchedEffect(state.isLoading) {
             if (!state.isLoading) {
                 (context as? MainActivity)?.ready = true
+
+                // AM (DISCORD) -->
+                with(DiscordRPCService) {
+                    discordScope.launchIO { setScreen(context, DiscordScreen.UPDATES) }
+                }
+                // <-- AM (DISCORD)
             }
         }
         DisposableEffect(Unit) {

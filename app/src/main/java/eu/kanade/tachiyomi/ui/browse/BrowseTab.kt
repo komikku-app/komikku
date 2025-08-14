@@ -141,6 +141,7 @@ data object BrowseTab : Tab {
 
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
+
             // AM (DISCORD) -->
             with(DiscordRPCService) {
                 discordScope.launchIO { setScreen(context, DiscordScreen.BROWSE) }

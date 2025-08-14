@@ -193,7 +193,6 @@
     <string name="browsing">Browsing</string>
     <string name="scrolling">Scrolling through</string>
     <string name="messing">Messing around with</string>
-    <string name="video">Video</string>
 
     <!-- Discord RPC Customization -->
     <string name="pref_category_discord_customization">Discord Customization</string>

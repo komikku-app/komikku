@@ -156,15 +156,16 @@ data object HistoryTab : Tab {
         LaunchedEffect(state.list) {
             if (state.list != null) {
                 (context as? MainActivity)?.ready = true
+
+                // AM (DISCORD) -->
+                with(DiscordRPCService) {
+                    discordScope.launchIO { setScreen(context, DiscordScreen.HISTORY) }
+                }
+                // <-- AM (DISCORD)
             }
         }
 
         LaunchedEffect(Unit) {
-            // AM (DISCORD) -->
-            with(DiscordRPCService) {
-                discordScope.launchIO { setScreen(context, DiscordScreen.HISTORY) }
-            }
-            // <-- AM (DISCORD)
             screenModel.events.collectLatest { e ->
                 when (e) {
                     HistoryScreenModel.Event.InternalError ->

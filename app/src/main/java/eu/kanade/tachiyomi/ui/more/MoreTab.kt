@@ -30,7 +30,6 @@ import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorScreen
-import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.stats.StatsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
@@ -97,14 +96,13 @@ data object MoreTab : Tab {
             // KMK <--
         )
 
+        // AM (DISCORD) -->
         LaunchedEffect(Unit) {
-            (context as? MainActivity)?.ready = true
-            // AM (DISCORD) -->
             with(DiscordRPCService) {
                 discordScope.launchIO { setScreen(context, DiscordScreen.MORE) }
             }
-            // <-- AM (DISCORD)
         }
+        // <-- AM (DISCORD)
     }
 }
 

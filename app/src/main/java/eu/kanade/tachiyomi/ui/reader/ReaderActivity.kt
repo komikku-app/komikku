@@ -310,11 +310,12 @@ class ReaderActivity : BaseActivity() {
                 }
             }
             .launchIn(lifecycleScope)
+
+        // AM (DISCORD) -->
         viewModel.viewModelScope.launchIO {
-            // AM (DISCORD) -->
             updateDiscordRPC(exitingReader = false)
-            // <-- AM (DISCORD)
         }
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -326,12 +327,19 @@ class ReaderActivity : BaseActivity() {
         config = null
         menuToggleToast?.cancel()
         readingModeToast?.cancel()
+
+        // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = true)
+        // <-- AM (DISCORD)
     }
 
     override fun onPause() {
         viewModel.flushReadTimer()
+
+        // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
+
         super.onPause()
     }
 
@@ -342,7 +350,11 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
+
+        // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
+
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -354,6 +366,14 @@ class ReaderActivity : BaseActivity() {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
             setMenuVisibility(viewModel.state.value.menuVisible)
+
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = false)
+            // <-- AM (DISCORD)
+        } else {
+            // AM (DISCORD) -->
+            updateDiscordRPC(exitingReader = true)
+            // <-- AM (DISCORD)
         }
     }
 
@@ -368,7 +388,11 @@ class ReaderActivity : BaseActivity() {
      */
     override fun finish() {
         viewModel.onActivityFinish()
-        updateDiscordRPC(exitingReader = false)
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = true)
+        // <-- AM (DISCORD)
+
         super.finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
@@ -935,6 +959,7 @@ class ReaderActivity : BaseActivity() {
         viewModel.state.value.viewerChapters?.let {
             viewer.setChaptersInternal(it)
         }
+
         // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
         // <-- AM (DISCORD)
@@ -1041,6 +1066,7 @@ class ReaderActivity : BaseActivity() {
         binding.readerContainer.addView(loadingIndicator)
 
         startPostponedEnterTransition()
+
         // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
         // <-- AM (DISCORD)
@@ -1126,7 +1152,10 @@ class ReaderActivity : BaseActivity() {
                 assistUrl = url
             }
         }
+
+        // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1151,6 +1180,7 @@ class ReaderActivity : BaseActivity() {
         } else {
             viewModel.closeDialog()
         }
+
         // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = false)
         // <-- AM (DISCORD)
@@ -1175,6 +1205,7 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadNextChapter()
             moveToPageIndex(0)
+
             // AM (DISCORD) -->
             updateDiscordRPC(exitingReader = false)
             // <-- AM (DISCORD)
@@ -1189,6 +1220,7 @@ class ReaderActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.loadPreviousChapter()
             moveToPageIndex(0)
+
             // AM (DISCORD) -->
             updateDiscordRPC(exitingReader = false)
             // <-- AM (DISCORD)

@@ -7,6 +7,7 @@ package eu.kanade.tachiyomi.data.connections.discord
 import android.graphics.Color
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import exh.log.xLogE
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
@@ -97,7 +98,7 @@ class Discord(id: Long) : ConnectionsService(id) {
             val accountsJson = json.encodeToString(accounts)
             connectionsPreferences.discordAccounts().set(accountsJson)
         } catch (e: Exception) {
-            e.printStackTrace()
+            xLogE("Failed to save Discord accounts", e)
         }
     }
 }
