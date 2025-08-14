@@ -42,6 +42,11 @@ class WebtoonConfig(
 
     var doubleTapZoomChangedListener: ((Boolean) -> Unit)? = null
 
+    var pinchToZoomDisabled = false
+        private set
+
+    var pinchToZoomChangedListener: ((Boolean) -> Unit)? = null
+
     // SY -->
     var usePageTransitions = false
 
@@ -100,6 +105,12 @@ class WebtoonConfig(
             .register(
                 { doubleTapZoom = it },
                 { doubleTapZoomChangedListener?.invoke(it) },
+            )
+
+        readerPreferences.webtoonDisablePinchToZoom()
+            .register(
+                { pinchToZoomDisabled = it },
+                { pinchToZoomChangedListener?.invoke(it) },
             )
 
         readerPreferences.readerTheme().changes()

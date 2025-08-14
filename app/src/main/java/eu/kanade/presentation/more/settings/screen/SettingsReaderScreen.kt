@@ -445,6 +445,10 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.webtoonDisableZoomOut(),
                     title = stringResource(MR.strings.pref_webtoon_disable_zoom_out),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.webtoonDisablePinchToZoom(),
+                    title = stringResource(MR.strings.pref_webtoon_disable_pinch_to_zoom),
+                ),
                 // SY -->
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.pageTransitionsWebtoon(),
