@@ -1605,8 +1605,8 @@ class ReaderActivity : BaseActivity() {
         DiscordRPCService.discordScope.launchIO {
             try {
                 if (!exitingReader) {
-                    val manga = viewModel.currentManga.value ?: return@launchIO
-                    val chapter = viewModel.currentChapter.value ?: return@launchIO
+                    val manga = viewModel.manga ?: return@launchIO
+                    val chapter = viewModel.currentChapter ?: return@launchIO
 
                     DiscordRPCService.setReaderActivity(
                         context = this@ReaderActivity,
