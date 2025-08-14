@@ -22,18 +22,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.util.fastMap
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.i18n.MR
@@ -44,6 +42,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsDiscordScreen : SearchableSettings {
+    private fun readResolve(): Any = SettingsDiscordScreen
 
     @ReadOnlyComposable
     @Composable
@@ -62,7 +61,6 @@ object SettingsDiscordScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
-        val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
         val connectionsPreferences = remember { Injekt.get<ConnectionsPreferences>() }
         val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
@@ -238,28 +236,6 @@ object SettingsDiscordScreen : SearchableSettings {
         val discordRPCIncognitoPref = connectionsPreferences.discordRPCIncognito()
         val discordRPCIncognitoCategoriesPref = connectionsPreferences.discordRPCIncognitoCategories()
 
-        val includedManga by discordRPCIncognitoCategoriesPref.collectAsState()
-        var showDialog by rememberSaveable { mutableStateOf(false) }
-        if (showDialog) {
-            TriStateListDialog(
-                title = stringResource(MR.strings.categories),
-                message = stringResource(KMR.strings.pref_discord_incognito_categories_details),
-                items = allCategories,
-                initialChecked = includedManga.mapNotNull { id -> allCategories.find { it.id.toString() == id } },
-                initialInversed = includedManga.mapNotNull { allCategories.find { false } },
-                itemLabel = { it.visualName },
-                onDismissRequest = { showDialog = false },
-                onValueChanged = { newIncluded, _ ->
-                    discordRPCIncognitoCategoriesPref.set(
-                        newIncluded.fastMap { it.id.toString() }
-                            .toSet(),
-                    )
-                    showDialog = false
-                },
-                onlyChecked = true,
-            )
-        }
-
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.categories),
             preferenceItems = persistentListOf(
@@ -268,13 +244,12 @@ object SettingsDiscordScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_discord_incognito),
                     subtitle = stringResource(KMR.strings.pref_discord_incognito_summary),
                 ),
-                Preference.PreferenceItem.TextPreference(
+                Preference.PreferenceItem.MultiSelectListPreference(
+                    preference = discordRPCIncognitoCategoriesPref,
+                    entries = allCategories
+                        .associate { it.id.toString() to it.visualName }
+                        .toImmutableMap(),
                     title = stringResource(MR.strings.categories),
-                    subtitle = getCategoriesLabel(
-                        allCategories = allCategories,
-                        included = includedManga,
-                    ),
-                    onClick = { showDialog = true },
                 ),
                 Preference.PreferenceItem.InfoPreference(
                     stringResource(KMR.strings.pref_discord_incognito_categories_details),
