@@ -92,7 +92,6 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.category.interactor.GetCategoriesPerLibraryManga
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -160,7 +159,6 @@ class LibraryScreenModel(
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
-    private val getCategoriesPerLibraryManga: GetCategoriesPerLibraryManga = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -185,17 +183,22 @@ class LibraryScreenModel(
                 ),
                 combine(getTracksPerManga.subscribe(), getTrackingFiltersFlow(), ::Pair),
                 // KMK -->
-                getCategoriesPerLibraryManga.subscribe(),
+                combine(
+                    state.map { it.includedCategories }.distinctUntilChanged(),
+                    state.map { it.excludedCategories }.distinctUntilChanged(),
+                    ::Pair,
+                ),
                 // KMK <--
                 getLibraryItemPreferencesFlow(),
-            ) { (searchQuery, categories, favorites), (tracksMap, trackingFilters), categoriesPerManga, itemPreferences ->
+            ) { (searchQuery, categories, favorites), (tracksMap, trackingFilters), (includedCategories, excludedCategories), itemPreferences ->
                 val filteredFavorites = favorites
                     .applyFilters(
                         tracksMap,
                         trackingFilters,
                         itemPreferences,
                         // KMK -->
-                        categoriesPerManga,
+                        includedCategories,
+                        excludedCategories,
                         // KMK <--
                     )
                     .let {
@@ -422,7 +425,8 @@ class LibraryScreenModel(
         trackingFilter: Map<Long, TriState>,
         preferences: ItemPreferences,
         // KMK -->
-        categoriesPerManga: Map<Long, Set<Long>>,
+        includedCategories: ImmutableSet<Long>,
+        excludedCategories: ImmutableSet<Long>,
         // KMK <--
     ): List<LibraryItem> {
         val downloadedOnly = preferences.globalFilterDownloaded
@@ -433,6 +437,7 @@ class LibraryScreenModel(
         val filterBookmarked = preferences.filterBookmarked
         val filterCompleted = preferences.filterCompleted
         val filterIntervalCustom = preferences.filterIntervalCustom
+        val filterCategories = preferences.filterCategories
 
         val isNotLoggedInAnyTrack = trackingFilter.isEmpty()
 
@@ -497,12 +502,12 @@ class LibraryScreenModel(
 
         // KMK -->
         val filterFnCategories: (LibraryItem) -> Boolean = categories@{ item ->
-            if (!state.value.filterCategory) return@categories true
+            if (!filterCategories) return@categories true
 
-            val mangaCategories = categoriesPerManga[item.libraryManga.id].orEmpty()
+            val mangaCategories = item.libraryManga.categories.filterNot { it == 0L }.toSet()
 
-            val isExcluded = state.value.excludedCategories.any { it in mangaCategories }
-            val isIncluded = state.value.includedCategories.isEmpty() || state.value.includedCategories.all { it in mangaCategories }
+            val isExcluded = excludedCategories.any { it in mangaCategories }
+            val isIncluded = includedCategories.isEmpty() || includedCategories.all { it in mangaCategories }
 
             !isExcluded && isIncluded
         }
@@ -1445,32 +1450,32 @@ class LibraryScreenModel(
                 groupBy { item ->
                     item.libraryManga.manga.status
                 }.mapKeys {
-                        Category(
-                            id = it.key + 1,
-                            name = when (it.key) {
-                                SManga.ONGOING.toLong() -> context.stringResource(MR.strings.ongoing)
-                                SManga.LICENSED.toLong() -> context.stringResource(MR.strings.licensed)
-                                SManga.CANCELLED.toLong() -> context.stringResource(MR.strings.cancelled)
-                                SManga.ON_HIATUS.toLong() -> context.stringResource(MR.strings.on_hiatus)
-                                SManga.PUBLISHING_FINISHED.toLong() -> context.stringResource(MR.strings.publishing_finished)
-                                SManga.COMPLETED.toLong() -> context.stringResource(MR.strings.completed)
-                                else -> context.stringResource(MR.strings.unknown)
-                            },
-                            order = when (it.key) {
-                                SManga.ONGOING.toLong() -> 1
-                                SManga.LICENSED.toLong() -> 2
-                                SManga.CANCELLED.toLong() -> 3
-                                SManga.ON_HIATUS.toLong() -> 4
-                                SManga.PUBLISHING_FINISHED.toLong() -> 5
-                                SManga.COMPLETED.toLong() -> 6
-                                else -> 7
-                            },
-                            flags = 0,
-                            // KMK -->
-                            hidden = false,
-                            // KMK <--
-                        )
-                    }
+                    Category(
+                        id = it.key + 1,
+                        name = when (it.key) {
+                            SManga.ONGOING.toLong() -> context.stringResource(MR.strings.ongoing)
+                            SManga.LICENSED.toLong() -> context.stringResource(MR.strings.licensed)
+                            SManga.CANCELLED.toLong() -> context.stringResource(MR.strings.cancelled)
+                            SManga.ON_HIATUS.toLong() -> context.stringResource(MR.strings.on_hiatus)
+                            SManga.PUBLISHING_FINISHED.toLong() -> context.stringResource(MR.strings.publishing_finished)
+                            SManga.COMPLETED.toLong() -> context.stringResource(MR.strings.completed)
+                            else -> context.stringResource(MR.strings.unknown)
+                        },
+                        order = when (it.key) {
+                            SManga.ONGOING.toLong() -> 1
+                            SManga.LICENSED.toLong() -> 2
+                            SManga.CANCELLED.toLong() -> 3
+                            SManga.ON_HIATUS.toLong() -> 4
+                            SManga.PUBLISHING_FINISHED.toLong() -> 5
+                            SManga.COMPLETED.toLong() -> 6
+                            else -> 7
+                        },
+                        flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
+                    )
+                }
             }
             else -> emptyMap()
         }.toSortedMap(compareBy { it.order })
