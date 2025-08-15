@@ -1,7 +1,6 @@
 package tachiyomi.data.category
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.category.model.Category
@@ -35,18 +34,6 @@ class CategoryRepositoryImpl(
             categoriesQueries.getCategoriesByMangaId(mangaId, CategoryMapper::mapCategory)
         }
     }
-
-    // KMK -->
-    override fun getCategoriesPerLibraryMangaAsFlow(): Flow<Map<Long, Set<Long>>> {
-        return handler.subscribeToList {
-            mangas_categoriesQueries.getCategoriesPerLibraryManga { mangaId, categoryId ->
-                mangaId to categoryId
-            }
-        }.map { list ->
-            list.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
-        }
-    }
-    // KMK <--
 
     // SY -->
     override suspend fun insert(category: Category): Long {
