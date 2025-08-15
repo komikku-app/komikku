@@ -451,6 +451,15 @@ class LibraryScreenModel(
         val filterLewd = preferences.filterLewd
         // SY <--
 
+        // KMK -->
+        // Pre-compute track mappings for better performance
+        val mangaTrackIds = if (!isNotLoggedInAnyTrack && !trackFiltersIsIgnored) {
+            trackMap.mapValues { entry -> entry.value.map { it.trackerId } }
+        } else {
+            emptyMap()
+        }
+        // KMK <--
+
         val filterFnDownloaded: (LibraryItem) -> Boolean = {
             applyFilter(filterDownloaded) {
                 it.libraryManga.manga.isLocal() ||
@@ -492,9 +501,12 @@ class LibraryScreenModel(
         val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
             if (isNotLoggedInAnyTrack || trackFiltersIsIgnored) return@tracking true
 
-            val mangaTracks = trackMap
-                .mapValues { entry -> entry.value.map { it.trackerId } }[item.id]
-                .orEmpty()
+            // KMK -->
+            val mangaTracks = mangaTrackIds[item.id].orEmpty()
+
+            // Early return
+            if (mangaTracks.isEmpty() && includedTracks.isNotEmpty()) return@tracking false
+            // KMK <--
 
             val isExcluded = excludedTracks.isNotEmpty() && mangaTracks.fastAny { it in excludedTracks }
             val isIncluded = includedTracks.isEmpty() || mangaTracks.fastAny { it in includedTracks }
@@ -507,6 +519,11 @@ class LibraryScreenModel(
             if (!filterCategories) return@categories true
 
             val mangaCategories = item.libraryManga.categories.filterNot { it == 0L }.toSet()
+
+            // Early return
+            if (mangaCategories.isEmpty()) {
+                return@categories includedCategories.isEmpty()
+            }
 
             val isExcluded = excludedCategories.any { it in mangaCategories }
             val isIncluded = includedCategories.isEmpty() || includedCategories.all { it in mangaCategories }
