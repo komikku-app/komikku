@@ -423,6 +423,7 @@ open class BrowseSourceScreenModel(
             if (new.favorite) {
                 withIOContext {
                     val chapters = source.getChapterList(new.toSManga())
+                    if (chapters.isEmpty()) return@withIOContext
                     syncChaptersWithSource.await(chapters, new, source, false)
                 }
             }
