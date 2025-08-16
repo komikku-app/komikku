@@ -799,7 +799,7 @@ object SettingsDataScreen : SearchableSettings {
                 subtitle = stringResource(SYMR.strings.pref_webdav_username_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
-                        syncPreferences.webDavUsername().set(newValue)
+                        syncPreferences.webDavUsername().set(newValue.trim())
                     }
                     true
                 },
@@ -821,7 +821,7 @@ object SettingsDataScreen : SearchableSettings {
                 subtitle = stringResource(SYMR.strings.pref_webdav_folder_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
-                        syncPreferences.webDavFolder().set(newValue)
+                        syncPreferences.webDavFolder().set(newValue.trim())
                     }
                     true
                 }

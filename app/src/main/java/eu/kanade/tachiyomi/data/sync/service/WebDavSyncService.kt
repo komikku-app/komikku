@@ -33,23 +33,22 @@ class WebDavSyncService(
 
     private class WebDavException(message: String?) : Exception(message)
 
-    private fun buildWebDavFileUrl(baseUrl: String, folder: String, fileName: String): String {
-        val cleanBase = baseUrl.trimEnd('/')
-        val cleanFolder = folder.trim('/')
-        return if (cleanFolder.isNotEmpty()) {
-            "$cleanBase/$cleanFolder/$fileName"
-        } else {
-            "$cleanBase/$fileName"
-        }
+    private val url: String = syncPreferences.webDavUrl().get().trim()
+    private val folder: String = syncPreferences.webDavFolder().get().trim('/')
+    private val username: String = syncPreferences.webDavUsername().get().trim()
+    private val password: String = syncPreferences.webDavPassword().get().trim()
+    private val credentials: String = Credentials.basic(username, password)
+
+    private fun buildWebDavFileUrl(fileName: String): String {
+        val cleanBase = url.trimEnd('/')
+        return if (folder.isNotEmpty()) "$cleanBase/$folder/$fileName" else "$cleanBase/$fileName"
     }
 
-    private fun buildCustomOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
+    private fun buildCustomOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
 
     override suspend fun doSync(syncData: SyncData): Backup? {
         try {
@@ -74,37 +73,31 @@ class WebDavSyncService(
     }
 
     private suspend fun pullSyncData(): Pair<SyncData?, String> {
-        val url = syncPreferences.webDavUrl().get()
-        val folder = syncPreferences.webDavFolder().get()
-        val username = syncPreferences.webDavUsername().get()
-        val password = syncPreferences.webDavPassword().get()
-
-        val credentials = Credentials.basic(username, password)
-        val lastETag = syncPreferences.lastSyncEtag().get()
-
-        val headersBuilder = Headers.Builder().add("Authorization", credentials)
-        if (lastETag.isNotEmpty()) {
-            headersBuilder.add("If-None-Match", lastETag)
+        if (url.isEmpty() || !url.startsWith("http")) {
+            notifier.showSyncError("Invalid WebDAV URL. Please check your settings.")
+            return Pair(null, "")
         }
 
-        val requestUrl = buildWebDavFileUrl(url, folder, "backup.proto")
-        val request = GET(requestUrl, headers = headersBuilder.build())
+        if (username.isBlank() || password.isBlank()) {
+            notifier.showSyncError("Username or password cannot be empty.")
+            return Pair(null, "")
+        }
 
+        val lastETag = syncPreferences.lastSyncEtag().get()
+        val headersBuilder = Headers.Builder().add("Authorization", credentials)
+        if (lastETag.isNotEmpty()) headersBuilder.add("If-None-Match", lastETag)
+
+        val requestUrl = buildWebDavFileUrl("backup.proto")
+        val request = GET(requestUrl, headers = headersBuilder.build())
         val client = buildCustomOkHttpClient()
         val response = client.newCall(request).await()
 
         return when (response.code) {
-            HttpStatus.SC_NOT_MODIFIED -> {
-                logcat(LogPriority.INFO) { "Remote file not modified" }
-                Pair(null, lastETag)
-            }
-            HttpStatus.SC_NOT_FOUND -> {
-                logcat(LogPriority.INFO) { "No remote file found" }
-                Pair(null, "")
-            }
+            HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
+            HttpStatus.SC_NOT_FOUND -> Pair(null, "")
             else -> {
                 if (response.isSuccessful) {
-                    val newETag = response.headers["ETag"] ?: ""
+                    val newETag = response.headers["ETag"]?.trim('"') ?: ""
                     val bytes = response.body.byteStream().use { it.readBytes() }
                     try {
                         val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
@@ -124,42 +117,44 @@ class WebDavSyncService(
     private suspend fun pushSyncData(syncData: SyncData, eTag: String) {
         val backup = syncData.backup ?: return
 
-        val url = syncPreferences.webDavUrl().get()
-        val folder = syncPreferences.webDavFolder().get()
-        val username = syncPreferences.webDavUsername().get()
-        val password = syncPreferences.webDavPassword().get()
-        val credentials = Credentials.basic(username, password)
+        if (url.isEmpty() || !url.startsWith("http")) {
+            notifier.showSyncError("Invalid WebDAV URL. Please check your settings.")
+            return
+        }
+
+        if (username.isBlank() || password.isBlank()) {
+            notifier.showSyncError("Username or password cannot be empty.")
+            return
+        }
 
         val client = buildCustomOkHttpClient()
-
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
-        if (byteArray.isEmpty()) {
-            throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
-        }
+        if (byteArray.isEmpty()) throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
 
         val body = byteArray.toRequestBody("application/octet-stream".toMediaType())
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
-        if (eTag.isNotEmpty()) {
-            headersBuilder.add("If-Match", eTag)
-        }
+        if (eTag.isNotEmpty()) headersBuilder.add("If-Match", eTag)
 
-        val requestUrl = buildWebDavFileUrl(url, folder, "backup.proto")
+        val requestUrl = buildWebDavFileUrl("backup.proto")
         val request = PUT(requestUrl, headers = headersBuilder.build(), body = body)
-
         val response = client.newCall(request).await()
 
-        if (response.isSuccessful) {
-            val newETag = response.headers["ETag"] ?: ""
-            if (newETag.isNotEmpty()) {
-                syncPreferences.lastSyncEtag().set(newETag)
+        when {
+            response.isSuccessful -> {
+                val newETag = response.headers["ETag"]?.trim('"') ?: ""
+                if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
+                logcat(LogPriority.INFO) { "WebDAV sync completed" }
             }
-            logcat(LogPriority.INFO) { "WebDAV sync completed" }
-        } else if (response.code == HttpStatus.SC_PRECONDITION_FAILED) {
-            logcat(LogPriority.WARN) { "WebDAV sync conflict (412)" }
-        } else {
-            val bodyStr = response.body.string()
-            throw WebDavException("Upload failed: $bodyStr")
+            response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
+                val message = "Sync conflict detected. Another device may have updated the remote backup. " +
+                    "Please retry syncing or check your WebDAV folder."
+                logcat(LogPriority.WARN) { message }
+                notifier.showSyncError(message)
+            }
+            else -> {
+                val bodyStr = response.body.string()
+                throw WebDavException("Upload failed: $bodyStr")
+            }
         }
     }
 }
-
