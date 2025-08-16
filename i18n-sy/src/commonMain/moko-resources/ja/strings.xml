@@ -209,6 +209,15 @@
     <string name="pref_choose_what_to_sync">同期する項目を選択</string>
     <string name="syncyomi">SyncYomi</string>
     <string name="last_synchronization">最後の同期: %1$s</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">WebDAV サーバー URL</string>
+    <string name="pref_webdav_url_summ">WebDAV サーバーのアドレスを入力してください</string>
+    <string name="pref_webdav_username">ユーザー名</string>
+    <string name="pref_webdav_username_summ">WebDAV のユーザー名を入力してください</string>
+    <string name="pref_webdav_password">パスワード</string>
+    <string name="pref_webdav_password_summ">WebDAV のパスワードを入力してください</string>
+    <string name="pref_webdav_folder">WebDAV サブフォルダー</string>
+    <string name="pref_webdav_folder_summ">アプリはこのフォルダーにデータを保存します</string>
     <string name="google_drive">Google ドライブ</string>
     <string name="pref_google_drive_sign_in">サインイン</string>
     <string name="pref_google_drive_purge_sync_data">Google ドライブから同期データを消去</string>
