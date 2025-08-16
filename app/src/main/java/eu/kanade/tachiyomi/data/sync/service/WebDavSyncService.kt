@@ -43,6 +43,13 @@ class WebDavSyncService(
         }
     }
 
+    private fun buildCustomOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     override suspend fun doSync(syncData: SyncData): Backup? {
         try {
@@ -83,7 +90,7 @@ class WebDavSyncService(
         val requestUrl = buildWebDavFileUrl(url, folder, "backup.proto")
         val request = GET(requestUrl, headers = headersBuilder.build())
 
-        val client = OkHttpClient()
+        val client = buildCustomOkHttpClient()
         val response = client.newCall(request).await()
 
         return when (response.code) {
@@ -123,12 +130,7 @@ class WebDavSyncService(
         val password = syncPreferences.webDavPassword().get()
         val credentials = Credentials.basic(username, password)
 
-        val timeout = 30L
-        val client = OkHttpClient.Builder()
-            .connectTimeout(timeout, TimeUnit.SECONDS)
-            .readTimeout(timeout, TimeUnit.SECONDS)
-            .writeTimeout(timeout, TimeUnit.SECONDS)
-            .build()
+        val client = buildCustomOkHttpClient()
 
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
         if (byteArray.isEmpty()) {
