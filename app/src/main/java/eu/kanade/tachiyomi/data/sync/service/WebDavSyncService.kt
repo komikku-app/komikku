@@ -92,7 +92,7 @@ class WebDavSyncService(
             .build()
 
         val response = buildCustomOkHttpClient.newCall(request).await()
-        val success = response.isSuccessful || response.code == 405
+        val success = response.isSuccessful || response.code == 405 || response.code == 409
         response.close()
         return success
     }
