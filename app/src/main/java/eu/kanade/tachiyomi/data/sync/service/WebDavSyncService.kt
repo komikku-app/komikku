@@ -11,10 +11,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import logcat.logcat
+import okhttp3.ConnectionPool
 import okhttp3.Credentials
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.http.HttpStatus
 import tachiyomi.core.common.i18n.stringResource
@@ -44,22 +46,72 @@ class WebDavSyncService(
         return if (folder.isNotEmpty()) "$cleanBase/$folder/$fileName" else "$cleanBase/$fileName"
     }
 
-    private fun buildCustomOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val buildCustomOkHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+            .build()
+    }
+
+    private fun validateSettings(): Boolean {
+        if (url.isEmpty() || !url.startsWith("http")) {
+            notifier.showSyncError("Invalid WebDAV URL. Please check your settings.")
+            return false
+        }
+        if (username.isBlank() || password.isBlank()) {
+            notifier.showSyncError("Username or password cannot be empty.")
+            return false
+        }
+        return true
+    }
+
+    private suspend fun ensureFolderExists() {
+        if (folder.isEmpty()) return
+        if (!validateSettings()) return
+        val baseUrl = url.trimEnd('/')
+        val folderParts = folder.split('/').filter { it.isNotEmpty() }
+        if (folderParts.isEmpty()) return
+
+        var currentPath = baseUrl
+        for (part in folderParts) {
+            currentPath = "$currentPath/$part"
+            if (!createSingleFolder(currentPath)) {
+                throw WebDavException("Failed to create folder: $currentPath")
+            }
+        }
+    }
+
+    private suspend fun createSingleFolder(folderUrl: String): Boolean {
+        val request = Request.Builder()
+            .url(folderUrl)
+            .method("MKCOL", null)
+            .header("Authorization", credentials)
+            .header("Content-Length", "0")
+            .build()
+
+        val response = buildCustomOkHttpClient.newCall(request).await()
+        val success = response.isSuccessful || response.code == 405
+        response.close()
+        return success
+    }
 
     override suspend fun doSync(syncData: SyncData): Backup? {
+        ensureFolderExists()
         try {
             val (remoteData, etag) = pullSyncData()
 
             val finalSyncData = if (remoteData != null) {
                 assert(etag.isNotEmpty()) { "ETag should never be empty if remote data is not null" }
-                logcat(LogPriority.DEBUG) { "Merging local and remote data with ETag($etag)" }
+                logcat(LogPriority.DEBUG, "SyncService") {
+                    "Try update remote data with ETag($etag)"
+                }
                 mergeSyncData(syncData, remoteData)
             } else {
-                logcat(LogPriority.DEBUG) { "No remote data, using local syncData" }
+                logcat(LogPriority.DEBUG) {
+                    "Try overwrite remote data with ETag($etag)"
+                }
                 syncData
             }
 
@@ -73,15 +125,7 @@ class WebDavSyncService(
     }
 
     private suspend fun pullSyncData(): Pair<SyncData?, String> {
-        if (url.isEmpty() || !url.startsWith("http")) {
-            notifier.showSyncError("Invalid WebDAV URL. Please check your settings.")
-            return Pair(null, "")
-        }
-
-        if (username.isBlank() || password.isBlank()) {
-            notifier.showSyncError("Username or password cannot be empty.")
-            return Pair(null, "")
-        }
+        if (!validateSettings()) return Pair(null, "")
 
         val lastETag = syncPreferences.lastSyncEtag().get()
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
@@ -89,7 +133,7 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl("backup.proto")
         val request = GET(requestUrl, headers = headersBuilder.build())
-        val client = buildCustomOkHttpClient()
+        val client = buildCustomOkHttpClient
         val response = client.newCall(request).await()
 
         return when (response.code) {
@@ -117,17 +161,9 @@ class WebDavSyncService(
     private suspend fun pushSyncData(syncData: SyncData, eTag: String) {
         val backup = syncData.backup ?: return
 
-        if (url.isEmpty() || !url.startsWith("http")) {
-            notifier.showSyncError("Invalid WebDAV URL. Please check your settings.")
-            return
-        }
+        if (!validateSettings()) return
 
-        if (username.isBlank() || password.isBlank()) {
-            notifier.showSyncError("Username or password cannot be empty.")
-            return
-        }
-
-        val client = buildCustomOkHttpClient()
+        val client = buildCustomOkHttpClient
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
         if (byteArray.isEmpty()) throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
 
