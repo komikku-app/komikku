@@ -234,6 +234,15 @@
     <string name="scan_qr_code">Scan a QR code</string>
     <string name="last_synchronization">Last Synchronization: %1$s</string>
     <string name="google_drive">Google Drive</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">WebDAV Server URL</string>
+    <string name="pref_webdav_url_summ">Enter the WebDAV server address</string>
+    <string name="pref_webdav_username">Username</string>
+    <string name="pref_webdav_username_summ">Enter your WebDAV account username</string>
+    <string name="pref_webdav_password">Password</string>
+    <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
+    <string name="pref_webdav_folder">WebDAV data folder</string>
+    <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
     <string name="pref_google_drive_sign_in">Sign in</string>
     <string name="pref_google_drive_purge_sync_data">Clear Sync Data from Google Drive</string>
     <string name="google_drive_sync_data_purged">Sync data purged from Google Drive</string>

@@ -556,6 +556,15 @@
     <string name="syncyomi">Sinkronisasi Yomi</string>
     <string name="last_synchronization">Sinkronisasi Terakhir: %1$s</string>
     <string name="google_drive">GDrive</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">URL Server WebDAV</string>
+    <string name="pref_webdav_url_summ">Masukkan alamat server WebDAV</string>
+    <string name="pref_webdav_username">Nama Pengguna</string>
+    <string name="pref_webdav_username_summ">Masukkan nama pengguna WebDAV Anda</string>
+    <string name="pref_webdav_password">Kata Sandi</string>
+    <string name="pref_webdav_password_summ">Masukkan kata sandi WebDAV Anda</string>
+    <string name="pref_webdav_folder">Subfolder WebDAV</string>
+    <string name="pref_webdav_folder_summ">Aplikasi akan menyimpan data di folder ini</string>
     <string name="pref_google_drive_sign_in">Masuk</string>
     <string name="google_drive_sync_data_purged">Data sinkronisasi dihapus dari Google Drive</string>
     <string name="google_drive_sync_data_not_found">Tidak ada data sinkronisasi yang ditemukan di Google Drive</string>

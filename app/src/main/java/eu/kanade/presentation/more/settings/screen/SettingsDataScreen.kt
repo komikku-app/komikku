@@ -561,6 +561,7 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
+                            SyncManager.SyncService.WebDAV.value to stringResource(SYMR.strings.web_dav),
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
                         onValueChanged = {
@@ -602,6 +603,7 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.NONE -> emptyList()
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
+            SyncManager.SyncService.WebDAV -> getWebDavPreferences(syncPreferences)
         }
 
         return if (syncServiceType != SyncManager.SyncService.NONE) {
@@ -773,6 +775,60 @@ object SettingsDataScreen : SearchableSettings {
             },
         )
     }
+
+
+    @Composable
+    private fun getWebDavPreferences(syncPreferences: SyncPreferences): List<Preference> {
+        val scope = rememberCoroutineScope()
+
+        return listOf(
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavUrl(),
+                title = stringResource(SYMR.strings.pref_webdav_url),
+                subtitle = stringResource(SYMR.strings.pref_webdav_url_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavUrl().set(newValue.trim())
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavUsername(),
+                title = stringResource(SYMR.strings.pref_webdav_username),
+                subtitle = stringResource(SYMR.strings.pref_webdav_username_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavUsername().set(newValue)
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavPassword(),
+                title = stringResource(SYMR.strings.pref_webdav_password),
+                subtitle = stringResource(SYMR.strings.pref_webdav_password_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavPassword().set(newValue)
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavFolder(),
+                title = stringResource(SYMR.strings.pref_webdav_folder),
+                subtitle = stringResource(SYMR.strings.pref_webdav_folder_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavFolder().set(newValue)
+                    }
+                    true
+                }
+            )
+        )
+    }
+
 
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {

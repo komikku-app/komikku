@@ -236,6 +236,15 @@
     <string name="pref_google_drive_sign_in">Iniciar sesión</string>
     <string name="error_deleting_google_drive_lock_file">Error borrando el archivo de bloqueo de Google Drive</string>
     <string name="google_drive">Google Drive</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">URL del servidor WebDAV</string>
+    <string name="pref_webdav_url_summ">Ingrese la dirección del servidor WebDAV</string>
+    <string name="pref_webdav_username">Nombre de usuario</string>
+    <string name="pref_webdav_username_summ">Ingrese su nombre de usuario de WebDAV</string>
+    <string name="pref_webdav_password">Contraseña</string>
+    <string name="pref_webdav_password_summ">Ingrese su contraseña de WebDAV</string>
+    <string name="pref_webdav_folder">Subcarpeta WebDAV</string>
+    <string name="pref_webdav_folder_summ">La aplicación almacenará los datos en esta carpeta</string>
     <string name="pref_purge_confirmation_message">Al eliminar los datos de sincronización, se eliminarán todos los datos sincronizados a Google Drive. ¿Estás seguro de que deseas continuar?</string>
     <string name="pref_purge_confirmation_title">Confirmación de purga</string>
     <string name="sync_on_app_start">Sincronizar al iniciar la aplicación</string>

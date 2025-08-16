@@ -293,6 +293,15 @@
     <string name="google_drive">جوجل درايف</string>
     <string name="google_drive_sync_data_purged">تمت إزالة بيانات المزامنة من Google Drive</string>
     <string name="google_drive_sync_data_not_found">لم يتم العثور على بيانات مزامنة في Google Drive</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">رابط خادم WebDAV</string>
+    <string name="pref_webdav_url_summ">أدخل عنوان خادم WebDAV</string>
+    <string name="pref_webdav_username">اسم المستخدم</string>
+    <string name="pref_webdav_username_summ">أدخل اسم مستخدم WebDAV الخاص بك</string>
+    <string name="pref_webdav_password">كلمة المرور</string>
+    <string name="pref_webdav_password_summ">أدخل كلمة مرور WebDAV الخاصة بك</string>
+    <string name="pref_webdav_folder">مجلد فرعي لـ WebDAV</string>
+    <string name="pref_webdav_folder_summ">سيقوم التطبيق بتخزين البيانات في هذا المجلد</string>
     <string name="google_drive_sync_data_purge_error">حدث خطأ أثناء إزالة بيانات المزامنة من Google Drive، حاول تسجيل الدخول مرة أخرى.</string>
     <string name="pref_choose_what_to_sync">اختر ما تريد مزامنته</string>
     <string name="syncyomi">Sync Yomi</string>
