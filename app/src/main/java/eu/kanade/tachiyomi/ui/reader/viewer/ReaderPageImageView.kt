@@ -24,6 +24,7 @@ import coil3.dispose
 import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
+import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Precision
 import coil3.size.ViewSizeResolver
@@ -432,6 +433,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
                 },
             )
             .crossfade(false)
+            .allowHardware(false) // Disable hardware bitmaps for GIFs
             .build()
         context.imageLoader.enqueue(request)
     }
