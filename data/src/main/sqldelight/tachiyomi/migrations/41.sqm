@@ -1,4 +1,5 @@
--- NOTE: must update MERGED_SOURCE_ID (6969) here
+DROP VIEW IF EXISTS libraryView;
+
 CREATE VIEW libraryView AS
 SELECT
     M.*,
@@ -95,13 +96,3 @@ LEFT JOIN (
 ) AS MC
 ON MC.manga_id = M._id
 WHERE M.source = 6969;
-
-library:
-SELECT *
-FROM libraryView
-WHERE libraryView.favorite = 1;
-
-readMangaNonLibrary:
-SELECT *
-FROM libraryView
-WHERE libraryView.favorite = 0 AND libraryView.readCount != 0;
