@@ -267,12 +267,11 @@ class DiscordLoginScreen : Screen() {
         }
     }
 
-    private val json: Json by lazy { Injekt.get<Json>() }
-
     private fun login(token: String, context: Context) {
         val connectionsManager: ConnectionsManager by lazy { Injekt.get() }
         val connectionsPreferences: ConnectionsPreferences by lazy { Injekt.get() }
         val networkHelper: NetworkHelper by lazy { Injekt.get() }
+        val json: Json by lazy { Injekt.get<Json>() }
 
         @Suppress("OPT_IN_USAGE")
         launchIO {
