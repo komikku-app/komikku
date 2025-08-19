@@ -324,16 +324,14 @@ class DiscordRPCService : Service() {
 
             val chapterNumber = readerData.chapterNumber ?: return null
             val chapterNumberDouble = chapterNumber.toDoubleOrNull()
-            val (current, total) = readerData.chapterProgress
             val useChapterTitles = connectionsPreferences.useChapterTitles().get()
-            val progress = "($current/$total)"
 
             return when {
-                useChapterTitles || chapterNumberDouble == null -> "$chapterNumber $progress"
+                useChapterTitles || chapterNumberDouble == null -> chapterNumber
                 ceil(chapterNumberDouble) == floor(chapterNumberDouble) -> {
-                    context.stringResource(MR.strings.notification_chapters_single, "${chapterNumberDouble.toInt()} $progress")
+                    context.stringResource(MR.strings.notification_chapters_single, "${chapterNumberDouble.toInt()}")
                 }
-                else -> context.stringResource(MR.strings.notification_chapters_single, "$chapterNumber $progress")
+                else -> context.stringResource(MR.strings.notification_chapters_single, chapterNumber)
             }
         }
 

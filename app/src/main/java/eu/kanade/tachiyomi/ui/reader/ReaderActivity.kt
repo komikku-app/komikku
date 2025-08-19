@@ -1195,10 +1195,6 @@ class ReaderActivity : BaseActivity() {
         val currentChapter = viewModel.state.value.currentChapter ?: return
         val page = currentChapter.pages?.getOrNull(index) ?: return
         viewer.moveToPage(page)
-
-        // AM (DISCORD) -->
-        updateDiscordRPC(exitingReader = false)
-        // <-- AM (DISCORD)
     }
 
     /**
@@ -1252,10 +1248,6 @@ class ReaderActivity : BaseActivity() {
         }
         viewModel.onPageSelected(page, currentPageText, hasExtraPage)
         // SY <--
-
-        // AM (DISCORD) -->
-        updateDiscordRPC(exitingReader = false)
-        // <-- AM (DISCORD)
     }
 
     /**
@@ -1619,7 +1611,6 @@ class ReaderActivity : BaseActivity() {
                             mangaId = manga.id,
                             mangaTitle = manga.ogTitle,
                             thumbnailUrl = manga.thumbnailUrl,
-                            chapterProgress = Pair(viewModel.state.value.currentPage, viewModel.state.value.totalPages),
                             chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
                                 chapter.name
                             } else {
