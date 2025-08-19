@@ -1572,6 +1572,7 @@ class ReaderActivity : BaseActivity() {
                             } else {
                                 chapter.chapterNumber.toString()
                             },
+                            startTimestamp = System.currentTimeMillis(),
                         ),
                     )
                 } else {

@@ -69,6 +69,7 @@ object SettingsDiscordScreen : SearchableSettings {
         val discordRPCStatus = connectionsPreferences.discordRPCStatus()
         val customMessagePref = connectionsPreferences.discordCustomMessage()
         val showProgressPref = connectionsPreferences.discordShowProgress()
+        val showTimestampPref = connectionsPreferences.discordShowTimestamp()
         val showButtonsPref = connectionsPreferences.discordShowButtons()
         val showDownloadButtonPref = connectionsPreferences.discordShowDownloadButton()
         val showDiscordButtonPref = connectionsPreferences.discordShowDiscordButton()
@@ -176,6 +177,7 @@ object SettingsDiscordScreen : SearchableSettings {
                             0 to stringResource(KMR.strings.pref_discord_idle),
                             1 to stringResource(KMR.strings.pref_discord_online),
                         ),
+                        enabled = enableDRPC,
                     ),
                 ),
             ),
@@ -196,6 +198,11 @@ object SettingsDiscordScreen : SearchableSettings {
                         preference = showProgressPref,
                         title = stringResource(KMR.strings.pref_discord_show_progress),
                         subtitle = stringResource(KMR.strings.pref_discord_show_progress_summary),
+                    ),
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = showTimestampPref,
+                        title = stringResource(KMR.strings.pref_discord_show_timestamp),
+                        subtitle = stringResource(KMR.strings.pref_discord_show_timestamp_summary),
                     ),
                     Preference.PreferenceItem.SwitchPreference(
                         preference = showButtonsPref,

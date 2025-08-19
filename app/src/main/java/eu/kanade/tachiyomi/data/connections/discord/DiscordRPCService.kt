@@ -166,6 +166,7 @@ class DiscordRPCService : Service() {
             context: Context,
             discordScreen: DiscordScreen = lastUsedScreen,
             readerData: ReaderData = ReaderData(),
+            sinceTime: Long = since,
         ) {
             rpc ?: return
             handler.removeCallbacksAndMessages(null)
@@ -174,6 +175,7 @@ class DiscordRPCService : Service() {
 
             // KMK -->
             val showProgress = connectionsPreferences.discordShowProgress().get()
+            val showTimestamp = connectionsPreferences.discordShowTimestamp().get()
 
             val (title, state, imageUrl) = when (discordScreen) {
                 DiscordScreen.MANGA -> Triple(
@@ -188,6 +190,18 @@ class DiscordRPCService : Service() {
                 )
             }
 
+            val timestamps = if (showTimestamp) {
+                when (discordScreen) {
+                    DiscordScreen.MANGA -> Activity.Timestamps(
+                        start = readerData.startTimestamp ?: since,
+                    )
+                    else -> Activity.Timestamps(start = sinceTime)
+                }
+            } else {
+                null
+            }
+            // KMK <--
+
             updateDiscordRPC(
                 context = context,
                 discordScreen = discordScreen,
@@ -195,7 +209,7 @@ class DiscordRPCService : Service() {
                 title = title,
                 state = state,
                 imageUrl = imageUrl,
-                // KMK <--
+                timestamps = timestamps,
                 // KMK <--
             )
         }
@@ -207,6 +221,7 @@ class DiscordRPCService : Service() {
             title: String? = null,
             state: String?,
             imageUrl: String,
+            timestamps: Activity.Timestamps?,
             sinceTime: Long = since,
             appName: String = context.getString(R.string.app_name),
             // KMK <--
@@ -248,6 +263,7 @@ class DiscordRPCService : Service() {
                     details = details,
                     state = state,
                     type = 3,
+                    timestamps = timestamps,
                     assets = Activity.Assets(
                         largeImage = "$MP_PREFIX$imageUrl",
                         smallImage = "$MP_PREFIX${DiscordScreen.APP.imageUrl}",
@@ -282,6 +298,7 @@ class DiscordRPCService : Service() {
 
                 val mangaTitle = readerData.mangaTitle.takeUnless { discordIncognito }
                 val chapterNumber = getFormattedChapterNumber(context, readerData, discordIncognito)
+                val (startTime, _) = getTimestamps(readerData)
 
                 withIOContext {
                     val rpcExternalAsset = getRPCExternalAsset()
@@ -296,6 +313,7 @@ class DiscordRPCService : Service() {
                                 mangaTitle = mangaTitle,
                                 chapterNumber = chapterNumber,
                                 thumbnailUrl = mangaThumbnail,
+                                startTimestamp = startTime,
                             ),
                         )
                     }
@@ -334,6 +352,12 @@ class DiscordRPCService : Service() {
                 else -> context.stringResource(MR.strings.notification_chapters_single, chapterNumber)
             }
         }
+
+        private fun getTimestamps(readerData: ReaderData): Pair<Long?, Long?> =
+            Pair(
+                readerData.startTimestamp ?: System.currentTimeMillis(),
+                null,
+            )
 
         private fun getRPCExternalAsset(): RPCExternalAsset {
             val connectionsManager: ConnectionsManager by injectLazy()
