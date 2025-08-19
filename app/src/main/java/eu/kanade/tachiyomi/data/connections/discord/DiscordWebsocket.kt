@@ -56,7 +56,7 @@ open class DiscordWebSocketImpl(
     private var connected = false
 
     override val coroutineContext: CoroutineContext
-        get() = SupervisorJob() + Dispatchers.Default
+        get() = SupervisorJob() + Dispatchers.IO
 
     private fun sendIdentify() {
         val response = Identity.Response(
