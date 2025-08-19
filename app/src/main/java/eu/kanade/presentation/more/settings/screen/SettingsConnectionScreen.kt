@@ -55,6 +55,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsConnectionScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsConnectionScreen
 
     @ReadOnlyComposable

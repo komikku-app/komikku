@@ -51,6 +51,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object DiscordAccountsScreen : Screen {
+    @Suppress("unused")
     private fun readResolve(): Any = DiscordAccountsScreen
 
     @Composable

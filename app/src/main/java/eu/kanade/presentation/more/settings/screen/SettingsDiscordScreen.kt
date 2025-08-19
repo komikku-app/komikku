@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
-import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -42,6 +41,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsDiscordScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsDiscordScreen
 
     @ReadOnlyComposable
@@ -229,9 +229,7 @@ object SettingsDiscordScreen : SearchableSettings {
         enabled: Boolean,
     ): Preference.PreferenceGroup {
         val getCategories = remember { Injekt.get<GetCategories>() }
-        val allCategories by getCategories.subscribe().collectAsState(
-            initial = runBlocking { getCategories.await() },
-        )
+        val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         val discordRPCIncognitoPref = connectionsPreferences.discordRPCIncognito()
         val discordRPCIncognitoCategoriesPref = connectionsPreferences.discordRPCIncognitoCategories()

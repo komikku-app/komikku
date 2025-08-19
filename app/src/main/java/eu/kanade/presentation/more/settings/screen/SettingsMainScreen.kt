@@ -57,6 +57,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import cafe.adriel.voyager.core.screen.Screen as VoyagerScreen
 
 object SettingsMainScreen : Screen() {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsMainScreen
 
     @Composable
