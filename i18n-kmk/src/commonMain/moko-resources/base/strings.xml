@@ -169,9 +169,9 @@
     <string name="special_services">Special Services</string>
     <string name="pref_category_connections">Connections</string>
     <string name="pref_connections_summary">Discord, more to come..</string>
-    <string name="connections_info">Special Services that are unique to Komikku and enhance the way you use the app</string>
+    <string name="connections_info">Special Services that are unique to %s and enhance the way you use the app</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and Komikku does not share it anywhere else</string>
+    <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and %s does not share it anywhere else</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
     <string name="show_chapters_titles_title">Show Chapter Titles</string>
     <string name="show_chapters_titles_subtitle">Show the title of the chapter you are reading</string>
@@ -199,9 +199,9 @@
     <string name="pref_discord_custom_message">Custom Message</string>
     <string name="pref_discord_custom_message_summary">Custom message that will be displayed on Discord</string>
     <string name="pref_discord_show_progress">Show Progress</string>
-    <string name="pref_discord_show_progress_summary">Display the current chapter progress</string>
+    <string name="pref_discord_show_progress_summary">Display the current reading chapter</string>
     <string name="pref_discord_show_timestamp">Show Time</string>
-    <string name="pref_discord_show_timestamp_summary">Display elapsed/remaining time</string>
+    <string name="pref_discord_show_timestamp_summary">Display activity time</string>
     <string name="pref_discord_show_buttons">Show Buttons</string>
     <string name="pref_discord_show_buttons_summary">Display buttons to download the app or join the Discord server</string>
     <string name="pref_discord_show_download_button">Show Download Button</string>

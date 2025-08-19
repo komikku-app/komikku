@@ -194,11 +194,13 @@ object SettingsDiscordScreen : SearchableSettings {
                         subtitle = stringResource(KMR.strings.pref_discord_custom_message_summary),
                         onClick = { showCustomMessageDialog = true },
                     ),
+                    /*
                     Preference.PreferenceItem.SwitchPreference(
                         preference = showProgressPref,
                         title = stringResource(KMR.strings.pref_discord_show_progress),
                         subtitle = stringResource(KMR.strings.pref_discord_show_progress_summary),
                     ),
+                     */
                     Preference.PreferenceItem.SwitchPreference(
                         preference = showTimestampPref,
                         title = stringResource(KMR.strings.pref_discord_show_timestamp),
