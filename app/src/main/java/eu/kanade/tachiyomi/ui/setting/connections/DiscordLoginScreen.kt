@@ -214,7 +214,7 @@ class DiscordLoginScreen : Screen() {
                                 .align(Alignment.BottomCenter),
                         )
                         is LoadingState.Loading -> LinearProgressIndicator(
-                            progress = { (loadingState as? LoadingState.Loading)?.progress ?: 1f },
+                            progress = { loadingState.progress },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter),
@@ -267,6 +267,8 @@ class DiscordLoginScreen : Screen() {
         }
     }
 
+    private val json: Json by lazy { Injekt.get<Json>() }
+
     private fun login(token: String, context: Context) {
         val connectionsManager: ConnectionsManager by lazy { Injekt.get() }
         val connectionsPreferences: ConnectionsPreferences by lazy { Injekt.get() }
@@ -283,7 +285,7 @@ class DiscordLoginScreen : Screen() {
                 ).execute().use { response ->
                     if (response.isSuccessful) {
                         val body = response.body.string()
-                        val account = Json.decodeFromString<DiscordAccount>(body)
+                        val account = json.decodeFromString<DiscordAccount>(body)
                             .copy(
                                 token = token,
                                 isActive = true,
