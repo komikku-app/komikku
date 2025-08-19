@@ -1195,6 +1195,10 @@ class ReaderActivity : BaseActivity() {
         val currentChapter = viewModel.state.value.currentChapter ?: return
         val page = currentChapter.pages?.getOrNull(index) ?: return
         viewer.moveToPage(page)
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
