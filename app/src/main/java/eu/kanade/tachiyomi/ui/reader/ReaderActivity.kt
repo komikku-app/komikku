@@ -337,7 +337,7 @@ class ReaderActivity : BaseActivity() {
         viewModel.flushReadTimer()
 
         // AM (DISCORD) -->
-        updateDiscordRPC(exitingReader = false)
+        updateDiscordRPC(exitingReader = true)
         // <-- AM (DISCORD)
 
         super.onPause()
@@ -1618,7 +1618,7 @@ class ReaderActivity : BaseActivity() {
                             incognitoMode = viewModel.incognitoMode,
                             mangaId = manga.id,
                             mangaTitle = manga.ogTitle,
-                            thumbnailUrl = manga.thumbnailUrl ?: "",
+                            thumbnailUrl = manga.thumbnailUrl,
                             chapterProgress = Pair(viewModel.state.value.currentPage, viewModel.state.value.totalPages),
                             chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
                                 chapter.name
