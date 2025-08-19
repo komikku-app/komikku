@@ -9,7 +9,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -134,11 +133,7 @@ class DiscordRPCService : Service() {
             handler.removeCallbacksAndMessages(null)
             if (rpc == null && connectionsPreferences.enableDiscordRPC().get()) {
                 since = System.currentTimeMillis()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(Intent(context, DiscordRPCService::class.java))
-                } else {
-                    context.startService(Intent(context, DiscordRPCService::class.java))
-                }
+                context.startForegroundService(Intent(context, DiscordRPCService::class.java))
             }
         }
 
