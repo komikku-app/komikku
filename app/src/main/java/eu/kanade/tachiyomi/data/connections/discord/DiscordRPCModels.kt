@@ -112,6 +112,26 @@ data class Res(
     val d: JsonElement,
 )
 
+enum class ActivityType(val value: Int) {
+    /** Playing a game. */
+    PLAYING(0),
+
+    /** Streaming a game. */
+    STREAMING(1),
+
+    /** Listening to music. */
+    LISTENING(2),
+
+    /** Watching a video. */
+    WATCHING(3),
+
+    /** Competing in a game. */
+    COMPETING(5),
+
+    /** Custom activity type, not defined by Discord. */
+    CUSTOM(4),
+}
+
 @Suppress("MagicNumber")
 enum class OpCode(val value: Int) {
     /** An event was dispatched. */

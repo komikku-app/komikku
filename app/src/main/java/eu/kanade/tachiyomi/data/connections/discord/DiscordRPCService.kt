@@ -262,7 +262,7 @@ class DiscordRPCService : Service() {
                     name = name,
                     details = details,
                     state = state,
-                    type = 3,
+                    type = ActivityType.WATCHING.value,
                     timestamps = timestamps,
                     assets = Activity.Assets(
                         largeImage = "$MP_PREFIX$imageUrl",

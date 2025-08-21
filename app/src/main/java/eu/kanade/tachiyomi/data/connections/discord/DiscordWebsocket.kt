@@ -99,7 +99,8 @@ open class DiscordWebSocketImpl(
             op = OpCode.PRESENCE_UPDATE.value.toLong(),
             d = presence,
         )
-        webSocket?.send(json.encodeToString(response))
+        val rtn = webSocket?.send(json.encodeToString(response))
+        if (rtn != true) log("Failed to sending ${OpCode.PRESENCE_UPDATE}")
     }
 
     inner class Listener : WebSocketListener() {
