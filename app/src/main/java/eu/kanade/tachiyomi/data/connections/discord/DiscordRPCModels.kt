@@ -19,7 +19,7 @@ const val RICH_PRESENCE_TAG = "discord_rpc"
 // Constant for application id
 internal const val RICH_PRESENCE_APPLICATION_ID = "1365208874440986685"
 
-const val DOWNLOAD_BUTTON_LABEL = "Download"
+val DOWNLOAD_BUTTON_LABEL_RES = R.string.discord_download_button
 const val DOWNLOAD_BUTTON_URL = "https://komikku-app.github.io/download/"
 const val DISCORD_BUTTON_LABEL = "Discord"
 const val DISCORD_BUTTON_URL = "https://discord.gg/85jB7V5AJR"
@@ -186,13 +186,13 @@ enum class DiscordScreen(
     @StringRes val details: Int,
     val imageUrl: String,
 ) {
-    APP(R.string.app_name, R.string.browsing, KOMIKKU_IMAGE),
-    LIBRARY(R.string.label_library, R.string.browsing, LIBRARY_IMAGE_URL),
-    UPDATES(R.string.label_recent_updates, R.string.scrolling, UPDATES_IMAGE_URL),
-    HISTORY(R.string.label_recent_manga, R.string.scrolling, HISTORY_IMAGE_URL),
-    BROWSE(R.string.label_sources, R.string.browsing, BROWSE_IMAGE_URL),
-    MORE(R.string.label_settings, R.string.messing, MORE_IMAGE_URL),
-    WEBVIEW(R.string.action_web_view, R.string.browsing, WEBVIEW_IMAGE_URL),
+    APP(R.string.app_name, R.string.discord_status_using, KOMIKKU_IMAGE),
+    LIBRARY(R.string.label_library, R.string.discord_status_browsing, LIBRARY_IMAGE_URL),
+    UPDATES(R.string.label_recent_updates, R.string.discord_status_scrolling, UPDATES_IMAGE_URL),
+    HISTORY(R.string.label_recent_manga, R.string.discord_status_scrolling, HISTORY_IMAGE_URL),
+    BROWSE(R.string.label_sources, R.string.discord_status_browsing, BROWSE_IMAGE_URL),
+    MORE(R.string.label_settings, R.string.discord_status_messing, MORE_IMAGE_URL),
+    WEBVIEW(R.string.action_web_view, R.string.discord_status_browsing, WEBVIEW_IMAGE_URL),
     MANGA(R.string.manga, R.string.reading, MANGA_IMAGE_URL),
 }
 

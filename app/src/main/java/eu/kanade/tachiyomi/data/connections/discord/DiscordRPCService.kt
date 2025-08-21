@@ -239,7 +239,7 @@ class DiscordRPCService : Service() {
             // Build buttons only if needed
             val buttonLabels = mutableListOf<String>().apply {
                 if (showButtons) {
-                    if (showDownloadButton) add(DOWNLOAD_BUTTON_LABEL)
+                    if (showDownloadButton) add(context.getString(DOWNLOAD_BUTTON_LABEL_RES, appName))
                     if (showDiscordButton) add(DISCORD_BUTTON_LABEL)
                 }
             }
@@ -267,7 +267,12 @@ class DiscordRPCService : Service() {
                     assets = Activity.Assets(
                         largeImage = "$MP_PREFIX$imageUrl",
                         smallImage = "$MP_PREFIX${DiscordScreen.APP.imageUrl}",
-                        smallText = context.getString(DiscordScreen.APP.text),
+                        largeText = context.getString(
+                            R.string.discord_status_description,
+                            context.getString(discordScreen.details),
+                            title ?: context.getString(discordScreen.text),
+                        ),
+                        smallText = context.getString(R.string.discord_app_description),
                     ),
                     buttons = buttonLabels.takeIf { it.isNotEmpty() },
                     metadata = metadata,

@@ -190,9 +190,13 @@
     <string name="login_failed">Failed to login</string>
 
     <!-- Discord section -->
-    <string name="browsing">Browsing</string>
-    <string name="scrolling">Scrolling through</string>
-    <string name="messing">Messing around with</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Using</string>
+    <string name="discord_status_browsing">Browsing</string>
+    <string name="discord_status_scrolling">Scrolling through</string>
+    <string name="discord_status_messing">Messing around with</string>
+    <string name="discord_download_button">Read on %s</string>
+    <string name="discord_app_description">Komikku - a manga reader app</string>
 
     <!-- Discord RPC Customization -->
     <string name="pref_category_discord_customization">Discord Customization</string>
