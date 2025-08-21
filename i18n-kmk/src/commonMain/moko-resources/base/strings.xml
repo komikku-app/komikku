@@ -169,7 +169,7 @@
     <string name="special_services">Special Services</string>
     <string name="pref_category_connections">Connections</string>
     <string name="pref_connections_summary">Discord, more to come..</string>
-    <string name="connections_info">Special Services that are unique to %s and enhance the way you use the app</string>
+    <string name="pref_discord_configuration">Configure Discord RPC</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and %s does not share it anywhere else</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>

@@ -92,11 +92,13 @@ object SettingsConnectionScreen : SearchableSettings {
                         },
                         openSettings = { navigator.push(SettingsDiscordScreen) },
                     ),
-                    Preference.PreferenceItem.InfoPreference(
-                        stringResource(KMR.strings.connections_discord_info, stringResource(MR.strings.app_name)),
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(KMR.strings.pref_discord_configuration),
+                        enabled = connectionsManager.discord.isLogged,
+                        onClick = { navigator.push(SettingsDiscordScreen) },
                     ),
                     Preference.PreferenceItem.InfoPreference(
-                        stringResource(KMR.strings.connections_info, stringResource(MR.strings.app_name)),
+                        stringResource(KMR.strings.connections_discord_info, stringResource(MR.strings.app_name)),
                     ),
                 ),
             ),
