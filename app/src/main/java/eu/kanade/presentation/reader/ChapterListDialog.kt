@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
+import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -42,6 +43,7 @@ fun ChapterListDialog(
     onClickChapter: (Chapter) -> Unit,
     onBookmark: (Chapter) -> Unit,
     dateRelativeTime: Boolean,
+    onDownloadChapter: ((List<Chapter>, ChapterDownloadAction) -> Unit)? = null,
 ) {
     val manga by screenModel.mangaFlow.collectAsState()
     val context = LocalContext.current
@@ -106,14 +108,18 @@ fun ChapterListDialog(
                     read = chapterItem.chapter.read,
                     bookmark = chapterItem.chapter.bookmark,
                     selected = false,
-                    downloadIndicatorEnabled = false,
+                    downloadIndicatorEnabled = true,
                     downloadStateProvider = { downloadState },
                     downloadProgressProvider = { progress },
                     chapterSwipeStartAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
                     chapterSwipeEndAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
                     onLongClick = { /*TODO*/ },
                     onClick = { onClickChapter(chapterItem.chapter) },
-                    onDownloadClick = null,
+                    onDownloadClick = if (onDownloadChapter != null) {
+                        { action -> onDownloadChapter(listOf(chapterItem.chapter), action) }
+                    } else {
+                        null
+                    },
                     onChapterSwipe = {
                         onBookmark(chapterItem.chapter)
                     },
