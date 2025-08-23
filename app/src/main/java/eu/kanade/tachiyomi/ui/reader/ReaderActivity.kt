@@ -689,6 +689,7 @@ class ReaderActivity : BaseActivity() {
                             }.toImmutableList()
                         },
                         state.dateRelativeTime,
+                        onDownloadChapter = { chapters, action -> viewModel.handleDownloadAction(chapters, action) },
                     )
                 }
                 // SY -->

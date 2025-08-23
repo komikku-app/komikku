@@ -18,6 +18,7 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.interactor.TrackChapter
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
@@ -72,6 +73,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.common.preference.toggle
@@ -168,6 +170,24 @@ class ReaderViewModel @JvmOverloads constructor(
             savedState["page_index"] = value
             field = value
         }
+    fun handleDownloadAction(chapters: List<Chapter>, action: ChapterDownloadAction) {
+        val manga = manga ?: return
+        val source = sourceManager.get(manga.source) ?: return
+        viewModelScope.launch {
+            when (action) {
+                ChapterDownloadAction.START -> downloadManager.downloadChapters(manga, chapters)
+                ChapterDownloadAction.START_NOW -> {
+                    val downloads = chapters.map { Download(source as HttpSource, manga, it) }
+                    downloadManager.addDownloadsToStartOfQueue(downloads)
+                }
+                ChapterDownloadAction.CANCEL -> {
+                    val downloads = chapters.map { Download(source as HttpSource, manga, it) }
+                    downloadManager.cancelQueuedDownloads(downloads)
+                }
+                ChapterDownloadAction.DELETE -> downloadManager.deleteChapters(chapters, manga, source)
+            }
+        }
+    }
 
     /**
      * The chapter loader for the loaded manga. It'll be null until [manga] is set.
