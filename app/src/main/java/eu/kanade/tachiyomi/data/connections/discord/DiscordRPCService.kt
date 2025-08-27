@@ -98,6 +98,45 @@ class DiscordRPCService : Service() {
 
     override fun onBind(intent: Intent): IBinder? = null
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_RESTART) {
+            restartRPC()
+        }
+        return START_STICKY
+    }
+
+    private fun restartRPC() {
+        try {
+            // Close existing RPC connection
+            rpc?.closeRPC()
+            rpc = null
+
+            // Get fresh token and status
+            val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
+            if (token.isBlank()) {
+                Timber.tag(TAG).w("Discord RPC restart failed due to missing token")
+                stopSelf()
+                return
+            }
+
+            val status = when (connectionsPreferences.discordRPCStatus().get()) {
+                -1 -> "dnd"
+                0 -> "idle"
+                else -> "online"
+            }
+
+            // Reinitialize RPC
+            rpc = DiscordRPC(token, status)
+            discordScope.launchIO {
+                setScreen(this@DiscordRPCService)
+            }
+            Timber.tag(TAG).i("Discord RPC restarted successfully")
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "Failed to restart Discord RPC: ${e.message}")
+            stopSelf()
+        }
+    }
+
     private fun notification(context: Context) {
         // KMK -->
         val stopIntent = NotificationReceiver.stopDiscordRPCService(context)
@@ -129,6 +168,8 @@ class DiscordRPCService : Service() {
         private val job = SupervisorJob()
         internal val discordScope = CoroutineScope(Dispatchers.IO + job)
 
+        private const val ACTION_RESTART = "eu.kanade.tachiyomi.DISCORD_RPC_RESTART"
+
         fun start(context: Context) {
             handler.removeCallbacksAndMessages(null)
             if (rpc == null && connectionsPreferences.enableDiscordRPC().get()) {
@@ -140,6 +181,23 @@ class DiscordRPCService : Service() {
         fun stop(context: Context, delay: Long = 30000L) {
             val serviceIntent = Intent(context, DiscordRPCService::class.java)
             handler.postDelayed({ context.stopService(serviceIntent) }, delay)
+        }
+
+        fun restart(context: Context) {
+            if (connectionsPreferences.enableDiscordRPC().get()) {
+                val restartIntent = Intent(context, DiscordRPCService::class.java).apply {
+                    action = ACTION_RESTART
+                }
+                try {
+                    context.startForegroundService(restartIntent)
+                    Timber.tag(TAG).d("Discord RPC restart intent sent")
+                } catch (e: Exception) {
+                    Timber.tag(TAG).e(e, "Failed to send restart intent: ${e.message}")
+                    // Fallback to stop/start if service isn't running
+                    stop(context, 0L)
+                    handler.postDelayed({ start(context) }, 1000L)
+                }
+            }
         }
 
         private var since = 0L

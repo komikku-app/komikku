@@ -78,19 +78,15 @@ class Discord(id: Long) : ConnectionsService(id) {
         val accounts = getAccounts().toMutableList()
         accounts.replaceAll { it.copy(isActive = it.id == accountId) }
         saveAccounts(accounts)
-        // Update active token and restart RPC
+        // Update active token (should restart RPC later)
         accounts.find { it.id == accountId }?.let { account ->
             connectionsPreferences.connectionsToken(this).set(account.token)
-            // Trigger RPC restart
-            connectionsPreferences.enableDiscordRPC().set(false)
-            connectionsPreferences.enableDiscordRPC().set(true)
         }
     }
 
-    fun restartRichPresence() {
-        // Trigger RPC restart by toggling the preference
-        connectionsPreferences.enableDiscordRPC().set(false)
-        connectionsPreferences.enableDiscordRPC().set(true)
+    fun restartRichPresence(context: android.content.Context) {
+        // Direct restart via service intent
+        DiscordRPCService.restart(context)
     }
 
     private fun saveAccounts(accounts: List<DiscordAccount>) {

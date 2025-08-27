@@ -1,5 +1,6 @@
 package eu.kanade.presentation.more.settings.screen
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -101,6 +103,8 @@ private fun DiscordAccountsScreenContent() {
                 .padding(paddingValues),
         ) {
             val (isLoading, error, accounts) = state.let { Triple(it.isLoading, it.error, it.accounts) }
+            val context = LocalContext.current
+
             when {
                 isLoading -> {
                     CircularProgressIndicator(
@@ -126,7 +130,7 @@ private fun DiscordAccountsScreenContent() {
                             DiscordAccountItem(
                                 account = account,
                                 onRemove = { screenModel.removeAccount(account.id) },
-                                onSetActive = { screenModel.setActiveAccount(account.id) },
+                                onSetActive = { screenModel.setActiveAccount(account.id, context) },
                             )
                         }
                     }
@@ -203,12 +207,12 @@ class DiscordAccountsScreenModel : StateScreenModel<DiscordAccountsScreenState>(
         }
     }
 
-    fun setActiveAccount(accountId: String) {
+    fun setActiveAccount(accountId: String, context: Context) {
         screenModelScope.launch {
             mutableState.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 discord.setActiveAccount(accountId)
-                discord.restartRichPresence()
+                discord.restartRichPresence(context)
                 loadAccounts()
             }.onFailure { e ->
                 mutableState.update { it.copy(isLoading = false, error = e.message ?: "Unknown error") }
