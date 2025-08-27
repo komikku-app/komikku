@@ -1395,13 +1395,20 @@ class LibraryScreenModel(
         return when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
-                groupBy { item ->
-                    val status = tracks[item.libraryManga.manga.id]?.firstNotNullOfOrNull { track ->
+                // KMK -->
+                val groupCache = mutableMapOf</* Track.status */ Int, MutableList</* LibraryItem */ Long>>()
+                forEach { item ->
+                    val statuses = tracks[item.libraryManga.manga.id]?.mapNotNull { track ->
                         TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
-                    } ?: TrackStatus.OTHER
-
-                    status.int
-                }.mapKeys { (id) ->
+                    }
+                        ?.takeIf { it.isNotEmpty() }
+                        ?: listOf(TrackStatus.OTHER)
+                    statuses.forEach { status ->
+                        groupCache.getOrPut(status.int) { mutableListOf() }.add(item.id)
+                    }
+                }
+                // KMK <--
+                groupCache.mapKeys { (id) ->
                     Category(
                         id = id.toLong(),
                         name = TrackStatus.entries
@@ -1419,32 +1426,32 @@ class LibraryScreenModel(
                 }
             }
             LibraryGroup.BY_SOURCE -> {
-                val sources: List<Long>
-                groupBy { item ->
-                    item.libraryManga.manga.source
-                }.also {
-                    sources = it.keys
-                        .map {
-                            sourceManager.getOrStub(it)
-                        }
-                        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
-                        .map { it.id }
-                }.mapKeys {
-                    Category(
-                        id = it.key,
-                        name = if (it.key == LocalSource.ID) {
+                // KMK -->
+                val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
+                forEach { item ->
+                    groupCache.getOrPut(item.libraryManga.manga.source) { mutableListOf() }.add(item.id)
+                }
+                val sources = groupCache.keys
+                    .map { sourceManager.getOrStub(it) }
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
+
+                sources.associate {
+                    val category = Category(
+                        id = it.id,
+                        name = if (it.id == LocalSource.ID) {
                             context.stringResource(MR.strings.local_source)
                         } else {
-                            val source = sourceManager.getOrStub(it.key)
-                            source.name.ifBlank { source.id.toString() }
+                            it.name.ifBlank { it.id.toString() }
                         },
-                        order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
+                        order = sources.indexOf(it).toLong(),
                         flags = 0,
                         // KMK -->
                         hidden = false,
                         // KMK <--
                     )
+                    category to groupCache[it.id]?.distinct().orEmpty()
                 }
+                // KMK <--
             }
             LibraryGroup.BY_STATUS -> {
                 groupBy { item ->
@@ -1476,12 +1483,12 @@ class LibraryScreenModel(
                         // KMK <--
                     )
                 }
+                    // KMK -->
+                    .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id } }
+                // KMK <--
             }
             else -> emptyMap()
         }.toSortedMap(compareBy { it.order })
-            // KMK -->
-            .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id } }
-        // KMK <--
     }
 
     fun runRecommendationSearch(selection: List<Manga>) {
