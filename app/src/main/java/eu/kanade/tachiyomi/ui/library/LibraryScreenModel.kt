@@ -184,37 +184,11 @@ class LibraryScreenModel(
                     ::Triple,
                 ),
                 combine(getTracksPerManga.subscribe(), getTrackingFiltersFlow(), ::Pair),
-                // SY -->
-                combine(
-                    state.map { it.groupType }.distinctUntilChanged(),
-                    libraryPreferences.sortingMode().changes(),
-                    // KMK -->
-                    state.map { it.searchQuery.isNullOrBlank() && !it.hasActiveFilters }.distinctUntilChanged(),
-                    ::Triple,
-                    // KMK <--
-                ),
-                // SY <--
                 // KMK -->
-                combine(
-                    combine(
-                        getCategoriesPerLibraryManga.subscribe(),
-                        state.map { it.filterCategory }.distinctUntilChanged(),
-                        ::Pair,
-                    ),
-                    combine(
-                        state.map { it.includedCategories }.distinctUntilChanged(),
-                        state.map { it.excludedCategories }.distinctUntilChanged(),
-                        ::Pair,
-                    ),
-                    ::Pair,
-                ),
+                getCategoriesPerLibraryManga.subscribe(),
                 // KMK <--
                 getLibraryItemPreferencesFlow(),
-            ) { (searchQuery, categories, favorites), (tracksMap, trackingFilters), (groupType, sort, noActiveFilterOrSearch), (categoryFilters, filteredCategories), itemPreferences ->
-                // KMK -->
-                val (categoriesPerManga, filterCategory) = categoryFilters
-                val (includedCategories, _) = filteredCategories
-                // KMK <--
+            ) { (searchQuery, categories, favorites), (tracksMap, trackingFilters), categoriesPerManga, itemPreferences ->
                 val filteredFavorites = favorites
                     .applyFilters(
                         tracksMap,
@@ -255,55 +229,75 @@ class LibraryScreenModel(
         }
 
         screenModelScope.launchIO {
-            state
-                .dropWhile { !it.libraryData.isInitialized }
-                .map {
-                    Triple(
-                        it.libraryData,
-                        // SY -->
-                        it.groupType,
-                        // SY <--
+            combine(
+                state
+                    .dropWhile { !it.libraryData.isInitialized }
+                    .map {
+                        Triple(
+                            it.libraryData,
+                            // SY -->
+                            it.groupType,
+                            // SY <--
+                            // KMK -->
+                            it.searchQuery.isNullOrBlank() && !it.hasActiveFilters,
+                            // KMK <--
+                        )
+                    }
+                    .distinctUntilChanged(),
+                // KMK -->
+                combine(
+                    libraryPreferences.sortingMode().changes(),
+                    libraryPreferences.showHiddenCategories().changes(),
+                    ::Pair,
+                ),
+                combine(
+                    state.map { it.filterCategory }.distinctUntilChanged(),
+                    state.map { it.includedCategories }.distinctUntilChanged(),
+                    ::Pair,
+                ),
+                // KMK <--
+            ) { (data, groupType, noActiveFilterOrSearch), (sort, showHiddenCategories), (filterCategory, includedCategories) ->
+                data.favorites
+                    .applyGrouping(
+                        data.categories,
                         // KMK -->
-                        it.searchQuery.isNullOrBlank() && !it.hasActiveFilters,
+                        if (filterCategory && includedCategories.isNotEmpty()) {
+                            LibraryGroup.UNGROUPED
+                        } else {
+                            groupType
+                        },
+                        showHiddenCategories,
                         // KMK <--
                     )
-                }
-                .distinctUntilChanged()
-                .map { (data, groupType, noActiveFilterOrSearch) ->
-                    data.favorites
-                        .applyGrouping(
-                            data.categories,
-                            // SY -->
-                            groupType,
-                            // SY <--
-                        )
-                        .applySort(
-                            data.favoritesById,
-                            data.tracksMap,
-                            data.loggedInTrackerIds,
-                            // SY -->
-                            libraryPreferences.sortingMode().get().takeIf { groupType != LibraryGroup.BY_DEFAULT },
-                            // SY <--
-                        )
-                        // KMK -->
-                        .filter {
-                            noActiveFilterOrSearch || it.value.isNotEmpty()
+                    .applySort(
+                        data.favoritesById,
+                        data.tracksMap,
+                        data.loggedInTrackerIds,
+                        // SY -->
+                        sort.takeIf { groupType != LibraryGroup.BY_DEFAULT },
+                        // SY <--
+                    )
+                    // KMK -->
+                    .filter {
+                        // Hide empty categories if no active filter or search
+                        noActiveFilterOrSearch || it.value.isNotEmpty()
+                    }
+                    .let {
+                        // Fall back to default category if no categories are present
+                        it.ifEmpty {
+                            mapOf(
+                                Category(
+                                    0,
+                                    preferences.context.stringResource(MR.strings.default_category),
+                                    0,
+                                    0,
+                                    false,
+                                ) to emptyList(),
+                            )
                         }
-                        .let {
-                            it.ifEmpty {
-                                mapOf(
-                                    Category(
-                                        0,
-                                        preferences.context.stringResource(MR.strings.default_category),
-                                        0,
-                                        0,
-                                        false,
-                                    ) to emptyList(),
-                                )
-                            }
-                        }
-                    // KMK <--
-                }
+                    }
+                // KMK <--
+            }
                 .collectLatest {
                     mutableState.update { state ->
                         state.copy(
@@ -414,16 +408,6 @@ class LibraryScreenModel(
                 }
             }
             .launchIn(screenModelScope)
-
-        screenModelScope.launchIO {
-            getCategories
-                .subscribe()
-                .collect { categories ->
-                    mutableState.update { state ->
-                        state.copy(libraryCategories = categories.filterNot(Category::isSystemCategory))
-                    }
-                }
-        }
 
         screenModelScope.launchIO {
             if (mangaDexDmcaUuids.isEmpty()) {
