@@ -9,10 +9,15 @@ import exh.log.xLogI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -24,7 +29,6 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.milliseconds
 
 sealed interface DiscordWebSocket : CoroutineScope {
     suspend fun sendActivity(presence: Presence)
@@ -54,6 +58,8 @@ open class DiscordWebSocketImpl(
     private var webSocket: WebSocket? = client.newWebSocket(request, Listener())
 
     private var connected = false
+
+    private val connectionState = MutableStateFlow(false)
 
     override val coroutineContext: CoroutineContext
         get() = SupervisorJob() + Dispatchers.IO
@@ -87,20 +93,27 @@ open class DiscordWebSocketImpl(
         )
         webSocket?.close(4000, "Interrupt")
         connected = false
+        connectionState.value = false
     }
 
     override suspend fun sendActivity(presence: Presence) {
-        // TODO : Figure out a better way to wait for socket to be connected to account
-        while (!connected) {
-            delay(10.milliseconds)
+        try {
+            // Wait for connection with a 30-second timeout
+            withTimeout(30_000) {
+                connectionState.filter { it }.first()
+            }
+            log("Sending ${OpCode.PRESENCE_UPDATE}")
+            val response = Presence.Response(
+                op = OpCode.PRESENCE_UPDATE.value.toLong(),
+                d = presence,
+            )
+            val rtn = webSocket?.send(json.encodeToString(response))
+            if (rtn != true) log("Failed to send ${OpCode.PRESENCE_UPDATE}")
+        } catch (@Suppress("UNUSED_PARAMETER") e: TimeoutCancellationException) {
+            log("Timeout waiting for Discord connection - skipping activity update")
+        } catch (e: Exception) {
+            log("Error sending Discord activity: ${e.message}")
         }
-        log("Sending ${OpCode.PRESENCE_UPDATE}")
-        val response = Presence.Response(
-            op = OpCode.PRESENCE_UPDATE.value.toLong(),
-            d = presence,
-        )
-        val rtn = webSocket?.send(json.encodeToString(response))
-        if (rtn != true) log("Failed to sending ${OpCode.PRESENCE_UPDATE}")
     }
 
     inner class Listener : WebSocketListener() {
@@ -134,6 +147,7 @@ open class DiscordWebSocketImpl(
                 }
                 OpCode.DISPATCH.value -> if (map.t == "READY") {
                     connected = true
+                    connectionState.value = true
                 }
                 OpCode.HEARTBEAT.value -> {
                     if (scope.isActive) scope.cancel()
