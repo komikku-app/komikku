@@ -43,7 +43,6 @@ import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginScreen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
-import mihon.core.migration.Migrator.scope
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -159,7 +158,7 @@ class DiscordAccountsScreenModel : StateScreenModel<DiscordAccountsScreenState>(
     }
 
     private fun loadAccounts() {
-        scope.launch {
+        screenModelScope.launch {
             mutableState.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 val accounts = discord.getAccounts()
@@ -192,7 +191,7 @@ class DiscordAccountsScreenModel : StateScreenModel<DiscordAccountsScreenState>(
     }
 
     fun removeAccount(accountId: String) {
-        scope.launch {
+        screenModelScope.launch {
             mutableState.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 discord.removeAccount(accountId)
@@ -204,7 +203,7 @@ class DiscordAccountsScreenModel : StateScreenModel<DiscordAccountsScreenState>(
     }
 
     fun setActiveAccount(accountId: String) {
-        scope.launch {
+        screenModelScope.launch {
             mutableState.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 discord.setActiveAccount(accountId)
