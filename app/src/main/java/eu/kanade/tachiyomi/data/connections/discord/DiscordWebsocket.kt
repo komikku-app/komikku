@@ -45,11 +45,13 @@ open class DiscordWebSocketImpl(
         ignoreUnknownKeys = true
     }
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
-        .build()
+    companion object {
+        private val client = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build()
+    }
 
     private val request = Request.Builder()
         .url("wss://gateway.discord.gg/?encoding=json&v=10")
@@ -109,7 +111,7 @@ open class DiscordWebSocketImpl(
             )
             val rtn = webSocket?.send(json.encodeToString(response))
             if (rtn != true) log("Failed to send ${OpCode.PRESENCE_UPDATE}")
-        } catch (@Suppress("UNUSED_PARAMETER") e: TimeoutCancellationException) {
+        } catch (e: TimeoutCancellationException) {
             log("Timeout waiting for Discord connection - skipping activity update")
         } catch (e: Exception) {
             log("Error sending Discord activity: ${e.message}")
