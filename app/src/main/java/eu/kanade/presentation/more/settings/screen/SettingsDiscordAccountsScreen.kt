@@ -100,15 +100,16 @@ private fun DiscordAccountsScreenContent() {
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
+            val (isLoading, error, accounts) = state.let { Triple(it.isLoading, it.error, it.accounts) }
             when {
-                state.isLoading -> {
+                isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
-                state.error != null -> {
+                error != null -> {
                     Text(
-                        text = state.error!!,
+                        text = error,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -121,7 +122,7 @@ private fun DiscordAccountsScreenContent() {
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(16.dp),
                     ) {
-                        items(state.accounts) { account ->
+                        items(accounts) { account ->
                             DiscordAccountItem(
                                 account = account,
                                 onRemove = { screenModel.removeAccount(account.id) },
