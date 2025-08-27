@@ -18,15 +18,15 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clickableNoIndication
 
 @Composable
-@Suppress("ModifierMissing")
 fun ConnectionLogoIcon(
     service: ConnectionsService,
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
     val modifier = if (onClick != null) {
-        Modifier.clickableNoIndication(onClick = onClick)
+        modifier.clickableNoIndication(onClick = onClick)
     } else {
-        Modifier
+        modifier
     }
 
     Box(
