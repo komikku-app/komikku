@@ -65,10 +65,10 @@ data class Activity(
 
 @Serializable
 data class Presence(
-    val activities: List<Activity> = listOf(),
-    val afk: Boolean = true,
-    val since: Long? = null,
     val status: String? = null,
+    val afk: Boolean = true,
+    val activities: List<Activity> = listOf(),
+    val since: Long? = null,
 ) {
     @Serializable
     data class Response(

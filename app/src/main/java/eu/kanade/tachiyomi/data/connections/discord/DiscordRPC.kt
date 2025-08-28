@@ -30,7 +30,7 @@ class DiscordRPC(val token: String, val status: String) {
     ) {
         rpc = Presence(
             activities = listOf(activity),
-            afk = true,
+            afk = status != "online", // Must set to true for both dnd & idle to work
             since = since,
             status = status,
         )

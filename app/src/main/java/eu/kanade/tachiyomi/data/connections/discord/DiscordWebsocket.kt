@@ -5,7 +5,7 @@
 // https://github.com/saikou-app/saikou
 package eu.kanade.tachiyomi.data.connections.discord
 
-import exh.log.xLogI
+import exh.log.xLogE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +27,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -46,6 +47,8 @@ open class DiscordWebSocketImpl(
     }
 
     companion object {
+        private const val TAG = "DiscordWebSocket"
+
         private val client = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
@@ -85,10 +88,11 @@ open class DiscordWebSocketImpl(
 
     @Suppress("MagicNumber")
     override fun close() {
+        Timber.tag(TAG).i("Closing Discord WebSocket, sending offline status")
         webSocket?.send(
             json.encodeToString(
                 Presence.Response(
-                    op = 3,
+                    op = OpCode.DISPATCH.value.toLong(),
                     d = Presence(status = "offline"),
                 ),
             ),
@@ -104,17 +108,19 @@ open class DiscordWebSocketImpl(
             withTimeout(30_000) {
                 connectionState.filter { it }.first()
             }
-            log("Sending ${OpCode.PRESENCE_UPDATE}")
+            Timber.tag(TAG).i("Sending ${OpCode.PRESENCE_UPDATE}")
             val response = Presence.Response(
                 op = OpCode.PRESENCE_UPDATE.value.toLong(),
                 d = presence,
             )
-            val rtn = webSocket?.send(json.encodeToString(response))
-            if (rtn != true) log("Failed to send ${OpCode.PRESENCE_UPDATE}")
+            val message = json.encodeToString(response)
+            Timber.tag(TAG).d("Sending message: $message")
+            val rtn = webSocket?.send(message)
+            if (rtn != true) xLogE("Failed to send ${OpCode.PRESENCE_UPDATE}")
         } catch (e: TimeoutCancellationException) {
-            log("Timeout waiting for Discord connection - skipping activity update")
+            Timber.tag(TAG).e("Timeout waiting for Discord connection - skipping activity update: ${e.message}")
         } catch (e: Exception) {
-            log("Error sending Discord activity: ${e.message}")
+            Timber.tag(TAG).e("Error sending Discord activity: ${e.message}")
         }
     }
 
@@ -136,7 +142,7 @@ open class DiscordWebSocketImpl(
 
         @Suppress("MagicNumber")
         override fun onMessage(webSocket: WebSocket, text: String) {
-            log("Message : $text")
+            Timber.tag(TAG).d("Message received : $text")
 
             val map = json.decodeFromString<Res>(text)
             seq = map.s
@@ -164,22 +170,18 @@ open class DiscordWebSocketImpl(
 
         @Suppress("MagicNumber")
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            log("Server Closed : $code $reason")
+            Timber.tag(TAG).i("Server Closed : $code $reason")
             if (code == 4000) {
                 scope.cancel()
             }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            log("Failure : ${t.message}")
+            Timber.tag(TAG).e("Failure : ${t.message}")
             if (t.message != "Interrupt") {
                 this@DiscordWebSocketImpl.webSocket = client.newWebSocket(request, Listener())
             }
         }
-    }
-
-    private fun log(message: String) {
-        xLogI(message)
     }
 }
 // <-- AM (DISCORD)

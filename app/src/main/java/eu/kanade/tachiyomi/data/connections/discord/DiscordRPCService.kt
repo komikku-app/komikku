@@ -44,6 +44,7 @@ class DiscordRPCService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        Timber.tag(TAG).i("Starting Discord RPC service")
 
         val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
 
@@ -99,14 +100,20 @@ class DiscordRPCService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_RESTART) {
-            restartRPC()
+        when (intent?.action) {
+            ACTION_RESTART -> restartRPC()
+            STOP_SERVICE -> {
+                Timber.tag(TAG).i("Stopping Discord RPC service")
+                stopSelf()
+                return START_NOT_STICKY
+            }
         }
         return START_STICKY
     }
 
     private fun restartRPC() {
         try {
+            Timber.tag(TAG).i("Restarting Discord RPC service")
             // Close existing RPC connection
             rpc?.closeRPC()
             rpc = null
@@ -169,6 +176,7 @@ class DiscordRPCService : Service() {
         internal val discordScope = CoroutineScope(Dispatchers.IO + job)
 
         private const val ACTION_RESTART = "eu.kanade.tachiyomi.DISCORD_RPC_RESTART"
+        private const val STOP_SERVICE = "eu.kanade.tachiyomi.DISCORD_RPC_STOP"
 
         fun start(context: Context) {
             handler.removeCallbacksAndMessages(null)
@@ -179,8 +187,28 @@ class DiscordRPCService : Service() {
         }
 
         fun stop(context: Context, delay: Long = 30000L) {
-            val serviceIntent = Intent(context, DiscordRPCService::class.java)
-            handler.postDelayed({ context.stopService(serviceIntent) }, delay)
+            handler.removeCallbacksAndMessages(null)
+            if (delay > 0) {
+                handler.postDelayed({
+                    val stopIntent = Intent(context, DiscordRPCService::class.java).apply {
+                        action = STOP_SERVICE
+                    }
+                    try {
+                        context.startService(stopIntent)
+                    } catch (e: Exception) {
+                        Timber.tag(TAG).e(e, "Failed to stop Discord RPC service: ${e.message}")
+                    }
+                }, delay)
+            } else {
+                val stopIntent = Intent(context, DiscordRPCService::class.java).apply {
+                    action = STOP_SERVICE
+                }
+                try {
+                    context.startService(stopIntent)
+                } catch (e: Exception) {
+                    Timber.tag(TAG).e(e, "Failed to stop Discord RPC service: ${e.message}")
+                }
+            }
         }
 
         fun restart(context: Context) {
@@ -190,7 +218,6 @@ class DiscordRPCService : Service() {
                 }
                 try {
                     context.startForegroundService(restartIntent)
-                    Timber.tag(TAG).d("Discord RPC restart intent sent")
                 } catch (e: Exception) {
                     Timber.tag(TAG).e(e, "Failed to send restart intent: ${e.message}")
                     // Fallback to stop/start if service isn't running
@@ -345,12 +372,12 @@ class DiscordRPCService : Service() {
         ) {
             // Early return if any required data is missing
             if (rpc == null) {
-                Timber.tag(TAG).d("RPC client is null, skipping reader activity update")
+                Timber.tag(TAG).w("RPC client is null, skipping reader activity update")
                 return
             }
 
             if (readerData.thumbnailUrl == null || readerData.mangaId == null) {
-                Timber.tag(TAG).d("Missing required data for reader activity: thumbnailUrl=${readerData.thumbnailUrl}, mangaId=${readerData.mangaId}")
+                Timber.tag(TAG).w("Missing required data for reader activity: thumbnailUrl=${readerData.thumbnailUrl}, mangaId=${readerData.mangaId}")
                 return
             }
 
