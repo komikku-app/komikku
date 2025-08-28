@@ -43,8 +43,19 @@ abstract class ConnectionsService(val id: Long) {
         connectionsPreferences.setConnectionsCredentials(this, username, password)
     }
 
+    /**
+     * Returns true if the service is considered logged in.
+     * Default implementation checks for non-empty username and password.
+     * For token-based services, override this property to check for token presence.
+     */
     open val isLogged: Boolean
         get() = getUsername().isNotEmpty() &&
             getPassword().isNotEmpty()
+
+    /**
+     * Override this method in token-based services to retrieve the token.
+     * Default implementation returns an empty string.
+     */
+    protected open fun getToken(): String = ""
 }
 // <-- AM (CONNECTIONS)

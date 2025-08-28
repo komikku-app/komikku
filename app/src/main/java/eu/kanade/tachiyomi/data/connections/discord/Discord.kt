@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.kmk.KMR
+import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -33,6 +34,13 @@ class Discord(id: Long) : ConnectionsService(id) {
         // Not Needed
     }
 
+    override val isLogged: Boolean
+        get() = getToken().isNotBlank()
+
+    override fun getToken(): String {
+        return connectionsPreferences.connectionsToken(this).get()
+    }
+
     private val json = Injekt.get<Json>()
 
     fun getAccounts(): List<DiscordAccount> {
@@ -44,6 +52,7 @@ class Discord(id: Long) : ConnectionsService(id) {
                 emptyList()
             }
         } catch (e: Exception) {
+            Timber.e(e, "Failed to parse Discord accounts")
             emptyList()
         }
     }
