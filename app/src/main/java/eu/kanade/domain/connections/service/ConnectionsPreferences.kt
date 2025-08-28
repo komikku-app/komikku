@@ -2,6 +2,7 @@
 package eu.kanade.domain.connections.service
 
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 
 class ConnectionsPreferences(
@@ -23,7 +24,7 @@ class ConnectionsPreferences(
     }
 
     fun connectionsToken(sync: ConnectionsService) = preferenceStore.getString(
-        connectionsToken(sync.id),
+        Preference.privateKey(connectionsToken(sync.id)),
         "",
     )
 
