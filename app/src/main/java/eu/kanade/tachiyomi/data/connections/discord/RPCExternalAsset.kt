@@ -11,6 +11,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
+import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -21,6 +22,9 @@ class RPCExternalAsset(
     private val client: OkHttpClient,
     private val json: Json,
 ) {
+    companion object {
+        private const val TAG = "RPCExternalAsset"
+    }
 
     @Serializable
     data class ExternalAsset(
@@ -35,11 +39,23 @@ class RPCExternalAsset(
         val request = Request.Builder().url(api).header("Authorization", token)
             .post("{\"urls\":[\"$imageUrl\"]}".toRequestBody("application/json".toMediaType()))
             .build()
-        return runCatching {
+        return try {
             val res = client.newCall(request).await()
+            if (res.code == 429) {
+                // Rate limit hit
+                Timber.tag(TAG).e("Discord API rate limit reached: ${res.body.string()}")
+                return null
+            }
+            if (!res.isSuccessful) {
+                Timber.tag(TAG).e("Discord API error: HTTP ${res.code} - ${res.body.string()}")
+                return null
+            }
             json.decodeFromString<List<ExternalAsset>>(res.body.string())
                 .firstOrNull()?.externalAssetPath?.let { "mp:$it" }
-        }.getOrNull()
+        } catch (e: Exception) {
+            Timber.tag(TAG).e("Exception while fetching Discord external asset: ${e.message}")
+            null
+        }
     }
 
     private suspend inline fun Call.await(): Response {
