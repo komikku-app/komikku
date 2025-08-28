@@ -9,8 +9,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
 import exh.log.xLogE
 import kotlinx.serialization.json.Json
-import logcat.LogPriority
-import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.kmk.KMR
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -59,7 +57,7 @@ class Discord(id: Long) : ConnectionsService(id) {
 
     fun addAccount(account: DiscordAccount) {
         val accounts = getAccounts().toMutableList()
-        logcat(LogPriority.DEBUG) { "Debug: Adding account: $account" }
+        Timber.d("Debug: Adding account: $account")
 
         if (account.isActive) {
             accounts.replaceAll { it.copy(isActive = false) }
@@ -73,7 +71,7 @@ class Discord(id: Long) : ConnectionsService(id) {
             accounts.add(account)
         }
 
-        logcat(LogPriority.DEBUG) { "Debug: Updated accounts: $accounts" } // Debug log
+        Timber.d("Debug: Updated accounts: $accounts")
         saveAccounts(accounts)
     }
 

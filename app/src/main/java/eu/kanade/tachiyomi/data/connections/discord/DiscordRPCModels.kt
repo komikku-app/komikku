@@ -200,8 +200,7 @@ enum class DiscordScreen(
 private const val KOMIKKU_IMAGE_URL = "emojis/1401719615536500916.webp?quality=lossless"
 private const val KOMIKKU_PREVIEW_IMAGE_URL = "emojis/1401732831314575401.webp?quality=lossless"
 
-@Suppress("SimplifyBooleanWithConstants")
-private val KOMIKKU_IMAGE = if (isPreviewBuildType == true) KOMIKKU_PREVIEW_IMAGE_URL else KOMIKKU_IMAGE_URL
+private val KOMIKKU_IMAGE = if (isPreviewBuildType) KOMIKKU_PREVIEW_IMAGE_URL else KOMIKKU_IMAGE_URL
 private const val LIBRARY_IMAGE_URL = "emojis/1365262809050644591.webp?quality=lossless"
 private const val UPDATES_IMAGE_URL = "emojis/1365261957883625492.webp?quality=lossless"
 private const val HISTORY_IMAGE_URL = "emojis/1365262076787949598.webp?quality=lossless"
