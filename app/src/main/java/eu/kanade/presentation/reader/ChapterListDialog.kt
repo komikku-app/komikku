@@ -43,7 +43,9 @@ fun ChapterListDialog(
     onClickChapter: (Chapter) -> Unit,
     onBookmark: (Chapter) -> Unit,
     dateRelativeTime: Boolean,
+    // KMK -->
     onDownloadChapter: ((List<Chapter>, ChapterDownloadAction) -> Unit)? = null,
+    // KMK <--
 ) {
     val manga by screenModel.mangaFlow.collectAsState()
     val context = LocalContext.current
@@ -108,18 +110,22 @@ fun ChapterListDialog(
                     read = chapterItem.chapter.read,
                     bookmark = chapterItem.chapter.bookmark,
                     selected = false,
-                    downloadIndicatorEnabled = true,
+                    // KMK -->
+                    downloadIndicatorEnabled = onDownloadChapter != null,
+                    // KMK <--
                     downloadStateProvider = { downloadState },
                     downloadProgressProvider = { progress },
                     chapterSwipeStartAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
                     chapterSwipeEndAction = LibraryPreferences.ChapterSwipeAction.ToggleBookmark,
                     onLongClick = { /*TODO*/ },
                     onClick = { onClickChapter(chapterItem.chapter) },
+                    // KMK -->
                     onDownloadClick = if (onDownloadChapter != null) {
                         { action -> onDownloadChapter(listOf(chapterItem.chapter), action) }
                     } else {
                         null
                     },
+                    // KMK <--
                     onChapterSwipe = {
                         onBookmark(chapterItem.chapter)
                     },
