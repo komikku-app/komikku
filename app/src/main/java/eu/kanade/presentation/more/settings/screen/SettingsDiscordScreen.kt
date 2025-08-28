@@ -73,6 +73,7 @@ object SettingsDiscordScreen : SearchableSettings {
         val showButtonsPref = connectionsPreferences.discordShowButtons()
         val showDownloadButtonPref = connectionsPreferences.discordShowDownloadButton()
         val showDiscordButtonPref = connectionsPreferences.discordShowDiscordButton()
+        val showProgressEnabled by showProgressPref.collectAsState()
 
         val enableDRPC by enableDRPCPref.collectAsState()
         val showButtons by showButtonsPref.collectAsState()
@@ -163,12 +164,6 @@ object SettingsDiscordScreen : SearchableSettings {
                         preference = enableDRPCPref,
                         title = stringResource(KMR.strings.pref_enable_discord_rpc),
                     ),
-                    Preference.PreferenceItem.SwitchPreference(
-                        preference = useChapterTitlesPref,
-                        title = stringResource(KMR.strings.show_chapters_titles_title),
-                        subtitle = stringResource(KMR.strings.show_chapters_titles_subtitle),
-                        enabled = enableDRPC,
-                    ),
                     Preference.PreferenceItem.ListPreference(
                         preference = discordRPCStatus,
                         title = stringResource(KMR.strings.pref_discord_status),
@@ -194,13 +189,17 @@ object SettingsDiscordScreen : SearchableSettings {
                         subtitle = stringResource(KMR.strings.pref_discord_custom_message_summary),
                         onClick = { showCustomMessageDialog = true },
                     ),
-                    /*
                     Preference.PreferenceItem.SwitchPreference(
                         preference = showProgressPref,
                         title = stringResource(KMR.strings.pref_discord_show_progress),
                         subtitle = stringResource(KMR.strings.pref_discord_show_progress_summary),
                     ),
-                     */
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = useChapterTitlesPref,
+                        title = stringResource(KMR.strings.show_chapters_titles_title),
+                        subtitle = stringResource(KMR.strings.show_chapters_titles_subtitle),
+                        enabled = showProgressEnabled,
+                    ),
                     Preference.PreferenceItem.SwitchPreference(
                         preference = showTimestampPref,
                         title = stringResource(KMR.strings.pref_discord_show_timestamp),
