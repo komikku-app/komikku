@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.UiModeManager
 import android.app.assist.AssistContent
 import android.content.ClipData
@@ -209,7 +208,7 @@ class ReaderActivity : BaseActivity() {
         registerSecureActivity(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_OPEN,
+                OVERRIDE_TRANSITION_OPEN,
                 R.anim.shared_axis_x_push_enter,
                 R.anim.shared_axis_x_push_exit,
             )
@@ -355,7 +354,7 @@ class ReaderActivity : BaseActivity() {
         super.finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_CLOSE,
+                OVERRIDE_TRANSITION_CLOSE,
                 R.anim.shared_axis_x_pop_enter,
                 R.anim.shared_axis_x_pop_exit,
             )
@@ -689,6 +688,11 @@ class ReaderActivity : BaseActivity() {
                             }.toImmutableList()
                         },
                         state.dateRelativeTime,
+                        // KMK -->
+                        onDownloadAction = { chapter, action ->
+                            viewModel.handleDownloadAction(chapter, action)
+                        },
+                        // KMK <--
                     )
                 }
                 // SY -->
@@ -1061,7 +1065,7 @@ class ReaderActivity : BaseActivity() {
         try {
             readingModeToast?.cancel()
             readingModeToast = toast(ReadingMode.fromPreference(mode).stringRes)
-        } catch (e: ArrayIndexOutOfBoundsException) {
+        } catch (_: ArrayIndexOutOfBoundsException) {
             logcat(LogPriority.ERROR) { "Unknown reading mode: $mode" }
         }
     }
