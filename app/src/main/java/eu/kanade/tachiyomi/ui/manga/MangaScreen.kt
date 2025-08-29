@@ -453,7 +453,9 @@ class MangaScreen(
                             context,
                             navigator,
                             successState.mergedData,
-                            action = { _, nav, _, source -> browseSource(nav, source!!, screenModel.useNewSourceNavigation) },
+                            action = { _, nav, _, source ->
+                                source?.let { browseSource(nav, it, screenModel.useNewSourceNavigation) }
+                            },
                             titleRes = MR.strings.browse,
                         )
                     }
