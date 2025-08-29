@@ -132,4 +132,10 @@
     <string name="error_opening_folder">無法開啟資料夾</string>
     <string name="pref_library_filter_categories_details">即使排除類別中的項目也包含在包含類別中，也不會顯示。</string>
     <string name="sponsor_me">贊助我</string>
+    <string name="action_clear_manga">清除漫畫</string>
+    <string name="action_update">更新</string>
+    <string name="updating">更新中</string>
+    <string name="pref_track_on_add_library">加入書櫃時開啟歷程選單</string>
+    <string name="downloaded_data">已下載資料</string>
+    <string name="chapters_from_database">資料庫中的章節與紀錄</string>
 </resources>

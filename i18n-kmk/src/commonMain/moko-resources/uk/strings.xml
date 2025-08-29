@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Пошук джерела</string>
+    <string name="action_source_search">Пошук у джерелі</string>
     <string name="action_toggle_nsfw_only">Лише NSFW</string>
     <string name="action_bulk_select">Масовий режим вибору</string>
     <string name="action_faq_and_guides">ЧаПи та керівництва</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 годин</string>
     <string name="download_cache_renew_interval_12hour">12 годин</string>
     <string name="download_cache_renew_interval_24hour">1 день</string>
-    <string name="download_cache_renew_interval_info">Якщо встановлено значення \"вручну\", або оновити кожну мангу або за допомогою \"Інвалідний індекс завантажень\" в розділі \"Додатково\"</string>
+    <string name="download_cache_renew_interval_info">Якщо встановлено \"вручну\", оновіть кожну мангу або скористайтесь \"Переіндексація завантажень\" в \"Додатково\"</string>
     <string name="pref_clean_invalid_downloads">Очистити неприпустимі завантаження</string>
     <string name="pref_clean_invalid_downloads_summary">Знайти та видалити всі завантаження, файли, папки які не збережено в бібліотеці</string>
     <string name="invalid_downloads_cleaned">Видалені неприпустимі завантаження</string>
@@ -120,4 +120,22 @@
     <string name="auto_update_app_disable_auto_download">Не завантажувати автоматично оновлення</string>
     <string name="action_remove_merged">Видалити оригінальні записи з бібліотеки?</string>
     <string name="batch_add_description">Підтримка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_open_folder">Відкрити папку</string>
+    <string name="action_clear_manga">Очистити мангу</string>
+    <string name="action_update">Оновити</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Менші зони натискання</string>
+    <string name="error_opening_folder">Не вдалося відкрити папку</string>
+    <string name="pref_top_align_cover">Вирівняти Обкладинку до Верху</string>
+    <string name="pref_top_align_cover_summary">Показувати обкладинку вирівняною до верху разом з інформацією про мангу</string>
+    <string name="theme_doom">Doom</string>
+    <string name="pref_library_filter_categories_details">Записи з виключених категорій не відобразяться навіть якщо вони також є у включених категоріях.</string>
+    <string name="updating">Оновлення</string>
+    <string name="pref_track_on_add_library">Відкривати меню відслідковування при додаванні до бібліотеки</string>
+    <string name="downloaded_data">Завантажені дані</string>
+    <string name="chapters_from_database">Розділи і Історія з бази даних</string>
+    <string name="action_manual_install">Ручне встановлення</string>
+    <string name="label_library_update_errors">Помилки оновлення бібліотеки (%d)</string>
+    <string name="sponsor_me">Підтримати Мене</string>
+    <string name="custom_theme_palette_outrun">Втеча</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
 </resources>
