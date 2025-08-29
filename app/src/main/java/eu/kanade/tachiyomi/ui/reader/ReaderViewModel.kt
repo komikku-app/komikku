@@ -196,8 +196,7 @@ class ReaderViewModel @JvmOverloads constructor(
         val (chapters, mangaMap) = runBlocking {
             if (manga.source == MERGED_SOURCE_ID) {
                 getMergedChaptersByMangaId.await(manga.id, applyFilter = true) to
-                    getMergedMangaById.await(manga.id)
-                        .associateBy { it.id }
+                    state.value.mergedManga
             } else {
                 getChaptersByMangaId.await(manga.id, applyFilter = true) to null
             }
@@ -367,7 +366,7 @@ class ReaderViewModel @JvmOverloads constructor(
                             getMergedMangaById.await(manga.id)
                         }.associateBy { it.id }
                     } else {
-                        emptyMap()
+                        null
                     }
                     val relativeTime = uiPreferences.relativeTime().get()
                     val autoScrollFreq = readerPreferences.autoscrollInterval().get()
