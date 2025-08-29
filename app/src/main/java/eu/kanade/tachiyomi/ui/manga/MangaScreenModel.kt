@@ -937,10 +937,8 @@ class MangaScreenModel(
     /**
      * Opens manga folder with the system's file manager.
      */
-    fun openMangaFolder() {
+    fun openMangaFolder(currentSource: Source?, currentManga: Manga?) {
         try {
-            val currentManga = manga
-            val currentSource = source
             if (currentManga == null || currentSource == null || currentSource is StubSource) return
 
             val mangaDir = downloadProvider.findMangaDir(/* SY --> */ currentManga.ogTitle /* SY <-- */, currentSource) ?: return

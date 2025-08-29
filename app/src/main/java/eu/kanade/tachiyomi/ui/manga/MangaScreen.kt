@@ -117,6 +117,7 @@ import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
@@ -421,8 +422,20 @@ class MangaScreen(
                 }
             }.takeIf { isConfigurableSource },
             onClearManga = { screenModel.showClearMangaDialog(successState.source is MergedSource) },
-            onOpenMangaFolder = { screenModel.openMangaFolder() }
-                .takeIf { successState.source !is StubSource && successState.source !is MergedSource },
+            onOpenMangaFolder = {
+                if (successState.mergedData == null) {
+                    screenModel.openMangaFolder(screenModel.source, screenModel.manga)
+                } else {
+                    mergedMangaAction(
+                        context,
+                        navigator,
+                        successState.mergedData,
+                        action = { _, nav, manga, source -> screenModel.openMangaFolder(source, manga) },
+                        titleRes = KMR.strings.action_open_folder,
+                    )
+                }
+            }
+                .takeIf { successState.source !is StubSource },
             onRelatedMangasScreenClick = {
                 if (successState.isRelatedMangasFetched == null) {
                     scope.launchIO { screenModel.fetchRelatedMangasFromSource(onDemand = true) }
