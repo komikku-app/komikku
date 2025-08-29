@@ -627,7 +627,7 @@ class ReaderViewModel @JvmOverloads constructor(
         }
 
         if (chapter.pageLoader?.isLocal == false) {
-            val manga = manga ?: return
+            val manga = state.value.mergedManga?.get(chapter.chapter.manga_id) ?: manga ?: return
             val dbChapter = chapter.chapter
             val isDownloaded = downloadManager.isChapterDownloaded(
                 dbChapter.name,
@@ -704,11 +704,12 @@ class ReaderViewModel @JvmOverloads constructor(
 
     private fun downloadNextChapters() {
         if (downloadAheadAmount == 0) return
-        val manga = manga ?: return
 
         // Only download ahead if current + next chapter is already downloaded too to avoid jank
         if (getCurrentChapter()?.pageLoader !is DownloadPageLoader) return
         val nextChapter = state.value.viewerChapters?.nextChapter?.chapter ?: return
+
+        val manga = state.value.mergedManga?.get(nextChapter.manga_id) ?: manga ?: return
 
         viewModelScope.launchIO {
             val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
