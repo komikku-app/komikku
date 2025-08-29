@@ -830,14 +830,12 @@ class ReaderViewModel @JvmOverloads constructor(
 
     fun getChapterUrl(): String? {
         val sChapter = getCurrentChapter()?.chapter ?: return null
-        val source = manga?.let {
-            if (it.source == MERGED_SOURCE_ID) {
-                state.value.mergedManga?.get(sChapter.manga_id)?.source?.let { source ->
-                    sourceManager.getOrStub(source) as? HttpSource
-                }
-            } else {
-                getSource()
+        val source = if (manga?.source == MERGED_SOURCE_ID) {
+            state.value.mergedManga?.get(sChapter.manga_id)?.source?.let { source ->
+                sourceManager.getOrStub(source) as? HttpSource
             }
+        } else {
+            getSource()
         } ?: return null
 
         return try {
