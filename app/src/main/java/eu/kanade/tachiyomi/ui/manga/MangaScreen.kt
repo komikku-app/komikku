@@ -446,27 +446,16 @@ class MangaScreen(
             onRelatedMangaLongClick = { bulkFavoriteScreenModel.addRemoveManga(it, haptic) },
             onSourceClick = {
                 if (successState.source !is StubSource) {
-                    val screen = when {
-                        // Clicked on source of an entry being merged with previous entry or
-                        // source of an recommending entry (to search again)
-                        smartSearchConfig != null -> SmartSearchScreen(successState.source.id, smartSearchConfig)
-                        screenModel.useNewSourceNavigation -> SourceFeedScreen(successState.source.id)
-                        else -> BrowseSourceScreen(successState.source.id, GetRemoteManga.QUERY_POPULAR)
-                    }
-                    when (screen) {
-                        // When doing a migrate/recommend => replace previous screen to perform search again.
-                        is SmartSearchScreen -> {
-                            navigator.popUntil { it is SmartSearchScreen }
-                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
-                        }
-                        is SourceFeedScreen -> {
-                            navigator.popUntil { it is SourceFeedScreen }
-                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
-                        }
-                        else -> {
-                            navigator.popUntil { it is BrowseSourceScreen }
-                            if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
-                        }
+                    if (successState.mergedData == null) {
+                        screenModel.source?.let { browseSource(navigator, it, screenModel.useNewSourceNavigation) }
+                    } else {
+                        mergedMangaAction(
+                            context,
+                            navigator,
+                            successState.mergedData,
+                            action = { _, nav, _, source -> browseSource(nav, source!!, screenModel.useNewSourceNavigation) },
+                            titleRes = MR.strings.browse,
+                        )
                     }
                 } else {
                     navigator.push(ExtensionsScreen(searchSource = successState.source.name))
@@ -867,6 +856,35 @@ class MangaScreen(
             .setNegativeButton(MR.strings.action_cancel.getString(context), null)
             .show()
     }
+
+    // KMK -->
+    private fun browseSource(navigator: Navigator, source: Source, useNewSourceNavigation: Boolean) {
+        val screen = when {
+            // Clicked on source of an entry being merged with previous entry or
+            // source of an recommending entry (to search again)
+            smartSearchConfig != null -> SmartSearchScreen(source.id, smartSearchConfig)
+            useNewSourceNavigation -> SourceFeedScreen(source.id)
+            else -> BrowseSourceScreen(source.id, GetRemoteManga.QUERY_POPULAR)
+        }
+        when (screen) {
+            // When doing a migrate/recommend => replace previous screen to perform search again.
+            is SmartSearchScreen -> {
+                navigator.popUntil { it is SmartSearchScreen }
+                if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+            }
+
+            is SourceFeedScreen -> {
+                navigator.popUntil { it is SourceFeedScreen }
+                if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+            }
+
+            else -> {
+                navigator.popUntil { it is BrowseSourceScreen }
+                if (navigator.size > 1) navigator.replace(screen) else navigator.push(screen)
+            }
+        }
+    }
+    // KMK <--
 
     private fun openMorePagePreviews(navigator: Navigator, manga: Manga) {
         navigator.push(PagePreviewScreen(manga.id))
