@@ -444,10 +444,10 @@ class MangaScreenModel(
                 )
             }
             val chapters = if (manga.source == MERGED_SOURCE_ID) {
-                    getMergedChaptersByMangaId.await(mangaId, applyFilter = true)
-                } else {
-                    getMangaAndChapters.awaitChapters(mangaId, applyFilter = true)
-                }
+                getMergedChaptersByMangaId.await(mangaId, applyFilter = true)
+            } else {
+                getMangaAndChapters.awaitChapters(mangaId, applyFilter = true)
+            }
                 .toChapterListItems(manga, mergedData)
             val meta = getFlatMetadata.await(mangaId)
             // SY <--
@@ -1588,7 +1588,7 @@ class MangaScreenModel(
                                     // Refresh chapters state for Local source
                                     fetchChaptersFromSource()
                                 }
-                        }
+                            }
                     } else {
                         downloadManager.deleteManga(
                             manga = state.manga,
