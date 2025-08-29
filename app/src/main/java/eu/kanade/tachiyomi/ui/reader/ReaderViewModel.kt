@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
+import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -615,8 +616,12 @@ class ReaderViewModel @JvmOverloads constructor(
             return
         }
 
+        /**
+         * This code is likely deprecated since once `chapter.pageLoader` is initialized with [HttpPageLoader],
+         * it would set `chapter.state` to `Loading` or `Loaded` and return early already.
+         */
         if (chapter.pageLoader?.isLocal == false) {
-            val manga = manga ?: return
+            val manga = state.value.mergedManga?.get(chapter.chapter.manga_id) ?: manga ?: return
             val dbChapter = chapter.chapter
             val isDownloaded = downloadManager.isChapterDownloaded(
                 dbChapter.name,
@@ -693,11 +698,12 @@ class ReaderViewModel @JvmOverloads constructor(
 
     private fun downloadNextChapters() {
         if (downloadAheadAmount == 0) return
-        val manga = manga ?: return
 
         // Only download ahead if current + next chapter is already downloaded too to avoid jank
         if (getCurrentChapter()?.pageLoader !is DownloadPageLoader) return
         val nextChapter = state.value.viewerChapters?.nextChapter?.chapter ?: return
+
+        val manga = state.value.mergedManga?.get(nextChapter.manga_id) ?: manga ?: return
 
         viewModelScope.launchIO {
             val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
