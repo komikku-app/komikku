@@ -428,12 +428,19 @@ class ReaderViewModel @JvmOverloads constructor(
 
     // SY -->
     fun getChapters(): List<ReaderChapterItem> {
+        // KMK -->
+        val manga = manga ?: return emptyList()
+        val mangaList = state.value.mergedManga?.takeIf { it.isNotEmpty() } ?: mapOf(manga.id to manga)
+        // KMK <--
+
         val currentChapter = getCurrentChapter()
 
         return chapterList.map {
             ReaderChapterItem(
                 chapter = it.chapter.toDomainChapter()!!,
-                manga = manga!!,
+                // KMK -->
+                manga = mangaList[it.chapter.manga_id] ?: manga,
+                // KMK <--
                 isCurrent = it.chapter.id == currentChapter?.chapter?.id,
                 dateFormat = UiPreferences.dateFormat(uiPreferences.dateFormat().get()),
             )
