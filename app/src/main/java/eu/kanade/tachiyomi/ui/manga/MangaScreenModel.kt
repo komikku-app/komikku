@@ -1541,7 +1541,7 @@ class MangaScreenModel(
                             // KMK <--
                         )
                         // KMK -->
-                        if (source?.isLocal() == true) {
+                        if (state.source.isLocal()) {
                             // Refresh chapters state for Local source
                             fetchChaptersFromSource()
                         }
@@ -1593,7 +1593,7 @@ class MangaScreenModel(
                             source = state.source,
                             removeQueued = true,
                         )
-                        if (source?.isLocal() == true) {
+                        if (state.source.isLocal()) {
                             // Refresh chapters state for Local source
                             fetchChaptersFromSource()
                         }
