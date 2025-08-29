@@ -1433,8 +1433,14 @@ class ReaderViewModel @JvmOverloads constructor(
             val page: ReaderPage,
             // SY -->
             val secondPage: ReaderPage? = null,
+                if (trackPreferences.deleteChaptersAfterAutoTracking().get()) {
+                    deleteChapterIfNeeded(readerChapter)
+                }
             // SY <--
         ) : Event
         data class CopyImage(val uri: Uri) : Event
     }
 }
+                if (trackPreferences.deleteChaptersAfterAutoTracking().get()) {
+                    deleteChapterIfNeeded(readerChapter)
+                }
