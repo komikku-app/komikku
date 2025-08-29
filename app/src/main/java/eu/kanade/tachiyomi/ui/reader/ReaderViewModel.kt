@@ -172,26 +172,77 @@ class ReaderViewModel @JvmOverloads constructor(
         }
 
     // KMK -->
-    fun handleDownloadAction(chapters: List<Chapter>, action: ChapterDownloadAction) {
-        val manga = manga ?: return
-        val source = sourceManager.get(manga.source) ?: return
+    fun handleDownloadAction(chapter: Chapter, action: ChapterDownloadAction) {
+        when (action) {
+            ChapterDownloadAction.START -> downloadChapter(chapter)
+            ChapterDownloadAction.START_NOW -> downloadManager.startDownloadNow(chapter.id)
+            ChapterDownloadAction.CANCEL -> cancelDownload(chapter.id)
+            ChapterDownloadAction.DELETE -> deleteChapter(chapter)
+        }
+    }
 
+    /**
+     * @param chapter the chapter to download.
+     */
+    private fun downloadChapter(chapter: Chapter) {
         viewModelScope.launch {
-            when (action) {
-                ChapterDownloadAction.START -> downloadManager.downloadChapters(manga, chapters)
-                ChapterDownloadAction.START_NOW -> {
-                    (source as? HttpSource)?.let { httpSource ->
-                        val downloads = chapters.map { Download(httpSource, manga, it) }
-                        downloadManager.addDownloadsToStartOfQueue(downloads)
-                    }
+            val manga = manga?.let {
+                if (it.source == MERGED_SOURCE_ID) {
+                    state.value.mergedManga?.get(chapter.mangaId) ?: return@launch
+                } else {
+                    it
                 }
-                ChapterDownloadAction.CANCEL -> {
-                    (source as? HttpSource)?.let { httpSource ->
-                        val downloads = chapters.map { Download(httpSource, manga, it) }
-                        downloadManager.cancelQueuedDownloads(downloads)
-                    }
+            } ?: return@launch
+            downloadManager.downloadChapters(manga, listOf(chapter))
+            downloadManager.startDownloads()
+        }
+    }
+
+    private fun cancelDownload(chapterId: Long) {
+        viewModelScope.launch {
+            val activeDownload = downloadManager.getQueuedDownloadOrNull(chapterId) ?: return@launch
+            downloadManager.cancelQueuedDownloads(listOf(activeDownload))
+            // updateDownloadState(activeDownload.apply { status = Download.State.NOT_DOWNLOADED })
+        }
+    }
+
+    fun deleteChapter(chapter: Chapter) {
+        val manga = manga ?: return
+
+        viewModelScope.launchNonCancellable {
+            try {
+                if (manga.source == MERGED_SOURCE_ID) {
+                        val manga = state.value.mergedManga?.get(chapter.mangaId) ?: return@launchNonCancellable
+                        val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
+                        downloadManager.deleteChapters(
+                            listOf(chapter),
+                            manga,
+                            source,
+                            ignoreCategoryExclusion = true,
+                        )
+//                        // KMK -->
+//                        if (source.isLocal()) {
+//                            // Refresh chapters state for Local source
+//                            fetchChaptersFromSource()
+//                        }
+//                        // KMK <--
+                } else {
+                    val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
+                    downloadManager.deleteChapters(
+                        listOf(chapter),
+                        manga,
+                        source,
+                        ignoreCategoryExclusion = true,
+                    )
+//                    // KMK -->
+//                    if (source.isLocal()) {
+//                        // Refresh chapters state for Local source
+//                        fetchChaptersFromSource()
+//                    }
+//                    // KMK <--
                 }
-                ChapterDownloadAction.DELETE -> downloadManager.deleteChapters(chapters, manga, source)
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e)
             }
         }
     }

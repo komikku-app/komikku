@@ -689,7 +689,9 @@ class ReaderActivity : BaseActivity() {
                         },
                         state.dateRelativeTime,
                         // KMK -->
-                        onDownloadChapter = { chapters, action -> viewModel.handleDownloadAction(chapters, action) },
+                        onDownloadAction = { chapter, action ->
+                            viewModel.handleDownloadAction(chapter, action)
+                        },
                         // KMK <--
                     )
                 }
