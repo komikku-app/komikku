@@ -1514,6 +1514,7 @@ class MangaScreenModel(
         screenModelScope.launchNonCancellable {
             try {
                 successState?.let { state ->
+                    // KMK --?
                     if (state.source.id == MERGED_SOURCE_ID) {
                         chapters.groupBy { it.mangaId }.forEach { map ->
                             val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
@@ -1522,18 +1523,15 @@ class MangaScreenModel(
                                 map.value,
                                 manga,
                                 source,
-                                // KMK -->
                                 ignoreCategoryExclusion = true,
-                                // KMK <--
                             )
-                            // KMK -->
                             if (source.isLocal()) {
                                 // Refresh chapters state for Local source
                                 fetchChaptersFromSource()
                             }
-                            // KMK <--
                         }
                     } else {
+                        // KMK <--
                         downloadManager.deleteChapters(
                             chapters,
                             state.manga,
