@@ -39,6 +39,12 @@ class WebtoonFrame(context: Context) : FrameLayout(context) {
             recycler?.zoomOutDisabled = value
         }
 
+    var pinchToZoomDisabled = false
+        set(value) {
+            field = value
+            recycler?.pinchToZoomDisabled = value
+        }
+
     /**
      * Recycler view added in this frame.
      */
