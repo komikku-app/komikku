@@ -677,7 +677,7 @@ class MangaScreen(
 
         return try {
             source.getMangaUrl(manga.toSManga())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
