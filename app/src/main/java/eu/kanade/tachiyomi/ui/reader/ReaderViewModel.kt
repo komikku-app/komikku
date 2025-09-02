@@ -212,14 +212,14 @@ class ReaderViewModel @JvmOverloads constructor(
         viewModelScope.launchNonCancellable {
             try {
                 if (manga.source == MERGED_SOURCE_ID) {
-                        val manga = state.value.mergedManga?.get(chapter.mangaId) ?: return@launchNonCancellable
-                        val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
-                        downloadManager.deleteChapters(
-                            listOf(chapter),
-                            manga,
-                            source,
-                            ignoreCategoryExclusion = true,
-                        )
+                    val manga = state.value.mergedManga?.get(chapter.mangaId) ?: return@launchNonCancellable
+                    val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
+                    downloadManager.deleteChapters(
+                        listOf(chapter),
+                        manga,
+                        source,
+                        ignoreCategoryExclusion = true,
+                    )
 //                        // KMK -->
 //                        if (source.isLocal()) {
 //                            // Refresh chapters state for Local source
