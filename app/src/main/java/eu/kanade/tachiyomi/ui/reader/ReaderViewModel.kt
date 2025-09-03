@@ -202,45 +202,31 @@ class ReaderViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             val activeDownload = downloadManager.getQueuedDownloadOrNull(chapterId) ?: return@launch
             downloadManager.cancelQueuedDownloads(listOf(activeDownload))
-            // updateDownloadState(activeDownload.apply { status = Download.State.NOT_DOWNLOADED })
+            // TODO: updateDownloadState(activeDownload.apply { status = Download.State.NOT_DOWNLOADED })
         }
     }
 
-    fun deleteChapter(chapter: Chapter) {
-        val manga = manga ?: return
-
+    private fun deleteChapter(chapter: Chapter) {
         viewModelScope.launchNonCancellable {
             try {
-                if (manga.source == MERGED_SOURCE_ID) {
-                    val manga = state.value.mergedManga?.get(chapter.mangaId) ?: return@launchNonCancellable
-                    val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
-                    downloadManager.deleteChapters(
-                        listOf(chapter),
-                        manga,
-                        source,
-                        ignoreCategoryExclusion = true,
-                    )
-//                        // KMK -->
-//                        if (source.isLocal()) {
-//                            // Refresh chapters state for Local source
-//                            fetchChaptersFromSource()
-//                        }
-//                        // KMK <--
+                val manga = if (manga?.source == MERGED_SOURCE_ID) {
+                    state.value.mergedManga?.get(chapter.mangaId) ?: return@launchNonCancellable
                 } else {
-                    val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
-                    downloadManager.deleteChapters(
-                        listOf(chapter),
-                        manga,
-                        source,
-                        ignoreCategoryExclusion = true,
-                    )
-//                    // KMK -->
-//                    if (source.isLocal()) {
-//                        // Refresh chapters state for Local source
-//                        fetchChaptersFromSource()
-//                    }
-//                    // KMK <--
+                    manga ?: return@launchNonCancellable
                 }
+                val source = sourceManager.get(manga.source) ?: return@launchNonCancellable
+                downloadManager.deleteChapters(
+                    listOf(chapter),
+                    manga,
+                    source,
+                    ignoreCategoryExclusion = true,
+                )
+//                // KMK -->
+//                if (source.isLocal()) {
+//                    // TODO: Refresh chapters state for Local source
+//                    fetchChaptersFromSource()
+//                }
+//                // KMK <--
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
             }
