@@ -227,7 +227,7 @@ class ReaderViewModel @JvmOverloads constructor(
 //                    fetchChaptersFromSource()
 //                }
 //                // KMK <--
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
             }
         }
