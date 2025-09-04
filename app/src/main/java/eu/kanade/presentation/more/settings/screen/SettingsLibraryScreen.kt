@@ -292,6 +292,11 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = libraryPreferences.showEmptyCategoriesSearch(),
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.autoFetchChapters(),
+                    title = stringResource(KMR.strings.pref_auto_fetch_chapters),
+                    subtitle = stringResource(KMR.strings.pref_auto_fetch_chapters_description),
+                )
                 // KMK <--
             ),
         )

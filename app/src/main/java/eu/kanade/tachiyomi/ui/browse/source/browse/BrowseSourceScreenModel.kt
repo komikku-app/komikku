@@ -420,7 +420,7 @@ open class BrowseSourceScreenModel(
 
             updateManga.await(new.toMangaUpdate())
             // KMK -->
-            if (new.favorite) {
+            if (new.favorite && libraryPreferences.autoFetchChapters().get()) {
                 withIOContext {
                     val chapters = source.getChapterList(new.toSManga())
                     if (chapters.isEmpty()) return@withIOContext

@@ -96,6 +96,8 @@
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
     <string name="pref_show_empty_categories_search">Show empty categories during search/filtering</string>
+    <string name="pref_auto_fetch_chapters">Fetch chapters on add to library</string>
+    <string name="pref_auto_fetch_chapters_description">Automatically fetch the chapter list of a new manga when adding it to the library</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
