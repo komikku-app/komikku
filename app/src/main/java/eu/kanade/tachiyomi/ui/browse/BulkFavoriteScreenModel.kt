@@ -250,6 +250,12 @@ class BulkFavoriteScreenModel(
 
         screenModelScope.launchIO {
             updateManga.awaitUpdateFavorite(manga.id, true)
+            if (libraryPreferences.autoFetchChapters().get()) {
+                val source = sourceManager.getOrStub(manga.source)
+                val chapters = source.getChapterList(manga.toSManga())
+                if (chapters.isEmpty()) return@launchIO
+                syncChaptersWithSource.await(chapters, manga, source, false)
+            }
         }
     }
 
