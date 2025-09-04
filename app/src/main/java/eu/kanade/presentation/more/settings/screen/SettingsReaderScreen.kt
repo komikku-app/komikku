@@ -444,7 +444,7 @@ object SettingsReaderScreen : SearchableSettings {
                 ),
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.pinchToZoomEnabled(),
+                    preference = readerPreferences.webtoonPinchToZoomEnabled(),
                     title = stringResource(KMR.strings.pref_pinch_to_zoom),
                 ),
                 // KMK <--

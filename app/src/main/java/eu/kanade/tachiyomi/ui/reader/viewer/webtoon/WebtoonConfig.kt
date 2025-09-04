@@ -110,7 +110,7 @@ class WebtoonConfig(
             )
 
         // KMK -->
-        readerPreferences.pinchToZoomEnabled()
+        readerPreferences.webtoonPinchToZoomEnabled()
             .register(
                 { pinchToZoom = it },
                 { pinchToZoomChangedListener?.invoke(it) },

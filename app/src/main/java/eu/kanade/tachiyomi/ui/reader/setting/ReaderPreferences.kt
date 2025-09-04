@@ -54,7 +54,7 @@ class ReaderPreferences(
     fun webtoonDoubleTapZoomEnabled() = preferenceStore.getBoolean("pref_enable_double_tap_zoom_webtoon", true)
 
     // KMK -->
-    fun pinchToZoomEnabled() = preferenceStore.getBoolean("pref_enable_pinch_to_zoom", true)
+    fun webtoonPinchToZoomEnabled() = preferenceStore.getBoolean("pref_enable_pinch_to_zoom_webtoon", true)
     // KMK <--
 
     fun imageScaleType() = preferenceStore.getInt("pref_image_scale_type_key", 1)
