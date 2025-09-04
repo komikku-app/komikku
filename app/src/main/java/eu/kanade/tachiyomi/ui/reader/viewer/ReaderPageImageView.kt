@@ -433,7 +433,9 @@ open class ReaderPageImageView @JvmOverloads constructor(
                 },
             )
             .crossfade(false)
+            // KMK -->
             .allowHardware(false) // Disable hardware bitmaps for GIFs
+            // KMK <--
             .build()
         context.imageLoader.enqueue(request)
     }
