@@ -153,6 +153,9 @@ class ReaderViewModel @JvmOverloads constructor(
     val manga: Manga?
         get() = state.value.manga
 
+    val currentChapter: Chapter?
+        get() = state.value.currentChapter?.chapter?.toDomainChapter()
+
     /**
      * The chapter id of the currently loaded chapter. Used to restore from process kill.
      */
@@ -334,7 +337,7 @@ class ReaderViewModel @JvmOverloads constructor(
             .map(::ReaderChapter)
     }
 
-    private val incognitoMode: Boolean by lazy { getIncognitoState.await(manga?.source) }
+    val incognitoMode: Boolean by lazy { getIncognitoState.await(manga?.source) }
     private val downloadAheadAmount = downloadPreferences.autoDownloadWhileReading().get()
 
     init {
