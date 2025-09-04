@@ -37,6 +37,7 @@ import com.github.chrisbanes.photoview.PhotoView
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.data.coil.cropBorders
 import eu.kanade.tachiyomi.data.coil.customDecoder
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.LandscapeZoomScaleType
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonSubsamplingImageView
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.view.isVisibleOnScreen
@@ -138,7 +139,11 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     ZoomStartPosition.CENTER -> center
                 }
 
-                val targetScale = height.toFloat() / sHeight.toFloat()
+                val targetScale = /* KMK --> */ when (config.landscapeZoomScaleType) {
+                    LandscapeZoomScaleType.DOUBLE -> scale * 2
+                    // KMK <--
+                    else -> height.toFloat() / sHeight.toFloat()
+                }
                 (animateScaleAndCenter(targetScale, point) ?: return@postDelayed)
                     .withDuration(500)
                     .withEasing(EASE_IN_OUT_QUAD)
@@ -466,6 +471,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
         // KMK -->
         val disableZoomIn: Boolean = false,
         val doubleTapZoom: Boolean = true,
+        val landscapeZoomScaleType: LandscapeZoomScaleType = LandscapeZoomScaleType.FIT,
         // KMK <--
     )
 

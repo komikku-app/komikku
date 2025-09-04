@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.graphics.Color
 import androidx.annotation.ColorInt
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.LandscapeZoomScaleType
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerConfig
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
@@ -54,6 +55,9 @@ class PagerConfig(
         private set
 
     var doubleTapZoom = true
+        private set
+
+    var landscapeZoomScaleType = LandscapeZoomScaleType.FIT
         private set
     // KMK <--
 
@@ -164,6 +168,12 @@ class PagerConfig(
         readerPreferences.pagedDoubleTapZoomEnabled()
             .register(
                 { doubleTapZoom = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+
+        readerPreferences.landscapeZoomType()
+            .register(
+                { landscapeZoomScaleType = it },
                 { imagePropertyChangedListener?.invoke() },
             )
         // KMK <--

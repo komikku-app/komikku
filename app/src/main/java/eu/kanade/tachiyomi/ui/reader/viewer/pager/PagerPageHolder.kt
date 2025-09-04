@@ -219,6 +219,7 @@ class PagerPageHolder(
                         // KMK -->
                         disableZoomIn = viewer.config.disableZoomIn,
                         doubleTapZoom = viewer.config.doubleTapZoom,
+                        landscapeZoomScaleType = viewer.config.landscapeZoomScaleType,
                         // KMK <--
                     ),
                 )

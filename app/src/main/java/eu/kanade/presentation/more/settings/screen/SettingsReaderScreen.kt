@@ -10,6 +10,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.Companion.zoomWideImagesAllowedList
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import kotlinx.collections.immutable.persistentListOf
@@ -258,6 +259,7 @@ object SettingsReaderScreen : SearchableSettings {
 
         // KMK -->
         val pagedDisableZoomIn by readerPreferences.pagedDisableZoomIn().collectAsState()
+        val landscapeZoom by readerPreferences.landscapeZoom().collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -313,9 +315,22 @@ object SettingsReaderScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.landscapeZoom(),
                     title = stringResource(MR.strings.pref_landscape_zoom),
-                    enabled = imageScaleType == 1,
+                    // KMK -->
+                    enabled = imageScaleType in zoomWideImagesAllowedList,
+                    // KMK <--
                 ),
                 // KMK -->
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.landscapeZoomType(),
+                    entries = persistentListOf(
+                        ReaderPreferences.LandscapeZoomScaleType.FIT,
+                        ReaderPreferences.LandscapeZoomScaleType.DOUBLE,
+                    )
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_landscape_zoom_type),
+                    enabled = landscapeZoom && imageScaleType in zoomWideImagesAllowedList,
+                ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.pagedDisableZoomIn(),
                     title = stringResource(KMR.strings.pref_paged_disable_zoom_in),
