@@ -54,6 +54,8 @@ class ReaderPreferences(
     fun webtoonDoubleTapZoomEnabled() = preferenceStore.getBoolean("pref_enable_double_tap_zoom_webtoon", true)
 
     // KMK -->
+    fun pagedDoubleTapZoomEnabled() = preferenceStore.getBoolean("pref_enable_double_tap_zoom_paged", true)
+
     fun webtoonPinchToZoomEnabled() = preferenceStore.getBoolean("pref_enable_pinch_to_zoom_webtoon", true)
     // KMK <--
 
@@ -86,6 +88,10 @@ class ReaderPreferences(
     fun skipDupe() = preferenceStore.getBoolean("skip_dupe", false)
 
     fun webtoonDisableZoomOut() = preferenceStore.getBoolean("webtoon_disable_zoom_out", false)
+
+    // KMK -->
+    fun pagedDisableZoomIn() = preferenceStore.getBoolean("paged_disable_zoom_in", false)
+    // KMK <--
 
     // endregion
 

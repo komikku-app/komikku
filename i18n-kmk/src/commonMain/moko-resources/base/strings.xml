@@ -26,6 +26,7 @@
     <string name="pref_viewer_nav_smaller_tap_zone">Smaller tap zones</string>
     <string name="error_opening_folder">Failed to open folder</string>
     <string name="pref_pinch_to_zoom">Pinch to zoom</string>
+    <string name="pref_paged_disable_zoom_in">Disable zoom in</string>
 
     <!-- Preferences -->
       <!-- Appearance section -->

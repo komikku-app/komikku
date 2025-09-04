@@ -216,6 +216,10 @@ class PagerPageHolder(
                         cropBorders = viewer.config.imageCropBorders,
                         zoomStartPosition = viewer.config.imageZoomType,
                         landscapeZoom = viewer.config.landscapeZoom,
+                        // KMK -->
+                        disableZoomIn = viewer.config.disableZoomIn,
+                        doubleTapZoom = viewer.config.doubleTapZoom,
+                        // KMK <--
                     ),
                 )
                 if (!isAnimated) {

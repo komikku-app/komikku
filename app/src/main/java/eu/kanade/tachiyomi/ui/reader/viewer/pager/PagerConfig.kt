@@ -49,6 +49,14 @@ class PagerConfig(
     var landscapeZoom = false
         private set
 
+    // KMK -->
+    var disableZoomIn = false
+        private set
+
+    var doubleTapZoom = true
+        private set
+    // KMK <--
+
     // SY -->
     var usePageTransitions = false
 
@@ -71,7 +79,6 @@ class PagerConfig(
     var pageCanvasColor = Color.WHITE
 
     var centerMarginType = CenterMarginType.NONE
-
     // SY <--
 
     init {
@@ -116,6 +123,7 @@ class PagerConfig(
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)
+
         // KMK -->
         readerPreferences.smallerTapZone().changes()
             .drop(1)
@@ -146,6 +154,19 @@ class PagerConfig(
                 { dualPageRotateToFitInvert = it },
                 { imagePropertyChangedListener?.invoke() },
             )
+
+        // KMK -->
+        readerPreferences.pagedDisableZoomIn()
+            .register(
+                { disableZoomIn = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+        readerPreferences.pagedDoubleTapZoomEnabled()
+            .register(
+                { doubleTapZoom = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+        // KMK <--
 
         // SY -->
         readerPreferences.pageTransitionsPager()

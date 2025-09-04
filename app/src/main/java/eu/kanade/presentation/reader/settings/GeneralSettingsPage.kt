@@ -1,6 +1,5 @@
 package eu.kanade.presentation.reader.settings
 
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,9 +29,8 @@ private val flashColors = listOf(
     MR.strings.pref_flash_style_white_black to ReaderPreferences.FlashColor.WHITE_BLACK,
 )
 
-@Suppress("UnusedReceiverParameter")
 @Composable
-internal fun ColumnScope.GeneralPage(screenModel: ReaderSettingsScreenModel) {
+internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
     val readerTheme by screenModel.preferences.readerTheme().collectAsState()
 
     val flashPageState by screenModel.preferences.flashOnPageChange().collectAsState()
