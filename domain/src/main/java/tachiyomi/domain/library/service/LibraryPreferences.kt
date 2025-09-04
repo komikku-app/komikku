@@ -74,7 +74,7 @@ class LibraryPreferences(
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
 
     // KMK -->
-    fun autoFetchChapters() = preferenceStore.getBoolean("auto_fetch_chapters", false)
+    fun syncOnAdd() = preferenceStore.getBoolean("sync_on_add", false)
     // KMK <--
 
     fun showContinueReadingButton() = preferenceStore.getBoolean(

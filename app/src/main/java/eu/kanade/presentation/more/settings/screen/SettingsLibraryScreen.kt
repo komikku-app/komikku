@@ -294,9 +294,9 @@ object SettingsLibraryScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.autoFetchChapters(),
-                    title = stringResource(KMR.strings.pref_auto_fetch_chapters),
-                    subtitle = stringResource(KMR.strings.pref_auto_fetch_chapters_description),
+                    preference = libraryPreferences.syncOnAdd(),
+                    title = stringResource(KMR.strings.pref_sync_manga_on_add),
+                    subtitle = stringResource(KMR.strings.pref_sync_manga_on_add_description),
                 ),
                 // KMK <--
             ),

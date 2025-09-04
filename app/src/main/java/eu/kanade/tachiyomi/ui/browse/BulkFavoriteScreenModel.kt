@@ -255,14 +255,17 @@ class BulkFavoriteScreenModel(
         screenModelScope.launchIO {
             updateManga.awaitUpdateFavorite(manga.id, true)
             // KMK -->
-            if (libraryPreferences.autoFetchChapters().get()) {
+            if (libraryPreferences.syncOnAdd().get()) {
                 try {
                     val source = sourceManager.getOrStub(manga.source)
-                    val chapters = source.getChapterList(manga.toSManga())
+                    val sManga = manga.toSManga()
+                    val remoteManga = source.getMangaDetails(sManga)
+                    val chapters = source.getChapterList(sManga)
+                    updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
                     syncChaptersWithSource.await(chapters, manga, source, false)
                 } catch (e: Exception) {
                     logcat(LogPriority.ERROR, e)
-                    snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
+                    snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
                 }
             }
             // KMK <--
@@ -350,14 +353,17 @@ class BulkFavoriteScreenModel(
 
             updateManga.await(new.toMangaUpdate())
             // KMK -->
-            if (new.favorite && libraryPreferences.autoFetchChapters().get()) {
+            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
                 withIOContext {
                     try {
-                        val chapters = source.getChapterList(new.toSManga())
+                        val sManga = manga.toSManga()
+                        val remoteManga = source.getMangaDetails(sManga)
+                        val chapters = source.getChapterList(sManga)
+                        updateManga.awaitUpdateFromSource(new, remoteManga, false, coverCache)
                         syncChaptersWithSource.await(chapters, new, source, false)
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
+                        snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
                     }
                 }
             }

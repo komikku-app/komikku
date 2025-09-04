@@ -425,15 +425,18 @@ open class BrowseSourceScreenModel(
 
             updateManga.await(new.toMangaUpdate())
             // KMK -->
-            if (new.favorite && libraryPreferences.autoFetchChapters().get()) {
+            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
                 withIOContext {
                     try {
-                        val chapters = source.getChapterList(new.toSManga())
+                        val sManga = new.toSManga()
+                        val remoteManga = source.getMangaDetails(sManga)
+                        val chapters = source.getChapterList(sManga)
+                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
                         syncChaptersWithSource.await(chapters, new, source, false)
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
                         screenModelScope.launch {
-                            snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
+                            snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
                         }
                     }
                 }
