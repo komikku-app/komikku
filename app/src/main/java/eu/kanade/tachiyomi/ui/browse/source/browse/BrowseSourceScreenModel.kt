@@ -433,7 +433,7 @@ open class BrowseSourceScreenModel(
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
                         screenModelScope.launch {
-                            snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                            snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
                         }
                     }
                 }

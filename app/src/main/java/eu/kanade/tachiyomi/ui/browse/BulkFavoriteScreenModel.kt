@@ -262,7 +262,7 @@ class BulkFavoriteScreenModel(
                     syncChaptersWithSource.await(chapters, manga, source, false)
                 } catch (e: Exception) {
                     logcat(LogPriority.ERROR, e)
-                    snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                    snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
                 }
             }
             // KMK <--
@@ -357,7 +357,7 @@ class BulkFavoriteScreenModel(
                         syncChaptersWithSource.await(chapters, new, source, false)
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                        snackbarHostState.showSnackbar(message = "Failed to fetch chapters: $e")
                     }
                 }
             }
