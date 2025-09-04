@@ -27,6 +27,8 @@
     <string name="error_opening_folder">Failed to open folder</string>
     <string name="pref_pinch_to_zoom">Pinch to zoom</string>
     <string name="pref_paged_disable_zoom_in">Disable zoom in</string>
+    <string name="pref_landscape_zoom_type">Wide images zoom mode</string>
+    <string name="scale_type_double">Double zoom</string>
 
     <!-- Preferences -->
       <!-- Appearance section -->

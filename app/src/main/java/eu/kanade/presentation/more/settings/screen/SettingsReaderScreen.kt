@@ -6,6 +6,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
@@ -258,6 +259,7 @@ object SettingsReaderScreen : SearchableSettings {
 
         // KMK -->
         val pagedDisableZoomIn by readerPreferences.pagedDisableZoomIn().collectAsState()
+        val landscapeZoom by readerPreferences.landscapeZoom().collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -313,9 +315,29 @@ object SettingsReaderScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.landscapeZoom(),
                     title = stringResource(MR.strings.pref_landscape_zoom),
-                    enabled = imageScaleType == 1,
+                    // KMK -->
+                    enabled = imageScaleType in listOf(
+                        SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
+                        SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
+                    ),
+                    // KMK <--
                 ),
                 // KMK -->
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.landscapeZoomType(),
+                    entries = persistentListOf(
+                        ReaderPreferences.LandscapeZoomScaleType.FIT,
+                        ReaderPreferences.LandscapeZoomScaleType.DOUBLE,
+                    )
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_landscape_zoom_type),
+                    enabled = landscapeZoom &&
+                        imageScaleType in listOf(
+                            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
+                            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
+                        ),
+                ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.pagedDisableZoomIn(),
                     title = stringResource(KMR.strings.pref_paged_disable_zoom_in),

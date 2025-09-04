@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 
 class ReaderPreferences(
@@ -72,6 +73,10 @@ class ReaderPreferences(
     fun navigateToPan() = preferenceStore.getBoolean("navigate_pan", true)
 
     fun landscapeZoom() = preferenceStore.getBoolean("landscape_zoom", true)
+
+    // KMK -->
+    fun landscapeZoomType() = preferenceStore.getEnum("landscape_zoom_type", LandscapeZoomScaleType.FIT)
+    // KMK <--
 
     fun cropBordersWebtoon() = preferenceStore.getBoolean("crop_borders_webtoon", false)
 
@@ -223,6 +228,15 @@ class ReaderPreferences(
         LOW(31),
         LOWEST(47),
     }
+
+    // KMK -->
+    enum class LandscapeZoomScaleType(
+        val titleRes: StringResource,
+    ) {
+        FIT(MR.strings.scale_type_fit_screen),
+        DOUBLE(KMR.strings.scale_type_double),
+    }
+    // KMK <--
 
     object ArchiveReaderMode {
         const val LOAD_FROM_FILE = 0

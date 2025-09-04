@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.domain.manga.model.readerOrientation
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
@@ -123,10 +124,18 @@ private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
         pref = screenModel.preferences.cropBorders(),
     )
 
-    CheckboxItem(
-        label = stringResource(MR.strings.pref_landscape_zoom),
-        pref = screenModel.preferences.landscapeZoom(),
-    )
+    // KMK -->
+    if (imageScaleType in listOf(
+            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
+            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
+        )
+    ) {
+        // KMK <--
+        CheckboxItem(
+            label = stringResource(MR.strings.pref_landscape_zoom),
+            pref = screenModel.preferences.landscapeZoom(),
+        )
+    }
 
     CheckboxItem(
         label = stringResource(MR.strings.pref_navigate_pan),
