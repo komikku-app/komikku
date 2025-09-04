@@ -1,6 +1,5 @@
 package eu.kanade.presentation.reader.settings
 
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,7 +26,7 @@ import tachiyomi.presentation.core.util.collectAsState
 import java.text.NumberFormat
 
 @Composable
-internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
+internal fun ReadingModePage(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.pref_category_for_this_series)
     val manga by screenModel.mangaFlow.collectAsState()
 
@@ -65,7 +64,7 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
 }
 
 @Composable
-private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
+private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.pager_viewer)
 
     val navigationModePager by screenModel.preferences.navigationModePager().collectAsState()
@@ -171,6 +170,20 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
         pref = screenModel.preferences.invertDoublePages(),
     )
 
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.pref_paged_disable_zoom_in),
+        pref = screenModel.preferences.pagedDisableZoomIn(),
+    )
+    val pagedDisableZoomIn by screenModel.preferences.pagedDisableZoomIn().collectAsState()
+    if (!pagedDisableZoomIn) {
+        CheckboxItem(
+            label = stringResource(MR.strings.pref_double_tap_zoom),
+            pref = screenModel.preferences.pagedDoubleTapZoomEnabled(),
+        )
+    }
+    // KMK <--
+
     val centerMarginType by screenModel.preferences.centerMarginType().collectAsState()
     SettingsChipRow(SYMR.strings.pref_center_margin) {
         ReaderPreferences.CenterMarginTypes.mapIndexed { index, it ->
@@ -185,7 +198,7 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
 }
 
 @Composable
-private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenModel) {
+private fun WebtoonViewerSettings(screenModel: ReaderSettingsScreenModel) {
     val numberFormat = remember { NumberFormat.getPercentInstance() }
 
     HeadingItem(MR.strings.webtoon_viewer)
@@ -279,7 +292,7 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
 
 // SY -->
 @Composable
-private fun ColumnScope.WebtoonWithGapsViewerSettings(screenModel: ReaderSettingsScreenModel) {
+private fun WebtoonWithGapsViewerSettings(screenModel: ReaderSettingsScreenModel) {
     HeadingItem(MR.strings.vertical_plus_viewer)
 
     CheckboxItem(
@@ -290,7 +303,7 @@ private fun ColumnScope.WebtoonWithGapsViewerSettings(screenModel: ReaderSetting
 // SY <--
 
 @Composable
-private fun ColumnScope.TapZonesItems(
+private fun TapZonesItems(
     selected: Int,
     onSelect: (Int) -> Unit,
     invertMode: ReaderPreferences.TappingInvertMode,
