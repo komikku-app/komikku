@@ -57,7 +57,6 @@ class Discord(id: Long) : ConnectionsService(id) {
 
     fun addAccount(account: DiscordAccount) {
         val accounts = getAccounts().toMutableList()
-        Timber.d("Debug: Adding account: $account")
 
         if (account.isActive) {
             accounts.replaceAll { it.copy(isActive = false) }
@@ -71,7 +70,6 @@ class Discord(id: Long) : ConnectionsService(id) {
             accounts.add(account)
         }
 
-        Timber.d("Debug: Updated accounts: $accounts")
         saveAccounts(accounts)
     }
 
