@@ -169,6 +169,12 @@ class WebtoonViewer(
             frame.doubleTapZoom = it
         }
 
+        // KMK -->
+        config.pinchToZoomChangedListener = {
+            frame.pinchToZoom = it
+        }
+        // KMK <--
+
         config.zoomPropertyChangedListener = {
             frame.zoomOutDisabled = it
         }

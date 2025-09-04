@@ -25,6 +25,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.NumberFormat
 
+@Suppress("unused")
 object SettingsReaderScreen : SearchableSettings {
     private fun readResolve(): Any = SettingsReaderScreen
 
@@ -441,6 +442,12 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.webtoonDoubleTapZoomEnabled(),
                     title = stringResource(MR.strings.pref_double_tap_zoom),
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.webtoonPinchToZoomEnabled(),
+                    title = stringResource(KMR.strings.pref_pinch_to_zoom),
+                ),
+                // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.webtoonDisableZoomOut(),
                     title = stringResource(MR.strings.pref_webtoon_disable_zoom_out),

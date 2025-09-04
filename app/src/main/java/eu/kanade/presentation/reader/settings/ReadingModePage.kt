@@ -265,6 +265,12 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         label = stringResource(MR.strings.pref_double_tap_zoom),
         pref = screenModel.preferences.webtoonDoubleTapZoomEnabled(),
     )
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.pref_pinch_to_zoom),
+        pref = screenModel.preferences.webtoonPinchToZoomEnabled(),
+    )
+    // KMK <--
     CheckboxItem(
         label = stringResource(MR.strings.pref_webtoon_disable_zoom_out),
         pref = screenModel.preferences.webtoonDisableZoomOut(),
