@@ -6,11 +6,11 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.Companion.zoomWideImagesAllowedList
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import kotlinx.collections.immutable.persistentListOf
@@ -316,10 +316,7 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.landscapeZoom(),
                     title = stringResource(MR.strings.pref_landscape_zoom),
                     // KMK -->
-                    enabled = imageScaleType in listOf(
-                        SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
-                        SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
-                    ),
+                    enabled = imageScaleType in zoomWideImagesAllowedList,
                     // KMK <--
                 ),
                 // KMK -->
@@ -332,11 +329,7 @@ object SettingsReaderScreen : SearchableSettings {
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_landscape_zoom_type),
-                    enabled = landscapeZoom &&
-                        imageScaleType in listOf(
-                            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
-                            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
-                        ),
+                    enabled = landscapeZoom && imageScaleType in zoomWideImagesAllowedList,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.pagedDisableZoomIn(),

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import android.os.Build
 import androidx.compose.ui.graphics.BlendMode
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import tachiyomi.core.common.preference.PreferenceStore
@@ -274,6 +275,13 @@ class ReaderPreferences(
             MR.strings.zoom_start_right,
             MR.strings.zoom_start_center,
         )
+
+        // KMK -->
+        val zoomWideImagesAllowedList = listOf(
+            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
+            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
+        )
+        // KMK <--
 
         val ColorFilterMode = buildList {
             addAll(

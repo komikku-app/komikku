@@ -139,14 +139,11 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     ZoomStartPosition.CENTER -> center
                 }
 
-                val targetScale =
-                    // KMK -->
-                    if (config.landscapeZoomScaleType == LandscapeZoomScaleType.DOUBLE) {
-                        scale * 2
-                    } else {
-                        // KMK <--
-                        height.toFloat() / sHeight.toFloat()
-                    }
+                val targetScale = /* KMK --> */ when (config.landscapeZoomScaleType) {
+                    LandscapeZoomScaleType.DOUBLE -> scale * 2
+                    // KMK <--
+                    else -> height.toFloat() / sHeight.toFloat()
+                }
                 (animateScaleAndCenter(targetScale, point) ?: return@postDelayed)
                     .withDuration(500)
                     .withEasing(EASE_IN_OUT_QUAD)
