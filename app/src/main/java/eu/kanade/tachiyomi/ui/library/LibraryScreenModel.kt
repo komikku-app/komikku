@@ -284,8 +284,9 @@ class LibraryScreenModel(
                     )
                     // KMK -->
                     .filter {
-                        libraryPreferences.showEmptyCategoriesSearch()
-                            .get() || noActiveFilterOrSearch || it.value.isNotEmpty()
+                        libraryPreferences.showEmptyCategoriesSearch().get() ||
+                            // Hide empty categories if no active filter or search
+                            noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                     .let {
                         // Fall back to default category if no categories are present
@@ -655,12 +656,15 @@ class LibraryScreenModel(
                 LibrarySort.Type.Alphabetical -> {
                     sortAlphabetically(manga1, manga2)
                 }
+
                 LibrarySort.Type.LastRead -> {
                     manga1.libraryManga.lastRead.compareTo(manga2.libraryManga.lastRead)
                 }
+
                 LibrarySort.Type.LastUpdate -> {
                     manga1.libraryManga.manga.lastUpdate.compareTo(manga2.libraryManga.manga.lastUpdate)
                 }
+
                 LibrarySort.Type.UnreadCount -> when {
                     // Ensure unread content comes first
                     manga1.libraryManga.unreadCount == manga2.libraryManga.unreadCount -> 0
@@ -668,23 +672,29 @@ class LibraryScreenModel(
                     manga2.libraryManga.unreadCount == 0L -> if (sort.isAscending) -1 else 1
                     else -> manga1.libraryManga.unreadCount.compareTo(manga2.libraryManga.unreadCount)
                 }
+
                 LibrarySort.Type.TotalChapters -> {
                     manga1.libraryManga.totalChapters.compareTo(manga2.libraryManga.totalChapters)
                 }
+
                 LibrarySort.Type.LatestChapter -> {
                     manga1.libraryManga.latestUpload.compareTo(manga2.libraryManga.latestUpload)
                 }
+
                 LibrarySort.Type.ChapterFetchDate -> {
                     manga1.libraryManga.chapterFetchedAt.compareTo(manga2.libraryManga.chapterFetchedAt)
                 }
+
                 LibrarySort.Type.DateAdded -> {
                     manga1.libraryManga.manga.dateAdded.compareTo(manga2.libraryManga.manga.dateAdded)
                 }
+
                 LibrarySort.Type.TrackerMean -> {
                     val item1Score = trackerScores[manga1.id] ?: defaultTrackerScoreSortValue
                     val item2Score = trackerScores[manga2.id] ?: defaultTrackerScoreSortValue
                     item1Score.compareTo(item2Score)
                 }
+
                 LibrarySort.Type.Random -> {
                     error("Why Are We Still Here? Just To Suffer?")
                 }
@@ -935,7 +945,7 @@ class LibraryScreenModel(
                                 // SY <--
                                 manga.source,
 
-                            )
+                                )
                     }
                     .let { if (amount != null) it.take(amount) else it }
 
@@ -950,13 +960,15 @@ class LibraryScreenModel(
             it.isEhBasedManga() ||
                 it.source in nHentaiSourceIds
         }.fastForEach { manga ->
-            val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
-                if (it.contains("|")) {
-                    it.replace(".*\\|".toRegex(), "").trim()
-                } else {
-                    it
+            val editedTitle =
+                manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim()
+                    .replace("\\{.*?\\}".toRegex(), "").trim().let {
+                    if (it.contains("|")) {
+                        it.replace(".*\\|".toRegex(), "").trim()
+                    } else {
+                        it
+                    }
                 }
-            }
             if (manga.title == editedTitle) return@fastForEach
             val mangaInfo = CustomMangaInfo(
                 id = manga.id,
@@ -1125,7 +1137,11 @@ class LibraryScreenModel(
         mutableState.update { it.copy(dialog = Dialog.RecommendationSearchSheet(mangaList)) }
     }
 
-    private suspend fun filterLibrary(unfiltered: List<LibraryItem>, query: String?, loggedInTrackServices: Map<Long, TriState>): List<LibraryItem> {
+    private suspend fun filterLibrary(
+        unfiltered: List<LibraryItem>,
+        query: String?,
+        loggedInTrackServices: Map<Long, TriState>,
+    ): List<LibraryItem> {
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // AZ -->
             if (query.trim().lowercase() == "mangadex-dmca") {
@@ -1218,6 +1234,7 @@ class LibraryScreenModel(
                             (searchTags?.fastAny { it.name.contains(query, true) } == true) ||
                             (searchTitles?.fastAny { it.title.contains(query, true) } == true)
                     }
+
                     is Namespace -> {
                         searchTags != null &&
                             searchTags.fastAny {
@@ -1229,8 +1246,10 @@ class LibraryScreenModel(
                                     (tag == null && it.namespace.equals(queryComponent.namespace, true))
                             }
                     }
+
                     else -> true
                 }
+
                 true -> when (queryComponent) {
                     is Text -> {
                         val query = queryComponent.asQuery()
@@ -1252,6 +1271,7 @@ class LibraryScreenModel(
                                     (searchTitles?.fastAny { it.title.contains(query, true) } != true)
                                 )
                     }
+
                     is Namespace -> {
                         val searchedTag = queryComponent.tag?.asQuery()
                         searchTags == null ||
@@ -1270,6 +1290,7 @@ class LibraryScreenModel(
                                 }
                             }
                     }
+
                     else -> true
                 }
             }
@@ -1416,6 +1437,7 @@ class LibraryScreenModel(
             val manga: List<Manga>,
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
+
         data class DeleteManga(val manga: List<Manga>) : Dialog
 
         // SY -->
@@ -1466,6 +1488,7 @@ class LibraryScreenModel(
                     .mapValues { (_, values) -> values.distinct() }
                 // KMK <--
             }
+
             LibraryGroup.BY_SOURCE -> {
                 // KMK -->
                 val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
@@ -1494,6 +1517,7 @@ class LibraryScreenModel(
                 }
                 // KMK <--
             }
+
             LibraryGroup.BY_STATUS -> {
                 groupBy { item ->
                     item.libraryManga.manga.status
@@ -1528,6 +1552,7 @@ class LibraryScreenModel(
                     .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id }.distinct() }
                 // KMK <--
             }
+
             else -> emptyMap()
         }.toSortedMap(compareBy { it.order })
     }
