@@ -284,9 +284,8 @@ class LibraryScreenModel(
                     )
                     // KMK -->
                     .filter {
-                        libraryPreferences.showEmptyCategoriesSearch().get() ||
-                            // Hide empty categories if no active filter or search
-                            noActiveFilterOrSearch || it.value.isNotEmpty()
+                        // Hide empty categories if no active filter or search
+                        libraryPreferences.showEmptyCategoriesSearch().get() || noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                     .let {
                         // Fall back to default category if no categories are present
