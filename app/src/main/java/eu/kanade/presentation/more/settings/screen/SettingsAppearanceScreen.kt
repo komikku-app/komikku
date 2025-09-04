@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +38,7 @@ import uy.kohesive.injekt.api.get
 import java.time.LocalDate
 
 object SettingsAppearanceScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsAppearanceScreen
 
     @ReadOnlyComposable
@@ -130,7 +130,6 @@ object SettingsAppearanceScreen : SearchableSettings {
                                     stringResource(KMR.strings.pref_theme_cover_based_style_fidelity)
                                 PaletteStyle.Content ->
                                     stringResource(KMR.strings.pref_theme_cover_based_style_content)
-                                else -> it.name
                             }
                         }
                         .toImmutableMap(),
@@ -194,7 +193,6 @@ object SettingsAppearanceScreen : SearchableSettings {
                                     stringResource(KMR.strings.pref_theme_cover_based_style_fidelity)
                                 PaletteStyle.Content ->
                                     stringResource(KMR.strings.pref_theme_cover_based_style_content)
-                                else -> it.name
                             }
                         }
                         .toImmutableMap(),
@@ -239,7 +237,7 @@ object SettingsAppearanceScreen : SearchableSettings {
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_app_language) +
-                        if (currentLanguage !in listOf( "en", "")) " (App Language)" else "",
+                        if (currentLanguage !in listOf("en", "")) " (App Language)" else "",
                     onClick = { navigator.push(AppLanguageScreen()) },
                 ),
                 Preference.PreferenceItem.ListPreference(
