@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -26,11 +27,13 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -58,6 +61,7 @@ class BulkFavoriteScreenModel(
     private val addTracks: AddTracks = Injekt.get(),
     // KMK -->
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
@@ -252,10 +256,14 @@ class BulkFavoriteScreenModel(
             updateManga.awaitUpdateFavorite(manga.id, true)
             // KMK -->
             if (libraryPreferences.autoFetchChapters().get()) {
-                val source = sourceManager.getOrStub(manga.source)
-                val chapters = source.getChapterList(manga.toSManga())
-                if (chapters.isEmpty()) return@launchIO
-                syncChaptersWithSource.await(chapters, manga, source, false)
+                try {
+                    val source = sourceManager.getOrStub(manga.source)
+                    val chapters = source.getChapterList(manga.toSManga())
+                    syncChaptersWithSource.await(chapters, manga, source, false)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                }
             }
             // KMK <--
         }
@@ -344,9 +352,13 @@ class BulkFavoriteScreenModel(
             // KMK -->
             if (new.favorite && libraryPreferences.autoFetchChapters().get()) {
                 withIOContext {
-                    val chapters = source.getChapterList(new.toSManga())
-                    if (chapters.isEmpty()) return@withIOContext
-                    syncChaptersWithSource.await(chapters, new, source, false)
+                    try {
+                        val chapters = source.getChapterList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                        snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                    }
                 }
             }
             // KMK <--

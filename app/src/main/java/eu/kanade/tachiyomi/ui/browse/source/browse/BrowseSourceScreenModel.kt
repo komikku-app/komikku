@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.content.res.Configuration
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,12 +60,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -117,6 +121,7 @@ open class BrowseSourceScreenModel(
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // KMK <--
 
     // SY -->
@@ -422,9 +427,15 @@ open class BrowseSourceScreenModel(
             // KMK -->
             if (new.favorite && libraryPreferences.autoFetchChapters().get()) {
                 withIOContext {
-                    val chapters = source.getChapterList(new.toSManga())
-                    if (chapters.isEmpty()) return@withIOContext
-                    syncChaptersWithSource.await(chapters, new, source, false)
+                    try {
+                        val chapters = source.getChapterList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                        screenModelScope.launch {
+                            snackbarHostState.showSnackbar(message = "Failed to fetch chapters: ${e.toString()}")
+                        }
+                    }
                 }
             }
             // KMK <--
