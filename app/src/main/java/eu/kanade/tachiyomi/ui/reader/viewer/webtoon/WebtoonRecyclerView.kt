@@ -49,7 +49,9 @@ class WebtoonRecyclerView @JvmOverloads constructor(
 
     var doubleTapZoom = true
 
-    var pinchToZoomDisabled = false
+    // KMK -->
+    var pinchToZoom = true
+    // KMK <--
 
     var tapListener: ((MotionEvent) -> Unit)? = null
     var longTapListener: ((MotionEvent) -> Boolean)? = null
@@ -176,7 +178,9 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     fun onScale(scaleFactor: Float) {
-        if (!detector.isQuickScaling && pinchToZoomDisabled) return
+        // KMK ->
+        if (!detector.isQuickScaling && !pinchToZoom) return
+        // KMK <--
 
         currentScale *= scaleFactor
         currentScale = currentScale.coerceIn(

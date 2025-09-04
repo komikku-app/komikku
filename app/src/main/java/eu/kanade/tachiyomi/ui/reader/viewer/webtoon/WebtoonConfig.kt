@@ -42,10 +42,12 @@ class WebtoonConfig(
 
     var doubleTapZoomChangedListener: ((Boolean) -> Unit)? = null
 
-    var pinchToZoomDisabled = false
+    // KMK -->
+    var pinchToZoom = true
         private set
 
     var pinchToZoomChangedListener: ((Boolean) -> Unit)? = null
+    // KMK <--
 
     // SY -->
     var usePageTransitions = false
@@ -107,11 +109,13 @@ class WebtoonConfig(
                 { doubleTapZoomChangedListener?.invoke(it) },
             )
 
-        readerPreferences.webtoonDisablePinchToZoom()
+        // KMK -->
+        readerPreferences.pinchToZoomEnabled()
             .register(
-                { pinchToZoomDisabled = it },
+                { pinchToZoom = it },
                 { pinchToZoomChangedListener?.invoke(it) },
             )
+        // KMK <--
 
         readerPreferences.readerTheme().changes()
             .drop(1)
