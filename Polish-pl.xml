@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_source_search">Szukaj źródła</string>
+  <string name="action_toggle_nsfw_only">Przełącz tylko NSFW</string>
+  <string name="action_bulk_select">Tryb masowego zaznaczenia</string>
+  <string name="action_faq_and_guides">FAQ i przewodniki</string>
+  <string name="download_cache_renew_interval" comment="download_cache_renew_interval Extension repos Downloads section">Częstotliwość odnawiania pamięci podręcznej pobierania</string>
+  <string name="download_cache_renew_interval_manual">Ręcznie</string>
+  <string name="download_cache_renew_interval_1hour">1 godzina</string>
+  <string name="download_cache_renew_interval_2hour">2 godziny</string>
+  <string name="download_cache_renew_interval_6hour">6 godzin</string>
+  <string name="download_cache_renew_interval_12hour">12 godzin</string>
+  <string name="download_cache_renew_interval_24hour">1 dzień</string>
+  <string name="download_cache_renew_interval_info">Jeśli ustawiono na \"manual\", odśwież każdy manga lub użyj akcji \"Invalidate downloads index\" w \"Advanced\"</string>
+  <string name="pref_clean_invalid_downloads" comment="pref_clean_invalid_downloads Advanced section">Wyczyść nieprawidłowe pobieranie</string>
+  <string name="pref_clean_invalid_downloads_summary">Znajdź i usuń wszystkie pobierania, pliki, foldery, które nie są zapisywane w twojej bibliotece</string>
+  <string name="invalid_downloads_cleaned">Wyczyszczono nieprawidłowe pobieranie</string>
+  <string name="pref_private_installer_warning">Unikaj korzystania z Prywatnego Instalatora, ponieważ nie jest jeszcze stabilny, doprowadzi do naprawdę wolnego startu/wznowienia aplikacji.</string>
+  <string name="whats_coming" comment="whats_coming About section">Co nadchodzi (wkrótce)</string>
+  <string name="action_allow_duplicate_manga" comment="action_allow_duplicate_manga Manga info">Zezwól na to</string>
+  <string name="action_skip_duplicate_manga">Pomiń</string>
+  <string name="action_allow_all_duplicate_manga">Zezwól wszystkim</string>
+  <string name="action_skip_all_duplicate_manga">Pomiń wszystkie</string>
+  <string name="update_check_try_now" comment="update_check_try_now UpdateCheck">Spróbuj teraz</string>
+  <string name="update_check_notification_preview_available" comment="update_check_notification_preview_available UpdateCheck Notifications">Najbliższe aktualizacje!</string>
+  <string name="changelogs" comment="changelogs About">Dziennik zmian</string>
+  <string name="related_mangas_more">Więcej takich informacji...</string>
+  <string name="too_many_in_feed" comment="too_many_in_feed Feed Tab">Zbyt wiele źródeł w Twoim kanale, nie można dodać więcej niż ograniczonej liczby źródeł (20)</string>
+  <string name="current_" comment="current_ Migration">Aktualnie: %1$s</string>
+  <string name="pref_theme_cover_based">Motyw oparty na okładce</string>
+  <string name="pref_theme_cover_based_style_tonalspot">Punkt tonalny</string>
+  <string name="pref_theme_cover_based_style_neutral">Neutralny</string>
+  <string name="pref_theme_cover_based_style_vibrant">Żywotne</string>
+  <string name="pref_theme_cover_based_style_expressive">Ekspresywny</string>
+  <string name="pref_theme_cover_based_style_rainbow">Tęczowa</string>
+  <string name="pref_theme_cover_based_style_fruitsalad">Sałata owocowa</string>
+  <string name="pref_theme_cover_based_style_monochrome">Monochromatyczne</string>
+  <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
+  <string name="pref_theme_cover_based_style_content">Zawartość</string>
+  <string name="action_search_for_source" comment="action_search_for_source Actions">Szukaj źródła</string>
+  <string name="action_library_search">Wyszukiwanie biblioteki</string>
+  <string name="theme_cloudflare">Cloudflare</string>
+  <string name="theme_cottoncandy">Cukierki bawełniane</string>
+  <string name="theme_doom">Doom</string>
+  <string name="theme_matrix">Matryca</string>
+  <string name="theme_mocha">Mocha</string>
+  <string name="theme_sapphire">Sapphire</string>
+  <string name="pref_show_updating_progress_banner" comment="pref_show_updating_progress_banner Library section">Pokaż baner postępu aktualizacji</string>
+  <string name="pref_show_restoring_progress_banner" comment="pref_show_restoring_progress_banner Sync section">Pokaż baner postępu przywracania</string>
+  <string name="pref_show_syncing_progress_banner">Pokaż baner postępu synchronizacji</string>
+  <string name="saved_searches_feeds">Zapisane wyszukiwania &amp; Kanały</string>
+  <string name="onboarding_permission_external_storage" comment="onboarding_permission_external_storage Onboarding section">Dostęp do plików multimedialnych</string>
+  <string name="onboarding_permission_external_storage_description">Zezwalaj na używanie własnych okładek w informacjach edycji wpisu</string>
+  <string name="onboarding_permission_writing_external_storage_description">Zezwalaj na zapisywanie okładek &amp; przy użyciu niestandardowych okładek w informacjach edycji wpisu</string>
+  <string name="permission_writing_external_storage_succeed">Udzielono uprawnień. Spróbuj ponownie.</string>
+  <string name="action_move_up">Przesuń w górę</string>
+  <string name="action_move_down">Przesuń w dół</string>
+  <string name="preload_library_cover_color">Kolor okładki biblioteki</string>
+  <string name="saved_searches_add_feed">Zapisane wyszukiwanie (Przytrzymaj aby dodać do listy Wątków)</string>
+  <string name="saved_searches_delete">Zapisane wyszukiwanie (przytrzymaj aby usunąć)</string>
+  <string name="action_display_source_badge">Ikona źródła</string>
+  <string name="action_display_language_icon">Użyj ikony języka</string>
+  <string name="action_confirm_color">Potwierdź kolor</string>
+  <string name="pref_custom_color" comment="pref_custom_color Custom Color Picker">Personalizator palety</string>
+  <string name="theme_custom">Niestandardowy motyw</string>
+  <string name="extensions_page_need_refresh" comment="extensions_page_need_refresh Extension section">Odśwież stronę rozszerzenia, aby zaktualizować listę.</string>
+  <string name="extensions_page_more">Więcej rozszerzeń...</string>
+  <string name="pref_expand_related_mangas">Rozwiń sugestie</string>
+  <string name="pref_expand_related_mangas_summary">Jeśli wyłączone, sugestie nie będą automatycznie wczytywać &amp; pokaż rozszerzone</string>
+  <string name="put_related_mangas_in_overflow">Sugestie dotyczące przepełnienia</string>
+  <string name="put_related_mangas_in_overflow_summary">Umieść przycisk Sugestie w menu przeciążenia zamiast na stronie wpisu</string>
+  <string name="pref_show_home_on_related_mangas">Strona główna z sugestii</string>
+  <string name="pref_show_home_on_related_mangas_summary">Pokaż ikonę podczas przeglądania sugestii aby wrócić bezpośrednio do strony głównej</string>
+  <string name="pref_source_related_mangas" comment="pref_source_related_mangas Browse settings">Sugestie</string>
+  <string name="pref_source_related_mangas_summary">Pokaż sugestie źródłowe podczas przeglądania wpisu</string>
+  <string name="related_mangas_website_suggestions">Sugestie strony</string>
+  <string name="action_hide">Ukryj</string>
+  <string name="action_sort_feed">Sortuj kanały</string>
+  <string name="sort_feed_confirmation">Czy chcesz posortować kanały alfabetycznie?</string>
+  <string name="pref_custom_theme_style" comment="pref_custom_theme_style Preferences Appearance section">Niestandardowy styl motywu</string>
+  <string name="pref_theme_cover_based_style">Styl motywu bazujący na okładce</string>
+  <string name="custom_color_description">Wybierz kolor ziarenka dla motywu niestandardowego</string>
+  <string name="custom_theme_palette_casual">Zwykły</string>
+  <string name="custom_theme_palette_sunset">Słońce</string>
+  <string name="custom_theme_palette_outrun">Outrun</string>
+  <string name="custom_theme_palette_raspberry">Maliny</string>
+  <string name="custom_theme_palette_pop">Pop</string>
+  <string name="custom_theme_palette_cathode">Kłódka</string>
+  <string name="custom_theme_palette_bubblegum">Bąblowate</string>
+  <string name="custom_theme_palette_night_at_the_beach">Noc na plażie</string>
+  <string name="custom_theme_palette_spectral">Widmo</string>
+  <string name="custom_theme_palette_patagonia">Patagonia</string>
+  <string name="custom_theme_palette_springfield">Springfield</string>
+  <string name="custom_theme_palette_lcd">LCD</string>
+  <string name="custom_theme_palette_pico">PICO-8</string>
+  <string name="action_show_hidden_categories">Pokaż ukryte kategorie</string>
+  <string name="action_display_comfortable_grid_panorama">Siatka wygodna panorama</string>
+  <string name="action_panorama_cover">Okładka panorama</string>
+  <string name="pref_panorama_cover">Pokładka panorama</string>
+  <string name="pref_panorama_cover_summary">Pokaż okładkę w trybie poziomym, jeśli jest szerokim obrazem</string>
+  <string name="pref_panorama_cover_flow">Przepływ Okładki Panoramy</string>
+  <string name="pref_panorama_cover_flow_summary">Pokaż okładkę panoramy w wyszukiwarce globalnej &amp; Sugestie</string>
+  <string name="pref_auto_sync_progress_from_trackers" comment="pref_auto_sync_progress_from_trackers Tracking section">Automatyczna synchronizacja postępu z trackerów</string>
+  <string name="sync_progress_from_trackers_up_to_chapter">Synchronizuj postęp z trackerów do rozdziału %d</string>
+  <string name="option_label_library_update_errors" comment="option_label_library_update_errors Error Screen">Błędy aktualizacji biblioteki</string>
+  <string name="label_library_update_errors">Błędy aktualizacji biblioteki (%d)</string>
+  <string name="info_empty_library_update_errors">Nie masz błędów aktualizacji biblioteki.</string>
+  <string name="action_scroll_to_top">Przewiń do góry</string>
+  <string name="action_scroll_to_bottom">Przewiń na dół</string>
+  <string name="action_scroll_to_previous">Przewiń do poprzedniego</string>
+  <string name="action_scroll_to_next">Przewiń do następnego</string>
+  <string name="migrating_all_entries">Migracja wszystkich wpisów ze źródła</string>
+  <string name="label_to_be_updated" comment="label_to_be_updated Misc">Do aktualizacji</string>
+  <string name="pref_manga_info">Manga Info</string>
+  <string name="manual_download">Ręczne pobieranie</string>
+  <string name="auto_update_app">Automatyczna aktualizacja aplikacji</string>
+  <string name="update_completed">Aktualizacja zakończona</string>
+  <string name="open">Otwórz</string>
+  <string name="release_page">Strona wydania</string>
+  <string name="could_not_install_update">Nie można zainstalować aktualizacji</string>
+  <string name="action_copy_to_clipboard_first_page" comment="action_copy_to_clipboard_first_page Reader Reader Actions">Skopiuj pierwszą stronę do schowka</string>
+  <string name="action_copy_to_clipboard_second_page">Skopiuj drugą stronę do schowka</string>
+  <string name="action_copy_to_clipboard_combined_page">Kopiuj połączoną stronę do schowka</string>
+  <string name="auto_update_app_disable_auto_download">Nie pobieraj automatycznie aktualizacji</string>
+  <string name="action_remove_merged">Usunąć oryginalne wpisy z biblioteki?</string>
+  <string name="batch_add_description">Wsparcie: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+</resources>
