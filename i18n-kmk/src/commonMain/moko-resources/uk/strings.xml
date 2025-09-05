@@ -135,7 +135,7 @@
     <string name="chapters_from_database">Розділи і Історія з бази даних</string>
     <string name="action_manual_install">Ручне встановлення</string>
     <string name="label_library_update_errors">Помилки оновлення бібліотеки (%d)</string>
-    <string name="sponsor_me">Підтримати Мене</string>
+    <string name="sponsor_me">Підтримати мене</string>
     <string name="custom_theme_palette_outrun">Аутран</string>
     <string name="custom_theme_palette_springfield">Springfield</string>
 </resources>
