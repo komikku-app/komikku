@@ -128,7 +128,7 @@
     <string name="custom_theme_palette_outrun">Гонки</string>
     <string name="custom_theme_palette_springfield">Весенняя</string>
     <string name="action_open_folder">Открыть папку</string>
-    <string name="action_clear_manga">Сбросить мангу</string>
+    <string name="action_clear_manga">Очистить мангу</string>
     <string name="action_update">Обновить</string>
     <string name="error_opening_folder">Не удалось открыть папку</string>
     <string name="pref_library_filter_categories_details">Тайтлы в исключенных категориях не будут показаны даже если они также находятся во включенных категориях.</string>
