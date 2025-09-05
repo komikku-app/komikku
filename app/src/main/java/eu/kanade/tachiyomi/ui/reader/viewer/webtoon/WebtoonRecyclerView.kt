@@ -12,6 +12,7 @@ import androidx.core.animation.doOnEnd
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.ui.reader.viewer.GestureDetectorWithLongTap
+import timber.log.Timber
 import kotlin.math.abs
 
 /**
@@ -178,6 +179,7 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     fun onScale(scaleFactor: Float) {
+        Timber.e("onScale: $scaleFactor")
         // KMK ->
         if (!detector.isQuickScaling && !pinchToZoom) return
         // KMK <--

@@ -258,8 +258,10 @@ object SettingsReaderScreen : SearchableSettings {
         val rotateToFit by rotateToFitPref.collectAsState()
 
         // KMK -->
-        val pagedDisableZoomIn by readerPreferences.pagedDisableZoomIn().collectAsState()
-        val landscapeZoom by readerPreferences.landscapeZoom().collectAsState()
+        val pagedDisableZoomInPref = readerPreferences.pagedDisableZoomIn()
+        val landscapeZoomPref = readerPreferences.landscapeZoom()
+        val pagedDisableZoomIn by pagedDisableZoomInPref.collectAsState()
+        val landscapeZoom by landscapeZoomPref.collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -313,7 +315,7 @@ object SettingsReaderScreen : SearchableSettings {
                 ),
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.landscapeZoom(),
+                    preference = landscapeZoomPref,
                     title = stringResource(MR.strings.pref_landscape_zoom),
                     // KMK -->
                     enabled = imageScaleType in zoomWideImagesAllowedList,
@@ -332,7 +334,7 @@ object SettingsReaderScreen : SearchableSettings {
                     enabled = landscapeZoom && imageScaleType in zoomWideImagesAllowedList,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.pagedDisableZoomIn(),
+                    preference = pagedDisableZoomInPref,
                     title = stringResource(KMR.strings.pref_paged_disable_zoom_in),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
@@ -414,6 +416,19 @@ object SettingsReaderScreen : SearchableSettings {
                         .toImmutableMap(),
                     title = stringResource(MR.strings.pref_read_with_tapping_inverted),
                     enabled = navMode != 5,
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.webtoonScaleType(),
+                    entries = persistentListOf(
+                        ReaderPreferences.WebtoonScaleType.FIT,
+                        ReaderPreferences.WebtoonScaleType.R16_9,
+                        ReaderPreferences.WebtoonScaleType.R20_9,
+                        ReaderPreferences.WebtoonScaleType.R4_3,
+                        ReaderPreferences.WebtoonScaleType.R3_2,
+                    )
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_webtoon_scale_type),
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = webtoonSidePadding,

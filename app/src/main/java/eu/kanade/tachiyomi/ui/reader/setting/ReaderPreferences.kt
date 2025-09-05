@@ -63,6 +63,10 @@ class ReaderPreferences(
 
     fun imageScaleType() = preferenceStore.getInt("pref_image_scale_type_key", 1)
 
+    // KMK -->
+    fun webtoonScaleType() = preferenceStore.getEnum("pref_webtoon_scale_type_key", WebtoonScaleType.FIT)
+    // KMK <--
+
     fun zoomStart() = preferenceStore.getInt("pref_zoom_start_key", 1)
 
     fun readerTheme() = preferenceStore.getInt("pref_reader_theme_key", 1)
@@ -236,6 +240,17 @@ class ReaderPreferences(
     ) {
         FIT(MR.strings.scale_type_fit_screen),
         DOUBLE(KMR.strings.scale_type_double),
+    }
+
+    enum class WebtoonScaleType(
+        val titleRes: StringResource,
+        val ratio: Float,
+    ) {
+        FIT(MR.strings.scale_type_fit_screen, 0f),
+        R16_9(KMR.strings.scale_type_16_9, 9f / 16f),
+        R20_9(KMR.strings.scale_type_20_9, 9f / 20f),
+        R4_3(KMR.strings.scale_type_4_3, 3f / 4f),
+        R3_2(KMR.strings.scale_type_3_2, 2f / 3f),
     }
     // KMK <--
 

@@ -47,6 +47,8 @@ class WebtoonConfig(
         private set
 
     var pinchToZoomChangedListener: ((Boolean) -> Unit)? = null
+
+    val webtoonScaleType = readerPreferences.webtoonScaleType().get()
     // KMK <--
 
     // SY -->
