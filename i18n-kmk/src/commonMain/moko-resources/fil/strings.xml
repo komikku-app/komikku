@@ -119,7 +119,7 @@
     <string name="action_clear_manga">I-reset ang manga</string>
     <string name="action_update">I-update</string>
     <string name="updating">Nag-a-update</string>
-    <string name="pref_track_on_add_library">Buksan ang menu sa pag-track na naka-on sa padaragdag sa aklatan</string>
+    <string name="pref_track_on_add_library">Buksan ang menu sa pag-track na naka-on sa pagdaragdag sa aklatan</string>
     <string name="downloaded_data">Nadownload na datos</string>
     <string name="chapters_from_database">Mga Kabanata at Kasaysayan mula sa Database</string>
 </resources>
