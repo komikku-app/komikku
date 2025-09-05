@@ -42,7 +42,7 @@
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">Сахарная вата</string>
     <string name="theme_matrix">Матрица</string>
-    <string name="theme_mocha">Моккачино</string>
+    <string name="theme_mocha">Мокко</string>
     <string name="theme_sapphire">Сапфир</string>
     <string name="pref_show_updating_progress_banner">Показывать баннер прогресса обновления</string>
     <string name="pref_show_restoring_progress_banner">Показывать баннер прогресса восстановления</string>
