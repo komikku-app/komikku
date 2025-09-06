@@ -1476,31 +1476,30 @@ class LibraryScreenModel(
                 val useLangIcon = this.firstOrNull()?.useLangIcon == true
 
                 val sources = groupCache.keys
-                    .map { (sourceId, lang) -> sourceManager.getOrStub(sourceId) to lang }
-                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { (source, lang) ->
-                        source.name.ifBlank { source.id.toString() } + " (" +
-                            (if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()) +
-                            ")"
-                    })
+                    .map { (sourceId, lang) ->
+                        val source = sourceManager.getOrStub(sourceId)
+                        val langText = if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()
+                        val sourceName = if (source.id == LocalSource.ID) {
+                            preferences.context.stringResource(MR.strings.local_source)
+                        } else {
+                            source.name.ifBlank { source.id.toString() }
+                        }
+                        Triple(source, lang, "$sourceName ($langText)")
+                    }
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.third })
 
-                sources.associate { (source, lang) ->
+                sources.mapIndexed { index, (source, lang, name) ->
                     val category = Category(
                         id = (source.id.toString() + "_" + lang).hashCode().toLong(),
-                        name = (
-                            if (source.id == LocalSource.ID) {
-                                preferences.context.stringResource(MR.strings.local_source)
-                            } else {
-                                source.name.ifBlank { source.id.toString() }
-                            }
-                            ) + " (" + (if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()) + ")",
-                        order = sources.indexOfFirst { it.first.id == source.id && it.second == lang }.toLong(),
+                        name = name,
+                        order = index.toLong(),
                         flags = 0,
                         // KMK -->
                         hidden = false,
                         // KMK <--
                     )
                     category to groupCache[Pair(source.id, lang)]?.distinct().orEmpty()
-                }
+                }.toMap()
                 // KMK <--
             }
             LibraryGroup.BY_STATUS -> {
