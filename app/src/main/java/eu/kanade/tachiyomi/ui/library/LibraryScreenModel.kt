@@ -120,6 +120,7 @@ import tachiyomi.domain.track.interactor.GetTracksPerManga
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -1468,29 +1469,37 @@ class LibraryScreenModel(
             }
             LibraryGroup.BY_SOURCE -> {
                 // KMK -->
-                val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
+                val groupCache = mutableMapOf<Pair<Long, String>, MutableList<Long>>()
                 forEach { item ->
-                    groupCache.getOrPut(item.libraryManga.manga.source) { mutableListOf() }.add(item.id)
+                    groupCache.getOrPut(Pair(item.libraryManga.manga.source, item.sourceLanguage)) { mutableListOf() }.add(item.id)
                 }
-                val sources = groupCache.keys
-                    .map { sourceManager.getOrStub(it) }
-                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
+                val useLangIcon = this.firstOrNull()?.useLangIcon == true
 
-                sources.associate {
+                val sources = groupCache.keys
+                    .map { (sourceId, lang) -> sourceManager.getOrStub(sourceId) to lang }
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { (source, lang) ->
+                        source.name.ifBlank { source.id.toString() } + " (" +
+                            (if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()) +
+                            ")"
+                    })
+
+                sources.associate { (source, lang) ->
                     val category = Category(
-                        id = it.id,
-                        name = if (it.id == LocalSource.ID) {
-                            context.stringResource(MR.strings.local_source)
-                        } else {
-                            it.name.ifBlank { it.id.toString() }
-                        },
-                        order = sources.indexOf(it).toLong(),
+                        id = (source.id.toString() + "_" + lang).hashCode().toLong(),
+                        name = (
+                            if (source.id == LocalSource.ID) {
+                                preferences.context.stringResource(MR.strings.local_source)
+                            } else {
+                                source.name.ifBlank { source.id.toString() }
+                            }
+                            ) + " (" + (if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()) + ")",
+                        order = sources.indexOfFirst { it.first.id == source.id && it.second == lang }.toLong(),
                         flags = 0,
                         // KMK -->
                         hidden = false,
                         // KMK <--
                     )
-                    category to groupCache[it.id]?.distinct().orEmpty()
+                    category to groupCache[Pair(source.id, lang)]?.distinct().orEmpty()
                 }
                 // KMK <--
             }
