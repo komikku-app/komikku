@@ -40,6 +40,7 @@ class WebtoonViewer(
     private val tapByPage: Boolean = false,
     // KMK -->
     @ColorInt private val seedColor: Int? = null,
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
     // KMK <--
 ) : Viewer {
 
@@ -89,7 +90,9 @@ class WebtoonViewer(
     var currentPage: Any? = null
 
     private val threshold: Int =
-        Injekt.get<ReaderPreferences>()
+        // KMK -->
+        readerPreferences
+            // KMK <--
             .readerHideThreshold()
             .get()
             .threshold
@@ -174,7 +177,9 @@ class WebtoonViewer(
             frame.pinchToZoom = it
         }
 
-        config.webtoonScaleTypeChangedListener = { scaleType ->
+        config.webtoonScaleTypeChangedListener = f@{ scaleType ->
+            if (!isContinuous && !readerPreferences.longStripGapSmartScale().get()) return@f
+
             if (scaleType != ReaderPreferences.WebtoonScaleType.FIT) {
                 // Call `scaleTo` after the view is loaded and visible
                 recycler.post {

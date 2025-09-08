@@ -425,6 +425,10 @@ object SettingsReaderScreen : SearchableSettings {
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_webtoon_scale_type),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.longStripGapSmartScale(),
+                    title = stringResource(KMR.strings.pref_smart_scale_long_strip_gap),
+                ),
                 // KMK <--
                 Preference.PreferenceItem.SliderPreference(
                     value = webtoonSidePadding,

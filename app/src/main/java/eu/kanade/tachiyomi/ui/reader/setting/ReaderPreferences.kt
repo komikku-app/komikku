@@ -65,6 +65,7 @@ class ReaderPreferences(
 
     // KMK -->
     fun webtoonScaleType() = preferenceStore.getEnum("pref_webtoon_scale_type_key", WebtoonScaleType.FIT)
+    fun longStripGapSmartScale() = preferenceStore.getBoolean("pref_webtoon_smart_scale_long_strip_gap", false)
     // KMK <--
 
     fun zoomStart() = preferenceStore.getInt("pref_zoom_start_key", 1)
