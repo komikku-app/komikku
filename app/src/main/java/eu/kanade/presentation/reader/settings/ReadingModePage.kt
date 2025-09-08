@@ -55,7 +55,12 @@ internal fun ReadingModePage(screenModel: ReaderSettingsScreenModel) {
 
     val viewer by screenModel.viewerFlow.collectAsState()
     if (viewer is WebtoonViewer) {
-        WebtoonViewerSettings(screenModel)
+        WebtoonViewerSettings(
+            screenModel,
+            // KMK -->
+            readingMode,
+            // KMK <--
+        )
         // SY -->
         WebtoonWithGapsViewerSettings(screenModel)
         // SY <--
@@ -207,7 +212,12 @@ private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
 }
 
 @Composable
-private fun WebtoonViewerSettings(screenModel: ReaderSettingsScreenModel) {
+private fun WebtoonViewerSettings(
+    screenModel: ReaderSettingsScreenModel,
+    // KMK -->
+    readingMode: ReadingMode,
+    // KMK <--
+) {
     val numberFormat = remember { NumberFormat.getPercentInstance() }
 
     HeadingItem(MR.strings.webtoon_viewer)
@@ -224,13 +234,16 @@ private fun WebtoonViewerSettings(screenModel: ReaderSettingsScreenModel) {
     // KMK -->
     val webtoonScaleTypePref = screenModel.preferences.webtoonScaleType()
     val webtoonScaleType by webtoonScaleTypePref.collectAsState()
-    SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
-        ReaderPreferences.webtoonScaleTypes.map { it ->
-            FilterChip(
-                selected = webtoonScaleType == it,
-                onClick = { webtoonScaleTypePref.set(it) },
-                label = { Text(stringResource(it.titleRes)) },
-            )
+    val webtoonSmartScaleLongStripGap = screenModel.preferences.longStripGapSmartScale().get()
+    if (readingMode != ReadingMode.CONTINUOUS_VERTICAL || webtoonSmartScaleLongStripGap) {
+        SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
+            ReaderPreferences.webtoonScaleTypes.map { it ->
+                FilterChip(
+                    selected = webtoonScaleType == it,
+                    onClick = { webtoonScaleTypePref.set(it) },
+                    label = { Text(stringResource(it.titleRes)) },
+                )
+            }
         }
     }
     // KMK <--
