@@ -20,7 +20,7 @@ jobs:
           script: |
             const prAuthor = context.payload.pull_request.user.login;
 
-            if (prAuthor === 'cuong-tran') {
+            if (prAuthor === 'weblate') {
               const labels = ['translations'];
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
