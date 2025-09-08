@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
+import exh.util.nullIfZero
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
@@ -183,8 +184,8 @@ class WebtoonViewer(
             if (scaleType != ReaderPreferences.WebtoonScaleType.FIT) {
                 // Call `scaleTo` after the view is loaded and visible
                 recycler.post {
-                    val currentWidth = activity.window.decorView.width
-                    val currentHeight = activity.window.decorView.height
+                    val currentWidth = activity.window.decorView.width.nullIfZero() ?: return@post
+                    val currentHeight = activity.window.decorView.height.nullIfZero() ?: return@post
 
                     val desiredRatio = scaleType.ratio
                     val screenRatio = currentWidth.toFloat() / currentHeight
