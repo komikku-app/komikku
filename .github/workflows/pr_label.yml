@@ -5,7 +5,9 @@ on:
     types: [opened]
 
 permissions:
-  contents: write
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   label_pr:
@@ -18,9 +20,9 @@ jobs:
           script: |
             const prAuthor = context.payload.pull_request.user.login;
 
-            if (prAuthor === 'weblate') {
-              const labels = ['Translations'];
-              await github.issues.addLabels({
+            if (prAuthor === 'cuong-tran') {
+              const labels = ['translations'];
+              await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
