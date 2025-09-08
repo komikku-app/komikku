@@ -24,7 +24,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -174,6 +173,29 @@ class WebtoonViewer(
         config.pinchToZoomChangedListener = {
             frame.pinchToZoom = it
         }
+
+        config.webtoonScaleTypeChangedListener = { scaleType ->
+            if (scaleType != ReaderPreferences.WebtoonScaleType.FIT) {
+                // Call `scaleTo` after the view is loaded and visible
+                recycler.post {
+                    val currentWidth = activity.window.decorView.width
+                    val currentHeight = activity.window.decorView.height
+
+                    val desiredRatio = scaleType.ratio
+                    val screenRatio = currentWidth.toFloat() / currentHeight
+                    val desiredWidth = currentHeight * desiredRatio
+                    val desiredScale = desiredWidth / currentWidth
+
+                    if (screenRatio > desiredRatio) {
+                        recycler.scaleTo(desiredScale)
+                    }
+                }
+            } else {
+                recycler.post {
+                    recycler.scaleTo(1f)
+                }
+            }
+        }
         // KMK <--
 
         config.zoomPropertyChangedListener = {
@@ -271,31 +293,6 @@ class WebtoonViewer(
             val pages = chapters.currChapter.pages ?: return
             moveToPage(pages[min(chapters.currChapter.requestedPage, pages.lastIndex)])
             recycler.isVisible = true
-
-            if (config.webtoonScaleType != ReaderPreferences.WebtoonScaleType.FIT) {
-                // Call onScale after the view is loaded and visible
-                recycler.post {
-                    // Get rendered width & height of the view, or if the view is not ready then get the width & height of screen.
-                    // If ratio of width over height is greater than 9/16 then call onScale to maximum of height*9/16
-                    val currentWidth = recycler.width.takeIf { it > 0 } ?: activity.window.decorView.width
-                    val currentHeight = recycler.height.takeIf { it > 0 } ?: activity.window.decorView.height
-                    Timber.e("Current WxH: ${currentWidth}x${currentHeight}")
-
-                    val desiredRatio = config.webtoonScaleType.ratio
-                    Timber.e("Desired ratio: $desiredRatio")
-
-                    val screenRatio = currentWidth.toFloat() / currentHeight
-                    Timber.e("Screen ratio: $screenRatio")
-                    val desiredWidth = currentHeight * desiredRatio
-                    Timber.e("Desired width: $desiredWidth")
-                    val desiredScale = desiredWidth / currentWidth
-                    Timber.e("Desired scale: $desiredScale")
-
-                    if (screenRatio > desiredRatio) {
-                        recycler.onScale(desiredScale)
-                    }
-                }
-            }
         }
     }
 

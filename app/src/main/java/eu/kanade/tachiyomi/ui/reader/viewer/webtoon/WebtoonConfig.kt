@@ -50,6 +50,8 @@ class WebtoonConfig(
 
     var webtoonScaleType = readerPreferences.webtoonScaleType().get()
         private set
+
+    var webtoonScaleTypeChangedListener: ((ReaderPreferences.WebtoonScaleType) -> Unit)? = null
     // KMK <--
 
     // SY -->
@@ -122,7 +124,7 @@ class WebtoonConfig(
         readerPreferences.webtoonScaleType()
             .register(
                 { webtoonScaleType = it },
-                { imagePropertyChangedListener?.invoke() },
+                { webtoonScaleTypeChangedListener?.invoke(it) },
             )
         // KMK <--
 

@@ -417,19 +417,15 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_read_with_tapping_inverted),
                     enabled = navMode != 5,
                 ),
+                // KMK -->
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.webtoonScaleType(),
-                    entries = persistentListOf(
-                        ReaderPreferences.WebtoonScaleType.FIT,
-                        ReaderPreferences.WebtoonScaleType.R16_9,
-                        ReaderPreferences.WebtoonScaleType.R20_9,
-                        ReaderPreferences.WebtoonScaleType.R4_3,
-                        ReaderPreferences.WebtoonScaleType.R3_2,
-                    )
+                    entries = ReaderPreferences.webtoonScaleTypes
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_webtoon_scale_type),
                 ),
+                // KMK <--
                 Preference.PreferenceItem.SliderPreference(
                     value = webtoonSidePadding,
                     valueRange = ReaderPreferences.let {

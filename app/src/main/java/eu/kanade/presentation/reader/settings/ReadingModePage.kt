@@ -221,6 +221,20 @@ private fun WebtoonViewerSettings(screenModel: ReaderSettingsScreenModel) {
         onSelectInvertMode = screenModel.preferences.webtoonNavInverted()::set,
     )
 
+    // KMK -->
+    val webtoonScaleTypePref = screenModel.preferences.webtoonScaleType()
+    val webtoonScaleType by webtoonScaleTypePref.collectAsState()
+    SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
+        ReaderPreferences.webtoonScaleTypes.map { it ->
+            FilterChip(
+                selected = webtoonScaleType == it,
+                onClick = { webtoonScaleTypePref.set(it) },
+                label = { Text(stringResource(it.titleRes)) },
+            )
+        }
+    }
+    // KMK <--
+
     val webtoonSidePadding by screenModel.preferences.webtoonSidePadding().collectAsState()
     SliderItem(
         value = webtoonSidePadding,
