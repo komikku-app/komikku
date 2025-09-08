@@ -193,6 +193,8 @@ class WebtoonViewer(
 
                     if (screenRatio > desiredRatio) {
                         recycler.scaleTo(desiredScale)
+                    } else {
+                        recycler.scaleTo(1f)
                     }
                 }
             } else {
