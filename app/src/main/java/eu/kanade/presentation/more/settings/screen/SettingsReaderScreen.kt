@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.Companion.zoomWideImagesAllowedList
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.WebtoonScaleType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import kotlinx.collections.immutable.persistentListOf
@@ -324,10 +325,7 @@ object SettingsReaderScreen : SearchableSettings {
                 // KMK -->
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.landscapeZoomType(),
-                    entries = persistentListOf(
-                        ReaderPreferences.LandscapeZoomScaleType.FIT,
-                        ReaderPreferences.LandscapeZoomScaleType.DOUBLE,
-                    )
+                    entries = ReaderPreferences.LandscapeZoomScaleType.entries
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_landscape_zoom_type),
@@ -420,7 +418,7 @@ object SettingsReaderScreen : SearchableSettings {
                 // KMK -->
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.webtoonScaleType(),
-                    entries = ReaderPreferences.webtoonScaleTypes
+                    entries = WebtoonScaleType.entries
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_webtoon_scale_type),

@@ -188,8 +188,8 @@ class WebtoonViewer(
                 }
 
                 // Call `scaleTo` after the view is loaded and visible
-                val currentWidth = activity.window.decorView.width.nullIfZero() ?: return@post
-                val currentHeight = activity.window.decorView.height.nullIfZero() ?: return@post
+                val currentWidth = recycler.width.takeIf { it > 0 } ?: activity.window.decorView.width.nullIfZero() ?: return@post
+                val currentHeight = recycler.originalHeight.takeIf { it > 0 } ?: activity.window.decorView.height.nullIfZero() ?: return@post
 
                 val desiredRatio = scaleType.ratio
                 val screenRatio = currentWidth.toFloat() / currentHeight

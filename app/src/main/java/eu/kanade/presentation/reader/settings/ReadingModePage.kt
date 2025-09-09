@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.domain.manga.model.readerOrientation
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
@@ -130,11 +129,7 @@ private fun PagerViewerSettings(screenModel: ReaderSettingsScreenModel) {
     )
 
     // KMK -->
-    if (imageScaleType in listOf(
-            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
-            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
-        )
-    ) {
+    if (imageScaleType in ReaderPreferences.zoomWideImagesAllowedList) {
         // KMK <--
         CheckboxItem(
             label = stringResource(MR.strings.pref_landscape_zoom),
@@ -237,7 +232,7 @@ private fun WebtoonViewerSettings(
     val webtoonSmartScaleLongStripGap = screenModel.preferences.longStripGapSmartScale().get()
     if (readingMode != ReadingMode.CONTINUOUS_VERTICAL || webtoonSmartScaleLongStripGap) {
         SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
-            ReaderPreferences.webtoonScaleTypes.forEach { scaleType ->
+            ReaderPreferences.WebtoonScaleType.entries.forEach { scaleType ->
                 FilterChip(
                     selected = webtoonScaleType == scaleType,
                     onClick = { webtoonScaleTypePref.set(scaleType) },

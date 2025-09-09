@@ -297,14 +297,6 @@ class ReaderPreferences(
             SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
             SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
         )
-
-        val webtoonScaleTypes = listOf(
-            WebtoonScaleType.FIT,
-            WebtoonScaleType.R4_3,
-            WebtoonScaleType.R3_2,
-            WebtoonScaleType.R16_9,
-            WebtoonScaleType.R20_9,
-        )
         // KMK <--
 
         val ColorFilterMode = buildList {
