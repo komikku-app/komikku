@@ -237,11 +237,11 @@ private fun WebtoonViewerSettings(
     val webtoonSmartScaleLongStripGap = screenModel.preferences.longStripGapSmartScale().get()
     if (readingMode != ReadingMode.CONTINUOUS_VERTICAL || webtoonSmartScaleLongStripGap) {
         SettingsChipRow(KMR.strings.pref_webtoon_scale_type) {
-            ReaderPreferences.webtoonScaleTypes.map { it ->
+            ReaderPreferences.webtoonScaleTypes.forEach { scaleType ->
                 FilterChip(
-                    selected = webtoonScaleType == it,
-                    onClick = { webtoonScaleTypePref.set(it) },
-                    label = { Text(stringResource(it.titleRes)) },
+                    selected = webtoonScaleType == scaleType,
+                    onClick = { webtoonScaleTypePref.set(scaleType) },
+                    label = { Text(stringResource(scaleType.titleRes)) },
                 )
             }
         }
