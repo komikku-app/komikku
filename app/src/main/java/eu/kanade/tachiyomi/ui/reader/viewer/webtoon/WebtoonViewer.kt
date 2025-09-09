@@ -181,25 +181,24 @@ class WebtoonViewer(
         config.webtoonScaleTypeChangedListener = f@{ scaleType ->
             if (!isContinuous && !readerPreferences.longStripGapSmartScale().get()) return@f
 
-            if (scaleType != ReaderPreferences.WebtoonScaleType.FIT) {
-                // Call `scaleTo` after the view is loaded and visible
-                recycler.post {
-                    val currentWidth = activity.window.decorView.width.nullIfZero() ?: return@post
-                    val currentHeight = activity.window.decorView.height.nullIfZero() ?: return@post
-
-                    val desiredRatio = scaleType.ratio
-                    val screenRatio = currentWidth.toFloat() / currentHeight
-                    val desiredWidth = currentHeight * desiredRatio
-                    val desiredScale = desiredWidth / currentWidth
-
-                    if (screenRatio > desiredRatio) {
-                        recycler.scaleTo(desiredScale)
-                    } else {
-                        recycler.scaleTo(1f)
-                    }
+            recycler.post {
+                if (scaleType == ReaderPreferences.WebtoonScaleType.FIT) {
+                    recycler.scaleTo(1f)
+                    return@post
                 }
-            } else {
-                recycler.post {
+
+                // Call `scaleTo` after the view is loaded and visible
+                val currentWidth = activity.window.decorView.width.nullIfZero() ?: return@post
+                val currentHeight = activity.window.decorView.height.nullIfZero() ?: return@post
+
+                val desiredRatio = scaleType.ratio
+                val screenRatio = currentWidth.toFloat() / currentHeight
+                val desiredWidth = currentHeight * desiredRatio
+                val desiredScale = desiredWidth / currentWidth
+
+                if (screenRatio > desiredRatio) {
+                    recycler.scaleTo(desiredScale)
+                } else {
                     recycler.scaleTo(1f)
                 }
             }
