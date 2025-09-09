@@ -291,6 +291,11 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = libraryPreferences.hideMissingChapters(),
                     title = stringResource(MR.strings.pref_hide_missing_chapter_indicators),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.syncOnAdd(),
+                    title = stringResource(KMR.strings.pref_sync_manga_on_add),
+                    subtitle = stringResource(KMR.strings.pref_sync_manga_on_add_description),
+                ),
             ),
         )
     }
