@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
+import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -615,8 +616,12 @@ class ReaderViewModel @JvmOverloads constructor(
             return
         }
 
+        /**
+         * This code is likely deprecated since once `chapter.pageLoader` is initialized with [HttpPageLoader],
+         * it would set `chapter.state` to `Loading` or `Loaded` and return early already.
+         */
         if (chapter.pageLoader?.isLocal == false) {
-            val manga = manga ?: return
+            val manga = state.value.mergedManga?.get(chapter.chapter.manga_id) ?: manga ?: return
             val dbChapter = chapter.chapter
             val isDownloaded = downloadManager.isChapterDownloaded(
                 dbChapter.name,
@@ -699,14 +704,19 @@ class ReaderViewModel @JvmOverloads constructor(
         if (getCurrentChapter()?.pageLoader !is DownloadPageLoader) return
         val nextChapter = state.value.viewerChapters?.nextChapter?.chapter ?: return
 
+        // KMK -->
+        val mangas = state.value.mergedManga ?: mapOf(manga.id to manga)
+        val nextChapterManga = mangas[nextChapter.manga_id] ?: return
+        // KMK <--
+
         viewModelScope.launchIO {
             val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
                 nextChapter.name,
                 nextChapter.scanlator,
-                // SY -->
-                manga.ogTitle,
-                // SY <--
-                manga.source,
+                // KMK -->
+                nextChapterManga.ogTitle,
+                nextChapterManga.source,
+                // KMK <--
             )
             if (!isNextChapterDownloaded) return@launchIO
 
@@ -718,10 +728,15 @@ class ReaderViewModel @JvmOverloads constructor(
                 }
             }.take(downloadAheadAmount)
 
-            downloadManager.downloadChapters(
-                manga,
-                chaptersToDownload,
-            )
+            // KMK -->
+            chaptersToDownload.groupBy { it.mangaId }.forEach { (mangaId, chapters) ->
+                val chapterManga = mangas[mangaId] ?: return@forEach
+                downloadManager.downloadChapters(
+                    chapterManga,
+                    chapters,
+                )
+            }
+            // KMK <--
         }
     }
 
