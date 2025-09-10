@@ -1469,37 +1469,39 @@ class LibraryScreenModel(
             }
             LibraryGroup.BY_SOURCE -> {
                 // KMK -->
-                val groupCache = mutableMapOf<Pair<Long, String>, MutableList<Long>>()
+                val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
                 forEach { item ->
-                    groupCache.getOrPut(Pair(item.libraryManga.manga.source, item.sourceLanguage)) { mutableListOf() }.add(item.id)
+                    groupCache.getOrPut(item.libraryManga.manga.source) { mutableListOf() }.add(item.id)
                 }
-                val useLangIcon = this.firstOrNull()?.useLangIcon == true
-
                 val sources = groupCache.keys
-                    .map { (sourceId, lang) ->
-                        val source = sourceManager.getOrStub(sourceId)
-                        val langText = if (useLangIcon) FlagEmoji.getEmojiLangFlag(lang) else lang.uppercase()
-                        val sourceName = if (source.id == LocalSource.ID) {
-                            preferences.context.stringResource(MR.strings.local_source)
-                        } else {
-                            source.name.ifBlank { source.id.toString() }
-                        }
-                        Triple(source, lang, "$sourceName ($langText)")
-                    }
-                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.third })
+                    .map { sourceManager.getOrStub(it) }
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
 
-                sources.mapIndexed { index, (source, lang, name) ->
+                sources.associate {
                     val category = Category(
-                        id = (source.id.toString() + "_" + lang).hashCode().toLong(),
-                        name = name,
-                        order = index.toLong(),
+                        id = it.id,
+                        name = if (it.id == LocalSource.ID) {
+                            context.stringResource(MR.strings.local_source)
+                        } else {
+                            // KMK -->
+                            // FIXME: This useLangIcon should be moved out ouf LibraryItem & subscribe to changes() directly from preferences
+                            val useLangIcon = groupCache[it.id]?.let { it.firstOrNull()?.let { itemId -> this.firstOrNull { it.id == itemId } } }?.useLangIcon == true
+                            val langText = if (useLangIcon) FlagEmoji.getEmojiLangFlag(it.lang) else it.lang.uppercase()
+                            // KMK <--
+                            it.name.ifBlank { it.id.toString() }.let { sourceName ->
+                                // KMK -->
+                                "$sourceName ($langText)"
+                                // KMK <--
+                            }
+                        },
+                        order = sources.indexOf(it).toLong(),
                         flags = 0,
                         // KMK -->
                         hidden = false,
                         // KMK <--
                     )
-                    category to groupCache[Pair(source.id, lang)]?.distinct().orEmpty()
-                }.toMap()
+                    category to groupCache[it.id]?.distinct().orEmpty()
+                }
                 // KMK <--
             }
             LibraryGroup.BY_STATUS -> {
