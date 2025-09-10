@@ -954,9 +954,11 @@ class LibraryScreenModel(
             it.isEhBasedManga() ||
                 it.source in nHentaiSourceIds
         }.fastForEach { manga ->
-            val editedTitle = manga.title.replace(regex1, "").trim()
+            val editedTitle = manga.title
+                .replace(regex1, "").trim()
                 .replace(regex2, "").trim()
-                .replace(regex3, "").trim().let {
+                .replace(regex3, "").trim()
+                .let {
                     if (it.contains("|")) {
                         it.replace(regex4, "").trim()
                     } else {
