@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.Companion.zoomWideImagesAllowedList
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.WebtoonScaleType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import kotlinx.collections.immutable.persistentListOf
@@ -258,8 +259,10 @@ object SettingsReaderScreen : SearchableSettings {
         val rotateToFit by rotateToFitPref.collectAsState()
 
         // KMK -->
-        val pagedDisableZoomIn by readerPreferences.pagedDisableZoomIn().collectAsState()
-        val landscapeZoom by readerPreferences.landscapeZoom().collectAsState()
+        val pagedDisableZoomInPref = readerPreferences.pagedDisableZoomIn()
+        val landscapeZoomPref = readerPreferences.landscapeZoom()
+        val pagedDisableZoomIn by pagedDisableZoomInPref.collectAsState()
+        val landscapeZoom by landscapeZoomPref.collectAsState()
         // KMK <--
 
         return Preference.PreferenceGroup(
@@ -313,7 +316,7 @@ object SettingsReaderScreen : SearchableSettings {
                 ),
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.landscapeZoom(),
+                    preference = landscapeZoomPref,
                     title = stringResource(MR.strings.pref_landscape_zoom),
                     // KMK -->
                     enabled = imageScaleType in zoomWideImagesAllowedList,
@@ -322,17 +325,14 @@ object SettingsReaderScreen : SearchableSettings {
                 // KMK -->
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.landscapeZoomType(),
-                    entries = persistentListOf(
-                        ReaderPreferences.LandscapeZoomScaleType.FIT,
-                        ReaderPreferences.LandscapeZoomScaleType.DOUBLE,
-                    )
+                    entries = ReaderPreferences.LandscapeZoomScaleType.entries
                         .associateWith { stringResource(it.titleRes) }
                         .toImmutableMap(),
                     title = stringResource(KMR.strings.pref_landscape_zoom_type),
                     enabled = landscapeZoom && imageScaleType in zoomWideImagesAllowedList,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.pagedDisableZoomIn(),
+                    preference = pagedDisableZoomInPref,
                     title = stringResource(KMR.strings.pref_paged_disable_zoom_in),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
@@ -415,6 +415,19 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_read_with_tapping_inverted),
                     enabled = navMode != 5,
                 ),
+                // KMK -->
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.webtoonScaleType(),
+                    entries = WebtoonScaleType.entries
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_webtoon_scale_type),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.longStripGapSmartScale(),
+                    title = stringResource(KMR.strings.pref_smart_scale_long_strip_gap),
+                ),
+                // KMK <--
                 Preference.PreferenceItem.SliderPreference(
                     value = webtoonSidePadding,
                     valueRange = ReaderPreferences.let {

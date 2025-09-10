@@ -252,7 +252,8 @@ class LibraryScreenModel(
                 combine(
                     libraryPreferences.sortingMode().changes(),
                     libraryPreferences.showHiddenCategories().changes(),
-                    ::Pair,
+                    libraryPreferences.showEmptyCategoriesSearch().changes(),
+                    ::Triple,
                 ),
                 combine(
                     state.map { it.filterCategory }.distinctUntilChanged(),
@@ -260,7 +261,7 @@ class LibraryScreenModel(
                     ::Pair,
                 ),
                 // KMK <--
-            ) { (data, groupType, noActiveFilterOrSearch), (sort, showHiddenCategories), (filterCategory, includedCategories) ->
+            ) { (data, groupType, noActiveFilterOrSearch), (sort, showHiddenCategories, showEmptyCategoriesSearch), (filterCategory, includedCategories) ->
                 data.favorites
                     .applyGrouping(
                         data.categories,
@@ -285,7 +286,7 @@ class LibraryScreenModel(
                     // KMK -->
                     .filter {
                         // Hide empty categories if no active filter or search
-                        noActiveFilterOrSearch || it.value.isNotEmpty()
+                        showEmptyCategoriesSearch || noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                     .let {
                         // Fall back to default category if no categories are present
@@ -934,7 +935,6 @@ class LibraryScreenModel(
                                 manga.ogTitle,
                                 // SY <--
                                 manga.source,
-
                             )
                     }
                     .let { if (amount != null) it.take(amount) else it }
@@ -946,17 +946,25 @@ class LibraryScreenModel(
 
     // SY -->
     fun cleanTitles() {
+        val regex1 = "\\[.*?]".toRegex()
+        val regex2 = "\\(.*?\\)".toRegex()
+        val regex3 = "\\{.*?\\}".toRegex()
+        val regex4 = ".*\\|".toRegex()
         state.value.selectedManga.fastFilter {
             it.isEhBasedManga() ||
                 it.source in nHentaiSourceIds
         }.fastForEach { manga ->
-            val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
-                if (it.contains("|")) {
-                    it.replace(".*\\|".toRegex(), "").trim()
-                } else {
-                    it
+            val editedTitle = manga.title
+                .replace(regex1, "").trim()
+                .replace(regex2, "").trim()
+                .replace(regex3, "").trim()
+                .let {
+                    if (it.contains("|")) {
+                        it.replace(regex4, "").trim()
+                    } else {
+                        it
+                    }
                 }
-            }
             if (manga.title == editedTitle) return@fastForEach
             val mangaInfo = CustomMangaInfo(
                 id = manga.id,

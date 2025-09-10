@@ -29,6 +29,12 @@
     <string name="pref_paged_disable_zoom_in">Disable zoom in</string>
     <string name="pref_landscape_zoom_type">Wide images zoom mode</string>
     <string name="scale_type_double">Double zoom</string>
+    <string name="pref_webtoon_scale_type">Smart scale on wide screen</string>
+    <string name="pref_smart_scale_long_strip_gap">Apply Smart scale to Long strip with gaps</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
 
     <!-- Preferences -->
       <!-- Appearance section -->
@@ -87,6 +93,7 @@
     <string name="action_display_language_icon">Use language icon</string>
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
+    <string name="pref_show_empty_categories_search">Show empty categories during search/filtering.</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>

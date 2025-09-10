@@ -56,11 +56,13 @@ fun ScanlatorFilterDialog(
             Box {
                 val state = rememberLazyListState()
                 LazyColumn(state = state) {
+                    // KMK -->
                     items(
                         items = sortedAvailableScanlators,
                         contentType = { "item" },
                         key = { it },
                     ) { scanlator ->
+                        // KMK <--
                         val isExcluded = mutableExcludedScanlators.contains(scanlator)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
