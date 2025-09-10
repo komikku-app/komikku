@@ -169,7 +169,7 @@
     <string name="discord_status_browsing">瀏覽中</string>
     <string name="discord_status_scrolling">滑動瀏覽中</string>
     <string name="discord_status_messing">在隨處看看</string>
-    <string name="discord_download_button">正在閱讀 %s</string>
+    <string name="discord_download_button">在 %s 上閱讀</string>
     <string name="discord_app_description">Komikku - 一款漫畫閱讀應用</string>
     <string name="pref_category_discord_customization">Discord 個人化設置</string>
     <string name="pref_discord_custom_message">自訂訊息</string>
