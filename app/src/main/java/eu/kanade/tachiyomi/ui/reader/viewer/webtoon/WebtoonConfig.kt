@@ -42,6 +42,18 @@ class WebtoonConfig(
 
     var doubleTapZoomChangedListener: ((Boolean) -> Unit)? = null
 
+    // KMK -->
+    var pinchToZoom = true
+        private set
+
+    var pinchToZoomChangedListener: ((Boolean) -> Unit)? = null
+
+    var webtoonScaleType = readerPreferences.webtoonScaleType().get()
+        private set
+
+    var webtoonScaleTypeChangedListener: ((ReaderPreferences.WebtoonScaleType) -> Unit)? = null
+    // KMK <--
+
     // SY -->
     var usePageTransitions = false
 
@@ -101,6 +113,20 @@ class WebtoonConfig(
                 { doubleTapZoom = it },
                 { doubleTapZoomChangedListener?.invoke(it) },
             )
+
+        // KMK -->
+        readerPreferences.webtoonPinchToZoomEnabled()
+            .register(
+                { pinchToZoom = it },
+                { pinchToZoomChangedListener?.invoke(it) },
+            )
+
+        readerPreferences.webtoonScaleType()
+            .register(
+                { webtoonScaleType = it },
+                { webtoonScaleTypeChangedListener?.invoke(it) },
+            )
+        // KMK <--
 
         readerPreferences.readerTheme().changes()
             .drop(1)

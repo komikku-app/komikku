@@ -42,6 +42,7 @@ data class BackupManga(
     @ProtoNumber(108) var excludedScanlators: List<String> = emptyList(),
     @ProtoNumber(109) var version: Long = 0,
     @ProtoNumber(110) var notes: String = "",
+    @ProtoNumber(111) var initialized: Boolean = false,
 
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
@@ -80,6 +81,7 @@ data class BackupManga(
             favoriteModifiedAt = this@BackupManga.favoriteModifiedAt,
             version = this@BackupManga.version,
             notes = this@BackupManga.notes,
+            initialized = this@BackupManga.initialized,
         )
     }
 }

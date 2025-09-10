@@ -443,15 +443,11 @@ class MangaScreenModel(
                         .map { sourceManager.getOrStub(it) },
                 )
             }
-            val chapters = (
-                if (manga.source ==
-                    MERGED_SOURCE_ID
-                ) {
-                    getMergedChaptersByMangaId.await(mangaId, applyFilter = true)
-                } else {
-                    getMangaAndChapters.awaitChapters(mangaId, applyFilter = true)
-                }
-                )
+            val chapters = if (manga.source == MERGED_SOURCE_ID) {
+                getMergedChaptersByMangaId.await(mangaId, applyFilter = true)
+            } else {
+                getMangaAndChapters.awaitChapters(mangaId, applyFilter = true)
+            }
                 .toChapterListItems(manga, mergedData)
             val meta = getFlatMetadata.await(mangaId)
             // SY <--
@@ -937,10 +933,8 @@ class MangaScreenModel(
     /**
      * Opens manga folder with the system's file manager.
      */
-    fun openMangaFolder() {
+    fun openMangaFolder(currentSource: Source?, currentManga: Manga?) {
         try {
-            val currentManga = manga
-            val currentSource = source
             if (currentManga == null || currentSource == null || currentSource is StubSource) return
 
             val mangaDir = downloadProvider.findMangaDir(/* SY --> */ currentManga.ogTitle /* SY <-- */, currentSource) ?: return
@@ -1518,20 +1512,39 @@ class MangaScreenModel(
         screenModelScope.launchNonCancellable {
             try {
                 successState?.let { state ->
-                    downloadManager.deleteChapters(
-                        chapters,
-                        state.manga,
-                        state.source,
-                        // KMK -->
-                        ignoreCategoryExclusion = true,
+                    // KMK --?
+                    if (state.source.id == MERGED_SOURCE_ID) {
+                        chapters.groupBy { it.mangaId }.forEach { map ->
+                            val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
+                            val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+                            downloadManager.deleteChapters(
+                                map.value,
+                                manga,
+                                source,
+                                ignoreCategoryExclusion = true,
+                            )
+                            if (source.isLocal()) {
+                                // Refresh chapters state for Local source
+                                fetchChaptersFromSource()
+                            }
+                        }
+                    } else {
                         // KMK <--
-                    )
-                    // KMK -->
-                    if (source?.isLocal() == true) {
-                        // Refresh chapters state for Local source
-                        fetchChaptersFromSource()
+                        downloadManager.deleteChapters(
+                            chapters,
+                            state.manga,
+                            state.source,
+                            // KMK -->
+                            ignoreCategoryExclusion = true,
+                            // KMK <--
+                        )
+                        // KMK -->
+                        if (state.source.isLocal()) {
+                            // Refresh chapters state for Local source
+                            fetchChaptersFromSource()
+                        }
+                        // KMK <--
                     }
-                    // KMK <--
                 }
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
@@ -1556,14 +1569,32 @@ class MangaScreenModel(
         screenModelScope.launchNonCancellable {
             try {
                 successState?.let { state ->
-                    downloadManager.deleteManga(
-                        manga = state.manga,
-                        source = state.source,
-                        removeQueued = true,
-                    )
-                    if (source?.isLocal() == true) {
-                        // Refresh chapters state for Local source
-                        fetchChaptersFromSource()
+                    if (state.source.id == MERGED_SOURCE_ID) {
+                        state.mergedData?.manga
+                            ?.filterNot { it.key == MERGED_SOURCE_ID }
+                            ?.forEach { (_, manga) ->
+                                val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+
+                                downloadManager.deleteManga(
+                                    manga = manga,
+                                    source = source,
+                                    removeQueued = true,
+                                )
+                                if (source.isLocal()) {
+                                    // Refresh chapters state for Local source
+                                    fetchChaptersFromSource()
+                                }
+                            }
+                    } else {
+                        downloadManager.deleteManga(
+                            manga = state.manga,
+                            source = state.source,
+                            removeQueued = true,
+                        )
+                        if (state.source.isLocal()) {
+                            // Refresh chapters state for Local source
+                            fetchChaptersFromSource()
+                        }
                     }
                 }
             } catch (e: Throwable) {

@@ -16,6 +16,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import logcat.LogPriority
+import mihon.core.archive.ArchiveReader
 import mihon.core.archive.ZipWriter
 import mihon.core.archive.archiveReader
 import mihon.core.archive.epubReader
@@ -259,7 +260,7 @@ actual class LocalSource(
                 noXmlFile == null -> {
                     val chapterArchives = mangaDirFiles.filter(Archive::isSupported)
 
-                    val copiedFile = copyComicInfoFileFromArchive(chapterArchives, mangaDir)
+                    val copiedFile = copyComicInfoFileFromChapters(chapterArchives, mangaDir)
 
                     // SY -->
                     if (copiedFile != null && copiedFile.name != COMIC_INFO_ARCHIVE) {
@@ -281,13 +282,24 @@ actual class LocalSource(
         return@withIOContext manga
     }
 
-    private fun copyComicInfoFileFromArchive(chapterArchives: List<UniFile>, folder: UniFile): UniFile? {
-        for (chapter in chapterArchives) {
-            chapter.archiveReader(context).use { reader ->
-                reader.getInputStream(COMIC_INFO_FILE)?.use { stream ->
-                    return copyComicInfoFile(stream, folder, /* SY --> */ reader.encrypted /* SY <-- */)
-                }
+    private fun <T> getComicInfoForChapter(chapter: UniFile, block: (InputStream, ArchiveReader?) -> T): T? {
+        if (chapter.isDirectory) {
+            return chapter.findFile(COMIC_INFO_FILE)?.let { file ->
+                file.openInputStream().use { block(it, /* SY --> */ null /* SY <-- */) }
             }
+        } else {
+            return chapter.archiveReader(context).use { reader ->
+                reader.getInputStream(COMIC_INFO_FILE)?.use { block(it, /* SY --> */ reader /* SY <-- */) }
+            }
+        }
+    }
+
+    private fun copyComicInfoFileFromChapters(chapterArchives: List<UniFile>, folder: UniFile): UniFile? {
+        for (chapter in chapterArchives) {
+            val file = getComicInfoForChapter(chapter) f@{ stream, /* SY --> */ reader /* SY <-- */ ->
+                return@f copyComicInfoFile(stream, folder, /* SY --> */ reader?.encrypted == true /* SY <-- */)
+            }
+            if (file != null) return file
         }
         return null
     }
@@ -318,12 +330,22 @@ actual class LocalSource(
         }
     }
 
-    private fun setMangaDetailsFromComicInfoFile(stream: InputStream, manga: SManga) {
-        val comicInfo = AndroidXmlReader(stream, StandardCharsets.UTF_8.name()).use {
+    private fun parseComicInfo(stream: InputStream): ComicInfo {
+        return AndroidXmlReader(stream, StandardCharsets.UTF_8.name()).use {
             xml.decodeFromReader<ComicInfo>(it)
         }
+    }
 
-        manga.copyFromComicInfo(comicInfo)
+    private fun setMangaDetailsFromComicInfoFile(stream: InputStream, manga: SManga) {
+        manga.copyFromComicInfo(parseComicInfo(stream))
+    }
+
+    private fun setChapterDetailsFromComicInfoFile(stream: InputStream, chapter: SChapter) {
+        val comicInfo = parseComicInfo(stream)
+
+        comicInfo.title?.let { chapter.name = it.value }
+        comicInfo.number?.value?.toFloatOrNull()?.let { chapter.chapter_number = it }
+        comicInfo.translator?.let { chapter.scanlator = it.value }
     }
 
     // Chapters
@@ -350,12 +372,15 @@ actual class LocalSource(
                         format.file.epubReader(context).use { epub ->
                             epub.fillMetadata(manga, this)
                         }
+                    } else {
+                        getComicInfoForChapter(chapterFile) { stream, /* SY --> */ _ /* SY <-- */ ->
+                            setChapterDetailsFromComicInfoFile(stream, this)
+                        }
                     }
                 }
             }
             .sortedWith { c1, c2 ->
-                val c = c2.chapter_number.compareTo(c1.chapter_number)
-                if (c == 0) c2.name.compareToCaseInsensitiveNaturalOrder(c1.name) else c
+                c2.name.compareToCaseInsensitiveNaturalOrder(c1.name)
             }
 
         // Copy the cover from the first chapter found if not available

@@ -25,6 +25,17 @@
     <string name="action_copy_to_clipboard_combined_page">Copy combined page to clipboard</string>
     <string name="pref_viewer_nav_smaller_tap_zone">Smaller tap zones</string>
     <string name="error_opening_folder">Failed to open folder</string>
+    <string name="pref_pinch_to_zoom">Pinch to zoom</string>
+    <string name="pref_paged_disable_zoom_in">Disable zoom in</string>
+    <string name="pref_landscape_zoom_type">Wide images zoom mode</string>
+    <string name="scale_type_double">Double zoom</string>
+    <string name="pref_webtoon_scale_type">Smart scale on wide screen</string>
+    <string name="pref_smart_scale_long_strip_gap">Apply Smart scale to Long strip with gaps</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
@@ -82,6 +93,7 @@
     <string name="action_display_language_icon">Use language icon</string>
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
+    <string name="pref_show_empty_categories_search">Show empty categories during search/filtering.</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
@@ -164,4 +176,52 @@
     <string name="label_to_be_updated">To be updated</string>
     <string name="sponsor_me">Sponsor Me</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+
+    <!-- Connections section -->
+    <string name="special_services">Special Services</string>
+    <string name="pref_category_connections">Connections</string>
+    <string name="pref_connections_summary">Discord, more to come..</string>
+    <string name="pref_discord_configuration">Configure Discord RPC</string>
+    <string name="connections_discord">Discord</string>
+    <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and %s does not share it anywhere else</string>
+    <string name="pref_discord_rpc">Discord Rich Presence</string>
+    <string name="show_chapters_titles_title">Show Chapter Titles</string>
+    <string name="show_chapters_titles_subtitle">Show the title of the chapter you are reading</string>
+    <string name="pref_enable_discord_rpc">Enable Discord Rich Presence</string>
+    <string name="pref_discord_status">Discord Status</string>
+    <string name="pref_discord_dnd">⛔ Do Not Disturb</string>
+    <string name="pref_discord_idle">🌙 Idle</string>
+    <string name="pref_discord_online">🟢 Online</string>
+    <string name="pref_category_discord_incognito">RPC Incognito</string>
+    <string name="pref_discord_incognito">Discord Incognito mode</string>
+    <string name="pref_discord_incognito_summary">Overridden when Incognito Mode is enabled</string>
+    <string name="pref_discord_incognito_categories_details">Entries in included categories will not be displayed in Discord</string>
+    <string name="discord_accounts">Discord Accounts</string>
+    <string name="active_account">Active Account</string>
+    <string name="no_accounts_found">No accounts found</string>
+    <string name="login_failed">Failed to login</string>
+
+    <!-- Discord section -->
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Using</string>
+    <string name="discord_status_browsing">Browsing</string>
+    <string name="discord_status_scrolling">Scrolling through</string>
+    <string name="discord_status_messing">Messing around with</string>
+    <string name="discord_download_button">Read on %s</string>
+    <string name="discord_app_description">Komikku - a manga reader app</string>
+
+    <!-- Discord RPC Customization -->
+    <string name="pref_category_discord_customization">Discord Customization</string>
+    <string name="pref_discord_custom_message">Custom Message</string>
+    <string name="pref_discord_custom_message_summary">Custom message that will be displayed on Discord</string>
+    <string name="pref_discord_show_progress">Show Progress</string>
+    <string name="pref_discord_show_progress_summary">Display the current reading chapter</string>
+    <string name="pref_discord_show_timestamp">Show Time</string>
+    <string name="pref_discord_show_timestamp_summary">Display activity time</string>
+    <string name="pref_discord_show_buttons">Show Buttons</string>
+    <string name="pref_discord_show_buttons_summary">Display buttons to download the app or join the Discord server</string>
+    <string name="pref_discord_show_download_button">Show Download Button</string>
+    <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
+    <string name="pref_discord_show_discord_button">Show Discord Button</string>
+    <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
 </resources>

@@ -216,6 +216,13 @@
             android:label="EHentaiLogin"
             android:exported="false"/>
 
+        <service
+            android:name=".data.connections.discord.DiscordRPCService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync">
+        </service>
+
         <receiver
             android:name=".data.notification.NotificationReceiver"
             android:exported="false" />

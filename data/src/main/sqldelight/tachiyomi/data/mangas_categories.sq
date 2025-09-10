@@ -22,12 +22,3 @@ VALUES (:mangaId, :categoryId);
 deleteMangaCategoryByMangaId:
 DELETE FROM mangas_categories
 WHERE manga_id = :mangaId;
-
--- KMK -->
-getCategoriesPerLibraryManga:
-SELECT MC.manga_id, MC.category_id
-FROM mangas_categories MC
-JOIN mangas M
-ON MC.manga_id = M._id
-WHERE M.favorite = 1;
--- KMK <--
