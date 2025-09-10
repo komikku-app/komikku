@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -120,7 +121,6 @@ import tachiyomi.domain.track.interactor.GetTracksPerManga
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -1480,20 +1480,22 @@ class LibraryScreenModel(
                 sources.associate {
                     val category = Category(
                         id = it.id,
-                        name = if (it.id == LocalSource.ID) {
-                            context.stringResource(MR.strings.local_source)
-                        } else {
-                            // KMK -->
-                            // FIXME: This useLangIcon should be moved out ouf LibraryItem & subscribe to changes() directly from preferences
-                            val useLangIcon = groupCache[it.id]?.let { it.firstOrNull()?.let { itemId -> this.firstOrNull { it.id == itemId } } }?.useLangIcon == true
-                            val langText = if (useLangIcon) FlagEmoji.getEmojiLangFlag(it.lang) else it.lang.uppercase()
-                            // KMK <--
-                            it.name.ifBlank { it.id.toString() }.let { sourceName ->
-                                // KMK -->
-                                "$sourceName ($langText)"
-                                // KMK <--
-                            }
-                        },
+                        // TODO: Probably add condition for useLangIcon to `getNameForMangaInfo` too
+                        name = it.getNameForMangaInfo(),
+//                        if (it.id == LocalSource.ID) {
+//                            context.stringResource(MR.strings.local_source)
+//                        } else {
+//                            // KMK -->
+//                            // FIXME: This useLangIcon should be moved out ouf LibraryItem & subscribe to changes() directly from preferences
+//                            val useLangIcon = groupCache[it.id]?.let { it.firstOrNull()?.let { itemId -> this.firstOrNull { it.id == itemId } } }?.useLangIcon == true
+//                            val langText = if (useLangIcon) FlagEmoji.getEmojiLangFlag(it.lang) else it.lang.uppercase()
+//                            // KMK <--
+//                            it.name.ifBlank { it.id.toString() }.let { sourceName ->
+//                                // KMK -->
+//                                "$sourceName ($langText)"
+//                                // KMK <--
+//                            }
+//                        },
                         order = sources.indexOf(it).toLong(),
                         flags = 0,
                         // KMK -->
