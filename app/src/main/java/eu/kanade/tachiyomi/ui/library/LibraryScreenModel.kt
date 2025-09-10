@@ -1244,7 +1244,7 @@ class LibraryScreenModel(
                                     (manga.artist?.contains(query, true) != true) &&
                                     (manga.description?.contains(query, true) != true) &&
                                     // KMK -->
-                                    (source?.getNameForMangaInfo()?.contains(query, true) == true) &&
+                                    (source?.getNameForMangaInfo()?.contains(query, true) != true) &&
                                     // KMK <--
                                     (sourceIdString != null && sourceIdString != query) &&
                                     (
