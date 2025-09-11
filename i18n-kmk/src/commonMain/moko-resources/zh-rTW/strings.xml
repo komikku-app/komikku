@@ -144,7 +144,7 @@
     <string name="scale_type_double">雙倍縮放</string>
     <string name="special_services">特別服務</string>
     <string name="pref_category_connections">連結</string>
-    <string name="pref_connections_summary">Discord，更多內容即將推出</string>
+    <string name="pref_connections_summary">Discord，更多服務即將推出</string>
     <string name="pref_discord_configuration">設定 Discord 豐富狀態</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">此 Discord 服務是透過 Token 記錄運作的，使用風險請自行承擔，您的 Token 會儲存在本機，%s 不會將其分享至其他地方</string>
@@ -158,8 +158,8 @@
     <string name="pref_discord_online">🟢 線上</string>
     <string name="pref_category_discord_incognito">隱形模式 (RPC)</string>
     <string name="pref_discord_incognito">Discord 隱形模式</string>
-    <string name="pref_discord_incognito_summary">啟用隱形模式時設定會被覆蓋</string>
-    <string name="pref_discord_incognito_categories_details">屬於被包含類別的項目將不會在 Discord 中顯示</string>
+    <string name="pref_discord_incognito_summary">啟用隱形模式時將會被覆蓋</string>
+    <string name="pref_discord_incognito_categories_details">屬於所選類別的項目將不會在 Discord 中顯示</string>
     <string name="discord_accounts">Discord 帳號</string>
     <string name="active_account">活動帳號</string>
     <string name="no_accounts_found">沒有找到帳號</string>
@@ -168,7 +168,7 @@
     <string name="discord_status_using">使用中</string>
     <string name="discord_status_browsing">瀏覽中</string>
     <string name="discord_status_scrolling">滑動瀏覽中</string>
-    <string name="discord_status_messing">在隨處看看</string>
+    <string name="discord_status_messing">隨意看看</string>
     <string name="discord_download_button">在 %s 上閱讀</string>
     <string name="discord_app_description">Komikku - 一款漫畫閱讀應用</string>
     <string name="pref_category_discord_customization">Discord 個人化設置</string>
