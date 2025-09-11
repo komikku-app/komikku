@@ -121,11 +121,14 @@ class WebtoonConfig(
                 { pinchToZoomChangedListener?.invoke(it) },
             )
 
-        readerPreferences.webtoonScaleType()
-            .register(
-                { webtoonScaleType = it },
-                { webtoonScaleTypeChangedListener?.invoke(it) },
-            )
+        readerPreferences.webtoonScaleType().changes()
+            .drop(1)
+            .distinctUntilChanged()
+            .onEach {
+                webtoonScaleType = it
+                imagePropertyChangedListener?.invoke()
+            }
+            .launchIn(scope)
         // KMK <--
 
         readerPreferences.readerTheme().changes()

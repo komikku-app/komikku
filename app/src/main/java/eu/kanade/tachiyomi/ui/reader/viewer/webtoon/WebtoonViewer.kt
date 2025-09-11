@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
-import exh.util.nullIfZero
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
@@ -182,14 +181,14 @@ class WebtoonViewer(
             if (!isContinuous && !readerPreferences.longStripGapSmartScale().get()) return@f
 
             recycler.post {
+                // Call `scaleTo` after the view is loaded and visible
+                val currentWidth = recycler.width.takeIf { it > 0 } ?: return@post
+                val currentHeight = recycler.originalHeight.takeIf { it > 0 } ?: return@post
+
                 if (scaleType == ReaderPreferences.WebtoonScaleType.FIT) {
                     recycler.scaleTo(1f)
                     return@post
                 }
-
-                // Call `scaleTo` after the view is loaded and visible
-                val currentWidth = recycler.width.takeIf { it > 0 } ?: activity.window.decorView.width.nullIfZero() ?: return@post
-                val currentHeight = recycler.originalHeight.takeIf { it > 0 } ?: activity.window.decorView.height.nullIfZero() ?: return@post
 
                 val desiredRatio = scaleType.ratio
                 val screenRatio = currentWidth.toFloat() / currentHeight
@@ -300,6 +299,10 @@ class WebtoonViewer(
             val pages = chapters.currChapter.pages ?: return
             moveToPage(pages[min(chapters.currChapter.requestedPage, pages.lastIndex)])
             recycler.isVisible = true
+
+            // KMK -->
+            config.webtoonScaleTypeChangedListener?.invoke(config.webtoonScaleType)
+            // KMK <--
         }
     }
 
