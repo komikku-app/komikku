@@ -34,3 +34,4 @@ ktlint_standard_type-parameter-comment = disabled
 ktlint_standard_max-line-length = disabled
 ktlint_standard_value-argument-comment = disabled
 ktlint_standard_value-parameter-comment = disabled
+ktlint_standard_comment-spacing = disabled
