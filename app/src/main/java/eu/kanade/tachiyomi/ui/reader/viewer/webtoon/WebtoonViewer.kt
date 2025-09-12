@@ -228,7 +228,11 @@ class WebtoonViewer(
 
                     // Add listener to be removed when scope is destroyed
                     scope.coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion {
-                        recycler.post { recycler.viewTreeObserver.removeOnGlobalLayoutListener(listener) }
+                        recycler.post {
+                            if (recycler.viewTreeObserver.isAlive) {
+                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(listener)
+                            }
+                        }
                     }
                 }
             }
