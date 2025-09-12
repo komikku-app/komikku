@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewTreeObserver
 import android.view.animation.LinearInterpolator
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
@@ -209,7 +210,7 @@ class WebtoonViewer(
                 } else {
                     var retryCount = 0
                     val maxRetries = 20
-                    recycler.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                    val globalLayoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
                         override fun onGlobalLayout() {
                             if (recycler.width > 0 && recycler.originalHeight > 0) {
                                 recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
@@ -221,7 +222,8 @@ class WebtoonViewer(
                                 }
                             }
                         }
-                    })
+                    }
+                    recycler.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
                 }
             }
         }
