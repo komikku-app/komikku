@@ -210,19 +210,32 @@ class WebtoonViewer(
                 } else {
                     var retryCount = 0
                     val maxRetries = 20
-                    val globalLayoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
-                        override fun onGlobalLayout() {
-                            if (recycler.width > 0 && recycler.originalHeight > 0) {
-                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                applyScale()
-                            } else {
-                                retryCount++
-                                if (retryCount >= maxRetries) {
-                                    recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                }
+                    var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
+                    val removeListener = {
+                        globalLayoutListener?.let { listener ->
+                            recycler.viewTreeObserver.removeOnGlobalLayoutListener(listener)
+                            globalLayoutListener = null
+                        }
+                    }
+
+                    globalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+                        if (recycler.width > 0 && recycler.originalHeight > 0) {
+                            removeListener()
+                            applyScale()
+                        } else {
+                            retryCount++
+                            if (retryCount >= maxRetries) {
+                                removeListener()
                             }
                         }
                     }
+
+                    // Add listener to be removed when scope is destroyed
+                    scope.coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion {
+                        recycler.post { removeListener() }
+                    }
+
                     recycler.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
                 }
             }
