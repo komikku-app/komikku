@@ -182,15 +182,14 @@ class WebtoonViewer(
             if (!isContinuous && !readerPreferences.longStripGapSmartScale().get()) return@f
 
             recycler.post {
-                // Call `scaleTo` after the view is loaded and visible
-                val applyScale: () -> Unit = applyScale@{
+                recycler.doOnLayout doOnLayout@{
                     val currentWidth = recycler.width
                     val currentHeight = recycler.originalHeight
-                    if (currentWidth <= 0 || currentHeight <= 0) return@applyScale
+                    if (currentWidth <= 0 || currentHeight <= 0) return@doOnLayout
 
                     if (scaleType == ReaderPreferences.WebtoonScaleType.FIT) {
                         recycler.scaleTo(1f)
-                        return@applyScale
+                        return@doOnLayout
                     }
 
                     val desiredRatio = scaleType.ratio
@@ -203,12 +202,6 @@ class WebtoonViewer(
                     } else {
                         recycler.scaleTo(1f)
                     }
-                }
-
-                if (recycler.width > 0 && recycler.originalHeight > 0) {
-                    applyScale()
-                } else {
-                    recycler.doOnLayout { applyScale() }
                 }
             }
         }
