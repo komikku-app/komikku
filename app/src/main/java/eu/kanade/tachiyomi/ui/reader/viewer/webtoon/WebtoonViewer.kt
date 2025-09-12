@@ -207,11 +207,18 @@ class WebtoonViewer(
                 if (recycler.width > 0 && recycler.originalHeight > 0) {
                     applyScale()
                 } else {
+                    var retryCount = 0
+                    val maxRetries = 20
                     recycler.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
                         override fun onGlobalLayout() {
                             if (recycler.width > 0 && recycler.originalHeight > 0) {
                                 recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
                                 applyScale()
+                            } else {
+                                retryCount++
+                                if (retryCount >= maxRetries) {
+                                    recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                }
                             }
                         }
                     })
