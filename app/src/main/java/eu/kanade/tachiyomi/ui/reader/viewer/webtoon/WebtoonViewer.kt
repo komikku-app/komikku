@@ -6,10 +6,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewTreeObserver
 import android.view.animation.LinearInterpolator
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -208,33 +208,7 @@ class WebtoonViewer(
                 if (recycler.width > 0 && recycler.originalHeight > 0) {
                     applyScale()
                 } else {
-                    val listener = object : ViewTreeObserver.OnGlobalLayoutListener {
-                        private var retryCount = 0
-                        private val maxRetries = 20
-
-                        override fun onGlobalLayout() {
-                            val dimensionsReady = recycler.width > 0 && recycler.originalHeight > 0
-                            if (dimensionsReady) {
-                                applyScale()
-                            } else {
-                                retryCount++
-                            }
-
-                            if (dimensionsReady || retryCount >= maxRetries) {
-                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                            }
-                        }
-                    }
-                    recycler.viewTreeObserver.addOnGlobalLayoutListener(listener)
-
-                    // Add listener to be removed when scope is destroyed
-                    scope.coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion {
-                        recycler.post {
-                            if (recycler.viewTreeObserver.isAlive) {
-                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(listener)
-                            }
-                        }
-                    }
+                    recycler.doOnLayout { applyScale() }
                 }
             }
         }
