@@ -213,14 +213,15 @@ class WebtoonViewer(
                         private val maxRetries = 20
 
                         override fun onGlobalLayout() {
-                            if (recycler.width > 0 && recycler.originalHeight > 0) {
-                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                            val dimensionsReady = recycler.width > 0 && recycler.originalHeight > 0
+                            if (dimensionsReady) {
                                 applyScale()
                             } else {
                                 retryCount++
-                                if (retryCount >= maxRetries) {
-                                    recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                }
+                            }
+
+                            if (dimensionsReady || retryCount >= maxRetries) {
+                                recycler.viewTreeObserver.removeOnGlobalLayoutListener(this)
                             }
                         }
                     }
