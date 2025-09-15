@@ -15,7 +15,7 @@
     <string name="pref_clean_invalid_downloads">Dọn dẹp các dữ liệu tải xuống không hợp lệ</string>
     <string name="pref_clean_invalid_downloads_summary">Tìm và xóa các dữ liệu, tệp và thư mục tải xuống mà không nằm trong thư viện</string>
     <string name="invalid_downloads_cleaned">Đã dọn dẹp giữ liệu tải xuống không hợp lệ</string>
-    <string name="pref_private_installer_warning">Trách sử dụng Trình cài đặt riêng vì nó chưa hoạt động ổn định, có thể khiến ứng dụng chậm khởi động.</string>
+    <string name="pref_private_installer_warning">Tránh sử dụng Trình cài đặt riêng vì nó chưa hoạt động ổn định, có thể khiến ứng dụng chậm khởi động.</string>
     <string name="whats_coming">Có gì mới (sớm thôi)</string>
     <string name="action_allow_duplicate_manga">Cho phép nó</string>
     <string name="action_skip_duplicate_manga">Bỏ qua nó</string>
@@ -62,7 +62,7 @@
     <string name="action_display_language_icon">Dùng biểu tượng ngôn ngữ</string>
     <string name="action_confirm_color">Chọn màu</string>
     <string name="pref_custom_color">Bảng màu cá nhân hóa</string>
-    <string name="theme_custom">Chủ đề tủy chỉnh</string>
+    <string name="theme_custom">Chủ đề tùy chỉnh</string>
     <string name="extensions_page_need_refresh">Làm mới danh sách tiện ích mở rộng để cập nhật.</string>
     <string name="extensions_page_more">Thêm tiện ích mở rộng...</string>
     <string name="pref_expand_related_mangas">Mở rộng phần Gợi ý</string>
@@ -101,7 +101,7 @@
     <string name="pref_panorama_cover_flow">Dải ảnh bìa toàn cảnh</string>
     <string name="pref_panorama_cover_flow_summary">Hiển thị ảnh bìa toàn cảnh ở màn hình tìm kiếm tổng &amp; thanh gợi ý truyện</string>
     <string name="pref_auto_sync_progress_from_trackers">Tự động đồng bộ chương đã đọc từ các dịch vụ theo dõi</string>
-    <string name="sync_progress_from_trackers_up_to_chapter">Đã động bộ tiến độ từ bộ theo dõi tới chương %d</string>
+    <string name="sync_progress_from_trackers_up_to_chapter">Đã đồng bộ tiến độ từ bộ theo dõi tới chương %d</string>
     <string name="option_label_library_update_errors">Lỗi cập nhật thư viện</string>
     <string name="label_library_update_errors">Lỗi cập nhật thư viện (%d)</string>
     <string name="info_empty_library_update_errors">Bạn không có lỗi cập nhật thư viện nào.</string>
