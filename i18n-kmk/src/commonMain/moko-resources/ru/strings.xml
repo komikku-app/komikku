@@ -157,7 +157,7 @@
     <string name="connections_discord_info">Этот сервис Discord работает путем логгирования токена. Используйте на свой страх и риск. Ваш токен хранится локально, и %s не передаёт его куда-либо ещё</string>
     <string name="pref_discord_rpc">Эффект присутствия в Discord</string>
     <string name="show_chapters_titles_title">Показывать название главы</string>
-    <string name="show_chapters_titles_subtitle">Показывает название главы которую вы читаете</string>
+    <string name="show_chapters_titles_subtitle">Показывает название главы, которую вы читаете</string>
     <string name="pref_enable_discord_rpc">Включить эффект присутствия в Discord</string>
     <string name="pref_discord_status">Статус в Discord</string>
     <string name="pref_discord_dnd">⛔ Не беспокоить</string>
@@ -174,13 +174,13 @@
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">Использует</string>
     <string name="discord_status_browsing">Просматривает</string>
-    <string name="discord_status_scrolling">Просматривает</string>
+    <string name="discord_status_scrolling">Пролистывает</string>
     <string name="discord_status_messing">Играется с</string>
     <string name="discord_download_button">Читайте в %s</string>
     <string name="discord_app_description">Komikku - приложение для чтения манги</string>
     <string name="pref_category_discord_customization">Кастомизация Discord</string>
     <string name="pref_discord_custom_message">Пользовательское сообщение</string>
-    <string name="pref_discord_custom_message_summary">Пользовательское сообщение которое будет показано в Discord</string>
+    <string name="pref_discord_custom_message_summary">Пользовательское сообщение, которое будет показано в Discord</string>
     <string name="pref_discord_show_progress">Показывать прогресс</string>
     <string name="pref_discord_show_progress_summary">Показывает текущую главу</string>
     <string name="pref_discord_show_timestamp">Показывать время</string>
