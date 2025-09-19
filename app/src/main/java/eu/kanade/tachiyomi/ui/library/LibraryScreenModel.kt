@@ -711,7 +711,9 @@ class LibraryScreenModel(
                 return@mapValues value.shuffled(Random(libraryPreferences.randomSortSeed().get()))
             }
 
-            val manga = value.mapNotNull { favoritesById[it] }
+            // KMK -->
+            val manga = value.filter { favoritesById.containsKey(it) }.map { favoritesById[it]!! }
+            // KMK <--
 
             // SY -->
             val comparator = sort.comparator()
