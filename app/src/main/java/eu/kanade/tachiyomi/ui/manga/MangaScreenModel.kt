@@ -1516,7 +1516,7 @@ class MangaScreenModel(
                     if (state.source.id == MERGED_SOURCE_ID) {
                         chapters.groupBy { it.mangaId }.forEach { map ->
                             val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
-                            val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+                            val source = state.mergedData.sources.find { it.id != MERGED_SOURCE_ID && manga.source == it.id } ?: return@forEach
                             downloadManager.deleteChapters(
                                 map.value,
                                 manga,
@@ -1571,9 +1571,8 @@ class MangaScreenModel(
                 successState?.let { state ->
                     if (state.source.id == MERGED_SOURCE_ID) {
                         state.mergedData?.manga
-                            ?.filterNot { it.key == MERGED_SOURCE_ID }
                             ?.forEach { (_, manga) ->
-                                val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+                                val source = state.mergedData.sources.find { it.id != MERGED_SOURCE_ID && manga.source == it.id } ?: return@forEach
 
                                 downloadManager.deleteManga(
                                     manga = manga,
