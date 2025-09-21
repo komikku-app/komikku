@@ -16,9 +16,7 @@ interface ChapterRepository {
 
     suspend fun softDeleteChaptersWithIds(chapterIds: List<Long>)
 
-    suspend fun getChapterByMangaIdIncludeDeleted(mangaId: Long, applyFilter: Boolean = false): List<Chapter>
-
-    suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean = false): List<Chapter>
+    suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean = false, includeDeleted: Boolean = false): List<Chapter>
 
     suspend fun getScanlatorsByMangaId(mangaId: Long): List<String>
 
@@ -28,7 +26,7 @@ interface ChapterRepository {
 
     suspend fun getChapterById(id: Long): Chapter?
 
-    suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyFilter: Boolean = false): Flow<List<Chapter>>
+    suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyFilter: Boolean = false, includeDeleted: Boolean = false): Flow<List<Chapter>>
 
     suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter?
 

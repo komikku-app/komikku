@@ -64,7 +64,9 @@ LEFT JOIN excluded_scanlators ES
 ON C.manga_id = ES.manga_id
 AND C.scanlator = ES.scanlator
 WHERE C.manga_id = :mangaId
-AND C.deleted = 0
+AND (
+    :includeDeleted = 1 OR C.deleted = 0
+)
 AND (
     :applyFilter = 0
     -- KMK -->
@@ -168,26 +170,7 @@ SET manga_id = coalesce(:mangaId, manga_id),
     deleted = coalesce(:deleted, deleted)
 WHERE _id = :chapterId;
 
-getChaptersByMangaIdIncludeDeleted:
-SELECT C.*
-FROM chapters C
--- KMK -->
-JOIN mangas M ON C.manga_id = M._id
--- KMK <--
-LEFT JOIN excluded_scanlators ES
-ON C.manga_id = ES.manga_id
-AND C.scanlator = ES.scanlator
-WHERE C.manga_id = :mangaId
-AND (
-    :applyFilter = 0
-    -- KMK -->
-    OR (
-        ES.scanlator IS NULL
-        AND ((M.chapter_flags & :bookmarkUnmask) = 0 OR C.bookmark = 0)
-        AND ((M.chapter_flags & :bookmarkMask) = 0 OR C.bookmark = 1)
-    )
-    -- KMK <--
-);
+-- removed getChaptersByMangaIdIncludeDeleted: merged into getChaptersByMangaId with :includeDeleted flag
 
 softDeleteChaptersWithIds:
 UPDATE chapters
