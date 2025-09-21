@@ -81,9 +81,10 @@ class SyncChaptersWithSource(
             }
         }
         val chaptersToUndelete = dbChaptersIncludeDeleted.filter { dbChapter ->
-            dbChapter.deleted && sourceChapters.any { sourceChapter ->
-                dbChapter.url == sourceChapter.url
-            }
+            dbChapter.deleted &&
+                sourceChapters.any { sourceChapter ->
+                    dbChapter.url == sourceChapter.url
+                }
         }
 
         // Used to not set upload date of older chapters
@@ -241,8 +242,8 @@ class SyncChaptersWithSource(
         }
 
         if (chaptersToUndelete.isNotEmpty()) {
-            val chapterUpdates = chaptersToUndelete.map { 
-                it.toChapterUpdate().copy(deleted = false) 
+            val chapterUpdates = chaptersToUndelete.map {
+                it.toChapterUpdate().copy(deleted = false)
             }
             updateChapter.awaitAll(chapterUpdates)
         }
