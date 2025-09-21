@@ -14,6 +14,10 @@ interface ChapterRepository {
 
     suspend fun removeChaptersWithIds(chapterIds: List<Long>)
 
+    suspend fun softDeleteChaptersWithIds(chapterIds: List<Long>)
+
+    suspend fun getChapterByMangaIdIncludeDeleted(mangaId: Long, applyFilter: Boolean = false): List<Chapter>
+
     suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean = false): List<Chapter>
 
     suspend fun getScanlatorsByMangaId(mangaId: Long): List<String>

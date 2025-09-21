@@ -68,6 +68,7 @@ class ChapterRepositoryImpl(
                     chapterId = chapterUpdate.id,
                     version = chapterUpdate.version,
                     isSyncing = 0,
+                    deleted = chapterUpdate.deleted,
                 )
             }
         }
@@ -81,9 +82,31 @@ class ChapterRepositoryImpl(
         }
     }
 
+    override suspend fun softDeleteChaptersWithIds(chapterIds: List<Long>) {
+        try {
+            handler.await { chaptersQueries.softDeleteChaptersWithIds(chapterIds) }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+        }
+    }
+
     override suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getChaptersByMangaId(
+                mangaId,
+                applyFilter.toLong(),
+                // KMK -->
+                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                Manga.CHAPTER_SHOW_BOOKMARKED,
+                // KMK <--
+                ChapterMapper::mapChapter,
+            )
+        }
+    }
+
+    override suspend fun getChapterByMangaIdIncludeDeleted(mangaId: Long, applyFilter: Boolean): List<Chapter> {
+        return handler.awaitList {
+            chaptersQueries.getChaptersByMangaIdIncludeDeleted(
                 mangaId,
                 applyFilter.toLong(),
                 // KMK -->
