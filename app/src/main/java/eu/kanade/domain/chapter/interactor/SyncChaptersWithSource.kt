@@ -109,27 +109,26 @@ class SyncChaptersWithSource(
             )
             chapter = chapter.copy(chapterNumber = chapterNumber)
 
-            val dbChapter = dbChapters.find { it.url == chapter.url }
+            val existingChapter = dbChapters.find { it.url == chapter.url }
+                ?: dbChaptersIncludeDeleted.find { it.url == chapter.url && it.deleted }
 
-            if (dbChapter == null) {
-                // Check if this chapter was soft deleted and will be undeleted
-                val deletedChapter = dbChaptersIncludeDeleted.find { it.url == chapter.url && it.deleted }
-                if (deletedChapter == null) {
-                    val toAddChapter = if (chapter.dateUpload == 0L) {
-                        val altDateUpload = if (maxSeenUploadDate == 0L) nowMillis else maxSeenUploadDate
-                        chapter.copy(dateUpload = altDateUpload)
-                    } else {
-                        maxSeenUploadDate = max(maxSeenUploadDate, sourceChapter.dateUpload)
-                        chapter
-                    }
-                    newChapters.add(toAddChapter)
+            if (existingChapter == null) {
+                // Chapter is new, so add it
+                val toAddChapter = if (chapter.dateUpload == 0L) {
+                    val altDateUpload = if (maxSeenUploadDate == 0L) nowMillis else maxSeenUploadDate
+                    chapter.copy(dateUpload = altDateUpload)
+                } else {
+                    maxSeenUploadDate = max(maxSeenUploadDate, sourceChapter.dateUpload)
+                    chapter
                 }
+                newChapters.add(toAddChapter)
             } else {
-                if (shouldUpdateDbChapter.await(dbChapter, chapter)) {
-                    val shouldRenameChapter = downloadProvider.isChapterDirNameChanged(dbChapter, chapter) &&
+                // Chapter exists in DB (deleted or not), check for updates
+                if (shouldUpdateDbChapter.await(existingChapter, chapter)) {
+                    val shouldRenameChapter = downloadProvider.isChapterDirNameChanged(existingChapter, chapter) &&
                         downloadManager.isChapterDownloaded(
-                            dbChapter.name,
-                            dbChapter.scanlator,
+                            existingChapter.name,
+                            existingChapter.scanlator,
                             // SY -->
                             // manga.title,
                             manga.ogTitle,
@@ -138,9 +137,9 @@ class SyncChaptersWithSource(
                         )
 
                     if (shouldRenameChapter) {
-                        downloadManager.renameChapter(source, manga, dbChapter, chapter)
+                        downloadManager.renameChapter(source, manga, existingChapter, chapter)
                     }
-                    var toChangeChapter = dbChapter.copy(
+                    var toChangeChapter = existingChapter.copy(
                         name = chapter.name,
                         chapterNumber = chapter.chapterNumber,
                         scanlator = chapter.scanlator,
