@@ -71,7 +71,11 @@ class BackupNotifier(private val context: Context) {
             .setContentTitle(context.stringResource(MR.strings.creating_backup))
             .setProgress(0, 0, true)
 
-        builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK <--
 
         return builder
     }
