@@ -72,9 +72,9 @@ class MangaBackupCreator(
         }
 
         if (options.chapters) {
-            // Backup all the chapters
+            // Backup all the chapters, including deleted ones for sync
             handler.awaitList {
-                chaptersQueries.getChaptersByMangaId(
+                chaptersQueries.getChaptersByMangaIdIncludeDeleted(
                     mangaId = manga.id,
                     applyFilter = 0, // false
                     // KMK -->

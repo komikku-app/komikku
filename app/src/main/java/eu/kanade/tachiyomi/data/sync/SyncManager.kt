@@ -251,7 +251,7 @@ class SyncManager(
 
     private suspend fun isMangaDifferent(localManga: Manga, remoteManga: BackupManga): Boolean {
         val localChapters = handler.await {
-            chaptersQueries.getChaptersByMangaId(
+            chaptersQueries.getChaptersByMangaIdIncludeDeleted(
                 localManga.id,
                 0,
                 // KMK -->
