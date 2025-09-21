@@ -116,7 +116,7 @@ class BackupNotifier(private val context: Context) {
         // KMK <--
 
         lock.withLock {
-            val builder = (progressNotificationBuilder ?: newProgressBuilder().also { progressNotificationBuilder = it })
+            val builder = progressNotificationBuilder ?: newProgressBuilder().also { progressNotificationBuilder = it }
             with(builder) {
                 setContentTitle(
                     if (sync) {
