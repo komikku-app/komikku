@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.more.settings.widget.ConnectionPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.InfoWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
@@ -173,6 +174,17 @@ internal fun PreferenceItem(
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
                 )
             }
+            // AM (CONNECTIONS) -->
+            is Preference.PreferenceItem.ConnectionPreference -> {
+                item.service.run {
+                    ConnectionPreferenceWidget(
+                        service = this,
+                        checked = isLogged,
+                        onClick = { if (isLogged) item.openSettings() else item.login() },
+                    )
+                }
+            }
+            // <-- AM (CONNECTIONS)
             is Preference.PreferenceItem.InfoPreference -> {
                 InfoWidget(text = item.title)
             }

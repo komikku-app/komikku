@@ -53,10 +53,17 @@ class AddTracks(
                     ?.chapterNumber ?: -1.0
 
                 if (latestLocalReadChapterNumber > track.lastChapterRead) {
+                    /* KMK -->
+                    // This code causes issue NOT settings remote-track's status
                     track = track.copy(
                         lastChapterRead = latestLocalReadChapterNumber,
                     )
+                    KMK <-- */
                     tracker.setRemoteLastChapterRead(track.toDbTrack(), latestLocalReadChapterNumber.toInt())
+                        // KMK -->
+                        .toDomainTrack(idRequired = false)
+                        ?.let { track = it }
+                    // KMK <--
                 }
 
                 if (track.startDate <= 0) {

@@ -48,6 +48,8 @@ class UiPreferences(
 
     fun tabletUiMode() = preferenceStore.getEnum("tablet_ui_mode", TabletUiMode.AUTOMATIC)
 
+    fun imagesInDescription() = preferenceStore.getBoolean("pref_render_images_description", true)
+
     // SY -->
 
     fun expandFilters() = preferenceStore.getBoolean("eh_expand_filters", false)

@@ -1,6 +1,5 @@
 package eu.kanade.presentation.reader.settings
 
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,7 +20,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 
 @Composable
-internal fun ColumnScope.ColorFilterPage(screenModel: ReaderSettingsScreenModel) {
+internal fun ColorFilterPage(screenModel: ReaderSettingsScreenModel) {
     val customBrightness by screenModel.preferences.customBrightness().collectAsState()
     CheckboxItem(
         label = stringResource(MR.strings.pref_custom_brightness),

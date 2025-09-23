@@ -169,6 +169,7 @@ fun HistoryItem(
                         text = readProgress,
                         maxLines = 1,
                         color = LocalContentColor.current.copy(alpha = textAlpha),
+                        style = MaterialTheme.typography.bodySmall,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
