@@ -423,7 +423,7 @@ class LibraryScreenModel(
         // KMK <--
     }
 
-    private fun List<LibraryItem>.applyFilters(
+    private suspend fun List<LibraryItem>.applyFilters(
         trackMap: Map<Long, List<Track>>,
         trackingFilter: Map<Long, TriState>,
         preferences: ItemPreferences,
@@ -461,11 +461,20 @@ class LibraryScreenModel(
         }
         // KMK <--
 
-        val filterFnDownloaded: (LibraryItem) -> Boolean = {
+        val filterFnDownloaded: suspend (LibraryItem) -> Boolean = {
             applyFilter(filterDownloaded) {
                 it.libraryManga.manga.isLocal() ||
                     it.downloadCount > 0 ||
-                    downloadManager.getDownloadCount(it.libraryManga.manga) > 0
+                    // KMK -->
+                    if (it.libraryManga.manga.source == MERGED_SOURCE_ID) {
+                        // FIXME: Calling await in filter could lead to N+1 performance issues.
+                        //  Should include all the merged references in library query instead.
+                        getMergedMangaById.await(it.libraryManga.manga.id)
+                            .sumOf { manga -> downloadManager.getDownloadCount(manga) } > 0
+                    } else {
+                        // KMK <--
+                        downloadManager.getDownloadCount(it.libraryManga.manga) > 0
+                    }
             }
         }
 
@@ -787,13 +796,14 @@ class LibraryScreenModel(
                     downloadCount = if (preferences.downloadBadge) {
                         // SY -->
                         if (manga.manga.source == MERGED_SOURCE_ID) {
-                            runBlocking {
-                                getMergedMangaById.await(manga.manga.id)
-                            }.sumOf { downloadManager.getDownloadCount(it) }.toLong()
+                            // FIXME: N+1 performance issues.
+                            //  Should include all the merged references in library query instead.
+                            getMergedMangaById.await(manga.manga.id)
+                                .sumOf { downloadManager.getDownloadCount(it) }.toLong()
                         } else {
+                            // SY <--
                             downloadManager.getDownloadCount(manga.manga).toLong()
                         }
-                        // SY <--
                     } else {
                         0
                     },
