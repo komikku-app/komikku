@@ -37,7 +37,7 @@ class BackupNotifier(private val context: Context) {
     // KMK <--
 
     private val largeIcon by lazy {
-        BitmapFactory.decodeResource(context.resources, R.mipmap.komikku)
+        BitmapFactory.decodeResource(context.resources, R.drawable.komikku)
     }
 
     private val completeNotificationBuilder by lazy {
