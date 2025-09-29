@@ -477,10 +477,12 @@ class MangaScreen(
 
         val onDismissRequest = {
             screenModel.dismissDialog()
+            // KMK -->
             if (screenModel.autoOpenTrack && screenModel.showTrackDialogAfterCategorySelection) {
                 screenModel.showTrackDialogAfterCategorySelection = false
-                screenModel.showTrackDialog()
+                if (successState.manga.favorite) screenModel.showTrackDialog()
             }
+            // KMK <--
         }
         when (val dialog = successState.dialog) {
             null -> {}
