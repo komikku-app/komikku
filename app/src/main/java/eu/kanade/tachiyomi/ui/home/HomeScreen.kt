@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -120,9 +121,10 @@ object HomeScreen : Screen() {
                             val uiPreferences = remember { Injekt.get<UiPreferences>() }
                             val scope = rememberCoroutineScope()
                             val hideBottomBar by uiPreferences.hideBottomBar().asState(scope)
-                            val bottomNavVisible by produceState(initialValue = !hideBottomBar, key1 = hideBottomBar) {
-                                showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
+                            val showBottomNav by produceState(initialValue = true) {
+                                showBottomNavEvent.receiveAsFlow().collect { value = it }
                             }
+                            val bottomNavVisible = (hideBottomBar == false) && showBottomNav
                             AnimatedVisibility(
                                 visible = bottomNavVisible,
                                 enter = expandVertically(),

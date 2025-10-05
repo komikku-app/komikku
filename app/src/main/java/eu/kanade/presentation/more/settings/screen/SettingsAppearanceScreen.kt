@@ -348,7 +348,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = uiPreferences.hideBottomBar(),
-                    title = "Toggle hide bottom bar",
+                    title = stringResource(MR.strings.pref_hide_bottom_bar),
                 ),
             ),
         )
