@@ -133,7 +133,7 @@ object HomeScreen : Screen() {
                             val showBottomNav by produceState(initialValue = true) {
                                 showBottomNavEvent.receiveAsFlow().collect { value = it }
                             }
-                            val bottomNavVisible = (hideBottomBar == false) && showBottomNav
+                            val bottomNavVisible = hideBottomBar == false && showBottomNav
                             AnimatedVisibility(
                                 visible = bottomNavVisible,
                                 enter = expandVertically(),
