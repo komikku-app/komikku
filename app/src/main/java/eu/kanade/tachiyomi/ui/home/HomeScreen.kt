@@ -1,3 +1,4 @@
+
 package eu.kanade.tachiyomi.ui.home
 
 import androidx.activity.compose.BackHandler
@@ -116,7 +117,10 @@ object HomeScreen : Screen() {
                     },
                     bottomBar = {
                         if (!isTabletUi()) {
-                            val bottomNavVisible by produceState(initialValue = true) {
+                            val uiPreferences = remember { Injekt.get<UiPreferences>() }
+                            val scope = rememberCoroutineScope()
+                            val hideBottomBar by uiPreferences.hideBottomBar().asState(scope)
+                            val bottomNavVisible by produceState(initialValue = !hideBottomBar, key1 = hideBottomBar) {
                                 showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
                             }
                             AnimatedVisibility(
