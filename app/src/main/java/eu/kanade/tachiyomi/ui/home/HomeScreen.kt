@@ -105,14 +105,23 @@ object HomeScreen : Screen() {
                 Scaffold(
                     startBar = {
                         if (isTabletUi()) {
-                            NavigationRail {
-                                TABS
-                                    // SY -->
-                                    .fastFilter { it.isEnabled() }
-                                    // SY <--
-                                    .fastForEach {
-                                        NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
-                                    }
+                            val uiPreferences = remember { Injekt.get<UiPreferences>() }
+                            val scope = rememberCoroutineScope()
+                            val hideBottomBar by uiPreferences.hideBottomBar().asState(scope)
+                            val showBottomNav by produceState(initialValue = true) {
+                                showBottomNavEvent.receiveAsFlow().collect { value = it }
+                            }
+                            val railVisible = (hideBottomBar == false) && showBottomNav
+                            AnimatedVisibility(visible = railVisible) {
+                                NavigationRail {
+                                    TABS
+                                        // SY -->
+                                        .fastFilter { it.isEnabled() }
+                                        // SY <--
+                                        .fastForEach {
+                                            NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
+                                        }
+                                }
                             }
                         }
                     },
