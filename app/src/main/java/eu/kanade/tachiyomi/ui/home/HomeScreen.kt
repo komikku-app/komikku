@@ -111,7 +111,7 @@ object HomeScreen : Screen() {
                             val showBottomNav by produceState(initialValue = true) {
                                 showBottomNavEvent.receiveAsFlow().collect { value = it }
                             }
-                            val railVisible = (hideBottomBar == false) && showBottomNav
+                            val railVisible = hideBottomBar == false && showBottomNav
                             AnimatedVisibility(visible = railVisible) {
                                 NavigationRail {
                                     TABS
