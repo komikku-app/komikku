@@ -7,7 +7,7 @@ xlog = "com.elvishew:xlog:1.11.1"
 ratingbar = "me.zhanghai.android.materialratingbar:library:1.4.0"
 composeRatingbar = "com.github.a914-gowtham:compose-ratingbar:1.3.12"
 
-gradleversionsx = "com.github.ben-manes:gradle-versions-plugin:0.52.0"
+gradleversionsx = "com.github.ben-manes:gradle-versions-plugin:0.53.0"
 
 sqlcipher = "net.zetetic:sqlcipher-android:4.10.0"
 
