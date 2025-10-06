@@ -9,7 +9,7 @@ composeRatingbar = "com.github.a914-gowtham:compose-ratingbar:1.3.12"
 
 gradleversionsx = "com.github.ben-manes:gradle-versions-plugin:0.52.0"
 
-sqlcipher = "net.zetetic:sqlcipher-android:4.9.0"
+sqlcipher = "net.zetetic:sqlcipher-android:4.10.0"
 
 exifinterface = "androidx.exifinterface:exifinterface:1.4.1"
 
