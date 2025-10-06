@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonElement
 const val RICH_PRESENCE_TAG = "discord_rpc"
 
 // Constant for application id
-internal const val RICH_PRESENCE_APPLICATION_ID = "1365208874440986685"
+internal const val RICH_PRESENCE_APPLICATION_ID = "1424627741256585271"
 
 val DOWNLOAD_BUTTON_LABEL_RES = R.string.discord_download_button
 const val DOWNLOAD_BUTTON_URL = "https://komikku-app.github.io/download/"
