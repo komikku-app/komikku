@@ -928,6 +928,7 @@ class LibraryScreenModel(
                                     downloadManager.isChapterDownloaded(
                                         chapter.name,
                                         chapter.scanlator,
+                                        chapter.url,
                                         mergedManga.ogTitle,
                                         mergedManga.source,
                                     )
@@ -946,6 +947,7 @@ class LibraryScreenModel(
                             downloadManager.isChapterDownloaded(
                                 chapter.name,
                                 chapter.scanlator,
+                                chapter.url,
                                 // SY -->
                                 manga.ogTitle,
                                 // SY <--

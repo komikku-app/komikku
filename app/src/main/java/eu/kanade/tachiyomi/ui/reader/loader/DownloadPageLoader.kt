@@ -33,7 +33,15 @@ internal class DownloadPageLoader(
 
     override suspend fun getPages(): List<ReaderPage> {
         val dbChapter = chapter.chapter
-        val chapterPath = downloadProvider.findChapterDir(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source)
+        val chapterPath = downloadProvider.findChapterDir(
+            dbChapter.name,
+            dbChapter.scanlator,
+            dbChapter.url,
+            // SY -->
+            manga.ogTitle,
+            // SY <--
+            source,
+        )
         return if (chapterPath?.isFile == true) {
             getPagesFromArchive(chapterPath)
         } else {
