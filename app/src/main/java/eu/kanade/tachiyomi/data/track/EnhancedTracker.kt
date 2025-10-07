@@ -18,6 +18,15 @@ interface EnhancedTracker {
         return source::class.qualifiedName in getAcceptedSources()
     }
 
+    // KMK -->
+    /**
+     * This tracker will only work with the sources that are accepted by this filter function.
+     */
+    fun accept(sources: List<Source>): Boolean {
+        return sources.any { accept(it) }
+    }
+    // KMK <--
+
     /**
      * Fully qualified source classes that this tracker is compatible with.
      */
