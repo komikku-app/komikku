@@ -66,7 +66,6 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
@@ -421,7 +420,7 @@ class MangaScreen(
                     else -> {}
                 }
             }.takeIf { isConfigurableSource },
-            onClearManga = { screenModel.showClearMangaDialog(successState.source is MergedSource) },
+            onClearManga = { screenModel.showClearMangaDialog() },
             onOpenMangaFolder = {
                 if (successState.mergedData == null) {
                     screenModel.openMangaFolder(screenModel.source, screenModel.manga)
@@ -646,7 +645,6 @@ class MangaScreen(
             // KMK -->
             is MangaScreenModel.Dialog.ClearManga -> {
                 ClearMangaDialog(
-                    isMergedSource = dialog.isMergedSource,
                     onDismissRequest = onDismissRequest,
                     onConfirm = screenModel::clearManga,
                 )
