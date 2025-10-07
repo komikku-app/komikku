@@ -68,8 +68,7 @@ fun TachiyomiTheme(
     if (seedColor != null) {
         DynamicMaterialTheme(
             seedColor = seedColor,
-            useDarkTheme = isSystemInDarkTheme(),
-            withAmoled = isAmoled,
+            isAmoled = isAmoled,
             style = uiPreferences.themeCoverBasedStyle().get(),
             typography = typography,
             animate = true,
