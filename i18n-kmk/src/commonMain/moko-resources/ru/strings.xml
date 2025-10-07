@@ -151,7 +151,7 @@
     <string name="scale_type_3_2">3:2</string>
     <string name="special_services">Особые сервисы</string>
     <string name="pref_category_connections">Подключения</string>
-    <string name="pref_connections_summary">Discord, вскоре будет ещё..</string>
+    <string name="pref_connections_summary">Discord, вскоре будет ещё...</string>
     <string name="pref_discord_configuration">Настроить Discord RPC</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">Этот сервис Discord работает путем логгирования токена. Используйте на свой страх и риск. Ваш токен хранится локально, и %s не передаёт его куда-либо ещё</string>
