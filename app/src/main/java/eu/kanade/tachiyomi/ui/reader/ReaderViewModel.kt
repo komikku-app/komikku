@@ -1463,7 +1463,7 @@ class ReaderViewModel @JvmOverloads constructor(
         val viewer: Viewer? = null,
         val dialog: Dialog? = null,
         val menuVisible: Boolean = false,
-        @param:IntRange(from = -100, to = 100) val brightnessOverlayValue: Int = 0,
+        @field:IntRange(from = -100, to = 100) val brightnessOverlayValue: Int = 0,
 
         // SY -->
         /** for display page number in double-page mode */
