@@ -1470,15 +1470,15 @@ class LibraryScreenModel(
                 }
                 // KMK <--
                 groupCache.mapKeys { (id) ->
+                    // KMK -->
+                    val trackStatus = TrackStatus.entries.find { it.int == id } ?: TrackStatus.OTHER
+                    // KMK <--
                     Category(
                         id = id.toLong(),
-                        name = TrackStatus.entries
-                            .find { it.int == id }
-                            .let { it ?: TrackStatus.OTHER }
-                            .let { context.stringResource(it.res) },
-                        order = TrackStatus.entries.indexOfFirst {
-                            it.int == id
-                        }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
+                        // KMK -->
+                        name = context.stringResource(trackStatus.res),
+                        order = trackStatus.ordinal.toLong(),
+                        // KMK <--
                         flags = 0,
                         // KMK -->
                         hidden = false,
@@ -1498,6 +1498,7 @@ class LibraryScreenModel(
                 val sources = groupCache.keys
                     .map { sourceManager.getOrStub(it) }
                     .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
+                val sourceOrderMap = sources.withIndex().associate { (index, source) -> source.id to index.toLong() }
 
                 sources.associate {
                     val category = Category(
@@ -1507,13 +1508,13 @@ class LibraryScreenModel(
                         } else {
                             it.name.ifBlank { it.id.toString() }
                         },
-                        order = sources.indexOf(it).toLong(),
+                        order = sourceOrderMap[it.id] ?: Long.MAX_VALUE,
                         flags = 0,
                         // KMK -->
                         hidden = false,
                         // KMK <--
                     )
-                    category to groupCache[it.id]?.distinct().orEmpty()
+                    category to groupCache[it.id].orEmpty()
                 }
                 // KMK <--
             }
@@ -1521,26 +1522,13 @@ class LibraryScreenModel(
                 groupBy { item ->
                     item.libraryManga.manga.status
                 }.mapKeys {
+                    // KMK -->
+                    val (nameRes, order) = statusMap[it.key] ?: (MR.strings.unknown to 7L)
+                    // KMK <--
                     Category(
                         id = it.key + 1,
-                        name = when (it.key) {
-                            SManga.ONGOING.toLong() -> context.stringResource(MR.strings.ongoing)
-                            SManga.LICENSED.toLong() -> context.stringResource(MR.strings.licensed)
-                            SManga.CANCELLED.toLong() -> context.stringResource(MR.strings.cancelled)
-                            SManga.ON_HIATUS.toLong() -> context.stringResource(MR.strings.on_hiatus)
-                            SManga.PUBLISHING_FINISHED.toLong() -> context.stringResource(MR.strings.publishing_finished)
-                            SManga.COMPLETED.toLong() -> context.stringResource(MR.strings.completed)
-                            else -> context.stringResource(MR.strings.unknown)
-                        },
-                        order = when (it.key) {
-                            SManga.ONGOING.toLong() -> 1
-                            SManga.LICENSED.toLong() -> 2
-                            SManga.CANCELLED.toLong() -> 3
-                            SManga.ON_HIATUS.toLong() -> 4
-                            SManga.PUBLISHING_FINISHED.toLong() -> 5
-                            SManga.COMPLETED.toLong() -> 6
-                            else -> 7
-                        },
+                        name = context.stringResource(nameRes),
+                        order = order,
                         flags = 0,
                         // KMK -->
                         hidden = false,
@@ -1548,12 +1536,23 @@ class LibraryScreenModel(
                     )
                 }
                     // KMK -->
-                    .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id }.distinct() }
+                    .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id } }
                 // KMK <--
             }
             else -> emptyMap()
         }.toSortedMap(compareBy { it.order })
     }
+
+    // KMK -->
+    private val statusMap = mapOf(
+        SManga.ONGOING.toLong() to (MR.strings.ongoing to 1L),
+        SManga.COMPLETED.toLong() to (MR.strings.completed to 2L),
+        SManga.PUBLISHING_FINISHED.toLong() to (MR.strings.publishing_finished to 3L),
+        SManga.LICENSED.toLong() to (MR.strings.licensed to 4L),
+        SManga.ON_HIATUS.toLong() to (MR.strings.on_hiatus to 5L),
+        SManga.CANCELLED.toLong() to (MR.strings.cancelled to 6L),
+    )
+    // KMK <--
 
     fun runRecommendationSearch(selection: List<Manga>) {
         recommendationSearch.runSearch(screenModelScope, selection)?.let {
