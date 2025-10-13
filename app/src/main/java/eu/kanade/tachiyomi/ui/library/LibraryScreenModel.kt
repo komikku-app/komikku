@@ -1670,7 +1670,7 @@ class LibraryScreenModel(
         val displayedCategories: List<Category> = groupedFavorites.keys.toList()
 
         val coercedActiveCategoryIndex = /* KMK --> */ displayedCategories.indexOfFirst { it.id == activeCategoryId }
-            .let { if (it != -1) it else activeCategoryIndex }
+            .takeIf { it != -1 } ?: activeCategoryIndex
             // KMK <--
             .coerceIn(
                 minimumValue = 0,
