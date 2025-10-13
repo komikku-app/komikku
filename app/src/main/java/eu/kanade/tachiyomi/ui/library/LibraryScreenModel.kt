@@ -1386,7 +1386,12 @@ class LibraryScreenModel(
 
     fun updateActiveCategoryIndex(index: Int) {
         val newIndex = mutableState.updateAndGet { state ->
-            state.copy(activeCategoryIndex = index)
+            state.copy(
+                activeCategoryIndex = index,
+                // KMK -->
+                activeCategoryId = state.displayedCategories.getOrNull(index)?.id,
+                // KMK <--
+            )
         }
             .coercedActiveCategoryIndex
 
@@ -1653,6 +1658,9 @@ class LibraryScreenModel(
         val dialog: Dialog? = null,
         val libraryData: LibraryData = LibraryData(),
         private val activeCategoryIndex: Int = 0,
+        // KMK -->
+        private val activeCategoryId: Long? = null,
+        // KMK <--
         private val groupedFavorites: Map<Category, List</* LibraryItem */ Long>> = emptyMap(),
         // SY -->
         val showSyncExh: Boolean = false,
@@ -1671,10 +1679,13 @@ class LibraryScreenModel(
          */
         val displayedCategories: List<Category> = groupedFavorites.keys.toList()
 
-        val coercedActiveCategoryIndex = activeCategoryIndex.coerceIn(
-            minimumValue = 0,
-            maximumValue = displayedCategories.lastIndex.coerceAtLeast(0),
-        )
+        val coercedActiveCategoryIndex = /* KMK --> */ displayedCategories.indexOfFirst { it.id == activeCategoryId }
+            .takeIf { it != -1 } ?: activeCategoryIndex
+            // KMK <--
+            .coerceIn(
+                minimumValue = 0,
+                maximumValue = displayedCategories.lastIndex.coerceAtLeast(0),
+            )
 
         val activeCategory: Category? = displayedCategories.getOrNull(coercedActiveCategoryIndex)
 
