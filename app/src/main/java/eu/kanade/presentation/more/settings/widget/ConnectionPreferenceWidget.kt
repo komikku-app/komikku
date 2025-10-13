@@ -3,10 +3,12 @@ package eu.kanade.presentation.more.settings.widget
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.Icon
@@ -19,37 +21,54 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.connection.components.ConnectionLogoIcon
 import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
+import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 @Suppress("ModifierNotUsedAtRoot", "MagicNumber")
 fun ConnectionPreferenceWidget(
     service: ConnectionsService,
     checked: Boolean,
+    subtitle: String?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
     val highlighted = LocalPreferenceHighlighted.current
+    val minHeight = LocalPreferenceMinHeight.current
     Box(modifier = Modifier.highlightBackground(highlighted)) {
         Row(
             modifier = modifier
+                .sizeIn(minHeight = minHeight)
                 .clickable(enabled = onClick != null, onClick = { onClick?.invoke() })
                 .fillMaxWidth()
-                .padding(horizontal = PrefsHorizontalPadding, vertical = 8.dp),
+                .padding(horizontal = PrefsHorizontalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ConnectionLogoIcon(service)
-            Text(
-                text = stringResource(service.nameStrRes()),
+            Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 16.dp),
-                maxLines = 1,
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = TitleFontSize,
-            )
+                    .padding(horizontal = PrefsHorizontalPadding),
+            ) {
+                Text(
+                    text = stringResource(service.nameStrRes()),
+                    maxLines = 1,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = TitleFontSize,
+                )
+                if (!subtitle.isNullOrBlank()) {
+                    Text(
+                        text = subtitle,
+                        modifier = Modifier
+                            .secondaryItemAlpha(),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                    )
+                }
+            }
             if (checked) {
                 Icon(
                     imageVector = Icons.Outlined.Done,
