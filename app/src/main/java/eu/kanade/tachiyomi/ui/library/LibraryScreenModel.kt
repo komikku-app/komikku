@@ -283,7 +283,7 @@ class LibraryScreenModel(
                     )
                     // KMK -->
                     .filter {
-                        // Hide empty categories if a filter or search is active
+                        // Hide empty categories unless the setting is enabled or there are no active filters/search
                         showEmptyCategoriesSearch || noActiveFilterOrSearch || it.value.isNotEmpty()
                     }
                     .let {
@@ -578,7 +578,7 @@ class LibraryScreenModel(
                     // KMK <--
                 }
                     .associateWith {
-                        groupCache[it.id]
+                        groupCache[it.id]?.toList()
                             // KMK -->
                             ?.distinct()
                             // KMK <--
