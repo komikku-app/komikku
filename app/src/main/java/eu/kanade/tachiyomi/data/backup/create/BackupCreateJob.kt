@@ -13,6 +13,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.hippo.unifile.UniFile
@@ -125,6 +126,20 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
                 .build()
             context.workManager.enqueueUniqueWork(TAG_MANUAL, ExistingWorkPolicy.KEEP, request)
         }
+
+        // KMK -->
+        fun isPeriodicBackupScheduled(context: Context): Boolean {
+            val workInfos = context.workManager
+                .getWorkInfosForUniqueWork(TAG_AUTO)
+                .get()
+
+            return workInfos.any { workInfo ->
+                workInfo.state == WorkInfo.State.ENQUEUED ||
+                    workInfo.state == WorkInfo.State.RUNNING ||
+                    workInfo.state == WorkInfo.State.BLOCKED
+            }
+        }
+        // KMK <--
     }
 }
 

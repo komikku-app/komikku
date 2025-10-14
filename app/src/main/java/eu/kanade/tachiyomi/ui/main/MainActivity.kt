@@ -73,6 +73,7 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.SyncStatus
+import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
@@ -376,6 +377,9 @@ class MainActivity : BaseActivity() {
 
                 HandleOnNewIntent(context = context, navigator = navigator)
 
+                // KMK -->
+                RearmJobs()
+                // KMK <--
                 CheckForUpdates()
                 ShowOnboarding()
             }
@@ -492,6 +496,25 @@ class MainActivity : BaseActivity() {
                 .collectLatest { handleIntentAction(it, navigator) }
         }
     }
+
+    // KMK -->
+    @Composable
+    private fun RearmJobs() {
+        val context = LocalContext.current
+
+        LaunchedEffect(Unit) {
+            launchIO {
+                if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {
+                    try {
+                        BackupCreateJob.setupTask(context)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                    }
+                }
+            }
+        }
+    }
+    // KMK <--
 
     @Composable
     private fun CheckForUpdates() {
