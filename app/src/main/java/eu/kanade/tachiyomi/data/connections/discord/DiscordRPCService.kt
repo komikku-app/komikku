@@ -212,8 +212,9 @@ class DiscordRPCService : Service() {
             }
         }
 
-        fun restart(context: Context) {
-            if (connectionsPreferences.enableDiscordRPC().get()) {
+        fun restart(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
+            val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
+            if (connectionsPreferences.enableDiscordRPC().get() && token.isNotBlank()) {
                 val restartIntent = Intent(context, DiscordRPCService::class.java).apply {
                     action = ACTION_RESTART
                 }
@@ -225,6 +226,9 @@ class DiscordRPCService : Service() {
                     stop(context, 0L)
                     handler.postDelayed({ start(context) }, 1000L)
                 }
+            } else if (token.isBlank()) {
+                Timber.tag(TAG).w("Discord RPC not started due to missing token")
+                connectionsPreferences.enableDiscordRPC().set(false)
             }
         }
 
