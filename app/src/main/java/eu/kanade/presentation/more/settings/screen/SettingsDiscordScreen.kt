@@ -4,11 +4,14 @@ package eu.kanade.presentation.more.settings.screen
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,6 +31,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -35,6 +39,7 @@ import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -224,9 +229,20 @@ object SettingsDiscordScreen : SearchableSettings {
                     ),
                 ),
             ),
-            Preference.PreferenceItem.TextPreference(
-                title = stringResource(MR.strings.logout),
-                onClick = { dialog = LogoutConnectionDialog(connectionsManager.discord) },
+            Preference.PreferenceItem.CustomPreference(
+                title = "testing",
+                content = {
+                    TextPreferenceWidget(
+                        modifier = Modifier
+                            .padding(horizontal = MaterialTheme.padding.large),
+                        title = stringResource(MR.strings.logout),
+                        icon = Icons.AutoMirrored.Filled.Logout,
+                        iconTint = MaterialTheme.colorScheme.error,
+                        onPreferenceClick = {
+                            dialog = LogoutConnectionDialog(connectionsManager.discord)
+                        },
+                    )
+                },
             ),
         )
     }
