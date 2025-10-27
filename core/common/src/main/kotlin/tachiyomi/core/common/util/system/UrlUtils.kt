@@ -100,13 +100,7 @@ object UrlUtils {
         if (colonIndex <= 0) return null
 
         // Optionally, check if the scheme is followed by '//' or not
-        return url.substring(0, colonIndex)
-        val schemeIndex = url.indexOf("://")
-        return if (schemeIndex > 0) {
-            url.substring(0, schemeIndex).lowercase()
-        } else {
-            null
-        }
+        return url.substring(0, colonIndex).lowercase()
     }
 
     /**
