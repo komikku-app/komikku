@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
+import kotlinx.coroutines.guava.await
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
@@ -125,6 +126,24 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
                 .build()
             context.workManager.enqueueUniqueWork(TAG_MANUAL, ExistingWorkPolicy.KEEP, request)
         }
+
+        // KMK -->
+        /**
+         * Returns true if a periodic backup job is currently scheduled.
+         * @param context The application context.
+         * @return True if a periodic backup job is scheduled, false otherwise.
+         * @throws Exception If there is an error retrieving the work info.
+         */
+        suspend fun isPeriodicBackupScheduled(context: Context): Boolean {
+            val workInfos = context.workManager
+                .getWorkInfosForUniqueWork(TAG_AUTO)
+                .await()
+
+            return workInfos.any { workInfo ->
+                !workInfo.state.isFinished
+            }
+        }
+        // KMK <--
     }
 }
 
