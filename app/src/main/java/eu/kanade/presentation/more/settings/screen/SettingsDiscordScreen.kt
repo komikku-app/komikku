@@ -230,7 +230,7 @@ object SettingsDiscordScreen : SearchableSettings {
                 ),
             ),
             Preference.PreferenceItem.CustomPreference(
-                title = "testing",
+                title = stringResource(MR.strings.logout),
                 content = {
                     TextPreferenceWidget(
                         modifier = Modifier

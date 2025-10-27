@@ -16,7 +16,7 @@ object UrlUtils {
 
         val trimmedUrl = url.trim()
 
-        // Check for common online URL schemes
+        // Check for common local storage URL schemes
         return when {
             // Standard HTTP/HTTPS URLs
             trimmedUrl.startsWith("http://", ignoreCase = true) -> true
@@ -26,7 +26,7 @@ object UrlUtils {
             trimmedUrl.startsWith("ftp://", ignoreCase = true) -> true
             trimmedUrl.startsWith("ftps://", ignoreCase = true) -> true
 
-            // If none of the above patterns match, assume it's not a valid online URL
+            // If none of the above patterns match, assume it's not a valid local URL
             else -> false
         }
     }
@@ -42,7 +42,7 @@ object UrlUtils {
 
         val trimmedUrl = url.trim()
 
-        // Check for common online URL schemes
+        // Check for embedded data URL schemes
         return when {
             // Local file schemes
             trimmedUrl.startsWith("file://", ignoreCase = true) -> true
@@ -57,11 +57,17 @@ object UrlUtils {
             trimmedUrl.startsWith("./") -> true
             trimmedUrl.startsWith("../") -> true
 
-            // If none of the above patterns match, assume it's not a valid online URL
+            // If none of the above patterns match, assume it's not a valid embedded URL
             else -> false
         }
     }
 
+    /**
+     * Detects if a URL string represents an embedded resource (such as blob or data URLs)
+     *
+     * @param url The URL string to check
+     * @return true if the URL is an embedded resource, false otherwise
+     */
     fun isEmbeddedUrl(url: String?): Boolean {
         if (url.isNullOrBlank()) return false
 
