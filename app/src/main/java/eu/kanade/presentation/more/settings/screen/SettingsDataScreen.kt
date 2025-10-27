@@ -568,7 +568,7 @@ object SettingsDataScreen : SearchableSettings {
                             if (it != SyncManager.SyncService.NONE.value) {
                                 SyncDataJob.setupTask(context)
                             } else {
-                                SyncDataJob.setupTask(context, 0)
+                                SyncDataJob.setupTask(context, prefInterval = 0)
                             }
                             // KMK <--
                             true
@@ -830,7 +830,7 @@ object SettingsDataScreen : SearchableSettings {
                     ),
                     title = stringResource(SYMR.strings.pref_sync_interval),
                     onValueChanged = {
-                        SyncDataJob.setupTask(context, it)
+                        SyncDataJob.setupTask(context, prefInterval = it)
                         true
                     },
                 ),
