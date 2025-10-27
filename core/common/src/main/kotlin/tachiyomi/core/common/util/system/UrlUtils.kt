@@ -95,6 +95,12 @@ object UrlUtils {
     fun getUrlScheme(url: String?): String? {
         if (url.isNullOrBlank()) return null
 
+        // Find the first colon, which separates the scheme from the rest
+        val colonIndex = url.indexOf(':')
+        if (colonIndex <= 0) return null
+
+        // Optionally, check if the scheme is followed by '//' or not
+        return url.substring(0, colonIndex)
         val schemeIndex = url.indexOf("://")
         return if (schemeIndex > 0) {
             url.substring(0, schemeIndex).lowercase()
