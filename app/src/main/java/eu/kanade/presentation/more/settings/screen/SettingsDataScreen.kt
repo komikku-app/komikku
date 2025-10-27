@@ -97,6 +97,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsDataScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsDataScreen
 
     val restorePreferenceKeyString = MR.strings.label_backup
@@ -222,7 +223,7 @@ object SettingsDataScreen : SearchableSettings {
                         // KMK <--
                         pickStorageLocation.launch(null)
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     context.toast(MR.strings.file_picker_error)
                 }
             },
@@ -549,6 +550,7 @@ object SettingsDataScreen : SearchableSettings {
     // SY -->
     @Composable
     private fun getSyncPreferences(syncPreferences: SyncPreferences, syncService: Int): List<Preference> {
+        val context = LocalContext.current
         return listOf(
             Preference.PreferenceGroup(
                 title = stringResource(SYMR.strings.pref_sync_service_category),
@@ -561,7 +563,16 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
-                        onValueChanged = { true },
+                        onValueChanged = {
+                            // KMK -->
+                            if (it != SyncManager.SyncService.NONE.value) {
+                                SyncDataJob.setupTask(context)
+                            } else {
+                                SyncDataJob.setupTask(context, prefInterval = 0)
+                            }
+                            // KMK <--
+                            true
+                        },
                     ),
                 ),
             ),
@@ -819,7 +830,7 @@ object SettingsDataScreen : SearchableSettings {
                     ),
                     title = stringResource(SYMR.strings.pref_sync_interval),
                     onValueChanged = {
-                        SyncDataJob.setupTask(context, it)
+                        SyncDataJob.setupTask(context, prefInterval = it)
                         true
                     },
                 ),
