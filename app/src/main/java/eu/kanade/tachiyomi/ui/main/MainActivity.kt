@@ -117,6 +117,7 @@ import logcat.LogPriority
 import mihon.core.migration.Migrator
 import mihon.core.migration.Migrator.scope
 import tachiyomi.core.common.Constants
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
@@ -125,6 +126,8 @@ import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -515,8 +518,8 @@ class MainActivity : BaseActivity() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                "Failed to schedule automatic backup: ${e.localizedMessage ?: "Unknown error"}",
-                                Toast.LENGTH_LONG
+                                stringResource(KMR.strings.job_failed_schedule_update_check, e.localizedMessage ?: MR.strings.unknown_error),
+                                Toast.LENGTH_LONG,
                             ).show()
                         }
                     }
