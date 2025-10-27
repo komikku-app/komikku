@@ -518,7 +518,7 @@ class MainActivity : BaseActivity() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                stringResource(KMR.strings.job_failed_schedule_update_check, e.localizedMessage ?: MR.strings.unknown_error),
+                                stringResource(KMR.strings.job_failed_schedule_update_check, stringResource(MR.strings.unknown_error)),
                                 Toast.LENGTH_LONG,
                             ).show()
                         }
