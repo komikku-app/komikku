@@ -128,6 +128,12 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
         }
 
         // KMK -->
+        /**
+         * Returns true if a periodic backup job is currently scheduled.
+         * @param context The application context.
+         * @return True if a periodic backup job is scheduled, false otherwise.
+         * @throws Exception If there is an error retrieving the work info.
+         */
         suspend fun isPeriodicBackupScheduled(context: Context): Boolean {
             val workInfos = context.workManager
                 .getWorkInfosForUniqueWork(TAG_AUTO)

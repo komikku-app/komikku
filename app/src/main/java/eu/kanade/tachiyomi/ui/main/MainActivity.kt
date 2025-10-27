@@ -510,18 +510,18 @@ class MainActivity : BaseActivity() {
 
         LaunchedEffect(Unit) {
             launchIO {
-                if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {
-                    try {
+                try {
+                    if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {
                         BackupCreateJob.setupTask(context)
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                stringResource(KMR.strings.job_failed_schedule_update_check, stringResource(MR.strings.unknown_error)),
-                                Toast.LENGTH_LONG,
-                            ).show()
-                        }
+                    }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            context,
+                            stringResource(KMR.strings.job_failed_schedule_update_check, stringResource(MR.strings.unknown_error)),
+                            Toast.LENGTH_LONG,
+                        ).show()
                     }
                 }
             }
