@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -102,6 +103,7 @@ import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
 import exh.log.DebugModeOverlay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -110,6 +112,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import mihon.core.migration.Migrator
 import mihon.core.migration.Migrator.scope
@@ -509,6 +512,13 @@ class MainActivity : BaseActivity() {
                         BackupCreateJob.setupTask(context)
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                "Failed to schedule automatic backup: ${e.localizedMessage ?: "Unknown error"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
