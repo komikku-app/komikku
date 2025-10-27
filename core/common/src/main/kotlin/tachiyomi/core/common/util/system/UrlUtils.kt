@@ -99,7 +99,6 @@ object UrlUtils {
         val colonIndex = url.indexOf(':')
         if (colonIndex <= 0) return null
 
-        // Optionally, check if the scheme is followed by '//' or not
         return url.substring(0, colonIndex).lowercase()
     }
 
