@@ -224,7 +224,7 @@ class DiscordRPCService : Service() {
                     Timber.tag(TAG).e(e, "Failed to send restart intent: ${e.message}")
                     // Fallback to stop/start if service isn't running
                     stop(context, 0L)
-                    handler.postDelayed({ start(context) }, 1000L)
+                    handler.postDelayed({ start(context, connectionsManager) }, 1000L)
                 }
             } else if (token.isBlank()) {
                 Timber.tag(TAG).w("Discord RPC not started due to missing token")
