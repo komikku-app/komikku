@@ -16,7 +16,7 @@ object UrlUtils {
 
         val trimmedUrl = url.trim()
 
-        // Check for common local storage URL schemes
+        // Check for common online URL schemes
         return when {
             // Standard HTTP/HTTPS URLs
             trimmedUrl.startsWith("http://", ignoreCase = true) -> true
@@ -42,7 +42,7 @@ object UrlUtils {
 
         val trimmedUrl = url.trim()
 
-        // Check for embedded data URL schemes
+        // Check for local storage URL schemes
         return when {
             // Local file schemes
             trimmedUrl.startsWith("file://", ignoreCase = true) -> true
@@ -73,7 +73,7 @@ object UrlUtils {
 
         val trimmedUrl = url.trim()
 
-        // Check for common online URL schemes
+        // Check for embedded URL schemes
         return when {
             // Blob URLs (typically local/temporary)
             trimmedUrl.startsWith("blob:", ignoreCase = true) -> true
