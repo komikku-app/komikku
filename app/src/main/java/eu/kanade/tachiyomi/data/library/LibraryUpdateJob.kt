@@ -50,6 +50,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -889,5 +890,23 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
                 }
         }
+
+        // KMK -->
+        /**
+         * Returns true if a periodic job is currently scheduled.
+         * @param context The application context.
+         * @return True if a periodic job is scheduled, false otherwise.
+         * @throws Exception If there is an error retrieving the work info.
+         */
+        suspend fun isPeriodicUpdateScheduled(context: Context): Boolean {
+            val workInfos = context.workManager
+                .getWorkInfosForUniqueWork(WORK_NAME_AUTO)
+                .await()
+
+            return workInfos.any { workInfo ->
+                !workInfo.state.isFinished
+            }
+        }
+        // KMK <--
     }
 }

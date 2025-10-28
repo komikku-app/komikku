@@ -173,7 +173,8 @@
     <string name="current_">Current: %1$s</string>
     <string name="migrating_all_entries">Migrating all entries from source</string>
     <!-- Misc -->
-    <string name="job_failed_schedule_update_check">Failed to schedule automatic backup: %s</string>
+    <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
+    <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>
     <string name="label_to_be_updated">To be updated</string>
     <string name="sponsor_me">Sponsor Me</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
