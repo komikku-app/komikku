@@ -44,13 +44,13 @@ import exh.md.utils.MdUtil
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.mangaDexSourceIds
+import exh.util.WorkerUtil
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -899,13 +899,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
          * @throws Exception If there is an error retrieving the work info.
          */
         suspend fun isPeriodicUpdateScheduled(context: Context): Boolean {
-            val workInfos = context.workManager
-                .getWorkInfosForUniqueWork(WORK_NAME_AUTO)
-                .await()
-
-            return workInfos.any { workInfo ->
-                !workInfo.state.isFinished
-            }
+            return WorkerUtil.isPeriodicJobScheduled(context, WORK_NAME_AUTO)
         }
         // KMK <--
     }
