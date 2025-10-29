@@ -191,5 +191,6 @@
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
     <string name="pref_show_empty_categories_search">在搜尋/篩選時顯示空類別</string>
-    <string name="job_failed_schedule_update_check">無法排程自動備份：%s</string>
+    <string name="job_failed_schedule_update_check">無法排程自動書櫃更新：%s</string>
+    <string name="job_failed_schedule_backup_check">無法排程自動備份: %s</string>
 </resources>
