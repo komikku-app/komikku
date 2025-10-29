@@ -96,6 +96,7 @@ import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.IOException
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.concurrent.CopyOnWriteArrayList
@@ -191,12 +192,22 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 }
                 Result.success()
             } catch (e: Exception) {
-                if (e is CancellationException) {
-                    // Assume success although cancelled
-                    Result.success()
-                } else {
-                    logcat(LogPriority.ERROR, e)
-                    Result.failure()
+                when (e) {
+                    is CancellationException -> {
+                        // Assume success although cancelled
+                        Result.success()
+                    }
+
+                    is IOException -> {
+                        // Transient I/O error — request retry with backoff
+                        logcat(LogPriority.WARN, e) { "Transient I/O error, will retry" }
+                        Result.retry()
+                    }
+
+                    else -> {
+                        logcat(LogPriority.ERROR, e)
+                        Result.failure()
+                    }
                 }
             } finally {
                 notifier.cancelProgressNotification()
