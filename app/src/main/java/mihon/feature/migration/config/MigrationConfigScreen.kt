@@ -406,13 +406,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         private val disabledSources by lazy { sourcePreferences.disabledSources().get().mapNotNull { it.toLongOrNull() } }
         // KMK <--
 
-        init {
-            screenModelScope.launchIO {
-                initSources()
-                mutableState.update { it.copy(isLoading = false) }
-            }
-        }
-
         private val sourcesComparator = { includedSources: /* KMK --> */ Map<Long, Int> /* KMK <-- */ ->
             compareBy<MigrationSource>(
                 // KMK -->
@@ -421,6 +414,13 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 // KMK <--
                 { with(it) { "$name ($shortLanguage)" } },
             )
+        }
+
+        init {
+            screenModelScope.launchIO {
+                initSources()
+                mutableState.update { it.copy(isLoading = false) }
+            }
         }
 
         private fun updateSources(save: Boolean = true, action: (List<MigrationSource>) -> List<MigrationSource>) {
