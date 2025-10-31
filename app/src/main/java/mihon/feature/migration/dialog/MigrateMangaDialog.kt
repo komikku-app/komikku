@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,8 +50,13 @@ internal fun Screen.MigrateMangaDialog(
 ) {
     val scope = rememberCoroutineScope()
 
-    val screenModel = rememberScreenModel { MigrateDialogScreenModel(current, target) }
+    val screenModel = rememberScreenModel { MigrateDialogScreenModel() }
+    LaunchedEffect(current, target) {
+        screenModel.init(current, target)
+    }
     val state by screenModel.state.collectAsState()
+
+    if (state.isMigrated) return
 
     if (state.isMigrating) {
         LoadingScreen(
@@ -121,15 +127,13 @@ internal fun Screen.MigrateMangaDialog(
 }
 
 private class MigrateDialogScreenModel(
-    private val current: Manga,
-    private val target: Manga,
-    sourcePreference: SourcePreferences = Injekt.get(),
+    val sourcePreference: SourcePreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val migrateManga: MigrateMangaUseCase = Injekt.get(),
 ) : StateScreenModel<MigrateDialogScreenModel.State>(State()) {
 
-    init {
+    fun init(current: Manga, target: Manga) {
         val applicableFlags = buildList {
             MigrationFlag.entries.forEach {
                 val applicable = when (it) {
@@ -149,7 +153,14 @@ private class MigrateDialogScreenModel(
             }
         }
         val selectedFlags = sourcePreference.migrationFlags().get()
-        mutableState.update { it.copy(applicableFlags = applicableFlags, selectedFlags = selectedFlags) }
+        mutableState.update {
+            it.copy(
+                current = current,
+                target = target,
+                applicableFlags = applicableFlags,
+                selectedFlags = selectedFlags,
+            )
+        }
     }
 
     fun toggleSelection(flag: MigrationFlag) {
@@ -162,17 +173,23 @@ private class MigrateDialogScreenModel(
     }
 
     suspend fun migrateManga(replace: Boolean) {
+        val state = state.value
+        val current = state.current ?: return
+        val target = state.target ?: return
         // KMK -->
-        // sourcePreference.migrationFlags().set(state.value.selectedFlags)
+        // sourcePreference.migrationFlags().set(state.selectedFlags)
         // KMK <--
         mutableState.update { it.copy(isMigrating = true) }
-        migrateManga(current, target, replace, /* KMK --> */ state.value.selectedFlags /* KMK <-- */)
-        mutableState.update { it.copy(isMigrating = false) }
+        migrateManga(current, target, replace, /* KMK --> */ state.selectedFlags /* KMK <-- */)
+        mutableState.update { it.copy(isMigrating = false, isMigrated = true) }
     }
 
     data class State(
+        val current: Manga? = null,
+        val target: Manga? = null,
         val applicableFlags: List<MigrationFlag> = emptyList(),
         val selectedFlags: Set<MigrationFlag> = emptySet(),
         val isMigrating: Boolean = false,
+        val isMigrated: Boolean = false,
     )
 }
