@@ -122,7 +122,7 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
             value = flashMillis / ReaderPreferences.MILLI_CONVERSION,
             valueRange = 1..15,
             label = stringResource(MR.strings.pref_flash_duration),
-            valueText = stringResource(MR.strings.pref_flash_duration_summary, flashMillis),
+            valueString = stringResource(MR.strings.pref_flash_duration_summary, flashMillis),
             onChange = { flashMillisPref.set(it * ReaderPreferences.MILLI_CONVERSION) },
             pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
@@ -130,7 +130,7 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
             value = flashInterval,
             valueRange = 1..10,
             label = stringResource(MR.strings.pref_flash_page_interval),
-            valueText = pluralStringResource(MR.plurals.pref_pages, flashInterval, flashInterval),
+            valueString = pluralStringResource(MR.plurals.pref_pages, flashInterval, flashInterval),
             onChange = {
                 flashIntervalPref.set(it)
             },
