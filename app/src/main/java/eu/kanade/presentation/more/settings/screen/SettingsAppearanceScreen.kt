@@ -311,7 +311,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                     value = previewsRowCount,
                     valueRange = 0..10,
                     title = stringResource(SYMR.strings.pref_previews_row_count),
-                    subtitle = if (previewsRowCount > 0) {
+                    valueString = if (previewsRowCount > 0) {
                         pluralStringResource(
                             SYMR.plurals.row_count,
                             previewsRowCount,
@@ -320,10 +320,7 @@ object SettingsAppearanceScreen : SearchableSettings {
                     } else {
                         stringResource(MR.strings.disabled)
                     },
-                    onValueChanged = {
-                        uiPreferences.previewsRowCount().set(it)
-                        true
-                    },
+                    onValueChanged = { uiPreferences.previewsRowCount().set(it) },
                 ),
             ),
         )
