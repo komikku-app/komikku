@@ -22,17 +22,21 @@ import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,14 +44,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
-import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.transition.doOnEnd
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -55,12 +61,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
-import com.materialkolor.dynamicColorScheme
-import com.materialkolor.dynamiccolor.ColorSpec
-import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.connections.service.ConnectionsPreferences
@@ -69,9 +71,9 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.DisplayRefreshHost
 import eu.kanade.presentation.reader.OrientationSelectDialog
-import eu.kanade.presentation.reader.PageIndicatorText
 import eu.kanade.presentation.reader.ReaderContentOverlay
 import eu.kanade.presentation.reader.ReaderPageActionsDialog
+import eu.kanade.presentation.reader.ReaderPageIndicator
 import eu.kanade.presentation.reader.ReadingModeSelectDialog
 import eu.kanade.presentation.reader.appbars.NavBarType
 import eu.kanade.presentation.reader.appbars.ReaderAppBars
@@ -171,10 +173,7 @@ class ReaderActivity : BaseActivity() {
     private val preferences = Injekt.get<BasePreferences>()
 
     // KMK -->
-    private val uiPreferences = Injekt.get<UiPreferences>()
-    private val themeCoverBased = uiPreferences.themeCoverBased().get()
-    private val themeDarkAmoled = uiPreferences.themeDarkAmoled().get()
-    private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
+    val themeCoverBased = Injekt.get<UiPreferences>().themeCoverBased().get()
     // KMK <--
 
     // AM (CONNECTIONS) -->
@@ -185,8 +184,6 @@ class ReaderActivity : BaseActivity() {
 
     val viewModel by viewModels<ReaderViewModel>()
     private var assistUrl: String? = null
-
-    private val hasCutout by lazy { hasDisplayCutout() }
 
     // SY -->
     private val sourceManager = Injekt.get<SourceManager>()
@@ -201,7 +198,7 @@ class ReaderActivity : BaseActivity() {
     private var readingModeToast: Toast? = null
     private val displayRefreshHost = DisplayRefreshHost()
 
-    private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, binding.root) }
+    private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, window.decorView) }
 
     private var loadingIndicator: ReaderProgressIndicator? = null
 
@@ -224,10 +221,17 @@ class ReaderActivity : BaseActivity() {
             overridePendingTransition(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
         }
 
+        enableEdgeToEdge(navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
         super.onCreate(savedInstanceState)
 
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.setComposeOverlay()
 
         if (viewModel.needsInit()) {
             val manga = intent.extras?.getLong("manga", -1) ?: -1L
@@ -253,7 +257,11 @@ class ReaderActivity : BaseActivity() {
         }
 
         config = ReaderConfig()
-        initializeMenu()
+        setMenuVisibility(viewModel.state.value.menuVisible)
+
+        // EXH -->
+        enableExhAutoScroll()
+        // EXH <--
 
         // Finish when incognito mode is disabled
         preferences.incognitoMode().changes()
@@ -308,6 +316,210 @@ class ReaderActivity : BaseActivity() {
                 }
             }
             .launchIn(lifecycleScope)
+    }
+
+    private fun ReaderActivityBinding.setComposeOverlay(): Unit = composeOverlay.setComposeContent {
+        // KMK -->
+        TachiyomiTheme(
+            seedColor = seedColorState().takeIf { themeCoverBased },
+            typography = MaterialTheme.typography.copy(
+                bodyLarge = MaterialTheme.typography.bodySmall,
+            ),
+        ) {
+            val context = LocalContext.current
+            // KMK <--
+            val state by viewModel.state.collectAsState()
+            val showPageNumber by readerPreferences.showPageNumber().collectAsState()
+            val isFullscreen by readerPreferences.fullscreen().collectAsState()
+            val settingsScreenModel = remember {
+                ReaderSettingsScreenModel(
+                    readerState = viewModel.state,
+                    onChangeReadingMode = viewModel::setMangaReadingMode,
+                    onChangeOrientation = viewModel::setMangaOrientationType,
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (!state.menuVisible && showPageNumber) {
+                    ReaderPageIndicator(
+                        // SY -->
+                        currentPage = state.currentPageText,
+                        // SY <--
+                        totalPages = state.totalPages,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .then(if (isFullscreen) Modifier else Modifier.navigationBarsPadding()),
+                    )
+                }
+
+                ContentOverlay(state = state)
+
+                AppBars(state = state)
+            }
+
+            // KMK -->
+            val externalStoragePermissionNotGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_DENIED
+            val permissionRequester = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {
+                    toast(KMR.strings.permission_writing_external_storage_succeed)
+                },
+            )
+            // KMK <--
+
+            val onDismissRequest = viewModel::closeDialog
+            when (state.dialog) {
+                is ReaderViewModel.Dialog.Loading -> {
+                    AlertDialog(
+                        onDismissRequest = {},
+                        confirmButton = {},
+                        text = {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CircularProgressIndicator(
+                                    // KMK -->
+                                    color = MaterialTheme.colorScheme.primary,
+                                    // KMK <--
+                                )
+                                Text(stringResource(MR.strings.loading))
+                            }
+                        },
+                    )
+                }
+
+                is ReaderViewModel.Dialog.Settings -> {
+                    ReaderSettingsDialog(
+                        onDismissRequest = onDismissRequest,
+                        onShowMenus = { setMenuVisibility(true) },
+                        onHideMenus = { setMenuVisibility(false) },
+                        screenModel = settingsScreenModel,
+                    )
+                }
+
+                is ReaderViewModel.Dialog.ReadingModeSelect -> {
+                    ReadingModeSelectDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        onChange = { stringRes ->
+                            menuToggleToast?.cancel()
+                            if (!readerPreferences.showReadingMode().get()) {
+                                menuToggleToast = toast(stringRes)
+                            }
+                        },
+                    )
+                }
+
+                is ReaderViewModel.Dialog.OrientationModeSelect -> {
+                    OrientationSelectDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        onChange = { stringRes ->
+                            menuToggleToast?.cancel()
+                            menuToggleToast = toast(stringRes)
+                        },
+                    )
+                }
+
+                is ReaderViewModel.Dialog.PageActions -> {
+                    ReaderPageActionsDialog(
+                        onDismissRequest = onDismissRequest,
+                        onSetAsCover = viewModel::setAsCover,
+                        onShare = viewModel::shareImage,
+                        // SY -->
+                        onSave = { extra ->
+                            // KMK -->
+                            if (externalStoragePermissionNotGranted) {
+                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            } else {
+                                // KMK <--
+                                viewModel.saveImage(extra)
+                            }
+                        },
+                        onShareCombined = viewModel::shareImages,
+                        onSaveCombined = {
+                            // KMK -->
+                            if (externalStoragePermissionNotGranted) {
+                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            } else {
+                                // KMK <--
+                                viewModel.saveImages()
+                            }
+                        },
+                        hasExtraPage = (state.dialog as? ReaderViewModel.Dialog.PageActions)?.extraPage != null,
+                    )
+                }
+
+                is ReaderViewModel.Dialog.ChapterList -> {
+                    var chapters by remember {
+                        mutableStateOf(viewModel.getChapters().toImmutableList())
+                    }
+                    ChapterListDialog(
+                        onDismissRequest = onDismissRequest,
+                        screenModel = settingsScreenModel,
+                        chapters = chapters,
+                        onClickChapter = {
+                            viewModel.loadNewChapterFromDialog(it)
+                            onDismissRequest()
+                        },
+                        onBookmark = { chapter ->
+                            viewModel.toggleBookmark(chapter.id, !chapter.bookmark)
+                            chapters = chapters.map {
+                                if (it.chapter.id == chapter.id) {
+                                    it.copy(chapter = chapter.copy(bookmark = !chapter.bookmark))
+                                } else {
+                                    it
+                                }
+                            }.toImmutableList()
+                        },
+                        state.dateRelativeTime,
+                        // KMK -->
+                        onDownloadAction = { chapter, action ->
+                            viewModel.handleDownloadAction(chapter, action)
+                        },
+                        // KMK <--
+                    )
+                }
+
+                ReaderViewModel.Dialog.AutoScrollHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(MR.strings.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help_message)) },
+                )
+
+                ReaderViewModel.Dialog.BoostPageHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(MR.strings.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(SYMR.strings.eh_boost_page_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_boost_page_help_message)) },
+                )
+
+                ReaderViewModel.Dialog.RetryAllHelp -> AlertDialog(
+                    onDismissRequest = onDismissRequest,
+                    confirmButton = {
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(MR.strings.action_ok))
+                        }
+                    },
+                    title = { Text(text = stringResource(SYMR.strings.eh_retry_all_help)) },
+                    text = { Text(text = stringResource(SYMR.strings.eh_retry_all_help_message)) },
+                )
+                // SY <--
+                null -> {}
+            }
+        }
     }
 
     /**
@@ -411,389 +623,146 @@ class ReaderActivity : BaseActivity() {
         return handled || super.dispatchGenericMotionEvent(event)
     }
 
-    /**
-     * Initializes the reader menu. It sets up click listeners and the initial visibility.
-     */
-    private fun initializeMenu() {
-        // KMK -->
-        @Composable
-        fun pageNumberContent() {
-            // KMK <--
-            val state by viewModel.state.collectAsState()
-            val showPageNumber by viewModel.readerPreferences.showPageNumber().collectAsState()
+    @Composable
+    private fun ContentOverlay(state: ReaderViewModel.State) {
+        val flashOnPageChange by readerPreferences.flashOnPageChange().collectAsState()
 
-            if (!state.menuVisible && showPageNumber) {
-                PageIndicatorText(
-                    // SY -->
-                    currentPage = state.currentPageText,
-                    // SY <--
-                    totalPages = state.totalPages,
-                )
-            }
+        val colorOverlayEnabled by readerPreferences.colorFilter().collectAsState()
+        val colorOverlay by readerPreferences.colorFilterValue().collectAsState()
+        val colorOverlayMode by readerPreferences.colorFilterMode().collectAsState()
+        val colorOverlayBlendMode = remember(colorOverlayMode) {
+            ReaderPreferences.ColorFilterMode.getOrNull(colorOverlayMode)?.second
         }
 
-        // KMK -->
-        binding.pageNumber.setComposeContent {
-            TachiyomiTheme(
-                seedColor = seedColorState().takeIf { themeCoverBased },
-            ) {
-                pageNumberContent()
-            }
-        }
-
-        @Composable
-        fun dialogRootContent() {
-            val context = LocalContext.current
-            // KMK <--
-            val state by viewModel.state.collectAsState()
-            val settingsScreenModel = remember {
-                ReaderSettingsScreenModel(
-                    readerState = viewModel.state,
-                    hasDisplayCutout = hasCutout,
-                    onChangeReadingMode = viewModel::setMangaReadingMode,
-                    onChangeOrientation = viewModel::setMangaOrientationType,
-                )
-            }
-
-            if (!ifSourcesLoaded()) {
-                return
-            }
-
-            val isHttpSource = viewModel.getSource() is HttpSource
-            val isFullscreen by readerPreferences.fullscreen().collectAsState()
-            val flashOnPageChange by readerPreferences.flashOnPageChange().collectAsState()
-
-            val colorOverlayEnabled by readerPreferences.colorFilter().collectAsState()
-            val colorOverlay by readerPreferences.colorFilterValue().collectAsState()
-            val colorOverlayMode by readerPreferences.colorFilterMode().collectAsState()
-            val colorOverlayBlendMode = remember(colorOverlayMode) {
-                ReaderPreferences.ColorFilterMode.getOrNull(colorOverlayMode)?.second
-            }
-
-            val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
-            val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
-            // SY -->
-            val readingMode = viewModel.getMangaReadingMode()
-            val isPagerType = ReadingMode.isPagerType(readingMode)
-            val isWebtoon = ReadingMode.WEBTOON.flagValue == readingMode
-            val cropBorderContinuousVertical by readerPreferences.cropBordersContinuousVertical().collectAsState()
-            val cropEnabled = if (isPagerType) {
-                cropBorderPaged
-            } else if (isWebtoon) {
-                cropBorderWebtoon
-            } else {
-                cropBorderContinuousVertical
-            }
-            val readerBottomButtons by readerPreferences.readerBottomButtons().changes().map { it.toImmutableSet() }
-                .collectAsState(persistentSetOf())
-            val dualPageSplitPaged by readerPreferences.dualPageSplitPaged().collectAsState()
-
-            val forceHorizontalSeekbar by readerPreferences.forceHorizontalSeekbar().collectAsState()
-            val landscapeVerticalSeekbar by readerPreferences.landscapeVerticalSeekbar().collectAsState()
-            val leftHandedVerticalSeekbar by readerPreferences.leftVerticalSeekbar().collectAsState()
-            val configuration = LocalConfiguration.current
-            val verticalSeekbarLandscape =
-                configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && landscapeVerticalSeekbar
-            val verticalSeekbarHorizontal = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-            val viewerIsVertical = (state.viewer is WebtoonViewer || state.viewer is VerticalPagerViewer)
-            val showVerticalSeekbar =
-                !forceHorizontalSeekbar && (verticalSeekbarLandscape || verticalSeekbarHorizontal) && viewerIsVertical
-            val navBarType = when {
-                !showVerticalSeekbar -> NavBarType.Bottom
-                leftHandedVerticalSeekbar -> NavBarType.VerticalLeft
-                else -> NavBarType.VerticalRight
-            }
-            // SY <--
-
-            // KMK -->
-            val externalStoragePermissionNotGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_DENIED
-            val permissionRequester = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission(),
-                onResult = {
-                    toast(KMR.strings.permission_writing_external_storage_succeed)
-                },
-            )
-            // KMK <--
-
-            ReaderContentOverlay(
-                brightness = state.brightnessOverlayValue,
-                color = colorOverlay.takeIf { colorOverlayEnabled },
-                colorBlendMode = colorOverlayBlendMode,
-            )
-
-            ReaderAppBars(
-                visible = state.menuVisible,
-                fullscreen = isFullscreen,
-
-                mangaTitle = state.manga?.title,
-                chapterTitle = state.currentChapter?.chapter?.name,
-                navigateUp = onBackPressedDispatcher::onBackPressed,
-                onClickTopAppBar = ::openMangaScreen,
-                bookmarked = state.bookmarked,
-                onToggleBookmarked = viewModel::toggleChapterBookmark,
-                onOpenInWebView = ::openChapterInWebView.takeIf { isHttpSource },
-                onOpenInBrowser = ::openChapterInBrowser.takeIf { isHttpSource },
-                onShare = ::shareChapter.takeIf { isHttpSource },
-
-                viewer = state.viewer,
-                onNextChapter = ::loadNextChapter,
-                enabledNext = state.viewerChapters?.nextChapter != null,
-                onPreviousChapter = ::loadPreviousChapter,
-                enabledPrevious = state.viewerChapters?.prevChapter != null,
-                currentPage = state.currentPage,
-                totalPages = state.totalPages,
-                onPageIndexChange = {
-                    isScrollingThroughPages = true
-                    moveToPageIndex(it)
-                },
-
-                readingMode = ReadingMode.fromPreference(
-                    viewModel.getMangaReadingMode(resolveDefault = false),
-                ),
-                onClickReadingMode = viewModel::openReadingModeSelectDialog,
-                orientation = ReaderOrientation.fromPreference(
-                    viewModel.getMangaOrientation(resolveDefault = false),
-                ),
-                onClickOrientation = viewModel::openOrientationModeSelectDialog,
-                cropEnabled = cropEnabled,
-                onClickCropBorder = {
-                    val enabled = viewModel.toggleCropBorders()
-                    menuToggleToast?.cancel()
-                    menuToggleToast = toast(if (enabled) MR.strings.on else MR.strings.off)
-                },
-                onClickSettings = viewModel::openSettingsDialog,
-                // SY -->
-                isExhToolsVisible = state.ehUtilsVisible,
-                onSetExhUtilsVisibility = viewModel::showEhUtils,
-                isAutoScroll = state.autoScroll,
-                isAutoScrollEnabled = state.isAutoScrollEnabled,
-                onToggleAutoscroll = viewModel::toggleAutoScroll,
-                autoScrollFrequency = state.ehAutoscrollFreq,
-                onSetAutoScrollFrequency = viewModel::setAutoScrollFrequency,
-                onClickAutoScrollHelp = viewModel::openAutoScrollHelpDialog,
-                onClickRetryAll = ::exhRetryAll,
-                onClickRetryAllHelp = viewModel::openRetryAllHelp,
-                onClickBoostPage = ::exhBoostPage,
-                onClickBoostPageHelp = viewModel::openBoostPageHelp,
-                currentPageText = state.currentPageText,
-                navBarType = navBarType,
-                enabledButtons = readerBottomButtons,
-                currentReadingMode = ReadingMode.fromPreference(
-                    viewModel.getMangaReadingMode(resolveDefault = true),
-                ),
-                dualPageSplitEnabled = dualPageSplitPaged,
-                doublePages = state.doublePages,
-                onClickChapterList = viewModel::openChapterListDialog,
-                onClickPageLayout = {
-                    if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
-                        (viewModel.state.value.viewer as? PagerViewer)?.config?.let { config ->
-                            config.doublePages = !config.doublePages
-                            reloadChapters(config.doublePages, true)
-                        }
-                    } else {
-                        readerPreferences.pageLayout().set(1 - readerPreferences.pageLayout().get())
-                    }
-                },
-                onClickShiftPage = ::shiftDoublePages,
-                // SY <--
-            )
-
-            if (flashOnPageChange) {
-                DisplayRefreshHost(
-                    hostState = displayRefreshHost,
-                )
-            }
-
-            val onDismissRequest = viewModel::closeDialog
-            when (state.dialog) {
-                is ReaderViewModel.Dialog.Loading -> {
-                    AlertDialog(
-                        onDismissRequest = {},
-                        confirmButton = {},
-                        text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                CircularProgressIndicator(
-                                    // KMK -->
-                                    color = MaterialTheme.colorScheme.primary,
-                                    // KMK <--
-                                )
-                                Text(stringResource(MR.strings.loading))
-                            }
-                        },
-                    )
-                }
-                is ReaderViewModel.Dialog.Settings -> {
-                    ReaderSettingsDialog(
-                        onDismissRequest = onDismissRequest,
-                        onShowMenus = { setMenuVisibility(true) },
-                        onHideMenus = { setMenuVisibility(false) },
-                        screenModel = settingsScreenModel,
-                    )
-                }
-                is ReaderViewModel.Dialog.ReadingModeSelect -> {
-                    ReadingModeSelectDialog(
-                        onDismissRequest = onDismissRequest,
-                        screenModel = settingsScreenModel,
-                        onChange = { stringRes ->
-                            menuToggleToast?.cancel()
-                            if (!readerPreferences.showReadingMode().get()) {
-                                menuToggleToast = toast(stringRes)
-                            }
-                        },
-                    )
-                }
-                is ReaderViewModel.Dialog.OrientationModeSelect -> {
-                    OrientationSelectDialog(
-                        onDismissRequest = onDismissRequest,
-                        screenModel = settingsScreenModel,
-                        onChange = { stringRes ->
-                            menuToggleToast?.cancel()
-                            menuToggleToast = toast(stringRes)
-                        },
-                    )
-                }
-                is ReaderViewModel.Dialog.PageActions -> {
-                    ReaderPageActionsDialog(
-                        onDismissRequest = onDismissRequest,
-                        onSetAsCover = viewModel::setAsCover,
-                        onShare = viewModel::shareImage,
-                        onSave = { extra ->
-                            // KMK -->
-                            if (externalStoragePermissionNotGranted) {
-                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            } else {
-                                // KMK <--
-                                viewModel.saveImage(extra)
-                            }
-                        },
-                        onShareCombined = viewModel::shareImages,
-                        onSaveCombined = {
-                            // KMK -->
-                            if (externalStoragePermissionNotGranted) {
-                                permissionRequester.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            } else {
-                                // KMK <--
-                                viewModel.saveImages()
-                            }
-                        },
-                        hasExtraPage = (state.dialog as? ReaderViewModel.Dialog.PageActions)?.extraPage != null,
-                    )
-                }
-                is ReaderViewModel.Dialog.ChapterList -> {
-                    var chapters by remember {
-                        mutableStateOf(viewModel.getChapters().toImmutableList())
-                    }
-                    ChapterListDialog(
-                        onDismissRequest = onDismissRequest,
-                        screenModel = settingsScreenModel,
-                        chapters = chapters,
-                        onClickChapter = {
-                            viewModel.loadNewChapterFromDialog(it)
-                            onDismissRequest()
-                        },
-                        onBookmark = { chapter ->
-                            viewModel.toggleBookmark(chapter.id, !chapter.bookmark)
-                            chapters = chapters.map {
-                                if (it.chapter.id == chapter.id) {
-                                    it.copy(chapter = chapter.copy(bookmark = !chapter.bookmark))
-                                } else {
-                                    it
-                                }
-                            }.toImmutableList()
-                        },
-                        state.dateRelativeTime,
-                        // KMK -->
-                        onDownloadAction = { chapter, action ->
-                            viewModel.handleDownloadAction(chapter, action)
-                        },
-                        // KMK <--
-                    )
-                }
-                // SY -->
-                ReaderViewModel.Dialog.AutoScrollHelp -> AlertDialog(
-                    onDismissRequest = onDismissRequest,
-                    confirmButton = {
-                        TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(MR.strings.action_ok))
-                        }
-                    },
-                    title = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help)) },
-                    text = { Text(text = stringResource(SYMR.strings.eh_autoscroll_help_message)) },
-                )
-                ReaderViewModel.Dialog.BoostPageHelp -> AlertDialog(
-                    onDismissRequest = onDismissRequest,
-                    confirmButton = {
-                        TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(MR.strings.action_ok))
-                        }
-                    },
-                    title = { Text(text = stringResource(SYMR.strings.eh_boost_page_help)) },
-                    text = { Text(text = stringResource(SYMR.strings.eh_boost_page_help_message)) },
-                )
-                ReaderViewModel.Dialog.RetryAllHelp -> AlertDialog(
-                    onDismissRequest = onDismissRequest,
-                    confirmButton = {
-                        TextButton(onClick = onDismissRequest) {
-                            Text(text = stringResource(MR.strings.action_ok))
-                        }
-                    },
-                    title = { Text(text = stringResource(SYMR.strings.eh_retry_all_help)) },
-                    text = { Text(text = stringResource(SYMR.strings.eh_retry_all_help_message)) },
-                )
-                // SY <--
-                null -> {}
-            }
-        }
-
-        // KMK -->
-        binding.dialogRoot.setComposeContent {
-            TachiyomiTheme(
-                seedColor = seedColorState().takeIf { themeCoverBased },
-                typography = MaterialTheme.typography.copy(
-                    bodyLarge = MaterialTheme.typography.bodySmall,
-                ),
-            ) {
-                dialogRootContent()
-            }
-        }
-
-        val colorScheme = seedColorStatic()?.let {
-            dynamicColorScheme(
-                seedColor = it,
-                isDark = isNightMode(),
-                isAmoled = themeDarkAmoled,
-                style = themeCoverBasedStyle,
-                specVersion = ColorSpec.SpecVersion.SPEC_2025,
-            )
-        }
-        // KMK <--
-
-        val toolbarColor = ColorUtils.setAlphaComponent(
-            // KMK -->
-            if (themeCoverBased && colorScheme != null) {
-                colorScheme.surfaceColorAtElevation(3.dp).toArgb()
-            } else {
-                // KMK <--
-                SurfaceColors.SURFACE_2.getColor(this)
-            },
-            if (isNightMode()) 230 else 242, // 90% dark 95% light
+        ReaderContentOverlay(
+            brightness = state.brightnessOverlayValue,
+            color = colorOverlay.takeIf { colorOverlayEnabled },
+            colorBlendMode = colorOverlayBlendMode,
         )
-        @Suppress("DEPRECATION")
-        window.statusBarColor = toolbarColor
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            @Suppress("DEPRECATION")
-            window.navigationBarColor = toolbarColor
+
+        if (flashOnPageChange) {
+            DisplayRefreshHost(hostState = displayRefreshHost)
+        }
+    }
+
+    @Composable
+    fun AppBars(state: ReaderViewModel.State) {
+        if (!ifSourcesLoaded()) {
+            return
         }
 
-        // Set initial visibility
-        setMenuVisibility(viewModel.state.value.menuVisible)
+        val isHttpSource = viewModel.getSource() is HttpSource
 
-        enableExhAutoScroll()
+        val cropBorderPaged by readerPreferences.cropBorders().collectAsState()
+        val cropBorderWebtoon by readerPreferences.cropBordersWebtoon().collectAsState()
+        // SY -->
+        val readingMode = viewModel.getMangaReadingMode()
+        val isPagerType = ReadingMode.isPagerType(readingMode)
+        val isWebtoon = ReadingMode.WEBTOON.flagValue == readingMode
+        val cropBorderContinuousVertical by readerPreferences.cropBordersContinuousVertical().collectAsState()
+        val cropEnabled = if (isPagerType) {
+            cropBorderPaged
+        } else if (isWebtoon) {
+            cropBorderWebtoon
+        } else {
+            cropBorderContinuousVertical
+        }
+        val readerBottomButtons by readerPreferences.readerBottomButtons().changes().map { it.toImmutableSet() }
+            .collectAsState(persistentSetOf())
+        val dualPageSplitPaged by readerPreferences.dualPageSplitPaged().collectAsState()
+
+        val forceHorizontalSeekbar by readerPreferences.forceHorizontalSeekbar().collectAsState()
+        val landscapeVerticalSeekbar by readerPreferences.landscapeVerticalSeekbar().collectAsState()
+        val leftHandedVerticalSeekbar by readerPreferences.leftVerticalSeekbar().collectAsState()
+        val configuration = LocalConfiguration.current
+        val verticalSeekbarLandscape =
+            configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && landscapeVerticalSeekbar
+        val verticalSeekbarHorizontal = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        val viewerIsVertical = (state.viewer is WebtoonViewer || state.viewer is VerticalPagerViewer)
+        val showVerticalSeekbar =
+            !forceHorizontalSeekbar && (verticalSeekbarLandscape || verticalSeekbarHorizontal) && viewerIsVertical
+        val navBarType = when {
+            !showVerticalSeekbar -> NavBarType.Bottom
+            leftHandedVerticalSeekbar -> NavBarType.VerticalLeft
+            else -> NavBarType.VerticalRight
+        }
+        // SY <--
+
+        ReaderAppBars(
+            visible = state.menuVisible,
+
+            mangaTitle = state.manga?.title,
+            chapterTitle = state.currentChapter?.chapter?.name,
+            navigateUp = onBackPressedDispatcher::onBackPressed,
+            onClickTopAppBar = ::openMangaScreen,
+            bookmarked = state.bookmarked,
+            onToggleBookmarked = viewModel::toggleChapterBookmark,
+            onOpenInWebView = ::openChapterInWebView.takeIf { isHttpSource },
+            onOpenInBrowser = ::openChapterInBrowser.takeIf { isHttpSource },
+            onShare = ::shareChapter.takeIf { isHttpSource },
+
+            viewer = state.viewer,
+            onNextChapter = ::loadNextChapter,
+            enabledNext = state.viewerChapters?.nextChapter != null,
+            onPreviousChapter = ::loadPreviousChapter,
+            enabledPrevious = state.viewerChapters?.prevChapter != null,
+            currentPage = state.currentPage,
+            totalPages = state.totalPages,
+            onPageIndexChange = {
+                isScrollingThroughPages = true
+                moveToPageIndex(it)
+            },
+
+            readingMode = ReadingMode.fromPreference(
+                viewModel.getMangaReadingMode(resolveDefault = false),
+            ),
+            onClickReadingMode = viewModel::openReadingModeSelectDialog,
+            orientation = ReaderOrientation.fromPreference(
+                viewModel.getMangaOrientation(resolveDefault = false),
+            ),
+            onClickOrientation = viewModel::openOrientationModeSelectDialog,
+            cropEnabled = cropEnabled,
+            onClickCropBorder = {
+                val enabled = viewModel.toggleCropBorders()
+                menuToggleToast?.cancel()
+                menuToggleToast = toast(if (enabled) MR.strings.on else MR.strings.off)
+            },
+            onClickSettings = viewModel::openSettingsDialog,
+            // SY -->
+            isExhToolsVisible = state.ehUtilsVisible,
+            onSetExhUtilsVisibility = viewModel::showEhUtils,
+            isAutoScroll = state.autoScroll,
+            isAutoScrollEnabled = state.isAutoScrollEnabled,
+            onToggleAutoscroll = viewModel::toggleAutoScroll,
+            autoScrollFrequency = state.ehAutoscrollFreq,
+            onSetAutoScrollFrequency = viewModel::setAutoScrollFrequency,
+            onClickAutoScrollHelp = viewModel::openAutoScrollHelpDialog,
+            onClickRetryAll = ::exhRetryAll,
+            onClickRetryAllHelp = viewModel::openRetryAllHelp,
+            onClickBoostPage = ::exhBoostPage,
+            onClickBoostPageHelp = viewModel::openBoostPageHelp,
+            currentPageText = state.currentPageText,
+            navBarType = navBarType,
+            enabledButtons = readerBottomButtons,
+            currentReadingMode = ReadingMode.fromPreference(
+                viewModel.getMangaReadingMode(resolveDefault = true),
+            ),
+            dualPageSplitEnabled = dualPageSplitPaged,
+            doublePages = state.doublePages,
+            onClickChapterList = viewModel::openChapterListDialog,
+            onClickPageLayout = {
+                if (readerPreferences.pageLayout().get() == PagerConfig.PageLayout.AUTOMATIC) {
+                    (viewModel.state.value.viewer as? PagerViewer)?.config?.let { config ->
+                        config.doublePages = !config.doublePages
+                        reloadChapters(config.doublePages, true)
+                    }
+                } else {
+                    readerPreferences.pageLayout().set(1 - readerPreferences.pageLayout().get())
+                }
+            },
+            onClickShiftPage = ::shiftDoublePages,
+            // SY <--
+        )
     }
 
     // KMK -->
@@ -812,6 +781,7 @@ class ReaderActivity : BaseActivity() {
     }
     // KMK <--
 
+    // EXH -->
     private fun enableExhAutoScroll() {
         readerPreferences.autoscrollInterval().changes()
             .combine(viewModel.state.map { it.autoScroll }.distinctUntilChanged()) { interval, enabled ->
@@ -965,13 +935,8 @@ class ReaderActivity : BaseActivity() {
         viewModel.showMenus(visible)
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        } else {
-            if (readerPreferences.fullscreen().get()) {
-                windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-                windowInsetsController.systemBarsBehavior =
-                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
+        } else if (readerPreferences.fullscreen().get()) {
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
         }
     }
 
@@ -1189,7 +1154,6 @@ class ReaderActivity : BaseActivity() {
      * Called from the viewer whenever a [page] is marked as active. It updates the values of the
      * bottom menu and delegates the change to the presenter.
      */
-    @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean = false) {
         // SY -->
         val currentPageText = if (hasExtraPage) {
@@ -1204,18 +1168,16 @@ class ReaderActivity : BaseActivity() {
         } else {
             "${page.number}"
         }
-        viewModel.onPageSelected(page, currentPageText, hasExtraPage)
         // SY <--
+        viewModel.onPageSelected(page, /* SY --> */ currentPageText, hasExtraPage /* SY <-- */)
     }
 
     /**
      * Called from the viewer whenever a [page] is long clicked. A bottom sheet with a list of
      * actions to perform is shown.
      */
-    fun onPageLongTap(page: ReaderPage, extraPage: ReaderPage? = null) {
-        // SY -->
-        viewModel.openPageDialog(page, extraPage)
-        // SY <--
+    fun onPageLongTap(page: ReaderPage, /* SY --> */ extraPage: ReaderPage? = null /* SY <-- */) {
+        viewModel.openPageDialog(page, /* SY --> */ extraPage /* SY <-- */)
     }
 
     /**
@@ -1260,28 +1222,26 @@ class ReaderActivity : BaseActivity() {
         val manga = viewModel.manga ?: return
         val chapter = page.chapter.chapter
 
-        // SY -->
-        val text = if (secondPage != null) {
-            stringResource(
-                SYMR.strings.share_pages_info,
-                manga.title,
-                chapter.name,
-                if (resources.configuration.layoutDirection ==
-                    View.LAYOUT_DIRECTION_LTR
-                ) {
-                    "${page.number}-${page.number + 1}"
-                } else {
-                    "${page.number + 1}-${page.number}"
-                },
-            )
-        } else {
-            stringResource(MR.strings.share_page_info, manga.title, chapter.name, page.number)
-        }
-        // SY <--
-
         val intent = uri.toShareIntent(
             context = applicationContext,
-            message = /* SY --> */ text, // SY <--
+            message = // SY -->
+            if (secondPage != null) {
+                stringResource(
+                    SYMR.strings.share_pages_info,
+                    manga.title,
+                    chapter.name,
+                    if (resources.configuration.layoutDirection ==
+                        View.LAYOUT_DIRECTION_LTR
+                    ) {
+                        "${page.number}-${page.number + 1}"
+                    } else {
+                        "${page.number + 1}-${page.number}"
+                    },
+                )
+            } else {
+                // SY <--
+                stringResource(MR.strings.share_page_info, manga.title, chapter.name, page.number)
+            },
         )
         startActivity(Intent.createChooser(intent, stringResource(MR.strings.action_share)))
     }
@@ -1335,13 +1295,22 @@ class ReaderActivity : BaseActivity() {
      * Updates viewer inset depending on fullscreen reader preferences.
      */
     private fun updateViewerInset(fullscreen: Boolean) {
-        viewModel.state.value.viewer?.getView()?.applyInsetter {
-            if (!fullscreen) {
-                type(navigationBars = true, statusBars = true) {
-                    padding()
-                }
-            }
+        val view = viewModel.state.value.viewer?.getView() ?: return
+
+        view.applyInsetsPadding(ViewCompat.getRootWindowInsets(view), fullscreen)
+        ViewCompat.setOnApplyWindowInsetsListener(view) { view, windowInsets ->
+            view.applyInsetsPadding(windowInsets, fullscreen)
+            windowInsets
         }
+    }
+
+    private fun View.applyInsetsPadding(windowInsets: WindowInsetsCompat?, fullscreen: Boolean) {
+        val insets = if (!fullscreen) {
+            windowInsets?.getInsets(WindowInsetsCompat.Type.systemBars()) ?: Insets.NONE
+        } else {
+            Insets.NONE
+        }
+        setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 
     /**
@@ -1483,15 +1452,13 @@ class ReaderActivity : BaseActivity() {
         }
 
         private fun setCutoutShort(enabled: Boolean) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
+            if (!window.decorView.hasDisplayCutout()) return
 
+            @SuppressLint("NewApi")
             window.attributes.layoutInDisplayCutoutMode = when (enabled) {
                 true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 false -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
             }
-
-            // Trigger relayout
-            setMenuVisibility(viewModel.state.value.menuVisible)
         }
 
         /**
@@ -1546,6 +1513,7 @@ class ReaderActivity : BaseActivity() {
         }
     }
 
+    // KMK -->
     /**
      * Updates the Discord Rich Presence (RPC) status based on the current reader activity.
      *
@@ -1587,4 +1555,5 @@ class ReaderActivity : BaseActivity() {
             }
         }
     }
+    // KMK <--
 }
