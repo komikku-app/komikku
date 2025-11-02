@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
@@ -15,11 +16,12 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 
 @Composable
-fun PageIndicatorText(
+fun ReaderPageIndicator(
     // SY -->
     currentPage: String,
     // SY <--
     totalPages: Int,
+    modifier: Modifier = Modifier,
 ) {
     if (currentPage.isEmpty() || totalPages <= 0) return
 
@@ -40,6 +42,7 @@ fun PageIndicatorText(
 
     Box(
         contentAlignment = Alignment.Center,
+        modifier = modifier,
     ) {
         Text(
             text = text,
@@ -54,10 +57,10 @@ fun PageIndicatorText(
 
 @PreviewLightDark
 @Composable
-private fun PageIndicatorTextPreview() {
+private fun ReaderPageIndicatorPreview() {
     TachiyomiPreviewTheme {
         Surface {
-            PageIndicatorText(currentPage = "10", totalPages = 69)
+            ReaderPageIndicator(currentPage = "10", totalPages = 69)
         }
     }
 }
