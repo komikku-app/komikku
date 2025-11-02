@@ -12,8 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,12 +23,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.reader.components.ChapterNavigator
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
@@ -48,22 +43,6 @@ enum class NavBarType {
     VerticalRight,
     VerticalLeft,
     Bottom,
-}
-
-@Composable
-fun BoxIgnoreLayoutDirection(modifier: Modifier, content: @Composable BoxScope.() -> Unit) {
-    val layoutDirection = LocalLayoutDirection.current
-    CompositionLocalProvider(
-        LocalLayoutDirection provides LayoutDirection.Ltr,
-    ) {
-        Box(modifier) {
-            CompositionLocalProvider(
-                LocalLayoutDirection provides layoutDirection,
-            ) {
-                content()
-            }
-        }
-    }
 }
 // SY <--
 
@@ -126,163 +105,177 @@ fun ReaderAppBars(
         .surfaceColorAtElevation(3.dp)
         .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
-    // SY -->
-    BoxIgnoreLayoutDirection(
-        Modifier.fillMaxWidth(),
-    ) {
+    Column(modifier = Modifier.fillMaxHeight()) {
         AnimatedVisibility(
-            visible = visible && navBarType == NavBarType.VerticalLeft,
-            enter = slideInHorizontally(initialOffsetX = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
                 fadeIn(animationSpec = readerBarsFadeAnimationSpec),
-            exit = slideOutHorizontally(targetOffsetX = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
+            exit = slideOutVertically(targetOffsetY = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
                 fadeOut(animationSpec = readerBarsFadeAnimationSpec),
-            modifier = Modifier
-                .padding(top = 164.dp, bottom = 70.dp)
-                .align(Alignment.TopStart),
         ) {
-            ChapterNavigator(
-                isRtl = isRtl,
-                onNextChapter = onNextChapter,
-                enabledNext = enabledNext,
-                onPreviousChapter = onPreviousChapter,
-                enabledPrevious = enabledPrevious,
-                currentPage = currentPage,
-                totalPages = totalPages,
-                onPageIndexChange = onPageIndexChange,
-                // SY -->
-                isVerticalSlider = true,
-                currentPageText = currentPageText,
+            // SY -->
+            Column {
                 // SY <--
-            )
+                ReaderTopBar(
+                    modifier = Modifier
+                        .background(backgroundColor)
+                        .clickable(onClick = onClickTopAppBar),
+                    mangaTitle = mangaTitle,
+                    chapterTitle = chapterTitle,
+                    navigateUp = navigateUp,
+                    bookmarked = bookmarked,
+                    onToggleBookmarked = onToggleBookmarked,
+                    // SY -->
+                    onOpenInWebView = null, // onOpenInWebView,
+                    onOpenInBrowser = null, // onOpenInBrowser,
+                    onShare = null, // onShare,
+                    // SY <--
+                )
+                // SY -->
+                ExhUtils(
+                    isVisible = isExhToolsVisible,
+                    onSetExhUtilsVisibility = onSetExhUtilsVisibility,
+                    backgroundColor = backgroundColor,
+                    isAutoScroll = isAutoScroll,
+                    isAutoScrollEnabled = isAutoScrollEnabled,
+                    onToggleAutoscroll = onToggleAutoscroll,
+                    autoScrollFrequency = autoScrollFrequency,
+                    onSetAutoScrollFrequency = onSetAutoScrollFrequency,
+                    onClickAutoScrollHelp = onClickAutoScrollHelp,
+                    onClickRetryAll = onClickRetryAll,
+                    onClickRetryAllHelp = onClickRetryAllHelp,
+                    onClickBoostPage = onClickBoostPage,
+                    onClickBoostPageHelp = onClickBoostPageHelp,
+                )
+            }
+            // SY <--
         }
 
-        AnimatedVisibility(
-            visible = visible && navBarType == NavBarType.VerticalRight,
-            enter = slideInHorizontally(initialOffsetX = { it }, animationSpec = readerBarsSlideAnimationSpec) +
-                fadeIn(animationSpec = readerBarsFadeAnimationSpec),
-            exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = readerBarsSlideAnimationSpec) +
-                fadeOut(animationSpec = readerBarsFadeAnimationSpec),
-            modifier = Modifier
-                .padding(top = 164.dp, bottom = 70.dp)
-                .align(Alignment.TopEnd),
-        ) {
-            ChapterNavigator(
-                isRtl = isRtl,
-                onNextChapter = onNextChapter,
-                enabledNext = enabledNext,
-                onPreviousChapter = onPreviousChapter,
-                enabledPrevious = enabledPrevious,
-                currentPage = currentPage,
-                totalPages = totalPages,
-                onPageIndexChange = onPageIndexChange,
-                // SY -->
-                isVerticalSlider = true,
-                currentPageText = currentPageText,
-                // SY <--
-            )
-        }
-        // SY <--
-        Column(modifier = Modifier.fillMaxHeight()) {
-            AnimatedVisibility(
-                visible = visible,
-                enter = slideInVertically(initialOffsetY = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
-                    fadeIn(animationSpec = readerBarsFadeAnimationSpec),
-                exit = slideOutVertically(targetOffsetY = { -it }, animationSpec = readerBarsSlideAnimationSpec) +
-                    fadeOut(animationSpec = readerBarsFadeAnimationSpec),
-            ) {
-                // SY -->
-                Column {
-                    // SY <--
-                    ReaderTopBar(
-                        modifier = Modifier
-                            .background(backgroundColor)
-                            .clickable(onClick = onClickTopAppBar),
-                        mangaTitle = mangaTitle,
-                        chapterTitle = chapterTitle,
-                        navigateUp = navigateUp,
-                        bookmarked = bookmarked,
-                        onToggleBookmarked = onToggleBookmarked,
+        // KMK -->
+        when (navBarType) {
+            NavBarType.VerticalLeft -> {
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { -it },
+                        animationSpec = readerBarsSlideAnimationSpec,
+                    ) +
+                        fadeIn(animationSpec = readerBarsFadeAnimationSpec),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { -it },
+                        animationSpec = readerBarsSlideAnimationSpec,
+                    ) +
+                        fadeOut(animationSpec = readerBarsFadeAnimationSpec),
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.Start),
+                ) {
+                    ChapterNavigator(
+                        isRtl = isRtl,
+                        onNextChapter = onNextChapter,
+                        enabledNext = enabledNext,
+                        onPreviousChapter = onPreviousChapter,
+                        enabledPrevious = enabledPrevious,
+                        currentPage = currentPage,
+                        totalPages = totalPages,
+                        onPageIndexChange = onPageIndexChange,
                         // SY -->
-                        onOpenInWebView = null, // onOpenInWebView,
-                        onOpenInBrowser = null, // onOpenInBrowser,
-                        onShare = null, // onShare,
+                        isVerticalSlider = true,
+                        currentPageText = currentPageText,
                         // SY <--
                     )
-                    // SY -->
-                    ExhUtils(
-                        isVisible = isExhToolsVisible,
-                        onSetExhUtilsVisibility = onSetExhUtilsVisibility,
-                        backgroundColor = backgroundColor,
-                        isAutoScroll = isAutoScroll,
-                        isAutoScrollEnabled = isAutoScrollEnabled,
-                        onToggleAutoscroll = onToggleAutoscroll,
-                        autoScrollFrequency = autoScrollFrequency,
-                        onSetAutoScrollFrequency = onSetAutoScrollFrequency,
-                        onClickAutoScrollHelp = onClickAutoScrollHelp,
-                        onClickRetryAll = onClickRetryAll,
-                        onClickRetryAllHelp = onClickRetryAllHelp,
-                        onClickBoostPage = onClickBoostPage,
-                        onClickBoostPageHelp = onClickBoostPageHelp,
-                    )
                 }
-                // SY <--
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            AnimatedVisibility(
-                visible = visible,
-                enter = slideInVertically(initialOffsetY = { it }, animationSpec = readerBarsSlideAnimationSpec) +
-                    fadeIn(animationSpec = readerBarsFadeAnimationSpec),
-                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = readerBarsSlideAnimationSpec) +
-                    fadeOut(animationSpec = readerBarsFadeAnimationSpec),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
-                    // SY -->
-                    if (navBarType == NavBarType.Bottom) {
-                        // SY <--
-                        ChapterNavigator(
-                            isRtl = isRtl,
-                            onNextChapter = onNextChapter,
-                            enabledNext = enabledNext,
-                            onPreviousChapter = onPreviousChapter,
-                            enabledPrevious = enabledPrevious,
-                            currentPage = currentPage,
-                            totalPages = totalPages,
-                            onPageIndexChange = onPageIndexChange,
-                            // SY -->
-                            isVerticalSlider = false,
-                            currentPageText = currentPageText,
-                            // SY <--
-                        )
-                    }
-                    ReaderBottomBar(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(backgroundColor)
-                            .padding(horizontal = MaterialTheme.padding.small)
-                            .windowInsetsPadding(WindowInsets.navigationBars),
-                        readingMode = readingMode,
-                        onClickReadingMode = onClickReadingMode,
-                        orientation = orientation,
-                        onClickOrientation = onClickOrientation,
-                        cropEnabled = cropEnabled,
-                        onClickCropBorder = onClickCropBorder,
-                        onClickSettings = onClickSettings,
+            NavBarType.VerticalRight -> {
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = readerBarsSlideAnimationSpec,
+                    ) +
+                        fadeIn(animationSpec = readerBarsFadeAnimationSpec),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { it },
+                        animationSpec = readerBarsSlideAnimationSpec,
+                    ) +
+                        fadeOut(animationSpec = readerBarsFadeAnimationSpec),
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.End),
+                ) {
+                    ChapterNavigator(
+                        isRtl = isRtl,
+                        onNextChapter = onNextChapter,
+                        enabledNext = enabledNext,
+                        onPreviousChapter = onPreviousChapter,
+                        enabledPrevious = enabledPrevious,
+                        currentPage = currentPage,
+                        totalPages = totalPages,
+                        onPageIndexChange = onPageIndexChange,
                         // SY -->
-                        enabledButtons = enabledButtons,
-                        currentReadingMode = currentReadingMode,
-                        dualPageSplitEnabled = dualPageSplitEnabled,
-                        doublePages = doublePages,
-                        onClickChapterList = onClickChapterList,
-                        onClickWebView = onOpenInWebView,
-                        onClickBrowser = onOpenInBrowser,
-                        onClickShare = onShare,
-                        onClickPageLayout = onClickPageLayout,
-                        onClickShiftPage = onClickShiftPage,
+                        isVerticalSlider = true,
+                        currentPageText = currentPageText,
                         // SY <--
                     )
                 }
+            }
+            // KMK <--
+            else -> Spacer(modifier = Modifier.weight(1f))
+        }
+
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it }, animationSpec = readerBarsSlideAnimationSpec) +
+                fadeIn(animationSpec = readerBarsFadeAnimationSpec),
+            exit = slideOutVertically(targetOffsetY = { it }, animationSpec = readerBarsSlideAnimationSpec) +
+                fadeOut(animationSpec = readerBarsFadeAnimationSpec),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
+                // SY -->
+                if (navBarType == NavBarType.Bottom) {
+                    // SY <--
+                    ChapterNavigator(
+                        isRtl = isRtl,
+                        onNextChapter = onNextChapter,
+                        enabledNext = enabledNext,
+                        onPreviousChapter = onPreviousChapter,
+                        enabledPrevious = enabledPrevious,
+                        currentPage = currentPage,
+                        totalPages = totalPages,
+                        onPageIndexChange = onPageIndexChange,
+                        // SY -->
+                        isVerticalSlider = false,
+                        currentPageText = currentPageText,
+                        // SY <--
+                    )
+                }
+                ReaderBottomBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(backgroundColor)
+                        .padding(horizontal = MaterialTheme.padding.small)
+                        .windowInsetsPadding(WindowInsets.navigationBars),
+                    readingMode = readingMode,
+                    onClickReadingMode = onClickReadingMode,
+                    orientation = orientation,
+                    onClickOrientation = onClickOrientation,
+                    cropEnabled = cropEnabled,
+                    onClickCropBorder = onClickCropBorder,
+                    onClickSettings = onClickSettings,
+                    // SY -->
+                    enabledButtons = enabledButtons,
+                    currentReadingMode = currentReadingMode,
+                    dualPageSplitEnabled = dualPageSplitEnabled,
+                    doublePages = doublePages,
+                    onClickChapterList = onClickChapterList,
+                    onClickWebView = onOpenInWebView,
+                    onClickBrowser = onOpenInBrowser,
+                    onClickShare = onShare,
+                    onClickPageLayout = onClickPageLayout,
+                    onClickShiftPage = onClickShiftPage,
+                    // SY <--
+                )
             }
         }
     }
