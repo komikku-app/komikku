@@ -21,10 +21,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
@@ -40,14 +43,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.distinctUntilChanged
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
 import tachiyomi.presentation.core.util.isScrolledToStart
-import tachiyomi.presentation.core.util.isScrollingDown
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import kotlin.math.absoluteValue
 
 @Composable
 fun AnimatedFloatingSearchBox(
@@ -60,8 +64,23 @@ fun AnimatedFloatingSearchBox(
     focusRequester: FocusRequester = remember { FocusRequester() },
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
 ) {
+    var shouldShow by remember { mutableStateOf(true) }
+    var prevFirstVisibleItemIndex by remember { mutableIntStateOf(listState.firstVisibleItemIndex) }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect {
+                val deltaItemIndex = listState.firstVisibleItemIndex - prevFirstVisibleItemIndex
+
+                if (deltaItemIndex.absoluteValue > 0) {
+                    shouldShow = deltaItemIndex < 0
+                    prevFirstVisibleItemIndex = listState.firstVisibleItemIndex
+                }
+            }
+    }
     AnimatedVisibility(
-        visible = listState.isScrolledToStart() || !listState.isScrollingDown(),
+        visible = listState.isScrolledToStart() || shouldShow,
         enter = expandVertically(),
         exit = shrinkVertically(),
         modifier = modifier,
