@@ -138,7 +138,7 @@
     <string name="chapters_from_database">Главы и история из базы данных</string>
     <string name="action_manual_install">Ручная установка</string>
     <string name="sponsor_me">Поддержите меня</string>
-    <string name="pref_show_empty_categories_search">Показывать пустые категории при поиске/фильтрации.</string>
+    <string name="pref_show_empty_categories_search">Показывать пустые категории при поиске/фильтрации</string>
     <string name="pref_pinch_to_zoom">Приближение разведением двумя пальцами</string>
     <string name="pref_paged_disable_zoom_in">Отключить приближение</string>
     <string name="pref_landscape_zoom_type">Режим приближения для широких изображений</string>
@@ -152,7 +152,7 @@
     <string name="special_services">Особые сервисы</string>
     <string name="pref_category_connections">Подключения</string>
     <string name="pref_connections_summary">Discord, вскоре будет ещё...</string>
-    <string name="pref_discord_configuration">Настроить Discord RPC</string>
+    <string name="pref_discord_configuration">Откройте чтобы настроить Discord RPC</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">Этот сервис Discord работает путем логгирования токена. Используйте на свой страх и риск. Ваш токен хранится локально, и %s не передаёт его куда-либо ещё</string>
     <string name="pref_discord_rpc">Эффект присутствия в Discord</string>
@@ -191,4 +191,6 @@
     <string name="pref_discord_show_download_button_summary">Показывает кнопку для загрузки приложения</string>
     <string name="pref_discord_show_discord_button">Показывать кнопку Discord</string>
     <string name="pref_discord_show_discord_button_summary">Показывает кнопку для присоединения к серверу Discord</string>
+    <string name="job_failed_schedule_update_check">Не удалось запланировать автоматическое обновление библиотеки: %s</string>
+    <string name="job_failed_schedule_backup_check">Не удалось запланировать автоматический бэкап: %s</string>
 </resources>
