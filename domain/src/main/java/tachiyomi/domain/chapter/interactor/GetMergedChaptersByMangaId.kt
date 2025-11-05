@@ -69,7 +69,7 @@ class GetMergedChaptersByMangaId(
         chapterList: List<Chapter>,
     ): List<Chapter> {
         return when (mangaReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }?.chapterSortMode) {
-            MergedMangaReference.CHAPTER_SORT_NO_DEDUPE, MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
+            MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
             MergedMangaReference.CHAPTER_SORT_PRIORITY -> dedupeByPriority(mangaReferences, chapterList)
             MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> {
                 findSourceWithMostChapters(chapterList)?.let { mangaId ->

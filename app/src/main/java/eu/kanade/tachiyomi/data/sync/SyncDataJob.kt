@@ -123,6 +123,10 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         }
 
         fun stop(context: Context) {
+            // KMK -->
+            val syncPreferences = Injekt.get<SyncPreferences>()
+            val syncEnabled = syncPreferences.isSyncEnabled()
+            // KMK <--
             val wm = context.workManager
             val workQuery = WorkQuery.Builder.fromTags(listOf(TAG_JOB, TAG_AUTO, TAG_MANUAL))
                 .addStates(listOf(WorkInfo.State.RUNNING))
@@ -137,7 +141,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
                     // KMK <--
 
                     // Re-enqueue cancelled scheduled work
-                    if (it.tags.contains(TAG_AUTO)) {
+                    if (/* KMK --> */ syncEnabled /* KMK <-- */ && it.tags.contains(TAG_AUTO)) {
                         setupTask(context)
                     }
                 }

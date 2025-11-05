@@ -56,6 +56,9 @@ class DiscordRPCService : Service() {
             stopSelf()
             return
         }
+
+        // Show notification and enter foreground as early as possible
+        notification(this)
         // KMK <--
 
         val status = when (connectionsPreferences.discordRPCStatus().get()) {
@@ -67,19 +70,13 @@ class DiscordRPCService : Service() {
         try {
             rpc = DiscordRPC(token, status)
 
+            // KMK -->
             try {
-                // KMK -->
                 discordScope.launchIO { setScreen(this@DiscordRPCService) }
-                // KMK <--
             } catch (e: Exception) {
                 Timber.tag(TAG).e(e, "Error setting initial screen: ${e.message}")
-                // KMK -->
                 stopSelf()
-                // KMK <--
             }
-
-            notification(this)
-            // KMK -->
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to initialize Discord RPC: ${e.message}")
             connectionsPreferences.enableDiscordRPC().set(false)
@@ -178,11 +175,17 @@ class DiscordRPCService : Service() {
         private const val ACTION_RESTART = "eu.kanade.tachiyomi.DISCORD_RPC_RESTART"
         private const val STOP_SERVICE = "eu.kanade.tachiyomi.DISCORD_RPC_STOP"
 
-        fun start(context: Context) {
+        fun start(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
             handler.removeCallbacksAndMessages(null)
-            if (rpc == null && connectionsPreferences.enableDiscordRPC().get()) {
-                since = System.currentTimeMillis()
-                context.startForegroundService(Intent(context, DiscordRPCService::class.java))
+            val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
+            if (connectionsPreferences.enableDiscordRPC().get()) {
+                if (token.isBlank()) {
+                    Timber.tag(TAG).w("Discord RPC not started due to missing token")
+                    connectionsPreferences.enableDiscordRPC().set(false)
+                } else if (rpc == null) {
+                    since = System.currentTimeMillis()
+                    context.startForegroundService(Intent(context, DiscordRPCService::class.java))
+                }
             }
         }
 
@@ -211,8 +214,9 @@ class DiscordRPCService : Service() {
             }
         }
 
-        fun restart(context: Context) {
-            if (connectionsPreferences.enableDiscordRPC().get()) {
+        fun restart(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
+            val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
+            if (connectionsPreferences.enableDiscordRPC().get() && token.isNotBlank()) {
                 val restartIntent = Intent(context, DiscordRPCService::class.java).apply {
                     action = ACTION_RESTART
                 }
@@ -222,8 +226,11 @@ class DiscordRPCService : Service() {
                     Timber.tag(TAG).e(e, "Failed to send restart intent: ${e.message}")
                     // Fallback to stop/start if service isn't running
                     stop(context, 0L)
-                    handler.postDelayed({ start(context) }, 1000L)
+                    handler.postDelayed({ start(context, connectionsManager) }, 1000L)
                 }
+            } else if (token.isBlank()) {
+                Timber.tag(TAG).w("Discord RPC not started due to missing token")
+                connectionsPreferences.enableDiscordRPC().set(false)
             }
         }
 
