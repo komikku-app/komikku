@@ -77,7 +77,15 @@ jobs:
         run: ./gradlew assemblePreview
 
       - name: Run unit tests
+        id: unit_tests
         run: ./gradlew testReleaseUnitTest
+
+      - name: Upload test report
+        if: steps.unit_tests.outcome == 'failure'
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: test-report-${{ github.sha }}
+          path: app/build/reports/tests/testReleaseUnitTest
 
       - name: Sign APK
         if: github.repository == github.event.pull_request.head.repo.full_name
