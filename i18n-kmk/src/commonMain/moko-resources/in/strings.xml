@@ -70,4 +70,25 @@
     <string name="action_remove_merged">Remove original entries from library?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_hide">Sembunyikan</string>
+    <string name="action_show_hidden_categories">Tampilkan kategori tersembunyi</string>
+    <string name="action_panorama_cover">Penutup panorama</string>
+    <string name="action_open_folder">Buka berkas</string>
+    <string name="action_clear_manga">manga yang jelas</string>
+    <string name="action_update">Pembaruan</string>
+    <string name="action_copy_to_clipboard_first_page">Salin halaman pertama ke papan klip</string>
+    <string name="action_copy_to_clipboard_second_page">Salin halaman kedua ke papan klip</string>
+    <string name="action_copy_to_clipboard_combined_page">Salin halaman gabungan ke papan klip</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Zona keran yang lebih kecil</string>
+    <string name="error_opening_folder">Gagal membuka berkas</string>
+    <string name="pref_pinch_to_zoom">Cubit untuk memperbesar</string>
+    <string name="pref_paged_disable_zoom_in">Nonaktifkan perbesar</string>
+    <string name="pref_landscape_zoom_type">Mode zoom gambar lebar</string>
+    <string name="scale_type_double">Zoom ganda</string>
+    <string name="pref_webtoon_scale_type">Skala cerdas di layar lebar</string>
+    <string name="pref_smart_scale_long_strip_gap">Terapkan skala cerdas pada strip panjang dengan celah-celah</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="pref_custom_theme_style">Gaya tema khusus</string>
 </resources>
