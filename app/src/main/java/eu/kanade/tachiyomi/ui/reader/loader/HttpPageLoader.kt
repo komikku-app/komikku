@@ -41,7 +41,7 @@ internal class HttpPageLoader(
     private val chapterCache: ChapterCache = Injekt.get(),
     // SY -->
     private val readerPreferences: ReaderPreferences = Injekt.get(),
-    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     // SY <--
 ) : PageLoader() {
 
@@ -153,7 +153,7 @@ internal class HttpPageLoader(
             page.imageUrl = null
         }
 
-        if (readerPreferences.readerInstantRetry().get()) { // EXH <--
+        if (readerPreferences.readerInstantRetry().get()) {
             boostPage(page)
         } else {
             // EXH <--
