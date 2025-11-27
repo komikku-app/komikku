@@ -134,4 +134,5 @@
     <string name="downloaded_data">Arquivos baixados</string>
     <string name="chapters_from_database">Capítulos e histórico do banco de dados</string>
     <string name="action_manual_install">Instalação Manual</string>
+    <string name="action_clear_manga">Remover mangá</string>
 </resources>
