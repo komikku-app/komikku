@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -103,6 +104,7 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsAdvancedScreen
 
     @ReadOnlyComposable
@@ -210,7 +212,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 context.startActivity(intent)
-                            } catch (e: ActivityNotFoundException) {
+                            } catch (_: ActivityNotFoundException) {
                                 context.toast(MR.strings.battery_optimization_setting_activity_not_found)
                             }
                         } else {
@@ -527,8 +529,8 @@ object SettingsAdvancedScreen : SearchableSettings {
         onDismissRequest: () -> Unit,
         onCleanupDownloads: (removeRead: Boolean, removeNonFavorite: Boolean) -> Unit,
     ) {
-        val context = LocalContext.current
-        val options = remember { context.resources.getStringArray(R.array.clean_up_downloads).toList() }
+        val resources = LocalResources.current
+        val options = remember { resources.getStringArray(R.array.clean_up_downloads).toList() }
         val selection = remember {
             options.toMutableStateList()
         }
