@@ -189,7 +189,7 @@ private fun MigrateSourceList(
                             !filterObsoleteSource ||
                                 (
                                     it.first.installedExtension?.isObsolete != false &&
-                                        (!isHentaiEnabled || it.first.id !in (EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys))
+                                        (!isHentaiEnabled || it.first.id !in EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys)
                                     )
                         },
                     // KMK <--
