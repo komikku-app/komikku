@@ -89,7 +89,6 @@ fun SourcesScreen(
             // Wrap around so we can use stickyHeader
             modifier = Modifier.padding(contentPadding),
         ) {
-
             FastScrollLazyColumn(
                 state = lazyListState,
                 contentPadding = PaddingValues(top = 65.dp),
