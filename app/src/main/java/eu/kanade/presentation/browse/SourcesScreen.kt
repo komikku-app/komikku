@@ -86,7 +86,6 @@ fun SourcesScreen(
         )
         // KMK -->
         else -> Box(
-            // Wrap around so we can use stickyHeader
             modifier = Modifier.padding(contentPadding),
         ) {
             FastScrollLazyColumn(
@@ -134,6 +133,7 @@ fun SourcesScreen(
                 }
             }
 
+            // KMK -->
             AnimatedFloatingSearchBox(
                 listState = lazyListState,
                 searchQuery = state.searchQuery,
@@ -147,6 +147,7 @@ fun SourcesScreen(
                     )
                     .align(Alignment.TopCenter),
             )
+            // KMK <--
         }
     }
 }

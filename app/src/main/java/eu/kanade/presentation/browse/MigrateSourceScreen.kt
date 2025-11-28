@@ -129,6 +129,7 @@ private fun MigrateSourceList(
     Column(
         modifier = Modifier.padding(contentPadding),
     ) {
+        // KMK <--
         Row(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
@@ -176,6 +177,8 @@ private fun MigrateSourceList(
                 }
             }
         }
+
+        // KMK -->
         Box {
             FastScrollLazyColumn(
                 state = lazyListState,
@@ -208,6 +211,7 @@ private fun MigrateSourceList(
                 }
             }
 
+            // KMK -->
             AnimatedFloatingSearchBox(
                 listState = lazyListState,
                 searchQuery = state.searchQuery,
@@ -221,6 +225,7 @@ private fun MigrateSourceList(
                     )
                     .align(Alignment.TopCenter),
             )
+            // KMK <--
         }
     }
 }
