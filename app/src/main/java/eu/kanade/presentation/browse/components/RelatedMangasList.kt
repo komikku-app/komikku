@@ -1,6 +1,7 @@
 package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
@@ -37,62 +38,72 @@ fun RelatedMangasList(
         modifier = Modifier.padding(contentPadding),
     ) {
         relatedMangas.forEach { related ->
-            val isLoading = related is RelatedManga.Loading
-            if (isLoading) {
-                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
-                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
-                    RelatedMangaTitle(
-                        title = stringResource(MR.strings.loading),
-                        subtitle = null,
-                        onClick = {},
-                        onLongClick = null,
-                        modifier = Modifier
-                            .padding(
-                                start = MaterialTheme.padding.small,
-                                end = MaterialTheme.padding.medium,
+            when (related) {
+                is RelatedManga.Loading -> {
+                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background),
+                        ) {
+                            HorizontalDivider()
+                            RelatedMangaTitle(
+                                title = stringResource(MR.strings.loading),
+                                subtitle = null,
+                                onClick = {},
+                                onLongClick = null,
+                                modifier = Modifier
+                                    .padding(
+                                        start = MaterialTheme.padding.small,
+                                        end = MaterialTheme.padding.medium,
+                                    )
+                                    .background(MaterialTheme.colorScheme.background),
                             )
-                            .background(MaterialTheme.colorScheme.background),
-                    )
+                        }
+                    }
+                    item(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
                 }
-                item(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
-            } else {
-                val relatedManga = related as RelatedManga.Success
-                item(key = "${related.hashCode()}#divider") { HorizontalDivider() }
-                stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
-                    RelatedMangaTitle(
-                        title = if (relatedManga.keyword.isNotBlank()) {
-                            stringResource(KMR.strings.related_mangas_more)
-                        } else {
-                            stringResource(KMR.strings.related_mangas_website_suggestions)
-                        },
-                        showArrow = relatedManga.keyword.isNotBlank(),
-                        subtitle = null,
-                        onClick = {
-                            if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
-                        },
-                        onLongClick = {
-                            if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
-                        },
-                        modifier = Modifier
-                            .padding(
-                                start = MaterialTheme.padding.small,
-                                end = MaterialTheme.padding.medium,
+                is RelatedManga.Success -> {
+                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background),
+                        ) {
+                            HorizontalDivider()
+                            RelatedMangaTitle(
+                                title = if (related.keyword.isNotBlank()) {
+                                    stringResource(KMR.strings.related_mangas_more)
+                                } else {
+                                    stringResource(KMR.strings.related_mangas_website_suggestions)
+                                },
+                                showArrow = related.keyword.isNotBlank(),
+                                subtitle = null,
+                                onClick = {
+                                    if (related.keyword.isNotBlank()) onKeywordClick(related.keyword)
+                                },
+                                onLongClick = {
+                                    if (related.keyword.isNotBlank()) onKeywordLongClick(related.keyword)
+                                },
+                                modifier = Modifier
+                                    .padding(
+                                        start = MaterialTheme.padding.small,
+                                        end = MaterialTheme.padding.medium,
+                                    ),
                             )
-                            .background(MaterialTheme.colorScheme.background),
-                    )
-                }
-                items(
-                    key = { "related-list-${relatedManga.mangaList[it].id}" },
-                    count = relatedManga.mangaList.size,
-                ) { index ->
-                    val manga by getManga(relatedManga.mangaList[index])
-                    BrowseSourceListItem(
-                        manga = manga,
-                        onClick = { onMangaClick(manga) },
-                        onLongClick = { onMangaLongClick(manga) },
-                        isSelected = selection.fastAny { selected -> selected.id == manga.id },
-                        metadata = null,
-                    )
+                        }
+                    }
+                    items(
+                        key = { "related-list-${related.mangaList[it].id}" },
+                        count = related.mangaList.size,
+                    ) { index ->
+                        val manga by getManga(related.mangaList[index])
+                        BrowseSourceListItem(
+                            manga = manga,
+                            onClick = { onMangaClick(manga) },
+                            onLongClick = { onMangaLongClick(manga) },
+                            isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                            metadata = null,
+                        )
+                    }
                 }
             }
         }
