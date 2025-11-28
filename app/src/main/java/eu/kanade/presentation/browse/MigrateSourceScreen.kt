@@ -201,7 +201,8 @@ private fun MigrateSourceList(
                     MigrateSourceItem(
                         // KMK -->
                         // modifier = Modifier.animateItem(),
-                        modifier = Modifier.animateItemFastScroll(),
+                        modifier = Modifier.animateItemFastScroll()
+                            .padding(end = MaterialTheme.padding.small),
                         // KMK <--
                         source = source,
                         count = count,
