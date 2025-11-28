@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -102,42 +101,43 @@ fun SourcesScreen(
                 contentPadding = PaddingValues(top = searchBoxHeight),
                 // KMK <--
             ) {
-                items(
-                    items = state.items,
-                    contentType = {
-                        when (it) {
-                            is SourceUiModel.Header -> "header"
-                            is SourceUiModel.Item -> "item"
-                        }
-                    },
-                    key = {
-                        when (it) {
-                            is SourceUiModel.Header -> "header-${it.hashCode()}"
-                            is SourceUiModel.Item -> "source-${it.source.key()}"
-                        }
-                    },
-                ) { model ->
+                state.items.forEach { model ->
                     when (model) {
                         is SourceUiModel.Header -> {
-                            SourceHeader(
-                                modifier = Modifier.animateItemFastScroll(),
-                                language = model.language,
-                                // SY -->
-                                isCategory = model.isCategory,
-                                // SY <--
-                            )
+                            stickyHeader(
+                                key = "header-${model.hashCode()}",
+                                contentType = "header",
+                            ) {
+                                SourceHeader(
+                                    modifier = Modifier
+                                        .animateItemFastScroll()
+                                        .background(MaterialTheme.colorScheme.background)
+                                        .fillMaxWidth(),
+                                    language = model.language,
+                                    // SY -->
+                                    isCategory = model.isCategory,
+                                    // SY <--
+                                )
+                            }
                         }
-                        is SourceUiModel.Item -> SourceItem(
-                            modifier = Modifier.animateItemFastScroll(),
-                            source = model.source,
-                            // SY -->
-                            showLatest = state.showLatest,
-                            showPin = state.showPin,
-                            // SY <--
-                            onClickItem = onClickItem,
-                            onLongClickItem = onLongClickItem,
-                            onClickPin = onClickPin,
-                        )
+                        is SourceUiModel.Item -> {
+                            item(
+                                key = "source-${model.source.key()}",
+                                contentType = "item",
+                            ) {
+                                SourceItem(
+                                    modifier = Modifier.animateItemFastScroll(),
+                                    source = model.source,
+                                    // SY -->
+                                    showLatest = state.showLatest,
+                                    showPin = state.showPin,
+                                    // SY <--
+                                    onClickItem = onClickItem,
+                                    onLongClickItem = onLongClickItem,
+                                    onClickPin = onClickPin,
+                                )
+                            }
+                        }
                     }
                 }
             }
