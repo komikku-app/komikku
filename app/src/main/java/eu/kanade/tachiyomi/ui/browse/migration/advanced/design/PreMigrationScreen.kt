@@ -57,7 +57,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -74,6 +73,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.components.SourcesSearchBox
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
@@ -195,7 +195,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
         ) { contentPadding ->
             // KMK -->
             Box(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
-                var searchBoxHeight by remember { mutableIntStateOf(40) }
+                var searchBoxHeight by remember { mutableIntStateOf(SOURCE_SEARCH_BOX_HEIGHT.value.toInt()) }
                 // KMK <--
                 val density = LocalDensity.current
                 val layoutDirection = LocalLayoutDirection.current
@@ -234,12 +234,14 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
                 }
                 // KMK -->
                 SourcesSearchBox(
-                    modifier = Modifier
-                        .onSizeChanged { searchBoxHeight = it.height }
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(horizontal = MaterialTheme.padding.small),
                     searchQuery = searchQuery,
                     onChangeSearchQuery = { searchQuery = it ?: "" },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = MaterialTheme.padding.small),
+                    onGloballyPositioned = { layoutCoordinates ->
+                        searchBoxHeight = layoutCoordinates.size.height
+                    },
                     placeholderText = stringResource(KMR.strings.action_search_for_source),
                 )
                 // KMK <--
