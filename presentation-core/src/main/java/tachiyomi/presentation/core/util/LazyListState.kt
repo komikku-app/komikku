@@ -63,25 +63,6 @@ fun LazyListState.isScrollingUp(): Boolean {
 }
 
 @Composable
-fun LazyListState.isItemScrollingUp(initiallyVisible: Boolean = true): Boolean {
-    var isScrolling by remember { mutableStateOf(initiallyVisible) }
-    var previousIndex by remember { mutableIntStateOf(firstVisibleItemIndex) }
-
-    LaunchedEffect(this) {
-        snapshotFlow { firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .collect { currentIndex ->
-                if (previousIndex != currentIndex) {
-                    isScrolling = previousIndex > currentIndex
-                    previousIndex = currentIndex
-                }
-            }
-    }
-
-    return isScrolling
-}
-
-@Composable
 fun LazyListState.isScrollingDown(): Boolean {
     var previousIndex by remember { mutableIntStateOf(firstVisibleItemIndex) }
     var previousScrollOffset by remember { mutableIntStateOf(firstVisibleItemScrollOffset) }
@@ -100,8 +81,11 @@ fun LazyListState.isScrollingDown(): Boolean {
 }
 
 @Composable
-fun LazyListState.isItemScrollingDown(initiallyVisible: Boolean = false): Boolean {
-    var isScrolling by remember { mutableStateOf(initiallyVisible) }
+private fun LazyListState.isItemScrolling(
+    initialValue: Boolean,
+    comparison: (Int, Int) -> Boolean,
+): Boolean {
+    var isScrolling by remember { mutableStateOf(initialValue) }
     var previousIndex by remember { mutableIntStateOf(firstVisibleItemIndex) }
 
     LaunchedEffect(this) {
@@ -109,11 +93,21 @@ fun LazyListState.isItemScrollingDown(initiallyVisible: Boolean = false): Boolea
             .distinctUntilChanged()
             .collect { currentIndex ->
                 if (previousIndex != currentIndex) {
-                    isScrolling = previousIndex < currentIndex
+                    isScrolling = comparison(previousIndex, currentIndex)
                     previousIndex = currentIndex
                 }
             }
     }
 
     return isScrolling
+}
+
+@Composable
+fun LazyListState.isItemScrollingUp(initiallyVisible: Boolean = true): Boolean {
+    return isItemScrolling(initialValue = initiallyVisible) { previous, current -> previous > current }
+}
+
+@Composable
+fun LazyListState.isItemScrollingDown(initiallyVisible: Boolean = false): Boolean {
+    return isItemScrolling(initialValue = initiallyVisible) { previous, current -> previous < current }
 }
