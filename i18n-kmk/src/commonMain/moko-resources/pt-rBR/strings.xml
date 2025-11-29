@@ -91,7 +91,7 @@
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Mostrar categorias ocultas</string>
     <string name="action_display_comfortable_grid_panorama">Grade de panorama confortável</string>
-    <string name="action_panorama_cover">Capa do Panorama</string>
+    <string name="action_panorama_cover">Capa panorâmica</string>
     <string name="pref_panorama_cover">Capa do Panorama</string>
     <string name="pref_panorama_cover_summary">Mostrar capa no modo paisagem se for uma imagem larga</string>
     <string name="pref_panorama_cover_flow">Cobertura do Panorama</string>
@@ -135,4 +135,7 @@
     <string name="chapters_from_database">Capítulos e histórico do banco de dados</string>
     <string name="action_manual_install">Instalação Manual</string>
     <string name="action_clear_manga">Remover mangá</string>
+    <string name="pref_pinch_to_zoom">Use o gesto de pinça para ampliar</string>
+    <string name="pref_landscape_zoom_type">Modo de zoom para imagens amplas</string>
+    <string name="scale_type_double">Zoom duplo</string>
 </resources>
