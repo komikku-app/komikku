@@ -137,6 +137,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.core.common.util.system.UrlUtils
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
@@ -529,8 +530,8 @@ class ReaderActivity : BaseActivity() {
                 chapterTitle = state.currentChapter?.chapter?.name,
                 navigateUp = onBackPressedDispatcher::onBackPressed,
                 onClickTopAppBar = ::openMangaScreen,
-                // bookmarked = state.bookmarked,
-                // onToggleBookmarked = viewModel::toggleChapterBookmark,
+                bookmarked = state.bookmarked,
+                onToggleBookmarked = viewModel::toggleChapterBookmark,
                 onOpenInWebView = ::openChapterInWebView.takeIf { isHttpSource },
                 onOpenInBrowser = ::openChapterInBrowser.takeIf { isHttpSource },
                 onShare = ::shareChapter.takeIf { isHttpSource },
@@ -1570,7 +1571,7 @@ class ReaderActivity : BaseActivity() {
                             incognitoMode = viewModel.incognitoMode,
                             mangaId = manga.id,
                             mangaTitle = manga.ogTitle,
-                            thumbnailUrl = manga.thumbnailUrl,
+                            thumbnailUrl = manga.thumbnailUrl.takeIf { UrlUtils.isOnlineUrl(it) } ?: manga.ogThumbnailUrl,
                             chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
                                 chapter.name
                             } else {

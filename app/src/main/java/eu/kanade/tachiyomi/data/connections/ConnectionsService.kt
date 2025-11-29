@@ -7,6 +7,8 @@ import androidx.annotation.DrawableRes
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.tachiyomi.network.NetworkHelper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import okhttp3.OkHttpClient
 import uy.kohesive.injekt.injectLazy
 
@@ -51,6 +53,15 @@ abstract class ConnectionsService(val id: Long) {
     open val isLogged: Boolean
         get() = getUsername().isNotEmpty() &&
             getPassword().isNotEmpty()
+
+    open val isLoggedInFlow: Flow<Boolean> by lazy {
+        combine(
+            connectionsPreferences.connectionsUsername(this).changes(),
+            connectionsPreferences.connectionsPassword(this).changes(),
+        ) { username, password ->
+            username.isNotEmpty() && password.isNotEmpty()
+        }
+    }
 
     /**
      * Override this method in token-based services to retrieve the token.

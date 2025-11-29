@@ -1,17 +1,17 @@
 [versions]
-aboutlib_version = "12.2.4"
+aboutlib_version = "13.1.0"
 leakcanary = "2.14"
-moko = "0.25.0"
-okhttp_version = "5.1.0"
+moko = "0.25.1"
+okhttp_version = "5.3.0"
 shizuku_version = "13.1.0"
 sqldelight = "2.1.0"
-sqlite = "2.5.2"
+sqlite = "2.6.1"
 voyager = "1.1.0-beta03"
-spotless = "7.2.1"
+spotless = "8.0.0"
 ktlint-core = "1.5.0"
-firebase-bom = "33.16.0"
-markdown = "0.35.0"
-junit = "5.13.4"
+firebase-bom = "34.5.0"
+markdown = "0.38.1"
+junit = "6.0.1"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
@@ -22,7 +22,7 @@ okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp_ve
 okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp_version" }
 okhttp-brotli = { module = "com.squareup.okhttp3:okhttp-brotli", version.ref = "okhttp_version" }
 okhttp-dnsoverhttps = { module = "com.squareup.okhttp3:okhttp-dnsoverhttps", version.ref = "okhttp_version" }
-okio = "com.squareup.okio:okio:3.15.0"
+okio = "com.squareup.okio:okio:3.16.2"
 
 conscrypt-android = "org.conscrypt:conscrypt-android:2.5.3"
 
@@ -55,7 +55,7 @@ natural-comparator = "com.github.gpanther:java-nat-sort:natural-comparator-1.1"
 
 richeditor-compose = "com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc13"
 
-material = "com.google.android.material:material:1.12.0"
+material = "com.google.android.material:material:1.13.0"
 flexible-adapter-core = "com.github.arkon.FlexibleAdapter:flexible-adapter:c8013533"
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
@@ -63,10 +63,9 @@ insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 compose-materialmotion = "io.github.fornewid:material-motion-compose-core:2.0.1"
 compose-webview = "io.github.kevinnzou:compose-webview:0.33.6"
 compose-grid = "io.woong.compose.grid:grid:1.2.2"
-compose-stablemarker = "com.github.skydoves:compose-stable-marker:1.0.7"
-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.5.1" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version = "3.0.0" }
 palette-ktx = "androidx.palette:palette-ktx:1.0.0"
-materialKolor = "com.materialkolor:material-kolor:2.1.1"
+materialKolor = "com.materialkolor:material-kolor:4.0.3"
 haze = "dev.chrisbanes.haze:haze:1.6.10"
 
 swipe = "me.saket.swipe:swipe:1.3.0"
@@ -74,7 +73,7 @@ swipe = "me.saket.swipe:swipe:1.3.0"
 moko-core = { module = "dev.icerock.moko:resources", version.ref = "moko" }
 
 timber = "com.jakewharton.timber:timber:5.0.1"
-logcat = "com.squareup.logcat:logcat:0.2.3"
+logcat = "com.squareup.logcat:logcat:0.4"
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
@@ -95,8 +94,8 @@ sqldelight-dialects-sql = { module = "app.cash.sqldelight:sqlite-3-38-dialect", 
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
-kotest-assertions = "io.kotest:kotest-assertions-core:5.9.1"
-mockk = "io.mockk:mockk:1.14.5"
+kotest-assertions = "io.kotest:kotest-assertions-core:6.0.4"
+mockk = "io.mockk:mockk:1.14.6"
 
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
@@ -110,7 +109,7 @@ markdown-core = { module = "com.mikepenz:multiplatform-markdown-renderer", versi
 markdown-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdown" }
 
 [plugins]
-google-services = { id = "com.google.gms.google-services", version = "4.4.3" }
+google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlib_version" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 moko = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko" }
