@@ -51,6 +51,7 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.LabeledCheckbox
+import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -105,7 +106,7 @@ fun SourcesScreen(
                     when (model) {
                         is SourceUiModel.Header -> {
                             stickyHeader(
-                                key = "header-${model.hashCode()}",
+                                key = "$STICKY_HEADER_KEY_PREFIX-header-${model.hashCode()}",
                                 contentType = "header",
                             ) {
                                 SourceHeader(
