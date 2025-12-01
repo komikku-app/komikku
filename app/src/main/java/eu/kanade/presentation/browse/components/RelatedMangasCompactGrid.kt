@@ -2,7 +2,9 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -38,58 +40,77 @@ fun RelatedMangasCompactGrid(
 ) {
     FastScrollLazyVerticalGrid(
         columns = columns,
-        contentPadding = contentPadding + PaddingValues(horizontal = MaterialTheme.padding.small),
-        // padding for scrollbar
+        contentPadding = contentPadding + PaddingValues(horizontal = MaterialTheme.padding.small), // padding for scrollbar
         topContentPadding = contentPadding.calculateTopPadding(),
         verticalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridVerticalSpacer),
         horizontalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridHorizontalSpacer),
     ) {
-        relatedMangas.forEach { related ->
-            val isLoading = related is RelatedManga.Loading
-            if (isLoading) {
-                header(key = "${related.hashCode()}#header") {
-                    RelatedMangaTitle(
-                        title = stringResource(MR.strings.loading),
-                        subtitle = null,
-                        onClick = {},
-                        onLongClick = null,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
-                    )
+        relatedMangas.forEach { relatedManga ->
+            when (relatedManga) {
+                is RelatedManga.Loading -> {
+                    header(key = "${relatedManga.hashCode()}#header") {
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background),
+                        ) {
+                            HorizontalDivider()
+                            RelatedMangaTitle(
+                                title = stringResource(MR.strings.loading),
+                                subtitle = null,
+                                onClick = {},
+                                onLongClick = null,
+                                modifier = Modifier
+                                    .padding(
+                                        start = MaterialTheme.padding.small,
+                                        end = MaterialTheme.padding.small,
+                                    ),
+                            )
+                        }
+                    }
+                    header(key = "${relatedManga.hashCode()}#loading") { RelatedMangasLoadingItem() }
                 }
-                header(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
-            } else {
-                val relatedManga = related as RelatedManga.Success
-                header(key = "${related.hashCode()}#divider") { HorizontalDivider() }
-                header(key = "${related.hashCode()}#header") {
-                    RelatedMangaTitle(
-                        title = if (relatedManga.keyword.isNotBlank()) {
-                            stringResource(KMR.strings.related_mangas_more)
-                        } else {
-                            stringResource(KMR.strings.related_mangas_website_suggestions)
-                        },
-                        showArrow = relatedManga.keyword.isNotBlank(),
-                        subtitle = null,
-                        onClick = {
-                            if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
-                        },
-                        onLongClick = {
-                            if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
-                        },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
-                    )
-                }
-                items(
-                    key = { "related-compact-${relatedManga.mangaList[it].id}" },
-                    count = relatedManga.mangaList.size,
-                ) { index ->
-                    val manga by getManga(relatedManga.mangaList[index])
-                    BrowseSourceCompactGridItem(
-                        manga = manga,
-                        onClick = { onMangaClick(manga) },
-                        onLongClick = { onMangaLongClick(manga) },
-                        isSelected = selection.fastAny { selected -> selected.id == manga.id },
-                        metadata = null,
-                    )
+                is RelatedManga.Success -> {
+                    header(key = "${relatedManga.hashCode()}#header") {
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background),
+                        ) {
+                            HorizontalDivider()
+                            RelatedMangaTitle(
+                                title = if (relatedManga.keyword.isNotBlank()) {
+                                    stringResource(KMR.strings.related_mangas_more)
+                                } else {
+                                    stringResource(KMR.strings.related_mangas_website_suggestions)
+                                },
+                                showArrow = relatedManga.keyword.isNotBlank(),
+                                subtitle = null,
+                                onClick = {
+                                    if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
+                                },
+                                onLongClick = {
+                                    if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
+                                },
+                                modifier = Modifier
+                                    .padding(
+                                        start = MaterialTheme.padding.small,
+                                        end = MaterialTheme.padding.small,
+                                    ),
+                            )
+                        }
+                    }
+                    items(
+                        key = { "related-compact-${relatedManga.mangaList[it].id}" },
+                        count = relatedManga.mangaList.size,
+                    ) { index ->
+                        val manga by getManga(relatedManga.mangaList[index])
+                        BrowseSourceCompactGridItem(
+                            manga = manga,
+                            onClick = { onMangaClick(manga) },
+                            onLongClick = { onMangaLongClick(manga) },
+                            isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                            metadata = null,
+                        )
+                    }
                 }
             }
         }

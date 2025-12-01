@@ -37,10 +37,10 @@ fun RelatedMangasList(
         // Using modifier instead of contentPadding so we can use stickyHeader
         modifier = Modifier.padding(contentPadding),
     ) {
-        relatedMangas.forEach { related ->
-            when (related) {
+        relatedMangas.forEach { relatedManga ->
+            when (relatedManga) {
                 is RelatedManga.Loading -> {
-                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
+                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX-${relatedManga.hashCode()}#header") {
                         Column(
                             modifier = Modifier
                                 .background(MaterialTheme.colorScheme.background),
@@ -54,48 +54,47 @@ fun RelatedMangasList(
                                 modifier = Modifier
                                     .padding(
                                         start = MaterialTheme.padding.small,
-                                        end = MaterialTheme.padding.medium,
-                                    )
-                                    .background(MaterialTheme.colorScheme.background),
+                                        end = MaterialTheme.padding.small,
+                                    ),
                             )
                         }
                     }
-                    item(key = "${related.hashCode()}#content") { RelatedMangasLoadingItem() }
+                    item(key = "${relatedManga.hashCode()}#loading") { RelatedMangasLoadingItem() }
                 }
                 is RelatedManga.Success -> {
-                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX${related.hashCode()}#header") {
+                    stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX-${relatedManga.hashCode()}#header") {
                         Column(
                             modifier = Modifier
                                 .background(MaterialTheme.colorScheme.background),
                         ) {
                             HorizontalDivider()
                             RelatedMangaTitle(
-                                title = if (related.keyword.isNotBlank()) {
+                                title = if (relatedManga.keyword.isNotBlank()) {
                                     stringResource(KMR.strings.related_mangas_more)
                                 } else {
                                     stringResource(KMR.strings.related_mangas_website_suggestions)
                                 },
-                                showArrow = related.keyword.isNotBlank(),
+                                showArrow = relatedManga.keyword.isNotBlank(),
                                 subtitle = null,
                                 onClick = {
-                                    if (related.keyword.isNotBlank()) onKeywordClick(related.keyword)
+                                    if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
                                 },
                                 onLongClick = {
-                                    if (related.keyword.isNotBlank()) onKeywordLongClick(related.keyword)
+                                    if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
                                 },
                                 modifier = Modifier
                                     .padding(
                                         start = MaterialTheme.padding.small,
-                                        end = MaterialTheme.padding.medium,
+                                        end = MaterialTheme.padding.small,
                                     ),
                             )
                         }
                     }
                     items(
-                        key = { "related-list-${related.mangaList[it].id}" },
-                        count = related.mangaList.size,
+                        key = { "related-list-${relatedManga.mangaList[it].id}" },
+                        count = relatedManga.mangaList.size,
                     ) { index ->
-                        val manga by getManga(related.mangaList[index])
+                        val manga by getManga(relatedManga.mangaList[index])
                         BrowseSourceListItem(
                             manga = manga,
                             onClick = { onMangaClick(manga) },
