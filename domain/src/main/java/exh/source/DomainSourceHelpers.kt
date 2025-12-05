@@ -11,6 +11,8 @@ var metadataDelegatedSourceIds: List<Long> = emptyList()
 
 var nHentaiSourceIds: List<Long> = emptyList()
 
+var lanraragiSourceIds: List<Long> = emptyList()
+
 var mangaDexSourceIds: List<Long> = emptyList()
 
 var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
