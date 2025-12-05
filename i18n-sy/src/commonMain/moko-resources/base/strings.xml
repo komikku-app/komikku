@@ -666,6 +666,9 @@
     <string name="manga_updates_id">Manga updates id</string>
     <string name="anime_planet_id">Anime planet id</string>
     <string name="translated">Translated</string>
+    <string name="filename">File name</string>
+    <string name="file_extension">File extension</string>
+    <string name="base_url">Base url</string>
 
     <!-- Extra gallery info -->
     <string name="is_visible">Visible: %1$s</string>
