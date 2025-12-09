@@ -530,7 +530,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         onCleanupDownloads: (removeRead: Boolean, removeNonFavorite: Boolean) -> Unit,
     ) {
         val resources = LocalResources.current
-        val options = remember { resources.getStringArray(R.array.clean_up_downloads).toList() }
+        val options = remember(resources) { resources.getStringArray(R.array.clean_up_downloads).toList() }
         val selection = remember {
             options.toMutableStateList()
         }

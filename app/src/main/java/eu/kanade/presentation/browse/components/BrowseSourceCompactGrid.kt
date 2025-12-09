@@ -112,9 +112,9 @@ internal fun BrowseSourceCompactGridItem(
             if (metadata is MangaDexSearchMetadata) {
                 metadata.followStatus?.let { followStatus ->
                     val text = LocalResources.current
-                        .let {
-                            remember {
-                                it.getStringArray(R.array.md_follows_options)
+                        .let { resources ->
+                            remember(resources, followStatus) {
+                                resources.getStringArray(R.array.md_follows_options)
                                     .getOrNull(followStatus)
                             }
                         }

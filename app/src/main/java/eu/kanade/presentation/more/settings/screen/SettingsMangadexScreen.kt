@@ -196,7 +196,7 @@ object SettingsMangadexScreen : SearchableSettings {
         onSelectionConfirmed: (List<String>) -> Unit,
     ) {
         val resources = LocalResources.current
-        val items = remember {
+        val items = remember(resources) {
             resources.getStringArray(R.array.md_follows_options)
                 .drop(1)
         }
