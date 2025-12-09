@@ -70,6 +70,7 @@ fun RelatedMangasCompactGrid(
                     header(key = "${relatedManga.hashCode()}#loading") { RelatedMangasLoadingItem() }
                 }
                 is RelatedManga.Success -> {
+                    val hasKeyword = relatedManga.keyword.isNotBlank()
                     header(key = "${relatedManga.hashCode()}#header") {
                         Column(
                             modifier = Modifier
@@ -77,18 +78,18 @@ fun RelatedMangasCompactGrid(
                         ) {
                             HorizontalDivider()
                             RelatedMangaTitle(
-                                title = if (relatedManga.keyword.isNotBlank()) {
+                                title = if (hasKeyword) {
                                     stringResource(KMR.strings.related_mangas_more)
                                 } else {
                                     stringResource(KMR.strings.related_mangas_website_suggestions)
                                 },
-                                showArrow = relatedManga.keyword.isNotBlank(),
+                                showArrow = hasKeyword,
                                 subtitle = null,
                                 onClick = {
-                                    if (relatedManga.keyword.isNotBlank()) onKeywordClick(relatedManga.keyword)
+                                    if (hasKeyword) onKeywordClick(relatedManga.keyword)
                                 },
                                 onLongClick = {
-                                    if (relatedManga.keyword.isNotBlank()) onKeywordLongClick(relatedManga.keyword)
+                                    if (hasKeyword) onKeywordLongClick(relatedManga.keyword)
                                 },
                                 modifier = Modifier
                                     .padding(
