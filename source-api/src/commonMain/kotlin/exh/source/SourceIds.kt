@@ -71,8 +71,6 @@ val EXHENTAI_EXT_SOURCES = mapOf(
     EXH_SOURCE_ID to "all", // E-Hentai (Multi)
 )
 
-val hentaiSourceIds = EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys
-
 val COMICK_IDS = setOf(
     982606170401027267, // all
     2971557565147974499, // en

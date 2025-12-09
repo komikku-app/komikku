@@ -41,7 +41,8 @@ import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.source.hentaiSourceIds
+import exh.source.EHENTAI_EXT_SOURCES
+import exh.source.EXHENTAI_EXT_SOURCES
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.Source
@@ -195,7 +196,7 @@ private fun MigrateSourceList(
                             !filterObsoleteSource ||
                                 (
                                     it.first.installedExtension?.isObsolete != false &&
-                                        (!isHentaiEnabled || it.first.id !in hentaiSourceIds)
+                                        (!isHentaiEnabled || it.first.id !in (EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys))
                                     )
                         },
                     // KMK <--
