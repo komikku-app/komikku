@@ -3,6 +3,7 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,7 @@ fun RelatedMangasList(
                     stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX-${relatedManga.hashCode()}#header") {
                         Column(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.background),
                         ) {
                             HorizontalDivider()
@@ -66,6 +68,7 @@ fun RelatedMangasList(
                     stickyHeader(key = "$STICKY_HEADER_KEY_PREFIX-${relatedManga.hashCode()}#header") {
                         Column(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.background),
                         ) {
                             HorizontalDivider()
