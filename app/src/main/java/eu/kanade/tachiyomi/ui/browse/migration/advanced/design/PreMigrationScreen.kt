@@ -194,10 +194,10 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
             },
         ) { contentPadding ->
             // KMK -->
+            val density = LocalDensity.current
             Box(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
-                var searchBoxHeight by remember { mutableIntStateOf(SOURCE_SEARCH_BOX_HEIGHT.value.toInt()) }
+                var searchBoxHeight by remember { mutableIntStateOf(with(density) { SOURCE_SEARCH_BOX_HEIGHT.roundToPx() }) }
                 // KMK <--
-                val density = LocalDensity.current
                 val layoutDirection = LocalLayoutDirection.current
                 val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
                 // KMK -->
