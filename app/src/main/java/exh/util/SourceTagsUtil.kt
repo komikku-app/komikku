@@ -1,6 +1,5 @@
 package exh.util
 
-import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -114,16 +113,16 @@ object SourceTagsUtil {
 
     @ColorInt fun genreTextColor(genre: GenreColor): Int {
         return when (genre) {
-            GenreColor.DOUJINSHI_COLOR -> Color.BLACK
-            GenreColor.MANGA_COLOR -> Color.BLACK
-            GenreColor.ARTIST_CG_COLOR -> Color.BLACK
-            GenreColor.GAME_CG_COLOR -> Color.BLACK
-            GenreColor.WESTERN_COLOR -> Color.BLACK
-            GenreColor.NON_H_COLOR -> Color.BLACK
-            GenreColor.IMAGE_SET_COLOR -> Color.WHITE
-            GenreColor.COSPLAY_COLOR -> Color.WHITE
-            GenreColor.ASIAN_PORN_COLOR -> Color.BLACK
-            GenreColor.MISC_COLOR -> Color.BLACK
+            GenreColor.DOUJINSHI_COLOR -> "#000000".toColorInt()
+            GenreColor.MANGA_COLOR -> "#000000".toColorInt()
+            GenreColor.ARTIST_CG_COLOR -> "#000000".toColorInt()
+            GenreColor.GAME_CG_COLOR -> "#000000".toColorInt()
+            GenreColor.WESTERN_COLOR -> "#000000".toColorInt()
+            GenreColor.NON_H_COLOR -> "#000000".toColorInt()
+            GenreColor.IMAGE_SET_COLOR -> "#FFFFFF".toColorInt()
+            GenreColor.COSPLAY_COLOR -> "#FFFFFF".toColorInt()
+            GenreColor.ASIAN_PORN_COLOR -> "#000000".toColorInt()
+            GenreColor.MISC_COLOR -> "#000000".toColorInt()
         }
     }
 

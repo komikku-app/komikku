@@ -43,7 +43,6 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
-import exh.util.SourceTagsUtil.genreTextColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.core.common.i18n.pluralStringResource
@@ -277,9 +276,6 @@ fun BrowseSourceEHentaiListItem(
                         style = RatingBarStyle.Fill(),
                     )
                     val color = genre?.first?.color
-                    // KMK -->
-                    val textColor = genre?.first?.let(::genreTextColor)?.let(::Color) ?: Color.Unspecified
-                    // KMK <--
                     val res = genre?.second
                     Card(
                         colors = if (color != null) {
@@ -294,9 +290,6 @@ fun BrowseSourceEHentaiListItem(
                             } else {
                                 metadata.genre.orEmpty()
                             },
-                            // KMK -->
-                            color = textColor,
-                            // KMK <--
                             modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
                             maxLines = 1,
                             style = MaterialTheme.typography.bodyMedium,
