@@ -28,13 +28,13 @@ fun isMetadataSource(source: Long) = source in 6900..6999 ||
     metadataDelegatedSourceIds.binarySearch(source) >= 0
 
 // KMK -->
-fun Source.isEhBasedSource() = this is EhBasedSource && id in EHENTAI_EXT_SOURCES || id in EXHENTAI_EXT_SOURCES
+fun Source.isEhBasedSource() = this is EhBasedSource && id in hentaiSourceIds
 // KMK <--
 
 fun Source.isMdBasedSource() = id in mangaDexSourceIds
 
 // KMK -->
-fun Manga.isEhBasedManga() = source in EHENTAI_EXT_SOURCES || source in EXHENTAI_EXT_SOURCES
+fun Manga.isEhBasedManga() = source in hentaiSourceIds
 // KMK <--
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
