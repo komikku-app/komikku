@@ -214,7 +214,7 @@ fun MangaCoverDialog(
                                 // Because SSIV needs to thoroughly read the image
                                 // KMK -->
                                 val src = (drawable as? BitmapDrawable)?.bitmap
-                                val config = if (src?.config == Bitmap.Config.HARDWARE) Bitmap.Config.ARGB_8888 else src?.config ?: Bitmap.Config.ARGB_8888
+                                val config = src?.config?.takeIf { it != Bitmap.Config.HARDWARE } ?: Bitmap.Config.ARGB_8888
                                 // KMK <--
                                 val copy = src?.copy(config, false)
                                     ?.toDrawable(view.context.resources)
