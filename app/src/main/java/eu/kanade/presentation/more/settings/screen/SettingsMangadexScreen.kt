@@ -26,6 +26,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
@@ -55,6 +56,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsMangadexScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsMangadexScreen
 
     @ReadOnlyComposable
@@ -193,9 +195,9 @@ object SettingsMangadexScreen : SearchableSettings {
         onDismissRequest: () -> Unit,
         onSelectionConfirmed: (List<String>) -> Unit,
     ) {
-        val context = LocalContext.current
-        val items = remember {
-            context.resources.getStringArray(R.array.md_follows_options)
+        val resources = LocalResources.current
+        val items = remember(resources) {
+            resources.getStringArray(R.array.md_follows_options)
                 .drop(1)
         }
         val selection = remember {
