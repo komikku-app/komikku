@@ -212,7 +212,11 @@ fun MangaCoverDialog(
 
                                 // Copy bitmap in case it came from memory cache
                                 // Because SSIV needs to thoroughly read the image
-                                val copy = (drawable as? BitmapDrawable)?.bitmap?.copy(Bitmap.Config.HARDWARE, false)
+                                // KMK -->
+                                val src = (drawable as? BitmapDrawable)?.bitmap
+                                val config = src?.config?.takeIf { it != Bitmap.Config.HARDWARE } ?: Bitmap.Config.ARGB_8888
+                                // KMK <--
+                                val copy = src?.copy(config, false)
                                     ?.toDrawable(view.context.resources)
                                     ?: drawable
                                 view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
