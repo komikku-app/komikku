@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.track.mdlist
 
-import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.tachiyomi.R
@@ -35,13 +34,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
 
     val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
 
-    override fun getLogo(): Int {
-        return R.drawable.ic_tracker_mangadex_logo
-    }
-
-    override fun getLogoColor(): Int {
-        return Color.rgb(43, 48, 53)
-    }
+    override fun getLogo() = R.drawable.brand_mangadex
 
     override fun getStatusList(): List<Long> {
         return FollowStatus.entries.map { it.long }
