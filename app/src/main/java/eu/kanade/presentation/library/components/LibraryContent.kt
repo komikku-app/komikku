@@ -75,21 +75,50 @@ fun LibraryContent(
 
     val displayCategories = remember(categories, activeParentId, showParentFilters, collapsedParentIds) {
         if (!showParentFilters) {
-            // When parent/child disabled, show all categories
-            categories
+            // When parent/child disabled, still show all categories in hierarchical order
+            val result = mutableListOf<Category>()
+            val nonSystemParents = categories.filter { it.parentId == null && !it.isSystemCategory }.sortedBy { it.order }
+            
+            for (parent in nonSystemParents) {
+                result.add(parent)
+                // Add all children (no collapse when layout is disabled)
+                val children = categories
+                    .filter { it.parentId == parent.id }
+                    .sortedBy { it.order }
+                result.addAll(children)
+            }
+            
+            // Add system categories at the end
+            val systemCategories = categories.filter { it.isSystemCategory }
+            result.addAll(systemCategories)
+            
+            result
         } else if (activeParentId != null) {
             // When a parent is selected, show only that parent and its children
             val parent = categories.firstOrNull { it.id == activeParentId }
             val children = categories.filter { it.parentId == activeParentId }
             (listOfNotNull(parent) + children).ifEmpty { categories }
         } else {
-            // Show all parents and their expanded children
-            categories.filter { category ->
-                // Include all parents
-                if (category.parentId == null) true
-                // Include children only if their parent is not collapsed
-                else !collapsedParentIds.contains(category.parentId)
+            // Show all parents and their children in hierarchical order, plus system categories
+            val result = mutableListOf<Category>()
+            val sortedParents = parentCategories.sortedBy { it.order }
+            
+            for (parent in sortedParents) {
+                result.add(parent)
+                // Add children only if parent is not collapsed
+                if (!collapsedParentIds.contains(parent.id)) {
+                    val children = categories
+                        .filter { it.parentId == parent.id }
+                        .sortedBy { it.order }
+                    result.addAll(children)
+                }
             }
+            
+            // Add system categories (default/uncategorized) at the end
+            val systemCategories = categories.filter { it.isSystemCategory }
+            result.addAll(systemCategories)
+            
+            result
         }
     }
 
