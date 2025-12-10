@@ -5,6 +5,7 @@ data class CategoryUpdate(
     val name: String? = null,
     val order: Long? = null,
     val flags: Long? = null,
+    val parentId: Long? = null,
     // KMK -->
     val hidden: Boolean? = null,
     // KMK <--

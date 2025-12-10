@@ -1,15 +1,19 @@
 package eu.kanade.presentation.category.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -29,6 +33,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import tachiyomi.core.common.preference.CheckboxState
@@ -41,8 +46,10 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
-    onCreate: (String) -> Unit,
+    onCreate: (String, Long?) -> Unit,
     categories: ImmutableList<String>,
+    parentOptions: ImmutableList<Category> = persistentListOf(),
+    initialParentId: Long? = null,
     // SY -->
     title: String = stringResource(MR.strings.action_add_category),
     extraMessage: String? = null,
@@ -50,6 +57,7 @@ fun CategoryCreateDialog(
     // SY <--
 ) {
     var name by remember { mutableStateOf("") }
+    var parentId by remember { mutableStateOf(initialParentId) }
 
     val focusRequester = remember { FocusRequester() }
     val nameAlreadyExists = remember(name) { categories.contains(name) }
@@ -60,7 +68,7 @@ fun CategoryCreateDialog(
             TextButton(
                 enabled = name.isNotEmpty() && !nameAlreadyExists,
                 onClick = {
-                    onCreate(name)
+                    onCreate(name, parentId)
                     onDismissRequest()
                 },
             ) {
@@ -104,6 +112,11 @@ fun CategoryCreateDialog(
                     isError = name.isNotEmpty() && nameAlreadyExists,
                     singleLine = true,
                 )
+                ParentCategorySelector(
+                    parentOptions = parentOptions,
+                    selectedParentId = parentId,
+                    onSelectParent = { parentId = it },
+                )
                 // SY -->
             }
             // SY <--
@@ -120,23 +133,31 @@ fun CategoryCreateDialog(
 @Composable
 fun CategoryRenameDialog(
     onDismissRequest: () -> Unit,
-    onRename: (String) -> Unit,
+    onRename: (String, Long?) -> Unit,
     categories: ImmutableList<String>,
     category: String,
+    parentOptions: ImmutableList<Category> = persistentListOf(),
+    initialParentId: Long? = null,
+    categoryHasChildren: Boolean = false,
 ) {
     var name by remember { mutableStateOf(category) }
     var valueHasChanged by remember { mutableStateOf(false) }
+    var parentId by remember { mutableStateOf(initialParentId) }
 
     val focusRequester = remember { FocusRequester() }
-    val nameAlreadyExists = remember(name) { categories.contains(name) }
+    val nameAlreadyExists = remember(name) { categories.contains(name) && name != category }
+    val parentHasChanged = parentId != initialParentId
+    val canChangeName = valueHasChanged && !nameAlreadyExists
+    val canChangeParent = parentHasChanged && !(categoryHasChildren && parentId != initialParentId)
+    val hasChanges = canChangeName || canChangeParent
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
-                enabled = valueHasChanged && !nameAlreadyExists,
+                enabled = hasChanges,
                 onClick = {
-                    onRename(name)
+                    onRename(name, parentId)
                     onDismissRequest()
                 },
             ) {
@@ -170,6 +191,12 @@ fun CategoryRenameDialog(
                 },
                 isError = valueHasChanged && nameAlreadyExists,
                 singleLine = true,
+            )
+            ParentCategorySelector(
+                parentOptions = parentOptions,
+                selectedParentId = parentId,
+                onSelectParent = { parentId = it },
+                categoryHasChildren = categoryHasChildren,
             )
         },
     )
@@ -220,6 +247,53 @@ fun CategoryDeleteDialog(
 }
 
 @Composable
+private fun ParentCategorySelector(
+    parentOptions: ImmutableList<Category>,
+    selectedParentId: Long?,
+    onSelectParent: (Long?) -> Unit,
+    categoryHasChildren: Boolean = false,
+) {
+    if (parentOptions.isEmpty()) return
+
+    var expanded by remember { mutableStateOf(false) }
+    val noneLabel = stringResource(MR.strings.none)
+    val selectedCategory = remember(selectedParentId, parentOptions) {
+        parentOptions.firstOrNull { it.id == selectedParentId }
+    }
+    val selectedLabel = if (selectedCategory != null) selectedCategory.visualName else noneLabel
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = MaterialTheme.padding.small),
+    ) {
+        TextButton(onClick = { if (!categoryHasChildren) expanded = true }, enabled = !categoryHasChildren) {
+            Text(selectedLabel)
+        }
+        if (!categoryHasChildren) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(MR.strings.none)) },
+                    onClick = {
+                        onSelectParent(null)
+                        expanded = false
+                    },
+                )
+                parentOptions.forEach { parent ->
+                    DropdownMenuItem(
+                        text = { Text(parent.visualName) },
+                        onClick = {
+                            onSelectParent(parent.id)
+                            expanded = false
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ChangeCategoryDialog(
     initialSelection: ImmutableList<CheckboxState<Category>>,
     onDismissRequest: () -> Unit,
@@ -249,6 +323,16 @@ fun ChangeCategoryDialog(
         return
     }
     var selection by remember { mutableStateOf(initialSelection) }
+    val orderedSelection by remember(selection) {
+        val selectionMap = selection.associateBy { it.value.id }
+        mutableStateOf(
+            buildCategoryEntries(selection.map { it.value })
+                .mapNotNull { entry ->
+                    selectionMap[entry.category.id]?.let { CheckboxEntry(it, entry.depth) }
+                }
+                .toImmutableList(),
+        )
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -287,7 +371,8 @@ fun ChangeCategoryDialog(
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
             ) {
-                selection.forEach { checkbox ->
+                orderedSelection.forEach { entry ->
+                    val checkbox = entry.checkbox
                     val onChange: (CheckboxState<Category>) -> Unit = {
                         val index = selection.indexOf(it)
                         if (index != -1) {
@@ -299,7 +384,8 @@ fun ChangeCategoryDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onChange(checkbox) },
+                            .clickable { onChange(checkbox) }
+                            .padding(start = MaterialTheme.padding.medium * entry.depth.coerceAtLeast(0).toFloat()),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         when (checkbox) {
@@ -326,4 +412,43 @@ fun ChangeCategoryDialog(
             }
         },
     )
+}
+
+private data class CheckboxEntry(
+    val checkbox: CheckboxState<Category>,
+    val depth: Int,
+)
+
+private data class CategoryOrderEntry(
+    val category: Category,
+    val depth: Int,
+)
+
+private fun buildCategoryEntries(categories: List<Category>): List<CategoryOrderEntry> {
+    val byParent = categories.groupBy { it.parentId }
+    val visited = mutableSetOf<Long>()
+    val result = mutableListOf<CategoryOrderEntry>()
+
+    fun traverse(parentId: Long?, depth: Int) {
+        val children = byParent[parentId].orEmpty()
+            .sortedBy { it.order }
+        for (child in children) {
+            if (visited.add(child.id)) {
+                result += CategoryOrderEntry(child, depth)
+                traverse(child.id, depth + 1)
+            }
+        }
+    }
+
+    traverse(null, 0)
+
+    categories.filter { it.id !in visited }
+        .sortedBy { it.order }
+        .forEach { orphan ->
+            visited.add(orphan.id)
+            result += CategoryOrderEntry(orphan, 0)
+            traverse(orphan.id, 1)
+        }
+
+    return result
 }

@@ -51,9 +51,9 @@ class CategoryScreenModel(
         }
     }
 
-    fun createCategory(name: String) {
+    fun createCategory(name: String, parentId: Long?) {
         screenModelScope.launch {
-            when (createCategoryWithName.await(name)) {
+            when (createCategoryWithName.await(name, parentId)) {
                 is CreateCategoryWithName.Result.InternalError -> _events.send(CategoryEvent.InternalError)
                 else -> {}
             }
@@ -89,9 +89,18 @@ class CategoryScreenModel(
         }
     }
 
-    fun renameCategory(category: Category, name: String) {
+    fun renameCategory(category: Category, name: String, parentId: Long?) {
         screenModelScope.launch {
-            when (renameCategory.await(category, name)) {
+            when (renameCategory.await(category, name, parentId)) {
+                is RenameCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
+                else -> {}
+            }
+        }
+    }
+
+    fun changeParent(category: Category, newParentId: Long?) {
+        screenModelScope.launch {
+            when (renameCategory.await(category, category.name, newParentId)) {
                 is RenameCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
                 else -> {}
             }
