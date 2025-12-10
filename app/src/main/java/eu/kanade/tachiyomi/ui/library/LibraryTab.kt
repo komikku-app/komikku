@@ -148,7 +148,7 @@ data object LibraryTab : Tab {
                 val title = state.getToolbarTitle(
                     defaultTitle = stringResource(MR.strings.label_library),
                     defaultCategoryTitle = stringResource(MR.strings.label_default),
-                    page = state.coercedActiveCategoryIndex,
+                    page = state.activeCategoryIndex,
                 )
                 LibraryToolbar(
                     hasActiveFilters = state.hasActiveFilters,
@@ -301,16 +301,14 @@ data object LibraryTab : Tab {
                 }
                 else -> {
                     LibraryContent(
-                        categories = state.displayedCategories,
-                        // KMK -->
-                        activeCategoryIndex = state.coercedActiveCategoryIndex,
-                        // KMK <--
+                        categories = state.categories,
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,
-                        currentPage = state.coercedActiveCategoryIndex,
+                        currentPage = state.activeCategoryIndex.coerceIn(0, state.categories.lastIndex.coerceAtLeast(0)),
                         hasActiveFilters = state.hasActiveFilters,
                         showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
+                        showParentFilters = state.showParentFilters && state.categories.any { it.parentId == null && !it.isSystemCategory },
                         onChangeCurrentPage = screenModel::updateActiveCategoryIndex,
                         onClickManga = { navigator.push(MangaScreen(it)) },
                         onContinueReadingClicked = { it: LibraryManga ->
