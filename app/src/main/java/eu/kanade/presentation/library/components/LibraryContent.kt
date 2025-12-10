@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.presentation.category.visualName
 import eu.kanade.tachiyomi.ui.library.LibraryItem
@@ -69,12 +71,25 @@ fun LibraryContent(
     // Build parent list and display list depending on parent selection
     val parentCategories = remember(categories) { categories.filter { it.parentId == null && !it.isSystemCategory } }
     var activeParentId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var collapsedParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
 
-    val displayCategories = remember(categories, activeParentId, showParentFilters) {
-        if (!showParentFilters || activeParentId == null) categories else {
+    val displayCategories = remember(categories, activeParentId, showParentFilters, collapsedParentIds) {
+        if (!showParentFilters) {
+            // When parent/child disabled, show all categories
+            categories
+        } else if (activeParentId != null) {
+            // When a parent is selected, show only that parent and its children
             val parent = categories.firstOrNull { it.id == activeParentId }
             val children = categories.filter { it.parentId == activeParentId }
             (listOfNotNull(parent) + children).ifEmpty { categories }
+        } else {
+            // Show all parents and their expanded children
+            categories.filter { category ->
+                // Include all parents
+                if (category.parentId == null) true
+                // Include children only if their parent is not collapsed
+                else !collapsedParentIds.contains(category.parentId)
+            }
         }
     }
 
@@ -94,11 +109,19 @@ fun LibraryContent(
             ParentChipsRow(
                 parents = parentCategories,
                 activeParentId = activeParentId,
+                collapsedParentIds = collapsedParentIds,
                 onParentChange = { newParent ->
                     activeParentId = newParent
                     // Reset pager to first page for new selection
                     val target = 0
                     scope.launch { pagerState.scrollToPage(target) }
+                },
+                onToggleCollapse = { parentId ->
+                    collapsedParentIds = if (collapsedParentIds.contains(parentId)) {
+                        collapsedParentIds - parentId
+                    } else {
+                        collapsedParentIds + parentId
+                    }
                 },
             )
         }
@@ -175,7 +198,9 @@ fun LibraryContent(
 private fun ParentChipsRow(
     parents: List<Category>,
     activeParentId: Long?,
+    collapsedParentIds: Set<Long>,
     onParentChange: (Long?) -> Unit,
+    onToggleCollapse: (Long) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -191,10 +216,26 @@ private fun ParentChipsRow(
             label = { Text(stringResource(MR.strings.all)) },
         )
         parents.sortedBy { it.order }.forEach { parent ->
+            val isCollapsed = collapsedParentIds.contains(parent.id)
             FilterChip(
                 selected = activeParentId == parent.id,
                 onClick = { onParentChange(parent.id) },
-                label = { Text(parent.visualName) },
+                label = { 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(parent.visualName)
+                        Text(
+                            text = if (isCollapsed) "▼" else "▲",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.clickable(
+                                enabled = true,
+                                onClick = { onToggleCollapse(parent.id) },
+                            ),
+                        )
+                    }
+                },
             )
         }
     }

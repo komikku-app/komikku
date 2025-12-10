@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.visualName
@@ -323,12 +325,29 @@ fun ChangeCategoryDialog(
         return
     }
     var selection by remember { mutableStateOf(initialSelection) }
-    val orderedSelection by remember(selection) {
+    var expandedParents by remember { mutableStateOf(setOf<Long>()) }
+    
+    // Check which parents have children
+    val parentChildMap by remember(selection) {
+        mutableStateOf(
+            selection.groupBy { it.value.parentId }
+                .filterKeys { it != null }
+                .mapKeys { it.key!! }
+        )
+    }
+    
+    val orderedSelection by remember(selection, expandedParents) {
         val selectionMap = selection.associateBy { it.value.id }
         mutableStateOf(
             buildCategoryEntries(selection.map { it.value })
                 .mapNotNull { entry ->
                     selectionMap[entry.category.id]?.let { CheckboxEntry(it, entry.depth) }
+                }
+                .filter { entry ->
+                    // Show all parents
+                    if (entry.checkbox.value.parentId == null) true
+                    // Show children only if their parent is expanded
+                    else expandedParents.contains(entry.checkbox.value.parentId)
                 }
                 .toImmutableList(),
         )
@@ -373,6 +392,9 @@ fun ChangeCategoryDialog(
             ) {
                 orderedSelection.forEach { entry ->
                     val checkbox = entry.checkbox
+                    val isParent = checkbox.value.parentId == null
+                    val isExpanded = expandedParents.contains(checkbox.value.id)
+                    val hasChildren = parentChildMap.containsKey(checkbox.value.id)
                     val onChange: (CheckboxState<Category>) -> Unit = {
                         val index = selection.indexOf(it)
                         if (index != -1) {
@@ -384,10 +406,23 @@ fun ChangeCategoryDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onChange(checkbox) }
+                            .clickable { 
+                                if (isParent && hasChildren) {
+                                    // Toggle expand/collapse only for parents with children
+                                    expandedParents = if (isExpanded) {
+                                        expandedParents - checkbox.value.id
+                                    } else {
+                                        expandedParents + checkbox.value.id
+                                    }
+                                } else {
+                                    // Toggle checkbox for all items (parents without children and all children)
+                                    onChange(checkbox)
+                                }
+                            }
                             .padding(start = MaterialTheme.padding.medium * entry.depth.coerceAtLeast(0).toFloat()),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        // Show checkbox on the left for all items
                         when (checkbox) {
                             is CheckboxState.TriState -> {
                                 TriStateCheckbox(
@@ -405,8 +440,29 @@ fun ChangeCategoryDialog(
 
                         Text(
                             text = checkbox.value.visualName,
-                            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                            modifier = Modifier
+                                .padding(horizontal = MaterialTheme.padding.medium)
+                                .weight(1f),
                         )
+                        
+                        // Show expand/collapse indicator on the right for parents with children
+                        if (isParent && hasChildren) {
+                            Text(
+                                text = if (isExpanded) "▼" else "▶",
+                                modifier = Modifier
+                                    .padding(end = MaterialTheme.padding.medium)
+                                    .clickable(
+                                        enabled = true,
+                                        onClick = {
+                                            expandedParents = if (isExpanded) {
+                                                expandedParents - checkbox.value.id
+                                            } else {
+                                                expandedParents + checkbox.value.id
+                                            }
+                                        },
+                                    ),
+                            )
+                        }
                     }
                 }
             }
