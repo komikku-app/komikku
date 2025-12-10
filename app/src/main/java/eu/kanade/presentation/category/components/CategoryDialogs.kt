@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import eu.kanade.presentation.category.buildCategoryHierarchy
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -339,7 +340,7 @@ fun ChangeCategoryDialog(
     val orderedSelection by remember(selection, expandedParents) {
         val selectionMap = selection.associateBy { it.value.id }
         mutableStateOf(
-            buildCategoryEntries(selection.map { it.value })
+            buildCategoryHierarchy(selection.map { it.value })
                 .mapNotNull { entry ->
                     selectionMap[entry.category.id]?.let { CheckboxEntry(it, entry.depth) }
                 }
@@ -475,36 +476,4 @@ private data class CheckboxEntry(
     val depth: Int,
 )
 
-private data class CategoryOrderEntry(
-    val category: Category,
-    val depth: Int,
-)
 
-private fun buildCategoryEntries(categories: List<Category>): List<CategoryOrderEntry> {
-    val byParent = categories.groupBy { it.parentId }
-    val visited = mutableSetOf<Long>()
-    val result = mutableListOf<CategoryOrderEntry>()
-
-    fun traverse(parentId: Long?, depth: Int) {
-        val children = byParent[parentId].orEmpty()
-            .sortedBy { it.order }
-        for (child in children) {
-            if (visited.add(child.id)) {
-                result += CategoryOrderEntry(child, depth)
-                traverse(child.id, depth + 1)
-            }
-        }
-    }
-
-    traverse(null, 0)
-
-    categories.filter { it.id !in visited }
-        .sortedBy { it.order }
-        .forEach { orphan ->
-            visited.add(orphan.id)
-            result += CategoryOrderEntry(orphan, 0)
-            traverse(orphan.id, 1)
-        }
-
-    return result
-}

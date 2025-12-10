@@ -305,7 +305,7 @@ data object LibraryTab : Tab {
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,
-                        currentPage = { state.categories.indexOfFirst { it.id == state.activeCategory?.id }.takeIf { it != -1 } ?: 0 }(),
+                        currentPage = state.activeCategoryIndex.coerceIn(0, state.categories.lastIndex.coerceAtLeast(0)),
                         hasActiveFilters = state.hasActiveFilters,
                         showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
                         showParentFilters = state.showParentFilters && state.categories.any { it.parentId == null && !it.isSystemCategory },

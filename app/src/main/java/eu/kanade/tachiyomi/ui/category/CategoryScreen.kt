@@ -113,12 +113,3 @@ private fun isDescendantOf(candidate: Category, parent: Category, allCategories:
     }
     return false
 }
-
-private fun isDescendantOfCategory(candidate: Category, parent: Category, allCategories: List<Category>): Boolean {
-    var currentParentId = candidate.parentId
-    while (currentParentId != null) {
-        if (currentParentId == parent.id) return true
-        currentParentId = allCategories.firstOrNull { it.id == currentParentId }?.parentId
-    }
-    return false
-}

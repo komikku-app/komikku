@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -198,72 +199,56 @@ private fun ReorderableCollectionItemScope.ChildCategoryRow(
             Text(
                 text = category.name,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = MaterialTheme.padding.small),
+                    .padding(start = 8.dp, end = 4.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = LocalContentColor.current.let {
                     if (category.hidden) it.copy(alpha = 0.6f) else it
                 },
                 textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
 
+            // Parent info label (inline)
+            if (parentCategory != null) {
+                Text(
+                    text = "Parent: ${parentCategory.name}",
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
             // Action buttons (compact)
-            IconButton(onClick = onRename, modifier = Modifier.padding(4.dp)) {
+            IconButton(onClick = onRename, modifier = Modifier.padding(0.dp).size(32.dp)) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = stringResource(MR.strings.action_rename_category),
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .width(18.dp),
+                    modifier = Modifier.size(16.dp),
                 )
             }
-                IconButton(onClick = onHide, modifier = Modifier.padding(4.dp)) {
-                    Icon(
-                        imageVector = if (category.hidden) {
-                            Icons.Outlined.Visibility
-                        } else {
-                            Icons.Outlined.VisibilityOff
-                        },
-                        contentDescription = stringResource(KMR.strings.action_hide),
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .width(18.dp),
-                    )
-                }
-                IconButton(onClick = onDelete, modifier = Modifier.padding(4.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = stringResource(MR.strings.action_delete),
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .width(18.dp),
-                    )
-                }
+            IconButton(onClick = onHide, modifier = Modifier.padding(0.dp).size(32.dp)) {
+                Icon(
+                    imageVector = if (category.hidden) {
+                        Icons.Outlined.Visibility
+                    } else {
+                        Icons.Outlined.VisibilityOff
+                    },
+                    contentDescription = stringResource(KMR.strings.action_hide),
+                    modifier = Modifier.size(16.dp),
+                )
             }
-
-            // Parent info footer
-            if (parentCategory != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = startIndent + 10.dp,
-                            end = MaterialTheme.padding.small,
-                            top = 2.dp,
-                            bottom = 8.dp,
-                        )
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(4.dp),
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Text(
-                        text = "Parent: ${parentCategory.name}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            IconButton(onClick = onDelete, modifier = Modifier.padding(0.dp).size(32.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = stringResource(MR.strings.action_delete),
+                    modifier = Modifier.size(16.dp),
+                )
             }
         }
     }
+}

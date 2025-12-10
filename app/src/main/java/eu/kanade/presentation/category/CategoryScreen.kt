@@ -22,7 +22,6 @@ import eu.kanade.presentation.category.components.CategoryListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.ui.category.CategoryScreenState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.category.model.Category
@@ -99,55 +98,61 @@ private fun CategoryContent(
     onClickHide: (Category) -> Unit,
     // KMK <--
 ) {
-    val entries = remember(categories) { buildCategoryEntries(categories) }
-    val categoriesState = remember { entries.toMutableStateList() }
-    var needsRebuild by remember { mutableStateOf(false) }
+    val entries = remember(categories) { buildCategoryHierarchy(categories) }
+    val categoriesState = remember(entries) { entries.toMutableStateList() }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
-        val movedItem = categoriesState.removeAt(from.index)
-        categoriesState.add(to.index, movedItem)
-
-        // If moving a parent category, also move all its children
-        if (movedItem.category.parentId == null && movedItem.depth == 0) {
-            // This is a parent - find all children that should move with it
-            val childrenToMove = mutableListOf<CategoryEntry>()
-
-            // Find all children by checking depth and position
-            // Children are any entries immediately following the parent with greater depth
-            var checkIndex = to.index + 1
+        // If moving a parent category, collect its entire subtree first
+        if (categoriesState[from.index].category.parentId == null && categoriesState[from.index].depth == 0) {
+            // Collect the parent and all its contiguous children from the original position
+            val movedParent = categoriesState[from.index]
+            val subtreeToMove = mutableListOf(movedParent)
+            
+            // Scan forward from original position to collect all children
+            var checkIndex = from.index + 1
             while (checkIndex < categoriesState.size) {
                 val entry = categoriesState[checkIndex]
-                // Stop when we hit a non-child (same or lower depth)
-                if (entry.depth <= movedItem.depth) {
+                // Stop when we hit a non-child (same or lower depth as parent)
+                if (entry.depth <= movedParent.depth) {
                     break
                 }
-                childrenToMove.add(entry)
+                subtreeToMove.add(entry)
                 checkIndex++
             }
-
-            // Remove children from their current positions
-            childrenToMove.forEach { categoriesState.remove(it) }
-
-            // Re-insert children right after parent in the correct order
-            var insertIndex = to.index + 1
-            for (child in childrenToMove) {
-                categoriesState.add(insertIndex, child)
-                insertIndex++
+            
+            // Remove the entire subtree from current position
+            subtreeToMove.forEach { categoriesState.remove(it) }
+            
+            // Calculate adjusted target index (account for removed items before target)
+            val adjustedTo = if (from.index < to.index) {
+                to.index - subtreeToMove.size
+            } else {
+                to.index
             }
             
-            // Mark for rebuild since parent position changed
-            needsRebuild = true
-        } else if (movedItem.category.parentId != null && movedItem.depth > 0) {
-            // This is a child being dragged - check if it's being moved to a new parent
+            // Insert parent and all its children at the target position
+            subtreeToMove.forEachIndexed { offset, entry ->
+                categoriesState.add(adjustedTo + offset, entry)
+            }
+        } else if (categoriesState[from.index].category.parentId != null && categoriesState[from.index].depth > 0) {
+            // Moving a child - standard single item move
+            val movedItem = categoriesState.removeAt(from.index)
+            categoriesState.add(to.index, movedItem)
+            
+            // Check if it's being moved to a new parent
             val newParentId = findParentAtPosition(categoriesState, to.index)
             val oldParentId = movedItem.category.parentId
             
             // If parent changed, update it
             if (newParentId != oldParentId) {
                 val updatedCategory = movedItem.category.copy(parentId = newParentId)
-                movedItem.category = updatedCategory
+                categoriesState[to.index] = movedItem.copy(category = updatedCategory)
                 onChangeParent(updatedCategory, newParentId)
             }
+        } else {
+            // Standard single item move for non-parent items
+            val movedItem = categoriesState.removeAt(from.index)
+            categoriesState.add(to.index, movedItem)
         }
 
         // Recalculate order indices for all affected categories
@@ -160,19 +165,10 @@ private fun CategoryContent(
         // Update the list when categories from database change
         categoriesState.clear()
         categoriesState.addAll(entries)
-        needsRebuild = false
     }
-    
-    LaunchedEffect(needsRebuild) {
-        if (needsRebuild) {
-            // Small delay to allow database update, then rebuild
-            kotlinx.coroutines.delay(50)
-            val rebuiltEntries = buildCategoryEntries(categoriesState.map { it.category })
-            categoriesState.clear()
-            categoriesState.addAll(rebuiltEntries)
-            needsRebuild = false
-        }
-    }
+
+    // Pre-compute categories map for efficient parent lookups
+    val categoriesById = remember(categories) { categories.associateBy { it.id } }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -187,11 +183,7 @@ private fun CategoryContent(
             key = { entry -> entry.category.key },
         ) { entry ->
             ReorderableItem(reorderableState, entry.category.key) {
-                val parentCategory = if (entry.category.parentId != null) {
-                    categories.firstOrNull { it.id == entry.category.parentId }
-                } else {
-                    null
-                }
+                val parentCategory = entry.category.parentId?.let { categoriesById[it] }
 
                 CategoryListItem(
                     modifier = Modifier.animateItem(),
@@ -211,53 +203,3 @@ private fun CategoryContent(
 }
 
 private val Category.key inline get() = "category-$id"
-
-private data class CategoryEntry(
-    var category: Category,
-    val depth: Int,
-)
-
-private fun findParentAtPosition(entries: List<CategoryEntry>, position: Int): Long? {
-    if (position <= 0) return null
-    
-    // Look backward to find the nearest parent (depth == 0)
-    for (i in position - 1 downTo 0) {
-        if (entries[i].depth == 0) {
-            return entries[i].category.id
-        }
-    }
-    return null
-}
-
-private fun buildCategoryEntries(categories: List<Category>): List<CategoryEntry> {
-    if (categories.isEmpty()) return emptyList()
-
-    val byParent = categories.groupBy { it.parentId }
-    val visited = mutableSetOf<Long>()
-    val result = mutableListOf<CategoryEntry>()
-
-    fun traverse(parentId: Long?, depth: Int) {
-        val children = byParent[parentId].orEmpty()
-            .sortedBy { it.order }
-        for (child in children) {
-            if (visited.add(child.id)) {
-                result += CategoryEntry(child, depth)
-                traverse(child.id, depth + 1)
-            }
-        }
-    }
-
-    // First pass: traverse all categories with parentId == null (top-level parents)
-    traverse(null, 0)
-
-    // Second pass: include any orphaned categories that did not get visited
-    categories.filter { it.id !in visited }
-        .sortedBy { it.order }
-        .forEach { orphan ->
-            visited.add(orphan.id)
-            result += CategoryEntry(orphan, 0)
-            traverse(orphan.id, 1)
-        }
-
-    return result
-}
