@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source
 
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.source.EH_PACKAGE
 import exh.source.LOCAL_SOURCE_PACKAGE
 import exh.source.isEhBasedSource
@@ -52,8 +53,11 @@ private fun getMergedSourcesString(
     enabledLangs: List<String>,
     onlyName: Boolean,
 ): String {
-    return if (onlyName) {
-        mergeSources.joinToString { source ->
+    // KMK --> Filter out MergedSource itself
+    val filteredSources = mergeSources.filterNot { it is MergedSource }
+    // KMK <--
+    val sourceNames = if (onlyName) {
+        filteredSources.joinToString { source ->
             when {
                 // KMK -->
                 source.isLocalOrStub() -> source.toString()
@@ -67,7 +71,7 @@ private fun getMergedSourcesString(
             }
         }
     } else {
-        mergeSources.joinToString { source ->
+        filteredSources.joinToString { source ->
             // KMK -->
             if (source.isLocalOrStub()) {
                 source.toString()
@@ -77,6 +81,7 @@ private fun getMergedSourcesString(
             // KMK <--
         }
     }
+    return "Merged Entry ($sourceNames)"
 }
 // SY <--
 
