@@ -7,6 +7,8 @@ import dev.icerock.moko.resources.StringResource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -21,6 +23,7 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+
 
 class CategoryScreenModel(
     private val getCategories: GetCategories = Injekt.get(),
@@ -121,6 +124,23 @@ class CategoryScreenModel(
             when (it) {
                 CategoryScreenState.Loading -> it
                 is CategoryScreenState.Success -> it.copy(dialog = null)
+            }
+        }
+    }
+
+    fun changeOrderBatch(changes: List<Pair<Category, Int>>) {
+        screenModelScope.launch {
+            // Run sequentially on IO so these don't block main thread; runs in a single coroutine.
+            withContext(Dispatchers.IO) {
+                changes.forEach { (category, newIndex) ->
+                    // reorderCategory.await is suspend and performs the DB update;
+                    // calling it sequentially on IO is better than launching many UI coroutines.
+                    try {
+                        reorderCategory.await(category, newIndex)
+                    } catch (e: Throwable) {
+                        // Handle/emit error as needed; for simplicity, we ignore errors here.
+                    }
+                }
             }
         }
     }
