@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
+package mihon.feature.migration.list
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -9,10 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.MigrationListScreen
-import eu.kanade.presentation.browse.components.MigrationExitDialog
-import eu.kanade.presentation.browse.components.MigrationMangaDialog
-import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -22,6 +18,10 @@ import exh.util.underEq
 import kotlinx.collections.immutable.persistentListOf
 import mihon.feature.migration.config.MigrationConfigScreen
 import mihon.feature.migration.config.MigrationConfigScreenSheet
+import mihon.feature.migration.list.components.MigrationExitDialog
+import mihon.feature.migration.list.components.MigrationMangaDialog
+import mihon.feature.migration.list.components.MigrationProgressDialog
+import mihon.feature.migration.list.models.MigratingManga
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
@@ -95,7 +95,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 }
             }
         }
-        MigrationListScreen(
+        MigrationListScreenContent(
             items = items ?: persistentListOf(),
             migrationDone = migrationDone,
             finishedCount = finishedCount,

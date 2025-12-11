@@ -58,12 +58,12 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationType
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
+import mihon.feature.migration.list.MigrationListScreen
+import mihon.feature.migration.list.MigrationProcedureConfig
+import mihon.feature.migration.list.MigrationType
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
