@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="clear_db_exclude_read">Tartsa meg az elolvasott fejezetekkel rendelkező elemeket</string>
+    <string name="artist">Művész</string>
+    <string name="author">Szerző</string>
+</resources>

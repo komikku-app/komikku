@@ -649,4 +649,7 @@
     <string name="rec_no_results">Nenhuma recomendação encontrada</string>
     <string name="failed_merge">Falha ao mesclar a entrada: %1$s</string>
     <string name="select_tracker">Selecione um rastreador</string>
+    <string name="relation_prequel">Prólogo</string>
+    <string name="dedupe_priority">Eliminar duplicatas com base na prioridade</string>
+    <string name="no_dedupe">Sem remoção de duplicatas</string>
 </resources>

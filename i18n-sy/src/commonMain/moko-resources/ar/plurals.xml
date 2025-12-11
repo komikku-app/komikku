@@ -25,7 +25,7 @@
         <item quantity="other">نسخ %1$d%2$s إدخال؟</item>
     </plurals>
     <plurals name="entry_migrated">
-        <item quantity="zero">تم نقل ٠ ادخال</item>
+        <item quantity="zero">تم نقل %d ادخال</item>
         <item quantity="one">تم نقل %d ادخال</item>
         <item quantity="two">تم نقل %d ادخال</item>
         <item quantity="few">تم نقل %d ادخالات</item>
@@ -81,59 +81,59 @@
         <item quantity="other">منذُ %1$d دقيقة</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">العلامات في هذه القائمة . تعطيك خيار الترتيب حسب الأولوية في هذه القائمة، مما يعني أن المدخلات سيتم توزيعها حسب اختيارك</item>
-        <item quantity="one">هاذا الخيار يعطيك إمكانية فرز المدخلات في هذه القائمة حسب اختيارك</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="zero">العلامات في هذه القائمة . تعطيك خيار الترتيب حسب الأولوية في هذه القائمة، مما يعني أن المدخلات سيتم توزيعها حسب اختيارك.</item>
+        <item quantity="one">هذا الخيار يعطيك إمكانية فرز المدخلات في هذه القائمة حسب اختيارك.</item>
+        <item quantity="two">علامتان في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
+        <item quantity="few">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
+        <item quantity="many">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
+        <item quantity="other">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
     </plurals>
     <plurals name="num_lock_times">
         <item quantity="zero">وقت الإنغلاق</item>
         <item quantity="one">‬وقت الإغلاق</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="two"/>
+        <item quantity="few"/>
+        <item quantity="many"/>
+        <item quantity="other"/>
     </plurals>
     <plurals name="migrate_entry">
-        <item quantity="zero">ترحيل ....... المدخل؟</item>
-        <item quantity="one">نقل ...... المدخلات؟</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="zero">ترحيل ‫ المدخل؟</item>
+        <item quantity="one">نقل مدخل؟</item>
+        <item quantity="two">نقل مدخلان؟</item>
+        <item quantity="few">نقل %1$d%2$s مدخل؟</item>
+        <item quantity="many">نقل %1$d%2$s مدخل؟</item>
+        <item quantity="other">نقل %1$d%2$s مدخل؟</item>
     </plurals>
     <plurals name="humanize_month">
         <item quantity="zero">%1$d شهر مضى</item>
-        <item quantity="one">%1$dشهور مضت</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="one">%1$dشهر مضت</item>
+        <item quantity="two">منذ شهران</item>
+        <item quantity="few">منذ %1$dشهر</item>
+        <item quantity="many">منذ %1$dشهر</item>
+        <item quantity="other">منذ %1$dشهر</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="zero">....،.... الصفحة</item>
-        <item quantity="one">.....،... الصفحات</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="zero">%d صفحة</item>
+        <item quantity="one">صفحة واحدة</item>
+        <item quantity="two">صفحتان</item>
+        <item quantity="few">%2$s, %1$d صفحات</item>
+        <item quantity="many">%2$s, %1$d صفحات</item>
+        <item quantity="other">%2$s, %1$d صفحات</item>
     </plurals>
     <plurals name="humanize_year">
-        <item quantity="zero">...... سنة مضت</item>
-        <item quantity="one">..... سنوات مضت</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="zero">منذ %1$d عام</item>
+        <item quantity="one">منذ %1$d عام</item>
+        <item quantity="two">منذ عامان</item>
+        <item quantity="few">منذ %1$d عام</item>
+        <item quantity="many">منذ %1$d عام</item>
+        <item quantity="other">منذ %1$d عام</item>
     </plurals>
     <plurals name="humanize_week">
-        <item quantity="zero">"%1$d  اسبوع الفائت"</item>
+        <item quantity="zero">%1$d اسبوع الفائت</item>
         <item quantity="one">%1$d اسابيع الماضية</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="two"/>
+        <item quantity="few"/>
+        <item quantity="many"/>
+        <item quantity="other"/>
     </plurals>
 </resources>

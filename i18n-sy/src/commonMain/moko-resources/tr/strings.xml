@@ -6,7 +6,7 @@
     <string name="entry_type_manga">Manga</string>
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
-    <string name="entry_type_comic">Karikatür</string>
+    <string name="entry_type_comic">Çizgi Roman</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_mangadex">MangaDex</string>
     <string name="action_start_reading">Okumaya başla</string>
@@ -298,7 +298,7 @@
     <string name="action_share_second_page">İkinci sayfayı paylaş</string>
     <string name="action_copy_combined_page">Birleştirilmiş sayfayı kopyala</string>
     <string name="center_margin_wide_page">Geniş sayfaya ekle</string>
-    <string name="migration">Taşı</string>
+    <string name="migration">Taşıma</string>
     <string name="favorites_sync_done_errors">Favorilerin eşitlenmesi hatasız olarak tamamlandı</string>
     <string name="save_search_delete">Kaydedilmiş arama sorgusunu sil?</string>
     <string name="no_source_categories">Kaynak kategori mavcut değil</string>

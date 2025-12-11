@@ -85,7 +85,7 @@
     <string name="gallery_updater_statistics">Статистика обновлений для галерей</string>
     <string name="gallery_updater_stats_text">Последний раз программа обновления была запущена %1$s и проверила %2$d из %3$d галерей, которые были готовы к проверке.</string>
     <string name="gallery_updater_not_ran_yet">Программа обновления ещё не запущена.</string>
-    <string name="gallery_updater_stats_time">Такое количество галерей было проверено за:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделю: %6$d\n- месяц: %7$d\n- год: %8$d</string>
+    <string name="gallery_updater_stats_time">\nТакое количество галерей было проверено за:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделю: %6$d\n- месяц: %7$d\n- год: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Примечание профиля настроек</string>
     <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.
@@ -690,4 +690,7 @@
     <string name="rec_initializing">Идёт подготовка</string>
     <string name="rec_common_recommendations">Общие рекомендации</string>
     <string name="scan_qr_code">Сканировать QR-код</string>
+    <string name="filename">Название файла</string>
+    <string name="file_extension">Расширение файла</string>
+    <string name="base_url">Главный URL</string>
 </resources>

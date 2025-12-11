@@ -37,7 +37,7 @@
         <item quantity="other">%1$d Tháng trước</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="other">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means entries will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="other">%1$d thẻ trong danh sách phân loại. Việc này sẽ thêm tuỳ chọn ưu tiên sắp xếp danh sách thư viện bằng danh sách thẻ, có nghĩa là các mục sẽ được sắp xếp theo cách để ưu tiên với những thẻ mà bạn thích</item>
     </plurals>
     <plurals name="humanize_hour">
         <item quantity="other">%1$d tiếng trước</item>
@@ -47,5 +47,8 @@
     </plurals>
     <plurals name="migrate_entry">
         <item quantity="other">Di chuyển %1$d%2$s mục?</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="other">%d Hàng</item>
     </plurals>
 </resources>
