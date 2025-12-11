@@ -704,7 +704,8 @@
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked entries to MangaDex as reading.</string>
     <string name="community_recommendations">Community recommendations</string>
     <string name="similar_titles">Similar titles</string>
-    <string name="alt_titles">Alternative Titles</string>
+    <string name="alt_titles">Alternative titles</string>
+    <string name="final_chapter">Final chapter</string>
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Scanlator groups to show</string>
