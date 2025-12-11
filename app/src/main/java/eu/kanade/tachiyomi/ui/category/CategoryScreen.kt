@@ -46,6 +46,7 @@ class CategoryScreen : Screen() {
             onChangeParent = screenModel::changeParent,
             // KMK -->
             onClickHide = screenModel::hideCategory,
+            onCommitOrder = { changes -> screenModel.changeOrderBatch(changes) },
             // KMK <--
             navigateUp = navigator::pop,
         )
