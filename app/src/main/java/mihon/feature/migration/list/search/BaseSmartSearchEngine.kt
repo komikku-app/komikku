@@ -1,4 +1,4 @@
-package exh.smartsearch
+package mihon.feature.migration.list.search
 
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers

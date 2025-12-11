@@ -1,5 +1,6 @@
 package exh.smartsearch
 
+import mihon.feature.migration.list.search.BaseSmartSearchEngine
 import tachiyomi.domain.library.model.LibraryManga
 
 class SmartLibrarySearchEngine(

@@ -1,4 +1,4 @@
-package eu.kanade.presentation.browse.components
+package mihon.feature.migration.list.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
