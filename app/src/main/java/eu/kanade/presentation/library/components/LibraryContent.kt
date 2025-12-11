@@ -1,5 +1,8 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,10 +16,15 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.presentation.category.visualName
 import eu.kanade.tachiyomi.ui.library.LibraryItem
@@ -49,6 +58,9 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun LibraryContent(
     categories: List<Category>,
+    // KMK -->
+    activeCategoryIndex: Int = 0,
+    // KMK <--
     searchQuery: String?,
     selection: Set<Long>,
     contentPadding: PaddingValues,
@@ -67,158 +79,221 @@ fun LibraryContent(
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getItemsForCategory: (Category) -> List<LibraryItem>,
-) {
-    // Build parent list and display list depending on parent selection
-    val parentCategories = remember(categories) { categories.filter { it.parentId == null && !it.isSystemCategory } }
-    var activeParentId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var collapsedParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
 
-    val displayCategories = remember(categories, activeParentId, showParentFilters, collapsedParentIds) {
-        if (!showParentFilters) {
-            // When parent/child disabled, still show all categories in hierarchical order
-            val result = mutableListOf<Category>()
-            val nonSystemParents = categories.filter { it.parentId == null && !it.isSystemCategory }.sortedBy { it.order }
-            
-            for (parent in nonSystemParents) {
-                result.add(parent)
-                // Add all children (no collapse when layout is disabled)
-                val children = categories
-                    .filter { it.parentId == parent.id }
-                    .sortedBy { it.order }
-                result.addAll(children)
-            }
-            
-            // Add system categories at the end
-            val systemCategories = categories.filter { it.isSystemCategory }
-            result.addAll(systemCategories)
-            
-            result
-        } else if (activeParentId != null) {
-            // When a parent is selected, show only that parent and its children
-            val parent = categories.firstOrNull { it.id == activeParentId }
-            val children = categories.filter { it.parentId == activeParentId }
-            (listOfNotNull(parent) + children).ifEmpty { categories }
-        } else {
-            // Show all parents and their children in hierarchical order, plus system categories
-            val result = mutableListOf<Category>()
-            val sortedParents = parentCategories.sortedBy { it.order }
-            
-            for (parent in sortedParents) {
-                result.add(parent)
-                // Add children only if parent is not collapsed
-                if (!collapsedParentIds.contains(parent.id)) {
-                    val children = categories
-                        .filter { it.parentId == parent.id }
-                        .sortedBy { it.order }
-                    result.addAll(children)
-                }
-            }
-            
-            // Add system categories (default/uncategorized) at the end
-            val systemCategories = categories.filter { it.isSystemCategory }
-            result.addAll(systemCategories)
-            
-            result
-        }
+) {
+    // Derive parent categories (top-level) and a map of parentId -> children
+    val parentCategories = remember(categories) {
+        categories.filter { it.parentId == null && !it.isSystemCategory }.sortedBy { it.order }
+    }
+    val childrenByParent = remember(categories) {
+        categories.filter { it.parentId != null }
+            .groupBy { it.parentId }
+            .mapValues { entry -> entry.value.sortedBy { it.order } }
     }
 
-    Column(
+    // Track the currently selected subcategory (chip). Null means "no subcategory filter" (show parent items).
+    var activeSubcategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    Box(
         modifier = Modifier.padding(
             top = contentPadding.calculateTopPadding(),
             start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
             end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ),
     ) {
-        val pagerState = rememberPagerState(currentPage) { displayCategories.size }
+        // Keep the original Column content but make the pager pages correspond to parentCategories
+        Column(modifier = Modifier.zIndex(0f)) {
+            // Pager for parent categories
+            val pagerState = rememberPagerState(currentPage) { parentCategories.size.coerceAtLeast(1) }
+            var chipsVisible by remember { mutableStateOf(true) }
+            val scope = rememberCoroutineScope()
+            var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
 
-        val scope = rememberCoroutineScope()
-        var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
-
-        if (showParentFilters && parentCategories.isNotEmpty()) {
-            ParentChipsRow(
-                parents = parentCategories,
-                activeParentId = activeParentId,
-                collapsedParentIds = collapsedParentIds,
-                onParentChange = { newParent ->
-                    activeParentId = newParent
-                    // Reset pager to first page for new selection
-                    val target = 0
-                    scope.launch { pagerState.scrollToPage(target) }
-                },
-                onToggleCollapse = { parentId ->
-                    collapsedParentIds = if (collapsedParentIds.contains(parentId)) {
-                        collapsedParentIds - parentId
-                    } else {
-                        collapsedParentIds + parentId
-                    }
-                },
+            // accumulator to avoid toggling for tiny jitter
+            var scrollAccum by remember { mutableStateOf(0f) }
+            val threshold = 24f // adjust sensitivity (px)
+            val chipsOffsetDp by animateDpAsState(
+                targetValue = if (chipsVisible) 0.dp else (-56).dp, // -height of chips row
+                animationSpec = tween(durationMillis = 200),
             )
-        }
+            val chipsAlpha by animateFloatAsState(if (chipsVisible) 1f else 0f, tween(200))
 
-        if (showPageTabs && displayCategories.isNotEmpty() && (displayCategories.size > 1 || !displayCategories.first().isSystemCategory)) {
-            LaunchedEffect(displayCategories) {
-                val targetPage = when {
-                    displayCategories.isEmpty() -> 0
-                    currentPage != pagerState.currentPage -> currentPage.coerceAtMost(displayCategories.size - 1)
-                    pagerState.currentPage >= displayCategories.size -> displayCategories.size - 1
-                    else -> pagerState.currentPage
+            // Show subcategory chips row (children of the active parent) under the tabs when enabled
+            if (showParentFilters && parentCategories.isNotEmpty()) {
+                // Display tabs of parent categories
+                if (showPageTabs) {
+                    LaunchedEffect(parentCategories) {
+                        val targetPage = when {
+                            parentCategories.isEmpty() -> 0
+                            currentPage != pagerState.currentPage -> currentPage.coerceAtMost(parentCategories.size - 1)
+                            activeCategoryIndex != pagerState.currentPage -> activeCategoryIndex.coerceAtMost(categories.size - 1)
+                            pagerState.currentPage >= parentCategories.size -> parentCategories.size - 1
+                            else -> pagerState.currentPage
+                        }
+                        if (targetPage != pagerState.currentPage) {
+                            pagerState.scrollToPage(targetPage)
+                        }
+                    }
+                    LibraryTabs(
+                        categories = parentCategories,
+                        pagerState = pagerState,
+                        getItemCountForCategory = getItemCountForCategory,
+                        onTabItemClick = {
+                            scope.launch { pagerState.animateScrollToPage(it) }
+                        },
+                    )
                 }
-                if (targetPage != pagerState.currentPage) {
-                    pagerState.scrollToPage(targetPage)
+
+                // Subcategory chips for the currently active parent page
+                val activeParent = parentCategories.getOrNull(pagerState.currentPage)
+                val subcategoriesForActiveParent = activeParent?.let { childrenByParent[it.id] }.orEmpty()
+
+                LaunchedEffect(subcategoriesForActiveParent) {
+                    if (subcategoriesForActiveParent.isEmpty()) {
+                        activeSubcategoryId = null
+                    }
                 }
-                // KMK <--
+
+                if (subcategoriesForActiveParent.isNotEmpty()) {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.padding.medium),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        // "All" chip to clear subcategory filter (shown because there are subcategories)
+                        item {
+                            FilterChip(
+                                selected = activeSubcategoryId == null,
+                                onClick = { activeSubcategoryId = null },
+                                label = { Text(text = "All") },
+                                modifier = Modifier.padding(vertical = 6.dp),
+                            )
+                        }
+
+                        items(subcategoriesForActiveParent) { sub ->
+                            val selected = activeSubcategoryId == sub.id
+                            FilterChip(
+                                selected = selected,
+                                onClick = { activeSubcategoryId = if (selected) null else sub.id },
+                                label = { Text(text = sub.visualName) },
+                                modifier = Modifier.padding(vertical = 6.dp),
+                            )
+                        }
+                    }
+                }
+            }else {
+                // If parent filters are disabled, fall back to showing the tabs for parentCategories normally
+                if (showPageTabs && parentCategories.isNotEmpty()) {
+                    LaunchedEffect(parentCategories) {
+                        val targetPage = when {
+                            parentCategories.isEmpty() -> 0
+                            currentPage != pagerState.currentPage -> currentPage.coerceAtMost(parentCategories.size - 1)
+                            pagerState.currentPage >= parentCategories.size -> parentCategories.size - 1
+                            else -> pagerState.currentPage
+                        }
+                        if (targetPage != pagerState.currentPage) {
+                            pagerState.scrollToPage(targetPage)
+                        }
+                    }
+                    LibraryTabs(
+                        categories = parentCategories,
+                        pagerState = pagerState,
+                        getItemCountForCategory = getItemCountForCategory,
+                        onTabItemClick = {
+                            scope.launch { pagerState.animateScrollToPage(it) }
+                        },
+                    )
+                    HorizontalDivider()
+                }
             }
-            LibraryTabs(
-                categories = displayCategories,
-                pagerState = pagerState,
-                getItemCountForCategory = getItemCountForCategory,
-                onTabItemClick = {
+
+            PullRefresh(
+                refreshing = isRefreshing,
+                enabled = selection.isEmpty(),
+                onRefresh = {
+                    val started = onRefresh()
+                    if (!started) return@PullRefresh
                     scope.launch {
-                        pagerState.animateScrollToPage(it)
+                        // Fake refresh status but hide it after a second as it's a long running task
+                        isRefreshing = true
+                        delay(1.seconds)
+                        isRefreshing = false
                     }
                 },
-            )
-        }
+            ) {
 
-        PullRefresh(
-            refreshing = isRefreshing,
-            enabled = selection.isEmpty(),
-            onRefresh = {
-                val started = onRefresh()
-                if (!started) return@PullRefresh
-                scope.launch {
-                    // Fake refresh status but hide it after a second as it's a long running task
-                    isRefreshing = true
-                    delay(1.seconds)
-                    isRefreshing = false
-                }
-            },
-        ) {
-            LibraryPager(
-                state = pagerState,
-                contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
-                hasActiveFilters = hasActiveFilters,
-                selection = selection,
-                searchQuery = searchQuery,
-                onGlobalSearchClicked = onGlobalSearchClicked,
-                getCategoryForPage = { page -> displayCategories[page] },
-                getDisplayMode = getDisplayMode,
-                getColumnsForOrientation = getColumnsForOrientation,
-                getItemsForCategory = getItemsForCategory,
-                onClickManga = { category, manga ->
-                    if (selection.isNotEmpty()) {
-                        onToggleSelection(category, manga)
+            val wrappedGetItemsForCategory: (Category) -> List<LibraryItem> = { pageCategory ->
+                if (showParentFilters) {
+                    // Existing behavior when parent filters are enabled:
+                    // If a specific subcategory is selected and it belongs to this parent, show that subcategory's items
+                    val selectedSub = activeSubcategoryId?.let { id -> categories.firstOrNull { it.id == id } }
+                    if (selectedSub != null && selectedSub.parentId == pageCategory.id) {
+                        getItemsForCategory(selectedSub)
+                    } else if (activeSubcategoryId == null) {
+                        // "All" selected: return parent items PLUS all items from its subcategories, deduped by manga id.
+                        val parentItems = getItemsForCategory(pageCategory)
+                        val children = childrenByParent[pageCategory.id].orEmpty()
+                        val childItems = children.flatMap { child -> getItemsForCategory(child) }
+
+                        val seen = mutableSetOf<Long>()
+                        val merged = mutableListOf<LibraryItem>()
+                        (parentItems + childItems).forEach { item ->
+                            val mangaId = item.libraryManga.manga.id
+                            if (seen.add(mangaId)) merged.add(item)
+                        }
+                        merged
                     } else {
-                        onClickManga(manga.manga.id)
+                        // No relevant selection: fallback to parent items
+                        getItemsForCategory(pageCategory)
                     }
-                },
-                onLongClickManga = onToggleRangeSelection,
-                onClickContinueReading = onContinueReadingClicked,
-            )
-        }
+                } else {
+                    // When parent filters are disabled, ALWAYS show parent items + all subcategory items (deduped).
+                    val parentItems = getItemsForCategory(pageCategory)
+                    val children = childrenByParent[pageCategory.id].orEmpty()
+                    val childItems = children.flatMap { child -> getItemsForCategory(child) }
 
-        LaunchedEffect(pagerState.currentPage) {
-            onChangeCurrentPage(pagerState.currentPage)
+                    val seen = mutableSetOf<Long>()
+                    val merged = mutableListOf<LibraryItem>()
+                    (parentItems + childItems).forEach { item ->
+                        val mangaId = item.libraryManga.manga.id
+                        if (seen.add(mangaId)) merged.add(item)
+                    }
+                    merged
+                }
+            }
+
+                LibraryPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
+                    hasActiveFilters = hasActiveFilters,
+                    selection = selection,
+                    searchQuery = searchQuery,
+                    onGlobalSearchClicked = onGlobalSearchClicked,
+                    // Pages correspond to parentCategories
+                    getCategoryForPage = { page -> parentCategories[page] },
+                    getDisplayMode = getDisplayMode,
+                    getColumnsForOrientation = getColumnsForOrientation,
+                    // Use wrapped items getter
+                    getItemsForCategory = wrappedGetItemsForCategory,
+                    onClickManga = { category, manga ->
+                        if (selection.isNotEmpty()) {
+                            onToggleSelection(category, manga)
+                        } else {
+                            onClickManga(manga.manga.id)
+                        }
+                    },
+                    onLongClickManga = onToggleRangeSelection,
+                    onClickContinueReading = onContinueReadingClicked,
+                )
+            }
+
+            LaunchedEffect(pagerState.currentPage) {
+                // Reset subcategory selection when changing parent page to avoid showing a subcategory
+                // from a different parent by mistake.
+                activeSubcategoryId = null
+                onChangeCurrentPage(pagerState.currentPage)
+            }
         }
     }
 }
@@ -249,7 +324,7 @@ private fun ParentChipsRow(
             FilterChip(
                 selected = activeParentId == parent.id,
                 onClick = { onParentChange(parent.id) },
-                label = { 
+                label = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
