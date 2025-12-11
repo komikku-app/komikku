@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.outlined.FlipToBack
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.VerticalAlignBottom
 import androidx.compose.material.icons.outlined.VerticalAlignTop
@@ -68,6 +69,7 @@ fun LibraryUpdateErrorScreen(
     onErrorsDelete: () -> Unit,
     onErrorDelete: (Long) -> Unit,
     onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean) -> Unit,
+    onUpdateMangaClicked: () -> Unit,
     navigateUp: () -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
@@ -119,6 +121,7 @@ fun LibraryUpdateErrorScreen(
                 onClickSelectAll = { onSelectAll(true) },
                 onClickInvertSelection = onInvertSelection,
                 onClickDeleteErrors = onErrorsDelete,
+                onClickUpdateManga = onUpdateMangaClicked,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -312,6 +315,7 @@ private fun LibraryUpdateErrorAppBar(
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
     onClickDeleteErrors: () -> Unit,
+    onClickUpdateManga: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     AppBar(
@@ -335,6 +339,11 @@ private fun LibraryUpdateErrorAppBar(
         actionModeActions = {
             AppBarActions(
                 persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(KMR.strings.action_update),
+                        icon = Icons.Outlined.Refresh,
+                        onClick = onClickUpdateManga,
+                    ),
                     AppBar.Action(
                         title = stringResource(MR.strings.action_delete),
                         icon = Icons.Outlined.DeleteOutline,
