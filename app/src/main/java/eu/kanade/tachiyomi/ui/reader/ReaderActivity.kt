@@ -323,7 +323,9 @@ class ReaderActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        viewModel.flushReadTimer()
+        lifecycleScope.launchNonCancellable {
+            viewModel.updateHistory()
+        }
 
         // AM (DISCORD) -->
         updateDiscordRPC(exitingReader = true)
