@@ -1,5 +1,11 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +78,9 @@ fun LibraryContent(
     // Track selected subcategory (null = show all/parent items)
     var activeSubcategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
 
+    // Track which parent categories have collapsed subcategory chips
+    var collapsedParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
+
     Column(
         modifier = Modifier.padding(
             top = contentPadding.calculateTopPadding(),
@@ -119,7 +127,20 @@ fun LibraryContent(
                 getItemCountForCategory = getItemCountForCategory,
                 onTabItemClick = {
                     scope.launch {
-                        pagerState.animateScrollToPage(it)
+                        val targetCategory = tabCategories[it]
+                        val hasSubcategories = childrenByParent[targetCategory.id]?.isNotEmpty() == true
+
+                        // Toggle collapse state if clicking on current page with subcategories
+                        if (it == pagerState.currentPage && hasSubcategories && showParentFilters) {
+                            collapsedParentIds = if (targetCategory.id in collapsedParentIds) {
+                                collapsedParentIds - targetCategory.id
+                            } else {
+                                collapsedParentIds + targetCategory.id
+                            }
+                        } else {
+                            // Navigate to the tab
+                            pagerState.animateScrollToPage(it)
+                        }
                     }
                 },
             )
@@ -129,6 +150,7 @@ fun LibraryContent(
         if (showParentFilters && parentCategories.isNotEmpty()) {
             val activeParent = parentCategories.getOrNull(pagerState.currentPage)
             val subcategoriesForActiveParent = activeParent?.let { childrenByParent[it.id] }.orEmpty()
+            val isCollapsed = activeParent?.id?.let { it in collapsedParentIds } ?: false
 
             // Reset activeSubcategoryId if no subcategories for current parent
             LaunchedEffect(subcategoriesForActiveParent) {
@@ -137,7 +159,18 @@ fun LibraryContent(
                 }
             }
 
-            if (subcategoriesForActiveParent.isNotEmpty()) {
+            // Animated visibility for subcategory chips with smooth expand/collapse
+            AnimatedVisibility(
+                visible = subcategoriesForActiveParent.isNotEmpty() && !isCollapsed,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = androidx.compose.ui.Alignment.Top,
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = androidx.compose.ui.Alignment.Top,
+                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
+            ) {
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
