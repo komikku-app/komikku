@@ -61,7 +61,7 @@ fun buildCategoryHierarchy(categories: List<Category>): List<CategoryHierarchyEn
  */
 fun findParentAtPosition(entries: List<CategoryHierarchyEntry>, position: Int): Long? {
     if (position <= 0) return null
-    
+
     // Look backward to find the nearest parent (depth == 0)
     for (i in position - 1 downTo 0) {
         if (entries[i].depth == 0) {
