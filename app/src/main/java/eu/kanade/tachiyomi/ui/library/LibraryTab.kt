@@ -302,6 +302,7 @@ data object LibraryTab : Tab {
                 else -> {
                     LibraryContent(
                         categories = state.categories,
+                        activeCategoryIndex = state.activeCategoryIndex,
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,
