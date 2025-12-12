@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.util.fastMap
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -37,6 +39,18 @@ class CategoryScreen : Screen() {
 
         val successState = state as CategoryScreenState.Success
 
+        // KMK --> Add expand/collapse state management
+        val expanded = remember { mutableStateOf(setOf<Long>()) }
+
+        fun toggle(categoryId: Long) {
+            expanded.value =
+                if (expanded.value.contains(categoryId))
+                    expanded.value - categoryId
+                else
+                    expanded.value + categoryId
+        }
+        // KMK <--
+
         CategoryScreen(
             state = successState,
             onClickCreate = { screenModel.showDialog(CategoryDialog.Create) },
@@ -47,6 +61,8 @@ class CategoryScreen : Screen() {
             // KMK -->
             onClickHide = screenModel::hideCategory,
             onCommitOrder = { changes -> screenModel.changeOrderBatch(changes) },
+            expanded = expanded.value,
+            onToggleExpand = ::toggle,
             // KMK <--
             navigateUp = navigator::pop,
         )
@@ -74,9 +90,9 @@ class CategoryScreen : Screen() {
                         .filterNot { candidate ->
                             // Can't be: itself, a system category, a descendant of this category, or a subcategory
                             candidate.id == dialog.category.id ||
-                            candidate.isSystemCategory ||
-                            candidate.parentId != null ||  // Exclude subcategories (only show parent categories)
-                            isDescendantOf(candidate, dialog.category, successState.categories)
+                                candidate.isSystemCategory ||
+                                candidate.parentId != null ||  // Exclude subcategories (only show parent categories)
+                                isDescendantOf(candidate, dialog.category, successState.categories)
                         }
                         .toImmutableList(),
                     initialParentId = dialog.category.parentId,

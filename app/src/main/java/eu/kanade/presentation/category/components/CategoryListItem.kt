@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -46,6 +48,11 @@ fun ReorderableCollectionItemScope.CategoryListItem(
     isParent: Boolean = false,
     parentCategory: Category? = null,
     modifier: Modifier = Modifier,
+    // KMK --> Add expand/collapse parameters
+    hasChildren: Boolean = false,
+    isExpanded: Boolean = false,
+    onToggleExpand: () -> Unit = {},
+    // KMK <--
 ) {
     if (isParent && indentLevel == 0) {
         // Parent category - container card layout
@@ -55,6 +62,11 @@ fun ReorderableCollectionItemScope.CategoryListItem(
             onDelete = onDelete,
             onHide = onHide,
             modifier = modifier,
+            // KMK -->
+            hasChildren = hasChildren,
+            isExpanded = isExpanded,
+            onToggleExpand = onToggleExpand,
+            // KMK <--
         )
     } else {
         // Child category - compact layout
@@ -77,6 +89,11 @@ private fun ReorderableCollectionItemScope.ParentCategoryContainer(
     onDelete: () -> Unit,
     onHide: () -> Unit,
     modifier: Modifier = Modifier,
+    // KMK -->
+    hasChildren: Boolean = false,
+    isExpanded: Boolean = false,
+    onToggleExpand: () -> Unit = {},
+    // KMK <--
 ) {
     ElevatedCard(
         modifier = modifier
@@ -101,6 +118,32 @@ private fun ReorderableCollectionItemScope.ParentCategoryContainer(
                         .draggableHandle(),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                // KMK --> Expand/collapse icon (only show if has children)
+                if (hasChildren) {
+                    IconButton(
+                        onClick = onToggleExpand,
+                        modifier = Modifier.size(40.dp).padding(end = 4.dp),
+                    ) {
+                        Icon(
+                            imageVector = if (isExpanded) {
+                                Icons.Outlined.ExpandLess
+                            } else {
+                                Icons.Outlined.ExpandMore
+                            },
+                            contentDescription = if (isExpanded) {
+                                "Collapse"
+                            } else {
+                                "Expand"
+                            },
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                } else {
+                    // Spacer to maintain alignment when no expand icon
+                    Spacer(modifier = Modifier.width(40.dp))
+                }
+                // KMK <--
 
                 // Folder icon
                 Icon(

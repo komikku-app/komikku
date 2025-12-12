@@ -46,12 +46,10 @@ fun CategoryScreen(
     onChangeParent: (Category, Long?) -> Unit,
     // KMK -->
     onClickHide: (Category) -> Unit,
+    expanded: Set<Long>,
+    onToggleExpand: (Long) -> Unit,
     // KMK <--
-    // New: onCommitOrder lets caller handle batched commit (recommended).
-    // Default behaviour falls back to calling onChangeOrder for each changed item.
     onCommitOrder: (List<Pair<Category, Int>>) -> Unit = { changes ->
-        // Default: sequentially call onChangeOrder.
-        // For best perf, supply your own batch interactor here (recommended).
         changes.forEach { (cat, idx) -> onChangeOrder(cat, idx) }
     },
     navigateUp: () -> Unit,
@@ -90,6 +88,8 @@ fun CategoryScreen(
             onChangeParent = onChangeParent,
             // KMK -->
             onClickHide = onClickHide,
+            expanded = expanded,
+            onToggleExpand = onToggleExpand,
             // KMK <--
             onCommitOrder = onCommitOrder,
         )
@@ -107,25 +107,30 @@ private fun CategoryContent(
     onChangeParent: (Category, Long?) -> Unit,
     // KMK -->
     onClickHide: (Category) -> Unit,
+    expanded: Set<Long>,
+    onToggleExpand: (Long) -> Unit,
     // KMK <--
     onCommitOrder: (List<Pair<Category, Int>>) -> Unit,
 ) {
-    val entries = remember(categories) { buildCategoryHierarchy(categories) }
+    // Filter entries based on expand/collapse state
+    val entries = remember(categories, expanded) {
+        buildCategoryHierarchy(categories).filter { entry ->
+            // Always show parent categories (depth == 0)
+            if (entry.depth == 0) return@filter true
 
-    // Backing list used by LazyColumn (stateful, triggers recompositions on swap)
+            // Show children only if their parent is expanded
+            val parentId = entry.category.parentId
+            parentId != null && expanded.contains(parentId)
+        }
+    }
+
     val categoriesState = remember(entries) { entries.toMutableStateList() }
-
-    // Flow to emit pending in-memory order; debounced collector will commit to model/DB.
     val pendingOrderFlow = remember { MutableStateFlow(categoriesState.map { it.category }) }
-
-    // Track last committed indices to only commit changed items
     var lastCommittedIndices by remember { mutableStateOf(entries.mapIndexed { idx, e -> e.category.id to idx }.toMap()) }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
-        // Build a new list locally, perform all mutations there (single replace)
         val newList = categoriesState.toMutableList()
 
-        // Helper to find subtree end index for parent moves
         fun findSubtreeEnd(startIndex: Int, list: MutableList<CategoryHierarchyEntry>): Int {
             val parentDepth = list[startIndex].depth
             var idx = startIndex + 1
@@ -136,53 +141,36 @@ private fun CategoryContent(
             return idx
         }
 
-        // If moving a parent category (depth == 0), move parent + contiguous children
         if (categoriesState[from.index].depth == 0) {
             val subtreeEnd = findSubtreeEnd(from.index, newList)
             val subtree = newList.subList(from.index, subtreeEnd).toList()
-            // Remove subtree range
             newList.subList(from.index, subtreeEnd).clear()
-            // Adjust target
             val adjustedTo = if (from.index < to.index) {
-                // to.index refers to destination in the original list; after removal,
-                // indices shift left by subtree.size
                 to.index - subtree.size
             } else {
                 to.index
             }.coerceIn(0, newList.size)
-            // Insert subtree
             newList.addAll(adjustedTo, subtree)
         } else if (categoriesState[from.index].depth > 0) {
-            // Moving a child, single-item move; perform on local list
             val item = newList.removeAt(from.index)
             val destIndex = to.index.coerceIn(0, newList.size)
             newList.add(destIndex, item)
-
-            // Optionally detect parent change; update the Category in the entry if needed
-            // We'll compute parent at dest position after swap when committing to model.
         } else {
-            // Fallback single item move
             val item = newList.removeAt(from.index)
             val destIndex = to.index.coerceIn(0, newList.size)
             newList.add(destIndex, item)
         }
 
-        // Replace the backing list in a single operation (reduces recompositions)
         categoriesState.clear()
         categoriesState.addAll(newList)
-
-        // Publish the new in-memory category order for debounced commit
         pendingOrderFlow.value = newList.map { it.category }
     }
 
-    // Debounced collector: commit changes after user stops moving items for a short period
     LaunchedEffect(pendingOrderFlow) {
-        // Debounce duration: adjust to taste (ms)
         val debounceMs = 700L
         pendingOrderFlow
             .debounce(debounceMs)
             .collectLatest { newOrder ->
-                // Compute changed items by comparing indices against lastCommittedIndices
                 val changes = newOrder.mapIndexedNotNull { index, category ->
                     val lastIndex = lastCommittedIndices[category.id]
                     if (lastIndex == null || lastIndex != index) {
@@ -191,27 +179,19 @@ private fun CategoryContent(
                 }
 
                 if (changes.isNotEmpty()) {
-                    // Call commit callback (caller should optimize DB writes, ideally single transaction)
-                    // Note: caller's implementation should execute DB work on IO dispatcher.
-                    // The default onCommitOrder will call onChangeOrder sequentially.
                     onCommitOrder(changes)
-
-                    // Update lastCommittedIndices to reflect committed order
                     lastCommittedIndices = newOrder.mapIndexed { idx, cat -> cat.id to idx }.toMap()
                 }
             }
     }
 
-    // Keep list in sync if underlying data changes (external DB changes)
     LaunchedEffect(entries) {
         categoriesState.clear()
         categoriesState.addAll(entries)
-        // Also reset lastCommittedIndices to database-supplied order
         lastCommittedIndices = entries.mapIndexed { idx, e -> e.category.id to idx }.toMap()
         pendingOrderFlow.value = entries.map { it.category }
     }
 
-    // Pre-compute categories map for efficient parent lookups
     val categoriesById = remember(categories) { categories.associateBy { it.id } }
 
     LazyColumn(
@@ -229,8 +209,12 @@ private fun CategoryContent(
             ReorderableItem(reorderableState, entry.category.key) {
                 val parentCategory = entry.category.parentId?.let { categoriesById[it] }
 
+                // Check if this category has children
+                val hasChildren = categories.any { it.parentId == entry.category.id }
+                val isExpanded = expanded.contains(entry.category.id)
+
                 CategoryListItem(
-                    modifier = Modifier, // removed animateItem for baseline; re-add if you need
+                    modifier = Modifier,
                     category = entry.category,
                     indentLevel = entry.depth,
                     isParent = entry.depth == 0,
@@ -239,6 +223,9 @@ private fun CategoryContent(
                     onDelete = { onClickDelete(entry.category) },
                     // KMK -->
                     onHide = { onClickHide(entry.category) },
+                    hasChildren = hasChildren,
+                    isExpanded = isExpanded,
+                    onToggleExpand = { onToggleExpand(entry.category.id) },
                     // KMK <--
                 )
             }
@@ -248,7 +235,6 @@ private fun CategoryContent(
 
 private val Category.key inline get() = "category-$id"
 
-// Minimal intermediary type to make local helper type signatures readable
 private interface AnyWithDepth {
     val depth: Int
 }
