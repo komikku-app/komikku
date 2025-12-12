@@ -22,6 +22,9 @@ import eu.kanade.presentation.category.components.CategoryListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.ui.category.CategoryScreenState
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.category.model.Category
@@ -32,9 +35,6 @@ import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.util.plus
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun CategoryScreen(
@@ -175,7 +175,9 @@ private fun CategoryContent(
                     val lastIndex = lastCommittedIndices[category.id]
                     if (lastIndex == null || lastIndex != index) {
                         category to index
-                    } else null
+                    } else {
+                        null
+                    }
                 }
 
                 if (changes.isNotEmpty()) {

@@ -1,19 +1,16 @@
 package eu.kanade.presentation.category.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import eu.kanade.presentation.category.buildCategoryHierarchy
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
+import eu.kanade.presentation.category.buildCategoryHierarchy
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -327,16 +324,16 @@ fun ChangeCategoryDialog(
     }
     var selection by remember { mutableStateOf(initialSelection) }
     var expandedParents by remember { mutableStateOf(setOf<Long>()) }
-    
+
     // Check which parents have children
     val parentChildMap by remember(selection) {
         mutableStateOf(
             selection.groupBy { it.value.parentId }
                 .filterKeys { it != null }
-                .mapKeys { it.key!! }
+                .mapKeys { it.key!! },
         )
     }
-    
+
     val orderedSelection by remember(selection, expandedParents) {
         val selectionMap = selection.associateBy { it.value.id }
         mutableStateOf(
@@ -346,9 +343,12 @@ fun ChangeCategoryDialog(
                 }
                 .filter { entry ->
                     // Show all parents
-                    if (entry.checkbox.value.parentId == null) true
-                    // Show children only if their parent is expanded
-                    else expandedParents.contains(entry.checkbox.value.parentId)
+                    if (entry.checkbox.value.parentId == null) {
+                        true
+                    } // Show children only if their parent is expanded
+                    else {
+                        expandedParents.contains(entry.checkbox.value.parentId)
+                    }
                 }
                 .toImmutableList(),
         )
@@ -407,7 +407,7 @@ fun ChangeCategoryDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { 
+                            .clickable {
                                 if (isParent && hasChildren) {
                                     // Toggle expand/collapse only for parents with children
                                     expandedParents = if (isExpanded) {
@@ -445,7 +445,7 @@ fun ChangeCategoryDialog(
                                 .padding(horizontal = MaterialTheme.padding.medium)
                                 .weight(1f),
                         )
-                        
+
                         // Show expand/collapse indicator on the right for parents with children
                         if (isParent && hasChildren) {
                             Text(
@@ -475,5 +475,3 @@ private data class CheckboxEntry(
     val checkbox: CheckboxState<Category>,
     val depth: Int,
 )
-
-
