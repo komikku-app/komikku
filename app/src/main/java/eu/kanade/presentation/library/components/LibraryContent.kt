@@ -3,6 +3,9 @@ package eu.kanade.presentation.library.components
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,20 +13,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,9 +46,9 @@ import eu.kanade.tachiyomi.ui.library.LibraryItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.domain.category.model.Category
-import tachiyomi.i18n.MR
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -112,9 +111,13 @@ fun LibraryContent(
                 return
             }
 
-            val initialPage = if (currentPage in parentCategories.indices) { currentPage } else { 0 }
+            val initialPage = if (currentPage in parentCategories.indices) {
+                currentPage
+            } else {
+                0
+            }
 
-            val pagerState = rememberPagerState(initialPage = initialPage,) { parentCategories.size }
+            val pagerState = rememberPagerState(initialPage = initialPage) { parentCategories.size }
 
             var chipsVisible by remember { mutableStateOf(true) }
             val scope = rememberCoroutineScope()
@@ -193,7 +196,7 @@ fun LibraryContent(
                         }
                     }
                 }
-            }else {
+            } else {
                 // If parent filters are disabled, fall back to showing the tabs for parentCategories normally
                 if (showPageTabs && parentCategories.isNotEmpty()) {
                     LaunchedEffect(parentCategories) {
@@ -235,16 +238,32 @@ fun LibraryContent(
                     }
                 },
             ) {
+                val wrappedGetItemsForCategory: (Category) -> List<LibraryItem> = { pageCategory ->
+                    if (showParentFilters) {
+                        // Existing behavior when parent filters are enabled:
+                        // If a specific subcategory is selected and it belongs to this parent, show that subcategory's items
+                        val selectedSub = activeSubcategoryId?.let { id -> categories.firstOrNull { it.id == id } }
+                        if (selectedSub != null && selectedSub.parentId == pageCategory.id) {
+                            getItemsForCategory(selectedSub)
+                        } else if (activeSubcategoryId == null) {
+                            // "All" selected: return parent items PLUS all items from its subcategories, deduped by manga id.
+                            val parentItems = getItemsForCategory(pageCategory)
+                            val children = childrenByParent[pageCategory.id].orEmpty()
+                            val childItems = children.flatMap { child -> getItemsForCategory(child) }
 
-            val wrappedGetItemsForCategory: (Category) -> List<LibraryItem> = { pageCategory ->
-                if (showParentFilters) {
-                    // Existing behavior when parent filters are enabled:
-                    // If a specific subcategory is selected and it belongs to this parent, show that subcategory's items
-                    val selectedSub = activeSubcategoryId?.let { id -> categories.firstOrNull { it.id == id } }
-                    if (selectedSub != null && selectedSub.parentId == pageCategory.id) {
-                        getItemsForCategory(selectedSub)
-                    } else if (activeSubcategoryId == null) {
-                        // "All" selected: return parent items PLUS all items from its subcategories, deduped by manga id.
+                            val seen = mutableSetOf<Long>()
+                            val merged = mutableListOf<LibraryItem>()
+                            (parentItems + childItems).forEach { item ->
+                                val mangaId = item.libraryManga.manga.id
+                                if (seen.add(mangaId)) merged.add(item)
+                            }
+                            merged
+                        } else {
+                            // No relevant selection: fallback to parent items
+                            getItemsForCategory(pageCategory)
+                        }
+                    } else {
+                        // When parent filters are disabled, ALWAYS show parent items + all subcategory items (deduped).
                         val parentItems = getItemsForCategory(pageCategory)
                         val children = childrenByParent[pageCategory.id].orEmpty()
                         val childItems = children.flatMap { child -> getItemsForCategory(child) }
@@ -256,32 +275,14 @@ fun LibraryContent(
                             if (seen.add(mangaId)) merged.add(item)
                         }
                         merged
-                    } else {
-                        // No relevant selection: fallback to parent items
-                        getItemsForCategory(pageCategory)
                     }
-                } else {
-                    // When parent filters are disabled, ALWAYS show parent items + all subcategory items (deduped).
-                    val parentItems = getItemsForCategory(pageCategory)
-                    val children = childrenByParent[pageCategory.id].orEmpty()
-                    val childItems = children.flatMap { child -> getItemsForCategory(child) }
-
-                    val seen = mutableSetOf<Long>()
-                    val merged = mutableListOf<LibraryItem>()
-                    (parentItems + childItems).forEach { item ->
-                        val mangaId = item.libraryManga.manga.id
-                        if (seen.add(mangaId)) merged.add(item)
-                    }
-                    merged
                 }
-            }
                 if (parentCategories.isEmpty()) {
                     Text(
                         text = stringResource(MR.strings.no_results_found),
                         modifier = Modifier.padding(16.dp),
                     )
                 }
-
 
                 LibraryPager(
                     state = pagerState,
