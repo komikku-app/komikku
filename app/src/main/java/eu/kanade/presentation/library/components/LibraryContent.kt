@@ -104,7 +104,18 @@ fun LibraryContent(
         // Keep the original Column content but make the pager pages correspond to parentCategories
         Column(modifier = Modifier.zIndex(0f)) {
             // Pager for parent categories
-            val pagerState = rememberPagerState(currentPage) { parentCategories.size.coerceAtLeast(1) }
+            if (parentCategories.isEmpty()) {
+                Text(
+                    text = stringResource(MR.strings.no_results_found),
+                    modifier = Modifier.padding(16.dp),
+                )
+                return
+            }
+
+            val initialPage = if (currentPage in parentCategories.indices) { currentPage } else { 0 }
+
+            val pagerState = rememberPagerState(initialPage = initialPage,) { parentCategories.size }
+
             var chipsVisible by remember { mutableStateOf(true) }
             val scope = rememberCoroutineScope()
             var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
@@ -186,10 +197,12 @@ fun LibraryContent(
                 // If parent filters are disabled, fall back to showing the tabs for parentCategories normally
                 if (showPageTabs && parentCategories.isNotEmpty()) {
                     LaunchedEffect(parentCategories) {
+                        if (parentCategories.isEmpty()) return@LaunchedEffect
                         val targetPage = when {
-                            parentCategories.isEmpty() -> 0
-                            currentPage != pagerState.currentPage -> currentPage.coerceAtMost(parentCategories.size - 1)
-                            pagerState.currentPage >= parentCategories.size -> parentCategories.size - 1
+                            currentPage != pagerState.currentPage -> currentPage.takeIf { it in parentCategories.indices } ?: 0
+                            activeCategoryIndex != pagerState.currentPage -> activeCategoryIndex.takeIf { it in parentCategories.indices } ?: 0
+
+                            pagerState.currentPage > parentCategories.lastIndex -> parentCategories.lastIndex
                             else -> pagerState.currentPage
                         }
                         if (targetPage != pagerState.currentPage) {
@@ -262,6 +275,13 @@ fun LibraryContent(
                     merged
                 }
             }
+                if (parentCategories.isEmpty()) {
+                    Text(
+                        text = stringResource(MR.strings.no_results_found),
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+
 
                 LibraryPager(
                     state = pagerState,
