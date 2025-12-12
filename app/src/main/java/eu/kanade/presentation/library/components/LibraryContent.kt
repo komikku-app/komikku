@@ -166,8 +166,6 @@ fun LibraryContent(
                     }
                 }
             }
-
-            HorizontalDivider()
         }
 
         PullRefresh(
