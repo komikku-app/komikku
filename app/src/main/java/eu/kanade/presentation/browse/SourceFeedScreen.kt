@@ -4,7 +4,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -12,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
@@ -31,6 +34,7 @@ import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -156,10 +160,21 @@ fun SourceFeedScreen(
             }
         },
         floatingActionButton = {
-            BrowseSourceFloatingActionButton(
-                isVisible = hasFilters,
-                onFabClick = onFabClick,
+            // KMK -->
+            SmallExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = if (hasFilters) {
+                            stringResource(MR.strings.action_filter)
+                        } else {
+                            stringResource(SYMR.strings.saved_searches)
+                        },
+                    )
+                },
+                icon = { Icon(Icons.Outlined.FilterList, contentDescription = "") },
+                onClick = onFabClick,
             )
+            // KMK <--
         },
     ) { paddingValues ->
         Crossfade(targetState = isLoading, label = "source_feed") { state ->

@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 class MigratingManga(
     val manga: Manga,
     val chapterInfo: ChapterInfo,
-    val sourcesString: String,
+    val source: String,
     parentContext: CoroutineContext,
 ) {
     val migrationScope = CoroutineScope(parentContext + SupervisorJob() + Dispatchers.Default)
@@ -33,7 +33,7 @@ class MigratingManga(
     sealed class SearchResult {
         data object Searching : SearchResult()
         data object NotFound : SearchResult()
-        data class Result(val id: Long) : SearchResult()
+        data class Success(val id: Long) : SearchResult()
     }
 
     data class ChapterInfo(

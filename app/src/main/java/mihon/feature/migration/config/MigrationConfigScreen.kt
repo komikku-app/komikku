@@ -62,8 +62,6 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import mihon.feature.migration.list.MigrationListScreen
-import mihon.feature.migration.list.MigrationProcedureConfig
-import mihon.feature.migration.list.MigrationType
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
@@ -100,13 +98,14 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         val navigator = LocalNavigator.currentOrThrow
 
         val screenModel = rememberScreenModel { ScreenModel() }
+        val state by screenModel.state.collectAsState()
+
         // KMK -->
         var searchQuery by remember { mutableStateOf("") }
         BackHandler(enabled = searchQuery.isNotBlank()) {
             searchQuery = ""
         }
         // KMK <--
-        val state by screenModel.state.collectAsState()
 
         var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
 
@@ -119,9 +118,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
             navigator.replace(
                 // KMK -->
                 // MigrateSearchScreen(mangaId)
-                MigrationListScreen(
-                    MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraSearchQuery),
-                ),
+                MigrationListScreen(mangaIds, extraSearchQuery),
                 // KMK <--
             )
         }
