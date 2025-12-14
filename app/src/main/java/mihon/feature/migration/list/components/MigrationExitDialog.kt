@@ -15,6 +15,9 @@ fun MigrationExitDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = stringResource(SYMR.strings.stop_migrating))
+        },
         confirmButton = {
             TextButton(onClick = exitMigration) {
                 Text(text = stringResource(SYMR.strings.action_stop))
@@ -24,9 +27,6 @@ fun MigrationExitDialog(
             TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(MR.strings.action_cancel))
             }
-        },
-        title = {
-            Text(text = stringResource(SYMR.strings.stop_migrating))
         },
     )
 }

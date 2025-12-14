@@ -26,7 +26,7 @@ class SmartSearchScreenModel(
     init {
         screenModelScope.launchIO {
             val result = try {
-                val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
+                val resultManga = smartSearchEngine.deepSearch(source, config.origTitle)
                 if (resultManga != null) {
                     val localManga = networkToLocalManga(resultManga)
                     SearchResults.Found(localManga)

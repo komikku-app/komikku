@@ -42,18 +42,18 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
             onChangeSearchFilter = screenModel::setSourceFilter,
             onToggleResults = screenModel::toggleFilterResults,
             onClickSource = { navigator.push(MigrateSourceSearchScreen(state.from!!, it.id, state.searchQuery)) },
-            onClickItem = { manga ->
+            onClickItem = {
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    bulkFavoriteScreenModel.toggleSelection(manga)
+                    bulkFavoriteScreenModel.toggleSelection(it)
                 } else {
                     // KMK <--
                     // SY -->
                     navigator.items
                         .filterIsInstance<MigrationListScreen>()
                         .last()
-                        .newSelectedItem = mangaId to manga.id
-                    navigator.popUntil { it is MigrationListScreen }
+                        .matchOverride = mangaId to it.id
+                    navigator.popUntil { screen -> screen is MigrationListScreen }
                     // SY <--
                 }
             },
