@@ -67,7 +67,7 @@ fun LibraryContent(
 ) {
     // Derive parent categories and child mapping
     val parentCategories = remember(categories) {
-        categories.filter { it.parentId == null && !it.isSystemCategory }.sortedBy { it.order }
+        categories.filter { it.parentId == null }.sortedBy { it.order }
     }
     val childrenByParent = remember(categories) {
         categories.filter { it.parentId != null }
@@ -128,7 +128,7 @@ fun LibraryContent(
                 onTabItemClick = {
                     scope.launch {
                         val targetCategory = tabCategories[it]
-                        val hasSubcategories = childrenByParent[targetCategory.id]?.isNotEmpty() == true
+                        val hasSubcategories = childrenByParent[targetCategory.id]?. isNotEmpty() == true
 
                         // Toggle collapse state if clicking on current page with subcategories
                         if (it == pagerState.currentPage && hasSubcategories && showParentFilters) {
@@ -243,18 +243,7 @@ fun LibraryContent(
                         getItemsForCategory(pageCategory)
                     }
                 } else {
-                    // Parent filters disabled: always merge parent + all subcategories
-                    val parentItems = getItemsForCategory(pageCategory)
-                    val children = childrenByParent[pageCategory.id].orEmpty()
-                    val childItems = children.flatMap { child -> getItemsForCategory(child) }
-
-                    val seen = mutableSetOf<Long>()
-                    val merged = mutableListOf<LibraryItem>()
-                    (parentItems + childItems).forEach { item ->
-                        val mangaId = item.libraryManga.manga.id
-                        if (seen.add(mangaId)) merged.add(item)
-                    }
-                    merged
+                    getItemsForCategory(pageCategory)
                 }
             }
 
