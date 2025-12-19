@@ -1,6 +1,7 @@
 package eu.kanade.presentation.category.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
 import eu.kanade.presentation.category.buildCategoryHierarchy
@@ -42,7 +44,6 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
-
 @Composable
 fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
@@ -173,31 +174,38 @@ fun CategoryRenameDialog(
             Text(text = stringResource(MR.strings.action_rename_category))
         },
         text = {
-            OutlinedTextField(
-                modifier = Modifier.focusRequester(focusRequester),
-                value = name,
-                onValueChange = {
-                    valueHasChanged = name != it
-                    name = it
-                },
-                label = { Text(text = stringResource(MR.strings.name)) },
-                supportingText = {
-                    val msgRes = if (valueHasChanged && nameAlreadyExists) {
-                        MR.strings.error_category_exists
-                    } else {
-                        MR.strings.information_required_plain
-                    }
-                    Text(text = stringResource(msgRes))
-                },
-                isError = valueHasChanged && nameAlreadyExists,
-                singleLine = true,
-            )
-            ParentCategorySelector(
-                parentOptions = parentOptions,
-                selectedParentId = parentId,
-                onSelectParent = { parentId = it },
-                categoryHasChildren = categoryHasChildren,
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    value = name,
+                    onValueChange = {
+                        valueHasChanged = name != it
+                        name = it
+                    },
+                    label = { Text(text = stringResource(MR.strings.name)) },
+                    supportingText = {
+                        val msgRes = if (valueHasChanged && nameAlreadyExists) {
+                            MR.strings.error_category_exists
+                        } else {
+                            MR.strings.information_required_plain
+                        }
+                        Text(text = stringResource(msgRes))
+                    },
+                    isError = valueHasChanged && nameAlreadyExists,
+                    singleLine = true,
+                )
+                ParentCategorySelector(
+                    parentOptions = parentOptions,
+                    selectedParentId = parentId,
+                    onSelectParent = { parentId = it },
+                    categoryHasChildren = categoryHasChildren,
+                )
+            }
         },
     )
 

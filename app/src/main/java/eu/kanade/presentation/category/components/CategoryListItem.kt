@@ -1,23 +1,18 @@
 package eu.kanade.presentation.category.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ElevatedCard
@@ -27,6 +22,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
@@ -47,30 +43,26 @@ fun ReorderableCollectionItemScope.CategoryListItem(
     indentLevel: Int = 0,
     isParent: Boolean = false,
     parentCategory: Category? = null,
-    modifier: Modifier = Modifier,
-    // KMK --> Add expand/collapse parameters
     hasChildren: Boolean = false,
     isExpanded: Boolean = false,
     onToggleExpand: () -> Unit = {},
-    // KMK <--
+    modifier: Modifier = Modifier,
 ) {
     if (isParent && indentLevel == 0) {
-        // Parent category - container card layout
-        ParentCategoryContainer(
+        // Parent category with expand/collapse functionality
+        ParentCategoryItem(
             category = category,
             onRename = onRename,
             onDelete = onDelete,
             onHide = onHide,
-            modifier = modifier,
-            // KMK -->
             hasChildren = hasChildren,
             isExpanded = isExpanded,
             onToggleExpand = onToggleExpand,
-            // KMK <--
+            modifier = modifier,
         )
     } else {
-        // Child category - compact layout
-        ChildCategoryRow(
+        // Child/subcategory item
+        ChildCategoryItem(
             category = category,
             onRename = onRename,
             onDelete = onDelete,
@@ -83,198 +75,48 @@ fun ReorderableCollectionItemScope.CategoryListItem(
 }
 
 @Composable
-private fun ReorderableCollectionItemScope.ParentCategoryContainer(
+private fun ReorderableCollectionItemScope.ParentCategoryItem(
     category: Category,
     onRename: () -> Unit,
     onDelete: () -> Unit,
     onHide: () -> Unit,
-    modifier: Modifier = Modifier,
-    // KMK -->
-    hasChildren: Boolean = false,
-    isExpanded: Boolean = false,
-    onToggleExpand: () -> Unit = {},
-    // KMK <--
-) {
-    ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-    ) {
-        Column {
-            // Parent header with drag handle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = MaterialTheme.padding.small)
-                    .padding(horizontal = MaterialTheme.padding.medium),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                // Drag handle
-                Icon(
-                    imageVector = Icons.Outlined.DragHandle,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(end = MaterialTheme.padding.medium)
-                        .draggableHandle(),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                // KMK --> Expand/collapse icon (only show if has children)
-                if (hasChildren) {
-                    IconButton(
-                        onClick = onToggleExpand,
-                        modifier = Modifier.size(40.dp).padding(end = 4.dp),
-                    ) {
-                        Icon(
-                            imageVector = if (isExpanded) {
-                                Icons.Outlined.ExpandLess
-                            } else {
-                                Icons.Outlined.ExpandMore
-                            },
-                            contentDescription = if (isExpanded) {
-                                "Collapse"
-                            } else {
-                                "Expand"
-                            },
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                } else {
-                    // Spacer to maintain alignment when no expand icon
-                    Spacer(modifier = Modifier.width(40.dp))
-                }
-                // KMK <--
-
-                // Folder icon
-                Icon(
-                    imageVector = Icons.Outlined.Folder,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = MaterialTheme.padding.medium),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-
-                // Category name (not clickable - use edit button)
-                Text(
-                    text = category.name,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = LocalContentColor.current.let {
-                        if (category.hidden) it.copy(alpha = 0.6f) else it
-                    },
-                    textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
-                )
-
-                // Action buttons
-                IconButton(onClick = onRename, modifier = Modifier.padding(0.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = stringResource(MR.strings.action_rename_category),
-                        modifier = Modifier.padding(4.dp),
-                    )
-                }
-                IconButton(onClick = onHide, modifier = Modifier.padding(0.dp)) {
-                    Icon(
-                        imageVector = if (category.hidden) {
-                            Icons.Outlined.Visibility
-                        } else {
-                            Icons.Outlined.VisibilityOff
-                        },
-                        contentDescription = stringResource(KMR.strings.action_hide),
-                        modifier = Modifier.padding(4.dp),
-                    )
-                }
-                IconButton(onClick = onDelete, modifier = Modifier.padding(0.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = stringResource(MR.strings.action_delete),
-                        modifier = Modifier.padding(4.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ReorderableCollectionItemScope.ChildCategoryRow(
-    category: Category,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
-    onHide: () -> Unit,
-    indentLevel: Int = 0,
-    parentCategory: Category? = null,
+    hasChildren: Boolean,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val startIndent = 8.dp + (indentLevel.coerceAtLeast(0) * 16).dp
-
-    Column(modifier = modifier) {
-        // Child item row
+    ElevatedCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = startIndent, end = MaterialTheme.padding.small)
-                .padding(vertical = 8.dp),
+                .clickable(enabled = hasChildren, onClick = onToggleExpand)
+                .padding(vertical = MaterialTheme.padding.small)
+                .padding(
+                    start = MaterialTheme.padding.small,
+                    end = MaterialTheme.padding.medium,
+                ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Drag handle
             Icon(
                 imageVector = Icons.Outlined.DragHandle,
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(end = 4.dp)
+                    .padding(MaterialTheme.padding.medium)
                     .draggableHandle(),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
-            // Tree connector line visual
-            Box(
-                modifier = Modifier
-                    .width(2.dp)
-                    .height(24.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(1.dp),
-                    )
-                    .padding(end = 8.dp),
-            )
-
-            // Category name with strikethrough if hidden (not clickable - use edit button)
             Text(
                 text = category.name,
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 4.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = LocalContentColor.current.let {
-                    if (category.hidden) it.copy(alpha = 0.6f) else it
-                },
+                color = LocalContentColor.current.let { if (category.hidden) it.copy(alpha = 0.6f) else it },
                 textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
-
-            // Parent info label (inline)
-            if (parentCategory != null) {
-                Text(
-                    text = "Parent: ${parentCategory.name}",
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Action buttons (compact)
-            IconButton(onClick = onRename, modifier = Modifier.padding(0.dp).size(32.dp)) {
+            IconButton(onClick = onRename) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = stringResource(MR.strings.action_rename_category),
-                    modifier = Modifier.size(16.dp),
                 )
             }
-            IconButton(onClick = onHide, modifier = Modifier.padding(0.dp).size(32.dp)) {
+            IconButton(onClick = onHide) {
                 Icon(
                     imageVector = if (category.hidden) {
                         Icons.Outlined.Visibility
@@ -282,14 +124,87 @@ private fun ReorderableCollectionItemScope.ChildCategoryRow(
                         Icons.Outlined.VisibilityOff
                     },
                     contentDescription = stringResource(KMR.strings.action_hide),
-                    modifier = Modifier.size(16.dp),
                 )
             }
-            IconButton(onClick = onDelete, modifier = Modifier.padding(0.dp).size(32.dp)) {
+            IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(MR.strings.action_delete),
-                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReorderableCollectionItemScope.ChildCategoryItem(
+    category: Category,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
+    onHide: () -> Unit,
+    indentLevel: Int,
+    parentCategory: Category?,
+    modifier: Modifier = Modifier,
+) {
+    val startIndent = 5.dp + (indentLevel.coerceAtLeast(0) * 20).dp
+
+    ElevatedCard(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = MaterialTheme.padding.small)
+                .padding(
+                    start = startIndent + MaterialTheme.padding.small,
+                    end = MaterialTheme.padding.medium,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.DragHandle,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(MaterialTheme.padding.medium)
+                    .draggableHandle(),
+            )
+
+            // Tree connector line
+            Box(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(20.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(1.dp),
+                    ),
+            )
+            Text(
+                text = category.name,
+                color = LocalContentColor.current.let { if (category.hidden) it.copy(alpha = 0.6f) else it },
+                textDecoration = TextDecoration.LineThrough.takeIf { category.hidden },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp),
+            )
+            IconButton(onClick = onRename) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = stringResource(MR.strings.action_rename_category),
+                )
+            }
+            IconButton(onClick = onHide) {
+                Icon(
+                    imageVector = if (category.hidden) {
+                        Icons.Outlined.Visibility
+                    } else {
+                        Icons.Outlined.VisibilityOff
+                    },
+                    contentDescription = stringResource(KMR.strings.action_hide),
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = stringResource(MR.strings.action_delete),
                 )
             }
         }
