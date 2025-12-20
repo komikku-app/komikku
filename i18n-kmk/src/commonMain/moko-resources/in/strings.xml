@@ -183,4 +183,14 @@
     <string name="pref_category_discord_customization">Discord Kustomisasi</string>
     <string name="pref_discord_custom_message">Pesan Khusus</string>
     <string name="pref_discord_custom_message_summary">Pesan khusus yang akan ditampilkan Discord</string>
+    <string name="pref_discord_show_progress">Tampilkan Kemajuan</string>
+    <string name="pref_discord_show_progress_summary">Menampilkan bab bacaan saat ini</string>
+    <string name="pref_discord_show_timestamp">Waktu Pertunjukan</string>
+    <string name="pref_discord_show_timestamp_summary">Menampilkan waktu aktivitas</string>
+    <string name="pref_discord_show_buttons">Tampilkan Tombol</string>
+    <string name="pref_discord_show_buttons_summary">Tampilkan tombol untuk mengunduh aplikasi atau bergabung dengan server Discord</string>
+    <string name="pref_discord_show_download_button">Tampilkan Tombol Unduh</string>
+    <string name="pref_discord_show_download_button_summary">Menampilkan tombol untuk mengunduh aplikasi</string>
+    <string name="pref_discord_show_discord_button">Tampilkan Tombol Discord</string>
+    <string name="pref_discord_show_discord_button_summary">Menampilkan tombol untuk bergabung dengan server Discord</string>
 </resources>
