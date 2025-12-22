@@ -61,7 +61,7 @@ fun LibraryUpdateErrorScreen(
     state: LibraryUpdateErrorScreenState,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
     onErrorsDelete: () -> Unit,
@@ -189,7 +189,7 @@ fun LibraryUpdateErrorScreen(
 private fun LibraryUpdateErrorBottomBar(
     modifier: Modifier = Modifier,
     selected: List<LibraryUpdateErrorItem>,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     enableScrollToTop: Boolean,
     enableScrollToBottom: Boolean,
     scrollToTop: () -> Unit,
@@ -219,7 +219,7 @@ private fun LibraryUpdateErrorBottomBar(
         var resetJob: Job? = remember { null }
         val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            (0 until 5).forEach { i -> confirm[i] = i == toConfirmIndex }
+            confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
             resetJob?.cancel()
             resetJob = scope.launch {
                 delay(1.seconds)

@@ -52,7 +52,7 @@ fun ChapterSettingsDialog(
     onUnreadFilterChanged: (TriState) -> Unit,
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
-    onScanlatorFilterClicked: (() -> Unit),
+    onScanlatorFilterClicked: () -> Unit,
     onSortModeChanged: (Long) -> Unit,
     onDisplayModeChanged: (Long) -> Unit,
     onSetAsDefault: (applyToExistingManga: Boolean) -> Unit,
@@ -138,7 +138,7 @@ private fun ColumnScope.FilterPage(
     bookmarkedFilter: TriState,
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
-    onScanlatorFilterClicked: (() -> Unit),
+    onScanlatorFilterClicked: () -> Unit,
 ) {
     TriStateItem(
         label = stringResource(MR.strings.label_downloaded),
