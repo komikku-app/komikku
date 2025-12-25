@@ -331,4 +331,9 @@
     <string name="sync_on_chapter_open">Sincronizza ad apertura del Capitolo</string>
     <string name="sync_on_app_start">Sincronizza ad Avvio della Applicazione</string>
     <string name="sync_library">Sincronizza Libreria</string>
+    <string name="pref_feed_position_summery">Vuoi che la scheda Feed sia la prima scheda in Esplora? In questo modo diventerà la scheda predefinita all\'apertura di Esplora, sconsigliato se si utilizza una connessione dati o una rete a consumo</string>
+    <string name="pref_source_source_filtering_summery">Filtra le fonti che sono in categorie, facendo in modo che le fonti non vengano inserite nella lingua se sono in una categoria</string>
+    <string name="google_drive_login_failed">Impossibile accedere a Google Drive: %s</string>
+    <string name="google_drive_not_signed_in">Non hai effettuato l\'accesso a Google Drive</string>
+    <string name="error_deleting_google_drive_lock_file">Errore durante l\'eliminazione del file di blocco di Google Drive</string>
 </resources>

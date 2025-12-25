@@ -582,7 +582,7 @@
     <string name="random">Rastgele</string>
     <string name="mangadex_push_favorites_to_mangadex">Kitaplık girdilerini MangaDex\'e eşitle</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">MD listelerinde olmayan girdileri okunuyor olarak MangaDex\'e eşitler.</string>
-    <string name="alt_titles">Alternatif Başlıklar</string>
+    <string name="alt_titles">Alternatif başlıklar</string>
     <string name="select_scanlators">Gösterilecek çeviri grupları</string>
     <string name="similar">%1$s benzeri</string>
     <string name="relation_similar">Benzer</string>
@@ -620,4 +620,8 @@
     <string name="rec_collecting">Öneriler toplanıyor</string>
     <string name="rec_initializing">Başlatılıyor</string>
     <string name="scan_qr_code">QR kod tarayın</string>
+    <string name="filename">Dosya adı</string>
+    <string name="file_extension">Dosya uzantısı</string>
+    <string name="base_url">Ana url</string>
+    <string name="final_chapter">Son bölüm</string>
 </resources>

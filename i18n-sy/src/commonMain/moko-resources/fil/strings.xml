@@ -592,7 +592,7 @@
     <string name="multi_tags_comma_separated">Maglagay ng (mga) tag, na pinaghihiwalay ng mga kuwit (,).</string>
     <string name="settings_profile_note">Profile note na mga setting</string>
     <string name="pref_sync_api_key">API key</string>
-    <string name="alt_titles">Alternatibong mga Pamagat</string>
+    <string name="alt_titles">Mga Alternatibong pamagat</string>
     <string name="pref_sync_host">Host</string>
     <string name="video">Bidyo</string>
     <string name="url">Url</string>
@@ -647,4 +647,8 @@
     <string name="rec_collecting">Nangongolekta ng mga rekomendasyon</string>
     <string name="rec_initializing">Sinisimulan</string>
     <string name="scan_qr_code">Mag-scan ng QR code</string>
+    <string name="filename">Pangalan ng file</string>
+    <string name="file_extension">Extension ng file</string>
+    <string name="final_chapter">Huling Kabanata</string>
+    <string name="base_url">Base url</string>
 </resources>

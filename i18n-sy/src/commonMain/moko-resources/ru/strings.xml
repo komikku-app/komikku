@@ -693,4 +693,5 @@
     <string name="filename">Название файла</string>
     <string name="file_extension">Расширение файла</string>
     <string name="base_url">Главный URL</string>
+    <string name="final_chapter">Последняя глава</string>
 </resources>

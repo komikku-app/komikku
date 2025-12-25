@@ -678,4 +678,8 @@
     <string name="rec_initializing">正在初始化</string>
     <string name="similar_titles">相似标题</string>
     <string name="scan_qr_code">扫描二维码</string>
+    <string name="filename">文件名</string>
+    <string name="file_extension">文件拓展名</string>
+    <string name="final_chapter">终章</string>
+    <string name="base_url">基础url</string>
 </resources>

@@ -587,7 +587,7 @@
     <string name="favorites_sync_conformation_message">Apakah Anda yakin untuk menyinkronkan favorit Anda dengan E-Hentai?</string>
     <string name="relation_similar">Mirip</string>
     <string name="relation_prequel">Prekuel</string>
-    <string name="alt_titles">Judul-Judul Alternatif</string>
+    <string name="alt_titles">Judul alternatif</string>
     <string name="encryption_type">Tipe enkripsi</string>
     <string name="aes_256">AES 256</string>
     <string name="relation_adapted_from">Diadaptasi dari</string>
@@ -666,4 +666,8 @@
     <string name="rec_collecting">Mengumpulkan rekomendasi</string>
     <string name="rec_initializing">Inisialisasi</string>
     <string name="scan_qr_code">Pindai kode QR</string>
+    <string name="filename">Nama file</string>
+    <string name="file_extension">Ekstensi file</string>
+    <string name="final_chapter">Bab terakhir</string>
+    <string name="base_url">URL dasar</string>
 </resources>
