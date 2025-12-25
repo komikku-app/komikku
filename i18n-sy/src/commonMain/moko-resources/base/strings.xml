@@ -153,6 +153,8 @@
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
     <string name="clear_db_exclude_read">Keep entries with read chapters</string>
+    <string name="pref_include_chapter_url_hash">Include chapter URL hash</string>
+    <string name="pref_include_chapter_url_hash_desc">Append the first six characters of the chapter URL's MD5 hash to the chapter file or folder name.</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
