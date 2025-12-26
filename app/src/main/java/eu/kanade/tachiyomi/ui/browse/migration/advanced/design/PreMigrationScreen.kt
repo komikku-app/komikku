@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -86,7 +87,6 @@ import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -178,7 +178,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
             },
             // KMK <--
             floatingActionButton = {
-                ExtendedFloatingActionButton(
+                SmallExtendedFloatingActionButton(
                     text = { Text(text = stringResource(MR.strings.action_migrate)) },
                     icon = {
                         Icon(
