@@ -1,13 +1,14 @@
 package eu.kanade.presentation.theme
 
 import android.app.UiModeManager
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.getSystemService
@@ -101,27 +102,36 @@ private fun BaseTachiyomiTheme(
     isAmoled: Boolean,
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     MaterialTheme(
-        colorScheme = getThemeColorScheme(appTheme, isAmoled),
+        colorScheme = remember(appTheme, isDark, isAmoled) {
+            getThemeColorScheme(
+                context = context,
+                appTheme = appTheme,
+                isDark = isDark,
+                isAmoled = isAmoled,
+            )
+        },
         content = content,
     )
 }
 
-@Composable
-@ReadOnlyComposable
 private fun getThemeColorScheme(
+    context: Context,
     appTheme: AppTheme,
+    isDark: Boolean,
     isAmoled: Boolean,
 ): ColorScheme {
     val colorScheme = when (appTheme) {
         AppTheme.MONET -> {
-            MonetColorScheme(LocalContext.current)
+            MonetColorScheme(context)
         }
         // KMK -->
         AppTheme.CUSTOM -> {
             val uiPreferences = Injekt.get<UiPreferences>()
             CustomColorScheme(
-                context = LocalContext.current,
+                context = context,
                 seed = uiPreferences.colorTheme().get(),
                 style = uiPreferences.customThemeStyle().get(),
             )
@@ -132,8 +142,9 @@ private fun getThemeColorScheme(
         }
     }
     return colorScheme.getColorScheme(
-        isSystemInDarkTheme(),
-        isAmoled,
+        isDark = isDark,
+        isAmoled = isAmoled,
+        overrideDarkSurfaceContainers = appTheme != AppTheme.MONET,
     )
 }
 
