@@ -3,13 +3,14 @@ package eu.kanade.presentation.theme
 import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.DynamicMaterialExpressiveTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
@@ -66,7 +67,7 @@ fun TachiyomiTheme(
     } else {
         val uiPreferences = Injekt.get<UiPreferences>()
         val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
-        DynamicMaterialTheme(
+        DynamicMaterialExpressiveTheme(
             seedColor = seedColor,
             isAmoled = isAmoled,
             style = uiPreferences.themeCoverBasedStyle().get(),
@@ -93,7 +94,7 @@ private fun BaseTachiyomiTheme(
 ) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = remember(appTheme, isDark, isAmoled) {
             getThemeColorScheme(
                 context = context,

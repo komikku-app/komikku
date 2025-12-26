@@ -59,6 +59,7 @@ import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
 import com.materialkolor.dynamicColorScheme
+import com.materialkolor.dynamiccolor.ColorSpec
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
@@ -767,6 +768,7 @@ class ReaderActivity : BaseActivity() {
                 isDark = isNightMode(),
                 isAmoled = themeDarkAmoled,
                 style = themeCoverBasedStyle,
+                specVersion = ColorSpec.SpecVersion.SPEC_2025,
             )
         }
         // KMK <--
