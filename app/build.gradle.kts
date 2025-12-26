@@ -289,10 +289,10 @@ dependencies {
     implementation(libs.compose.grid)
     implementation(libs.reorderable)
     implementation(libs.bundles.markdown)
+    implementation(libs.materialKolor)
 
     // KMK -->
     implementation(libs.palette.ktx)
-    implementation(libs.materialKolor)
     implementation(libs.haze)
     implementation(compose.colorpicker)
     implementation(projects.flagkit)
