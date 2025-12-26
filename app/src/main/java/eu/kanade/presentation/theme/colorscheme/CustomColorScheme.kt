@@ -14,6 +14,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
+import com.materialkolor.dynamiccolor.ColorSpec
 
 internal class CustomColorScheme(
     seed: Color,
@@ -29,6 +30,7 @@ internal class CustomColorScheme(
                 isDark = dark,
                 isAmoled = false,
                 style = style,
+                specVersion = ColorSpec.SpecVersion.SPEC_2025,
             )
         }
     }
