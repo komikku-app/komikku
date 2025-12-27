@@ -11,7 +11,7 @@ class GetChaptersByMangaId(
 
     suspend fun await(mangaId: Long, applyFilter: Boolean = false): List<Chapter> {
         return try {
-            chapterRepository.getChapterByMangaId(mangaId, applyFilter)
+            chapterRepository.getChapterByMangaId(mangaId, applyFilter, includeDeleted = false)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             emptyList()
