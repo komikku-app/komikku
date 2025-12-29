@@ -9,14 +9,19 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
@@ -80,6 +86,9 @@ fun LibraryContent(
 
     // Track which parent categories have collapsed subcategory chips
     var collapsedParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
+
+    // Track which parent categories have "exclude subcategories" mode enabled
+    var excludeSubcategoriesParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
 
     Column(
         modifier = Modifier.padding(
@@ -151,6 +160,7 @@ fun LibraryContent(
             val activeParent = parentCategories.getOrNull(pagerState.currentPage)
             val subcategoriesForActiveParent = activeParent?.let { childrenByParent[it.id] }.orEmpty()
             val isCollapsed = activeParent?.id?.let { it in collapsedParentIds } ?: false
+            val isExcludingSubcategories = activeParent?.id?.let { it in excludeSubcategoriesParentIds } ?: false
 
             // Reset activeSubcategoryId if no subcategories for current parent
             LaunchedEffect(subcategoriesForActiveParent) {
@@ -177,12 +187,42 @@ fun LibraryContent(
                         .padding(horizontal = MaterialTheme.padding.medium),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    // "All" chip to show parent + all subcategory items
+                    // "All" chip with integrated exclude mode toggle
                     item {
                         FilterChip(
                             selected = activeSubcategoryId == null,
-                            onClick = { activeSubcategoryId = null },
-                            label = { Text(text = "All") },
+                            onClick = {
+                                if (activeSubcategoryId == null && activeParent != null) {
+                                    // Already on "All" - toggle exclude mode
+                                    excludeSubcategoriesParentIds = if (isExcludingSubcategories) {
+                                        excludeSubcategoriesParentIds - activeParent.id
+                                    } else {
+                                        excludeSubcategoriesParentIds + activeParent.id
+                                    }
+                                } else {
+                                    // Switch to "All" and turn off exclude mode
+                                    activeSubcategoryId = null
+                                    if (isExcludingSubcategories && activeParent != null) {
+                                        excludeSubcategoriesParentIds = excludeSubcategoriesParentIds - activeParent.id
+                                    }
+                                }
+                            },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(text = "All")
+                                    if (isExcludingSubcategories) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Excluding subcategories",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.error,
+                                        )
+                                    }
+                                }
+                            },
                             modifier = Modifier.padding(vertical = 6.dp),
                         )
                     }
@@ -192,7 +232,13 @@ fun LibraryContent(
                         val selected = activeSubcategoryId == sub.id
                         FilterChip(
                             selected = selected,
-                            onClick = { activeSubcategoryId = if (selected) null else sub.id },
+                            onClick = {
+                                activeSubcategoryId = if (selected) null else sub.id
+                                // When selecting a subcategory, turn off exclude mode
+                                if (activeParent != null && isExcludingSubcategories) {
+                                    excludeSubcategoriesParentIds = excludeSubcategoriesParentIds - activeParent.id
+                                }
+                            },
                             label = { Text(text = sub.visualName) },
                             modifier = Modifier.padding(vertical = 6.dp),
                         )
@@ -217,6 +263,8 @@ fun LibraryContent(
             // Wrapper function to handle item fetching based on parent filter state
             val wrappedGetItemsForCategory: (Category) -> List<LibraryItem> = { pageCategory ->
                 if (showParentFilters) {
+                    val isExcludingSubcategories = pageCategory.id in excludeSubcategoriesParentIds
+
                     // Parent filters enabled: respect subcategory selection
                     val selectedSub = activeSubcategoryId?.let { id ->
                         categories.firstOrNull { it.id == id }
@@ -226,18 +274,24 @@ fun LibraryContent(
                         // Show only the selected subcategory's items
                         getItemsForCategory(selectedSub)
                     } else if (activeSubcategoryId == null) {
-                        // "All" selected: merge parent + all subcategory items (deduped)
-                        val parentItems = getItemsForCategory(pageCategory)
-                        val children = childrenByParent[pageCategory.id].orEmpty()
-                        val childItems = children.flatMap { child -> getItemsForCategory(child) }
+                        // "All" selected
+                        if (isExcludingSubcategories) {
+                            // Exclude mode:  show only parent's own items (no subcategory items)
+                            getItemsForCategory(pageCategory)
+                        } else {
+                            // Include mode: merge parent + all subcategory items (deduped)
+                            val parentItems = getItemsForCategory(pageCategory)
+                            val children = childrenByParent[pageCategory.id].orEmpty()
+                            val childItems = children.flatMap { child -> getItemsForCategory(child) }
 
-                        val seen = mutableSetOf<Long>()
-                        val merged = mutableListOf<LibraryItem>()
-                        (parentItems + childItems).forEach { item ->
-                            val mangaId = item.libraryManga.manga.id
-                            if (seen.add(mangaId)) merged.add(item)
+                            val seen = mutableSetOf<Long>()
+                            val merged = mutableListOf<LibraryItem>()
+                            (parentItems + childItems).forEach { item ->
+                                val mangaId = item.libraryManga.manga.id
+                                if (seen.add(mangaId)) merged.add(item)
+                            }
+                            merged
                         }
-                        merged
                     } else {
                         // Subcategory selected but doesn't belong to current parent
                         getItemsForCategory(pageCategory)
