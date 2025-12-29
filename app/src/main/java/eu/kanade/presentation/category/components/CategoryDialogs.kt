@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -44,6 +49,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
+
 @Composable
 fun CategoryCreateDialog(
     onDismissRequest: () -> Unit,
@@ -456,8 +462,13 @@ fun ChangeCategoryDialog(
 
                         // Show expand/collapse indicator on the right for parents with children
                         if (isParent && hasChildren) {
-                            Text(
-                                text = if (isExpanded) "▼" else "▶",
+                            Icon(
+                                imageVector = if (isExpanded) {
+                                    Icons.Filled.KeyboardArrowDown
+                                } else {
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                                },
+                                contentDescription = if (isExpanded) "Collapse" else "Expand",
                                 modifier = Modifier
                                     .padding(end = MaterialTheme.padding.medium)
                                     .clickable(
