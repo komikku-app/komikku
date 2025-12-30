@@ -129,4 +129,5 @@
     <string name="action_manual_install">手动安装</string>
     <string name="sponsor_me">赞助</string>
     <string name="pref_viewer_nav_smaller_tap_zone">缩减点按区域</string>
+    <string name="action_update">更新</string>
 </resources>
