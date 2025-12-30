@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 heures</string>
     <string name="download_cache_renew_interval_12hour">12 heures</string>
     <string name="download_cache_renew_interval_24hour">1 jour</string>
-    <string name="download_cache_renew_interval_info">Si réglé sur manuel, actualisez chaque manga ou utilisez l\'action Réindexe les téléchargements dans Avancé</string>
+    <string name="download_cache_renew_interval_info">Si réglé sur manuel, actualisez chaque manga ou utilisez l\'action « Réindexer les téléchargements » dans Avancé</string>
     <string name="pref_clean_invalid_downloads">Nettoyer les téléchargements invalides</string>
     <string name="pref_clean_invalid_downloads_summary">Rechercher et supprimer tous les téléchargements, fichiers, dossiers qui ne sont pas enregistrés dans votre bibliothèque</string>
     <string name="invalid_downloads_cleaned">Téléchargements invalides nettoyés</string>
@@ -190,7 +190,7 @@
     <string name="pref_discord_show_buttons">Afficher les boutons</string>
     <string name="pref_discord_show_buttons_summary">Afficher les boutons pour télécharger l\'application ou rejoindre le serveur Discord</string>
     <string name="pref_discord_show_download_button">Afficher le bouton Télécharger</string>
-    <string name="pref_discord_show_download_button_summary">Affiche un bouton pour télécharger l\'application</string>
+    <string name="pref_discord_show_download_button_summary">Afficher un bouton pour télécharger l\'application</string>
     <string name="pref_discord_show_discord_button">Afficher le bouton Discord</string>
-    <string name="pref_discord_show_discord_button_summary">Affiche un bouton pour rejoindre le serveur Discord</string>
+    <string name="pref_discord_show_discord_button_summary">Afficher un bouton pour rejoindre le serveur Discord</string>
 </resources>
