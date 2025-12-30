@@ -134,7 +134,7 @@
     <string name="pref_library_filter_categories_details">Os itens em categorias excluídas não serão exibidos, mesmo que também estejam em categorias incluídas.</string>
     <string name="pref_show_empty_categories_search">Exibir categorias vazias durante a pesquisa/filtragem</string>
     <string name="updating">Atualizando</string>
-    <string name="pref_track_on_add_library">Abra o menu da faixa ao adicioná-la à biblioteca</string>
+    <string name="pref_track_on_add_library">Abrir o menu de acompanhamento ao adicionar à biblioteca</string>
     <string name="downloaded_data">Dados baixados</string>
     <string name="chapters_from_database">Capítulos e histórico do banco de dados</string>
     <string name="pref_viewer_nav_smaller_tap_zone">Zonas de toque menores</string>
@@ -178,7 +178,7 @@
     <string name="discord_status_browsing">Navegando</string>
     <string name="discord_status_scrolling">Rolando por</string>
     <string name="discord_status_messing">Experimentando com</string>
-    <string name="discord_download_button">Leia mais %s</string>
+    <string name="discord_download_button">Ler em %s</string>
     <string name="discord_app_description">Komikku – um app para ler mangás</string>
     <string name="pref_category_discord_customization">Personalização do Discord</string>
     <string name="pref_discord_custom_message">Mensagem personalizada</string>
