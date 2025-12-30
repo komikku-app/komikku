@@ -111,10 +111,20 @@ class ShizukuInstaller(private val service: Service) : Installer(service) {
 
     override fun processEntry(entry: Entry) {
         super.processEntry(entry)
+
+        // KMK -->
+        val installer = shellInterface
+        if (installer == null) {
+            logcat(LogPriority.ERROR) { "Shizuku shell interface not available for ${entry.downloadId}" }
+            continueQueue(InstallStep.Error)
+            return
+        }
+
         try {
             service.contentResolver.openAssetFileDescriptor(entry.uri, "r")?.use {
-                shellInterface?.install(it)
+                installer.install(it)
             }
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to install extension ${entry.downloadId} ${entry.uri}" }
             continueQueue(InstallStep.Error)
