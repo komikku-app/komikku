@@ -772,7 +772,7 @@
     <string name="action_sort_tracker_score">Skor penjejak</string>
     <string name="ext_revoke_trust">Batalkan sambungan dipercayakan yang tidak diketahui</string>
     <string name="information_empty_repos">Anda tidak menetapkan repositori.</string>
-    <string name="action_add_repo_message">Tambah repositori tambahan pada Mihon %s. Ini mestilah URL yang berakhir dengan \"index.min.json\".</string>
+    <string name="action_add_repo_message">Tambah repositori tambahan pada Komikku %s. Ini mestilah URL yang berakhir dengan \"index.min.json\".</string>
     <string name="action_open_repo">Buka sumber repositori</string>
     <string name="manga_interval_expected_update_soon">Tidak lama lagi</string>
     <string name="scanlator">Pemindai</string>
