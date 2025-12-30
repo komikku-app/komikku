@@ -109,9 +109,9 @@ class ShizukuInstaller(private val service: Service) : Installer(service) {
     override fun processEntry(entry: Entry) {
         super.processEntry(entry)
         try {
-            shellInterface?.install(
-                service.contentResolver.openAssetFileDescriptor(entry.uri, "r"),
-            )
+            service.contentResolver.openAssetFileDescriptor(entry.uri, "r")?.use {
+                shellInterface?.install(it)
+            }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to install extension ${entry.downloadId} ${entry.uri}" }
             continueQueue(InstallStep.Error)
@@ -125,7 +125,17 @@ class ShizukuInstaller(private val service: Service) : Installer(service) {
         Shizuku.removeBinderDeadListener(shizukuDeadListener)
         Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
         Shizuku.unbindUserService(shizukuArgs, connection, true)
-        service.unregisterReceiver(receiver)
+        try {
+            service.unregisterReceiver(receiver)
+            // KMK -->
+        } catch (e: IllegalArgumentException) {
+            // Receiver was not registered, ignore but log for debugging
+            logcat(LogPriority.WARN, e) { "Receiver was not registered when attempting to unregister" }
+        } catch (e: Exception) {
+            // Unexpected error while unregistering
+            logcat(LogPriority.ERROR, e) { "Failed to unregister receiver" }
+        }
+        // KMK <--
         logcat { "ShizukuInstaller destroy" }
         scope.cancel()
         super.onDestroy()
