@@ -92,9 +92,9 @@
     <string name="scale_type_3_2">3:2</string>
     <string name="pref_custom_theme_style">Gaya tema khusus</string>
     <string name="pref_theme_cover_based_style">Gaya tema berdasarkan sampul</string>
-    <string name="pref_theme_cover_based_style_tonalspot">Tempat Nada</string>
+    <string name="pref_theme_cover_based_style_tonalspot">Skema Warna Tonal</string>
     <string name="pref_theme_cover_based_style_vibrant">Bersemangat</string>
-    <string name="pref_theme_cover_based_style_fidelity">Kesetiaan</string>
+    <string name="pref_theme_cover_based_style_fidelity">Fidelitas</string>
     <string name="pref_panorama_cover">Penutup Panorama</string>
     <string name="pref_panorama_cover_summary">Tampilkan sampul dalam mode lanskap jika gambar tersebut lebar</string>
     <string name="pref_panorama_cover_flow">Aliran Penutup Panorama</string>
@@ -178,7 +178,7 @@
     <string name="discord_status_browsing">Menjelajah</string>
     <string name="discord_status_scrolling">Menggulir</string>
     <string name="discord_status_messing">Bermain-main dengan</string>
-    <string name="discord_download_button">Baca terus %s</string>
+    <string name="discord_download_button">Baca di %s</string>
     <string name="discord_app_description">Komikku - aplikasi pembaca manga</string>
     <string name="pref_category_discord_customization">Kustomisasi Discord</string>
     <string name="pref_discord_custom_message">Pesan Khusus</string>
