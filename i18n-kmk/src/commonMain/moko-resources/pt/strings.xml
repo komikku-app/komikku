@@ -122,7 +122,7 @@
     <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_manual_install">Instalação manual</string>
     <string name="action_open_folder">Abrir pasta</string>
-    <string name="action_clear_manga">Limpar manga</string>
+    <string name="action_clear_manga">Limpar mangá</string>
     <string name="action_update">Atualizar</string>
     <string name="error_opening_folder">Não foi possível abrir a pasta</string>
     <string name="scale_type_16_9">16:9</string>
@@ -130,7 +130,7 @@
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
     <string name="pref_top_align_cover">Alinhe a capa com a parte superior</string>
-    <string name="pref_top_align_cover_summary">Mostre a capa alinhada na parte superior, junto com as informações do mangá</string>
+    <string name="pref_top_align_cover_summary">Mostrar a capa alinhada na parte superior, junto com as informações do mangá</string>
     <string name="pref_library_filter_categories_details">Os itens em categorias excluídas não serão exibidos, mesmo que também estejam em categorias incluídas.</string>
     <string name="pref_show_empty_categories_search">Exibir categorias vazias durante a pesquisa/filtragem</string>
     <string name="updating">Atualizando</string>
@@ -175,7 +175,7 @@
     <string name="login_failed">Falha ao fazer login</string>
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">Usando</string>
-    <string name="discord_status_browsing">Navegação</string>
+    <string name="discord_status_browsing">Navegando</string>
     <string name="discord_status_scrolling">Rolando por</string>
     <string name="discord_status_messing">Experimentando com</string>
     <string name="discord_download_button">Leia mais %s</string>
