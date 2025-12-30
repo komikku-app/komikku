@@ -73,8 +73,8 @@
     <string name="action_show_hidden_categories">Tampilkan kategori tersembunyi</string>
     <string name="action_panorama_cover">Penutup panorama</string>
     <string name="action_open_folder">Buka berkas</string>
-    <string name="action_clear_manga">manga yang jelas</string>
-    <string name="action_update">Pembaruan</string>
+    <string name="action_clear_manga">Bersihkan manga</string>
+    <string name="action_update">Perbarui</string>
     <string name="action_copy_to_clipboard_first_page">Salin halaman pertama ke papan klip</string>
     <string name="action_copy_to_clipboard_second_page">Salin halaman kedua ke papan klip</string>
     <string name="action_copy_to_clipboard_combined_page">Salin halaman gabungan ke papan klip</string>
@@ -122,7 +122,7 @@
     <string name="custom_theme_palette_patagonia">Patagonia</string>
     <string name="custom_theme_palette_springfield">lapangan musim semi</string>
     <string name="pref_library_filter_categories_details">Entri dalam kategori yang dikecualikan tidak akan ditampilkan meskipun juga terdapat dalam kategori yang termasuk.</string>
-    <string name="updating">Perbarui</string>
+    <string name="updating">Memperbarui</string>
     <string name="pref_show_empty_categories_search">Tampilkan kategori kosong selama pencarian/pemfilteran</string>
     <string name="pref_auto_sync_progress_from_trackers">Kemajuan sinkronisasi otomatis dari Pelacak</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Sinkronkan kemajuan dari Pelacak hingga bab %d</string>
@@ -153,7 +153,7 @@
     <string name="sponsor_me">Dukung Saya</string>
     <string name="special_services">Layanan Khusus</string>
     <string name="pref_category_connections">Koneksi</string>
-    <string name="pref_connections_summary">Discord, lebih banyak lagi yang akan datang..</string>
+    <string name="pref_connections_summary">Discord, lebih banyak lagi yang akan datang...</string>
     <string name="pref_discord_configuration">Buka untuk mengonfigurasi Discord RPC</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">Layanan Discord ini beroperasi melalui pencatatan token. Gunakan dengan risiko Anda sendiri. Token Anda disimpan secara lokal dan %s tidak membagikannya ke tempat lain</string>
@@ -161,7 +161,7 @@
     <string name="show_chapters_titles_title">Tampilkan Judul Bab</string>
     <string name="show_chapters_titles_subtitle">Tunjukkan judul bab yang sedang Anda baca</string>
     <string name="pref_enable_discord_rpc">Aktifkan Fitur Kehadiran Lengkap Discord</string>
-    <string name="pref_discord_status">Discord Status</string>
+    <string name="pref_discord_status">Status Discord</string>
     <string name="pref_discord_dnd">⛔ Jangan Ganggu</string>
     <string name="pref_discord_idle">🌙 Menganggur</string>
     <string name="pref_discord_online">🟢 Online</string>
@@ -180,12 +180,12 @@
     <string name="discord_status_messing">Bermain-main dengan</string>
     <string name="discord_download_button">Baca terus %s</string>
     <string name="discord_app_description">Komikku - aplikasi pembaca manga</string>
-    <string name="pref_category_discord_customization">Discord Kustomisasi</string>
+    <string name="pref_category_discord_customization">Kustomisasi Discord</string>
     <string name="pref_discord_custom_message">Pesan Khusus</string>
     <string name="pref_discord_custom_message_summary">Pesan khusus yang akan ditampilkan Discord</string>
     <string name="pref_discord_show_progress">Tampilkan Kemajuan</string>
     <string name="pref_discord_show_progress_summary">Menampilkan bab bacaan saat ini</string>
-    <string name="pref_discord_show_timestamp">Waktu Pertunjukan</string>
+    <string name="pref_discord_show_timestamp">Tampilkan Waktu</string>
     <string name="pref_discord_show_timestamp_summary">Menampilkan waktu aktivitas</string>
     <string name="pref_discord_show_buttons">Tampilkan Tombol</string>
     <string name="pref_discord_show_buttons_summary">Tampilkan tombol untuk mengunduh aplikasi atau bergabung dengan server Discord</string>
