@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.graphics.Color
 import androidx.annotation.ColorInt
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.LandscapeZoomScaleType
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerConfig
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
@@ -49,6 +50,17 @@ class PagerConfig(
     var landscapeZoom = false
         private set
 
+    // KMK -->
+    var disableZoomIn = false
+        private set
+
+    var doubleTapZoom = true
+        private set
+
+    var landscapeZoomScaleType = LandscapeZoomScaleType.FIT
+        private set
+    // KMK <--
+
     // SY -->
     var usePageTransitions = false
 
@@ -71,7 +83,6 @@ class PagerConfig(
     var pageCanvasColor = Color.WHITE
 
     var centerMarginType = CenterMarginType.NONE
-
     // SY <--
 
     init {
@@ -116,6 +127,7 @@ class PagerConfig(
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)
+
         // KMK -->
         readerPreferences.smallerTapZone().changes()
             .drop(1)
@@ -146,6 +158,25 @@ class PagerConfig(
                 { dualPageRotateToFitInvert = it },
                 { imagePropertyChangedListener?.invoke() },
             )
+
+        // KMK -->
+        readerPreferences.pagedDisableZoomIn()
+            .register(
+                { disableZoomIn = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+        readerPreferences.pagedDoubleTapZoomEnabled()
+            .register(
+                { doubleTapZoom = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+
+        readerPreferences.landscapeZoomType()
+            .register(
+                { landscapeZoomScaleType = it },
+                { imagePropertyChangedListener?.invoke() },
+            )
+        // KMK <--
 
         // SY -->
         readerPreferences.pageTransitionsPager()

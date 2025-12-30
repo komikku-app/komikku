@@ -50,6 +50,7 @@ import eu.kanade.tachiyomi.data.coil.MangaKeyer
 import eu.kanade.tachiyomi.data.coil.PagePreviewFetcher
 import eu.kanade.tachiyomi.data.coil.PagePreviewKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.di.AppModule
@@ -172,7 +173,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                         val pendingIntent = PendingIntent.getBroadcast(
                             this@App,
                             0,
-                            Intent(ACTION_DISABLE_INCOGNITO_MODE),
+                            Intent(ACTION_DISABLE_INCOGNITO_MODE).setPackage(BuildConfig.APPLICATION_ID),
                             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
                         )
                         setContentIntent(pendingIntent)
@@ -284,19 +285,31 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppResume) {
             SyncDataJob.startNow(this@App)
         }
+
+        // AM (DISCORD) -->
+        DiscordRPCService.start(applicationContext)
+        // <-- AM (DISCORD)
     }
 
     override fun onStop(owner: LifecycleOwner) {
         SecureActivityDelegate.onApplicationStopped()
+
+        // AM (DISCORD) -->
+        DiscordRPCService.stop(applicationContext)
+        // <-- AM (DISCORD)
     }
 
     override fun getPackageName(): String {
         try {
             // Override the value passed as X-Requested-With in WebView requests
             val stackTrace = Looper.getMainLooper().thread.stackTrace
+            // KMK -->
+            val chromiumClasses = setOf("org.chromium.base.buildinfo", "org.chromium.base.apkinfo")
+            val chromiumMethods = setOf("getall", "getpackagename", "<init>")
+            // KMK <--
             val isChromiumCall = stackTrace.any { trace ->
-                trace.className.equals("org.chromium.base.BuildInfo", ignoreCase = true) &&
-                    setOf("getAll", "getPackageName", "<init>").any { trace.methodName.equals(it, ignoreCase = true) }
+                trace.className.lowercase() in chromiumClasses &&
+                    trace.methodName.lowercase() in chromiumMethods
             }
 
             if (isChromiumCall) return WebViewUtil.spoofedPackageName(applicationContext)

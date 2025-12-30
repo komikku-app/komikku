@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.LinearInterpolator
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +40,8 @@ class WebtoonViewer(
     val isContinuous: Boolean = true,
     private val tapByPage: Boolean = false,
     // KMK -->
-    @ColorInt private val seedColor: Int? = null,
+    @param:ColorInt private val seedColor: Int? = null,
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
     // KMK <--
 ) : Viewer {
 
@@ -89,7 +91,9 @@ class WebtoonViewer(
     var currentPage: Any? = null
 
     private val threshold: Int =
-        Injekt.get<ReaderPreferences>()
+        // KMK -->
+        readerPreferences
+            // KMK <--
             .readerHideThreshold()
             .get()
             .threshold
@@ -168,6 +172,40 @@ class WebtoonViewer(
         config.doubleTapZoomChangedListener = {
             frame.doubleTapZoom = it
         }
+
+        // KMK -->
+        config.pinchToZoomChangedListener = {
+            frame.pinchToZoom = it
+        }
+
+        config.webtoonScaleTypeChangedListener = f@{ scaleType ->
+            if (!isContinuous && !readerPreferences.longStripGapSmartScale().get()) return@f
+
+            recycler.post {
+                recycler.doOnLayout doOnLayout@{
+                    val currentWidth = recycler.width
+                    val currentHeight = recycler.originalHeight
+                    if (currentWidth <= 0 || currentHeight <= 0) return@doOnLayout
+
+                    if (scaleType == ReaderPreferences.WebtoonScaleType.FIT) {
+                        recycler.scaleTo(1f)
+                        return@doOnLayout
+                    }
+
+                    val desiredRatio = scaleType.ratio
+                    val screenRatio = currentWidth.toFloat() / currentHeight
+                    val desiredWidth = currentHeight * desiredRatio
+                    val desiredScale = desiredWidth / currentWidth
+
+                    if (screenRatio > desiredRatio) {
+                        recycler.scaleTo(desiredScale)
+                    } else {
+                        recycler.scaleTo(1f)
+                    }
+                }
+            }
+        }
+        // KMK <--
 
         config.zoomPropertyChangedListener = {
             frame.zoomOutDisabled = it

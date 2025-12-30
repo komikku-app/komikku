@@ -1,6 +1,7 @@
 package eu.kanade.domain.sync
 
 import eu.kanade.domain.sync.models.SyncSettings
+import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.models.SyncTriggerOptions
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -42,7 +43,7 @@ class SyncPreferences(
     }
 
     fun isSyncEnabled(): Boolean {
-        return syncService().get() != 0
+        return syncService().get() != SyncManager.SyncService.NONE.value
     }
 
     fun getSyncSettings(): SyncSettings {

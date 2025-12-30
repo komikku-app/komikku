@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.UiModeManager
 import android.app.assist.AssistContent
 import android.content.ClipData
@@ -65,6 +64,7 @@ import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
@@ -80,6 +80,8 @@ import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
@@ -135,6 +137,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.core.common.util.system.UrlUtils
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
@@ -175,6 +178,10 @@ class ReaderActivity : BaseActivity() {
     private val themeCoverBasedStyle = uiPreferences.themeCoverBasedStyle().get()
     // KMK <--
 
+    // AM (CONNECTIONS) -->
+    private val connectionsPreferences: ConnectionsPreferences = Injekt.get()
+    // <-- AM (CONNECTIONS)
+
     lateinit var binding: ReaderActivityBinding
 
     val viewModel by viewModels<ReaderViewModel>()
@@ -209,7 +216,7 @@ class ReaderActivity : BaseActivity() {
         registerSecureActivity(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_OPEN,
+                OVERRIDE_TRANSITION_OPEN,
                 R.anim.shared_axis_x_push_enter,
                 R.anim.shared_axis_x_push_exit,
             )
@@ -317,6 +324,11 @@ class ReaderActivity : BaseActivity() {
 
     override fun onPause() {
         viewModel.flushReadTimer()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = true)
+        // <-- AM (DISCORD)
+
         super.onPause()
     }
 
@@ -327,6 +339,11 @@ class ReaderActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.restartReadTimer()
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
+
         setMenuVisibility(viewModel.state.value.menuVisible)
     }
 
@@ -355,7 +372,7 @@ class ReaderActivity : BaseActivity() {
         super.finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_CLOSE,
+                OVERRIDE_TRANSITION_CLOSE,
                 R.anim.shared_axis_x_pop_enter,
                 R.anim.shared_axis_x_pop_exit,
             )
@@ -689,6 +706,11 @@ class ReaderActivity : BaseActivity() {
                             }.toImmutableList()
                         },
                         state.dateRelativeTime,
+                        // KMK -->
+                        onDownloadAction = { chapter, action ->
+                            viewModel.handleDownloadAction(chapter, action)
+                        },
+                        // KMK <--
                     )
                 }
                 // SY -->
@@ -1061,7 +1083,7 @@ class ReaderActivity : BaseActivity() {
         try {
             readingModeToast?.cancel()
             readingModeToast = toast(ReadingMode.fromPreference(mode).stringRes)
-        } catch (e: ArrayIndexOutOfBoundsException) {
+        } catch (_: ArrayIndexOutOfBoundsException) {
             logcat(LogPriority.ERROR) { "Unknown reading mode: $mode" }
         }
     }
@@ -1103,6 +1125,10 @@ class ReaderActivity : BaseActivity() {
                 assistUrl = url
             }
         }
+
+        // AM (DISCORD) -->
+        updateDiscordRPC(exitingReader = false)
+        // <-- AM (DISCORD)
     }
 
     /**
@@ -1520,6 +1546,48 @@ class ReaderActivity : BaseActivity() {
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
             val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
+        }
+    }
+
+    /**
+     * Updates the Discord Rich Presence (RPC) status based on the current reader activity.
+     *
+     * @param exitingReader A boolean flag indicating whether the user is exiting the reader.
+     * If true, the Discord RPC status is set to the last used screen.
+     * If false, the Discord RPC status is set to the current reader activity, displaying details such as the manga title, chapter number, and chapter title.
+     */
+    private fun updateDiscordRPC(exitingReader: Boolean) {
+        if (!connectionsPreferences.enableDiscordRPC().get()) return
+
+        DiscordRPCService.discordScope.launchIO {
+            try {
+                if (!exitingReader) {
+                    val manga = viewModel.manga ?: return@launchIO
+                    val chapter = viewModel.currentChapter ?: return@launchIO
+
+                    DiscordRPCService.setReaderActivity(
+                        context = this@ReaderActivity,
+                        ReaderData(
+                            incognitoMode = viewModel.incognitoMode,
+                            mangaId = manga.id,
+                            mangaTitle = manga.ogTitle,
+                            thumbnailUrl = manga.thumbnailUrl.takeIf { UrlUtils.isOnlineUrl(it) } ?: manga.ogThumbnailUrl,
+                            chapterNumber = if (connectionsPreferences.useChapterTitles().get()) {
+                                chapter.name
+                            } else {
+                                chapter.chapterNumber.toString()
+                            },
+                            startTimestamp = System.currentTimeMillis(),
+                        ),
+                    )
+                } else {
+                    with(DiscordRPCService) {
+                        setScreen(this@ReaderActivity)
+                    }
+                }
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR) { "Error updating Discord RPC: ${e.message}" }
+            }
         }
     }
 }

@@ -143,6 +143,7 @@ private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* 
         favoriteModifiedAt = this.favoriteModifiedAt,
         version = this.version,
         notes = this.notes,
+        initialized = this.initialized,
         // SY -->
     ).also { backupManga ->
         customMangaInfo?.let {
