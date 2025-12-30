@@ -50,6 +50,9 @@ class ShizukuInstaller(private val service: Service) : Installer(service) {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             shellInterface = null
+            // KMK -->
+            ready = false
+            // KMK <--
         }
     }
 
