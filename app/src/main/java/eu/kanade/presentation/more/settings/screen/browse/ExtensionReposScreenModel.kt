@@ -144,6 +144,12 @@ class ExtensionReposScreenModel(
             )
         }
     }
+
+    fun refreshExtensionList() {
+        screenModelScope.launchIO {
+            extensionManager.findAvailableExtensions()
+        }
+    }
     // KMK <--
 
     fun showDialog(dialog: RepoDialog) {
