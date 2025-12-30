@@ -129,7 +129,7 @@
     <string name="action_open_folder">Abrir diretório</string>
     <string name="pref_paged_disable_zoom_in">Desativar zoom in</string>
     <string name="updating">Atualizando</string>
-    <string name="pref_library_filter_categories_details">Resultados de categorias excluidas não aparecem mesmo caso estejam nas categorias incluídas.</string>
+    <string name="pref_library_filter_categories_details">Resultados de categorias excluídas não aparecem mesmo caso estejam nas categorias incluídas.</string>
     <string name="pref_show_empty_categories_search">Mostrar categorias vazias durante as pesquisas</string>
     <string name="downloaded_data">Arquivos baixados</string>
     <string name="chapters_from_database">Capítulos e histórico do banco de dados</string>
