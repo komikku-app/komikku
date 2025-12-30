@@ -128,11 +128,11 @@
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
     <string name="pref_top_align_cover">Alinear portada a la parte superior</string>
-    <string name="pref_top_align_cover_summary">Mostrar la portada alineada en la parte superior junto la información del manga</string>
+    <string name="pref_top_align_cover_summary">Mostrar la portada alineada en la parte superior junto a la información del manga</string>
     <string name="custom_theme_palette_casual">Casual</string>
     <string name="pref_library_filter_categories_details">Entradas en las categorías excluidas no se mostrarán incluso si están en las categorías incluidas.</string>
     <string name="updating">Actualizando</string>
     <string name="pref_show_empty_categories_search">Mostrar categorías vacías durante la búsqueda/filtrado</string>
-    <string name="pref_track_on_add_library">Abrir menú de seguimiento al añadir a biblioteca</string>
+    <string name="pref_track_on_add_library">Abrir menú de seguimiento al añadir a la biblioteca</string>
     <string name="downloaded_data">Datos descargados</string>
 </resources>
