@@ -113,21 +113,29 @@ class ShellInterface : IShellInterface.Stub() {
                 Long::class.java,
             ).invoke(session, "extension", 0L, apk.length) as ParcelFileDescriptor
             ).let { fd ->
-            val revocable = Class.forName("android.os.SystemProperties")
-                .getMethod("getBoolean", String::class.java, Boolean::class.java)
-                .invoke(null, "fw.revocable_fd", false) as Boolean
+            val outputStream = try {
+                val revocable = Class.forName("android.os.SystemProperties")
+                    .getMethod("getBoolean", String::class.java, Boolean::class.java)
+                    .invoke(null, "fw.revocable_fd", false) as Boolean
 
-            if (revocable) {
-                ParcelFileDescriptor.AutoCloseOutputStream(fd)
-            } else {
-                Class.forName($$"android.os.FileBridge$FileBridgeOutputStream")
-                    .getConstructor(ParcelFileDescriptor::class.java)
-                    .newInstance(fd) as OutputStream
+                if (revocable) {
+                    ParcelFileDescriptor.AutoCloseOutputStream(fd)
+                } else {
+                    Class.forName($$"android.os.FileBridge$FileBridgeOutputStream")
+                        .getConstructor(ParcelFileDescriptor::class.java)
+                        .newInstance(fd) as OutputStream
+                }
+                // KMK -->
+            } catch (e: Exception) {
+                fd.close()
+                throw e
+                // KMK <--
             }
-        }
-            .use { output ->
+
+            outputStream.use { output ->
                 apk.createInputStream().use { input -> input.copyTo(output) }
             }
+        }
 
         val statusIntent = PendingIntent.getBroadcast(
             context,
