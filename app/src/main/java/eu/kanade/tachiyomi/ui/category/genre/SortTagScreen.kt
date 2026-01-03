@@ -47,7 +47,7 @@ class SortTagScreen : Screen() {
             SortTagDialog.Create -> {
                 CategoryCreateDialog(
                     onDismissRequest = screenModel::dismissDialog,
-                    onCreate = { screenModel.createTag(it) },
+                    onCreate = { name, _ -> screenModel.createTag(name) },
                     categories = successState.tags,
                     title = stringResource(SYMR.strings.add_tag),
                     extraMessage = stringResource(SYMR.strings.action_add_tags_message),

@@ -1,0 +1,2 @@
+ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(_id);
+CREATE INDEX IF NOT EXISTS categories_parent_id_index ON categories(parent_id);
