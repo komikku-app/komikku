@@ -163,6 +163,7 @@
     <string name="action_webview_back">Back</string>
     <string name="action_webview_forward">Forward</string>
     <string name="action_webview_refresh">Refresh</string>
+    <string name="action_webview_close_tab">Close tab</string>
     <string name="action_start_downloading_now">Start downloading now</string>
     <string name="action_not_now">Not now</string>
     <string name="action_add_anyway">Add anyway</string>
@@ -522,6 +523,9 @@
     <string name="save_chapter_as_cbz">Save as CBZ archive</string>
     <string name="split_tall_images">Split tall images</string>
     <string name="split_tall_images_summary">Improves reader performance</string>
+    <string name="pref_download_concurrent_sources">Concurrent source downloads</string>
+    <string name="pref_download_concurrent_pages">Concurrent page downloads</string>
+    <string name="pref_download_concurrent_pages_summary">Pages downloaded simultaneously per source</string>
 
     <!-- Tracking section -->
     <string name="tracking_guide">Tracking guide</string>

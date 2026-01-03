@@ -3,7 +3,7 @@ aboutlib_version = "13.1.0"
 leakcanary = "2.14"
 moko = "0.25.1"
 okhttp_version = "5.3.0"
-shizuku_version = "13.1.0"
+shizuku_version = "13.1.5"
 sqldelight = "2.1.0"
 sqlite = "2.6.1"
 voyager = "1.1.0-beta03"
@@ -112,7 +112,7 @@ material3 = { group = "androidx.compose.material3", name = "material3", version.
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
-aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlib_version" }
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlib_version" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 moko = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
