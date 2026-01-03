@@ -92,7 +92,8 @@ class CategoryScreen : Screen() {
                             // Can't be: itself, a system category, a descendant of this category, or a subcategory
                             candidate.id == dialog.category.id ||
                                 candidate.isSystemCategory ||
-                                candidate.parentId != null || // Exclude subcategories (only show parent categories)
+                                candidate.parentId != null ||
+                                // Exclude subcategories (only show parent categories)
                                 isDescendantOf(candidate, dialog.category, successState.categories)
                         }
                         .toImmutableList(),
