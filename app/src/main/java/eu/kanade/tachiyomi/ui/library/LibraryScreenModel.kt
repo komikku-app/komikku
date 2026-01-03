@@ -1724,18 +1724,16 @@ class LibraryScreenModel(
         }
 
         // KMK -->
-        val displayedCategories:  List<Category> = groupedFavorites.keys.toList()
+        val displayedCategories: List<Category> = groupedFavorites.keys.toList()
 
         // Recursively get all subcategories for a given parent category
         private fun getAllSubcategories(parentId: Long, allCategories: List<Category>): List<Category> {
             val directChildren = allCategories.filter { it.parentId == parentId }
-            return directChildren + directChildren. flatMap { getAllSubcategories(it.id, allCategories) }
+            return directChildren + directChildren.flatMap { getAllSubcategories(it.id, allCategories) }
         }
         // KMK <--
 
-
-
-        fun getItemCountForCategory(category:  Category): Int? {
+        fun getItemCountForCategory(category: Category): Int? {
             if (!showMangaCount && searchQuery.isNullOrEmpty()) return null
 
             // Get this category + all its subcategories
