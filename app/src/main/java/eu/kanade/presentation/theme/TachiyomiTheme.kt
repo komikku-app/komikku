@@ -1,8 +1,6 @@
 package eu.kanade.presentation.theme
 
-import android.app.UiModeManager
 import android.content.Context
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -11,8 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.getSystemService
-import com.materialkolor.Contrast
 import com.materialkolor.DynamicMaterialTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
@@ -55,6 +51,8 @@ fun TachiyomiTheme(
     )
 }
 
+// KMK -->
+/** Theme based on Cover */
 @Composable
 fun TachiyomiTheme(
     seedColor: Color?,
@@ -63,10 +61,11 @@ fun TachiyomiTheme(
     typography: Typography = MaterialTheme.typography,
     content: @Composable () -> Unit,
 ) {
-    val uiPreferences = Injekt.get<UiPreferences>()
-    val context = LocalContext.current
-    val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
-    if (seedColor != null) {
+    if (seedColor == null) {
+        TachiyomiTheme(appTheme, amoled, content)
+    } else {
+        val uiPreferences = Injekt.get<UiPreferences>()
+        val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
         DynamicMaterialTheme(
             seedColor = seedColor,
             isAmoled = isAmoled,
@@ -74,20 +73,10 @@ fun TachiyomiTheme(
             typography = typography,
             animate = true,
             content = content,
-            contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                context.getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
-            } else {
-                Contrast.Default.value
-            },
-        )
-    } else {
-        BaseTachiyomiTheme(
-            appTheme = appTheme ?: uiPreferences.appTheme().get(),
-            isAmoled = isAmoled,
-            content = content,
         )
     }
 }
+// KMK <--
 
 @Composable
 fun TachiyomiPreviewTheme(
@@ -131,8 +120,7 @@ private fun getThemeColorScheme(
         AppTheme.CUSTOM -> {
             val uiPreferences = Injekt.get<UiPreferences>()
             CustomColorScheme(
-                context = context,
-                seed = uiPreferences.colorTheme().get(),
+                seed = Color(uiPreferences.colorTheme().get()),
                 style = uiPreferences.customThemeStyle().get(),
             )
         }
