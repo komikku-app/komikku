@@ -18,7 +18,25 @@ data class MALManga(
     val mediaType: String,
     @SerialName("start_date")
     val startDate: String?,
+    val authors: List<MALAuthorNode> = emptyList(),
 )
+
+@Serializable
+data class MALAuthorNode(
+    val node: MALAuthor,
+    val role: String,
+)
+
+@Serializable
+data class MALAuthor(
+    val id: Int,
+    @SerialName("first_name")
+    val firstName: String,
+    @SerialName("last_name")
+    val lastName: String,
+) {
+    fun getFullName(): String? = "$firstName $lastName".trim().ifBlank { null }
+}
 
 @Serializable
 data class MALMangaCovers(
@@ -33,19 +51,5 @@ data class MALMangaMetadata(
     val synopsis: String?,
     @SerialName("main_picture")
     val covers: MALMangaCovers,
-    val authors: List<MALAuthor>,
-)
-
-@Serializable
-data class MALAuthor(
-    val node: MALAuthorNode,
-    val role: String,
-)
-
-@Serializable
-data class MALAuthorNode(
-    @SerialName("first_name")
-    val firstName: String,
-    @SerialName("last_name")
-    val lastName: String,
+    val authors: List<MALAuthorNode>,
 )
