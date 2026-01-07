@@ -175,6 +175,7 @@ class MyAnimeListApi(
         }
     }
 
+    // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
             val url = "$BASE_API_URL/manga".toUri().buildUpon()
@@ -188,25 +189,29 @@ class MyAnimeListApi(
                 authClient.newCall(GET(url.toString()))
                     .awaitSuccess()
                     .parseAs<MALMangaMetadata>()
-                    .let {
+                    .let { metadata ->
                         TrackMangaMetadata(
-                            remoteId = it.id,
-                            title = it.title,
-                            thumbnailUrl = it.covers.large?.ifEmpty { null } ?: it.covers.medium,
-                            description = it.synopsis,
-                            authors = it.authors
-                                .filter { "Story" in it.role }
-                                .joinToString(separator = ", ") { "${it.node.firstName} ${it.node.lastName}".trim() }
+                            remoteId = metadata.id,
+                            title = metadata.title,
+                            thumbnailUrl = metadata.covers.large?.ifEmpty { null } ?: metadata.covers.medium,
+                            description = metadata.synopsis,
+                            artists = metadata.authors
+                                .filter { authorNode -> authorNode.role == "Art" }
+                                .mapNotNull { authorNode -> authorNode.node.getFullName() }
+                                .joinToString()
                                 .ifEmpty { null },
-                            artists = it.authors
-                                .filter { "Art" in it.role }
-                                .joinToString(separator = ", ") { "${it.node.firstName} ${it.node.lastName}".trim() }
+                            authors = metadata.authors
+                                // count all with "Story" or "Story & Art" as authors, like is done for library entries
+                                .filter { authorNode -> authorNode.role.contains("Story") }
+                                .mapNotNull { authorNode -> authorNode.node.getFullName() }
+                                .joinToString()
                                 .ifEmpty { null },
                         )
                     }
             }
         }
     }
+    // SY <--
 
     private suspend fun getListPage(offset: Int): MALSearchResult {
         return withIOContext {
@@ -252,6 +257,13 @@ class MyAnimeListApi(
             publishing_status = searchItem.status.replace("_", " ")
             publishing_type = searchItem.mediaType.replace("_", " ")
             start_date = searchItem.startDate ?: ""
+            artists = searchItem.authors
+                .filter { authorNode -> authorNode.role == "Art" }
+                .mapNotNull { authorNode -> authorNode.node.getFullName() }
+            authors = searchItem.authors
+                // count all with "Story" or "Story & Art" as authors, like is done for library entries
+                .filter { authorNode -> authorNode.role.contains("Story") }
+                .mapNotNull { authorNode -> authorNode.node.getFullName() }
         }
     }
 
@@ -279,7 +291,7 @@ class MyAnimeListApi(
         private const val BASE_API_URL = "https://api.myanimelist.net/v2"
 
         private const val SEARCH_FIELDS =
-            "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date"
+            "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date,authors{first_name,last_name}"
 
         private const val LIST_PAGINATION_AMOUNT = 250
 
