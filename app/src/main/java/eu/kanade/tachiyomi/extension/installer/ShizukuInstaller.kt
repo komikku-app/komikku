@@ -137,10 +137,16 @@ class ShizukuInstaller(private val service: Service) : Installer(service) {
     override fun onDestroy() {
         Shizuku.removeBinderDeadListener(shizukuDeadListener)
         Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
-        Shizuku.unbindUserService(shizukuArgs, connection, true)
+        if (Shizuku.pingBinder()) {
+            try {
+                Shizuku.unbindUserService(shizukuArgs, connection, true)
+            } catch (e: Exception) {
+                logcat(LogPriority.WARN, e) { "Failed to unbind shizuku service" }
+            }
+        }
+        // KMK -->
         try {
             service.unregisterReceiver(receiver)
-            // KMK -->
         } catch (e: IllegalArgumentException) {
             // Receiver was not registered, ignore but log for debugging
             logcat(LogPriority.WARN, e) { "Receiver was not registered when attempting to unregister" }
