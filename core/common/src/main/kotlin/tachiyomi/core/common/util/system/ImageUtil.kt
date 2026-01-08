@@ -205,6 +205,7 @@ object ImageUtil {
         RIGHT,
         LEFT,
     }
+
     // SY -->
     /**
      * Split the image into left and right parts, then merge them into a

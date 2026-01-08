@@ -34,7 +34,6 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
-import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -624,7 +623,7 @@ class ReaderViewModel @JvmOverloads constructor(
             return
         }
 
-        /**
+        /*
          * This code is likely deprecated since once `chapter.pageLoader` is initialized with [HttpPageLoader],
          * it would set `chapter.state` to `Loading` or `Loaded` and return early already.
          */

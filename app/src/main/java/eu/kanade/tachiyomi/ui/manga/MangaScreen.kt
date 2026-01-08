@@ -266,8 +266,7 @@ class MangaScreen(
 
         val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
         val isConfigurableSource = successState.source.anyIs<ConfigurableSource>() ||
-            successState.source.isEhBasedSource() &&
-            isHentaiEnabled
+            (successState.source.isEhBasedSource() && isHentaiEnabled)
         // KMK <--
 
         MangaScreen(
@@ -739,8 +738,7 @@ class MangaScreen(
         // KMK -->
         navigator.popUntil { screen ->
             screen is HomeScreen ||
-                !library &&
-                (screen is BrowseSourceScreen || screen is SourceFeedScreen)
+                (!library && (screen is BrowseSourceScreen || screen is SourceFeedScreen))
         }
         // KMK <--
 

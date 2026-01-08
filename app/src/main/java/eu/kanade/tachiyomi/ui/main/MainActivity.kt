@@ -414,10 +414,8 @@ class MainActivity : BaseActivity() {
             var showChangelog by remember {
                 mutableStateOf(
                     // KMK -->
-                    isReleaseBuildType &&
-                        didMigration ||
-                        isPreviewBuildType &&
-                        previewCurrentVersion > previewLastVersion.get(),
+                    (isReleaseBuildType && didMigration) ||
+                        (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
                     // KMK <--
                 )
             }

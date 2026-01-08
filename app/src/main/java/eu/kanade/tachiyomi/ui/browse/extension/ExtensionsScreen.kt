@@ -13,7 +13,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import tachiyomi.i18n.MR
@@ -58,7 +57,7 @@ class ExtensionsScreen(private val searchSource: String? = null) : Screen() {
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
 
-            /**
+            /*
              * This will redo the searching for [searchSource] every times the screen is launched, for example when
              * back from the [ExtensionFilterScreen] or from the [ExtensionReposScreen].
              * Not really desired but let's accept it.
