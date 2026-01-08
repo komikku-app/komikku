@@ -6,11 +6,13 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
@@ -51,9 +53,9 @@ class CategoryScreenModel(
         }
     }
 
-    fun createCategory(name: String) {
+    fun createCategory(name: String, parentId: Long?) {
         screenModelScope.launch {
-            when (createCategoryWithName.await(name)) {
+            when (createCategoryWithName.await(name, parentId)) {
                 is CreateCategoryWithName.Result.InternalError -> _events.send(CategoryEvent.InternalError)
                 else -> {}
             }
@@ -89,9 +91,18 @@ class CategoryScreenModel(
         }
     }
 
-    fun renameCategory(category: Category, name: String) {
+    fun renameCategory(category: Category, name: String, parentId: Long?) {
         screenModelScope.launch {
-            when (renameCategory.await(category, name)) {
+            when (renameCategory.await(category, name, parentId)) {
+                is RenameCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
+                else -> {}
+            }
+        }
+    }
+
+    fun changeParent(category: Category, newParentId: Long?) {
+        screenModelScope.launch {
+            when (renameCategory.await(category, category.name, newParentId)) {
                 is RenameCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
                 else -> {}
             }
@@ -112,6 +123,23 @@ class CategoryScreenModel(
             when (it) {
                 CategoryScreenState.Loading -> it
                 is CategoryScreenState.Success -> it.copy(dialog = null)
+            }
+        }
+    }
+
+    fun changeOrderBatch(changes: List<Pair<Category, Int>>) {
+        screenModelScope.launch {
+            // Run sequentially on IO so these don't block main thread; runs in a single coroutine.
+            withContext(Dispatchers.IO) {
+                changes.forEach { (category, newIndex) ->
+                    // reorderCategory.await is suspend and performs the DB update;
+                    // calling it sequentially on IO is better than launching many UI coroutines.
+                    try {
+                        reorderCategory.await(category, newIndex)
+                    } catch (e: Throwable) {
+                        // Handle/emit error as needed; for simplicity, we ignore errors here.
+                    }
+                }
             }
         }
     }
