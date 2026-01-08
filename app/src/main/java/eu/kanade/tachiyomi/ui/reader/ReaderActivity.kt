@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.UiModeManager
 import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -59,7 +58,6 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
-import com.materialkolor.Contrast
 import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
@@ -769,11 +767,6 @@ class ReaderActivity : BaseActivity() {
                 isDark = isNightMode(),
                 isAmoled = themeDarkAmoled,
                 style = themeCoverBasedStyle,
-                contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
-                } else {
-                    Contrast.Default.value
-                },
             )
         }
         // KMK <--
