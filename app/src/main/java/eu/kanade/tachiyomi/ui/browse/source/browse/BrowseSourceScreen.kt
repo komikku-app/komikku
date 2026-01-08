@@ -181,8 +181,7 @@ data class BrowseSourceScreen(
 
         val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
         val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
-            screenModel.source.isEhBasedSource() &&
-            isHentaiEnabled
+            (screenModel.source.isEhBasedSource() && isHentaiEnabled)
         // KMK <--
 
         Scaffold(

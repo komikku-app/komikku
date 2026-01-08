@@ -71,10 +71,14 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
                 val restrictions = preferences.appShouldAutoUpdate().get()
-                if ((AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) &&
-                    !context.isConnectedToWifi() ||
-                    (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) &&
-                    context.connectivityManager.isActiveNetworkMetered
+                if ((
+                        AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions &&
+                            !context.isConnectedToWifi()
+                        ) ||
+                    (
+                        AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions &&
+                            context.connectivityManager.isActiveNetworkMetered
+                        )
                 ) {
                     return Result.retry()
                 }

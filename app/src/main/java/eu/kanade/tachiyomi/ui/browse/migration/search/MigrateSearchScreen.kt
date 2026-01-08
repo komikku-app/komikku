@@ -56,17 +56,16 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
                     bulkFavoriteScreenModel.toggleSelection(manga)
-                } else
+                } else {
                     // KMK <--
-                    {
-                        // SY -->
-                        navigator.items
-                            .filterIsInstance<MigrationListScreen>()
-                            .last()
-                            .newSelectedItem = mangaId to manga.id
-                        navigator.popUntil { it is MigrationListScreen }
-                        // SY <--
-                    }
+                    // SY -->
+                    navigator.items
+                        .filterIsInstance<MigrationListScreen>()
+                        .last()
+                        .newSelectedItem = mangaId to manga.id
+                    navigator.popUntil { it is MigrationListScreen }
+                    // SY <--
+                }
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
             // KMK -->
