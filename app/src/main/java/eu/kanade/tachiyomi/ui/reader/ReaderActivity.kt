@@ -22,7 +22,6 @@ import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,7 +53,6 @@ import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.transition.doOnEnd
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
@@ -107,7 +105,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toShareIntent
@@ -127,7 +124,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -221,7 +217,7 @@ class ReaderActivity : BaseActivity() {
             overridePendingTransition(R.anim.shared_axis_x_push_enter, R.anim.shared_axis_x_push_exit)
         }
 
-        enableEdgeToEdge(navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
+        enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
@@ -330,7 +326,6 @@ class ReaderActivity : BaseActivity() {
             // KMK <--
             val state by viewModel.state.collectAsState()
             val showPageNumber by readerPreferences.showPageNumber().collectAsState()
-            val isFullscreen by readerPreferences.fullscreen().collectAsState()
             val settingsScreenModel = remember {
                 ReaderSettingsScreenModel(
                     readerState = viewModel.state,
@@ -348,7 +343,7 @@ class ReaderActivity : BaseActivity() {
                         totalPages = state.totalPages,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .then(if (isFullscreen) Modifier else Modifier.navigationBarsPadding()),
+                            .navigationBarsPadding(),
                     )
                 }
 
@@ -968,7 +963,7 @@ class ReaderActivity : BaseActivity() {
             binding.viewerContainer.removeAllViews()
         }
         viewModel.onViewerLoaded(newViewer)
-        updateViewerInset(readerPreferences.fullscreen().get())
+        updateViewerInset(readerPreferences.fullscreen().get(), readerPreferences.drawUnderCutout().get())
         binding.viewerContainer.addView(newViewer.getView())
 
         // SY -->
@@ -1294,22 +1289,29 @@ class ReaderActivity : BaseActivity() {
     /**
      * Updates viewer inset depending on fullscreen reader preferences.
      */
-    private fun updateViewerInset(fullscreen: Boolean) {
-        val view = viewModel.state.value.viewer?.getView() ?: return
+    private fun updateViewerInset(fullscreen: Boolean, drawUnderCutout: Boolean) {
+        if (!::binding.isInitialized) return
+        val view = binding.viewerContainer
 
-        view.applyInsetsPadding(ViewCompat.getRootWindowInsets(view), fullscreen)
+        view.applyInsetsPadding(ViewCompat.getRootWindowInsets(view), fullscreen, drawUnderCutout)
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, windowInsets ->
-            view.applyInsetsPadding(windowInsets, fullscreen)
+            view.applyInsetsPadding(windowInsets, fullscreen, drawUnderCutout)
             windowInsets
         }
     }
 
-    private fun View.applyInsetsPadding(windowInsets: WindowInsetsCompat?, fullscreen: Boolean) {
-        val insets = if (!fullscreen) {
-            windowInsets?.getInsets(WindowInsetsCompat.Type.systemBars()) ?: Insets.NONE
-        } else {
-            Insets.NONE
+    private fun View.applyInsetsPadding(
+        windowInsets: WindowInsetsCompat?,
+        fullscreen: Boolean,
+        drawUnderCutout: Boolean,
+    ) {
+        val insets = when {
+            !fullscreen -> windowInsets?.getInsets(WindowInsetsCompat.Type.systemBars())
+            !drawUnderCutout -> windowInsets?.getInsets(WindowInsetsCompat.Type.displayCutout())
+            else -> null
         }
+            ?: Insets.NONE
+
         setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 
@@ -1365,10 +1367,6 @@ class ReaderActivity : BaseActivity() {
                 .onEach { setDisplayProfile(it) }
                 .launchIn(lifecycleScope)
 
-            readerPreferences.cutoutShort().changes()
-                .onEach(::setCutoutShort)
-                .launchIn(lifecycleScope)
-
             readerPreferences.keepScreenOn().changes()
                 .onEach(::setKeepScreenOn)
                 .launchIn(lifecycleScope)
@@ -1377,14 +1375,21 @@ class ReaderActivity : BaseActivity() {
                 .onEach(::setCustomBrightness)
                 .launchIn(lifecycleScope)
 
-            merge(readerPreferences.grayscale().changes(), readerPreferences.invertedColors().changes())
-                .onEach { setLayerPaint(readerPreferences.grayscale().get(), readerPreferences.invertedColors().get()) }
+            combine(
+                readerPreferences.grayscale().changes(),
+                readerPreferences.invertedColors().changes(),
+            ) { grayscale, invertedColors -> grayscale to invertedColors }
+                .onEach { (grayscale, invertedColors) ->
+                    setLayerPaint(grayscale, invertedColors)
+                }
                 .launchIn(lifecycleScope)
 
-            readerPreferences.fullscreen().changes()
-                .onEach {
-                    WindowCompat.setDecorFitsSystemWindows(window, !it)
-                    updateViewerInset(it)
+            combine(
+                readerPreferences.fullscreen().changes(),
+                readerPreferences.drawUnderCutout().changes(),
+            ) { fullscreen, drawUnderCutout -> fullscreen to drawUnderCutout }
+                .onEach { (fullscreen, drawUnderCutout) ->
+                    updateViewerInset(fullscreen, drawUnderCutout)
                 }
                 .launchIn(lifecycleScope)
 
@@ -1448,16 +1453,6 @@ class ReaderActivity : BaseActivity() {
                 val data = outputStream.toByteArray()
                 SubsamplingScaleImageView.setDisplayProfile(data)
                 TachiyomiImageDecoder.displayProfile = data
-            }
-        }
-
-        private fun setCutoutShort(enabled: Boolean) {
-            if (!window.decorView.hasDisplayCutout()) return
-
-            @SuppressLint("NewApi")
-            window.attributes.layoutInDisplayCutoutMode = when (enabled) {
-                true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                false -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
             }
         }
 
