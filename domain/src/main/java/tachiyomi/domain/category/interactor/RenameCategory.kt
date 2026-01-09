@@ -11,10 +11,11 @@ class RenameCategory(
     private val categoryRepository: CategoryRepository,
 ) {
 
-    suspend fun await(categoryId: Long, name: String) = withNonCancellableContext {
+    suspend fun await(categoryId: Long, name: String, parentId: Long? = null) = withNonCancellableContext {
         val update = CategoryUpdate(
             id = categoryId,
             name = name,
+            parentId = parentId,
         )
 
         try {
@@ -26,7 +27,8 @@ class RenameCategory(
         }
     }
 
-    suspend fun await(category: Category, name: String) = await(category.id, name)
+    suspend fun await(category: Category, name: String, parentId: Long? = category.parentId) =
+        await(category.id, name, parentId)
 
     sealed interface Result {
         data object Success : Result
