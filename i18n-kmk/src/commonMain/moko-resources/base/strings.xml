@@ -35,6 +35,8 @@
     <string name="scale_type_20_9">20:9</string>
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
+    <string name="pref_predictive_preloading">Predictive preloading</string>
+    <string name="pref_predictive_preloading_summary">Preload the next chapter while reading to make transitions instantaneous</string>
 
     <!-- Preferences -->
       <!-- Appearance section -->
@@ -94,6 +96,10 @@
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
     <string name="pref_show_empty_categories_search">Show empty categories during search/filtering</string>
+    <string name="pref_library_update_cache_skip">Disable caching for library updates</string>
+    <string name="pref_library_update_cache_skip_summary">Force network requests during global updates</string>
+    <string name="pref_library_update_parallel_slots">Parallel update slots</string>
+    <string name="pref_library_update_parallel_slots_summary">Number of updates to perform at the same time</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
@@ -123,6 +129,10 @@
     <string name="preload_library_cover_color">Preload library's cover color</string>
     <string name="auto_update_app">Auto-update app</string>
     <string name="auto_update_app_disable_auto_download">Don't auto download update</string>
+    <string name="pref_ignore_rate_limits">Ignore extension rate limits</string>
+    <string name="pref_ignore_rate_limits_summary">Makes page loading, downloading, and browsing faster</string>
+    <string name="pref_max_concurrent_requests">Maximum concurrent requests</string>
+    <string name="pref_max_concurrent_requests_summary">Significantly faster updates and downloads (may cause rate-limiting)</string>
     <!-- Onboarding section -->
     <string name="onboarding_permission_external_storage">Access media files permission</string>
     <string name="onboarding_permission_external_storage_description">Allow using custom covers in entry's Edit Info</string>

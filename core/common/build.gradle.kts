@@ -53,6 +53,9 @@ dependencies {
     // JavaScript engine
     implementation(libs.bundles.js.engine)
 
+    // Dependency injection
+    implementation(libs.injekt)
+
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 

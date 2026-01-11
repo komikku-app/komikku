@@ -263,6 +263,12 @@ class LibraryPreferences(
 
     // SY <--
 
+    // KMK -->
+    fun libraryUpdateCacheSkip() = preferenceStore.getBoolean("library_update_cache_skip", false)
+
+    fun libraryUpdateParallelSlots() = preferenceStore.getInt("library_update_parallel_slots", 1)
+    // KMK <--
+
     companion object {
         const val DEVICE_ONLY_ON_WIFI = "wifi"
         const val DEVICE_NETWORK_NOT_METERED = "network_not_metered"

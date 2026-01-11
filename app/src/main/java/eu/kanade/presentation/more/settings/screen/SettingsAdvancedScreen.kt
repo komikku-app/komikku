@@ -264,6 +264,9 @@ object SettingsAdvancedScreen : SearchableSettings {
         val userAgentPref = networkPreferences.defaultUserAgent()
         val userAgent by userAgentPref.collectAsState()
 
+        val maxConcurrentRequestsPref = networkPreferences.maxConcurrentRequests()
+        val maxConcurrentRequests by maxConcurrentRequestsPref.collectAsState()
+
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_network),
             preferenceItems = persistentListOf(
@@ -342,6 +345,22 @@ object SettingsAdvancedScreen : SearchableSettings {
                         context.toast(MR.strings.requires_app_restart)
                     },
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = networkPreferences.ignoreRateLimits(),
+                    title = stringResource(KMR.strings.pref_ignore_rate_limits),
+                    subtitle = stringResource(KMR.strings.pref_ignore_rate_limits_summary),
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = maxConcurrentRequests,
+                    title = stringResource(KMR.strings.pref_max_concurrent_requests),
+                    subtitle = stringResource(KMR.strings.pref_max_concurrent_requests_summary),
+                    valueRange = 1..256,
+                    valueString = maxConcurrentRequests.toString(),
+                    onValueChanged = {
+                        maxConcurrentRequestsPref.set(it)
+                        context.toast(MR.strings.requires_app_restart)
+                    },
+                ),
             ),
         )
     }
@@ -355,6 +374,9 @@ object SettingsAdvancedScreen : SearchableSettings {
         // KMK -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         // KMK <--
+
+        val parallelSlotsPref = libraryPreferences.libraryUpdateParallelSlots()
+        val parallelSlots by parallelSlotsPref.collectAsState()
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_library),
@@ -390,6 +412,21 @@ object SettingsAdvancedScreen : SearchableSettings {
                     preference = libraryPreferences.updateMangaTitles(),
                     title = stringResource(MR.strings.pref_update_library_manga_titles),
                     subtitle = stringResource(MR.strings.pref_update_library_manga_titles_summary),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.libraryUpdateCacheSkip(),
+                    title = stringResource(KMR.strings.pref_library_update_cache_skip),
+                    subtitle = stringResource(KMR.strings.pref_library_update_cache_skip_summary),
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = parallelSlots,
+                    title = stringResource(KMR.strings.pref_library_update_parallel_slots),
+                    subtitle = stringResource(KMR.strings.pref_library_update_parallel_slots_summary),
+                    valueRange = 1..10,
+                    valueString = parallelSlots.toString(),
+                    onValueChanged = {
+                        parallelSlotsPref.set(it)
+                    },
                 ),
             ),
         )

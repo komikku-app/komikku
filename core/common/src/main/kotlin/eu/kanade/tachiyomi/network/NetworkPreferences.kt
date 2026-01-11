@@ -22,4 +22,12 @@ class NetworkPreferences(
             "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36",
         )
     }
+
+    fun ignoreRateLimits(): Preference<Boolean> {
+        return preferenceStore.getBoolean("ignore_rate_limits", false)
+    }
+
+    fun maxConcurrentRequests(): Preference<Int> {
+        return preferenceStore.getInt("max_concurrent_requests", 64)
+    }
 }
