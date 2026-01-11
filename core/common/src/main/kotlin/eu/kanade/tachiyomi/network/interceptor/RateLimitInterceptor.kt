@@ -93,7 +93,7 @@ internal class RateLimitInterceptor(
         if (response.networkResponse == null) {
             lock.withLock {
                 timestamps.removeFirstOccurrence(timestamp)
-                condition.signalAll()
+                condition.signal()
             }
         }
 
