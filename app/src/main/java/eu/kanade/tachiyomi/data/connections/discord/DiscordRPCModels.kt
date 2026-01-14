@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonElement
 const val RICH_PRESENCE_TAG = "discord_rpc"
 
 // Constant for application id
-internal const val RICH_PRESENCE_APPLICATION_ID = "1365208874440986685"
+internal const val RICH_PRESENCE_APPLICATION_ID = "1424627741256585271"
 
 val DOWNLOAD_BUTTON_LABEL_RES = R.string.discord_download_button
 const val DOWNLOAD_BUTTON_URL = "https://komikku-app.github.io/download/"
@@ -197,8 +197,8 @@ enum class DiscordScreen(
 }
 
 // Constants for standard Rich Presence image urls
-private const val KOMIKKU_IMAGE_URL = "emojis/1401719615536500916.webp?quality=lossless"
-private const val KOMIKKU_PREVIEW_IMAGE_URL = "emojis/1401732831314575401.webp?quality=lossless"
+private const val KOMIKKU_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
+private const val KOMIKKU_PREVIEW_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
 
 private val KOMIKKU_IMAGE = if (isPreviewBuildType) KOMIKKU_PREVIEW_IMAGE_URL else KOMIKKU_IMAGE_URL
 private const val LIBRARY_IMAGE_URL = "emojis/1365262809050644591.webp?quality=lossless"

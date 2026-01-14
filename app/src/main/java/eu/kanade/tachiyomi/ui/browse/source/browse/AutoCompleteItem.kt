@@ -190,7 +190,7 @@ fun AutoCompleteTextField(
         if (value.text.length > 2 && filteredValues.isNotEmpty()) {
             ExposedDropdownMenu(
                 modifier = Modifier
-                    .exposedDropdownSize(matchTextFieldWidth = true),
+                    .exposedDropdownSize(matchAnchorWidth = true),
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
             ) {

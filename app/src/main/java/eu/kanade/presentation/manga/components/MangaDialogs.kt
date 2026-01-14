@@ -70,7 +70,6 @@ fun DeleteChaptersDialog(
 // KMK -->
 @Composable
 fun ClearMangaDialog(
-    isMergedSource: Boolean,
     onDismissRequest: () -> Unit,
     onConfirm: (Boolean, Boolean) -> Unit,
 ) {
@@ -112,7 +111,6 @@ fun ClearMangaDialog(
                     LabeledCheckbox(
                         label = stringResource(state.value),
                         checked = state.isChecked,
-                        enabled = index != 0 || !isMergedSource,
                         onCheckedChange = {
                             val mutableList = list.toMutableList()
                             mutableList[index] = state.next() as CheckboxState.State<StringResource>

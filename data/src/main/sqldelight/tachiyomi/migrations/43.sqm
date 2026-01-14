@@ -1,168 +1,5 @@
--- Update views to exclude deleted chapters
-
-DROP VIEW IF EXISTS libraryView;
-
-CREATE VIEW libraryView AS
-SELECT
-    M.*,
-    coalesce(C.total, 0) AS totalCount,
-    coalesce(C.readCount, 0) AS readCount,
-    coalesce(C.latestUpload, 0) AS latestUpload,
-    coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
-    coalesce(C.lastRead, 0) AS lastRead,
-    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
-    -- KMK -->
-    coalesce(C.bookmarkReadCount, 0) AS bookmarkedReadCount,
-    -- KMK <--
-    coalesce(MC.categories, '0') AS categories
-FROM mangas M
-LEFT JOIN (
-    SELECT
-        chapters.manga_id,
-        count(*) AS total,
-        sum(read) AS readCount,
-        coalesce(max(chapters.date_upload), 0) AS latestUpload,
-        coalesce(max(history.last_read), 0) AS lastRead,
-        coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
-        sum(chapters.bookmark) AS bookmarkCount,
-        -- KMK -->
-        sum(CASE WHEN chapters.bookmark = 1 AND chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
-        -- KMK <--
-        excluded_scanlators.scanlator AS ex_scanlator
-    FROM chapters
-    LEFT JOIN excluded_scanlators
-    ON chapters.manga_id = excluded_scanlators.manga_id
-    AND chapters.scanlator = excluded_scanlators.scanlator
-    LEFT JOIN history
-    ON chapters._id = history.chapter_id
-    WHERE ex_scanlator IS NULL
-    AND chapters.deleted = 0
-    GROUP BY chapters.manga_id
-) AS C
-ON M._id = C.manga_id
-LEFT JOIN (
-    SELECT manga_id, group_concat(category_id) AS categories
-    FROM mangas_categories
-    GROUP BY manga_id
-) AS MC
-ON MC.manga_id = M._id
-WHERE M.source <> 6969
-UNION
-SELECT
-    M.*,
-    coalesce(C.total, 0) AS totalCount,
-    coalesce(C.readCount, 0) AS readCount,
-    coalesce(C.latestUpload, 0) AS latestUpload,
-    coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
-    coalesce(C.lastRead, 0) AS lastRead,
-    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
-    -- KMK -->
-    coalesce(C.bookmarkReadCount, 0) AS bookmarkedReadCount,
-    -- KMK <--
-    coalesce(MC.categories, '0') AS categories
-FROM mangas M
-LEFT JOIN (
-    SELECT merged.manga_id,merged.merge_id
-    FROM merged
-    GROUP BY merged.merge_id
-) AS ME
-ON ME.merge_id = M._id
-LEFT JOIN(
-    SELECT
-        ME.merge_id,
-        count(*) AS total,
-        sum(read) AS readCount,
-        coalesce(max(chapters.date_upload), 0) AS latestUpload,
-        coalesce(max(history.last_read), 0) AS lastRead,
-        coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
-        sum(chapters.bookmark) AS bookmarkCount,
-        -- KMK -->
-        sum(CASE WHEN chapters.bookmark = 1 AND chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
-        -- KMK <--
-        excluded_scanlators.scanlator AS ex_scanlator
-    FROM chapters
-    LEFT JOIN excluded_scanlators
-    ON chapters.manga_id = excluded_scanlators.manga_id
-    AND chapters.scanlator = excluded_scanlators.scanlator
-    LEFT JOIN history
-    ON chapters._id = history.chapter_id
-    LEFT JOIN merged ME
-    ON ME.manga_id = chapters.manga_id
-    WHERE ex_scanlator IS NULL
-    AND chapters.deleted = 0
-    GROUP BY ME.merge_id
-) AS C
-ON M._id = C.merge_id
-LEFT JOIN (
-    SELECT manga_id, group_concat(category_id) AS categories
-    FROM mangas_categories
-    GROUP BY manga_id
-) AS MC
-ON MC.manga_id = M._id
-WHERE M.source = 6969;
-
-DROP VIEW IF EXISTS historyView;
-
-CREATE VIEW historyView AS
-SELECT
-    history._id AS id,
-    mangas._id AS mangaId,
-    chapters._id AS chapterId,
-    mangas.title,
-    mangas.thumbnail_url AS thumbnailUrl,
-    mangas.source,
-    mangas.favorite,
-    mangas.cover_last_modified,
-    chapters.chapter_number AS chapterNumber,
-    -- KMK -->
-    mangas.chapter_flags AS chapterFlags,
-    chapters.read AS read,
-    chapters.last_page_read AS lastPageRead,
-    coalesce(C.total, 0) AS totalCount,
-    coalesce(C.readCount, 0) AS readCount,
-    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
-    coalesce(C.bookmarkReadCount, 0) AS bookmarkReadCount,
-    -- KMK <--
-    history.last_read AS readAt,
-    history.time_read AS readDuration,
-    max_last_read.last_read AS maxReadAt,
-    max_last_read.chapter_id AS maxReadAtChapterId
-FROM mangas
-JOIN chapters
-ON mangas._id = chapters.manga_id
-JOIN history
-ON chapters._id = history.chapter_id
-JOIN (
-    SELECT chapters.manga_id,chapters._id AS chapter_id, MAX(history.last_read) AS last_read
-    FROM chapters JOIN history
-    ON chapters._id = history.chapter_id
-    WHERE chapters.deleted = 0
-    GROUP BY chapters.manga_id
-) AS max_last_read
-ON chapters.manga_id = max_last_read.manga_id
--- KMK -->
-LEFT JOIN(
-    SELECT
-        chapters.manga_id,
-        count(*) AS total,
-        sum(read) AS readCount,
-        sum(bookmark) AS bookmarkCount,
-        sum(CASE WHEN bookmark = 1 AND read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
-        excluded_scanlators.scanlator AS ex_scanlator
-    FROM chapters
-    LEFT JOIN excluded_scanlators
-    ON chapters.manga_id = excluded_scanlators.manga_id
-    AND chapters.scanlator = excluded_scanlators.scanlator
-    WHERE ex_scanlator IS NULL
-    AND chapters.deleted = 0
-    GROUP BY chapters.manga_id
-) AS C
-ON mangas._id = C.manga_id
-WHERE chapters.deleted = 0;
--- KMK <--
-
+-- Add chapter urls to updates view
 DROP VIEW IF EXISTS updatesView;
-
 CREATE VIEW updatesView AS
 SELECT
     mangas._id AS mangaId,
@@ -170,6 +7,7 @@ SELECT
     chapters._id AS chapterId,
     chapters.name AS chapterName,
     chapters.scanlator,
+    chapters.url AS chapterUrl,
     chapters.read,
     chapters.bookmark,
     chapters.last_page_read,
@@ -186,7 +24,6 @@ ON mangas._id = excluded_scanlators.manga_id
 AND chapters.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source <> 6969
 AND excluded_scanlators.scanlator IS NULL
-AND chapters.deleted = 0
 AND date_fetch > date_added
 UNION
 SELECT
@@ -195,6 +32,7 @@ SELECT
     chapters._id AS chapterId,
     chapters.name AS chapterName,
     chapters.scanlator,
+    chapters.url AS chapterUrl,
     chapters.read,
     chapters.bookmark,
     chapters.last_page_read,
@@ -218,5 +56,5 @@ ON mangas._id = excluded_scanlators.manga_id
 AND chapters.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source = 6969
 AND excluded_scanlators.scanlator IS NULL
-AND chapters.deleted = 0
-AND date_fetch > date_added;
+AND date_fetch > date_added
+ORDER BY datefetch DESC;

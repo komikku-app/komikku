@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.graphics.toColorInt
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -108,40 +109,40 @@ object SourceTagsUtil {
         MISC_COLOR("#f36594"),
         ;
 
-        constructor(color: String) : this(Color.parseColor(color))
+        constructor(color: String) : this(color.toColorInt())
     }
 
     @ColorInt fun genreTextColor(genre: GenreColor): Int {
         return when (genre) {
-            GenreColor.DOUJINSHI_COLOR -> Color.parseColor("#000000")
-            GenreColor.MANGA_COLOR -> Color.parseColor("#000000")
-            GenreColor.ARTIST_CG_COLOR -> Color.parseColor("#000000")
-            GenreColor.GAME_CG_COLOR -> Color.parseColor("#000000")
-            GenreColor.WESTERN_COLOR -> Color.parseColor("#000000")
-            GenreColor.NON_H_COLOR -> Color.parseColor("#000000")
-            GenreColor.IMAGE_SET_COLOR -> Color.parseColor("#FFFFFF")
-            GenreColor.COSPLAY_COLOR -> Color.parseColor("#FFFFFF")
-            GenreColor.ASIAN_PORN_COLOR -> Color.parseColor("#000000")
-            GenreColor.MISC_COLOR -> Color.parseColor("#000000")
+            GenreColor.DOUJINSHI_COLOR -> Color.BLACK
+            GenreColor.MANGA_COLOR -> Color.BLACK
+            GenreColor.ARTIST_CG_COLOR -> Color.BLACK
+            GenreColor.GAME_CG_COLOR -> Color.BLACK
+            GenreColor.WESTERN_COLOR -> Color.BLACK
+            GenreColor.NON_H_COLOR -> Color.BLACK
+            GenreColor.IMAGE_SET_COLOR -> Color.WHITE
+            GenreColor.COSPLAY_COLOR -> Color.WHITE
+            GenreColor.ASIAN_PORN_COLOR -> Color.BLACK
+            GenreColor.MISC_COLOR -> Color.BLACK
         }
     }
 
     fun getLocaleSourceUtil(language: String?) = when (language) {
-        "english", "eng" -> Locale("en")
-        "japanese" -> Locale("ja")
-        "chinese" -> Locale("zh")
-        "spanish" -> Locale("es")
-        "korean" -> Locale("ko")
-        "russian" -> Locale("ru")
-        "french" -> Locale("fr")
-        "portuguese" -> Locale("pt")
-        "thai" -> Locale("th")
-        "german" -> Locale("de")
-        "italian" -> Locale("it")
-        "vietnamese" -> Locale("vi")
-        "polish" -> Locale("pl")
-        "hungarian" -> Locale("hu")
-        "dutch" -> Locale("nl")
+        "english", "eng" -> Locale.forLanguageTag("en")
+        "japanese" -> Locale.forLanguageTag("ja")
+        "chinese" -> Locale.forLanguageTag("zh")
+        "spanish" -> Locale.forLanguageTag("es")
+        "korean" -> Locale.forLanguageTag("ko")
+        "russian" -> Locale.forLanguageTag("ru")
+        "french" -> Locale.forLanguageTag("fr")
+        "portuguese" -> Locale.forLanguageTag("pt")
+        "thai" -> Locale.forLanguageTag("th")
+        "german" -> Locale.forLanguageTag("de")
+        "italian" -> Locale.forLanguageTag("it")
+        "vietnamese" -> Locale.forLanguageTag("vi")
+        "polish" -> Locale.forLanguageTag("pl")
+        "hungarian" -> Locale.forLanguageTag("hu")
+        "dutch" -> Locale.forLanguageTag("nl")
         else -> null
     }
 
@@ -154,21 +155,21 @@ object SourceTagsUtil {
 @Composable
 private fun LanguageFlagPreview() {
     val locales = listOf(
-        Locale("en"),
-        Locale("ja"),
-        Locale("zh"),
-        Locale("es"),
-        Locale("ko"),
-        Locale("ru"),
-        Locale("fr"),
-        Locale("pt"),
-        Locale("th"),
-        Locale("de"),
-        Locale("it"),
-        Locale("vi"),
-        Locale("pl"),
-        Locale("hu"),
-        Locale("nl"),
+        Locale.forLanguageTag("en"),
+        Locale.forLanguageTag("ja"),
+        Locale.forLanguageTag("zh"),
+        Locale.forLanguageTag("es"),
+        Locale.forLanguageTag("ko"),
+        Locale.forLanguageTag("ru"),
+        Locale.forLanguageTag("fr"),
+        Locale.forLanguageTag("pt"),
+        Locale.forLanguageTag("th"),
+        Locale.forLanguageTag("de"),
+        Locale.forLanguageTag("it"),
+        Locale.forLanguageTag("vi"),
+        Locale.forLanguageTag("pl"),
+        Locale.forLanguageTag("hu"),
+        Locale.forLanguageTag("nl"),
     )
     Column {
         FlowRow {

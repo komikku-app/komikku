@@ -21,6 +21,7 @@ import androidx.work.workDataOf
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
@@ -44,6 +45,7 @@ import exh.md.utils.MdUtil
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.mangaDexSourceIds
+import exh.util.WorkerUtil
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -60,7 +62,6 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
@@ -559,7 +560,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      * filter all follows from Mangadex and only add reading or rereading manga to library
      */
     private suspend fun syncFollows() = coroutineScope {
-        val preferences = Injekt.get<UnsortedPreferences>()
+        val preferences = Injekt.get<SourcePreferences>()
         var count = 0
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager)
             ?: return@coroutineScope
@@ -889,5 +890,17 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
                 }
         }
+
+        // KMK -->
+        /**
+         * Returns true if a periodic job is currently scheduled.
+         * @param context The application context.
+         * @return True if a periodic job is scheduled, false otherwise.
+         * @throws Exception If there is an error retrieving the work info.
+         */
+        suspend fun isPeriodicUpdateScheduled(context: Context): Boolean {
+            return WorkerUtil.isPeriodicJobScheduled(context, WORK_NAME_AUTO)
+        }
+        // KMK <--
     }
 }

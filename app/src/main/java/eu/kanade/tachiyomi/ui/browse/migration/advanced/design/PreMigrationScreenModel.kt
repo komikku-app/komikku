@@ -10,14 +10,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class PreMigrationScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
-    private val prefs: UnsortedPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
 ) : ScreenModel {
 
@@ -53,7 +51,7 @@ class PreMigrationScreenModel(
      */
     private fun getEnabledSources(): List<MigrationSourceItem> {
         val languages = sourcePreferences.enabledLanguages().get()
-        val sourcesSaved = prefs.migrationSources().get().split("/")
+        val sourcesSaved = sourcePreferences.migrationSources().get().split("/")
             .mapNotNull { it.toLongOrNull() }
         val disabledSources = sourcePreferences.disabledSources().get()
             .mapNotNull { it.toLongOrNull() }
@@ -134,6 +132,6 @@ class PreMigrationScreenModel(
             ?.joinToString("/") { it.source.id.toString() }
             .orEmpty()
 
-        prefs.migrationSources().set(listOfSources)
+        sourcePreferences.migrationSources().set(listOfSources)
     }
 }

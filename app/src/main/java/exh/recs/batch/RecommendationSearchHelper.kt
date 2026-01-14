@@ -6,6 +6,7 @@ import android.os.PowerManager
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLog
 import exh.recs.sources.RecommendationPagingSource
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.data.source.NoResultsException
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
@@ -45,7 +45,7 @@ class RecommendationSearchHelper(val context: Context) {
     private val getLibraryManga: GetLibraryManga by injectLazy()
     private val getTracks: GetTracks by injectLazy()
     private val networkToLocalManga: NetworkToLocalManga by injectLazy()
-    private val prefs: UnsortedPreferences by injectLazy()
+    private val preferences: SourcePreferences by injectLazy()
 
     private var wifiLock: WifiManager.WifiLock? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -68,7 +68,7 @@ class RecommendationSearchHelper(val context: Context) {
     }
 
     private suspend fun beginSearch(mangaList: List<Manga>) {
-        val flags = prefs.recommendationSearchFlags().get()
+        val flags = preferences.recommendationSearchFlags().get()
         val libraryManga = getLibraryManga.await()
         val tracks = getTracks.await()
 
@@ -192,7 +192,7 @@ class RecommendationSearchHelper(val context: Context) {
         libraryManga: List<LibraryManga>,
         tracks: List<Track>,
     ): List<SManga> {
-        val flags = prefs.recommendationSearchFlags().get()
+        val flags = preferences.recommendationSearchFlags().get()
 
         if (!SearchFlags.hasHideLibraryResults(flags)) {
             return this

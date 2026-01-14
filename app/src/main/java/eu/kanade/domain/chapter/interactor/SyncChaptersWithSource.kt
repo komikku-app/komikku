@@ -129,6 +129,7 @@ class SyncChaptersWithSource(
                         downloadManager.isChapterDownloaded(
                             existingChapter.name,
                             existingChapter.scanlator,
+                            existingChapter.url,
                             // SY -->
                             // manga.title,
                             manga.ogTitle,
@@ -139,12 +140,14 @@ class SyncChaptersWithSource(
                     if (shouldRenameChapter) {
                         downloadManager.renameChapter(source, manga, existingChapter, chapter)
                     }
+
                     var toChangeChapter = existingChapter.copy(
                         name = chapter.name,
                         chapterNumber = chapter.chapterNumber,
                         scanlator = chapter.scanlator,
                         sourceOrder = chapter.sourceOrder,
                     )
+
                     if (chapter.dateUpload != 0L) {
                         toChangeChapter = toChangeChapter.copy(dateUpload = chapter.dateUpload)
                     }

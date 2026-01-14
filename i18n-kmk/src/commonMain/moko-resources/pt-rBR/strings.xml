@@ -6,7 +6,7 @@
     <string name="action_faq_and_guides">FAQ e Guias</string>
     <string name="download_cache_renew_interval">Baixar intervalo de renovação do cache</string>
     <string name="download_cache_renew_interval_manual">Manualmente</string>
-    <string name="download_cache_renew_interval_1hour">number@@0 horas</string>
+    <string name="download_cache_renew_interval_1hour">1 hora</string>
     <string name="download_cache_renew_interval_2hour">2 horas</string>
     <string name="download_cache_renew_interval_6hour">6 horas</string>
     <string name="download_cache_renew_interval_12hour">12 horas</string>
@@ -72,7 +72,7 @@
     <string name="pref_source_related_mangas">Sugestões</string>
     <string name="pref_source_related_mangas_summary">Exibir as sugestões do código-site ao visualizar a entrada</string>
     <string name="related_mangas_website_suggestions">Sugestões do site</string>
-    <string name="action_hide">Esconder</string>
+    <string name="action_hide">Ocultar</string>
     <string name="action_sort_feed">Ordenar feeds</string>
     <string name="sort_feed_confirmation">Gostaria de ordenar as alimentações em ordem alfabética?</string>
     <string name="pref_custom_theme_style">Estilo do tema personalizado</string>
@@ -91,7 +91,7 @@
     <string name="custom_theme_palette_pico">PICO-8</string>
     <string name="action_show_hidden_categories">Mostrar categorias ocultas</string>
     <string name="action_display_comfortable_grid_panorama">Grade de panorama confortável</string>
-    <string name="action_panorama_cover">Capa do Panorama</string>
+    <string name="action_panorama_cover">Capa panorâmica</string>
     <string name="pref_panorama_cover">Capa do Panorama</string>
     <string name="pref_panorama_cover_summary">Mostrar capa no modo paisagem se for uma imagem larga</string>
     <string name="pref_panorama_cover_flow">Cobertura do Panorama</string>
@@ -108,7 +108,7 @@
     <string name="migrating_all_entries">Migrando todas as entradas da fonte</string>
     <string name="label_to_be_updated">A ser atualizado</string>
     <string name="pref_manga_info">Manga Info</string>
-    <string name="manual_download">Download manual</string>
+    <string name="manual_download">Download Manual</string>
     <string name="auto_update_app">Atualizar app automaticamente</string>
     <string name="update_completed">Atualização concluída</string>
     <string name="open">Abertas</string>
@@ -116,8 +116,27 @@
     <string name="could_not_install_update">Não foi possível instalar a atualização</string>
     <string name="action_copy_to_clipboard_first_page">Copiar a primeira página para área de transferência</string>
     <string name="action_copy_to_clipboard_second_page">Copiar a segunda página para área de transferência</string>
-    <string name="action_copy_to_clipboard_combined_page">Copiar página combinada para área de transferência</string>
+    <string name="action_copy_to_clipboard_combined_page">Copiar combinação de páginas para a área de transferência</string>
     <string name="auto_update_app_disable_auto_download">Não baixar a atualização automaticamente</string>
     <string name="action_remove_merged">Remover entradas originais da biblioteca?</string>
     <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_update">Atualizar</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="error_opening_folder">Erro ao abrir o diretório</string>
+    <string name="action_open_folder">Abrir diretório</string>
+    <string name="pref_paged_disable_zoom_in">Desativar zoom in</string>
+    <string name="updating">Atualizando</string>
+    <string name="pref_library_filter_categories_details">Resultados de categorias excluídas não aparecem mesmo caso estejam nas categorias incluídas.</string>
+    <string name="pref_show_empty_categories_search">Mostrar categorias vazias durante as pesquisas</string>
+    <string name="downloaded_data">Arquivos baixados</string>
+    <string name="chapters_from_database">Capítulos e histórico do banco de dados</string>
+    <string name="action_manual_install">Instalação Manual</string>
+    <string name="action_clear_manga">Remover mangá</string>
+    <string name="pref_pinch_to_zoom">Use o gesto de pinça para ampliar</string>
+    <string name="pref_landscape_zoom_type">Modo de zoom para imagens amplas</string>
+    <string name="scale_type_double">Zoom duplo</string>
+    <string name="pref_webtoon_scale_type">Escala automática para tela grande</string>
 </resources>

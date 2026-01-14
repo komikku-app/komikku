@@ -13,7 +13,7 @@ import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
-import tachiyomi.domain.history.interactor.GetHistoryByMangaId
+import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.RemoveHistory
 import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.model.History
@@ -43,7 +43,7 @@ class EHentaiUpdateHelper(context: Context) {
     private val chapterRepository: ChapterRepository by injectLazy()
     private val upsertHistory: UpsertHistory by injectLazy()
     private val removeHistory: RemoveHistory by injectLazy()
-    private val getHistoryByMangaId: GetHistoryByMangaId by injectLazy()
+    private val getHistory: GetHistory by injectLazy()
     private val insertFavoriteEntryAlternative: InsertFavoriteEntryAlternative by injectLazy()
 
     /**
@@ -70,7 +70,7 @@ class EHentaiUpdateHelper(context: Context) {
                         getChaptersByMangaId.await(mangaId)
                     }
                     val history = async(Dispatchers.IO) {
-                        getHistoryByMangaId.await(mangaId)
+                        getHistory.await(mangaId)
                     }
                     ChapterChain(
                         manga.await() ?: return@coroutineScope null,

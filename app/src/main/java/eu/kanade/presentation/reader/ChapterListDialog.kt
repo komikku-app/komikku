@@ -78,6 +78,7 @@ fun ChapterListDialog(
                     downloadManager.isChapterDownloaded(
                         chapterItem.chapter.name,
                         chapterItem.chapter.scanlator,
+                        chapterItem.chapter.url,
                         chapterItem.manga.ogTitle,
                         chapterItem.manga.source,
                     )

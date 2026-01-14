@@ -68,6 +68,7 @@ interface CatalogueSource : Source {
     fun getFilterList(): FilterList
 
     // KMK -->
+
     /**
      * Whether parsing related mangas in manga page or extension provide custom related mangas request.
      * @default false

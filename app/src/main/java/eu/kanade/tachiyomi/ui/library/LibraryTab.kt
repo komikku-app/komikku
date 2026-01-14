@@ -29,6 +29,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
@@ -69,7 +70,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
@@ -211,7 +211,7 @@ data object LibraryTab : Tab {
                         screenModel.clearSelection()
                         if (selectedMangaIds.isNotEmpty()) {
                             PreMigrationScreen.navigateToMigration(
-                                Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                                Injekt.get<SourcePreferences>().skipPreMigration().get(),
                                 navigator,
                                 selectedMangaIds,
                             )
@@ -302,6 +302,9 @@ data object LibraryTab : Tab {
                 else -> {
                     LibraryContent(
                         categories = state.displayedCategories,
+                        // KMK -->
+                        activeCategoryIndex = state.coercedActiveCategoryIndex,
+                        // KMK <--
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,

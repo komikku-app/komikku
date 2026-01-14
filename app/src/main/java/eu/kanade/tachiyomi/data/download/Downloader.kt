@@ -202,15 +202,17 @@ class Downloader(
         if (isRunning) return
 
         downloaderJob = scope.launch {
-            val activeDownloadsFlow = queueState.transformLatest { queue ->
+            val activeDownloadsFlow = combine(
+                queueState,
+                downloadPreferences.parallelSourceLimit().changes(),
+            ) { a, b -> a to b }.transformLatest { (queue, parallelCount) ->
                 while (true) {
                     val activeDownloads = queue.asSequence()
                         // Ignore completed downloads, leave them in the queue
                         .filter { it.status.value <= Download.State.DOWNLOADING.value }
                         .groupBy { it.source }
                         .toList()
-                        // Concurrently download from 5 different sources
-                        .take(5)
+                        .take(parallelCount)
                         .map { (_, downloads) -> downloads.first() }
                     emit(activeDownloads)
 
@@ -222,7 +224,8 @@ class Downloader(
                         }.filter { it }
                     activeDownloadsErroredFlow.first()
                 }
-            }.distinctUntilChanged()
+            }
+                .distinctUntilChanged()
 
             // Use supervisorScope to cancel child jobs when the downloader job is cancelled
             supervisorScope {
@@ -291,7 +294,7 @@ class Downloader(
         val chaptersToQueue = chapters.asSequence()
             // Filter out those already downloaded.
             .filter {
-                provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null
+                provider.findChapterDir(it.name, it.scanlator, it.url, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null
             }
             // Add chapters to queue from the start.
             .sortedByDescending { it.sourceOrder }
@@ -358,7 +361,11 @@ class Downloader(
             return
         }
 
-        val chapterDirname = provider.getChapterDirName(download.chapter.name, download.chapter.scanlator)
+        val chapterDirname = provider.getChapterDirName(
+            download.chapter.name,
+            download.chapter.scanlator,
+            download.chapter.url,
+        )
         val tmpDir = mangaDir.createDirectory(chapterDirname + TMP_DIR_SUFFIX)!!
 
         try {
@@ -390,24 +397,23 @@ class Downloader(
             download.status = Download.State.DOWNLOADING
 
             // Start downloading images, consider we can have downloaded images already
-            // Concurrently do 2 pages at a time
-            pageList.asFlow()
-                .flatMapMerge(concurrency = 2) { page ->
-                    flow {
-                        // Fetch image URL if necessary
-                        if (page.imageUrl.isNullOrEmpty()) {
-                            page.status = Page.State.LoadPage
-                            try {
-                                page.imageUrl = download.source.getImageUrl(page)
-                            } catch (e: Throwable) {
-                                page.status = Page.State.Error(e)
-                            }
+            pageList.asFlow().flatMapMerge(concurrency = downloadPreferences.parallelPageLimit().get()) { page ->
+                flow {
+                    // Fetch image URL if necessary
+                    if (page.imageUrl.isNullOrEmpty()) {
+                        page.status = Page.State.LoadPage
+                        try {
+                            page.imageUrl = download.source.getImageUrl(page)
+                        } catch (e: Throwable) {
+                            page.status = Page.State.Error(e)
                         }
+                    }
 
-                        withIOContext { getOrDownloadImage(page, download, tmpDir, dataSaver) }
-                        emit(page)
-                    }.flowOn(Dispatchers.IO)
+                    withIOContext { getOrDownloadImage(page, download, tmpDir, dataSaver) }
+                    emit(page)
                 }
+                    .flowOn(Dispatchers.IO)
+            }
                 .collect {
                     // Do when page is downloaded.
                     notifier.onProgressChange(download)

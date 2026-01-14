@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,7 +58,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -74,6 +74,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.components.SourcesSearchBox
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
@@ -86,7 +87,6 @@ import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -178,7 +178,7 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
             },
             // KMK <--
             floatingActionButton = {
-                ExtendedFloatingActionButton(
+                SmallExtendedFloatingActionButton(
                     text = { Text(text = stringResource(MR.strings.action_migrate)) },
                     icon = {
                         Icon(
@@ -194,10 +194,10 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
             },
         ) { contentPadding ->
             // KMK -->
+            val density = LocalDensity.current
             Box(modifier = Modifier.padding(top = contentPadding.calculateTopPadding())) {
-                var searchBoxHeight by remember { mutableIntStateOf(40) }
+                var searchBoxHeight by remember { mutableIntStateOf(with(density) { SOURCE_SEARCH_BOX_HEIGHT.roundToPx() }) }
                 // KMK <--
-                val density = LocalDensity.current
                 val layoutDirection = LocalLayoutDirection.current
                 val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
                 // KMK -->
@@ -234,12 +234,14 @@ class PreMigrationScreen(val migration: MigrationType) : Screen() {
                 }
                 // KMK -->
                 SourcesSearchBox(
-                    modifier = Modifier
-                        .onSizeChanged { searchBoxHeight = it.height }
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(horizontal = MaterialTheme.padding.small),
                     searchQuery = searchQuery,
                     onChangeSearchQuery = { searchQuery = it ?: "" },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = MaterialTheme.padding.small),
+                    onGloballyPositioned = { layoutCoordinates ->
+                        searchBoxHeight = layoutCoordinates.size.height
+                    },
                     placeholderText = stringResource(KMR.strings.action_search_for_source),
                 )
                 // KMK <--
