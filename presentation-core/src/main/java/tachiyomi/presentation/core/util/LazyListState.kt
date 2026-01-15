@@ -12,17 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-@Composable
-fun LazyListState.shouldExpandFAB(): Boolean {
-    return remember {
-        derivedStateOf {
-            (firstVisibleItemIndex == 0 && firstVisibleItemScrollOffset == 0) ||
-                lastScrolledBackward ||
-                !canScrollForward
-        }
-    }
-        .value
-}
+fun LazyListState.shouldExpandFAB(): Boolean = lastScrolledBackward || !canScrollForward || !canScrollBackward
 
 @Composable
 fun LazyListState.isScrolledToStart(): Boolean {

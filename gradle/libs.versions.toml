@@ -8,11 +8,12 @@ sqldelight = "2.1.0"
 sqlite = "2.6.1"
 voyager = "1.1.0-beta03"
 spotless = "8.0.0"
-ktlint-core = "1.5.0"
+ktlint-core = "1.8.0"
 firebase-bom = "34.5.0"
 markdown = "0.38.1"
 junit = "6.0.1"
 material3-version = "1.4.0"
+materialKolor = "5.0.0-alpha04"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
@@ -60,13 +61,11 @@ material = "com.google.android.material:material:1.13.0"
 flexible-adapter-core = "com.github.arkon.FlexibleAdapter:flexible-adapter:c8013533"
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
-insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 compose-materialmotion = "io.github.fornewid:material-motion-compose-core:2.0.1"
 compose-webview = "io.github.kevinnzou:compose-webview:0.33.6"
 compose-grid = "io.woong.compose.grid:grid:1.2.2"
 reorderable = { module = "sh.calvin.reorderable:reorderable", version = "3.0.0" }
 palette-ktx = "androidx.palette:palette-ktx:1.0.0"
-materialKolor = "com.materialkolor:material-kolor:4.0.3"
 haze = "dev.chrisbanes.haze:haze:1.6.10"
 
 swipe = "me.saket.swipe:swipe:1.3.0"
@@ -109,6 +108,8 @@ ktlint-core = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlin
 markdown-core = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdown" }
 markdown-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdown" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3-version" }
+
+materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version = "4.4.4" }

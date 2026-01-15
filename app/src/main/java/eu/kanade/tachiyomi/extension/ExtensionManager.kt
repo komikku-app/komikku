@@ -19,6 +19,7 @@ import exh.log.xLogD
 import exh.source.BlacklistedSources
 import exh.source.EHENTAI_EXT_SOURCES
 import exh.source.EXHENTAI_EXT_SOURCES
+import exh.source.ExhPreferences
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -172,7 +172,7 @@ class ExtensionManager(
     private fun Extension.isBlacklisted(
         blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
         // KMK -->
-        isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
+        isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get(),
         // KMK <--
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&

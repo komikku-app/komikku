@@ -44,7 +44,6 @@ import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.launch
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.ResetCategoryFlags
 import tachiyomi.domain.category.model.Category
@@ -85,6 +84,7 @@ object SettingsLibraryScreen : SearchableSettings {
         val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
 
         val allCategories by getCategories.subscribe().collectAsState(emptyList())
+        val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         return listOf(
             getCategoriesGroup(navigator, allCategories, libraryPreferences),
@@ -92,6 +92,9 @@ object SettingsLibraryScreen : SearchableSettings {
             getBehaviorGroup(libraryPreferences),
             getSortingCategory(navigator, libraryPreferences),
             getMigrationCategory(unsortedPreferences),
+            // SY -->
+            getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
+            // SY <--
         )
     }
 

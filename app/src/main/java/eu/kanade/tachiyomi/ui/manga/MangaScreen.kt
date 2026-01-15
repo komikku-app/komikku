@@ -45,6 +45,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
@@ -89,6 +90,7 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import exh.pagepreview.PagePreviewScreen
 import exh.recs.RecommendsScreen
+import exh.source.ExhPreferences
 import exh.source.MERGED_SOURCE_ID
 import exh.source.anyIs
 import exh.source.getMainSource
@@ -109,7 +111,6 @@ import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -264,10 +265,9 @@ class MangaScreen(
         val hazeState = remember { HazeState() }
         val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
 
-        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get()
         val isConfigurableSource = successState.source.anyIs<ConfigurableSource>() ||
-            successState.source.isEhBasedSource() &&
-            isHentaiEnabled
+            (successState.source.isEhBasedSource() && isHentaiEnabled)
         // KMK <--
 
         MangaScreen(
@@ -369,7 +369,7 @@ class MangaScreen(
             onMigrateClicked = {
                 // SY -->
                 PreMigrationScreen.navigateToMigration(
-                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
                     navigator,
                     listOfNotNull(successState.manga.id),
                 )
@@ -739,8 +739,7 @@ class MangaScreen(
         // KMK -->
         navigator.popUntil { screen ->
             screen is HomeScreen ||
-                !library &&
-                (screen is BrowseSourceScreen || screen is SourceFeedScreen)
+                (!library && (screen is BrowseSourceScreen || screen is SourceFeedScreen))
         }
         // KMK <--
 

@@ -1,5 +1,6 @@
 package eu.kanade.presentation.reader.settings
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -7,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
+import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
@@ -84,10 +86,11 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
         pref = screenModel.preferences.fullscreen(),
     )
 
-    if (screenModel.hasDisplayCutout && screenModel.preferences.fullscreen().get()) {
+    val isFullscreen by screenModel.preferences.fullscreen().collectAsState()
+    if (LocalActivity.current?.hasDisplayCutout() == true && isFullscreen) {
         CheckboxItem(
             label = stringResource(MR.strings.pref_cutout_short),
-            pref = screenModel.preferences.cutoutShort(),
+            pref = screenModel.preferences.drawUnderCutout(),
         )
     }
 

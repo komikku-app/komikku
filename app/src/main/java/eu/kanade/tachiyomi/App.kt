@@ -80,6 +80,7 @@ import exh.log.xLogD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
 import mihon.core.migration.Migrator
@@ -148,9 +149,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         Injekt.importModule(KMKDomainModule())
         // KMK <--
 
-        setupExhLogging() // EXH logging
-        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
-
         setupNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -215,9 +213,17 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         // Updates widget update
         WidgetManager(Injekt.get(), Injekt.get()).apply { init(scope) }
 
-        /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
-            LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
-        }*/
+        setupExhLogging() // EXH logging
+        if (!LogcatLogger.isInstalled) {
+            val minLogPriority = when {
+                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
+                BuildConfig.DEBUG -> LogPriority.DEBUG
+                else -> LogPriority.INFO
+            }
+            LogcatLogger.install()
+            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
+            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
+        }
 
         if (!WorkManager.isInitialized()) {
             WorkManager.initialize(this, Configuration.Builder().build())
@@ -269,16 +275,16 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 // SY <--
             }
 
-            memoryCache(
-                MemoryCache.Builder()
-                    .maxSizePercent(context, 0.25)
-                    .build(),
-            )
-
             diskCache(
                 DiskCache.Builder()
                     .directory(context.cacheDir.resolve("image_cache"))
                     .maxSizePercent(0.02)
+                    .build(),
+            )
+
+            memoryCache(
+                MemoryCache.Builder()
+                    .maxSizePercent(context)
                     .build(),
             )
 

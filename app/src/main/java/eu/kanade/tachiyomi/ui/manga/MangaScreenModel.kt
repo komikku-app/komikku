@@ -1091,12 +1091,13 @@ class MangaScreenModel(
                 true
             } else {
                 downloadManager.isChapterDownloaded(
-                    // SY -->
                     chapter.name,
                     chapter.scanlator,
+                    chapter.url,
+                    // SY -->
                     manga.ogTitle,
-                    manga.source,
                     // SY <--
+                    manga.source,
                 )
             }
             val downloadState = when {
@@ -1202,7 +1203,7 @@ class MangaScreenModel(
      */
     internal suspend fun fetchRelatedMangasFromSource(onDemand: Boolean = false, onFinish: (() -> Unit)? = null) {
         val expandRelatedMangas = uiPreferences.expandRelatedMangas().get()
-        if (!onDemand && !expandRelatedMangas || manga?.source == MERGED_SOURCE_ID) return
+        if ((!onDemand && !expandRelatedMangas) || manga?.source == MERGED_SOURCE_ID) return
 
         // start fetching related mangas
         setRelatedMangasFetchedStatus(false)
