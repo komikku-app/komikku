@@ -1,4 +1,4 @@
-package exh.smartsearch
+package mihon.feature.migration.list.search
 
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga

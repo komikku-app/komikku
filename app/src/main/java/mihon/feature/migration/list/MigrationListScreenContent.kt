@@ -1,4 +1,4 @@
-package eu.kanade.presentation.browse
+package mihon.feature.migration.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -28,9 +28,9 @@ import eu.kanade.presentation.browse.components.MigrationItem
 import eu.kanade.presentation.browse.components.MigrationItemResult
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import mihon.feature.migration.list.models.MigratingManga
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -42,7 +42,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.plus
 
 @Composable
-fun MigrationListScreen(
+fun MigrationListScreenContent(
     items: ImmutableList<MigratingManga>,
     migrationDone: Boolean,
     finishedCount: Int,

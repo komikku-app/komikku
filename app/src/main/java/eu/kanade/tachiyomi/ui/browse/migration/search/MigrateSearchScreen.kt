@@ -11,8 +11,8 @@ import eu.kanade.presentation.browse.MigrateSearchScreen
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import mihon.feature.migration.list.MigrationListScreen
 
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
