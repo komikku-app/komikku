@@ -14,7 +14,6 @@ import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
@@ -22,6 +21,7 @@ import exh.util.overEq
 import exh.util.underEq
 import kotlinx.collections.immutable.persistentListOf
 import mihon.feature.migration.config.MigrationConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreenSheet
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.sy.SYMR
@@ -142,7 +142,8 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             }
             // KMK -->
             MigrationListScreenModel.Dialog.MigrationOptionsDialog -> {
-                MigrationBottomSheetDialog(
+                MigrationConfigScreenSheet(
+                    preferences = screenModel.preferences,
                     onDismissRequest = onDismissRequest,
                     onStartMigration = { _ ->
                         onDismissRequest()

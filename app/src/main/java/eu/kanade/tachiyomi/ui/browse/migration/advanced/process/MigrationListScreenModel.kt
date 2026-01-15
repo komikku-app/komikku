@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class MigrationListScreenModel(
     private val config: MigrationProcedureConfig,
-    private val preferences: SourcePreferences = Injekt.get(),
+    val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
