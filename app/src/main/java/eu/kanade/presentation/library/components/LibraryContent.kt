@@ -1,21 +1,43 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
+import eu.kanade.presentation.category.visualName
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,20 +45,20 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.presentation.core.components.material.PullRefresh
+import tachiyomi.presentation.core.components.material.padding
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun LibraryContent(
     categories: List<Category>,
-    // KMK -->
     activeCategoryIndex: Int,
-    // KMK <--
     searchQuery: String?,
     selection: Set<Long>,
     contentPadding: PaddingValues,
     currentPage: Int,
     hasActiveFilters: Boolean,
     showPageTabs: Boolean,
+    showParentFilters: Boolean,
     onChangeCurrentPage: (Int) -> Unit,
     onClickManga: (Long) -> Unit,
     onContinueReadingClicked: ((LibraryManga) -> Unit)?,
@@ -49,6 +71,25 @@ fun LibraryContent(
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getItemsForCategory: (Category) -> List<LibraryItem>,
 ) {
+    // Derive parent categories and child mapping
+    val parentCategories = remember(categories) {
+        categories.filter { it.parentId == null }.sortedBy { it.order }
+    }
+    val childrenByParent = remember(categories) {
+        categories.filter { it.parentId != null }
+            .groupBy { it.parentId }
+            .mapValues { entry -> entry.value.sortedBy { it.order } }
+    }
+
+    // Track selected subcategory (null = show all/parent items)
+    var activeSubcategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Track which parent categories have collapsed subcategory chips
+    var collapsedParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
+
+    // Track which parent categories have "exclude subcategories" mode enabled
+    var excludeSubcategoriesParentIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
+
     Column(
         modifier = Modifier.padding(
             top = contentPadding.calculateTopPadding(),
@@ -56,35 +97,154 @@ fun LibraryContent(
             end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ),
     ) {
-        val pagerState = rememberPagerState(currentPage) { categories.size }
+        // Determine which categories to show in tabs based on showParentFilters
+        val tabCategories = if (showParentFilters && parentCategories.isNotEmpty()) {
+            parentCategories
+        } else {
+            categories
+        }
 
+        // Calculate initial page based on activeCategoryIndex
+        val initialPage = when {
+            tabCategories.isEmpty() -> 0
+            activeCategoryIndex in tabCategories.indices -> activeCategoryIndex
+            currentPage in tabCategories.indices -> currentPage
+            else -> 0
+        }
+
+        val pagerState = rememberPagerState(initialPage = initialPage) { tabCategories.size }
         val scope = rememberCoroutineScope()
         var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
 
-        if (showPageTabs && categories.isNotEmpty() && (categories.size > 1 || !categories.first().isSystemCategory)) {
-            LaunchedEffect(categories) {
-                // KMK -->
+        // Show tabs if needed
+        if (showPageTabs && tabCategories.isNotEmpty() && (tabCategories.size > 1 || !tabCategories.first().isSystemCategory)) {
+            LaunchedEffect(tabCategories, activeCategoryIndex) {
                 val targetPage = when {
-                    categories.isEmpty() -> 0
-                    activeCategoryIndex != pagerState.currentPage -> activeCategoryIndex.coerceAtMost(categories.size - 1)
-                    pagerState.currentPage >= categories.size -> categories.size - 1
+                    tabCategories.isEmpty() -> 0
+                    activeCategoryIndex != pagerState.currentPage && activeCategoryIndex in tabCategories.indices -> activeCategoryIndex
+                    pagerState.currentPage >= tabCategories.size -> tabCategories.size - 1
                     else -> pagerState.currentPage
                 }
                 if (targetPage != pagerState.currentPage) {
                     pagerState.scrollToPage(targetPage)
                 }
-                // KMK <--
             }
+
             LibraryTabs(
-                categories = categories,
+                categories = tabCategories,
                 pagerState = pagerState,
                 getItemCountForCategory = getItemCountForCategory,
                 onTabItemClick = {
                     scope.launch {
-                        pagerState.animateScrollToPage(it)
+                        val targetCategory = tabCategories[it]
+                        val hasSubcategories = childrenByParent[targetCategory.id]?. isNotEmpty() == true
+
+                        // Toggle collapse state if clicking on current page with subcategories
+                        if (it == pagerState.currentPage && hasSubcategories && showParentFilters) {
+                            collapsedParentIds = if (targetCategory.id in collapsedParentIds) {
+                                collapsedParentIds - targetCategory.id
+                            } else {
+                                collapsedParentIds + targetCategory.id
+                            }
+                        } else {
+                            // Navigate to the tab
+                            pagerState.animateScrollToPage(it)
+                        }
                     }
                 },
             )
+        }
+
+        // Show subcategory filter chips if parent filters are enabled
+        if (showParentFilters && parentCategories.isNotEmpty()) {
+            val activeParent = parentCategories.getOrNull(pagerState.currentPage)
+            val subcategoriesForActiveParent = activeParent?.let { childrenByParent[it.id] }.orEmpty()
+            val isCollapsed = activeParent?.id?.let { it in collapsedParentIds } ?: false
+            val isExcludingSubcategories = activeParent?.id?.let { it in excludeSubcategoriesParentIds } ?: false
+
+            // Reset activeSubcategoryId if no subcategories for current parent
+            LaunchedEffect(subcategoriesForActiveParent) {
+                if (subcategoriesForActiveParent.isEmpty()) {
+                    activeSubcategoryId = null
+                }
+            }
+
+            // Animated visibility for subcategory chips with smooth expand/collapse
+            AnimatedVisibility(
+                visible = subcategoriesForActiveParent.isNotEmpty() && !isCollapsed,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = androidx.compose.ui.Alignment.Top,
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = androidx.compose.ui.Alignment.Top,
+                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
+            ) {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MaterialTheme.padding.medium),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // "All" chip with integrated exclude mode toggle
+                    item {
+                        FilterChip(
+                            selected = activeSubcategoryId == null,
+                            onClick = {
+                                if (activeSubcategoryId == null && activeParent != null) {
+                                    // Already on "All" - toggle exclude mode
+                                    excludeSubcategoriesParentIds = if (isExcludingSubcategories) {
+                                        excludeSubcategoriesParentIds - activeParent.id
+                                    } else {
+                                        excludeSubcategoriesParentIds + activeParent.id
+                                    }
+                                } else {
+                                    // Switch to "All" and turn off exclude mode
+                                    activeSubcategoryId = null
+                                    if (isExcludingSubcategories && activeParent != null) {
+                                        excludeSubcategoriesParentIds = excludeSubcategoriesParentIds - activeParent.id
+                                    }
+                                }
+                            },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(text = "All")
+                                    if (isExcludingSubcategories) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Excluding subcategories",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.error,
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier.padding(vertical = 6.dp),
+                        )
+                    }
+
+                    // Subcategory chips
+                    items(subcategoriesForActiveParent) { sub ->
+                        val selected = activeSubcategoryId == sub.id
+                        FilterChip(
+                            selected = selected,
+                            onClick = {
+                                activeSubcategoryId = if (selected) null else sub.id
+                                // When selecting a subcategory, turn off exclude mode
+                                if (activeParent != null && isExcludingSubcategories) {
+                                    excludeSubcategoriesParentIds = excludeSubcategoriesParentIds - activeParent.id
+                                }
+                            },
+                            label = { Text(text = sub.visualName) },
+                            modifier = Modifier.padding(vertical = 6.dp),
+                        )
+                    }
+                }
+            }
         }
 
         PullRefresh(
@@ -94,13 +254,53 @@ fun LibraryContent(
                 val started = onRefresh()
                 if (!started) return@PullRefresh
                 scope.launch {
-                    // Fake refresh status but hide it after a second as it's a long running task
                     isRefreshing = true
                     delay(1.seconds)
                     isRefreshing = false
                 }
             },
         ) {
+            // Wrapper function to handle item fetching based on parent filter state
+            val wrappedGetItemsForCategory: (Category) -> List<LibraryItem> = { pageCategory ->
+                if (showParentFilters) {
+                    val isExcludingSubcategories = pageCategory.id in excludeSubcategoriesParentIds
+
+                    // Parent filters enabled: respect subcategory selection
+                    val selectedSub = activeSubcategoryId?.let { id ->
+                        categories.firstOrNull { it.id == id }
+                    }
+
+                    if (selectedSub != null && selectedSub.parentId == pageCategory.id) {
+                        // Show only the selected subcategory's items
+                        getItemsForCategory(selectedSub)
+                    } else if (activeSubcategoryId == null) {
+                        // "All" selected
+                        if (isExcludingSubcategories) {
+                            // Exclude mode:  show only parent's own items (no subcategory items)
+                            getItemsForCategory(pageCategory)
+                        } else {
+                            // Include mode: merge parent + all subcategory items (deduped)
+                            val parentItems = getItemsForCategory(pageCategory)
+                            val children = childrenByParent[pageCategory.id].orEmpty()
+                            val childItems = children.flatMap { child -> getItemsForCategory(child) }
+
+                            val seen = mutableSetOf<Long>()
+                            val merged = mutableListOf<LibraryItem>()
+                            (parentItems + childItems).forEach { item ->
+                                val mangaId = item.libraryManga.manga.id
+                                if (seen.add(mangaId)) merged.add(item)
+                            }
+                            merged
+                        }
+                    } else {
+                        // Subcategory selected but doesn't belong to current parent
+                        getItemsForCategory(pageCategory)
+                    }
+                } else {
+                    getItemsForCategory(pageCategory)
+                }
+            }
+
             LibraryPager(
                 state = pagerState,
                 contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
@@ -108,10 +308,10 @@ fun LibraryContent(
                 selection = selection,
                 searchQuery = searchQuery,
                 onGlobalSearchClicked = onGlobalSearchClicked,
-                getCategoryForPage = { page -> categories[page] },
+                getCategoryForPage = { page -> tabCategories[page] },
                 getDisplayMode = getDisplayMode,
                 getColumnsForOrientation = getColumnsForOrientation,
-                getItemsForCategory = getItemsForCategory,
+                getItemsForCategory = wrappedGetItemsForCategory,
                 onClickManga = { category, manga ->
                     if (selection.isNotEmpty()) {
                         onToggleSelection(category, manga)
@@ -125,6 +325,10 @@ fun LibraryContent(
         }
 
         LaunchedEffect(pagerState.currentPage) {
+            // Reset subcategory selection when parent page changes
+            if (showParentFilters) {
+                activeSubcategoryId = null
+            }
             onChangeCurrentPage(pagerState.currentPage)
         }
     }
