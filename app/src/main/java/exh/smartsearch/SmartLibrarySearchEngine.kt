@@ -10,7 +10,7 @@ class SmartLibrarySearchEngine(
     override fun getTitle(result: LibraryManga) = result.manga.ogTitle
 
     suspend fun smartSearch(library: List<LibraryManga>, title: String): LibraryManga? =
-        smartSearch(
+        deepSearch(
             { query ->
                 library.filter { it.manga.ogTitle.contains(query, true) }
             },

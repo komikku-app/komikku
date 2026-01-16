@@ -49,7 +49,8 @@ import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger
 
 class MigrationListScreenModel(
-    private val config: MigrationProcedureConfig,
+    private var mangaIds: List<Long>,
+    extraSearchQuery: String?,
     val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -57,12 +58,16 @@ class MigrationListScreenModel(
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
-    private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val migrateManga: MigrateMangaUseCase = Injekt.get(),
+    // SY -->
+    private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
+    // SY <--
 ) : ScreenModel {
 
-    private val smartSearchEngine = SmartSourceSearchEngine(config.extraSearchParams)
+    private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
+    // SY -->
     private val throttleManager = ThrottleManager()
+    // SY <--
 
     val migratingItems = MutableStateFlow<ImmutableList<MigratingManga>?>(null)
     val migrationDone = MutableStateFlow(false)
@@ -70,10 +75,10 @@ class MigrationListScreenModel(
 
     val manualMigrations = MutableStateFlow(0)
 
-    var hideNotFound = preferences.migrationHideUnmatched().get()
-    private var showOnlyUpdates = preferences.migrationHideWithoutUpdates().get()
-    private var useSourceWithMost = preferences.migrationPrioritizeByChapters().get()
-    private var useSmartSearch = preferences.migrationDeepSearchMode().get()
+    var hideUnmatched = preferences.migrationHideUnmatched().get()
+    private var hideWithoutUpdates = preferences.migrationHideWithoutUpdates().get()
+    private var prioritizeByChapters = preferences.migrationPrioritizeByChapters().get()
+    private var deepSearchMode = preferences.migrationDeepSearchMode().get()
 
     val navigateOut = MutableSharedFlow<Unit>()
 
@@ -85,12 +90,6 @@ class MigrationListScreenModel(
 
     init {
         screenModelScope.launchIO {
-            val mangaIds = when (val migration = config.migration) {
-                is MigrationType.MangaList -> {
-                    migration.mangaIds
-                }
-                is MigrationType.MangaSingle -> listOf(migration.fromMangaId)
-            }
             runMigrations(
                 mangaIds
                     .map {
@@ -99,7 +98,7 @@ class MigrationListScreenModel(
                             MigratingManga(
                                 manga = manga,
                                 chapterInfo = getChapterInfo(it),
-                                sourcesString = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
+                                source = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
                                     if (manga.source == MERGED_SOURCE_ID) {
                                         getMergedReferencesById.await(manga.id)
                                             .map { sourceManager.getOrStub(it.mangaSourceId) }
@@ -120,9 +119,9 @@ class MigrationListScreenModel(
         }
     }
 
-    suspend fun getManga(result: SearchResult.Result) = getManga(result.id)
+    suspend fun getManga(result: SearchResult.Success) = getManga(result.id)
     suspend fun getManga(id: Long) = getManga.await(id)
-    suspend fun getChapterInfo(result: SearchResult.Result) = getChapterInfo(result.id)
+    suspend fun getChapterInfo(result: SearchResult.Success) = getChapterInfo(result.id)
     private suspend fun getChapterInfo(id: Long) = getChaptersByMangaId.await(id).let { chapters ->
         MigratingManga.ChapterInfo(
             latestChapter = chapters.maxOfOrNull { it.chapterNumber },
@@ -145,11 +144,8 @@ class MigrationListScreenModel(
                 break
             }
             // in case it was removed
-            when (val migration = config.migration) {
-                is MigrationType.MangaList -> if (manga.manga.id !in migration.mangaIds) {
-                    continue
-                }
-                else -> Unit
+            if (manga.manga.id !in mangaIds) {
+                continue
             }
 
             if (manga.searchResult.value == SearchResult.Searching && manga.migrationScope.isActive) {
@@ -165,107 +161,27 @@ class MigrationListScreenModel(
                         } else {
                             sources.filter { it.id != mangaSource.id }
                         }
-                        when (val migration = config.migration) {
-                            is MigrationType.MangaSingle -> if (migration.toManga != null) {
-                                val localManga = getManga.await(migration.toManga)
-                                if (localManga != null) {
-                                    val source = sourceManager.get(localManga.source) as? CatalogueSource
-                                    if (source != null) {
-                                        try {
-                                            val chapters = if (source is EHentai) {
-                                                source.getChapterList(localManga.toSManga(), throttleManager::throttle)
-                                            } else {
-                                                source.getChapterList(localManga.toSManga())
-                                            }
-                                            syncChaptersWithSource.await(chapters, localManga, source)
-                                        } catch (_: Exception) {
-                                        }
-                                        manga.progress.value = validSources.size to validSources.size
-                                        return@async localManga
-                                    }
-                                }
-                            }
-                            else -> Unit
-                        }
-                        if (useSourceWithMost) {
+                        if (prioritizeByChapters) {
                             val sourceSemaphore = Semaphore(3)
                             val processedSources = AtomicInteger()
 
                             validSources.map { source ->
                                 async async2@{
                                     sourceSemaphore.withPermit {
-                                        try {
-                                            val searchResult = if (useSmartSearch) {
-                                                smartSearchEngine.smartSearch(source, mangaObj.ogTitle)
-                                            } else {
-                                                smartSearchEngine.normalSearch(source, mangaObj.ogTitle)
-                                            }
-
-                                            if (searchResult != null &&
-                                                !(searchResult.url == mangaObj.url && source.id == mangaObj.source)
-                                            ) {
-                                                val localManga = networkToLocalManga(searchResult)
-
-                                                val chapters = if (source is EHentai) {
-                                                    source.getChapterList(localManga.toSManga(), throttleManager::throttle)
-                                                } else {
-                                                    source.getChapterList(localManga.toSManga())
-                                                }
-
-                                                try {
-                                                    syncChaptersWithSource.await(chapters, localManga, source)
-                                                } catch (_: Exception) {
-                                                    return@async2 null
-                                                }
-                                                manga.progress.value =
-                                                    validSources.size to processedSources.incrementAndGet()
-                                                localManga to chapters.size
-                                            } else {
-                                                null
-                                            }
-                                        } catch (e: CancellationException) {
-                                            // Ignore cancellations
-                                            throw e
-                                        } catch (_: Exception) {
-                                            null
+                                        val result = searchSource(manga.manga, source, deepSearchMode)
+                                        if (result != null) {
+                                            manga.progress.value =
+                                                validSources.size to processedSources.incrementAndGet()
                                         }
+                                        result
                                     }
                                 }
                             }.mapNotNull { it.await() }.maxByOrNull { it.second }?.first
                         } else {
                             validSources.forEachIndexed { index, source ->
-                                val searchResult = try {
-                                    val searchResult = if (useSmartSearch) {
-                                        smartSearchEngine.smartSearch(source, mangaObj.ogTitle)
-                                    } else {
-                                        smartSearchEngine.normalSearch(source, mangaObj.ogTitle)
-                                    }
-
-                                    if (searchResult != null) {
-                                        val localManga = networkToLocalManga(searchResult)
-                                        val chapters = try {
-                                            if (source is EHentai) {
-                                                source.getChapterList(localManga.toSManga(), throttleManager::throttle)
-                                            } else {
-                                                source.getChapterList(localManga.toSManga())
-                                            }
-                                        } catch (e: Exception) {
-                                            this@MigrationListScreenModel.logcat(LogPriority.ERROR, e)
-                                            emptyList()
-                                        }
-                                        syncChaptersWithSource.await(chapters, localManga, source)
-                                        localManga
-                                    } else {
-                                        null
-                                    }
-                                } catch (e: CancellationException) {
-                                    // Ignore cancellations
-                                    throw e
-                                } catch (_: Exception) {
-                                    null
-                                }
+                                val result = searchSource(manga.manga, source, deepSearchMode)
                                 manga.progress.value = validSources.size to (index + 1)
-                                if (searchResult != null) return@async searchResult
+                                if (result != null) return@async result.first
                             }
 
                             null
@@ -294,37 +210,82 @@ class MigrationListScreenModel(
                 manga.searchResult.value = if (result == null) {
                     SearchResult.NotFound
                 } else {
-                    SearchResult.Result(result.id)
+                    SearchResult.Success(result.id)
                 }
-                if (result == null && hideNotFound) {
+                if (result == null && hideUnmatched) {
                     removeManga(manga)
                 }
                 if (result != null &&
-                    showOnlyUpdates &&
+                    hideWithoutUpdates &&
                     (getChapterInfo(result.id).latestChapter ?: 0.0) <= (manga.chapterInfo.latestChapter ?: 0.0)
                 ) {
                     removeManga(manga)
                 }
 
-                sourceFinished()
+                updateMigrationProgress()
             }
         }
     }
 
-    private suspend fun sourceFinished() {
-        finishedCount.value = migratingItems.value.orEmpty().count {
-            it.searchResult.value != SearchResult.Searching
-        }
-        if (allMangasDone()) {
-            migrationDone.value = true
-        }
-        if (migratingItems.value?.isEmpty() == true) {
-            navigateOut()
+    private suspend fun searchSource(
+        manga: Manga,
+        source: CatalogueSource,
+        deepSearchMode: Boolean,
+    ): Pair<Manga, Int>? {
+        return try {
+            val searchResult = if (deepSearchMode) {
+                smartSearchEngine.deepSearch(source, manga.ogTitle)
+            } else {
+                smartSearchEngine.regularSearch(source, manga.ogTitle)
+            }
+
+            if (searchResult != null &&
+                !(searchResult.url == manga.url && source.id == manga.source)
+            ) {
+                val localManga = networkToLocalManga(searchResult)
+
+                val chapters = try {
+                    if (source is EHentai) {
+                        source.getChapterList(localManga.toSManga(), throttleManager::throttle)
+                    } else {
+                        source.getChapterList(localManga.toSManga())
+                    }
+                } catch (e: Exception) {
+                    this@MigrationListScreenModel.logcat(LogPriority.ERROR, e)
+                    return null
+                }
+
+                try {
+                    syncChaptersWithSource.await(chapters, localManga, source)
+                } catch (_: Exception) {
+                    return null
+                }
+                localManga to chapters.size
+            } else {
+                null
+            }
+        } catch (e: CancellationException) {
+            // Ignore cancellations
+            throw e
+        } catch (_: Exception) {
+            null
         }
     }
 
-    private fun allMangasDone() = migratingItems.value.orEmpty().all { it.searchResult.value != SearchResult.Searching } &&
-        migratingItems.value.orEmpty().any { it.searchResult.value is SearchResult.Result }
+    private suspend fun updateMigrationProgress() {
+        finishedCount.value = migratingItems.value.orEmpty().count {
+            it.searchResult.value != SearchResult.Searching
+        }
+        if (migrationComplete()) {
+            migrationDone.value = true
+        }
+        if (migratingItems.value?.isEmpty() == true) {
+            navigateBack()
+        }
+    }
+
+    private fun migrationComplete() = migratingItems.value.orEmpty().all { it.searchResult.value != SearchResult.Searching } &&
+        migratingItems.value.orEmpty().any { it.searchResult.value is SearchResult.Success }
 
     private fun mangasSkipped() = migratingItems.value.orEmpty().count { it.searchResult.value == SearchResult.NotFound }
 
@@ -357,7 +318,7 @@ class MigrationListScreenModel(
                     Timber.tag("MigrationListScreenModel").e(e, "Error updating manga from source")
                 }
 
-                migratingManga.searchResult.value = SearchResult.Result(result.id)
+                migratingManga.searchResult.value = SearchResult.Success(result.id)
             } else {
                 migratingManga.searchResult.value = SearchResult.NotFound
                 withUIContext {
@@ -366,7 +327,7 @@ class MigrationListScreenModel(
             }
 
             // KMK -->
-            sourceFinished()
+            updateMigrationProgress()
             // KMK <--
         }
     }
@@ -385,18 +346,18 @@ class MigrationListScreenModel(
             migratingProgress.value = 0f
             val items = migratingItems.value.orEmpty()
             try {
-                items.forEachIndexed { index, current ->
+                items.forEachIndexed { index, manga ->
                     try {
                         ensureActive()
-                        val target = current.searchResult.value.let {
-                            if (it is SearchResult.Result) {
+                        val target = manga.searchResult.value.let {
+                            if (it is SearchResult.Success) {
                                 getManga.await(it.id)
                             } else {
                                 null
                             }
                         }
                         if (target != null) {
-                            migrateManga(current.manga, target, replace)
+                            migrateManga(manga.manga, target, replace)
                         }
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
@@ -405,7 +366,7 @@ class MigrationListScreenModel(
                     migratingProgress.value = index.toFloat() / items.size
                 }
 
-                navigateOut()
+                navigateBack()
             } finally {
                 migratingProgress.value = Float.MAX_VALUE
                 migrateJob = null
@@ -418,20 +379,20 @@ class MigrationListScreenModel(
         migrateJob = null
     }
 
-    private suspend fun navigateOut() {
+    private suspend fun navigateBack() {
         navigateOut.emit(Unit)
     }
 
-    fun migrateManga(mangaId: Long, replace: Boolean) {
+    fun migrateNow(mangaId: Long, replace: Boolean) {
         manualMigrations.value++
         screenModelScope.launchIO {
-            val current = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
+            val manga = migratingItems.value.orEmpty().find { it.manga.id == mangaId }
                 ?: return@launchIO
 
-            val target = getManga.await((current.searchResult.value as? SearchResult.Result)?.id ?: return@launchIO)
+            val target = getManga.await((manga.searchResult.value as? SearchResult.Success)?.id ?: return@launchIO)
                 ?: return@launchIO
 
-            migrateManga(current.manga, target, replace)
+            migrateManga(manga.manga, target, replace)
             removeManga(mangaId)
         }
     }
@@ -445,7 +406,7 @@ class MigrationListScreenModel(
             item.searchingJob?.cancel()
             item.searchingJob = null
             item.searchResult.value = SearchResult.NotFound
-            sourceFinished()
+            updateMigrationProgress()
         }
     }
     // KMK <--
@@ -456,23 +417,18 @@ class MigrationListScreenModel(
                 ?: return@launchIO
             removeManga(item)
             item.migrationScope.cancel()
-            sourceFinished()
+            updateMigrationProgress()
         }
     }
 
     private fun removeManga(item: MigratingManga) {
-        when (val migration = config.migration) {
-            is MigrationType.MangaList -> {
-                val ids = migration.mangaIds.toMutableList()
-                val index = ids.indexOf(item.manga.id)
-                if (index > -1) {
-                    ids.removeAt(index)
-                    config.migration = MigrationType.MangaList(ids)
-                    val index2 = migratingItems.value.orEmpty().indexOf(item)
-                    if (index2 > -1) migratingItems.value = (migratingItems.value.orEmpty() - item).toImmutableList()
-                }
-            }
-            is MigrationType.MangaSingle -> Unit
+        val ids = mangaIds.toMutableList()
+        val index = ids.indexOf(item.manga.id)
+        if (index > -1) {
+            ids.removeAt(index)
+            mangaIds = ids
+            val index2 = migratingItems.value.orEmpty().indexOf(item)
+            if (index2 > -1) migratingItems.value = (migratingItems.value.orEmpty() - item).toImmutableList()
         }
     }
 
@@ -483,10 +439,8 @@ class MigrationListScreenModel(
         }
     }
 
-    fun openMigrateDialog(
-        copy: Boolean,
-    ) {
-        dialog.value = Dialog.MigrateMangaDialog(
+    fun showMigrateDialog(copy: Boolean) {
+        dialog.value = Dialog.Migrate(
             copy,
             migratingItems.value.orEmpty().size,
             mangasSkipped(),
@@ -494,24 +448,24 @@ class MigrationListScreenModel(
     }
 
     // KMK -->
-    fun openMigrationOptionsDialog() {
-        dialog.value = Dialog.MigrationOptionsDialog
+    fun openOptionsDialog() {
+        dialog.value = Dialog.Options
     }
 
     fun updateOptions() {
-        hideNotFound = preferences.migrationHideUnmatched().get()
-        showOnlyUpdates = preferences.migrationHideWithoutUpdates().get()
-        useSourceWithMost = preferences.migrationPrioritizeByChapters().get()
-        useSmartSearch = preferences.migrationDeepSearchMode().get()
+        hideUnmatched = preferences.migrationHideUnmatched().get()
+        hideWithoutUpdates = preferences.migrationHideWithoutUpdates().get()
+        prioritizeByChapters = preferences.migrationPrioritizeByChapters().get()
+        deepSearchMode = preferences.migrationDeepSearchMode().get()
     }
     // KMK <--
 
     sealed class Dialog {
-        data class MigrateMangaDialog(val copy: Boolean, val mangaSet: Int, val mangaSkipped: Int) : Dialog()
-        data object MigrationExitDialog : Dialog()
+        data class Migrate(val copy: Boolean, val totalCount: Int, val skippedCount: Int) : Dialog()
+        data object Exit : Dialog()
 
         // KMK -->
-        data object MigrationOptionsDialog : Dialog()
+        data object Options : Dialog()
         // KMK <--
     }
 }

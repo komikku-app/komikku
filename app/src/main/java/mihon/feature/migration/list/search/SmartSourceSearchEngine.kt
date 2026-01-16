@@ -11,13 +11,13 @@ class SmartSourceSearchEngine(
 
     override fun getTitle(result: SManga) = result.originalTitle
 
-    suspend fun smartSearch(source: CatalogueSource, title: String): Manga? =
-        smartSearch(makeSearchAction(source), title).let {
+    suspend fun regularSearch(source: CatalogueSource, title: String): Manga? =
+        regularSearch(makeSearchAction(source), title).let {
             it?.toDomainManga(source.id)
         }
 
-    suspend fun normalSearch(source: CatalogueSource, title: String): Manga? =
-        normalSearch(makeSearchAction(source), title).let {
+    suspend fun deepSearch(source: CatalogueSource, title: String): Manga? =
+        deepSearch(makeSearchAction(source), title).let {
             it?.toDomainManga(source.id)
         }
 

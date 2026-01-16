@@ -13,20 +13,30 @@ import tachiyomi.presentation.core.i18n.stringResource
 fun MigrationMangaDialog(
     onDismissRequest: () -> Unit,
     copy: Boolean,
-    mangaSet: Int,
-    mangaSkipped: Int,
+    totalCount: Int,
+    skippedCount: Int,
     copyManga: () -> Unit,
-    migrateManga: () -> Unit,
+    onMigrate: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
+        text = {
+            Text(
+                text = pluralStringResource(
+                    if (copy) SYMR.plurals.copy_entry else SYMR.plurals.migrate_entry,
+                    count = totalCount,
+                    totalCount,
+                    (if (skippedCount > 0) " " + stringResource(SYMR.strings.skipping_, skippedCount) else ""),
+                ),
+            )
+        },
         confirmButton = {
             TextButton(
                 onClick = {
                     if (copy) {
                         copyManga()
                     } else {
-                        migrateManga()
+                        onMigrate()
                     }
                 },
             ) {
@@ -37,16 +47,6 @@ fun MigrationMangaDialog(
             TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(MR.strings.action_cancel))
             }
-        },
-        text = {
-            Text(
-                text = pluralStringResource(
-                    if (copy) SYMR.plurals.copy_entry else SYMR.plurals.migrate_entry,
-                    count = mangaSet,
-                    mangaSet,
-                    (if (mangaSkipped > 0) " " + stringResource(SYMR.strings.skipping_, mangaSkipped) else ""),
-                ),
-            )
         },
     )
 }

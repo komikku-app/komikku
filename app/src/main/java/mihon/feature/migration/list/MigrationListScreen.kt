@@ -29,48 +29,33 @@ import tachiyomi.i18n.sy.SYMR
 /**
  * Screen showing a list of pair of current-target manga entries being migrated.
  */
-class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
+class MigrationListScreen(private val mangaIds: List<Long>, private val extraSearchQuery: String?) : Screen() {
 
-    var newSelectedItem: Pair<Long, Long>? = null
+    var matchOverride: Pair<Long, Long>? = null
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { MigrationListScreenModel(config) }
+        val navigator = LocalNavigator.currentOrThrow
+        val screenModel = rememberScreenModel { MigrationListScreenModel(mangaIds, extraSearchQuery) }
+        val context = LocalContext.current
         val items by screenModel.migratingItems.collectAsState()
-        val migrationDone by screenModel.migrationDone.collectAsState()
+        val migrationComplete by screenModel.migrationDone.collectAsState()
         val finishedCount by screenModel.finishedCount.collectAsState()
         val dialog by screenModel.dialog.collectAsState()
         val migrateProgress by screenModel.migratingProgress.collectAsState()
-        val navigator = LocalNavigator.currentOrThrow
-        val context = LocalContext.current
-        LaunchedEffect(items) {
-            if (items?.isEmpty() == true) {
-                val manualMigrations = screenModel.manualMigrations.value
-                context.toast(
-                    context.pluralStringResource(
-                        SYMR.plurals.entry_migrated,
-                        manualMigrations,
-                        manualMigrations,
-                    ),
-                )
-                if (!screenModel.hideNotFound) {
-                    navigator.pop()
-                }
-            }
-        }
 
-        LaunchedEffect(newSelectedItem) {
-            if (newSelectedItem != null) {
-                val (oldId, newId) = newSelectedItem!!
+        LaunchedEffect(matchOverride) {
+            if (matchOverride != null) {
+                val (oldId, newId) = matchOverride!!
                 screenModel.useMangaForMigration(context, newId, oldId)
-                newSelectedItem = null
+                matchOverride = null
             }
         }
 
         LaunchedEffect(screenModel) {
             screenModel.navigateOut.collect {
                 if (items.orEmpty().size == 1 && navigator.items.any { it is MangaScreen }) {
-                    val mangaId = (items.orEmpty().firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Result)?.id
+                    val mangaId = (items.orEmpty().firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Success)?.id
                     withUIContext {
                         if (mangaId != null) {
                             val newStack = navigator.items.filter {
@@ -95,28 +80,44 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 }
             }
         }
+
+        LaunchedEffect(items) {
+            if (items?.isEmpty() == true) {
+                val manualMigrations = screenModel.manualMigrations.value
+                context.toast(
+                    context.pluralStringResource(
+                        SYMR.plurals.entry_migrated,
+                        manualMigrations,
+                        manualMigrations,
+                    ),
+                )
+                if (!screenModel.hideUnmatched) {
+                    navigator.pop()
+                }
+            }
+        }
         MigrationListScreenContent(
             items = items ?: persistentListOf(),
-            migrationDone = migrationDone,
+            migrationComplete = migrationComplete,
             finishedCount = finishedCount,
             getManga = screenModel::getManga,
             getChapterInfo = screenModel::getChapterInfo,
             getSourceName = screenModel::getSourceName,
-            onMigrationItemClick = {
+            onItemClick = {
                 navigator.push(MangaScreen(it.id, true))
             },
-            openMigrationDialog = screenModel::openMigrateDialog,
-            skipManga = { screenModel.removeManga(it) },
-            // KMK -->
-            cancelManga = { screenModel.cancelManga(it) },
-            navigateUp = { navigator.pop() },
-            openMigrationOptionsDialog = screenModel::openMigrationOptionsDialog,
-            // KMK <--
-            searchManually = { migrationItem ->
+            onSearchManually = { migrationItem ->
                 navigator push MigrateSearchScreen(migrationItem.manga.id)
             },
-            migrateNow = { screenModel.migrateManga(it, true) },
-            copyNow = { screenModel.migrateManga(it, false) },
+            onSkip = { screenModel.removeManga(it) },
+            onMigrate = { screenModel.migrateNow(it, true) },
+            onCopy = { screenModel.migrateNow(it, false) },
+            openMigrationDialog = screenModel::showMigrateDialog,
+            // KMK -->
+            onCancel = { screenModel.cancelManga(it) },
+            navigateUp = { navigator.pop() },
+            openOptionsDialog = screenModel::openOptionsDialog,
+            // KMK <--
         )
 
         val onDismissRequest = { screenModel.dialog.value = null }
@@ -124,24 +125,24 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             @Suppress("NAME_SHADOWING")
             val dialog = dialog
         ) {
-            is MigrationListScreenModel.Dialog.MigrateMangaDialog -> {
+            is MigrationListScreenModel.Dialog.Migrate -> {
                 MigrationMangaDialog(
                     onDismissRequest = onDismissRequest,
                     copy = dialog.copy,
-                    mangaSet = dialog.mangaSet,
-                    mangaSkipped = dialog.mangaSkipped,
+                    totalCount = dialog.totalCount,
+                    skippedCount = dialog.skippedCount,
                     copyManga = screenModel::copyMangas,
-                    migrateManga = screenModel::migrateMangas,
+                    onMigrate = screenModel::migrateMangas,
                 )
             }
-            MigrationListScreenModel.Dialog.MigrationExitDialog -> {
+            MigrationListScreenModel.Dialog.Exit -> {
                 MigrationExitDialog(
                     onDismissRequest = onDismissRequest,
                     exitMigration = navigator::pop,
                 )
             }
             // KMK -->
-            MigrationListScreenModel.Dialog.MigrationOptionsDialog -> {
+            MigrationListScreenModel.Dialog.Options -> {
                 MigrationConfigScreenSheet(
                     preferences = screenModel.preferences,
                     onDismissRequest = onDismissRequest,
@@ -164,7 +165,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         }
 
         BackHandler(true) {
-            screenModel.dialog.value = MigrationListScreenModel.Dialog.MigrationExitDialog
+            screenModel.dialog.value = MigrationListScreenModel.Dialog.Exit
         }
     }
 }

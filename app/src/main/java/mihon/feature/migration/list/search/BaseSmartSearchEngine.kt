@@ -17,10 +17,10 @@ abstract class BaseSmartSearchEngine<T>(
 
     protected abstract fun getTitle(result: T): String
 
-    protected suspend fun smartSearch(searchAction: SearchAction<T>, title: String): T? {
+    protected suspend fun deepSearch(searchAction: SearchAction<T>, title: String): T? {
         val cleanedTitle = cleanSmartSearchTitle(title)
 
-        val queries = getSmartSearchQueries(cleanedTitle)
+        val queries = getDeepSearchQueries(cleanedTitle)
 
         val eligibleManga = supervisorScope {
             queries.map { query ->
@@ -42,10 +42,10 @@ abstract class BaseSmartSearchEngine<T>(
             }.flatMap { it.await() }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.distance }?.entry
     }
 
-    protected suspend fun normalSearch(searchAction: SearchAction<T>, title: String): T? {
+    protected suspend fun regularSearch(searchAction: SearchAction<T>, title: String): T? {
         val eligibleManga = supervisorScope {
             val searchQuery = if (extraSearchParams != null) {
                 "$title ${extraSearchParams.trim()}"
@@ -66,7 +66,7 @@ abstract class BaseSmartSearchEngine<T>(
             }
         }
 
-        return eligibleManga.maxByOrNull { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.distance }?.entry
     }
 
     private fun cleanSmartSearchTitle(title: String): String {
@@ -142,7 +142,7 @@ abstract class BaseSmartSearchEngine<T>(
         return result.toString()
     }
 
-    private fun getSmartSearchQueries(cleanedTitle: String): List<String> {
+    private fun getDeepSearchQueries(cleanedTitle: String): List<String> {
         val splitCleanedTitle = cleanedTitle.split(" ")
         val splitSortedByLargest = splitCleanedTitle.sortedByDescending { it.length }
 
@@ -155,7 +155,6 @@ abstract class BaseSmartSearchEngine<T>(
         // Search largest word
         // Search first two words
         // Search first word
-
         val searchQueries = listOf(
             listOf(cleanedTitle),
             splitSortedByLargest.take(2),
@@ -179,4 +178,4 @@ abstract class BaseSmartSearchEngine<T>(
     }
 }
 
-data class SearchEntry<T>(val manga: T, val dist: Double)
+data class SearchEntry<T>(val entry: T, val distance: Double)
