@@ -26,8 +26,9 @@ class EHConfigurator(val context: Context) {
         .maybeInjectEHLogger()
         .build()
 
-    private fun EHentai.requestWithCreds(sp: Int = 1) = Request.Builder()
-        .addHeader("Cookie", cookiesHeader(sp))
+    private fun EHentai.requestWithCreds(sp: Int = 1) =
+        Request.Builder()
+            .addHeader("Cookie", cookiesHeader(sp = sp))
 
     private suspend fun EHentai.execProfileActions(
         action: String,
