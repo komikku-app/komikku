@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -85,6 +86,9 @@ data object HistoryTab : Tab {
         val context = LocalContext.current
         val screenModel = rememberScreenModel { HistoryScreenModel() }
         val state by screenModel.state.collectAsState()
+        // KMK -->
+        val settingsScreenModel = rememberScreenModel { UpdatesSettingsScreenModel() }
+        // KMK <--
 
         HistoryScreen(
             state = state,
@@ -94,6 +98,9 @@ data object HistoryTab : Tab {
             onClickResume = screenModel::getNextChapterForManga,
             onDialogChange = screenModel::setDialog,
             onClickFavorite = screenModel::addFavorite,
+            // KMK -->
+            settingsScreenModel = settingsScreenModel,
+            // KMK <--
         )
 
         val onDismissRequest = { screenModel.setDialog(null) }
