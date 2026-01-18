@@ -1387,33 +1387,34 @@ class LibraryScreenModel(
         }
     }
 
+    // KMK --> Fix #1340: Save/restore category when search starts/ends
     fun search(query: String?) {
         mutableState.update { state ->
-            // KMK --> Fix #1340: Save/restore category when search starts/ends
-            val isQueryActive = !query.isNullOrBlank()
+            val isStartingSearch = !query.isNullOrBlank() && state.preSearchActiveCategoryId == null
+            val isClearingSearch = query.isNullOrBlank() && state.preSearchActiveCategoryId != null
 
             when {
-                // Starting a search: save current category (only if not already saved)
-                isQueryActive && state.preSearchActiveCategoryId == null -> {
+                isStartingSearch -> state.copy(
+                    searchQuery = query,
+                    preSearchActiveCategoryId = state.activeCategory?.id,
+                )
+                isClearingSearch -> {
+                    // Restore both ID and index to ensure UI state consistency
+                    val restoredIndex = state.libraryData.categories
+                        .indexOfFirst { it.id == state.preSearchActiveCategoryId }
+                        .takeIf { it != -1 } ?: state.activeCategoryIndex
                     state.copy(
                         searchQuery = query,
-                        preSearchActiveCategoryId = state.activeCategory?.id,
-                    )
-                }
-                // Clearing search: restore saved category
-                !isQueryActive && state.preSearchActiveCategoryId != null -> {
-                    state.copy(
-                        searchQuery = query,
+                        activeCategoryIndex = restoredIndex,
                         activeCategoryId = state.preSearchActiveCategoryId,
                         preSearchActiveCategoryId = null,
                     )
                 }
-                // Just updating search query (continuing to type, or clearing without saved category)
                 else -> state.copy(searchQuery = query)
             }
-            // KMK <--
         }
     }
+    // KMK <--
 
     fun updateActiveCategoryIndex(index: Int) {
         val newIndex = mutableState.updateAndGet { state ->
@@ -1421,9 +1422,6 @@ class LibraryScreenModel(
                 activeCategoryIndex = index,
                 // KMK -->
                 activeCategoryId = state.displayedCategories.getOrNull(index)?.id,
-                // Fix #1340: Don't modify preSearchActiveCategoryId here.
-                // It should only be set when search starts and cleared when search ends.
-                // Any category changes during search (automatic or manual) should not affect it.
                 // KMK <--
             )
         }
@@ -1704,9 +1702,7 @@ class LibraryScreenModel(
         val includedCategories: ImmutableSet<Long> = persistentSetOf(),
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
         // KMK <--
-        // KMK --> Fix #1340: Remember category before search to restore when search is cleared
-        val preSearchActiveCategoryId: Long? = null,
-        // KMK <--
+        val preSearchActiveCategoryId: Long? = null, // KMK: Fix #1340 - saved category to restore after search
     ) {
         /**
          * The grouped tabs which is displayed above the library screen.
