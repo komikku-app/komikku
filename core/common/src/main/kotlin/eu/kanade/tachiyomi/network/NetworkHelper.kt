@@ -20,31 +20,23 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 import kotlin.random.Random
 
-/* SY --> */ open /* SY <-- */ class NetworkHelper(
+open class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
     val isDebugBuild: Boolean,
 ) {
 
-    /* SY --> */ open /* SY <-- */ val cookieJar = AndroidCookieJar()
+    open val cookieJar = AndroidCookieJar()
 
-    /**
-     * Builds a shared OkHttpClient with a global concurrency limiter.
-     * Extension-specific rate limits are intentionally ignored.
-     */
     private fun clientBuilder(
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
         callTimeout: Long = 120,
     ): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
-            // Global concurrency limiter (fork-only behavior)
             .addInterceptor { chain ->
-                GlobalRequestLimiter.acquire()
-                try {
+                GlobalRequestLimiter.withPermit {
                     chain.proceed(chain.request())
-                } finally {
-                    GlobalRequestLimiter.release()
                 }
             }
             .cookieJar(cookieJar)
@@ -54,7 +46,7 @@ import kotlin.random.Random
             .cache(
                 Cache(
                     directory = File(context.cacheDir, "network_cache"),
-                    maxSize = 5L * 1024 * 1024, // 5 MiB
+                    maxSize = 5L * 1024 * 1024,
                 ),
             )
             .addInterceptor(UncaughtExceptionInterceptor())
@@ -87,10 +79,7 @@ import kotlin.random.Random
         }
     }
 
-    @Suppress("unused")
-    val nonCloudflareClient by lazy { clientBuilder().build() }
-
-    /* SY --> */ open /* SY <-- */ val client by lazy {
+    open val client by lazy {
         clientBuilder()
             .addInterceptor(
                 CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
@@ -98,9 +87,6 @@ import kotlin.random.Random
             .build()
     }
 
-    /**
-     * Client with extended timeout for large downloads.
-     */
     private fun clientWithTimeOut(
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
@@ -112,7 +98,9 @@ import kotlin.random.Random
         .build()
 
     /**
-     * Download a large file with resume + retry support.
+     * Blocking download with retry & resume support.
+     *
+     * MUST be called from a background thread.
      */
     fun downloadFileWithResume(
         url: String,
@@ -120,7 +108,9 @@ import kotlin.random.Random
         progressListener: ProgressListener,
     ) {
         val client = clientWithTimeOut(callTimeout = 120)
+
         var attempt = 0
+        var lastError: Throwable? = null
 
         while (attempt < MAX_RETRY) {
             try {
@@ -146,37 +136,58 @@ import kotlin.random.Random
                             saveResponseToFile(response, outputFile, startPosition)
                             return
                         } else {
+                            lastError = IOException("HTTP ${response.code}")
                             attempt++
-                            logcat(LogPriority.ERROR) {
-                                "Unexpected response code: ${response.code}. Retrying..."
+
+                            logcat(LogPriority.WARN) {
+                                "Unexpected response code ${response.code}. Retrying..."
                             }
+
                             if (response.code == 416) {
                                 outputFile.delete()
                             }
+
                             exponentialBackoff(attempt - 1)
                         }
                     }
             } catch (e: IOException) {
-                logcat(LogPriority.ERROR) {
+                lastError = e
+                attempt++
+
+                logcat(LogPriority.WARN) {
                     "Download interrupted: ${e.message}. Retrying..."
                 }
-                attempt++
+
                 exponentialBackoff(attempt - 1)
             }
         }
 
-        throw IOException("Max retry attempts reached.")
+        logcat(LogPriority.ERROR) {
+            "Download failed after $MAX_RETRY attempts"
+        }
+
+        throw IOException(
+            buildString {
+                append("Max retry attempts reached.")
+                lastError?.let { cause ->
+                    append(" Last error: ")
+                    append(cause::class.simpleName ?: "Exception")
+                    cause.message?.let { msg ->
+                        append(" - ")
+                        append(msg)
+                    }
+                }
+            },
+            lastError,
+        )
     }
 
-    /**
-     * Writes response body to file, starting at [startPosition].
-     */
     private fun saveResponseToFile(
         response: Response,
         outputFile: File,
         startPosition: Long,
     ) {
-        val body = response.body
+        val body = response.body ?: throw IOException("Empty response body")
 
         RandomAccessFile(outputFile, "rw").use { file ->
             file.seek(startPosition)
@@ -190,12 +201,10 @@ import kotlin.random.Random
         }
     }
 
-    /**
-     * Exponential backoff between retries.
-     */
     private fun exponentialBackoff(attempt: Int) {
-        val backoffDelay = calculateExponentialBackoff(attempt)
-        Thread.sleep(backoffDelay)
+        val delayMs = calculateExponentialBackoff(attempt)
+        logcat(LogPriority.INFO) { "Retrying in ${delayMs}ms" }
+        Thread.sleep(delayMs)
     }
 
     private fun calculateExponentialBackoff(
@@ -204,20 +213,8 @@ import kotlin.random.Random
         maxDelay: Long = 32000L,
     ): Long {
         val delay = baseDelay * 2.0.pow(attempt).toLong()
-        logcat(LogPriority.ERROR) { "Exponential backoff delay: $delay ms" }
         return (delay + Random.nextLong(0, 1000)).coerceAtMost(maxDelay)
     }
-
-    /**
-     * @deprecated Since extension-lib 1.5
-     */
-    @Deprecated(
-        "The regular client handles Cloudflare by default",
-        ReplaceWith("client"),
-    )
-    @Suppress("UNUSED")
-    open val cloudflareClient: OkHttpClient
-        get() = client
 
     fun defaultUserAgentProvider() =
         preferences.defaultUserAgent().get().trim()
