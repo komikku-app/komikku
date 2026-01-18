@@ -28,15 +28,22 @@ open class NetworkHelper(
 
     open val cookieJar = AndroidCookieJar()
 
+    /**
+     * Base OkHttp client builder
+     */
     private fun clientBuilder(
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
         callTimeout: Long = 120,
     ): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
+            // ✅ Global concurrency limiter (rate-limit bypass logic)
             .addInterceptor { chain ->
-                GlobalRequestLimiter.withPermit {
+                GlobalRequestLimiter.acquire()
+                try {
                     chain.proceed(chain.request())
+                } finally {
+                    GlobalRequestLimiter.release()
                 }
             }
             .cookieJar(cookieJar)
@@ -46,7 +53,7 @@ open class NetworkHelper(
             .cache(
                 Cache(
                     directory = File(context.cacheDir, "network_cache"),
-                    maxSize = 5L * 1024 * 1024,
+                    maxSize = 5L * 1024 * 1024, // 5 MiB
                 ),
             )
             .addInterceptor(UncaughtExceptionInterceptor())
@@ -87,20 +94,22 @@ open class NetworkHelper(
             .build()
     }
 
+    /**
+     * Client with custom timeouts (used for downloads)
+     */
     private fun clientWithTimeOut(
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
         callTimeout: Long = 120,
-    ) = clientBuilder(connectTimeout, readTimeout, callTimeout)
-        .addInterceptor(
-            CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
-        )
-        .build()
+    ): OkHttpClient =
+        clientBuilder(connectTimeout, readTimeout, callTimeout)
+            .addInterceptor(
+                CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
+            )
+            .build()
 
     /**
-     * Blocking download with retry & resume support.
-     *
-     * MUST be called from a background thread.
+     * Download with retry + resume support
      */
     fun downloadFileWithResume(
         url: String,
@@ -108,7 +117,6 @@ open class NetworkHelper(
         progressListener: ProgressListener,
     ) {
         val client = clientWithTimeOut(callTimeout = 120)
-
         var attempt = 0
         var lastError: Throwable? = null
 
@@ -137,45 +145,31 @@ open class NetworkHelper(
                             return
                         } else {
                             lastError = IOException("HTTP ${response.code}")
-                            attempt++
-
                             logcat(LogPriority.WARN) {
-                                "Unexpected response code ${response.code}. Retrying..."
+                                "Unexpected response code ${response.code}, retrying..."
                             }
-
                             if (response.code == 416) {
                                 outputFile.delete()
                             }
-
+                            attempt++
                             exponentialBackoff(attempt - 1)
                         }
                     }
             } catch (e: IOException) {
                 lastError = e
-                attempt++
-
                 logcat(LogPriority.WARN) {
-                    "Download interrupted: ${e.message}. Retrying..."
+                    "Download interrupted: ${e.message}, retrying..."
                 }
-
+                attempt++
                 exponentialBackoff(attempt - 1)
             }
-        }
-
-        logcat(LogPriority.ERROR) {
-            "Download failed after $MAX_RETRY attempts"
         }
 
         throw IOException(
             buildString {
                 append("Max retry attempts reached.")
-                lastError?.let { cause ->
-                    append(" Last error: ")
-                    append(cause::class.simpleName ?: "Exception")
-                    cause.message?.let { msg ->
-                        append(" - ")
-                        append(msg)
-                    }
+                lastError?.let {
+                    append(" Last error: ${it.message}")
                 }
             },
             lastError,
@@ -187,7 +181,7 @@ open class NetworkHelper(
         outputFile: File,
         startPosition: Long,
     ) {
-        val body = response.body ?: throw IOException("Empty response body")
+        val body = response.body
 
         RandomAccessFile(outputFile, "rw").use { file ->
             file.seek(startPosition)
@@ -203,7 +197,6 @@ open class NetworkHelper(
 
     private fun exponentialBackoff(attempt: Int) {
         val delayMs = calculateExponentialBackoff(attempt)
-        logcat(LogPriority.INFO) { "Retrying in ${delayMs}ms" }
         Thread.sleep(delayMs)
     }
 
@@ -213,10 +206,22 @@ open class NetworkHelper(
         maxDelay: Long = 32000L,
     ): Long {
         val delay = baseDelay * 2.0.pow(attempt).toLong()
+        logcat(LogPriority.INFO) { "Retry backoff: ${delay}ms" }
         return (delay + Random.nextLong(0, 1000)).coerceAtMost(maxDelay)
     }
 
-    fun defaultUserAgentProvider() =
+    /**
+     * Deprecated compatibility property
+     */
+    @Deprecated(
+        "The regular client handles Cloudflare by default",
+        ReplaceWith("client"),
+    )
+    @Suppress("UNUSED")
+    open val cloudflareClient: OkHttpClient
+        get() = client
+
+    fun defaultUserAgentProvider(): String =
         preferences.defaultUserAgent().get().trim()
 
     companion object {
