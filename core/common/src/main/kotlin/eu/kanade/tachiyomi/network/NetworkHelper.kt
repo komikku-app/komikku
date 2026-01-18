@@ -23,30 +23,34 @@ import kotlin.random.Random
 /* SY --> */ open /* SY <-- */ class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
-    // SY -->
     val isDebugBuild: Boolean,
-    // SY <--
 ) {
 
-    /* SY --> */ open /* SY <-- */val cookieJar = AndroidCookieJar()
+    /* SY --> */ open /* SY <-- */ val cookieJar = AndroidCookieJar()
 
     /**
-     * Timeout in unit of seconds.
+     * Builds a shared OkHttpClient with a global concurrency limiter.
+     * Extension-specific rate limits are intentionally ignored.
      */
-    private /* KMK --> */ fun /* KMK <-- */ clientBuilder(
-        // KMK -->
+    private fun clientBuilder(
         connectTimeout: Long = 30,
         readTimeout: Long = 30,
         callTimeout: Long = 120,
-        // KMK <--
-    ): OkHttpClient.Builder = run {
+    ): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
+            // Global concurrency limiter (fork-only behavior)
+            .addInterceptor { chain ->
+                GlobalRequestLimiter.acquire()
+                try {
+                    chain.proceed(chain.request())
+                } finally {
+                    GlobalRequestLimiter.release()
+                }
+            }
             .cookieJar(cookieJar)
-            // KMK -->
             .connectTimeout(connectTimeout, TimeUnit.SECONDS)
             .readTimeout(readTimeout, TimeUnit.SECONDS)
             .callTimeout(callTimeout, TimeUnit.SECONDS)
-            // KMK <--
             .cache(
                 Cache(
                     directory = File(context.cacheDir, "network_cache"),
@@ -59,13 +63,14 @@ import kotlin.random.Random
             .addNetworkInterceptor(BrotliInterceptor)
 
         if (isDebugBuild) {
-            val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.HEADERS
-            }
-            builder.addNetworkInterceptor(httpLoggingInterceptor)
+            builder.addNetworkInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.HEADERS
+                },
+            )
         }
 
-        when (preferences.dohProvider().get()) {
+        return when (preferences.dohProvider().get()) {
             PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
             PREF_DOH_GOOGLE -> builder.dohGoogle()
             PREF_DOH_ADGUARD -> builder.dohAdGuard()
@@ -82,9 +87,10 @@ import kotlin.random.Random
         }
     }
 
-    val nonCloudflareClient /* KMK --> */ by lazy /* KMK <-- */ { clientBuilder().build() }
+    @Suppress("unused")
+    val nonCloudflareClient by lazy { clientBuilder().build() }
 
-    /* SY --> */ open /* SY <-- */ val client /* KMK --> */ by lazy /* KMK <-- */ {
+    /* SY --> */ open /* SY <-- */ val client by lazy {
         clientBuilder()
             .addInterceptor(
                 CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
@@ -92,9 +98,8 @@ import kotlin.random.Random
             .build()
     }
 
-    // KMK -->
     /**
-     * Timeout in unit of seconds.
+     * Client with extended timeout for large downloads.
      */
     private fun clientWithTimeOut(
         connectTimeout: Long = 30,
@@ -107,23 +112,19 @@ import kotlin.random.Random
         .build()
 
     /**
-     * Allow to download a big file with retry & resume capability because
-     * normally it would get a Timeout exception.
+     * Download a large file with resume + retry support.
      */
-    fun downloadFileWithResume(url: String, outputFile: File, progressListener: ProgressListener) {
-        val client = clientWithTimeOut(
-            callTimeout = 120,
-        )
-
-        var downloadedBytes: Long
-
+    fun downloadFileWithResume(
+        url: String,
+        outputFile: File,
+        progressListener: ProgressListener,
+    ) {
+        val client = clientWithTimeOut(callTimeout = 120)
         var attempt = 0
 
         while (attempt < MAX_RETRY) {
             try {
-                // Check how much has already been downloaded
-                downloadedBytes = outputFile.length()
-                // Set up request with Range header to resume from the last byte
+                val downloadedBytes = outputFile.length()
                 val request = GET(
                     url = url,
                     headers = Headers.Builder()
@@ -131,39 +132,52 @@ import kotlin.random.Random
                         .build(),
                 )
 
-                var failed = false
-                client.newCachelessCallWithProgress(request, progressListener).execute().use { response ->
-                    if (response.isSuccessful || response.code == 206) { // 206 indicates partial content
-                        saveResponseToFile(response, outputFile, downloadedBytes)
+                client.newCachelessCallWithProgress(request, progressListener)
+                    .execute()
+                    .use { response ->
                         if (response.isSuccessful) {
+                            val startPosition =
+                                if (response.code == 206) downloadedBytes else 0L
+
+                            if (response.code != 206) {
+                                outputFile.delete()
+                            }
+
+                            saveResponseToFile(response, outputFile, startPosition)
                             return
+                        } else {
+                            attempt++
+                            logcat(LogPriority.ERROR) {
+                                "Unexpected response code: ${response.code}. Retrying..."
+                            }
+                            if (response.code == 416) {
+                                outputFile.delete()
+                            }
+                            exponentialBackoff(attempt - 1)
                         }
-                    } else {
-                        attempt++
-                        logcat(LogPriority.ERROR) { "Unexpected response code: ${response.code}. Retrying..." }
-                        if (response.code == 416) {
-                            // 416: Range Not Satisfiable
-                            outputFile.delete()
-                        }
-                        failed = true
                     }
-                }
-                if (failed) exponentialBackoff(attempt - 1)
             } catch (e: IOException) {
-                logcat(LogPriority.ERROR) { "Download interrupted: ${e.message}. Retrying..." }
-                // Wait or handle as needed before retrying
+                logcat(LogPriority.ERROR) {
+                    "Download interrupted: ${e.message}. Retrying..."
+                }
                 attempt++
                 exponentialBackoff(attempt - 1)
             }
         }
+
         throw IOException("Max retry attempts reached.")
     }
 
-    // Helper function to save data incrementally
-    private fun saveResponseToFile(response: Response, outputFile: File, startPosition: Long) {
+    /**
+     * Writes response body to file, starting at [startPosition].
+     */
+    private fun saveResponseToFile(
+        response: Response,
+        outputFile: File,
+        startPosition: Long,
+    ) {
         val body = response.body
 
-        // Use RandomAccessFile to write from specific position
         RandomAccessFile(outputFile, "rw").use { file ->
             file.seek(startPosition)
             body.byteStream().use { input ->
@@ -176,36 +190,39 @@ import kotlin.random.Random
         }
     }
 
-    // Increment attempt and apply exponential backoff
+    /**
+     * Exponential backoff between retries.
+     */
     private fun exponentialBackoff(attempt: Int) {
         val backoffDelay = calculateExponentialBackoff(attempt)
         Thread.sleep(backoffDelay)
     }
 
-    // Helper function to calculate exponential backoff with jitter
-    private fun calculateExponentialBackoff(attempt: Int, baseDelay: Long = 1000L, maxDelay: Long = 32000L): Long {
-        // Calculate the exponential delay
+    private fun calculateExponentialBackoff(
+        attempt: Int,
+        baseDelay: Long = 1000L,
+        maxDelay: Long = 32000L,
+    ): Long {
         val delay = baseDelay * 2.0.pow(attempt).toLong()
         logcat(LogPriority.ERROR) { "Exponential backoff delay: $delay ms" }
-        // Apply jitter by adding a random value to avoid synchronized retries in distributed systems
         return (delay + Random.nextLong(0, 1000)).coerceAtMost(maxDelay)
     }
-    // KMK <--
 
     /**
      * @deprecated Since extension-lib 1.5
      */
-    @Deprecated("The regular client handles Cloudflare by default", ReplaceWith("client"))
+    @Deprecated(
+        "The regular client handles Cloudflare by default",
+        ReplaceWith("client"),
+    )
     @Suppress("UNUSED")
-    /* SY --> */
-    open /* SY <-- */val cloudflareClient: OkHttpClient
+    open val cloudflareClient: OkHttpClient
         get() = client
 
-    fun defaultUserAgentProvider() = preferences.defaultUserAgent().get().trim()
+    fun defaultUserAgentProvider() =
+        preferences.defaultUserAgent().get().trim()
 
     companion object {
-        // KMK -->
         private const val MAX_RETRY = 5
-        // KMK <--
     }
 }
