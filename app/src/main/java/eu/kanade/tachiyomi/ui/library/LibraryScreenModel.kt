@@ -1388,7 +1388,31 @@ class LibraryScreenModel(
     }
 
     fun search(query: String?) {
-        mutableState.update { it.copy(searchQuery = query) }
+        mutableState.update { state ->
+            // KMK --> Fix #1340: Save/restore category when search starts/ends
+            val isQueryActive = !query.isNullOrBlank()
+
+            when {
+                // Starting a search: save current category (only if not already saved)
+                isQueryActive && state.preSearchActiveCategoryId == null -> {
+                    state.copy(
+                        searchQuery = query,
+                        preSearchActiveCategoryId = state.activeCategory?.id,
+                    )
+                }
+                // Clearing search: restore saved category
+                !isQueryActive && state.preSearchActiveCategoryId != null -> {
+                    state.copy(
+                        searchQuery = query,
+                        activeCategoryId = state.preSearchActiveCategoryId,
+                        preSearchActiveCategoryId = null,
+                    )
+                }
+                // Just updating search query (continuing to type, or clearing without saved category)
+                else -> state.copy(searchQuery = query)
+            }
+            // KMK <--
+        }
     }
 
     fun updateActiveCategoryIndex(index: Int) {
@@ -1397,6 +1421,9 @@ class LibraryScreenModel(
                 activeCategoryIndex = index,
                 // KMK -->
                 activeCategoryId = state.displayedCategories.getOrNull(index)?.id,
+                // Fix #1340: Don't modify preSearchActiveCategoryId here.
+                // It should only be set when search starts and cleared when search ends.
+                // Any category changes during search (automatic or manual) should not affect it.
                 // KMK <--
             )
         }
@@ -1676,6 +1703,9 @@ class LibraryScreenModel(
         val filterCategory: Boolean = false,
         val includedCategories: ImmutableSet<Long> = persistentSetOf(),
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
+        // KMK <--
+        // KMK --> Fix #1340: Remember category before search to restore when search is cleared
+        val preSearchActiveCategoryId: Long? = null,
         // KMK <--
     ) {
         /**
