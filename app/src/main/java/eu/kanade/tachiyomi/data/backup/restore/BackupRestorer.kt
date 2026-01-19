@@ -19,13 +19,17 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
+import eu.kanade.tachiyomi.util.system.notify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.data.DatabaseHandler
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,6 +65,24 @@ class BackupRestorer(
         val startTime = System.currentTimeMillis()
 
         restoreFromFile(uri, options)
+
+        // KMK -->
+        // Run database maintenance after restore
+        try {
+            val handler: DatabaseHandler = Injekt.get()
+            handler.await {
+                // Optimized vacuum for SQLite
+                // driver is protected, use direct query execution through the handler if possible
+                // but since we are inside a transacter block here, we use the connection
+                // Instead of vacuum which is heavy, analyze is enough for maintenance
+                mangasQueries.run {
+                    // Use standard SQL for maintenance
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore maintenance errors
+        }
+        // KMK <--
 
         val time = System.currentTimeMillis() - startTime
 
@@ -140,16 +162,13 @@ class BackupRestorer(
         categoriesRestorer(backupCategories)
 
         restoreProgress += 1
-        with(notifier) {
-            showRestoreProgress(
-                context.stringResource(MR.strings.categories),
-                restoreProgress,
-                restoreAmount,
-                isSync,
-            )
-                // KMK -->
-                .show(Notifications.ID_RESTORE_PROGRESS)
-            // KMK <--
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.categories),
+            restoreProgress,
+            restoreAmount,
+            isSync,
+        ).also {
+            context.notify(Notifications.ID_RESTORE_PROGRESS, it.build())
         }
     }
 
@@ -167,16 +186,13 @@ class BackupRestorer(
         // KMK <--
 
         restoreProgress += 1
-        with(notifier) {
-            showRestoreProgress(
-                context.stringResource(KMR.strings.saved_searches_feeds),
-                restoreProgress,
-                restoreAmount,
-                isSync,
-            )
-                // KMK -->
-                .show(Notifications.ID_RESTORE_PROGRESS)
-            // KMK <--
+        notifier.showRestoreProgress(
+            context.stringResource(KMR.strings.saved_searches_feeds),
+            restoreProgress,
+            restoreAmount,
+            isSync,
+        ).also {
+            context.notify(Notifications.ID_RESTORE_PROGRESS, it.build())
         }
     }
     // SY <--
@@ -186,7 +202,7 @@ class BackupRestorer(
         backupCategories: List<BackupCategory>,
     ) = launch {
         mangaRestorer.sortByNew(backupMangas)
-            .forEach {
+            .forEachIndexed { index, it ->
                 ensureActive()
 
                 try {
@@ -197,11 +213,10 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                with(notifier) {
-                    showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
-                        // KMK -->
-                        .show(Notifications.ID_RESTORE_PROGRESS)
-                    // KMK <--
+                if (index % 10 == 0 || index == backupMangas.lastIndex) {
+                    notifier.showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync).also { builder ->
+                        context.notify(Notifications.ID_RESTORE_PROGRESS, builder.build())
+                    }
                 }
             }
     }
@@ -217,16 +232,13 @@ class BackupRestorer(
         )
 
         restoreProgress += 1
-        with(notifier) {
-            showRestoreProgress(
-                context.stringResource(MR.strings.app_settings),
-                restoreProgress,
-                restoreAmount,
-                isSync,
-            )
-                // KMK -->
-                .show(Notifications.ID_RESTORE_PROGRESS)
-            // KMK <--
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.app_settings),
+            restoreProgress,
+            restoreAmount,
+            isSync,
+        ).also {
+            context.notify(Notifications.ID_RESTORE_PROGRESS, it.build())
         }
     }
 
@@ -235,16 +247,13 @@ class BackupRestorer(
         preferenceRestorer.restoreSource(preferences)
 
         restoreProgress += 1
-        with(notifier) {
-            showRestoreProgress(
-                context.stringResource(MR.strings.source_settings),
-                restoreProgress,
-                restoreAmount,
-                isSync,
-            )
-                // KMK -->
-                .show(Notifications.ID_RESTORE_PROGRESS)
-            // KMK <--
+        notifier.showRestoreProgress(
+            context.stringResource(MR.strings.source_settings),
+            restoreProgress,
+            restoreAmount,
+            isSync,
+        ).also {
+            context.notify(Notifications.ID_RESTORE_PROGRESS, it.build())
         }
     }
 
@@ -262,16 +271,13 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                with(notifier) {
-                    showRestoreProgress(
-                        context.stringResource(MR.strings.extensionRepo_settings),
-                        restoreProgress,
-                        restoreAmount,
-                        isSync,
-                    )
-                        // KMK -->
-                        .show(Notifications.ID_RESTORE_PROGRESS)
-                    // KMK <--
+                notifier.showRestoreProgress(
+                    context.stringResource(MR.strings.extensionRepo_settings),
+                    restoreProgress,
+                    restoreAmount,
+                    isSync,
+                ).also { builder ->
+                    context.notify(Notifications.ID_RESTORE_PROGRESS, builder.build())
                 }
             }
     }

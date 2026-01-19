@@ -11,7 +11,10 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 object GlobalRequestLimiter {
 
-    private const val DEFAULT_MAX_CONCURRENT_REQUESTS = 8
+    // KMK -->
+    // Increased from 8 to 20 for faster parallel image loading.
+    private const val DEFAULT_MAX_CONCURRENT_REQUESTS = 20
+    // KMK <--
 
     private val maxPermits = AtomicInteger(DEFAULT_MAX_CONCURRENT_REQUESTS)
 

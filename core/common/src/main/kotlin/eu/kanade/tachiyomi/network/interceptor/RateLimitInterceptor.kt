@@ -114,7 +114,17 @@ internal class RateLimitInterceptor(
             fairLock.release()
         }
 
-        val response = chain.proceed(request)
+        var response = chain.proceed(request)
+
+        // KMK -->
+        if (response.code == 429) {
+            // Automatic retry after a short delay on 429 Too Many Requests
+            response.close()
+            SystemClock.sleep(2000)
+            response = chain.proceed(request)
+        }
+        // KMK <--
+
         if (response.networkResponse == null) { // response is cached, remove it from queue
             synchronized(requestQueue) {
                 if (requestQueue.isEmpty() || timestamp < requestQueue.first) return@synchronized

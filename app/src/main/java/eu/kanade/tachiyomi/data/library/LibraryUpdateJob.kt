@@ -391,7 +391,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      * @return an observable delivering the progress of each update.
      */
     private suspend fun updateChapterList() {
-        val semaphore = Semaphore(5)
+        val semaphore = Semaphore(15) // Increased from 5 to 15 for faster batching
         val progressCount = AtomicInt(0)
         val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
         val newUpdates = CopyOnWriteArrayList<Pair<Manga, Array<Chapter>>>()

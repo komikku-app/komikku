@@ -15,6 +15,7 @@ import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
 import tachiyomi.data.manga.MergedMangaMapper
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.FetchInterval
@@ -53,6 +54,9 @@ class MangaRestorer(
 ) {
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
+
+    private var dbCategories: List<Category>? = null
+    private var dbMergedMangaReferences: List<tachiyomi.domain.manga.model.MergedMangaReference>? = null
 
     init {
         now = ZonedDateTime.now()
@@ -183,7 +187,7 @@ class MangaRestorer(
         )
     }
 
-    private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
+    private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>): List<Chapter> {
         val dbChaptersByUrl = getChaptersByMangaId.await(manga.id)
             .associateBy { it.url }
 
@@ -202,6 +206,9 @@ class MangaRestorer(
 
         insertNewChapters(newChapters)
         updateExistingChapters(existingChapters)
+
+        // Return all chapters for this manga (to use in history restoration)
+        return getChaptersByMangaId.await(manga.id)
     }
 
     private fun updateChapterBasedOnSyncState(chapter: Chapter, dbChapter: Chapter): Chapter {
@@ -252,6 +259,7 @@ class MangaRestorer(
         )
 
     private suspend fun insertNewChapters(chapters: List<Chapter>) {
+        if (chapters.isEmpty()) return
         handler.await(true) {
             chapters.forEach { chapter ->
                 chaptersQueries.insert(
@@ -273,6 +281,7 @@ class MangaRestorer(
     }
 
     private suspend fun updateExistingChapters(chapters: List<Chapter>) {
+        if (chapters.isEmpty()) return
         handler.await(true) {
             chapters.forEach { chapter ->
                 chaptersQueries.update(
@@ -348,9 +357,9 @@ class MangaRestorer(
         // SY <--
     ): Manga {
         restoreCategories(manga, categories, backupCategories)
-        restoreChapters(manga, chapters)
+        val dbChapters = restoreChapters(manga, chapters)
         restoreTracking(manga, tracks)
-        restoreHistory(manga, history)
+        restoreHistory(manga, dbChapters, history)
         restoreExcludedScanlators(manga, excludedScanlators)
         updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         // SY -->
@@ -374,8 +383,10 @@ class MangaRestorer(
         categories: List<Long>,
         backupCategories: List<BackupCategory>,
     ) {
-        val dbCategories = getCategories.await()
-        val dbCategoriesByName = dbCategories.associateBy { it.name }
+        if (dbCategories == null) {
+            dbCategories = getCategories.await()
+        }
+        val dbCategoriesByName = dbCategories!!.associateBy { it.name }
 
         val backupCategoriesByOrder = backupCategories.associateBy { it.order }
 
@@ -397,37 +408,34 @@ class MangaRestorer(
         }
     }
 
-    private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
+    private suspend fun restoreHistory(
+        manga: Manga,
+        dbChapters: List<Chapter>,
+        backupHistory: List<BackupHistory>,
+    ) {
+        if (backupHistory.isEmpty()) return
+
+        val dbHistory = handler.awaitList { historyQueries.getHistoryByMangaId(manga.id) }
+            .associateBy { it.chapter_id }
+
+        val chaptersByUrl = dbChapters.associateBy { it.url }
+
         val toUpdate = backupHistory.mapNotNull { history ->
-            // KMK -->
-            val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
-                .firstOrNull()
-            // KMK <--
-            val item = history.getHistoryImpl()
+            val chapter = chaptersByUrl[history.url] ?: return@mapNotNull null
+            val item = history.getHistoryImpl().copy(chapterId = chapter.id)
+            val existingHistory = dbHistory[chapter.id]
 
-            if (dbHistory == null) {
-                // KMK -->
-                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id) }
-                    .firstOrNull()
-                // KMK <--
-                return@mapNotNull if (chapter == null) {
-                    // Chapter doesn't exist; skip
-                    null
-                } else {
-                    // New history entry
-                    item.copy(chapterId = chapter._id)
-                }
+            if (existingHistory == null) {
+                item
+            } else {
+                item.copy(
+                    id = existingHistory._id,
+                    readAt = max(item.readAt?.time ?: 0L, existingHistory.last_read?.time ?: 0L)
+                        .takeIf { it > 0L }
+                        ?.let { Date(it) },
+                    readDuration = max(item.readDuration, existingHistory.time_read) - existingHistory.time_read,
+                )
             }
-
-            // Update history entry
-            item.copy(
-                id = dbHistory._id,
-                chapterId = dbHistory.chapter_id,
-                readAt = max(item.readAt?.time ?: 0L, dbHistory.last_read?.time ?: 0L)
-                    .takeIf { it > 0L }
-                    ?.let { Date(it) },
-                readDuration = max(item.readDuration, dbHistory.time_read) - dbHistory.time_read,
-            )
         }
 
         if (toUpdate.isNotEmpty()) {
@@ -444,6 +452,7 @@ class MangaRestorer(
     }
 
     private suspend fun restoreTracking(manga: Manga, backupTracks: List<BackupTracking>) {
+        if (backupTracks.isEmpty()) return
         val dbTrackByTrackerId = getTracks.await(manga.id).associateBy { it.trackerId }
 
         val (existingTracks, newTracks) = backupTracks
@@ -508,9 +517,13 @@ class MangaRestorer(
         mergeMangaId: Long,
         backupMergedMangaReferences: List<BackupMergedMangaReference>,
     ) {
+        if (backupMergedMangaReferences.isEmpty()) return
+
         // Get merged manga references from file and from db
-        val dbMergedMangaReferences = handler.awaitList {
-            mergedQueries.selectAll(MergedMangaMapper::map)
+        if (dbMergedMangaReferences == null) {
+            dbMergedMangaReferences = handler.awaitList {
+                mergedQueries.selectAll(MergedMangaMapper::map)
+            }
         }
 
         // Iterate over them
@@ -522,7 +535,7 @@ class MangaRestorer(
                 // If the backupMergedMangaReference isn't in the db,
                 // remove the id and insert a new backupMergedMangaReference
                 // Store the inserted id in the backupMergedMangaReference
-                if (dbMergedMangaReferences.none {
+                if (dbMergedMangaReferences!!.none {
                         backupMergedMangaReference.mergeUrl == it.mergeUrl &&
                             backupMergedMangaReference.mangaUrl == it.mangaUrl
                     }

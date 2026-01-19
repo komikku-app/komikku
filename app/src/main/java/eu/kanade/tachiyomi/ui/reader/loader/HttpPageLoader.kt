@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
+import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
@@ -8,6 +9,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import exh.source.isEhBasedSource
 import exh.util.DataSaver
 import exh.util.DataSaver.Companion.getImage
@@ -127,7 +129,17 @@ internal class HttpPageLoader(
         if (page.status == Page.State.Queue) {
             queuedPages += PriorityPage(page, 1).also { queue.offer(it) }
         }
-        queuedPages += preloadNextPages(page, preloadSize)
+
+        // KMK -->
+        // Adaptive prefetching based on connection type
+        val context = Injekt.get<Application>()
+        val adaptivePreloadSize = if (context.isConnectedToWifi()) {
+            preloadSize * 2 // Aggressive prefetch on Wi-Fi
+        } else {
+            preloadSize // Normal prefetch on Mobile Data
+        }
+        queuedPages += preloadNextPages(page, adaptivePreloadSize)
+        // KMK <--
 
         suspendCancellableCoroutine<Nothing> { continuation ->
             continuation.invokeOnCancellation {
