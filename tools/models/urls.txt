@@ -1,0 +1,27 @@
+# Candidate model URLs to download into app/src/main/assets/waifu2x_models/
+# Lines starting with '#' are comments and skipped by the downloader.
+# If any URL fails (Google Drive/OneDrive etc.), it will be reported in the PR for manual handling.
+
+# Real-CUGAN (Bilibili AI Lab / mirrors)
+# Official repo: https://github.com/bilibili/ailab/tree/main/Real-CUGAN
+https://github.com/bilibili/ailab/releases/download/v0.1.0/realcugan_x4.pth
+https://huggingface.co/JacksonYan/Real-CUGAN/resolve/main/realcugan_x4.pth
+
+# Real-ESRGAN (xinntao / community mirrors)
+# Example: RealESRGAN_x4plus.pth (community mirror)
+https://huggingface.co/iahhnim/ESRGAN_collection/resolve/main/RealESRGAN_x4plus.pth
+https://github.com/xinntao/Real-ESRGAN/releases/download/v0.3.0/RealESRGAN_x4plus.pth
+
+# waifu2x (official repo / NCNN-Vulkan releases)
+# nagadomi/waifu2x models (repo models folder)
+https://raw.githubusercontent.com/nagadomi/waifu2x/master/models/upconv_7/anime_style_art_rgb_upconv_7_model.json
+https://raw.githubusercontent.com/nagadomi/waifu2x/master/models/upconv_7/anime_style_art_rgb_upconv_7_model.bin
+# waifu2x-ncnn-vulkan community release (archive with models)
+https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download/20220319/models.tar.gz
+
+# "Nose" model (unknown public canonical source)
+# Placeholder: mihon may reference a specific custom model named "Nose".
+# If automatic download fails for this entry, it will be flagged for manual upload.
+https://example.com/path/to/nose_model.pth
+
+# End of list
