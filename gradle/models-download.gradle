@@ -1,0 +1,33 @@
+// Gradle script to download waifu2x/Real-CUGAN/Real-ESRGAN models into app assets before build
+// Usage: ./gradlew :app:downloadWaifu2xModels
+import org.apache.tools.ant.taskdefs.condition.Os
+
+task downloadWaifu2xModels {
+    doLast {
+        def outDir = file("${projectDir}/src/main/assets/waifu2x_models")
+        if (!outDir.exists()) outDir.mkdirs()
+
+        def urlsFile = file("${rootDir}/tools/models/urls.txt")
+        if (!urlsFile.exists()) {
+            println "No models URL list found at ${rootDir}/tools/models/urls.txt. Please add model URLs there."
+            return
+        }
+
+        urlsFile.eachLine { line ->
+            def url = line.trim()
+            if (!url) return
+            try {
+                def fileName = url.tokenize('/').last()
+                def outFile = new File(outDir, fileName)
+                if (outFile.exists()) {
+                    println "Skipping, already exists: ${fileName}"
+                } else {
+                    println "Downloading ${url} -> ${outFile.absolutePath}"
+                    ant.get(src: url, dest: outFile.absolutePath, skipexisting: true)
+                }
+            } catch (Exception e) {
+                println "Failed to download ${line}: ${e.message}"
+            }
+        }
+    }
+}
