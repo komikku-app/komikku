@@ -97,7 +97,7 @@ fun MangaBottomActionMenu(
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
-            var resetJob: Job? = remember { null }
+            var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
@@ -289,7 +289,7 @@ fun LibraryBottomActionMenu(
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
-            var resetJob: Job? = remember { null }
+            var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
