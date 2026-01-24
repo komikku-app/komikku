@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -216,7 +217,7 @@ private fun LibraryUpdateErrorBottomBar(
     ) {
         val haptic = LocalHapticFeedback.current
         val confirm = remember { mutableStateListOf(false, false, false, false, false) }
-        var resetJob: Job? = remember { null }
+        var resetJob by remember { mutableStateOf<Job?>(null) }
         val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
