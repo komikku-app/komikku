@@ -185,4 +185,11 @@
     <string name="pref_discord_show_download_button_summary"></string>
     <string name="discord_download_button"></string>
     <string name="downloaded_data"></string>
+    <string name="custom_theme_palette_bubblegum"></string>
+    <string name="custom_theme_palette_pop"></string>
+    <string name="custom_theme_palette_outrun"></string>
+    <string name="custom_theme_palette_springfield"></string>
+    <string name="theme_mocha"></string>
+    <string name="pref_theme_cover_based_style_tonalspot"></string>
+    <string name="theme_sapphire"></string>
 </resources>
