@@ -118,4 +118,10 @@
     <string name="action_remove_merged">Ta bort ursprungliga poster från biblioteket?</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_manual_install">Manuell installation</string>
+    <string name="pref_theme_cover_based_style_fidelity"></string>
+    <string name="custom_theme_palette_pop"></string>
+    <string name="custom_theme_palette_outrun"></string>
+    <string name="custom_theme_palette_springfield"></string>
+    <string name="theme_mocha"></string>
+    <string name="theme_sapphire"></string>
 </resources>
