@@ -191,4 +191,5 @@
     <string name="pref_panorama_cover_flow"></string>
     <string name="sync_progress_from_trackers_up_to_chapter"></string>
     <string name="pref_panorama_cover"></string>
+    <string name="downloaded_data"></string>
 </resources>
