@@ -26,7 +26,7 @@
     <string name="changelogs">Journaux des modifications</string>
     <string name="related_mangas_more">Dans le même style...</string>
     <string name="too_many_in_feed">Trop de sources dans votre flux, ne peut pas ajouter plus que limité (20)</string>
-    <string name="current_">Actuellement : %1$s</string>
+    <string name="current_">Actuellement : %1$s</string>
     <string name="pref_theme_cover_based">Thème basé sur la couverture</string>
     <string name="pref_theme_cover_based_style_neutral">Neutre</string>
     <string name="pref_theme_cover_based_style_vibrant">Vibrant</string>
@@ -73,7 +73,7 @@
     <string name="related_mangas_website_suggestions">Suggestions de site web</string>
     <string name="action_hide">Cacher</string>
     <string name="action_sort_feed">Trier les flux</string>
-    <string name="sort_feed_confirmation">Souhaitez-vous trier les flux par ordre alphabétique ?</string>
+    <string name="sort_feed_confirmation">Souhaitez-vous trier les flux par ordre alphabétique ?</string>
     <string name="pref_custom_theme_style">Style de thème personnalisé</string>
     <string name="pref_theme_cover_based_style">Style de thème basé sur la couverture</string>
     <string name="custom_color_description">Choisissez une couleur de graine pour le thème personnalisé</string>
@@ -114,7 +114,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copier la page combinée dans le presse-papiers</string>
     <string name="auto_update_app_disable_auto_download">Ne pas télécharger automatiquement la mise à jour</string>
     <string name="action_remove_merged">Supprimer les entrées originales de la bibliothèque ?</string>
-    <string name="batch_add_description">Compatible : MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Compatible : MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal</string>
     <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
     <string name="theme_doom">Doom</string>
@@ -147,8 +147,8 @@
     <string name="pref_track_on_add_library">Ouvrir le menu Suivi lors de l\'ajout à la bibliothèque</string>
     <string name="downloaded_data">Données téléchargées</string>
     <string name="chapters_from_database">Chapitres et historique issus de la base de données</string>
-    <string name="job_failed_schedule_update_check">Échec de la planification de la mise à jour automatique de la bibliothèque : %s</string>
-    <string name="job_failed_schedule_backup_check">Échec de la planification de la sauvegarde automatique : %s</string>
+    <string name="job_failed_schedule_update_check">Échec de la planification de la mise à jour automatique de la bibliothèque : %s</string>
+    <string name="job_failed_schedule_backup_check">Échec de la planification de la sauvegarde automatique : %s</string>
     <string name="sponsor_me">Soutenez-moi</string>
     <string name="special_services">Services spéciaux</string>
     <string name="pref_category_connections">Connexions</string>
