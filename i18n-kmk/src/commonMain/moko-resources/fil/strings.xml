@@ -184,4 +184,12 @@
     <string name="custom_theme_palette_patagonia"></string>
     <string name="pref_panorama_cover"></string>
     <string name="theme_doom"></string>
+    <string name="pref_discord_rpc"></string>
+    <string name="scale_type_16_9"></string>
+    <string name="scale_type_3_2"></string>
+    <string name="connections_discord"></string>
+    <string name="scale_type_4_3"></string>
+    <string name="pref_category_discord_incognito"></string>
+    <string name="scale_type_20_9"></string>
+    <string name="discord_status_description"></string>
 </resources>
