@@ -113,7 +113,7 @@
     <string name="action_copy_to_clipboard_second_page">Copier la seconde page dans le presse-papiers</string>
     <string name="action_copy_to_clipboard_combined_page">Copier la page combinée dans le presse-papiers</string>
     <string name="auto_update_app_disable_auto_download">Ne pas télécharger automatiquement la mise à jour</string>
-    <string name="action_remove_merged">Supprimer les entrées originales de la bibliothèque ?</string>
+    <string name="action_remove_merged">Supprimer les entrées originales de la bibliothèque ?</string>
     <string name="batch_add_description">Compatible : MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal</string>
     <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
