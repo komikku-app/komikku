@@ -189,4 +189,7 @@
     <string name="pref_discord_show_download_button_summary"></string>
     <string name="discord_download_button"></string>
     <string name="downloaded_data"></string>
+    <string name="theme_mocha"></string>
+    <string name="action_source_search"></string>
+    <string name="theme_doom"></string>
 </resources>
