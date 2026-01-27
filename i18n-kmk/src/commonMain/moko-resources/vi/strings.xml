@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 tiếng</string>
     <string name="download_cache_renew_interval_12hour">12 tiếng</string>
     <string name="download_cache_renew_interval_24hour">1 ngày</string>
-    <string name="download_cache_renew_interval_info">Nếu đặt thành "thủ công", cần làm mới từng truyện hoặc sử dụng "Reindex tải xuống" trong "Nâng cao"</string>
+    <string name="download_cache_renew_interval_info">Nếu đặt thành thủ công, cần làm mới từng truyện hoặc sử dụng Reindex tải xuống trong Nâng cao</string>
     <string name="pref_clean_invalid_downloads">Dọn dẹp các dữ liệu tải xuống không hợp lệ</string>
     <string name="pref_clean_invalid_downloads_summary">Tìm và xóa các dữ liệu, tệp và thư mục tải xuống mà không nằm trong thư viện</string>
     <string name="invalid_downloads_cleaned">Đã dọn dẹp giữ liệu tải xuống không hợp lệ</string>
