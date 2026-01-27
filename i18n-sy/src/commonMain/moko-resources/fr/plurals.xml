@@ -11,24 +11,24 @@
         <item quantity="other">%d temps de verrouillage</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="one">%1$d Tag dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tag basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tag que vous voulez</item>
-        <item quantity="many">%1$d Tags dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tags basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tags que vous voulez</item>
-        <item quantity="other">%1$d Tags dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tags basée sur la priorité, ce qui signifie que les mangas seront triés de manière à prioriser ceux avec les tags que vous voulez</item>
+        <item quantity="one">%1$d tag dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tag basée sur la priorité, ce qui signifie que les séries seront triées de manière à prioriser celles avec les tags que vous souhaitez</item>
+        <item quantity="many">%1$d tags dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tag basée sur la priorité, ce qui signifie que les séries seront triées de manière à prioriser celles avec les tags que vous souhaitez</item>
+        <item quantity="other">%1$d tags dans la liste de tri. Cela ajoute une option dans la bibliothèque pour trier par une liste de tag basée sur la priorité, ce qui signifie que les séries seront triées de manière à prioriser celles avec les tags que vous souhaitez</item>
     </plurals>
     <plurals name="migrate_entry">
-        <item quantity="one">Migrer %1$d%2$s entrée ?</item>
-        <item quantity="many">Migrer %1$d%2$s entrées ?</item>
-        <item quantity="other">Migrer %1$d%2$s entrées ?</item>
+        <item quantity="one">Migrer %1$d%2$s série ?</item>
+        <item quantity="many">Migrer %1$d%2$s séries ?</item>
+        <item quantity="other">Migrer %1$d%2$s séries ?</item>
     </plurals>
     <plurals name="copy_entry">
-        <item quantity="one">Copie %1$d%2$s entrée ?</item>
-        <item quantity="many">Copie %1$d%2$s entrées ?</item>
-        <item quantity="other">Copie %1$d%2$s entrées ?</item>
+        <item quantity="one">Copie %1$d%2$s série ?</item>
+        <item quantity="many">Copie %1$d%2$s séries ?</item>
+        <item quantity="other">Copie %1$d%2$s séries ?</item>
     </plurals>
     <plurals name="entry_migrated">
-        <item quantity="one">%d entrée migrée</item>
-        <item quantity="many">%d entrées migrées</item>
-        <item quantity="other">%d entrées migrées</item>
+        <item quantity="one">%d série migrée</item>
+        <item quantity="many">%d séries migrées</item>
+        <item quantity="other">%d séries migrées</item>
     </plurals>
     <!-- Extra gallery info -->
     <plurals name="num_pages">

@@ -88,7 +88,7 @@
     <string name="time_between_batches_summary_1">%1$s は現在、ライブラリ内のギャラリーで更新を確認することはありません。</string>
     <string name="time_between_batches_summary_2">%1$s のチェック/更新ギャラリーは一括で行われます。つまり、 %2$d 時間待機します。 %3$d ギャラリーをチェックし、 %2$d 時間待機します。…で %3$d をチェックします。</string>
     <string name="show_updater_statistics">更新の統計情報を表示</string>
-    <string name="gallery_updater_statistics_collection">統計情報を収集中...</string>
+    <string name="gallery_updater_statistics_collection">統計情報を収集中…</string>
     <string name="gallery_updater_statistics">ギャラリー更新の統計情報</string>
     <string name="gallery_updater_stats_text">更新は最後に %1$s を実行し、確認可能な %3$d ギャラリーのうち %2$d を確認しました。</string>
     <string name="gallery_updater_not_ran_yet">更新はまだ実行されていません。</string>
@@ -142,7 +142,7 @@
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">ここに Bandwidth Hero Proxy server のurlを入力して下さい</string>
-    <string name="clear_db_exclude_read">既読の章がある作品は保持</string>
+    <string name="clear_db_exclude_read">読み終えた章を含むエントリーを保持する</string>
     <!-- Log Level -->
     <string name="log_minimal">最小</string>
     <string name="log_extra">最大</string>
@@ -657,4 +657,12 @@
     <string name="multi_tags_comma_separated">タグをコンマで区切って入力してください。</string>
     <string name="alt_titles">代替タイトル</string>
     <string name="select_tracker">トラッカーを選択</string>
+    <string name="pref_tracker_resolve_using_source_metadata">ソースのメタデータを使用してエントリを選択します</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">ソースがトラッカーへのリンクを提供している場合、自動的に一致するタイトルを選択します。現在、MangaDexでサポートされています</string>
+    <string name="scan_qr_code">QRコードをスキャンしてください</string>
+    <string name="entry_not_tracked">エントリーは追跡されていません。</string>
+    <string name="fill_from_tracker">トラッカーから入力する</string>
+    <string name="only_show_updated_entries">新しい章を含むエントリーのみを表示する</string>
+    <string name="rec_search">共通の推奨事項を見つける</string>
+    <string name="rec_hide_library_entries">ライブラリに既に存在する結果を非表示にする</string>
 </resources>

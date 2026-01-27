@@ -33,8 +33,8 @@
         <item quantity="other">%1$d başarısız sayfa tekrar deneniyor…</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s, %1$d sayfa</item>
-        <item quantity="other">%2$s, %1$d sayfa</item>
+        <item quantity="one">%2$s %1$d sayfa</item>
+        <item quantity="other">%2$s %1$d sayfa</item>
     </plurals>
     <plurals name="cleanup_done">
         <item quantity="one">Temizleme tamamlandı. %d klasör kaldırıldı</item>

@@ -354,6 +354,9 @@
     <string name="action_share_second_page">Share second page</string>
     <string name="action_save_combined_page">Save combined page</string>
     <string name="action_share_combined_page">Share combined page</string>
+    <string name="action_copy_first_page">Copy first page</string>
+    <string name="action_copy_second_page">Copy second page</string>
+    <string name="action_copy_combined_page">Copy combined page</string>
 
     <!-- Reader Sharing -->
     <string name="share_pages_info">%1$s: %2$s, pages %3$s</string>

@@ -448,7 +448,7 @@
     <string name="pref_clear_page_preview_cache">Linisin ang cache ng pag preview</string>
     <string name="page_preview_page_go_to">Pumunta sa</string>
     <string name="no_rating">Walang rating</string>
-    <string name="more_info">Dagdag Impormasyon</string>
+    <string name="more_info">Karagdagang impo</string>
     <string name="is_exhentai_gallery">ay Exhentai na gallery</string>
     <string name="thumbnail_url">URL ng thumbnail</string>
     <string name="date_posted">Petsang nai-post</string>
@@ -592,7 +592,7 @@
     <string name="multi_tags_comma_separated">Maglagay ng (mga) tag, na pinaghihiwalay ng mga kuwit (,).</string>
     <string name="settings_profile_note">Profile note na mga setting</string>
     <string name="pref_sync_api_key">API key</string>
-    <string name="alt_titles">Alternatibong mga Pamagat</string>
+    <string name="alt_titles">Mga Alternatibong pamagat</string>
     <string name="pref_sync_host">Host</string>
     <string name="video">Bidyo</string>
     <string name="url">Url</string>
@@ -647,4 +647,8 @@
     <string name="rec_collecting">Nangongolekta ng mga rekomendasyon</string>
     <string name="rec_initializing">Sinisimulan</string>
     <string name="scan_qr_code">Mag-scan ng QR code</string>
+    <string name="filename">Pangalan ng file</string>
+    <string name="file_extension">Extension ng file</string>
+    <string name="final_chapter">Huling Kabanata</string>
+    <string name="base_url">Base url</string>
 </resources>
