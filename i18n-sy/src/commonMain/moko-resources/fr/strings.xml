@@ -466,7 +466,6 @@
     <string name="pref_mark_read_dupe_chapters">Marquer les chapitres en double comme lus</string>
     <string name="pref_archive_reader_mode_summary">La manière dont les images contenues dans les archives, telles que CBZ ou CBR, sont chargées</string>
     <string name="reset_info">Réinitialiser les informations</string>
-    <string name="too_many_in_feed">Trop de sources dans votre flux, vous ne pouvez pas en ajouter plus de 10</string>
     <string name="reader_bottom_buttons_summary">Personnaliser les boutons apparaissant au bas du lecteur</string>
     <string name="action_share_combined_page">Partager la page combinée</string>
     <string name="data_saver_stop_exclude">Arrêter d\'exclure de l\'économiseur de données</string>

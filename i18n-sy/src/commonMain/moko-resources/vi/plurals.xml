@@ -31,7 +31,7 @@
         <item quantity="other">%1$d phút trước</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="other">%2$s, %1$d trang</item>
+        <item quantity="other">%2$s %1$d trang</item>
     </plurals>
     <plurals name="humanize_month">
         <item quantity="other">%1$d Tháng trước</item>

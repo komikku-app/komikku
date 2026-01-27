@@ -25,7 +25,7 @@
     <string name="update_check_notification_preview_available">Mises à jour à venir (bientôt) !</string>
     <string name="changelogs">Journaux des modifications</string>
     <string name="related_mangas_more">Dans le même style...</string>
-    <string name="too_many_in_feed">Trop de sources dans votre flux, ne peut pas ajouter plus que limité (20)</string>
+    <string name="too_many_in_feed">Trop de sources dans votre flux, vous ne pouvez pas en ajouter plus de 20</string>
     <string name="current_">Actuellement : %1$s</string>
     <string name="pref_theme_cover_based">Thème basé sur la couverture</string>
     <string name="pref_theme_cover_based_style_neutral">Neutre</string>

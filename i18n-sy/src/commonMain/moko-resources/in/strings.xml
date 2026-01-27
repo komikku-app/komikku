@@ -595,6 +595,9 @@
     <string name="relation_side_story">Cerita Sampingan</string>
     <string name="relation_colored">Berwarna</string>
     <string name="relation_serialization">Serialisasi</string>
+    <string name="action_copy_second_page">Salin halaman kedua</string>
+    <string name="action_copy_combined_page">Salin halaman gabungan</string>
+    <string name="action_copy_first_page">Salin halaman pertama</string>
     <string name="page_preview_page_go_to">Pergi ke</string>
     <string name="aes_128">AES 128</string>
     <string name="community_recommendations">Rekomendasi komunitas</string>

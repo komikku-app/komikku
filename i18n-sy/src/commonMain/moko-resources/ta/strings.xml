@@ -453,7 +453,6 @@
     <string name="invalid_category_name">தவறான வகை பெயர்</string>
     <string name="feed">தீவனம்</string>
     <string name="feed_delete">தீவன உருப்படியை நீக்கவா?</string>
-    <string name="too_many_in_feed">உங்கள் ஊட்டத்தில் பல ஆதாரங்கள், 10 க்கு மேல் சேர்க்க முடியாது</string>
     <string name="feed_tab_empty">உங்கள் ஊட்டத்தில் உங்களிடம் எந்த ஆதாரங்களும் இல்லை, ஒன்றைச் சேர்க்க மேல் உரிமைக்கு செல்லவும்</string>
     <string name="feed_add">உணவளிக்க %1$s ஐச் சேர்க்கவா?</string>
     <string name="add_tag">குறிச்சொல்லைச் சேர்க்கவும்</string>
@@ -537,6 +536,7 @@
     <string name="favorites_sync_reset_message">ஒத்திசைவு நிலையை மீட்டமைப்பது உங்கள் அடுத்த ஒத்திசைவு மிகவும் மெதுவாக இருக்கும்.</string>
     <string name="favorites_sync_conformation_message">உங்களுக்கு பிடித்தவைகளை ஈ-எண்டாயுடன் ஒத்திசைக்க விரும்புகிறீர்களா?</string>
     <string name="eh_batch_add">தொகுதி சேர்</string>
+    <string name="md_batch_add_description">எடுத்துக்காட்டு:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">எடுத்துக்காட்டு:\n\n http://e- hentai.org/g/12345/1a2b3c4e\n http://g.e-hentai.org/g/67890/6f7g8h9i\n http://exhentai.org/g/13579/1a3b5c7e\n https://exhentai.org/g/24680/2f4g6h8i\n\n ஏற்றுமதி செய்யப்பட்ட தரவைப் பார்வையிட்ட E-H ஐ இது ஆதரிக்கிறது\n</string>
     <string name="eh_batch_add_title">சேர்க்க கேலரிகளை உள்ளிடவும் (ஒரு புதிய வரியால் பிரிக்கப்பட்டுள்ளது):</string>
     <string name="eh_batch_add_button">கேலரிகளைச் சேர்க்கவும்</string>

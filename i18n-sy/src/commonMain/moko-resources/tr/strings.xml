@@ -318,7 +318,6 @@
     <string name="feed_delete">Akış ögesi silinsin mi?</string>
     <string name="add_tag">Etiket Ekle</string>
     <string name="tag_sorting">Etiket sıralama</string>
-    <string name="too_many_in_feed">Akışınızda çok fazla kaynak var, 10\'dan daha fazla eklenemiyor</string>
     <string name="shift_double_pages">Bir sayfa kaydır</string>
     <string name="pref_crop_borders_pager">Kenarları kırp (Sayfalı)</string>
     <string name="pref_crop_borders_continuous_vertical">Kenarları kırp (Kesintisiz Dikey)</string>
@@ -462,6 +461,7 @@
     <string name="gallery_adder_could_not_add_gallery">Galeri eklenemedi (url: %1$s)!</string>
     <string name="favorites_sync_notes_message"><![CDATA[1. Uygulamada kategori isimlerine yapılan değişiklikler <b>EŞİTLENMEYECEKTİR!</b> Lütfen kategori isimlerini <i>ExHentai üzerinde değiştirin.</i> Kategori isimleri her eşitlemede ExHentai sunucularından kopyalanacaktır.<br><br>2. ExHentai üzerindeki favori kategoriler <b>uygulamadaki ilk 10 kategoriye karşılık gelmektedir.</b> (\'Varsayılan\' kategori hariç) <i>Diğer kategorilerdeki galeriler <b>EŞİTLENMEYECEKTİR!</b></i><br><br>3. <font color=\'red\'><b>EŞİTLEME DEVAM EDERKEN STABİL BİR İNTERNET BAĞLANTINIZ OLDUĞUNDAN EMİN OLUN!</b></font> Eşitleme sırasında internet bağlantınız kesilirse favorileriniz <i>yarı eşitlenmiş bir durumda kalabilir.</i><br><br>4. Eşitleme devam ederken uygulamayı açık tutun. Android, bazen arka planda olan uygulamaları kapatır ve eşitleme sürecinde bunun olması olumsuz sonuçlara neden olur.<br><br>5. <b>Favorilerinizi birden fazla kategoriye KOYMAYIN.</b> (uygulama bunu desteklemektedir) ExHentai her favorinin tek bir kategoride olmasına izin verdiği için bu, eşitleme algoritmasının kafasını karıştırabilir.<br><br>Bu mesaj sadece bir kere gösterilecektir. Bu notları tekrar okumak için \'Ayarlar > E-Hentai > Favori eşitleme notları\' bölümüne gidebilirsiniz.]]></string>
     <string name="eh_batch_add">Topluca Ekle</string>
+    <string name="md_batch_add_description">Örnek:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Örnek:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nAyrıca E-H Ziyaret Edilmiş şeklindeki dışa aktarılmış veriler de desteklenmektedir.\n</string>
     <string name="eh_batch_add_title">Eklenecek galerileri girin (her biri yeni satırlar ile ayrılmış):</string>
     <string name="eh_batch_add_finish">Bitir</string>

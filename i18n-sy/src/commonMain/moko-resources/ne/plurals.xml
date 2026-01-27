@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s, %1$d पेज</item>
-        <item quantity="other">%2$s, %1$d पेजहरु</item>
+        <item quantity="one">%2$s %1$d पेज</item>
+        <item quantity="other">%2$s %1$d पेजहरु</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="one">%1$d बर्ष आगधि</item>

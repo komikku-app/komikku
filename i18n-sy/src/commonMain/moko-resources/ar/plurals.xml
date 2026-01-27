@@ -116,9 +116,9 @@
         <item quantity="zero">%d صفحة</item>
         <item quantity="one">صفحة واحدة</item>
         <item quantity="two">صفحتان</item>
-        <item quantity="few">%2$s, %1$d صفحات</item>
-        <item quantity="many">%2$s, %1$d صفحات</item>
-        <item quantity="other">%2$s, %1$d صفحات</item>
+        <item quantity="few">%2$s %1$d صفحات</item>
+        <item quantity="many">%2$s %1$d صفحات</item>
+        <item quantity="other">%2$s %1$d صفحات</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="zero">منذ %1$d عام</item>

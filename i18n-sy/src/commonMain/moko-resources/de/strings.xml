@@ -443,7 +443,6 @@
     <string name="tag_filtering_threshhold_error">Muss zwischen -9999 und 0 liegen!</string>
     <string name="use_hentai_at_home_summary">Bilder durch das Hentai@Home-Netzwerk laden. Das Abschalten dieser Funktion reduziert die Anzahl an Seiten, die angesehen werden können. \nOptionen: \n- Jeder Client (empfohlen)\n- Nur Clients, die Standardports verwenden, erlauben (Möglicherweise langsamer. Wähle diese Option aus, falls du hinter einer Firewall/einem Proxy bist, die Nicht-Standard-Ports blocken.)</string>
     <string name="similar_titles">Ähnliche Titel</string>
-    <string name="too_many_in_feed">Zu viele Quellen in Ihrem Feed. Sie können nicht mehr als 10 hinzufügen</string>
     <string name="add_tags">Tags hinzufügen</string>
     <string name="tag_watching_threshhold_error">Muss zwischen 0 und 9999 liegen!</string>
     <string name="eh_image_quality_summary">Die Qualität der heruntergeladenen Bilder</string>
@@ -581,6 +580,7 @@
     <string name="favorites_sync_failed_to_add_to_local">Die Galerie konnte nicht zur lokalen Datenbank hinzugefügt werden:</string>
     <string name="favorites_sync_conformation_message">Sind Sie sicher, dass Sie Ihre Favoriten mit E-Hentai synchronisieren möchten?</string>
     <string name="eh_batch_add_title">Geben Sie die Galerien ein, die hinzugefügt werden sollen (getrennt durch einen Zeilenumbruch):</string>
+    <string name="md_batch_add_description">Beispiel:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Beispiel:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttp://exhentai.org/g/24680/2f4g6h8i\n\nEs unterstützt auch E-H Visited exportierte Daten\n</string>
     <string name="use_intelligent_search">Suche Titel und Stichwörter des Titels</string>
     <string name="save_search_invalid">Gespeicherte Suche ungültg, Filter haben sich geändert</string>

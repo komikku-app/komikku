@@ -79,7 +79,7 @@
     <string name="skip_this_step_next_time">Preskoči ovaj korak idući put</string>
     <string name="use_intelligent_search">Traži naslov i ključne riječi naslova</string>
     <string name="ext_redundant">Redundantno</string>
-    <string name="redundant_extension_message">Ovo proširenje je redundantno i neće se koristiti unutar ove Tachiyomi verzije.</string>
+    <string name="redundant_extension_message">Ovo proširenje je redundantno i neće se koristiti unutar ove Komikku verzije.</string>
     <string name="select_sources">Odaberi izvore</string>
     <string name="pre_migration_skip_toast">Za ponovni prikaz ovog ekrana idi na Postavke -&gt; Biblioteka.</string>
     <string name="data_to_include_in_migration">Podaci koji se uključuju u premještanje</string>
@@ -430,6 +430,7 @@
     <string name="favorites_sync_reset_message">Ponovno postavljanje stanja sinkronizacije može prouzročiti iznimno sporu sljedeću sinkronizaciju.</string>
     <string name="favorites_sync_conformation_message">Stvarno želiš sinkronizirati svoje favorite s E-Hentai platformom?</string>
     <string name="eh_batch_add">Skupno dodavanje</string>
+    <string name="md_batch_add_description">Primjer:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Primjer:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nTakođer podržava izvezene podatke posjećenih E-H galerija\n</string>
     <string name="eh_batch_add_title">Upiši galerije koje želiš dodati (odvojene novim redom):</string>
     <string name="eh_batch_add_button">Dodaj galerije</string>
@@ -616,7 +617,6 @@
     <string name="pref_hide_feed">Sakrij karticu feeda</string>
     <string name="pref_feed_position_summery">Želiš li da kartica feeda bude prva kartica u pregledavanju? Time će se pojaviti kao zadana kartica prilikom otvaranja pregledavanja. Ne preporučuje se ako koristiš mobilne podatke ili mrežu s tarifom</string>
     <string name="feed_delete">Izbrisati stavku feeda?</string>
-    <string name="too_many_in_feed">Previše izvora u tvom feedu, ne možeš dodati više od 10</string>
     <string name="feed_tab_empty">Nemaš nijedan izvor u svom feedu, idi gore desno za dodavanje izvora</string>
     <string name="feed_add">Dodati %1$s u feed?</string>
     <string name="download_threads">Preuzmi teme</string>
