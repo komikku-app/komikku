@@ -461,11 +461,12 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, selected)
                 it.copy(selected = selected)
             }
+            // KMK -->
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            // KMK <--
             state.copy(items = newItems.toPersistentList())
         }
-
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun invertSelection() {
@@ -474,10 +475,12 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, !it.selected)
                 it.copy(selected = !it.selected)
             }
+            // KMK -->
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            // KMK <--
             state.copy(items = newItems.toPersistentList())
         }
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun setDialog(dialog: Dialog?) {

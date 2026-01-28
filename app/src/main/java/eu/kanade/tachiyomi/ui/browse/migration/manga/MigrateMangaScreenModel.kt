@@ -149,11 +149,10 @@ class MigrateMangaScreenModel(
                 selectedMangaIds.addOrRemove(it.manga.id, selected)
                 it.copy(selected = selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(titleList = newItems.toImmutableList())
         }
-
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun invertSelection() {
@@ -162,10 +161,10 @@ class MigrateMangaScreenModel(
                 selectedMangaIds.addOrRemove(it.manga.id, !it.selected)
                 it.copy(selected = !it.selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(titleList = newItems.toImmutableList())
         }
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
     // KMK <--
 

@@ -129,11 +129,10 @@ class LibraryUpdateErrorScreenModel(
                 selectedErrorIds.addOrRemove(it.error.errorId, selected)
                 it.copy(selected = selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(items = newItems)
         }
-
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun invertSelection() {
@@ -142,10 +141,10 @@ class LibraryUpdateErrorScreenModel(
                 selectedErrorIds.addOrRemove(it.error.errorId, !it.selected)
                 it.copy(selected = !it.selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(items = newItems)
         }
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     @OptIn(DelicateCoroutinesApi::class)
