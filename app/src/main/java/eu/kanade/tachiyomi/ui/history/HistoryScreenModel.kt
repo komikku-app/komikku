@@ -77,7 +77,7 @@ class HistoryScreenModel(
     // KMK -->
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
-    private val selectedHistoryIds: HashSet<Long> = HashSet()
+    private val selectedChapterIds: HashSet<Long> = HashSet()
     // KMK <--
 
     init {
@@ -148,7 +148,7 @@ class HistoryScreenModel(
         return map {
             HistoryItem(
                 it,
-                selected = it.id in selectedHistoryIds,
+                selected = it.chapterId in selectedChapterIds,
             )
         }
     }
@@ -313,7 +313,7 @@ class HistoryScreenModel(
         val (selected, userSelected, fromLongPress) = selectionOptions
         mutableState.update { state ->
             val newItems = state.list.toMutableList().apply {
-                val selectedIndex = indexOfFirst { it.history.id == item.history.id }
+                val selectedIndex = indexOfFirst { it.history.chapterId == item.history.chapterId }
                 if (selectedIndex < 0) return@apply
 
                 val selectedItem = get(selectedIndex)
@@ -321,7 +321,7 @@ class HistoryScreenModel(
 
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
-                selectedHistoryIds.addOrRemove(item.history.id, selected)
+                selectedChapterIds.addOrRemove(item.history.chapterId, selected)
 
                 if (selected && userSelected && fromLongPress) {
                     if (firstSelection) {
@@ -344,7 +344,7 @@ class HistoryScreenModel(
                         range.forEach {
                             val inbetweenItem = get(it)
                             if (!inbetweenItem.selected) {
-                                selectedHistoryIds.add(inbetweenItem.history.id)
+                                selectedChapterIds.add(inbetweenItem.history.chapterId)
                                 set(it, inbetweenItem.copy(selected = true))
                             }
                         }
@@ -372,7 +372,7 @@ class HistoryScreenModel(
     fun toggleAllSelection(selected: Boolean) {
         mutableState.update { state ->
             val newItems = state.list.map {
-                selectedHistoryIds.addOrRemove(it.history.id, selected)
+                selectedChapterIds.addOrRemove(it.history.chapterId, selected)
                 it.copy(selected = selected)
             }
             selectedPositions[0] = -1
@@ -384,7 +384,7 @@ class HistoryScreenModel(
     fun invertSelection() {
         mutableState.update { state ->
             val newItems = state.list.map {
-                selectedHistoryIds.addOrRemove(it.history.id, !it.selected)
+                selectedChapterIds.addOrRemove(it.history.chapterId, !it.selected)
                 it.copy(selected = !it.selected)
             }
             selectedPositions[0] = -1
