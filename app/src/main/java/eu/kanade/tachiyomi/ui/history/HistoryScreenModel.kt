@@ -15,15 +15,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
+import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
@@ -36,6 +40,7 @@ import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.history.interactor.RemoveHistory
 import tachiyomi.domain.history.model.HistoryWithRelations
+import tachiyomi.domain.history.service.HistoryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
@@ -58,6 +63,9 @@ class HistoryScreenModel(
     private val updateManga: UpdateManga = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     private val sourceManager: SourceManager = Injekt.get(),
+    // KMK -->
+    private val historyPreferences: HistoryPreferences = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<HistoryScreenModel.State>(State()) {
 
     private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
@@ -65,10 +73,25 @@ class HistoryScreenModel(
 
     init {
         screenModelScope.launch {
-            state.map { it.searchQuery }
-                .distinctUntilChanged()
-                .flatMapLatest { query ->
-                    getHistory.subscribe(query ?: "")
+            // KMK -->
+            combine(
+                // KMK <--
+                state.map { it.searchQuery }
+                    .distinctUntilChanged(),
+                // KMK -->
+                getHistoryItemPreferenceFlow()
+                    .distinctUntilChanged(),
+            ) { query, itemPreferences -> query to itemPreferences }
+                .flatMapLatest { (query, pref) ->
+                    // KMK <--
+                    getHistory.subscribe(
+                        query ?: "",
+                        // KMK -->
+                        unfinishedManga = pref.filterUnfinishedManga.toBooleanOrNull(),
+                        unfinishedChapter = pref.filterUnfinishedChapter.toBooleanOrNull(),
+                        nonLibraryEntries = pref.filterNonLibraryManga.toBooleanOrNull(),
+                        // KMK <--
+                    )
                         .distinctUntilChanged()
                         .catch { error ->
                             logcat(LogPriority.ERROR, error)
@@ -79,6 +102,25 @@ class HistoryScreenModel(
                 }
                 .collect { newList -> mutableState.update { it.copy(list = newList) } }
         }
+
+        // KMK -->
+        getHistoryItemPreferenceFlow()
+            .map { prefs ->
+                listOf(
+                    prefs.filterUnfinishedManga,
+                    prefs.filterUnfinishedChapter,
+                    prefs.filterNonLibraryManga,
+                )
+                    .any { it != TriState.DISABLED }
+            }
+            .distinctUntilChanged()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(hasActiveFilters = it)
+                }
+            }
+            .launchIn(screenModelScope)
+        // KMK <--
     }
 
     private fun List<HistoryWithRelations>.toHistoryUiModels(): List<HistoryUiModel> {
@@ -237,11 +279,41 @@ class HistoryScreenModel(
         }
     }
 
+    // KMK -->
+    private fun getHistoryItemPreferenceFlow(): Flow<ItemPreferences> {
+        return combine(
+            historyPreferences.filterUnfinishedManga().changes(),
+            historyPreferences.filterUnfinishedChapter().changes(),
+            historyPreferences.filterNonLibraryManga().changes(),
+        ) { unfinishedManga, unfinishedChapter, nonLibraryManga ->
+            ItemPreferences(
+                filterUnfinishedManga = unfinishedManga,
+                filterUnfinishedChapter = unfinishedChapter,
+                filterNonLibraryManga = nonLibraryManga,
+            )
+        }
+    }
+
+    fun showFilterDialog() {
+        mutableState.update { it.copy(dialog = Dialog.FilterSheet) }
+    }
+
+    @Immutable
+    private data class ItemPreferences(
+        val filterUnfinishedManga: TriState,
+        val filterUnfinishedChapter: TriState,
+        val filterNonLibraryManga: TriState,
+    )
+    // KMK <--
+
     @Immutable
     data class State(
         val searchQuery: String? = null,
         val list: List<HistoryUiModel>? = null,
         val dialog: Dialog? = null,
+        // KMk -->
+        val hasActiveFilters: Boolean = false,
+        // KMK <--
     )
 
     sealed interface Dialog {
@@ -253,7 +325,20 @@ class HistoryScreenModel(
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
         data class Migrate(val target: Manga, val current: Manga) : Dialog
+        // KMK -->
+        data object FilterSheet : Dialog
+        // KMK <--
     }
+
+    // KMK -->
+    private fun TriState.toBooleanOrNull(): Boolean? {
+        return when (this) {
+            TriState.DISABLED -> null
+            TriState.ENABLED_IS -> true
+            TriState.ENABLED_NOT -> false
+        }
+    }
+    // KMK <--
 
     sealed interface Event {
         data class OpenChapter(val chapter: Chapter?) : Event

@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.util.lang.toTimestampString
 import exh.debug.DebugToggles
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -139,7 +140,7 @@ fun HistoryItem(
                 if (hasUnread) {
                     Icon(
                         imageVector = Icons.Filled.Circle,
-                        contentDescription = stringResource(MR.strings.unread),
+                        contentDescription = stringResource(KMR.strings.action_filter_unfinished_manga),
                         modifier = Modifier
                             .height(8.dp)
                             .padding(end = 4.dp),

@@ -71,17 +71,26 @@ CASE
     WHEN (chapterFlags & :bookmarkUnmask) != 0 THEN totalCount - bookmarkCount
     WHEN (chapterFlags & :bookmarkMask) != 0 THEN bookmarkCount
     ELSE totalCount
-END AS totalCount,
+END AS totalCountCalculated,
 CASE
     WHEN (chapterFlags & :bookmarkUnmask) != 0 THEN readCount - bookmarkReadCount
     WHEN (chapterFlags & :bookmarkMask) != 0 THEN bookmarkReadCount
     ELSE readCount
-END AS readCount,
+END AS readCountCalculated,
 -- KMK <--
 readAt,
 readDuration
 FROM historyView
 WHERE historyView.readAt > 0
+-- KMK -->
+AND (
+    :unfinishedManga IS NULL
+    OR (:unfinishedManga = 1 AND totalCountCalculated > readCountCalculated)
+    OR (:unfinishedManga = 0 AND totalCountCalculated <= readCountCalculated)
+)
+AND (:unfinishedChapter IS NULL OR read != :unfinishedChapter)
+AND (:nonLibraryEntries IS NULL OR favorite = :nonLibraryEntries)
+-- KMK <--
 AND maxReadAtChapterId = historyView.chapterId
 AND lower(historyView.title) LIKE ('%' || :query || '%')
 ORDER BY readAt DESC;
