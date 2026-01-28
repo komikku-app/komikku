@@ -17,8 +17,8 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // KMK -->
         read = true,
         lastPageRead = 5,
-        totalChapters = 5L,
-        readCount = 3L,
+        totalCountCalculated = 5L,
+        readCountCalculated = 3L,
         // KMK <--
         readAt = Date(1697247357L),
         readDuration = 123L,
@@ -42,8 +42,8 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // KMK -->
         read = false,
         lastPageRead = 5,
-        totalChapters = 5L,
-        readCount = 3L,
+        totalCountCalculated = 5L,
+        readCountCalculated = 3L,
         // KMK <--
         readAt = null,
         readDuration = 123L,
@@ -67,8 +67,8 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // KMK -->
         read = true,
         lastPageRead = 5,
-        totalChapters = 5L,
-        readCount = 3L,
+        totalCountCalculated = 5L,
+        readCountCalculated = 3L,
         // KMK <--
         readAt = Date(1697247357L),
         readDuration = 123L,

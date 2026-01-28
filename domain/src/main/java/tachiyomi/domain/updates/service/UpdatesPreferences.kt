@@ -35,8 +35,12 @@ class UpdatesPreferences(
 
     // KMK -->
     fun usePanoramaCover() = preferenceStore.getBoolean(
-        "pref_updates_screen_use_panorama_cover",
+        USE_PANORAMA_COVER_PREF,
         false,
     )
     // KMK <--
 }
+
+// KMK -->
+const val USE_PANORAMA_COVER_PREF = "pref_updates_history_screen_use_panorama_cover"
+// KMK <--

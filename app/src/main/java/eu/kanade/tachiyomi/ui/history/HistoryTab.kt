@@ -24,6 +24,7 @@ import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.history.HistoryScreen
 import eu.kanade.presentation.history.components.HistoryDeleteAllDialog
 import eu.kanade.presentation.history.components.HistoryDeleteDialog
+import eu.kanade.presentation.history.components.HistoryFilterDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
@@ -33,7 +34,6 @@ import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -43,6 +43,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -87,7 +88,8 @@ data object HistoryTab : Tab {
         val screenModel = rememberScreenModel { HistoryScreenModel() }
         val state by screenModel.state.collectAsState()
         // KMK -->
-        val settingsScreenModel = rememberScreenModel { UpdatesSettingsScreenModel() }
+        val settingsScreenModel = rememberScreenModel { HistorySettingsScreenModel() }
+        val usePanoramaCover by settingsScreenModel.historyPreferences.usePanoramaCover().collectAsState()
         // KMK <--
 
         HistoryScreen(
@@ -99,7 +101,9 @@ data object HistoryTab : Tab {
             onDialogChange = screenModel::setDialog,
             onClickFavorite = screenModel::addFavorite,
             // KMK -->
-            settingsScreenModel = settingsScreenModel,
+            onFilterClicked = screenModel::showFilterDialog,
+            hasActiveFilters = state.hasActiveFilters,
+            usePanoramaCover = usePanoramaCover,
             // KMK <--
         )
 
@@ -154,6 +158,14 @@ data object HistoryTab : Tab {
                     onDismissRequest = onDismissRequest,
                 )
             }
+            // KMK -->
+            is HistoryScreenModel.Dialog.FilterSheet -> {
+                HistoryFilterDialog(
+                    onDismissRequest = onDismissRequest,
+                    screenModel = settingsScreenModel,
+                )
+            }
+            // KMK <--
             null -> {}
         }
 

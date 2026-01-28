@@ -7,7 +7,14 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 
 interface HistoryRepository {
 
-    fun getHistory(query: String): Flow<List<HistoryWithRelations>>
+    fun getHistory(
+        query: String,
+        // KMK -->
+        unfinishedManga: Boolean?,
+        unfinishedChapter: Boolean?,
+        nonLibraryEntries: Boolean?,
+        // KMK <--
+    ): Flow<List<HistoryWithRelations>>
 
     suspend fun getLastHistory(): HistoryWithRelations?
 

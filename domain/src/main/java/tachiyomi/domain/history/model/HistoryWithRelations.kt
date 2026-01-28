@@ -16,8 +16,8 @@ data class HistoryWithRelations(
     // KMK -->
     val read: Boolean,
     val lastPageRead: Long,
-    val totalChapters: Long,
-    val readCount: Long,
+    val totalCountCalculated: Long,
+    val readCountCalculated: Long,
     // KMK <--
     val readAt: Date?,
     val readDuration: Long,
@@ -33,6 +33,6 @@ data class HistoryWithRelations(
 
     // KMK -->
     val unreadCount
-        get() = totalChapters - readCount
+        get() = totalCountCalculated - readCountCalculated
     // KMK <--
 }

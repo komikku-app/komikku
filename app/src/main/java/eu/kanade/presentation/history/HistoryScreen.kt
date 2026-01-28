@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.Panorama
+import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -23,19 +23,16 @@ import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
-import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.history.model.HistoryWithRelations
-import tachiyomi.domain.updates.service.UpdatesPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.presentation.core.util.collectAsState
+import tachiyomi.presentation.core.theme.active
 import java.time.LocalDate
 
 @Composable
@@ -48,13 +45,11 @@ fun HistoryScreen(
     onClickFavorite: (mangaId: Long) -> Unit,
     onDialogChange: (HistoryScreenModel.Dialog?) -> Unit,
     // KMK -->
-    settingsScreenModel: UpdatesSettingsScreenModel,
+    onFilterClicked: () -> Unit,
+    hasActiveFilters: Boolean,
+    usePanoramaCover: Boolean,
     // KMK <--
 ) {
-    // KMK -->
-    val usePanoramaCover by settingsScreenModel.updatesPreferences.usePanoramaCover().collectAsState()
-    // KMK <--
-
     Scaffold(
         topBar = { scrollBehavior ->
             SearchToolbar(
@@ -63,33 +58,23 @@ fun HistoryScreen(
                 onChangeSearchQuery = onSearchQueryChange,
                 actions = {
                     AppBarActions(
-                        // KMK -->
-                        persistentListOf<AppBar.AppBarAction>().builder()
-                            .apply {
-                                if (!state.list.isNullOrEmpty()) {
-                                    add(
-                                        AppBar.Action(
-                                            title = stringResource(KMR.strings.action_panorama_cover),
-                                            icon = Icons.Outlined.Panorama,
-                                            iconTint = MaterialTheme.colorScheme.primary.takeIf { usePanoramaCover },
-                                            onClick = { settingsScreenModel.toggleSwitch(UpdatesPreferences::usePanoramaCover) },
-                                        ),
-                                    )
-                                }
-                                add(
-                                    // KMK <--
-                                    AppBar.Action(
-                                        title = stringResource(MR.strings.pref_clear_history),
-                                        icon = Icons.Outlined.DeleteSweep,
-                                        onClick = {
-                                            onDialogChange(HistoryScreenModel.Dialog.DeleteAll)
-                                        },
-                                    ),
-                                    // KMK -->
-                                )
-                            }
-                            .build(),
-                        // KMK <--
+                        persistentListOf(
+                            // KMK -->
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_filter),
+                                icon = Icons.Outlined.FilterList,
+                                iconTint = if (hasActiveFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
+                                onClick = onFilterClicked,
+                            ),
+                            // KMK <--
+                            AppBar.Action(
+                                title = stringResource(MR.strings.pref_clear_history),
+                                icon = Icons.Outlined.DeleteSweep,
+                                onClick = {
+                                    onDialogChange(HistoryScreenModel.Dialog.DeleteAll)
+                                },
+                            ),
+                        ),
                     )
                 },
                 scrollBehavior = scrollBehavior,
@@ -198,7 +183,6 @@ internal fun HistoryScreenPreviews(
     @PreviewParameter(HistoryScreenModelStateProvider::class)
     historyState: HistoryScreenModel.State,
 ) {
-    val settingsScreenModel = UpdatesSettingsScreenModel()
     TachiyomiPreviewTheme {
         HistoryScreen(
             state = historyState,
@@ -208,7 +192,11 @@ internal fun HistoryScreenPreviews(
             onClickResume = { _, _ -> run {} },
             onDialogChange = {},
             onClickFavorite = {},
-            settingsScreenModel = settingsScreenModel,
+            // KMK -->
+            onFilterClicked = {},
+            hasActiveFilters = true,
+            usePanoramaCover = true,
+            // KMK <--
         )
     }
 }
