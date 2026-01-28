@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -1232,7 +1233,9 @@ class LibraryScreenModel(
                             (manga.author?.contains(query, true) == true) ||
                             (manga.artist?.contains(query, true) == true) ||
                             (manga.description?.contains(query, true) == true) ||
-                            (source?.name?.contains(query, true) == true) ||
+                            // KMK -->
+                            (source?.getNameForMangaInfo()?.contains(query, true) == true) ||
+                            // KMK <--
                             (sourceIdString != null && sourceIdString == query) ||
                             (
                                 loggedInTrackServices.isNotEmpty() &&
@@ -1265,7 +1268,9 @@ class LibraryScreenModel(
                                     (manga.author?.contains(query, true) != true) &&
                                     (manga.artist?.contains(query, true) != true) &&
                                     (manga.description?.contains(query, true) != true) &&
-                                    (source?.name?.contains(query, true) != true) &&
+                                    // KMK -->
+                                    (source?.getNameForMangaInfo()?.contains(query, true) != true) &&
+                                    // KMK <--
                                     (sourceIdString != null && sourceIdString != query) &&
                                     (
                                         loggedInTrackServices.isEmpty() ||
