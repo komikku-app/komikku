@@ -17,6 +17,10 @@
     <string name="action_open_folder">Open folder</string>
     <string name="action_clear_manga">Clear manga</string>
     <string name="action_update">Update</string>
+        <!-- History section -->
+    <string name="action_filter_unfinished_manga">Unfinished manga</string>
+    <string name="action_filter_unfinished_chapter">Unfinished chapter</string>
+    <string name="action_filter_non_library_entries">Non-library entries</string>
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
