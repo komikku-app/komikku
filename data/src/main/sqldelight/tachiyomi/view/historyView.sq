@@ -89,7 +89,7 @@ AND (
     OR (:unfinishedManga = 0 AND totalCountCalculated <= readCountCalculated)
 )
 AND (:unfinishedChapter IS NULL OR read != :unfinishedChapter)
-AND (:nonLibraryEntries IS NULL OR favorite = :nonLibraryEntries)
+AND (:nonLibraryEntries IS NULL OR favorite != :nonLibraryEntries)
 -- KMK <--
 AND maxReadAtChapterId = historyView.chapterId
 AND lower(historyView.title) LIKE ('%' || :query || '%')
