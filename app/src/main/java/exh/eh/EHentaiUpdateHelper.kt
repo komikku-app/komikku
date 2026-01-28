@@ -125,9 +125,9 @@ class EHentaiUpdateHelper(context: Context) {
             )
 
             // Delete the duplicate history first
-            deleteHistory.forEach {
-                removeHistory.awaitById(it)
-            }
+            // KMK -->
+            removeHistory.await(deleteHistory)
+            // KMK <--
 
             // Insert new history
             newHistory.forEach {

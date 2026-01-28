@@ -4,13 +4,16 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.history.HistoryUiModel
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +74,12 @@ class HistoryScreenModel(
     private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
+    // KMK -->
+    // First and last selected index in list
+    private val selectedPositions: Array<Int> = arrayOf(-1, -1)
+    private val selectedHistoryIds: HashSet<Long> = HashSet()
+    // KMK <--
+
     init {
         screenModelScope.launch {
             // KMK -->
@@ -97,10 +106,21 @@ class HistoryScreenModel(
                             logcat(LogPriority.ERROR, error)
                             _events.send(Event.InternalError)
                         }
-                        .map { it.toHistoryUiModels() }
+                        // KMK -->
+                        .map { it.toHistoryItems() }
+                        // KMK <--
                         .flowOn(Dispatchers.IO)
                 }
-                .collect { newList -> mutableState.update { it.copy(list = newList) } }
+                .collect { newList ->
+                    mutableState.update {
+                        it.copy(
+                            // KMK -->
+                            isLoading = false,
+                            list = newList.toImmutableList(),
+                            // KMK <--
+                        )
+                    }
+                }
         }
 
         // KMK -->
@@ -123,18 +143,16 @@ class HistoryScreenModel(
         // KMK <--
     }
 
-    private fun List<HistoryWithRelations>.toHistoryUiModels(): List<HistoryUiModel> {
-        return map { HistoryUiModel.Item(it) }
-            .insertSeparators { before, after ->
-                val beforeDate = before?.item?.readAt?.time?.toLocalDate()
-                val afterDate = after?.item?.readAt?.time?.toLocalDate()
-                when {
-                    beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(afterDate)
-                    // Return null to avoid adding a separator between two items.
-                    else -> null
-                }
-            }
+    // KMK -->
+    private fun List<HistoryWithRelations>.toHistoryItems(): List<HistoryItem> {
+        return map {
+            HistoryItem(
+                it,
+                selected = it.id in selectedHistoryIds,
+            )
+        }
     }
+    // KMK <--
 
     suspend fun getNextChapter(): Chapter? {
         return withIOContext { getNextChapters.await(onlyUnread = false).firstOrNull() }
@@ -151,17 +169,19 @@ class HistoryScreenModel(
         _events.send(Event.OpenChapter(chapter))
     }
 
-    fun removeFromHistory(history: HistoryWithRelations) {
+// KMK -->
+    fun removeFromHistory(toDelete: List<HistoryWithRelations>) {
         screenModelScope.launchIO {
-            removeHistory.await(history)
+            removeHistory.await(toDelete.map { it.id })
         }
     }
 
-    fun removeAllFromHistory(mangaId: Long) {
+    fun removeAllFromHistory(toDelete: List<HistoryWithRelations>) {
         screenModelScope.launchIO {
-            removeHistory.await(mangaId)
+            removeHistory.awaitManga(toDelete.map { it.mangaId })
         }
     }
+    // KMK <--
 
     fun removeAllHistory() {
         screenModelScope.launchIO {
@@ -280,6 +300,100 @@ class HistoryScreenModel(
     }
 
     // KMK -->
+    data class HistorySelectionOptions(
+        val selected: Boolean,
+        val userSelected: Boolean = false,
+        val fromLongPress: Boolean = false,
+    )
+
+    fun toggleSelection(
+        item: HistoryItem,
+        selectionOptions: HistorySelectionOptions,
+    ) {
+        val (selected, userSelected, fromLongPress) = selectionOptions
+        mutableState.update { state ->
+            val newItems = state.list.toMutableList().apply {
+                val selectedIndex = indexOfFirst { it.history.id == item.history.id }
+                if (selectedIndex < 0) return@apply
+
+                val selectedItem = get(selectedIndex)
+                if (selectedItem.selected == selected) return@apply
+
+                val firstSelection = none { it.selected }
+                set(selectedIndex, selectedItem.copy(selected = selected))
+                selectedHistoryIds.addOrRemove(item.history.id, selected)
+
+                if (selected && userSelected && fromLongPress) {
+                    if (firstSelection) {
+                        selectedPositions[0] = selectedIndex
+                        selectedPositions[1] = selectedIndex
+                    } else {
+                        // Try to select the items in-between when possible
+                        val range: IntRange
+                        if (selectedIndex < selectedPositions[0]) {
+                            range = selectedIndex + 1..<selectedPositions[0]
+                            selectedPositions[0] = selectedIndex
+                        } else if (selectedIndex > selectedPositions[1]) {
+                            range = (selectedPositions[1] + 1)..<selectedIndex
+                            selectedPositions[1] = selectedIndex
+                        } else {
+                            // Just select itself
+                            range = IntRange.EMPTY
+                        }
+
+                        range.forEach {
+                            val inbetweenItem = get(it)
+                            if (!inbetweenItem.selected) {
+                                selectedHistoryIds.add(inbetweenItem.history.id)
+                                set(it, inbetweenItem.copy(selected = true))
+                            }
+                        }
+                    }
+                } else if (userSelected && !fromLongPress) {
+                    if (!selected) {
+                        if (selectedIndex == selectedPositions[0]) {
+                            selectedPositions[0] = indexOfFirst { it.selected }
+                        } else if (selectedIndex == selectedPositions[1]) {
+                            selectedPositions[1] = indexOfLast { it.selected }
+                        }
+                    } else {
+                        if (selectedIndex < selectedPositions[0]) {
+                            selectedPositions[0] = selectedIndex
+                        } else if (selectedIndex > selectedPositions[1]) {
+                            selectedPositions[1] = selectedIndex
+                        }
+                    }
+                }
+            }
+            state.copy(list = newItems.toPersistentList())
+        }
+    }
+
+    fun toggleAllSelection(selected: Boolean) {
+        mutableState.update { state ->
+            val newItems = state.list.map {
+                selectedHistoryIds.addOrRemove(it.history.id, selected)
+                it.copy(selected = selected)
+            }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            state.copy(list = newItems.toPersistentList())
+        }
+    }
+
+    fun invertSelection() {
+        mutableState.update { state ->
+            val newItems = state.list.map {
+                selectedHistoryIds.addOrRemove(it.history.id, !it.selected)
+                it.copy(selected = !it.selected)
+            }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            state.copy(list = newItems.toPersistentList())
+        }
+    }
+    // KMK <--
+
     private fun getHistoryItemPreferenceFlow(): Flow<ItemPreferences> {
         return combine(
             historyPreferences.filterUnfinishedManga().changes(),
@@ -308,17 +422,41 @@ class HistoryScreenModel(
 
     @Immutable
     data class State(
+        val isLoading: Boolean = true,
+        // KMK -->
         val searchQuery: String? = null,
-        val list: List<HistoryUiModel>? = null,
+        val list: ImmutableList<HistoryItem> = persistentListOf(),
+        // KMK <--
         val dialog: Dialog? = null,
         // KMk -->
         val hasActiveFilters: Boolean = false,
-        // KMK <--
-    )
+    ) {
+        val selected = list.filter { it.selected }
+        val selectionMode = selected.isNotEmpty()
+
+        fun getUiModel(): List<HistoryUiModel> {
+            return list
+                .map { HistoryUiModel.Item(it) }
+                .insertSeparators { before, after ->
+                    val beforeDate = before?.item?.history?.readAt?.time?.toLocalDate()
+                    val afterDate = after?.item?.history?.readAt?.time?.toLocalDate()
+                    when {
+                        beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(afterDate)
+                        // Return null to avoid adding a separator between two items.
+                        else -> null
+                    }
+                }
+        }
+    }
+    // KMK <--
 
     sealed interface Dialog {
         data object DeleteAll : Dialog
-        data class Delete(val history: HistoryWithRelations) : Dialog
+        // KMK -->
+        data class Delete(val histories: List<HistoryWithRelations>) : Dialog {
+            constructor(history: HistoryWithRelations) : this(listOf(history))
+        }
+        // KMK <--
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
         data class ChangeCategory(
             val manga: Manga,
@@ -346,3 +484,11 @@ class HistoryScreenModel(
         data object HistoryCleared : Event
     }
 }
+
+// KMK -->
+@Immutable
+data class HistoryItem(
+    val history: HistoryWithRelations,
+    val selected: Boolean = false,
+)
+// KMK <--
