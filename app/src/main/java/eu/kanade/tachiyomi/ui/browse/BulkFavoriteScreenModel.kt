@@ -56,7 +56,7 @@ class BulkFavoriteScreenModel(
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
-        toggleSelectionMode()
+        toggleSelectionMode(false)
     }
 
     fun toggleSelectionMode(newMode: Boolean? = null) {
@@ -146,7 +146,7 @@ class BulkFavoriteScreenModel(
             val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             if (mangaList.isEmpty()) {
                 stopRunning()
-                toggleSelectionMode()
+                toggleSelectionMode(false)
                 return@launch
             }
             val categories = getCategories()
@@ -235,7 +235,7 @@ class BulkFavoriteScreenModel(
             }
             stopRunning()
         }
-        toggleSelectionMode(newMode = false)
+        toggleSelectionMode(false)
     }
 
     private fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
