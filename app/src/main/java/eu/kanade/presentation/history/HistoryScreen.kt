@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
@@ -52,6 +53,7 @@ fun HistoryScreen(
     onClickFavorite: (mangaId: Long) -> Unit,
     onDialogChange: (HistoryScreenModel.Dialog?) -> Unit,
     // KMK -->
+    toggleSelectionMode: () -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
     onHistorySelected: (HistoryItem, HistorySelectionOptions) -> Unit,
@@ -61,7 +63,7 @@ fun HistoryScreen(
     // KMK <--
 ) {
     // KMK -->
-    BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
+    BackHandler(enabled = state.selectionMode, onBack = toggleSelectionMode)
     // KMK <--
 
     Scaffold(
@@ -70,7 +72,7 @@ fun HistoryScreen(
             when {
                 state.selectionMode -> HistorySelectionToolbar(
                     selectedCount = state.selected.size,
-                    onClickUnselectAll = { onSelectAll(false) },
+                    onCancelActionMode = toggleSelectionMode,
                     onClickSelectAll = { onSelectAll(true) },
                     onClickInvertSelection = onInvertSelection,
                     onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected.map { it.history })) },
@@ -93,10 +95,8 @@ fun HistoryScreen(
                                 // KMK <--
                                 AppBar.Action(
                                     title = stringResource(MR.strings.pref_clear_history),
-                                    icon = Icons.Outlined.DeleteSweep,
-                                    onClick = {
-                                        onDialogChange(HistoryScreenModel.Dialog.DeleteAll)
-                                    },
+                                    icon = Icons.Outlined.Checklist,
+                                    onClick = toggleSelectionMode,
                                 ),
                             ),
                         )
@@ -246,7 +246,7 @@ sealed interface HistoryUiModel {
 @Composable
 private fun HistorySelectionToolbar(
     selectedCount: Int,
-    onClickUnselectAll: () -> Unit,
+    onCancelActionMode: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
     onClickClearHistory: () -> Unit,
@@ -275,7 +275,7 @@ private fun HistorySelectionToolbar(
             )
         },
         isActionMode = true,
-        onCancelActionMode = onClickUnselectAll,
+        onCancelActionMode = onCancelActionMode,
     )
 }
 // KMK <--
@@ -296,6 +296,7 @@ internal fun HistoryScreenPreviews(
             onDialogChange = {},
             onClickFavorite = {},
             // KMK -->
+            toggleSelectionMode = {},
             onSelectAll = {},
             onInvertSelection = {},
             onHistorySelected = { _, _ -> },

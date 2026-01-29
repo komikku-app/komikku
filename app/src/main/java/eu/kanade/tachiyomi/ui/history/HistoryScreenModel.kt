@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.history
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
@@ -174,12 +175,14 @@ class HistoryScreenModel(
         screenModelScope.launchIO {
             removeHistory.await(toDelete.map { it.id })
         }
+        toggleSelectionMode(false)
     }
 
     fun removeAllFromHistory(toDelete: List<HistoryWithRelations>) {
         screenModelScope.launchIO {
             removeHistory.awaitManga(toDelete.map { it.mangaId })
         }
+        toggleSelectionMode(false)
     }
     // KMK <--
 
@@ -189,6 +192,7 @@ class HistoryScreenModel(
             if (!result) return@launchIO
             _events.send(Event.HistoryCleared)
         }
+        toggleSelectionMode(false)
     }
 
     fun updateSearchQuery(query: String?) {
@@ -365,7 +369,10 @@ class HistoryScreenModel(
                     }
                 }
             }
-            state.copy(list = newItems.toPersistentList())
+            state.copy(
+                list = newItems.toPersistentList(),
+                selectionMode = selected || newItems.fastAny { it.selected },
+            )
         }
     }
 
@@ -391,6 +398,13 @@ class HistoryScreenModel(
             selectedPositions[1] = -1
             state.copy(list = newItems.toPersistentList())
         }
+    }
+
+    fun toggleSelectionMode(newMode: Boolean? = null) {
+        if (newMode == false || state.value.selectionMode) {
+            toggleAllSelection(false)
+        }
+        mutableState.update { it.copy(selectionMode = newMode ?: !it.selectionMode) }
     }
     // KMK <--
 
@@ -430,9 +444,9 @@ class HistoryScreenModel(
         val dialog: Dialog? = null,
         // KMk -->
         val hasActiveFilters: Boolean = false,
+        val selectionMode: Boolean = false,
     ) {
         val selected = list.filter { it.selected }
-        val selectionMode = selected.isNotEmpty()
 
         fun getUiModel(): List<HistoryUiModel> {
             return list

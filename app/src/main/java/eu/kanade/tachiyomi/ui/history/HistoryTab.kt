@@ -101,6 +101,7 @@ data object HistoryTab : Tab {
             onDialogChange = screenModel::setDialog,
             onClickFavorite = screenModel::addFavorite,
             // KMK -->
+            toggleSelectionMode = screenModel::toggleSelectionMode,
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
             onHistorySelected = screenModel::toggleSelection,
