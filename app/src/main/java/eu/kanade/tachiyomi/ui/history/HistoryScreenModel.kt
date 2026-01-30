@@ -5,18 +5,14 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.util.fastFilter
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.history.HistoryUiModel
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +28,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.core.common.utils.mutate
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.mapAsCheckboxState
@@ -157,7 +154,7 @@ class HistoryScreenModel(
         _events.send(Event.OpenChapter(chapter))
     }
 
-// KMK -->
+    // KMK -->
     fun removeFromHistory(toDelete: List<HistoryWithRelations>) {
         screenModelScope.launchIO {
             removeHistory.await(toDelete.map { it.id })
@@ -302,92 +299,92 @@ class HistoryScreenModel(
         selectionOptions: HistorySelectionOptions,
     ) {
         val (selected, userSelected, fromLongPress) = selectionOptions
-        if (selected == item.chapterId in state.value.selectedChapterIds) return
+        if ((item.chapterId in state.value.selection) == selected) return
 
         mutableState.update { state ->
-            val newSet = state.selectedChapterIds.toHashSet()
-            state.list.run {
-                val selectedIndex = indexOfFirst { it.chapterId == item.chapterId }
-                if (selectedIndex < 0) return@run
+            val selection = state.selection.mutate { list ->
+                state.list.run {
+                    val selectedIndex = indexOfFirst { it.chapterId == item.chapterId }
+                    if (selectedIndex < 0) return@run
 
-                val firstSelection = newSet.isEmpty()
-                newSet.addOrRemove(item.chapterId, selected)
+                    val firstSelection = list.isEmpty()
+                    if (selected) list.add(item.chapterId) else list.remove(item.chapterId)
 
-                if (selected && userSelected && fromLongPress) {
-                    if (firstSelection) {
-                        selectedPositions[0] = selectedIndex
-                        selectedPositions[1] = selectedIndex
-                    } else {
-                        // Try to select the items in-between when possible
-                        val range: IntRange
-                        if (selectedIndex < selectedPositions[0]) {
-                            range = selectedIndex + 1..<selectedPositions[0]
+                    if (selected && userSelected && fromLongPress) {
+                        if (firstSelection) {
                             selectedPositions[0] = selectedIndex
-                        } else if (selectedIndex > selectedPositions[1]) {
-                            range = (selectedPositions[1] + 1)..<selectedIndex
                             selectedPositions[1] = selectedIndex
                         } else {
-                            // Just select itself
-                            range = IntRange.EMPTY
-                        }
+                            // Try to select the items in-between when possible
+                            val range: IntRange
+                            if (selectedIndex < selectedPositions[0]) {
+                                range = selectedIndex + 1..<selectedPositions[0]
+                                selectedPositions[0] = selectedIndex
+                            } else if (selectedIndex > selectedPositions[1]) {
+                                range = (selectedPositions[1] + 1)..<selectedIndex
+                                selectedPositions[1] = selectedIndex
+                            } else {
+                                // Just select itself
+                                range = IntRange.EMPTY
+                            }
 
-                        range.forEach {
-                            val inBetweenItem = get(it)
-                            if (inBetweenItem.chapterId !in state.selectedChapterIds) {
-                                newSet.add(inBetweenItem.chapterId)
+                            range.forEach {
+                                val inBetweenItem = get(it)
+                                if (inBetweenItem.chapterId !in list) {
+                                    list.add(inBetweenItem.chapterId)
+                                }
                             }
                         }
-                    }
-                } else if (userSelected && !fromLongPress) {
-                    if (!selected) {
-                        if (selectedIndex == selectedPositions[0]) {
-                            selectedPositions[0] = indexOfFirst { it.chapterId in state.selectedChapterIds }
-                        } else if (selectedIndex == selectedPositions[1]) {
-                            selectedPositions[1] = indexOfLast { it.chapterId in state.selectedChapterIds }
-                        }
-                    } else {
-                        if (selectedIndex < selectedPositions[0]) {
-                            selectedPositions[0] = selectedIndex
-                        } else if (selectedIndex > selectedPositions[1]) {
-                            selectedPositions[1] = selectedIndex
+                    } else if (userSelected && !fromLongPress) {
+                        if (!selected) {
+                            if (selectedIndex == selectedPositions[0]) {
+                                selectedPositions[0] = indexOfFirst { it.chapterId in list }
+                            } else if (selectedIndex == selectedPositions[1]) {
+                                selectedPositions[1] = indexOfLast { it.chapterId in list }
+                            }
+                        } else {
+                            if (selectedIndex < selectedPositions[0]) {
+                                selectedPositions[0] = selectedIndex
+                            } else if (selectedIndex > selectedPositions[1]) {
+                                selectedPositions[1] = selectedIndex
+                            }
                         }
                     }
                 }
             }
             state.copy(
-                selectedChapterIds = newSet.toPersistentSet(),
-                selectionMode = selected || newSet.isNotEmpty(),
+                selection = selection,
+                selectionMode = selected || selection.isNotEmpty(),
             )
         }
     }
 
     fun toggleAllSelection(selected: Boolean) {
         mutableState.update { state ->
-            val newSet = if (selected) {
-                state.list.map { it.chapterId }.toPersistentSet()
+            val selection = if (selected) {
+                state.list.mapTo(mutableSetOf()) { it.chapterId }
             } else {
-                persistentSetOf()
+                emptySet()
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
             state.copy(
-                selectedChapterIds = newSet,
-                selectionMode = selected || newSet.isNotEmpty(),
+                selection = selection,
+                selectionMode = selected,
             )
         }
     }
 
     fun invertSelection() {
         mutableState.update { state ->
-            val newSet = state.selectedChapterIds.toHashSet()
-            state.list.forEach {
-                newSet.addOrRemove(it.chapterId, it.chapterId !in state.selectedChapterIds)
+            val selection = state.selection.mutate { list ->
+                state.list.forEach { item ->
+                    if (!list.remove(item.chapterId)) list.add(item.chapterId)
+                }
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
-            state.copy(
-                selectedChapterIds = newSet.toPersistentSet(),
-            )
+            state.copy(selection = selection)
         }
     }
 
@@ -435,12 +432,12 @@ class HistoryScreenModel(
         // KMK <--
         val dialog: Dialog? = null,
         // KMk -->
-        val selectedChapterIds: ImmutableSet<Long> = persistentSetOf(),
+        val selection: Set<Long> = emptySet(),
         val hasActiveFilters: Boolean = false,
         val selectionMode: Boolean = false,
     ) {
         val selected
-            get() = list.fastFilter { it.chapterId in selectedChapterIds }
+            get() = list.fastFilter { it.chapterId in selection }
 
         fun getUiModel() = list.map { HistoryUiModel.Item(it) }
             .insertSeparators { before, after ->

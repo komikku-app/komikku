@@ -70,7 +70,7 @@ fun HistoryScreen(
             // KMK -->
             when {
                 state.selectionMode -> HistorySelectionToolbar(
-                    selectedCount = state.selectedChapterIds.size,
+                    selectedCount = state.selection.size,
                     onCancelActionMode = toggleSelectionMode,
                     onClickSelectAll = { onSelectAll(true) },
                     onClickInvertSelection = onInvertSelection,
@@ -188,7 +188,7 @@ private fun HistoryScreenContent(
                 is HistoryUiModel.Item -> {
                     val value = item.item
                     // KMK -->
-                    val selected = remember(state.selectedChapterIds) { value.chapterId in state.selectedChapterIds }
+                    val isSelected = remember(state.selection) { value.chapterId in state.selection }
                     // KMK <--
                     HistoryItem(
                         modifier = Modifier.animateItemFastScroll(),
@@ -200,7 +200,7 @@ private fun HistoryScreenContent(
                                 selectionMode -> onHistorySelected(
                                     item.item,
                                     HistorySelectionOptions(
-                                        selected = !selected,
+                                        selected = !isSelected,
                                         userSelected = true,
                                         fromLongPress = false,
                                     ),
@@ -212,7 +212,7 @@ private fun HistoryScreenContent(
                             onHistorySelected(
                                 item.item,
                                 HistorySelectionOptions(
-                                    selected = !selected,
+                                    selected = !isSelected,
                                     userSelected = true,
                                     fromLongPress = true,
                                 ),
@@ -222,7 +222,7 @@ private fun HistoryScreenContent(
                         onClickDelete = { onClickDelete(value) },
                         onClickFavorite = { onClickFavorite(value) },
                         // KMK -->
-                        selected = selected,
+                        selected = isSelected,
                         readProgress = value.lastPageRead
                             .takeIf { !value.read && it > 0L }
                             ?.let {
