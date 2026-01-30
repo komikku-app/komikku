@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.browse.migration.manga
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.core.util.addOrRemove
 import eu.kanade.tachiyomi.source.Source
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.core.common.utils.mutate
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.model.Manga
@@ -36,7 +36,6 @@ class MigrateMangaScreenModel(
     // KMK -->
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
-    private val selectedMangaIds: HashSet<Long> = HashSet()
     // KMK <--
 
     init {
@@ -53,14 +52,9 @@ class MigrateMangaScreenModel(
                         state.copy(titleList = persistentListOf())
                     }
                 }
-                // KMK -->
-                .map { manga ->
-                    toMigrationMangaScreenItems(manga)
-                }
-                // KMK <--
                 .map { manga ->
                     manga
-                        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.manga.title })
+                        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
                         .toImmutableList()
                 }
                 .collectLatest { list ->
@@ -69,101 +63,93 @@ class MigrateMangaScreenModel(
         }
     }
 
-    // KMK -->
-    private fun toMigrationMangaScreenItems(mangas: List<Manga>): List<MigrateMangaItem> {
-        return mangas.map { manga ->
-            MigrateMangaItem(
-                manga = manga,
-                selected = manga.id in selectedMangaIds,
-            )
-        }
-    }
-
     fun toggleSelection(
-        item: MigrateMangaItem,
+        item: Manga,
+        // KMK -->
         selected: Boolean,
-        userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
+        if ((item.id in state.value.selection) == selected) return
         mutableState.update { state ->
-            val newItems = state.titles.toMutableList().apply {
-                val selectedIndex = indexOfFirst { it.manga.id == item.manga.id }
-                if (selectedIndex < 0) return@apply
+            val selection = state.selection.mutate { list ->
+                state.titles.run {
+                    val selectedIndex = indexOfFirst { it.id == item.id }
+                    if (selectedIndex < 0) return@run
 
-                val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
+                    val firstSelection = list.isEmpty()
+                    if (selected) list.add(item.id) else list.remove(item.id)
 
-                val firstSelection = none { it.selected }
-                set(selectedIndex, selectedItem.copy(selected = selected))
-                selectedMangaIds.addOrRemove(item.manga.id, selected)
-
-                if (selected && userSelected && fromLongPress) {
-                    if (firstSelection) {
-                        selectedPositions[0] = selectedIndex
-                        selectedPositions[1] = selectedIndex
-                    } else {
-                        // Try to select the items in-between when possible
-                        val range: IntRange
-                        if (selectedIndex < selectedPositions[0]) {
-                            range = selectedIndex + 1 until selectedPositions[0]
+                    if (selected && fromLongPress) {
+                        if (firstSelection) {
                             selectedPositions[0] = selectedIndex
-                        } else if (selectedIndex > selectedPositions[1]) {
-                            range = (selectedPositions[1] + 1) until selectedIndex
                             selectedPositions[1] = selectedIndex
                         } else {
-                            // Just select itself
-                            range = IntRange.EMPTY
-                        }
+                            // Try to select the items in-between when possible
+                            val range: IntRange
+                            if (selectedIndex < selectedPositions[0]) {
+                                range = selectedIndex + 1 until selectedPositions[0]
+                                selectedPositions[0] = selectedIndex
+                            } else if (selectedIndex > selectedPositions[1]) {
+                                range = (selectedPositions[1] + 1) until selectedIndex
+                                selectedPositions[1] = selectedIndex
+                            } else {
+                                // Just select itself
+                                range = IntRange.EMPTY
+                            }
 
-                        range.forEach {
-                            val inBetweenItem = get(it)
-                            if (!inBetweenItem.selected) {
-                                selectedMangaIds.add(inBetweenItem.manga.id)
-                                set(it, inBetweenItem.copy(selected = true))
+                            range.forEach {
+                                val inBetweenItem = get(it)
+                                if (inBetweenItem.id !in list) {
+                                    list.add(inBetweenItem.id)
+                                }
                             }
                         }
-                    }
-                } else if (userSelected && !fromLongPress) {
-                    if (!selected) {
-                        if (selectedIndex == selectedPositions[0]) {
-                            selectedPositions[0] = indexOfFirst { it.selected }
-                        } else if (selectedIndex == selectedPositions[1]) {
-                            selectedPositions[1] = indexOfLast { it.selected }
-                        }
-                    } else {
-                        if (selectedIndex < selectedPositions[0]) {
-                            selectedPositions[0] = selectedIndex
-                        } else if (selectedIndex > selectedPositions[1]) {
-                            selectedPositions[1] = selectedIndex
+                    } else if (!fromLongPress) {
+                        if (!selected) {
+                            if (selectedIndex == selectedPositions[0]) {
+                                selectedPositions[0] = indexOfFirst { it.id in list }
+                            } else if (selectedIndex == selectedPositions[1]) {
+                                selectedPositions[1] = indexOfLast { it.id in list }
+                            }
+                        } else {
+                            if (selectedIndex < selectedPositions[0]) {
+                                selectedPositions[0] = selectedIndex
+                            } else if (selectedIndex > selectedPositions[1]) {
+                                selectedPositions[1] = selectedIndex
+                            }
                         }
                     }
                 }
             }
-            state.copy(titleList = newItems.toImmutableList())
+            // KMK <--
+            state.copy(selection = selection)
         }
     }
 
+    // KMK -->
     fun toggleAllSelection(selected: Boolean = true) {
         mutableState.update { state ->
-            val newItems = state.titles.map {
-                selectedMangaIds.addOrRemove(it.manga.id, selected)
-                it.copy(selected = selected)
+            val selection = if (selected) {
+                state.titles.mapTo(mutableSetOf()) { it.id }
+            } else {
+                emptySet()
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
-            state.copy(titleList = newItems.toImmutableList())
+            state.copy(selection = selection)
         }
     }
 
     fun invertSelection() {
         mutableState.update { state ->
-            val newItems = state.titles.map {
-                selectedMangaIds.addOrRemove(it.manga.id, !it.selected)
-                it.copy(selected = !it.selected)
+            val selection = state.selection.mutate { list ->
+                state.titles.forEach { item ->
+                    if (!list.remove(item.id)) list.add(item.id)
+                }
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
-            state.copy(titleList = newItems.toImmutableList())
+            state.copy(selection = selection)
         }
     }
     // KMK <--
@@ -177,13 +163,11 @@ class MigrateMangaScreenModel(
     @Immutable
     data class State(
         val source: Source? = null,
-        private val titleList: ImmutableList<MigrateMangaItem>? = null,
+        val selection: Set<Long> = emptySet(),
+        private val titleList: ImmutableList<Manga>? = null,
     ) {
-        // KMK -->
-        val selection = titles.filter { it.selected }
-        // KMK <--
 
-        val titles: ImmutableList<MigrateMangaItem>
+        val titles: ImmutableList<Manga>
             get() = titleList ?: persistentListOf()
 
         val isLoading: Boolean
@@ -199,11 +183,3 @@ class MigrateMangaScreenModel(
 sealed interface MigrationMangaEvent {
     data object FailedFetchingFavorites : MigrationMangaEvent
 }
-
-// KMK -->
-@Immutable
-data class MigrateMangaItem(
-    val manga: Manga,
-    val selected: Boolean,
-)
-// KMK <--

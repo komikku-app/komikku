@@ -377,6 +377,7 @@ class UpdatesScreenModel(
     ) {
         // KMK -->
         val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        if (item.selected == selected) return
         // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
@@ -384,8 +385,6 @@ class UpdatesScreenModel(
                 if (selectedIndex < 0) return@apply
 
                 val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
-
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.update.chapterId, selected)
@@ -428,10 +427,10 @@ class UpdatesScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.update.chapterId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.update.chapterId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }

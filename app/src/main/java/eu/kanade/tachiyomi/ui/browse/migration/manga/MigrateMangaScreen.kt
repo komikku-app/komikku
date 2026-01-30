@@ -128,11 +128,9 @@ data class MigrateMangaScreen(
             // KMK -->
             bottomBar = {
                 MigrateMangaBottomBar(
-                    selected = state.selection,
+                    selectionMode = state.selectionMode,
                     onMultiMigrateClicked = {
-                        val selection = state.selection
-                            .map { it.manga.id }
-                        navigator.push(MigrationConfigScreen(selection))
+                        navigator.push(MigrationConfigScreen(state.selection))
                     },
                     enableScrollToTop = enableScrollToTop,
                     enableScrollToBottom = enableScrollToBottom,
@@ -187,7 +185,7 @@ data class MigrateMangaScreen(
         contentPadding: PaddingValues,
         state: MigrateMangaScreenModel.State,
         // KMK -->
-        onMangaSelected: (MigrateMangaItem, Boolean, Boolean, Boolean) -> Unit,
+        onMangaSelected: (Manga, Boolean, Boolean) -> Unit,
         // KMK <--
         onClickItem: (Manga) -> Unit,
         onClickCover: (Manga) -> Unit,
@@ -197,20 +195,23 @@ data class MigrateMangaScreen(
             contentPadding = contentPadding,
         ) {
             items(items = state.titles) { manga ->
+                // KMK -->
+                val isSelected = remember(state.selection) { manga.id in state.selection }
+                // KMK <--
                 MigrateMangaItem(
-                    manga = manga.manga,
-                    isSelected = manga.selected,
+                    manga = manga,
+                    isSelected = isSelected,
                     onClickItem = {
                         // KMK -->
                         when {
-                            state.selectionMode -> onMangaSelected(manga, !manga.selected, true, false)
+                            state.selectionMode -> onMangaSelected(manga, !isSelected, false)
                             // KMK <--
                             else -> onClickItem(it)
                         }
                     },
                     onClickCover = onClickCover,
                     // KMK -->
-                    onLongClick = { onMangaSelected(manga, !manga.selected, true, true) },
+                    onLongClick = { onMangaSelected(manga, !isSelected, true) },
                     modifier = Modifier.animateItemFastScroll(),
                     // KMK <--
                 )
@@ -293,7 +294,7 @@ data class MigrateMangaScreen(
     @Composable
     private fun MigrateMangaBottomBar(
         modifier: Modifier = Modifier,
-        selected: List<MigrateMangaItem>,
+        selectionMode: Boolean,
         onMultiMigrateClicked: () -> Unit,
         enableScrollToTop: Boolean,
         enableScrollToBottom: Boolean,
@@ -302,7 +303,7 @@ data class MigrateMangaScreen(
     ) {
         val scope = rememberCoroutineScope()
         val animatedElevation by animateDpAsState(
-            targetValue = if (selected.isNotEmpty()) 3.dp else 0.dp,
+            targetValue = if (selectionMode) 3.dp else 0.dp,
             label = "elevation",
         )
         Surface(
@@ -350,7 +351,7 @@ data class MigrateMangaScreen(
                     toConfirm = confirm[1],
                     onLongClick = { onLongClickItem(1) },
                     onClick = onMultiMigrateClicked,
-                    enabled = selected.isNotEmpty(),
+                    enabled = selectionMode,
                 )
                 Button(
                     title = stringResource(KMR.strings.action_scroll_to_bottom),
