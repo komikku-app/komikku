@@ -201,7 +201,6 @@ private fun HistoryScreenContent(
                                     item.item,
                                     HistorySelectionOptions(
                                         selected = !isSelected,
-                                        userSelected = true,
                                         fromLongPress = false,
                                     ),
                                 )
@@ -213,7 +212,6 @@ private fun HistoryScreenContent(
                                 item.item,
                                 HistorySelectionOptions(
                                     selected = !isSelected,
-                                    userSelected = true,
                                     fromLongPress = true,
                                 ),
                             )

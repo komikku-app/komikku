@@ -290,7 +290,6 @@ class HistoryScreenModel(
     // KMK -->
     data class HistorySelectionOptions(
         val selected: Boolean,
-        val userSelected: Boolean = false,
         val fromLongPress: Boolean = false,
     )
 
@@ -298,7 +297,7 @@ class HistoryScreenModel(
         item: HistoryWithRelations,
         selectionOptions: HistorySelectionOptions,
     ) {
-        val (selected, userSelected, fromLongPress) = selectionOptions
+        val (selected, fromLongPress) = selectionOptions
         if ((item.chapterId in state.value.selection) == selected) return
 
         mutableState.update { state ->
@@ -310,7 +309,7 @@ class HistoryScreenModel(
                     val firstSelection = list.isEmpty()
                     if (selected) list.add(item.chapterId) else list.remove(item.chapterId)
 
-                    if (selected && userSelected && fromLongPress) {
+                    if (selected && fromLongPress) {
                         if (firstSelection) {
                             selectedPositions[0] = selectedIndex
                             selectedPositions[1] = selectedIndex
@@ -335,7 +334,7 @@ class HistoryScreenModel(
                                 }
                             }
                         }
-                    } else if (userSelected && !fromLongPress) {
+                    } else if (!fromLongPress) {
                         if (!selected) {
                             if (selectedIndex == selectedPositions[0]) {
                                 selectedPositions[0] = indexOfFirst { it.chapterId in list }
