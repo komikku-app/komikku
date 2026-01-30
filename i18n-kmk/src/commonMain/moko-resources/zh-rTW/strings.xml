@@ -192,4 +192,7 @@
     <string name="pref_show_empty_categories_search">在搜尋/篩選時顯示空類別</string>
     <string name="job_failed_schedule_update_check">無法排程自動書櫃更新：%s</string>
     <string name="job_failed_schedule_backup_check">無法排程自動備份：%s</string>
+    <string name="action_filter_unfinished_manga">尚未讀完</string>
+    <string name="action_filter_unfinished_chapter">未讀完章節</string>
+    <string name="action_filter_non_library_entries">未收藏項目</string>
 </resources>
