@@ -288,7 +288,6 @@ object SettingsLibraryScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_hide_missing_chapter_indicators),
                 ),
                 // KMK -->
-                // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.showEmptyCategoriesSearch(),
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
