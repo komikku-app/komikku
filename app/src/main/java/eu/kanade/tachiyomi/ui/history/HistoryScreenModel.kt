@@ -298,7 +298,7 @@ class HistoryScreenModel(
         selectionOptions: HistorySelectionOptions,
     ) {
         val (selected, fromLongPress) = selectionOptions
-        if ((item.chapterId in state.value.selection) == selected) return
+        if (item.chapterId in state.value.selection == selected) return
 
         mutableState.update { state ->
             val selection = state.selection.mutate { list ->

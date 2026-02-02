@@ -95,7 +95,7 @@ fun HistoryItem(
         if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
             MangaCoverHide.Book(
                 modifier = Modifier.fillMaxHeight(),
-                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { selected }),
+                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { selected },
                 tint = onBgColor,
                 size = MangaCover.Size.Medium,
             )
