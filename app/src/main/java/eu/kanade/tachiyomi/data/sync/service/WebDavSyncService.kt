@@ -46,7 +46,7 @@ class WebDavSyncService(
         return if (folder.isNotEmpty()) "$cleanBase/$folder/$fileName" else "$cleanBase/$fileName"
     }
 
-    private val buildCustomOkHttpClient: OkHttpClient by lazy {
+    private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -91,7 +91,7 @@ class WebDavSyncService(
             .header("Content-Length", "0")
             .build()
 
-        val response = buildCustomOkHttpClient.newCall(request).await()
+        val response = client.newCall(request).await()
         val success = response.isSuccessful || response.code == 405 || response.code == 409
         response.close()
         return success
@@ -133,7 +133,6 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl("backup.proto")
         val request = GET(requestUrl, headers = headersBuilder.build())
-        val client = buildCustomOkHttpClient
         val response = client.newCall(request).await()
 
         return when (response.code) {
@@ -163,7 +162,6 @@ class WebDavSyncService(
 
         if (!validateSettings()) return
 
-        val client = buildCustomOkHttpClient
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
         if (byteArray.isEmpty()) throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
 
