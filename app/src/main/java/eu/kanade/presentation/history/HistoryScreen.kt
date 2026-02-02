@@ -15,6 +15,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -122,9 +123,12 @@ fun HistoryScreen(
                     modifier = Modifier.padding(contentPadding),
                 )
             } else {
+                // KMK -->
+                val uiModels = remember(state.list) { state.getUiModel() }
+                // KMK <--
                 HistoryScreenContent(
                     // KMK -->
-                    history = state.getUiModel(),
+                    history = uiModels,
                     // KMK <--
                     contentPadding = contentPadding,
                     onClickCover = { history -> onClickCover(history.mangaId) },
