@@ -266,9 +266,9 @@ data class TrackInfoDialogHomeScreen(
             item.tracker as EnhancedTracker
             val references = getMergedReferencesById.await(mangaId)
             return references.distinctBy { it.mangaSourceId }.firstNotNullOfOrNull { ref ->
-                val accept = sourceManager.get(ref.mangaSourceId)?.let { source -> item.tracker.accept(source) }
-                if (accept != true) return@firstNotNullOfOrNull null
-                ref.mangaId?.let { getMangaById.await(it) } ?: return@firstNotNullOfOrNull null
+                sourceManager.get(ref.mangaSourceId)
+                    ?.takeIf(item.tracker::accept)
+                    ?.let { ref.mangaId?.let { mangaId -> getMangaById.await(mangaId) } }
             }
         }
         // KMK <--
