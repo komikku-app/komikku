@@ -39,28 +39,27 @@ fun BrowseSourceSimpleToolbar(
             var selectingDisplayMode by remember { mutableStateOf(false) }
             // KMK -->
             AppBarActions(
-                actions = persistentListOf<AppBar.AppBarAction>().builder()
-                    .apply {
-                        displayMode?.let {
-                            add(
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_display_mode),
-                                    icon = if (displayMode == LibraryDisplayMode.List) {
-                                        Icons.AutoMirrored.Filled.ViewList
-                                    } else {
-                                        Icons.Filled.ViewModule
-                                    },
-                                    onClick = { selectingDisplayMode = true },
-                                ),
-                            )
-                        }
-                        toggleSelectionMode?.let {
-                            add(
-                                bulkSelectionButton(isRunning, toggleSelectionMode),
-                            )
-                        }
+                actions = persistentListOf<AppBar.AppBarAction>().builder().apply {
+                    displayMode?.let {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_display_mode),
+                                icon = if (displayMode == LibraryDisplayMode.List) {
+                                    Icons.AutoMirrored.Filled.ViewList
+                                } else {
+                                    Icons.Filled.ViewModule
+                                },
+                                onClick = { selectingDisplayMode = true },
+                            ),
+                        )
                     }
-                    .build(),
+                    toggleSelectionMode?.let {
+                        add(
+                            bulkSelectionButton(isRunning, toggleSelectionMode),
+                        )
+                    }
+                }
+                .build(),
             )
             // KMK <--
             DropdownMenu(
