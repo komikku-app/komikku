@@ -203,15 +203,6 @@
     <string name="syncyomi">SyncYomi</string>
     <string name="last_synchronization">上次同步時間：%1$s</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV 伺服器 URL</string>
-    <string name="pref_webdav_url_summ">輸入 WebDAV 伺服器地址</string>
-    <string name="pref_webdav_username">使用者名稱</string>
-    <string name="pref_webdav_username_summ">輸入你的 WebDAV 帳號</string>
-    <string name="pref_webdav_password">密碼</string>
-    <string name="pref_webdav_password_summ">輸入你的 WebDAV 密碼</string>
-    <string name="pref_webdav_folder">WebDAV 子資料夾</string>
-    <string name="pref_webdav_folder_summ">應用程式會將資料儲存至此資料夾</string>
     <string name="pref_google_drive_sign_in">登入</string>
     <string name="pref_google_drive_purge_sync_data">從 Google Drive 清除同步資料</string>
     <string name="google_drive_sync_data_purged">已從 Google Drive 清除同步資料</string>

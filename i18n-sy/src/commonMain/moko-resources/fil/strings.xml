@@ -545,15 +545,6 @@
     <string name="data_saver">Taga-save ng datos</string>
     <string name="syncyomi">SyncYomi</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL ng WebDAV Server</string>
-    <string name="pref_webdav_url_summ">Ilagay ang address ng WebDAV server</string>
-    <string name="pref_webdav_username">Username</string>
-    <string name="pref_webdav_username_summ">Ilagay ang iyong WebDAV username</string>
-    <string name="pref_webdav_password">Password</string>
-    <string name="pref_webdav_password_summ">Ilagay ang iyong WebDAV password</string>
-    <string name="pref_webdav_folder">WebDAV Subfolder</string>
-    <string name="pref_webdav_folder_summ">Ang app ay mag-iimbak ng mga data sa folder na ito</string>
     <string name="aes_256">AES 256</string>
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="rating9">Kamangha-mangha</string>

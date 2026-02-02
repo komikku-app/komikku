@@ -107,15 +107,6 @@
     <string name="google_drive_not_signed_in">Chưa đăng nhập vào Google Drive</string>
     <string name="error_uploading_sync_data">Đã có lỗi khi tải dữ liệu đồng bộ lên Google Drive</string>
     <string name="google_drive_login_failed">Đăng nhập vào Google Drive thất bại:%s</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL máy chủ WebDAV</string>
-    <string name="pref_webdav_url_summ">Nhập địa chỉ của máy chủ WebDAV</string>
-    <string name="pref_webdav_username">Tên người dùng</string>
-    <string name="pref_webdav_username_summ">Nhập tên người dùng WebDAV của bạn</string>
-    <string name="pref_webdav_password">Mật khẩu</string>
-    <string name="pref_webdav_password_summ">Nhập mật khẩu WebDAV của bạn</string>
-    <string name="pref_webdav_folder">Thư mục con WebDAV</string>
-    <string name="pref_webdav_folder_summ">Ứng dụng sẽ lưu dữ liệu vào thư mục này</string>
     <string name="pref_sync_service_category">Đồng bộ</string>
     <string name="last_synchronization">Lần đồng bộ gần nhất:%1$s</string>
     <string name="google_drive_sync_data_not_found">Không tìm thấy dữ liệu đồng bộ trong Google Drive</string>

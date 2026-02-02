@@ -512,15 +512,6 @@
     <string name="pref_choose_what_to_sync">Escolha o que sincronizar</string>
     <string name="syncyomi">SyncYomi</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL do servidor WebDAV</string>
-    <string name="pref_webdav_url_summ">Digite o endereço do servidor WebDAV</string>
-    <string name="pref_webdav_username">Nome de usuário</string>
-    <string name="pref_webdav_username_summ">Digite seu nome de usuário do WebDAV</string>
-    <string name="pref_webdav_password">Senha</string>
-    <string name="pref_webdav_password_summ">Digite sua senha do WebDAV</string>
-    <string name="pref_webdav_folder">Subpasta WebDAV</string>
-    <string name="pref_webdav_folder_summ">O aplicativo armazenará os dados nesta pasta</string>
     <string name="pref_google_drive_sign_in">Login</string>
     <string name="pref_google_drive_purge_sync_data">Limpar dados sincronizados do Google Drive</string>
     <string name="google_drive_sync_data_purged">Sincronizar dados purgados do Google Drive</string>

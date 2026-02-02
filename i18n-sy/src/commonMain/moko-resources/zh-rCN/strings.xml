@@ -596,16 +596,7 @@
     <string name="pref_choose_what_to_sync">选择要同步的内容</string>
     <string name="last_synchronization">最后同步：%1$s</string>
     <string name="google_drive">谷歌云端硬盘</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV服务器地址</string>
-    <string name="pref_webdav_url_summ">输入WebDAV服务器地址</string>
-    <string name="pref_webdav_username">WebDAV账号</string>
-    <string name="pref_webdav_username_summ">输入WebDAV账号</string>
-    <string name="pref_webdav_password">WebDAV密码</string>
-    <string name="pref_webdav_password_summ">输入WebDAV密码</string>
     <string name="pref_google_drive_sign_in">登录</string>
-    <string name="pref_webdav_folder">WebDAV子文件夹</string>
-    <string name="pref_webdav_folder_summ">应用会把数据储存至该文件夹中</string>
     <string name="pref_google_drive_purge_sync_data">从谷歌云端硬盘清除同步的数据</string>
     <string name="google_drive_sync_data_purged">同步数据已从谷歌云端硬盘清除</string>
     <string name="google_drive_sync_data_purge_error">从谷歌云端硬盘清除同步的数据失败，请尝试重新登录。</string>

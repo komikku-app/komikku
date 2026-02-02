@@ -150,15 +150,6 @@
     <string name="pref_choose_what_to_sync">Scegli cosa sincronizzare</string>
     <string name="last_synchronization">Ultima Sincronizzazione: %1$s</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL del server WebDAV</string>
-    <string name="pref_webdav_url_summ">Inserisci l'indirizzo del server WebDAV</string>
-    <string name="pref_webdav_username">Nome utente</string>
-    <string name="pref_webdav_username_summ">Inserisci il tuo nome utente WebDAV</string>
-    <string name="pref_webdav_password">Password</string>
-    <string name="pref_webdav_password_summ">Inserisci la tua password WebDAV</string>
-    <string name="pref_webdav_folder">Sottocartella WebDAV</string>
-    <string name="pref_webdav_folder_summ">L'app salverà i dati in questa cartella</string>
     <string name="aes_256">AES 256</string>
     <string name="aes_128">AES 128</string>
     <string name="reader_preload_amount_4_pages">4 Pagine</string>

@@ -459,15 +459,6 @@
     <string name="pref_choose_what_to_sync">Choisir quoi synchroniser</string>
     <string name="last_synchronization">Dernière synchronisation : %1$s</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL du serveur WebDAV</string>
-    <string name="pref_webdav_url_summ">Entrez l'adresse du serveur WebDAV</string>
-    <string name="pref_webdav_username">Nom d'utilisateur</string>
-    <string name="pref_webdav_username_summ">Entrez votre nom d'utilisateur WebDAV</string>
-    <string name="pref_webdav_password">Mot de passe</string>
-    <string name="pref_webdav_password_summ">Entrez votre mot de passe WebDAV</string>
-    <string name="pref_webdav_folder">Sous-dossier WebDAV</string>
-    <string name="pref_webdav_folder_summ">L'application stockera les données dans ce dossier</string>
     <string name="pref_google_drive_sign_in">Connexion</string>
     <string name="google_drive_login_success">Connecté à Google Drive</string>
     <string name="google_drive_login_failed">Impossible de se connecter à Google Drive : %s</string>

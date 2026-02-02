@@ -226,15 +226,6 @@
     <string name="pref_sync_automatic_category">স্বয়ংক্ৰিয় সিঙ্কৰণ</string>
     <string name="pref_sync_interval">সিঙ্কৰ ঘনত্ব</string>
     <string name="last_synchronization">শেষ সিঙ্ক: %1$s</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV ছাৰ্ভাৰ URL</string>
-    <string name="pref_webdav_url_summ">WebDAV ছাৰ্ভাৰৰ ঠিকনা লিখক</string>
-    <string name="pref_webdav_username">ইউজাৰনেম</string>
-    <string name="pref_webdav_username_summ">আপোনাৰ WebDAV ইউজাৰনেম লিখক</string>
-    <string name="pref_webdav_password">পাছৱৰ্ড</string>
-    <string name="pref_webdav_password_summ">আপোনাৰ WebDAV পাছৱৰ্ড লিখক</string>
-    <string name="pref_webdav_folder">WebDAV সাবফোল্ডাৰ</string>
-    <string name="pref_webdav_folder_summ">অ্যাপ্লিকেশনে ডেটা এই ফোল্ডাৰত সংৰক্ষণ কৰিব</string>
     <string name="google_drive">গুগল ড্ৰাইভ</string>
     <string name="pref_google_drive_sign_in">সাইন ইন কৰক</string>
     <string name="pref_google_drive_purge_sync_data">গুগল ড্ৰাইভৰ পৰা সিঙ্ক তথ্য পৰিস্কাৰ কৰক</string>

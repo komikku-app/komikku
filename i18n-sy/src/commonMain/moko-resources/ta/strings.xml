@@ -278,15 +278,6 @@
     <string name="pref_choose_what_to_sync">ஒத்திசைக்க என்ன என்பதைத் தேர்வுசெய்க</string>
     <string name="syncyomi">சினிசோமி</string>
     <string name="last_synchronization">கடைசி ஒத்திசைவு: %1$s</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV சேவை URL</string>
-    <string name="pref_webdav_url_summ">WebDAV சேவை முகவரியை உள்ளிடவும்</string>
-    <string name="pref_webdav_username">பயனர் பெயர்</string>
-    <string name="pref_webdav_username_summ">உங்கள் WebDAV பயனர் பெயரை உள்ளிடவும்</string>
-    <string name="pref_webdav_password">கடவுச்சொல்</string>
-    <string name="pref_webdav_password_summ">உங்கள் WebDAV கடவுச்சொல்லை உள்ளிடவும்</string>
-    <string name="pref_webdav_folder">WebDAV துணை கோப்புறை</string>
-    <string name="pref_webdav_folder_summ">ஆப் இந்த கோப்புறையில் தரவை சேமிக்கும்</string>
     <string name="google_drive">கூகிள் இயக்கி</string>
     <string name="pref_google_drive_sign_in">விடுபதிகை</string>
     <string name="pref_google_drive_purge_sync_data">Google இயக்ககத்திலிருந்து ஒத்திசைவு தரவை அழிக்கவும்</string>

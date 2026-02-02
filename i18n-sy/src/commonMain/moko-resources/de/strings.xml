@@ -161,15 +161,6 @@
     <string name="pref_sync_automatic_category">Automatische Synchronisierung</string>
     <string name="pref_sync_interval">Synchronisierungsfrequenz</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV Server-URL</string>
-    <string name="pref_webdav_url_summ">Geben Sie die WebDAV-Serveradresse ein</string>
-    <string name="pref_webdav_username">Benutzername</string>
-    <string name="pref_webdav_username_summ">Geben Sie Ihren WebDAV-Benutzernamen ein</string>
-    <string name="pref_webdav_password">Passwort</string>
-    <string name="pref_webdav_password_summ">Geben Sie Ihr WebDAV-Passwort ein</string>
-    <string name="pref_webdav_folder">WebDAV-Unterordner</string>
-    <string name="pref_webdav_folder_summ">Die Anwendung speichert Daten in diesem Ordner</string>
     <string name="pref_purge_confirmation_title">Reinigung bestätigen</string>
     <string name="pref_source_navigation">\'Neuste\'-Taste ersetzen</string>
     <string name="custom_entry_info">Benutzerdefinierte Eintragsinformation</string>

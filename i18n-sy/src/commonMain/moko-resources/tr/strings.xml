@@ -196,15 +196,6 @@
     <string name="syncyomi">SyncYomi</string>
     <string name="last_synchronization">Son eşitleme: %1$s</string>
     <string name="google_drive">Google Drive</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV Sunucu URL'si</string>
-    <string name="pref_webdav_url_summ">WebDAV sunucu adresini girin</string>
-    <string name="pref_webdav_username">Kullanıcı adı</string>
-    <string name="pref_webdav_username_summ">WebDAV kullanıcı adınızı girin</string>
-    <string name="pref_webdav_password">Şifre</string>
-    <string name="pref_webdav_password_summ">WebDAV şifrenizi girin</string>
-    <string name="pref_webdav_folder">WebDAV Alt Klasörü</string>
-    <string name="pref_webdav_folder_summ">Uygulama verileri bu klasöre kaydedecektir</string>
     <string name="pref_google_drive_sign_in">Giriş yap</string>
     <string name="pref_google_drive_purge_sync_data">Eşitleme verilerini Google Drive\'dan silin</string>
     <string name="google_drive_sync_data_purged">Eşitleme verileri Google Drive\'dan silindi</string>

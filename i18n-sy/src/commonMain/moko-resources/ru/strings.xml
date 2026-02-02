@@ -209,15 +209,6 @@
     <string name="pref_google_drive_purge_sync_data">Очистить данные синхронизации с Google Диска</string>
     <string name="google_drive_sync_data_purged">Данные синхронизации удалены из Google Диска</string>
     <string name="google_drive_sync_data_not_found">Данные синхронизации не найдены в Google Диске</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL сервера WebDAV</string>
-    <string name="pref_webdav_url_summ">Введите адрес сервера WebDAV</string>
-    <string name="pref_webdav_username">Имя пользователя</string>
-    <string name="pref_webdav_username_summ">Введите имя пользователя WebDAV</string>
-    <string name="pref_webdav_password">Пароль</string>
-    <string name="pref_webdav_password_summ">Введите пароль WebDAV</string>
-    <string name="pref_webdav_folder">WebDAV Подкаталог</string>
-    <string name="pref_webdav_folder_summ">Приложение будет сохранять данные в эту папку</string>
     <string name="google_drive_sync_data_purge_error">Ошибка при очистке данных синхронизации с Google Диска, попробуйте войти снова.</string>
     <string name="google_drive_login_success">Выполнен вход в Google Диск</string>
     <string name="google_drive_login_failed">Не удалось войти в Google Диск: %s</string>

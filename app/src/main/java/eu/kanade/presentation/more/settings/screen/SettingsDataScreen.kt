@@ -561,7 +561,7 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
-                            SyncManager.SyncService.WebDAV.value to stringResource(SYMR.strings.web_dav),
+                            SyncManager.SyncService.WebDAV.value to stringResource(KMR.strings.web_dav),
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
                         onValueChanged = {
@@ -784,8 +784,8 @@ object SettingsDataScreen : SearchableSettings {
         return listOf(
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavUrl(),
-                title = stringResource(SYMR.strings.pref_webdav_url),
-                subtitle = stringResource(SYMR.strings.pref_webdav_url_summ),
+                title = stringResource(KMR.strings.pref_webdav_url),
+                subtitle = stringResource(KMR.strings.pref_webdav_url_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
                         syncPreferences.webDavUrl().set(newValue.trim())
@@ -795,8 +795,8 @@ object SettingsDataScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavUsername(),
-                title = stringResource(SYMR.strings.pref_webdav_username),
-                subtitle = stringResource(SYMR.strings.pref_webdav_username_summ),
+                title = stringResource(KMR.strings.pref_webdav_username),
+                subtitle = stringResource(KMR.strings.pref_webdav_username_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
                         syncPreferences.webDavUsername().set(newValue.trim())
@@ -806,8 +806,8 @@ object SettingsDataScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavPassword(),
-                title = stringResource(SYMR.strings.pref_webdav_password),
-                subtitle = stringResource(SYMR.strings.pref_webdav_password_summ),
+                title = stringResource(KMR.strings.pref_webdav_password),
+                subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
                         syncPreferences.webDavPassword().set(newValue)
@@ -817,8 +817,8 @@ object SettingsDataScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavFolder(),
-                title = stringResource(SYMR.strings.pref_webdav_folder),
-                subtitle = stringResource(SYMR.strings.pref_webdav_folder_summ),
+                title = stringResource(KMR.strings.pref_webdav_folder),
+                subtitle = stringResource(KMR.strings.pref_webdav_folder_summ),
                 onValueChanged = { newValue ->
                     scope.launch {
                         syncPreferences.webDavFolder().set(newValue.trim())

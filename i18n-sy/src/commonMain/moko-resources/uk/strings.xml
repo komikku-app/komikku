@@ -180,15 +180,6 @@
     <string name="pref_choose_what_to_sync">Виберіть, що синхронізувати</string>
     <string name="google_drive_login_success">Вхід до Google Диску</string>
     <string name="pref_sync_options">Створити сценарії синхронізації</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">URL сервера WebDAV</string>
-    <string name="pref_webdav_url_summ">Введіть адресу сервера WebDAV</string>
-    <string name="pref_webdav_username">Ім'я користувача</string>
-    <string name="pref_webdav_username_summ">Введіть своє ім'я користувача WebDAV</string>
-    <string name="pref_webdav_password">Пароль</string>
-    <string name="pref_webdav_password_summ">Введіть свій пароль WebDAV</string>
-    <string name="pref_webdav_folder">Підпапка WebDAV</string>
-    <string name="pref_webdav_folder_summ">Додаток зберігатиме дані в цій папці</string>
     <string name="google_drive">Google Диск</string>
     <string name="pref_google_drive_sign_in">Увійти</string>
     <string name="pref_google_drive_purge_sync_data">Очистити дані синхронізації з Google Диска</string>
