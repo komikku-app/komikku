@@ -561,7 +561,9 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
+                            // KMK -->
                             SyncManager.SyncService.WebDAV.value to stringResource(KMR.strings.web_dav),
+                            // KMK <--
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
                         onValueChanged = {
@@ -603,7 +605,9 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.NONE -> emptyList()
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
+            // KMK -->
             SyncManager.SyncService.WebDAV -> getWebDavPreferences(syncPreferences)
+            // KMK <--
         }
 
         return if (syncServiceType != SyncManager.SyncService.NONE) {
@@ -776,7 +780,7 @@ object SettingsDataScreen : SearchableSettings {
         )
     }
 
-
+    // KMK -->
     @Composable
     private fun getWebDavPreferences(syncPreferences: SyncPreferences): List<Preference> {
         val scope = rememberCoroutineScope()
@@ -824,11 +828,11 @@ object SettingsDataScreen : SearchableSettings {
                         syncPreferences.webDavFolder().set(newValue.trim())
                     }
                     true
-                }
-            )
+                },
+            ),
         )
     }
-
+    // MK <--
 
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {

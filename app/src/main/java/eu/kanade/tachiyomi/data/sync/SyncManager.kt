@@ -56,7 +56,9 @@ class SyncManager(
         NONE(0),
         SYNCYOMI(1),
         GOOGLE_DRIVE(2),
+        // KMK -->
         WebDAV(3),
+        // KMK <--
         ;
 
         companion object {
@@ -139,9 +141,11 @@ class SyncManager(
                 GoogleDriveSyncService(context, json, syncPreferences)
             }
 
+            // KMK -->
             SyncService.WebDAV -> {
                 WebDavSyncService(context, json, syncPreferences, notifier)
             }
+            // KMK <--
 
             else -> {
                 logcat(LogPriority.ERROR) { "Invalid sync service type: $syncService" }

@@ -19,10 +19,12 @@ class SyncPreferences(
     fun syncInterval() = preferenceStore.getInt("sync_interval", 0)
     fun syncService() = preferenceStore.getInt("sync_service", 0)
 
+    // KMK -->
     fun webDavUrl() = preferenceStore.getString("webdav_url", "")
     fun webDavUsername() = preferenceStore.getString("webdav_username", "")
     fun webDavPassword() = preferenceStore.getString("webdav_password", "")
     fun webDavFolder() = preferenceStore.getString("webdav_folder", "komikku")
+    // KMK <--
 
     fun googleDriveAccessToken() = preferenceStore.getString(
         Preference.appStateKey("google_drive_access_token"),
