@@ -235,7 +235,7 @@ data class TrackInfoDialogHomeScreen(
         private val trackPreferences: TrackPreferences = Injekt.get(),
         // SY <--
         // KMK -->
-        val sourceManager: SourceManager = Injekt.get(),
+        private val sourceManager: SourceManager = Injekt.get(),
         // KMK <--
     ) : StateScreenModel<Model.State>(State()) {
         // KMK -->
@@ -395,7 +395,7 @@ data class TrackInfoDialogHomeScreen(
                 // KMK -->
                 .let { trackers ->
                     val sources = if (source is MergedSource) {
-                        source.getMergedSources(mangaId)
+                        sourceManager.getMergedSources(mangaId)
                     } else {
                         listOf(source)
                     }

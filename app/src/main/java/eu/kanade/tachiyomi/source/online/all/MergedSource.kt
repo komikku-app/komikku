@@ -178,14 +178,6 @@ class MergedSource : HttpSource() {
         return LoadedMangaSource(source, manga, this)
     }
 
-    // KMK -->
-    suspend fun getMergedSources(mangaId: Long): List<Source> {
-        val sources = getMergedReferencesById.await(mangaId)
-        return sources.map { it.mangaSourceId }.distinct()
-            .map { sourceManager.getOrStub(it) }
-    }
-    // KMK <--
-
     data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
 
     override val lang = "all"

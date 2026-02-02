@@ -39,7 +39,6 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.manga.interactor.GetManga
-import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -57,9 +56,6 @@ class MigrationListScreenModel(
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val migrateManga: MigrateMangaUseCase = Injekt.get(),
-    // SY -->
-    private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
-    // SY <--
 ) : StateScreenModel<MigrationListScreenModel.State>(State()) {
 
     private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
@@ -97,8 +93,7 @@ class MigrationListScreenModel(
                             source = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
                                 // KMK -->
                                 if (manga.source == MERGED_SOURCE_ID) {
-                                    getMergedReferencesById.await(manga.id)
-                                        .map { sourceManager.getOrStub(it.mangaSourceId) }
+                                    sourceManager.getMergedSources(manga.id)
                                 } else {
                                     null
                                 },
