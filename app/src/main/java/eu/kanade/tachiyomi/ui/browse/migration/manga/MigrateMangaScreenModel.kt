@@ -69,7 +69,7 @@ class MigrateMangaScreenModel(
         selected: Boolean,
         fromLongPress: Boolean = false,
     ) {
-        if ((item.id in state.value.selection) == selected) return
+        if (item.id in state.value.selection == selected) return
         mutableState.update { state ->
             val selection = state.selection.mutate { list ->
                 state.titles.run {

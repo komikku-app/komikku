@@ -311,7 +311,7 @@ private fun UpdatesUiItem(
                     MangaCoverHide.Book(
                         modifier = Modifier
                             .width(UpdateItemWidth),
-                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { selected }),
+                        bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { selected },
                         tint = onBgColor,
                         size = MangaCover.Size.Medium,
                     )
