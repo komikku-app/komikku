@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.history
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFilter
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
@@ -12,9 +12,11 @@ import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.history.HistoryUiModel
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -78,7 +80,6 @@ class HistoryScreenModel(
     // KMK -->
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
-    private val selectedChapterIds: HashSet<Long> = HashSet()
     // KMK <--
 
     init {
@@ -107,9 +108,6 @@ class HistoryScreenModel(
                             logcat(LogPriority.ERROR, error)
                             _events.send(Event.InternalError)
                         }
-                        // KMK -->
-                        .map { it.toHistoryItems() }
-                        // KMK <--
                         .flowOn(Dispatchers.IO)
                 }
                 .collect { newList ->
@@ -143,17 +141,6 @@ class HistoryScreenModel(
             .launchIn(screenModelScope)
         // KMK <--
     }
-
-    // KMK -->
-    private fun List<HistoryWithRelations>.toHistoryItems(): List<HistoryItem> {
-        return map {
-            HistoryItem(
-                it,
-                selected = it.chapterId in selectedChapterIds,
-            )
-        }
-    }
-    // KMK <--
 
     suspend fun getNextChapter(): Chapter? {
         return withIOContext { getNextChapters.await(onlyUnread = false).firstOrNull() }
@@ -311,21 +298,20 @@ class HistoryScreenModel(
     )
 
     fun toggleSelection(
-        item: HistoryItem,
+        item: HistoryWithRelations,
         selectionOptions: HistorySelectionOptions,
     ) {
         val (selected, userSelected, fromLongPress) = selectionOptions
+        if (selected == item.chapterId in state.value.selectedChapterIds) return
+
         mutableState.update { state ->
-            val newItems = state.list.toMutableList().apply {
-                val selectedIndex = indexOfFirst { it.history.chapterId == item.history.chapterId }
-                if (selectedIndex < 0) return@apply
+            val newSet = state.selectedChapterIds.toHashSet()
+            state.list.run {
+                val selectedIndex = indexOfFirst { it.chapterId == item.chapterId }
+                if (selectedIndex < 0) return@run
 
-                val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
-
-                val firstSelection = none { it.selected }
-                set(selectedIndex, selectedItem.copy(selected = selected))
-                selectedChapterIds.addOrRemove(item.history.chapterId, selected)
+                val firstSelection = newSet.isEmpty()
+                newSet.addOrRemove(item.chapterId, selected)
 
                 if (selected && userSelected && fromLongPress) {
                     if (firstSelection) {
@@ -346,19 +332,18 @@ class HistoryScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.history.chapterId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (inBetweenItem.chapterId !in state.selectedChapterIds) {
+                                newSet.add(inBetweenItem.chapterId)
                             }
                         }
                     }
                 } else if (userSelected && !fromLongPress) {
                     if (!selected) {
                         if (selectedIndex == selectedPositions[0]) {
-                            selectedPositions[0] = indexOfFirst { it.selected }
+                            selectedPositions[0] = indexOfFirst { it.chapterId in state.selectedChapterIds }
                         } else if (selectedIndex == selectedPositions[1]) {
-                            selectedPositions[1] = indexOfLast { it.selected }
+                            selectedPositions[1] = indexOfLast { it.chapterId in state.selectedChapterIds }
                         }
                     } else {
                         if (selectedIndex < selectedPositions[0]) {
@@ -370,41 +355,48 @@ class HistoryScreenModel(
                 }
             }
             state.copy(
-                list = newItems.toPersistentList(),
-                selectionMode = selected || newItems.fastAny { it.selected },
+                selectedChapterIds = newSet.toPersistentSet(),
+                selectionMode = selected || newSet.isNotEmpty(),
             )
         }
     }
 
     fun toggleAllSelection(selected: Boolean) {
         mutableState.update { state ->
-            val newItems = state.list.map {
-                selectedChapterIds.addOrRemove(it.history.chapterId, selected)
-                it.copy(selected = selected)
+            val newSet = if (selected) {
+                state.list.map { it.chapterId }.toPersistentSet()
+            } else {
+                persistentSetOf()
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
-            state.copy(list = newItems.toPersistentList())
+            state.copy(
+                selectedChapterIds = newSet,
+                selectionMode = selected || newSet.isNotEmpty(),
+            )
         }
     }
 
     fun invertSelection() {
         mutableState.update { state ->
-            val newItems = state.list.map {
-                selectedChapterIds.addOrRemove(it.history.chapterId, !it.selected)
-                it.copy(selected = !it.selected)
+            val newSet = state.selectedChapterIds.toHashSet()
+            state.list.forEach {
+                newSet.addOrRemove(it.chapterId, it.chapterId !in state.selectedChapterIds)
             }
             selectedPositions[0] = -1
             selectedPositions[1] = -1
-            state.copy(list = newItems.toPersistentList())
+            state.copy(
+                selectedChapterIds = newSet.toPersistentSet(),
+            )
         }
     }
 
     fun toggleSelectionMode(newMode: Boolean? = null) {
         if (newMode == false || state.value.selectionMode) {
             toggleAllSelection(false)
+        } else {
+            mutableState.update { it.copy(selectionMode = newMode ?: !it.selectionMode) }
         }
-        mutableState.update { it.copy(selectionMode = newMode ?: !it.selectionMode) }
     }
     // KMK <--
 
@@ -436,31 +428,30 @@ class HistoryScreenModel(
 
     @Immutable
     data class State(
-        val isLoading: Boolean = true,
-        // KMK -->
         val searchQuery: String? = null,
-        val list: ImmutableList<HistoryItem> = persistentListOf(),
+        // KMK -->
+        val list: ImmutableList<HistoryWithRelations> = persistentListOf(),
+        val isLoading: Boolean = true,
         // KMK <--
         val dialog: Dialog? = null,
         // KMk -->
+        val selectedChapterIds: ImmutableSet<Long> = persistentSetOf(),
         val hasActiveFilters: Boolean = false,
         val selectionMode: Boolean = false,
     ) {
-        val selected = list.filter { it.selected }
+        val selected
+            get() = list.fastFilter { it.chapterId in selectedChapterIds }
 
-        fun getUiModel(): List<HistoryUiModel> {
-            return list
-                .map { HistoryUiModel.Item(it) }
-                .insertSeparators { before, after ->
-                    val beforeDate = before?.item?.history?.readAt?.time?.toLocalDate()
-                    val afterDate = after?.item?.history?.readAt?.time?.toLocalDate()
-                    when {
-                        beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(afterDate)
-                        // Return null to avoid adding a separator between two items.
-                        else -> null
-                    }
+        fun getUiModel() = list.map { HistoryUiModel.Item(it) }
+            .insertSeparators { before, after ->
+                val beforeDate = before?.item?.readAt?.time?.toLocalDate()
+                val afterDate = after?.item?.readAt?.time?.toLocalDate()
+                when {
+                    beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(afterDate)
+                    // Return null to avoid adding a separator between two items.
+                    else -> null
                 }
-        }
+            }
     }
     // KMK <--
 
@@ -498,11 +489,3 @@ class HistoryScreenModel(
         data object HistoryCleared : Event
     }
 }
-
-// KMK -->
-@Immutable
-data class HistoryItem(
-    val history: HistoryWithRelations,
-    val selected: Boolean = false,
-)
-// KMK <--

@@ -28,7 +28,6 @@ import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
-import eu.kanade.tachiyomi.ui.history.HistoryItem
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel.HistorySelectionOptions
 import kotlinx.collections.immutable.persistentListOf
@@ -56,7 +55,7 @@ fun HistoryScreen(
     toggleSelectionMode: () -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
-    onHistorySelected: (HistoryItem, HistorySelectionOptions) -> Unit,
+    onHistorySelected: (HistoryWithRelations, HistorySelectionOptions) -> Unit,
     onFilterClicked: () -> Unit,
     hasActiveFilters: Boolean,
     usePanoramaCover: Boolean,
@@ -71,11 +70,11 @@ fun HistoryScreen(
             // KMK -->
             when {
                 state.selectionMode -> HistorySelectionToolbar(
-                    selectedCount = state.selected.size,
+                    selectedCount = state.selectedChapterIds.size,
                     onCancelActionMode = toggleSelectionMode,
                     onClickSelectAll = { onSelectAll(true) },
                     onClickInvertSelection = onInvertSelection,
-                    onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected.map { it.history })) },
+                    onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected)) },
                 )
                 // KMK <--
                 else -> SearchToolbar(
@@ -95,8 +94,10 @@ fun HistoryScreen(
                                 // KMK <--
                                 AppBar.Action(
                                     title = stringResource(MR.strings.pref_clear_history),
+                                    // KMK -->
                                     icon = Icons.Outlined.Checklist,
                                     onClick = toggleSelectionMode,
+                                    // KMK <--
                                 ),
                             ),
                         )
@@ -128,6 +129,7 @@ fun HistoryScreen(
                 // KMK <--
                 HistoryScreenContent(
                     // KMK -->
+                    state = state,
                     history = uiModels,
                     // KMK <--
                     contentPadding = contentPadding,
@@ -148,6 +150,9 @@ fun HistoryScreen(
 
 @Composable
 private fun HistoryScreenContent(
+    // KMK -->
+    state: HistoryScreenModel.State,
+
     history: List<HistoryUiModel>,
     contentPadding: PaddingValues,
     onClickCover: (HistoryWithRelations) -> Unit,
@@ -156,7 +161,7 @@ private fun HistoryScreenContent(
     onClickFavorite: (HistoryWithRelations) -> Unit,
     // KMK -->
     selectionMode: Boolean,
-    onHistorySelected: (HistoryItem, HistorySelectionOptions) -> Unit,
+    onHistorySelected: (HistoryWithRelations, HistorySelectionOptions) -> Unit,
     usePanoramaCover: Boolean,
     // KMK <--
 ) {
@@ -181,8 +186,9 @@ private fun HistoryScreenContent(
                     )
                 }
                 is HistoryUiModel.Item -> {
+                    val value = item.item
                     // KMK -->
-                    val value = item.item.history
+                    val selected = remember(state.selectedChapterIds) { value.chapterId in state.selectedChapterIds }
                     // KMK <--
                     HistoryItem(
                         modifier = Modifier.animateItemFastScroll(),
@@ -194,7 +200,7 @@ private fun HistoryScreenContent(
                                 selectionMode -> onHistorySelected(
                                     item.item,
                                     HistorySelectionOptions(
-                                        selected = !item.item.selected,
+                                        selected = !selected,
                                         userSelected = true,
                                         fromLongPress = false,
                                     ),
@@ -206,7 +212,7 @@ private fun HistoryScreenContent(
                             onHistorySelected(
                                 item.item,
                                 HistorySelectionOptions(
-                                    selected = !item.item.selected,
+                                    selected = !selected,
                                     userSelected = true,
                                     fromLongPress = true,
                                 ),
@@ -216,7 +222,7 @@ private fun HistoryScreenContent(
                         onClickDelete = { onClickDelete(value) },
                         onClickFavorite = { onClickFavorite(value) },
                         // KMK -->
-                        selected = item.item.selected,
+                        selected = selected,
                         readProgress = value.lastPageRead
                             .takeIf { !value.read && it > 0L }
                             ?.let {
@@ -238,7 +244,7 @@ private fun HistoryScreenContent(
 sealed interface HistoryUiModel {
     data class Header(val date: LocalDate) : HistoryUiModel
     // KMK -->
-    data class Item(val item: HistoryItem) : HistoryUiModel
+    data class Item(val item: HistoryWithRelations) : HistoryUiModel
     // KMK <--
 }
 

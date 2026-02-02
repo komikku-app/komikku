@@ -1,7 +1,6 @@
 package eu.kanade.presentation.history
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import eu.kanade.tachiyomi.ui.history.HistoryItem
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -20,13 +19,13 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
         searchQuery = null,
         list =
         // KMK -->
-        persistentListOf(HistoryItemExamples.headerToday)
+        persistentListOf(HistoryWithRelationExamples.headerToday)
             .asSequence()
-            .plus(HistoryItemExamples.items().take(3))
-            .plus(HistoryItemExamples.header { it.minus(1, ChronoUnit.DAYS) })
-            .plus(HistoryItemExamples.items().take(1))
-            .plus(HistoryItemExamples.header { it.minus(2, ChronoUnit.DAYS) })
-            .plus(HistoryItemExamples.items().take(7))
+            .plus(HistoryWithRelationExamples.items().take(3))
+            .plus(HistoryWithRelationExamples.header { it.minus(1, ChronoUnit.DAYS) })
+            .plus(HistoryWithRelationExamples.items().take(1))
+            .plus(HistoryWithRelationExamples.header { it.minus(2, ChronoUnit.DAYS) })
+            .plus(HistoryWithRelationExamples.items().take(7))
             // KMK <--
             .toImmutableList(),
         dialog = null,
@@ -36,8 +35,8 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
         searchQuery = null,
         list = persistentListOf(
             // KMK -->
-            HistoryItemExamples.headerToday,
-            HistoryItemExamples.items().first(),
+            HistoryWithRelationExamples.headerToday,
+            HistoryWithRelationExamples.items().first(),
             // KMK <--
         ),
         dialog = null,
@@ -47,8 +46,8 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
         searchQuery = null,
         list = persistentListOf(
             // KMK -->
-            HistoryItemExamples.headerTomorrow,
-            HistoryItemExamples.items().first(),
+            HistoryWithRelationExamples.headerTomorrow,
+            HistoryWithRelationExamples.items().first(),
             // KMK <--
         ),
         dialog = null,
@@ -82,7 +81,7 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
     )
 
     // KMK -->
-    private object HistoryItemExamples {
+    private object HistoryWithRelationExamples {
         val headerToday = randItem()
         val headerTomorrow = randItem(LocalDate.now().plusDays(1).toDate())
 
@@ -107,33 +106,29 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
             // KMK <--
             historyBuilder: (HistoryWithRelations) -> HistoryWithRelations = { it },
         ) =
-            // KMK -->
-            HistoryItem(
-                // KMK <--
-                historyBuilder(
-                    HistoryWithRelations(
-                        id = Random.nextLong(),
-                        chapterId = Random.nextLong(),
+            historyBuilder(
+                HistoryWithRelations(
+                    id = Random.nextLong(),
+                    chapterId = Random.nextLong(),
+                    mangaId = Random.nextLong(),
+                    // SY -->
+                    ogTitle = "Test Title",
+                    // SY <--
+                    chapterNumber = Random.nextDouble(),
+                    // KMK -->
+                    read = Random.nextBoolean(),
+                    lastPageRead = Random.nextLong(1, 10),
+                    totalCountCalculated = Random.nextLong(1, 100),
+                    readCountCalculated = 1,
+                    readAt = readAt,
+                    // KMK <--
+                    readDuration = Random.nextLong(),
+                    coverData = MangaCover(
                         mangaId = Random.nextLong(),
-                        // SY -->
-                        ogTitle = "Test Title",
-                        // SY <--
-                        chapterNumber = Random.nextDouble(),
-                        // KMK -->
-                        read = Random.nextBoolean(),
-                        lastPageRead = Random.nextLong(1, 10),
-                        totalCountCalculated = Random.nextLong(1, 100),
-                        readCountCalculated = 1,
-                        readAt = readAt,
-                        // KMK <--
-                        readDuration = Random.nextLong(),
-                        coverData = MangaCover(
-                            mangaId = Random.nextLong(),
-                            sourceId = Random.nextLong(),
-                            isMangaFavorite = Random.nextBoolean(),
-                            ogUrl = "https://example.com/cover.png",
-                            lastModified = Random.nextLong(),
-                        ),
+                        sourceId = Random.nextLong(),
+                        isMangaFavorite = Random.nextBoolean(),
+                        ogUrl = "https://example.com/cover.png",
+                        lastModified = Random.nextLong(),
                     ),
                 ),
             )
