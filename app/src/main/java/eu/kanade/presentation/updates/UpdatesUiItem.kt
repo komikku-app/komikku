@@ -286,8 +286,8 @@ private fun UpdatesUiItem(
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = {
-                        onLongClick()
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongClick()
                     },
                 )
                 .padding(top = if (isLeader) MaterialTheme.padding.small else 0.dp)

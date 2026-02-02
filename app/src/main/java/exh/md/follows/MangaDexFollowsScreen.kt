@@ -132,6 +132,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                     } else {
                         // KMK <--
                         scope.launchIO {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             val duplicates = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
@@ -140,7 +141,6 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                                 )
                                 else -> screenModel.addFavorite(manga)
                             }
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                     }
                 },

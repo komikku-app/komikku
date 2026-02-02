@@ -142,8 +142,8 @@ private fun LibraryUpdateErrorUiItem(
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = {
-                        onLongClick()
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongClick()
                     },
                 )
                 .padding(horizontal = MaterialTheme.padding.medium),

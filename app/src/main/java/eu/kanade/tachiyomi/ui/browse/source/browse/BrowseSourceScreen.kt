@@ -380,6 +380,7 @@ data class BrowseSourceScreen(
                     } else {
                         // KMK <--
                         scope.launchIO {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             val duplicates = screenModel.getDuplicateLibraryManga(manga)
                             when {
                                 manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
@@ -388,7 +389,6 @@ data class BrowseSourceScreen(
                                 )
                                 else -> screenModel.addFavorite(manga)
                             }
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                     }
                 },
