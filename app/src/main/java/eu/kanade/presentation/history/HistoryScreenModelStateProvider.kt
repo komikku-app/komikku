@@ -8,6 +8,7 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.manga.model.MangaCover
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import kotlin.random.Random
@@ -17,13 +18,15 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
     private val multiPage = HistoryScreenModel.State(
         searchQuery = null,
         list =
-        persistentListOf(HistoryUiModelExamples.headerToday)
+        // KMK -->
+        persistentListOf(HistoryWithRelationExamples.headerToday)
             .asSequence()
-            .plus(HistoryUiModelExamples.items().take(3))
-            .plus(HistoryUiModelExamples.header { it.minus(1, ChronoUnit.DAYS) })
-            .plus(HistoryUiModelExamples.items().take(1))
-            .plus(HistoryUiModelExamples.header { it.minus(2, ChronoUnit.DAYS) })
-            .plus(HistoryUiModelExamples.items().take(7))
+            .plus(HistoryWithRelationExamples.items().take(3))
+            .plus(HistoryWithRelationExamples.header { it.minus(1, ChronoUnit.DAYS) })
+            .plus(HistoryWithRelationExamples.items().take(1))
+            .plus(HistoryWithRelationExamples.header { it.minus(2, ChronoUnit.DAYS) })
+            .plus(HistoryWithRelationExamples.items().take(7))
+            // KMK <--
             .toImmutableList(),
         dialog = null,
     )
@@ -31,8 +34,10 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
     private val shortRecent = HistoryScreenModel.State(
         searchQuery = null,
         list = persistentListOf(
-            HistoryUiModelExamples.headerToday,
-            HistoryUiModelExamples.items().first(),
+            // KMK -->
+            HistoryWithRelationExamples.headerToday,
+            HistoryWithRelationExamples.items().first(),
+            // KMK <--
         ),
         dialog = null,
     )
@@ -40,8 +45,10 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
     private val shortFuture = HistoryScreenModel.State(
         searchQuery = null,
         list = persistentListOf(
-            HistoryUiModelExamples.headerTomorrow,
-            HistoryUiModelExamples.items().first(),
+            // KMK -->
+            HistoryWithRelationExamples.headerTomorrow,
+            HistoryWithRelationExamples.items().first(),
+            // KMK <--
         ),
         dialog = null,
     )
@@ -58,7 +65,9 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
 
     private val loading = HistoryScreenModel.State(
         searchQuery = null,
-        list = null,
+        // KMK -->
+        isLoading = true,
+        // KMK <--
         dialog = null,
     )
 
@@ -71,13 +80,17 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
         loading,
     )
 
-    private object HistoryUiModelExamples {
-        val headerToday = header()
-        val headerTomorrow =
-            HistoryUiModel.Header(LocalDate.now().plusDays(1))
+    // KMK -->
+    private object HistoryWithRelationExamples {
+        val headerToday = randItem()
+        val headerTomorrow = randItem(LocalDate.now().plusDays(1).toDate())
 
         fun header(instantBuilder: (Instant) -> Instant = { it }) =
-            HistoryUiModel.Header(LocalDate.from(instantBuilder(Instant.now())))
+            randItem(LocalDate.from(instantBuilder(Instant.now())).toDate())
+
+        fun LocalDate.toDate(zone: ZoneId = ZoneId.systemDefault()): Date =
+            Date.from(atStartOfDay(zone).toInstant())
+        // KMK <--
 
         fun items() = sequence {
             var count = 1
@@ -87,32 +100,35 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
             }
         }
 
-        fun randItem(historyBuilder: (HistoryWithRelations) -> HistoryWithRelations = { it }) =
-            HistoryUiModel.Item(
-                historyBuilder(
-                    HistoryWithRelations(
-                        id = Random.nextLong(),
-                        chapterId = Random.nextLong(),
+        fun randItem(
+            // KMK -->
+            readAt: Date = Date.from(Instant.now()),
+            // KMK <--
+            historyBuilder: (HistoryWithRelations) -> HistoryWithRelations = { it },
+        ) =
+            historyBuilder(
+                HistoryWithRelations(
+                    id = Random.nextLong(),
+                    chapterId = Random.nextLong(),
+                    mangaId = Random.nextLong(),
+                    // SY -->
+                    ogTitle = "Test Title",
+                    // SY <--
+                    chapterNumber = Random.nextDouble(),
+                    // KMK -->
+                    read = Random.nextBoolean(),
+                    lastPageRead = Random.nextLong(1, 10),
+                    totalCountCalculated = Random.nextLong(1, 100),
+                    readCountCalculated = 1,
+                    readAt = readAt,
+                    // KMK <--
+                    readDuration = Random.nextLong(),
+                    coverData = MangaCover(
                         mangaId = Random.nextLong(),
-                        // SY -->
-                        ogTitle = "Test Title",
-                        // SY <--
-                        chapterNumber = Random.nextDouble(),
-                        // KMK -->
-                        read = Random.nextBoolean(),
-                        lastPageRead = Random.nextLong(1, 10),
-                        totalCountCalculated = Random.nextLong(1, 100),
-                        readCountCalculated = 1,
-                        // KMK <--
-                        readAt = Date.from(Instant.now()),
-                        readDuration = Random.nextLong(),
-                        coverData = MangaCover(
-                            mangaId = Random.nextLong(),
-                            sourceId = Random.nextLong(),
-                            isMangaFavorite = Random.nextBoolean(),
-                            ogUrl = "https://example.com/cover.png",
-                            lastModified = Random.nextLong(),
-                        ),
+                        sourceId = Random.nextLong(),
+                        isMangaFavorite = Random.nextBoolean(),
+                        ogUrl = "https://example.com/cover.png",
+                        lastModified = Random.nextLong(),
                     ),
                 ),
             )

@@ -22,9 +22,11 @@ interface HistoryRepository {
 
     suspend fun getHistoryByMangaId(mangaId: Long): List<History>
 
-    suspend fun resetHistory(historyId: Long)
+    // KMK -->
+    suspend fun resetHistory(historyIds: List<Long>)
 
-    suspend fun resetHistoryByMangaId(mangaId: Long)
+    suspend fun resetHistoryByMangaIds(mangaIds: List<Long>)
+    // KMK <--
 
     suspend fun deleteAllHistory(): Boolean
 
