@@ -309,29 +309,28 @@ class HistoryScreenModel(
                     val firstSelection = list.isEmpty()
                     if (selected) list.add(item.chapterId) else list.remove(item.chapterId)
 
-                    if (selected && fromLongPress) {
-                        if (firstSelection) {
+                    if (firstSelection) {
+                        // Since it can go into selectionMode from toolbar (without long press), we need to set both positions here
+                        selectedPositions[0] = selectedIndex
+                        selectedPositions[1] = selectedIndex
+                    } else if (selected && fromLongPress) {
+                        // Try to select the items in-between when possible
+                        val range: IntRange
+                        if (selectedIndex < selectedPositions[0]) {
+                            range = selectedIndex + 1..<selectedPositions[0]
                             selectedPositions[0] = selectedIndex
+                        } else if (selectedIndex > selectedPositions[1]) {
+                            range = (selectedPositions[1] + 1)..<selectedIndex
                             selectedPositions[1] = selectedIndex
                         } else {
-                            // Try to select the items in-between when possible
-                            val range: IntRange
-                            if (selectedIndex < selectedPositions[0]) {
-                                range = selectedIndex + 1..<selectedPositions[0]
-                                selectedPositions[0] = selectedIndex
-                            } else if (selectedIndex > selectedPositions[1]) {
-                                range = (selectedPositions[1] + 1)..<selectedIndex
-                                selectedPositions[1] = selectedIndex
-                            } else {
-                                // Just select itself
-                                range = IntRange.EMPTY
-                            }
+                            // Just select itself
+                            range = IntRange.EMPTY
+                        }
 
-                            range.forEach {
-                                val inBetweenItem = get(it)
-                                if (inBetweenItem.chapterId !in list) {
-                                    list.add(inBetweenItem.chapterId)
-                                }
+                        range.forEach {
+                            val inBetweenItem = get(it)
+                            if (inBetweenItem.chapterId !in list) {
+                                list.add(inBetweenItem.chapterId)
                             }
                         }
                     } else if (!fromLongPress) {
