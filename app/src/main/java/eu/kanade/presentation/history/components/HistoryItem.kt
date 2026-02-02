@@ -78,8 +78,8 @@ fun HistoryItem(
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
-                    onLongClick()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
                 },
             )
             // KMK <--
@@ -102,9 +102,17 @@ fun HistoryItem(
         } else {
             if (usePanoramaCover && coverIsWide) {
                 MangaCover.Panorama(
-                    modifier = Modifier.fillMaxHeight(),
+                    modifier = Modifier.fillMaxHeight()
+                        // KMK -->
+                        .combinedClickable(
+                            onClick = onClickCover,
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onLongClick()
+                            },
+                        ),
+                    // KMK <--
                     data = mangaCover,
-                    onClick = onClickCover,
                     // KMK -->
                     bgColor = bgColor,
                     tint = onBgColor,
@@ -118,9 +126,17 @@ fun HistoryItem(
             } else {
                 // KMK <--
                 MangaCover.Book(
-                    modifier = Modifier.fillMaxHeight(),
+                    modifier = Modifier.fillMaxHeight()
+                        // KMK -->
+                        .combinedClickable(
+                            onClick = onClickCover,
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onLongClick()
+                            },
+                        ),
+                    // KMK <--
                     data = mangaCover,
-                    onClick = onClickCover,
                     // KMK -->
                     bgColor = bgColor,
                     tint = onBgColor,
