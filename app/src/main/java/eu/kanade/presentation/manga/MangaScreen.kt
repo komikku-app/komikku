@@ -1376,8 +1376,8 @@ private fun LazyListScope.sharedChapterItems(
                     chapterSwipeStartAction = chapterSwipeStartAction,
                     chapterSwipeEndAction = chapterSwipeEndAction,
                     onLongClick = {
-                        onChapterSelected(item, !item.selected, true, true)
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onChapterSelected(item, !item.selected, true, true)
                     },
                     onClick = {
                         onChapterItemClick(

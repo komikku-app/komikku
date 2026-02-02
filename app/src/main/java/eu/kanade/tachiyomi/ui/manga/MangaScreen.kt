@@ -279,8 +279,8 @@ class MangaScreen(
             onChapterClicked = { openChapter(context, it) },
             onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
-                screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                screenModel.toggleFavorite()
             },
             // SY -->
             onWebViewClicked = {
