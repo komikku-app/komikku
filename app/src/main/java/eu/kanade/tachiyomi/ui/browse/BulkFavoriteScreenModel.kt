@@ -251,19 +251,22 @@ class BulkFavoriteScreenModel(
         if (manga.favorite) return
 
         screenModelScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
-            if (libraryPreferences.syncOnAdd().get()) {
-                try {
-                    val source = sourceManager.getOrStub(manga.source)
+            try {
+                val source = sourceManager.getOrStub(manga.source)
+                setMangaDefaultChapterFlags.await(manga)
+                addTracks.bindEnhancedTrackers(manga, source)
+                updateManga.awaitUpdateFavorite(manga.id, true)
+                if (libraryPreferences.syncOnAdd().get()) {
                     val sManga = manga.toSManga()
                     val remoteManga = source.getMangaDetails(sManga)
                     val chapters = source.getChapterList(sManga)
+                    // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
                     updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
                     syncChaptersWithSource.await(chapters, manga, source, false)
-                } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e)
-                    snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
                 }
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
             }
         }
     }
@@ -354,11 +357,12 @@ class BulkFavoriteScreenModel(
                         val sManga = manga.toSManga()
                         val remoteManga = source.getMangaDetails(sManga)
                         val chapters = source.getChapterList(sManga)
-                        updateManga.awaitUpdateFromSource(new, remoteManga, false, coverCache)
-                        syncChaptersWithSource.await(chapters, new, source, false)
+                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
+                        syncChaptersWithSource.await(chapters, manga, source, false)
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
+                        snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
                     }
                 }
             }
