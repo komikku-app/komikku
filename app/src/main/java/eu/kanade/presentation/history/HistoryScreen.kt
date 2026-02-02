@@ -274,6 +274,7 @@ private fun HistorySelectionToolbar(
                         title = stringResource(MR.strings.pref_clear_history),
                         icon = Icons.Outlined.DeleteSweep,
                         onClick = onClickClearHistory,
+                        enabled = selectedCount > 0,
                     ),
                 ),
             )
