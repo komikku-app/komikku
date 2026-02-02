@@ -59,10 +59,8 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
-    // KMK -->
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
-    // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -254,7 +252,6 @@ class BulkFavoriteScreenModel(
 
         screenModelScope.launchIO {
             updateManga.awaitUpdateFavorite(manga.id, true)
-            // KMK -->
             if (libraryPreferences.syncOnAdd().get()) {
                 try {
                     val source = sourceManager.getOrStub(manga.source)
@@ -268,7 +265,6 @@ class BulkFavoriteScreenModel(
                     snackbarHostState.showSnackbar(message = "Failed to sync manga: $e")
                 }
             }
-            // KMK <--
         }
     }
 
@@ -352,7 +348,6 @@ class BulkFavoriteScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
-            // KMK -->
             if (new.favorite && libraryPreferences.syncOnAdd().get()) {
                 withIOContext {
                     try {
@@ -367,7 +362,6 @@ class BulkFavoriteScreenModel(
                     }
                 }
             }
-            // KMK <--
         }
     }
 
