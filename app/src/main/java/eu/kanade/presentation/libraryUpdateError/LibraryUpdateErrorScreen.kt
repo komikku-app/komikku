@@ -121,6 +121,7 @@ fun LibraryUpdateErrorScreen(
             )
         },
         bottomBar = {
+            val headerIndexes = remember(state.items) { state.getHeaderIndexes() }
             LibraryUpdateErrorBottomBar(
                 selected = state.selected,
                 onMultiMigrateClicked = onMultiMigrateClicked,
@@ -141,7 +142,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToPrevious = {
                     scope.launch {
                         listState.scrollToItem(
-                            state.getHeaderIndexes()
+                            headerIndexes
                                 .filter { it < listState.firstVisibleItemIndex }
                                 .maxOrNull() ?: 0,
                         )
@@ -150,7 +151,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToNext = {
                     scope.launch {
                         listState.scrollToItem(
-                            state.getHeaderIndexes()
+                            headerIndexes
                                 .filter { it > listState.firstVisibleItemIndex }
                                 .minOrNull() ?: 0,
                         )
@@ -167,13 +168,14 @@ fun LibraryUpdateErrorScreen(
             )
 
             else -> {
+                val uiModels = remember(state.items) { state.getUiModel() }
                 FastScrollLazyColumn(
                     // Using modifier instead of contentPadding so we can use stickyHeader
                     modifier = Modifier.padding(contentPadding),
                     state = listState,
                 ) {
                     libraryUpdateErrorUiItems(
-                        uiModels = state.getUiModel(),
+                        uiModels = uiModels,
                         selectionMode = state.selectionMode,
                         onErrorSelected = onErrorSelected,
                         onClick = onClick,
