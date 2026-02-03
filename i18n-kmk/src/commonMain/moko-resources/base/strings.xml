@@ -118,6 +118,15 @@
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">WebDAV Server URL</string>
+    <string name="pref_webdav_url_summ">Enter the WebDAV server address</string>
+    <string name="pref_webdav_username">Username</string>
+    <string name="pref_webdav_username_summ">Enter your WebDAV account username</string>
+    <string name="pref_webdav_password">Password</string>
+    <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
+    <string name="pref_webdav_folder">WebDAV data folder</string>
+    <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
