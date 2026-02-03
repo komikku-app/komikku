@@ -7,10 +7,12 @@ import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.PUT
 import eu.kanade.tachiyomi.network.await
+import exh.log.xLogD
+import exh.log.xLogE
+import exh.log.xLogI
+import exh.log.xLogW
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
-import logcat.LogPriority
-import logcat.logcat
 import okhttp3.ConnectionPool
 import okhttp3.Credentials
 import okhttp3.Headers
@@ -41,7 +43,7 @@ class WebDavSyncService(
     private val password: String = syncPreferences.webDavPassword().get().trim()
     private val credentials: String = Credentials.basic(username, password)
 
-    private fun buildWebDavFileUrl(fileName: String): String {
+    private fun buildWebDavFileUrl(fileName: String = "backup.proto"): String {
         val cleanBase = url.trimEnd('/')
         return if (folder.isNotEmpty()) "$cleanBase/$folder/$fileName" else "$cleanBase/$fileName"
     }
@@ -104,21 +106,17 @@ class WebDavSyncService(
 
             val finalSyncData = if (remoteData != null) {
                 assert(etag.isNotEmpty()) { "ETag should never be empty if remote data is not null" }
-                logcat(LogPriority.DEBUG, "SyncService") {
-                    "Try update remote data with ETag($etag)"
-                }
+                xLogD("Try update remote data with ETag(%s)", etag)
                 mergeSyncData(syncData, remoteData)
             } else {
-                logcat(LogPriority.DEBUG) {
-                    "Try overwrite remote data with ETag($etag)"
-                }
+                xLogD("Try overwrite remote data with ETag(%s)", etag)
                 syncData
             }
 
             pushSyncData(finalSyncData, etag)
             return finalSyncData.backup
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR) { "WebDAV sync error: ${e.message}" }
+            xLogE("WebDAV sync error:", e)
             notifier.showSyncError(e.message)
             return null
         }
@@ -131,7 +129,7 @@ class WebDavSyncService(
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
         if (lastETag.isNotEmpty()) headersBuilder.add("If-None-Match", lastETag)
 
-        val requestUrl = buildWebDavFileUrl("backup.proto")
+        val requestUrl = buildWebDavFileUrl()
         val request = GET(requestUrl, headers = headersBuilder.build())
         val response = client.newCall(request).await()
 
@@ -146,7 +144,7 @@ class WebDavSyncService(
                         val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
                         Pair(SyncData(backup = backup), newETag)
                     } catch (e: Exception) {
-                        logcat(LogPriority.ERROR) { "Invalid backup format: ${e.message}" }
+                        xLogE("Invalid backup format:", e)
                         Pair(null, "")
                     }
                 } else {
@@ -169,7 +167,7 @@ class WebDavSyncService(
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
         if (eTag.isNotEmpty()) headersBuilder.add("If-Match", eTag)
 
-        val requestUrl = buildWebDavFileUrl("backup.proto")
+        val requestUrl = buildWebDavFileUrl()
         val request = PUT(requestUrl, headers = headersBuilder.build(), body = body)
         val response = client.newCall(request).await()
 
@@ -177,12 +175,12 @@ class WebDavSyncService(
             response.isSuccessful -> {
                 val newETag = response.headers["ETag"]?.trim('"') ?: ""
                 if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
-                logcat(LogPriority.INFO) { "WebDAV sync completed" }
+                xLogI("WebDAV sync completed")
             }
             response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
                 val message = "Sync conflict detected. Another device may have updated the remote backup. " +
                     "Please retry syncing or check your WebDAV folder."
-                logcat(LogPriority.WARN) { message }
+                xLogW(message)
                 notifier.showSyncError(message)
             }
             else -> {
