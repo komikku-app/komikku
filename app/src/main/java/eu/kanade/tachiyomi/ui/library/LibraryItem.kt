@@ -20,28 +20,31 @@ data class LibraryItem(
 ) {
     val id: Long = libraryManga.id
 
-    // /**
-    //  * Checks if a query matches the manga
-    //  *
-    //  * @param constraint the query to check.
-    //  * @return true if the manga matches the query, false otherwise.
-    //  */
-    // fun matches(constraint: String): Boolean {
-    //     val sourceName by lazy { sourceManager.getOrStub(libraryManga.manga.source).getNameForMangaInfo() }
-    //     if (constraint.startsWith("id:", true)) {
-    //         return id == constraint.substringAfter("id:").toLongOrNull()
-    //     }
-    //     return libraryManga.manga.title.contains(constraint, true) ||
-    //         (libraryManga.manga.author?.contains(constraint, true) ?: false) ||
-    //         (libraryManga.manga.artist?.contains(constraint, true) ?: false) ||
-    //         (libraryManga.manga.description?.contains(constraint, true) ?: false) ||
-    //         constraint.split(",").map { it.trim() }.all { subconstraint ->
-    //             checkNegatableConstraint(subconstraint) {
-    //                 sourceName.contains(it, true) ||
-    //                     (libraryManga.manga.genre?.any { genre -> genre.equals(it, true) } ?: false)
-    //             }
-    //         }
-    // }
+//    /**
+//     * Checks if a query matches the manga
+//     *
+//     * @param constraint the query to check.
+//     * @return true if the manga matches the query, false otherwise.
+//     */
+//    fun matches(constraint: String): Boolean {
+//        val source = sourceManager.getOrStub(libraryManga.manga.source)
+//        val sourceName by lazy { source.getNameForMangaInfo() }
+//        if (constraint.startsWith("id:", true)) {
+//            return id == constraint.substringAfter("id:").toLongOrNull()
+//        } else if (constraint.startsWith("src:", true)) {
+//            return source.id == constraint.substringAfter("src:").toLongOrNull()
+//        }
+//        return libraryManga.manga.title.contains(constraint, true) ||
+//            (libraryManga.manga.author?.contains(constraint, true) ?: false) ||
+//            (libraryManga.manga.artist?.contains(constraint, true) ?: false) ||
+//            (libraryManga.manga.description?.contains(constraint, true) ?: false) ||
+//            constraint.split(",").map { it.trim() }.all { subconstraint ->
+//                checkNegatableConstraint(subconstraint) {
+//                    sourceName.contains(it, true) ||
+//                        (libraryManga.manga.genre?.any { genre -> genre.equals(it, true) } ?: false)
+//                }
+//            }
+//    }
 
     // /**
     //  * Checks a predicate on a negatable constraint. If the constraint starts with a minus character,
