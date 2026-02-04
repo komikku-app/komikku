@@ -42,6 +42,7 @@ class CategoryRepositoryImpl(
                 name = category.name,
                 order = category.order,
                 flags = category.flags,
+                parentId = category.parentId,
                 // KMK -->
                 hidden = if (category.hidden) 1L else 0L,
                 // KMK <--
@@ -70,6 +71,7 @@ class CategoryRepositoryImpl(
             name = update.name,
             order = update.order,
             flags = update.flags,
+            parentId = update.parentId,
             // KMK -->
             hidden = update.hidden?.let { if (it) 1L else 0L },
             // KMK <--

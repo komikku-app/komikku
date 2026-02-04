@@ -1,5 +1,22 @@
 package eu.kanade.presentation.more.settings.screen
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
@@ -9,21 +26,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.category.buildCategoryHierarchy
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.ResetCategoryFlags
@@ -49,6 +68,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsLibraryScreen : SearchableSettings {
+
     @Suppress("unused")
     private fun readResolve(): Any = SettingsLibraryScreen
 
@@ -58,14 +78,20 @@ object SettingsLibraryScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
+        val navigator = LocalNavigator.currentOrThrow
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
+        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
+
+        val allCategories by getCategories.subscribe().collectAsState(emptyList())
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         return listOf(
-            getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
+            getCategoriesGroup(navigator, allCategories, libraryPreferences),
             getGlobalUpdateGroup(allCategories, libraryPreferences),
             getBehaviorGroup(libraryPreferences),
+            getSortingCategory(navigator, libraryPreferences),
+            getMigrationCategory(unsortedPreferences),
             // SY -->
             getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
             // SY <--
@@ -80,12 +106,19 @@ object SettingsLibraryScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
         val userCategoriesCount = allCategories.filterNot(Category::isSystemCategory).size
+        var showDefaultDialog by rememberSaveable { mutableStateOf(false) }
 
-        // For default category
-        val ids = listOf(libraryPreferences.defaultCategory().defaultValue()) +
-            allCategories.fastMap { it.id.toInt() }
-        val labels = listOf(stringResource(MR.strings.default_category_summary)) +
-            allCategories.fastMap { it.visualName }
+        if (showDefaultDialog) {
+            DefaultCategoryDialog(
+                categories = allCategories,
+                selectedId = libraryPreferences.defaultCategory().get(),
+                onDismiss = { showDefaultDialog = false },
+                onConfirm = {
+                    libraryPreferences.defaultCategory().set(it)
+                    showDefaultDialog = false
+                },
+            )
+        }
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.categories),
@@ -94,15 +127,15 @@ object SettingsLibraryScreen : SearchableSettings {
                     title = stringResource(MR.strings.action_edit_categories),
                     subtitle = pluralStringResource(
                         MR.plurals.num_categories,
-                        count = userCategoriesCount,
+                        userCategoriesCount,
                         userCategoriesCount,
                     ),
                     onClick = { navigator.push(CategoryScreen()) },
                 ),
-                Preference.PreferenceItem.ListPreference(
-                    preference = libraryPreferences.defaultCategory(),
-                    entries = ids.zip(labels).toMap().toImmutableMap(),
+                Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.default_category),
+                    subtitle = getDefaultCategoryLabel(allCategories, libraryPreferences),
+                    onClick = { showDefaultDialog = true },
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.categorizedDisplaySettings(),
@@ -135,19 +168,18 @@ object SettingsLibraryScreen : SearchableSettings {
 
         val included by autoUpdateCategoriesPref.collectAsState()
         val excluded by autoUpdateCategoriesExcludePref.collectAsState()
+
         var showCategoriesDialog by rememberSaveable { mutableStateOf(false) }
+
         if (showCategoriesDialog) {
-            TriStateListDialog(
-                title = stringResource(MR.strings.categories),
-                message = stringResource(MR.strings.pref_library_update_categories_details),
-                items = allCategories,
-                initialChecked = included.mapNotNull { id -> allCategories.find { it.id.toString() == id } },
-                initialInversed = excluded.mapNotNull { id -> allCategories.find { it.id.toString() == id } },
-                itemLabel = { it.visualName },
-                onDismissRequest = { showCategoriesDialog = false },
-                onValueChanged = { newIncluded, newExcluded ->
-                    autoUpdateCategoriesPref.set(newIncluded.map { it.id.toString() }.toSet())
-                    autoUpdateCategoriesExcludePref.set(newExcluded.map { it.id.toString() }.toSet())
+            UpdateCategoriesDialog(
+                categories = allCategories,
+                included = included,
+                excluded = excluded,
+                onDismiss = { showCategoriesDialog = false },
+                onConfirm = { newIncluded, newExcluded ->
+                    autoUpdateCategoriesPref.set(newIncluded)
+                    autoUpdateCategoriesExcludePref.set(newExcluded)
                     showCategoriesDialog = false
                 },
             )
@@ -183,8 +215,8 @@ object SettingsLibraryScreen : SearchableSettings {
                     subtitle = stringResource(MR.strings.restrictions),
                     enabled = autoUpdateInterval > 0,
                     onValueChanged = {
-                        // Post to event looper to allow the preference to be updated.
-                        ContextCompat.getMainExecutor(context).execute { LibraryUpdateJob.setupTask(context) }
+                        ContextCompat.getMainExecutor(context)
+                            .execute { LibraryUpdateJob.setupTask(context) }
                         true
                     },
                 ),
@@ -239,37 +271,241 @@ object SettingsLibraryScreen : SearchableSettings {
     }
 
     @Composable
+    private fun DefaultCategoryDialog(
+        categories: List<Category>,
+        selectedId: Int,
+        onDismiss: () -> Unit,
+        onConfirm: (Int) -> Unit,
+    ) {
+        var selected by remember { mutableStateOf(selectedId) }
+        var expandedParents by remember { mutableStateOf(setOf<Long>()) }
+
+        val hierarchy = remember(categories) {
+            buildCategoryHierarchy(categories)
+        }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(MR.strings.default_category)) },
+            confirmButton = {
+                TextButton(onClick = { onConfirm(selected) }) {
+                    Text(stringResource(MR.strings.action_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(MR.strings.action_cancel))
+                }
+            },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    hierarchy.forEach { entry ->
+                        val cat = entry.category
+                        val isParent = cat.parentId == null
+                        val hasChildren = hierarchy.any { it.category.parentId == cat.id }
+                        val isExpanded = expandedParents.contains(cat.id)
+
+                        if (!isParent && !expandedParents.contains(cat.parentId)) return@forEach
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selected = cat.id.toInt() }
+                                .padding(start = (entry.depth * 24).dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = selected == cat.id.toInt(),
+                                onClick = { selected = cat.id.toInt() },
+                            )
+                            Text(
+                                text = cat.visualName,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 8.dp),
+                            )
+                            if (isParent && hasChildren) {
+                                Icon(
+                                    imageVector =
+                                    if (isExpanded) {
+                                        Icons.Default.KeyboardArrowDown
+                                    } else {
+                                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .clickable {
+                                            expandedParents =
+                                                if (isExpanded) {
+                                                    expandedParents - cat.id
+                                                } else {
+                                                    expandedParents + cat.id
+                                                }
+                                        },
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    @Composable
+    private fun UpdateCategoriesDialog(
+        categories: List<Category>,
+        included: Set<String>,
+        excluded: Set<String>,
+        onDismiss: () -> Unit,
+        onConfirm: (Set<String>, Set<String>) -> Unit,
+    ) {
+        var includedSet by remember { mutableStateOf(included) }
+        var excludedSet by remember { mutableStateOf(excluded) }
+        var expandedParents by remember { mutableStateOf(setOf<Long>()) }
+
+        val hierarchy = remember(categories) {
+            buildCategoryHierarchy(categories)
+        }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(MR.strings.categories)) },
+            confirmButton = {
+                TextButton(onClick = { onConfirm(includedSet, excludedSet) }) {
+                    Text(stringResource(MR.strings.action_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(MR.strings.action_cancel))
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                ) {
+                    hierarchy.forEach { entry ->
+                        val category = entry.category
+                        val id = category.id.toString()
+
+                        val isParent = category.parentId == null
+                        val hasChildren = hierarchy.any { it.category.parentId == category.id }
+                        val isExpanded = expandedParents.contains(category.id)
+
+                        if (!isParent && !expandedParents.contains(category.parentId)) return@forEach
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    when {
+                                        includedSet.contains(id) -> {
+                                            includedSet -= id
+                                            excludedSet += id
+                                        }
+                                        excludedSet.contains(id) -> {
+                                            excludedSet -= id
+                                        }
+                                        else -> {
+                                            includedSet += id
+                                        }
+                                    }
+                                }
+                                .padding(start = (entry.depth * 24).dp, top = 8.dp, bottom = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            // Checkbox state
+                            when {
+                                includedSet.contains(id) -> {
+                                    Checkbox(
+                                        checked = true,
+                                        onCheckedChange = null,
+                                    )
+                                }
+                                excludedSet.contains(id) -> {
+                                    TriStateCheckbox(
+                                        state = ToggleableState.Indeterminate,
+                                        onClick = null,
+                                    )
+                                }
+                                else -> {
+                                    Checkbox(
+                                        checked = false,
+                                        onCheckedChange = null,
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = category.visualName,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 12.dp),
+                            )
+
+                            if (isParent && hasChildren) {
+                                Icon(
+                                    imageVector =
+                                    if (isExpanded) {
+                                        Icons.Default.KeyboardArrowDown
+                                    } else {
+                                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .clickable {
+                                            expandedParents =
+                                                if (isExpanded) {
+                                                    expandedParents - category.id
+                                                } else {
+                                                    expandedParents + category.id
+                                                }
+                                        },
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    @Composable
+    private fun getDefaultCategoryLabel(
+        categories: List<Category>,
+        libraryPreferences: LibraryPreferences,
+    ): String {
+        val defaultId by libraryPreferences.defaultCategory().collectAsState()
+        return categories.firstOrNull { it.id.toInt() == defaultId }?.visualName
+            ?: stringResource(MR.strings.default_category_summary)
+    }
+
+    @Composable
     private fun getBehaviorGroup(
         libraryPreferences: LibraryPreferences,
-    ): Preference.PreferenceGroup {
-        return Preference.PreferenceGroup(
+    ): Preference.PreferenceGroup =
+        Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_behavior),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     preference = libraryPreferences.swipeToStartAction(),
                     entries = persistentMapOf(
-                        LibraryPreferences.ChapterSwipeAction.Disabled to
-                            stringResource(MR.strings.disabled),
-                        LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
-                            stringResource(MR.strings.action_bookmark),
-                        LibraryPreferences.ChapterSwipeAction.ToggleRead to
-                            stringResource(MR.strings.action_mark_as_read),
-                        LibraryPreferences.ChapterSwipeAction.Download to
-                            stringResource(MR.strings.action_download),
+                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(MR.strings.disabled),
+                        LibraryPreferences.ChapterSwipeAction.ToggleBookmark to stringResource(MR.strings.action_bookmark),
+                        LibraryPreferences.ChapterSwipeAction.ToggleRead to stringResource(MR.strings.action_mark_as_read),
+                        LibraryPreferences.ChapterSwipeAction.Download to stringResource(MR.strings.action_download),
                     ),
                     title = stringResource(MR.strings.pref_chapter_swipe_start),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     preference = libraryPreferences.swipeToEndAction(),
                     entries = persistentMapOf(
-                        LibraryPreferences.ChapterSwipeAction.Disabled to
-                            stringResource(MR.strings.disabled),
-                        LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
-                            stringResource(MR.strings.action_bookmark),
-                        LibraryPreferences.ChapterSwipeAction.ToggleRead to
-                            stringResource(MR.strings.action_mark_as_read),
-                        LibraryPreferences.ChapterSwipeAction.Download to
-                            stringResource(MR.strings.action_download),
+                        LibraryPreferences.ChapterSwipeAction.Disabled to stringResource(MR.strings.disabled),
+                        LibraryPreferences.ChapterSwipeAction.ToggleBookmark to stringResource(MR.strings.action_bookmark),
+                        LibraryPreferences.ChapterSwipeAction.ToggleRead to stringResource(MR.strings.action_mark_as_read),
+                        LibraryPreferences.ChapterSwipeAction.Download to stringResource(MR.strings.action_download),
                     ),
                     title = stringResource(MR.strings.pref_chapter_swipe_end),
                 ),
@@ -300,21 +536,44 @@ object SettingsLibraryScreen : SearchableSettings {
                 // KMK <--
             ),
         )
-    }
 
     // SY -->
     @Composable
-    fun getSortingCategory(navigator: Navigator, libraryPreferences: LibraryPreferences): Preference.PreferenceGroup {
+    fun getSortingCategory(
+        navigator: Navigator,
+        libraryPreferences: LibraryPreferences,
+    ): Preference.PreferenceGroup {
         val tagCount by libraryPreferences.sortTagsForLibrary().collectAsState()
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_sorting_settings),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.pref_tag_sorting),
-                    subtitle = pluralStringResource(SYMR.plurals.pref_tag_sorting_desc, tagCount.size, tagCount.size),
-                    onClick = {
-                        navigator.push(SortTagScreen())
-                    },
+                    subtitle = pluralStringResource(
+                        SYMR.plurals.pref_tag_sorting_desc,
+                        tagCount.size,
+                        tagCount.size,
+                    ),
+                    onClick = { navigator.push(SortTagScreen()) },
+                ),
+            ),
+        )
+    }
+
+    @Composable
+    fun getMigrationCategory(
+        unsortedPreferences: UnsortedPreferences,
+    ): Preference.PreferenceGroup {
+        val skipPreMigration by unsortedPreferences.skipPreMigration().collectAsState()
+        val migrationSources by unsortedPreferences.migrationSources().collectAsState()
+        return Preference.PreferenceGroup(
+            stringResource(SYMR.strings.migration),
+            enabled = skipPreMigration || migrationSources.isNotEmpty(),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = unsortedPreferences.skipPreMigration(),
+                    title = stringResource(SYMR.strings.skip_pre_migration),
+                    subtitle = stringResource(SYMR.strings.pref_skip_pre_migration_summary),
                 ),
             ),
         )

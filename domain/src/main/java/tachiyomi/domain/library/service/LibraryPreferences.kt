@@ -167,6 +167,8 @@ class LibraryPreferences(
 
     fun categoryTabs() = preferenceStore.getBoolean("display_category_tabs", true)
 
+    fun subcategoryTabs() = preferenceStore.getBoolean("display_subcategory_tabs", false)
+
     fun categoryNumberOfItems() = preferenceStore.getBoolean("display_number_of_items", false)
 
     fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)

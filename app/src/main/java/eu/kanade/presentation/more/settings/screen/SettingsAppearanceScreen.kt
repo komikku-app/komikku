@@ -251,6 +251,11 @@ object SettingsAppearanceScreen : SearchableSettings {
                         true
                     },
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = uiPreferences.libraryParentChildLayout(),
+                    title = "Library parent/child layout",
+                    subtitle = "Use parent-sub categories in Library tab",
+                ),
                 Preference.PreferenceItem.ListPreference(
                     preference = uiPreferences.dateFormat(),
                     entries = DateFormats

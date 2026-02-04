@@ -12,6 +12,7 @@ ktlint-core = "1.8.0"
 firebase-bom = "34.5.0"
 markdown = "0.38.1"
 junit = "6.0.1"
+material3-version = "1.4.0"
 materialKolor = "5.0.0-alpha04"
 
 [libraries]
@@ -106,6 +107,7 @@ ktlint-core = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlin
 
 markdown-core = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdown" }
 markdown-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdown" }
+material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3-version" }
 
 stringSimilarity = { module = "com.aallam.similarity:string-similarity-kotlin", version = "0.1.0" }
 

@@ -1,3 +1,5 @@
+ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(_id);
+CREATE INDEX IF NOT EXISTS categories_parent_id_index ON categories(parent_id);
 -- Save the current remote_id as library_id, since old Kitsu tracker did not use this correctly
 UPDATE manga_sync SET library_id = remote_id WHERE sync_id = 3;
 
