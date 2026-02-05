@@ -1180,7 +1180,12 @@ class LibraryScreenModel(
                 }
                 val sourceId = item.libraryManga.manga.source
                 if (query.startsWith("src:", true)) {
-                    return@filter sourceId == query.substringAfter("src:").toLongOrNull()
+                    val querySource = query.substringAfter("src:")
+                    return@filter if (querySource.equals(LOCAL_SOURCE_ID_ALIAS, ignoreCase = true)) {
+                        sourceId == LocalSource.ID
+                    } else {
+                        sourceId == querySource.toLongOrNull()
+                    }
                 }
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
