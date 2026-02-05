@@ -29,7 +29,7 @@
     <string name="action_filter_non_library_entries">Entrades fora de la biblioteca</string>
     <string name="action_copy_to_clipboard_first_page">Copiar la primera pàgina al porta-retalls</string>
     <string name="action_copy_to_clipboard_second_page">Copiar la segona pàgina al porta-retalls</string>
-    <string name="action_copy_to_clipboard_combined_page">Copar pàgina combinada al porta-retalls</string>
+    <string name="action_copy_to_clipboard_combined_page">Copiar pàgina combinada al porta-retalls</string>
     <string name="pref_viewer_nav_smaller_tap_zone">Zones de toc reduïdes</string>
     <string name="error_opening_folder">Error al obrir la carpeta</string>
     <string name="pref_pinch_to_zoom">Pessiga per ampliar</string>
