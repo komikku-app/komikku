@@ -61,11 +61,19 @@ internal class DownloadNotifier(private val context: Context) {
     }
 
     /**
-     * Dismiss the downloader's notification. Downloader error notifications use a different id, so
-     * those can only be dismissed by the user.
+     * Dismiss the downloader's progress and paused notifications. Error notifications use a
+     * different id, so those can only be dismissed by the user.
      */
     fun dismissProgress() {
         context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS)
+        context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
+    }
+
+    /**
+     * Dismiss the pause notification. Called when resuming downloads.
+     */
+    fun dismissPaused() {
+        context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
     }
 
     /**
@@ -147,7 +155,7 @@ internal class DownloadNotifier(private val context: Context) {
                 NotificationReceiver.clearDownloadsPendingBroadcast(context),
             )
 
-            show(Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS)
+            show(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
         }
 
         // Reset initial values
