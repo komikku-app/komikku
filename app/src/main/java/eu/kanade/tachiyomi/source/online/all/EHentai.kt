@@ -32,6 +32,7 @@ import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
 import exh.log.xLogD
+import exh.log.xLogI
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
@@ -960,10 +961,30 @@ class EHentai(
     override val client =
         network.client.newBuilder()
             // .cookieJar(CookieJar.NO_COOKIES)
-            .addInterceptor { chain ->
-                val cfCookies = chain.request().header("Cookie")?.split("; ")
-                    ?.filter {
-                        // KMK -->
+            // KMK -->
+            .addNetworkInterceptor { chain ->
+                // Get cookies present on the request (includes CookieJar-injected cookies)
+                val cookies = chain.request().header("Cookie")
+
+                // Fallback: read system WebView/browser cookies for the baseUrl (if any),
+                // but only if the request doesn't already have cookies to avoid unnecessary overhead.
+                val webViewCookies = if (cookies.isNullOrBlank()) {
+                    try {
+                        android.webkit.CookieManager.getInstance().getCookie(baseUrl)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    null
+                }
+
+                val combinedCookies = listOfNotNull(cookies, webViewCookies)
+                    .filter { it.isNotBlank() }
+                    .joinToString("; ")
+
+                // Keep only Cloudflare cookies from incoming cookies
+                val cfCookies = combinedCookies.split("; ")
+                    .filter {
                         // Only accept cookie in form of name=value
                         if (!it.contains("=")) return@filter false
                         val name = it.substringBefore("=").trim().lowercase()
@@ -971,7 +992,9 @@ class EHentai(
                         name.startsWith("cf") || name.startsWith("_cf") || name.startsWith("__cf")
                     }
                     // KMK -->
-                    ?.associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+                    .associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+                val newCookies = cookiesHeader(cfCookies)
+                xLogI("Overwritten Cookie: $newCookies")
                 // KMK <--
 
                 val newReq =
@@ -979,7 +1002,11 @@ class EHentai(
                         .request()
                         .newBuilder()
                         .removeHeader("Cookie")
-                        .addHeader("Cookie", cookiesHeader(cfCookies ?: emptyMap()))
+                        .apply {
+                            if (newCookies.isNotBlank()) {
+                                addHeader("Cookie", newCookies)
+                            }
+                        }
                         .build()
 
                 chain.proceed(newReq)
