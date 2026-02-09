@@ -963,28 +963,9 @@ class EHentai(
             // .cookieJar(CookieJar.NO_COOKIES)
             // KMK -->
             .addNetworkInterceptor { chain ->
-                // Get cookies present on the request (includes CookieJar-injected cookies)
-                val cookies = chain.request().header("Cookie")
-
-                // Fallback: read system WebView/browser cookies for the baseUrl (if any),
-                // but only if the request doesn't already have cookies to avoid unnecessary overhead.
-                val webViewCookies = if (cookies.isNullOrBlank()) {
-                    try {
-                        android.webkit.CookieManager.getInstance().getCookie(baseUrl)
-                    } catch (_: Exception) {
-                        null
-                    }
-                } else {
-                    null
-                }
-
-                val combinedCookies = listOfNotNull(cookies, webViewCookies)
-                    .filter { it.isNotBlank() }
-                    .joinToString("; ")
-
                 // Keep only Cloudflare cookies from incoming cookies
-                val cfCookies = combinedCookies.split("; ")
-                    .filter {
+                val cfCookies = chain.request().header("Cookie")?.split("; ")
+                    ?.filter {
                         // Only accept cookie in form of name=value
                         if (!it.contains("=")) return@filter false
                         val name = it.substringBefore("=").trim().lowercase()
@@ -992,8 +973,8 @@ class EHentai(
                         name.startsWith("cf") || name.startsWith("_cf") || name.startsWith("__cf")
                     }
                     // KMK -->
-                    .associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
-                val newCookies = cookiesHeader(cfCookies)
+                    ?.associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+                val newCookies = cookiesHeader(cfCookies ?: emptyMap())
                 xLogI("Overwritten Cookie: $newCookies")
                 // KMK <--
 
@@ -1002,11 +983,13 @@ class EHentai(
                         .request()
                         .newBuilder()
                         .removeHeader("Cookie")
+                        // KMK -->
                         .apply {
                             if (newCookies.isNotBlank()) {
                                 addHeader("Cookie", newCookies)
                             }
                         }
+                        // KMK <--
                         .build()
 
                 chain.proceed(newReq)
