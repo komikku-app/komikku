@@ -32,6 +32,7 @@ import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
 import exh.log.xLogD
+import exh.log.xLogI
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
@@ -960,10 +961,11 @@ class EHentai(
     override val client =
         network.client.newBuilder()
             // .cookieJar(CookieJar.NO_COOKIES)
-            .addInterceptor { chain ->
+            // KMK -->
+            .addNetworkInterceptor { chain ->
+                // Keep only Cloudflare cookies from incoming cookies
                 val cfCookies = chain.request().header("Cookie")?.split("; ")
                     ?.filter {
-                        // KMK -->
                         // Only accept cookie in form of name=value
                         if (!it.contains("=")) return@filter false
                         val name = it.substringBefore("=").trim().lowercase()
@@ -972,6 +974,8 @@ class EHentai(
                     }
                     // KMK -->
                     ?.associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+                val newCookies = cookiesHeader(cfCookies ?: emptyMap())
+                xLogI("Overwritten Cookie: $newCookies")
                 // KMK <--
 
                 val newReq =
@@ -979,7 +983,13 @@ class EHentai(
                         .request()
                         .newBuilder()
                         .removeHeader("Cookie")
-                        .addHeader("Cookie", cookiesHeader(cfCookies ?: emptyMap()))
+                        // KMK -->
+                        .apply {
+                            if (newCookies.isNotBlank()) {
+                                addHeader("Cookie", newCookies)
+                            }
+                        }
+                        // KMK <--
                         .build()
 
                 chain.proceed(newReq)
