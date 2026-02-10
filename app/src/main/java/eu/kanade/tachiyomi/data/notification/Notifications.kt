@@ -42,8 +42,9 @@ object Notifications {
     private const val GROUP_DOWNLOADER = "group_downloader"
     const val CHANNEL_DOWNLOADER_PROGRESS = "downloader_progress_channel"
     const val ID_DOWNLOAD_CHAPTER_PROGRESS = -201
-    /** Separate ID required: DownloadJob foreground worker uses ID_DOWNLOAD_CHAPTER_PROGRESS and clears it when stopping. */
+    // KMK -->
     const val ID_DOWNLOAD_CHAPTER_PAUSED = -203
+    // KMK <--
     const val CHANNEL_DOWNLOADER_ERROR = "downloader_error_channel"
     const val ID_DOWNLOAD_CHAPTER_ERROR = -202
 

@@ -139,7 +139,9 @@ class Downloader(
             return false
         }
 
+        // KMK -->
         notifier.dismissPaused()
+        // KMK <--
 
         val pending = queueState.value.filter { it.status != Download.State.DOWNLOADED }
         pending.forEach { if (it.status != Download.State.QUEUE) it.status = Download.State.QUEUE }
