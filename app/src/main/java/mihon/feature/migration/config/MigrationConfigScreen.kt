@@ -121,7 +121,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                 return
             }
             val screen = // KMK --> if (mangaId == null) {
-                MigrationListScreen(mangaIds, extraSearchQuery)
+                MigrationListScreen(mangaIds, extraSearchQuery, screenModel.sourcePreferences.migrationSmartSearchSingleEntry().get())
             // KMK -->
             // } else {
             //     MigrateSearchScreen(mangaId)
@@ -297,6 +297,9 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                     migrationSheetOpen = false
                     continueMigration(openSheet = false, extraSearchQuery = extraSearchQuery)
                 },
+                // KMK -->
+                isSingleEntry = mangaIds.size == 1,
+                // KMK <--
             )
         }
     }
