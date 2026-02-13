@@ -48,6 +48,9 @@ import uy.kohesive.injekt.api.get
 class MigrationListScreenModel(
     mangaIds: Collection<Long>,
     extraSearchQuery: String?,
+    // KMK -->
+    runManually: Boolean = false,
+    // KMK <--
     val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -100,12 +103,19 @@ class MigrationListScreenModel(
                                 // KMK <--
                             ),
                             parentContext = screenModelScope.coroutineContext,
-                        )
+                            // KMK -->
+                        ).apply {
+                            if (runManually) searchResult.value = SearchResult.NotFound
+                            // KMK <--
+                        }
                     }
                 }
                 .awaitAll()
                 .filterNotNull()
             mutableState.update { it.copy(items = manga.toImmutableList()) }
+            // KMK -->
+            if (runManually) return@launchIO
+            // KMK <--
             runMigrations(manga)
         }
     }

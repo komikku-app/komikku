@@ -27,6 +27,10 @@ import tachiyomi.i18n.MR
  */
 class MigrationListScreen(private val mangaIds: Collection<Long>, private val extraSearchQuery: String?) : Screen() {
 
+    // KMK -->
+    private var runManually = mangaIds.size == 1
+    // KMK <--
+
     private var matchOverride: Pair<Long, Long>? = null
 
     fun addMatchOverride(current: Long, target: Long) {
@@ -36,9 +40,18 @@ class MigrationListScreen(private val mangaIds: Collection<Long>, private val ex
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MigrationListScreenModel(mangaIds, extraSearchQuery) }
+        val screenModel = rememberScreenModel { MigrationListScreenModel(mangaIds, extraSearchQuery, /* KMK --> */ runManually /* KMK <-- */) }
         val state by screenModel.state.collectAsState()
         val context = LocalContext.current
+
+        // KMK -->
+        LaunchedEffect(mangaIds) {
+            if (runManually) {
+                runManually = false
+                navigator.push(MigrateSearchScreen(mangaIds.single()))
+            }
+        }
+        // KMK <--
 
         LaunchedEffect(matchOverride) {
             val (current, target) = matchOverride ?: return@LaunchedEffect
