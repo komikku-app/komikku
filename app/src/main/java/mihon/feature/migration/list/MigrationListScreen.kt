@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -25,11 +28,13 @@ import tachiyomi.i18n.MR
 /**
  * Screen showing a list of pair of current-target manga entries being migrated.
  */
-class MigrationListScreen(private val mangaIds: Collection<Long>, private val extraSearchQuery: String?) : Screen() {
-
+class MigrationListScreen(
+    private val mangaIds: Collection<Long>,
+    private val extraSearchQuery: String?,
     // KMK -->
-    private var runManually = mangaIds.size == 1
+    private val runManually: Boolean = mangaIds.size == 1,
     // KMK <--
+) : Screen() {
 
     private var matchOverride: Pair<Long, Long>? = null
 
@@ -45,9 +50,11 @@ class MigrationListScreen(private val mangaIds: Collection<Long>, private val ex
         val context = LocalContext.current
 
         // KMK -->
+        var hasPushedManual by rememberSaveable(mangaIds) { mutableStateOf(false) }
         LaunchedEffect(mangaIds) {
-            if (runManually) {
-                runManually = false
+            if (runManually && !hasPushedManual) {
+                @Suppress("AssignedValueIsNeverRead")
+                hasPushedManual = true
                 navigator.push(MigrateSearchScreen(mangaIds.single()))
             }
         }
