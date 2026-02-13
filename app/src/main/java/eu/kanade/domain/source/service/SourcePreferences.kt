@@ -87,6 +87,8 @@ class SourcePreferences(
     fun migrationHideWithoutUpdates() = preferenceStore.getBoolean("migration_hide_without_updates", false)
 
     // KMK -->
+    fun migrationSmartSearchSingleEntry() = preferenceStore.getBoolean("migration_smart_search_single_entry", false)
+
     fun globalSearchPinnedState() = preferenceStore.getEnum(
         Preference.appStateKey("global_search_pinned_toggle_state"),
         SourceFilter.PinnedOnly,

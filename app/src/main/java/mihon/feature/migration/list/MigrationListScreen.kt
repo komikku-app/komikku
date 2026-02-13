@@ -32,7 +32,7 @@ class MigrationListScreen(
     private val mangaIds: Collection<Long>,
     private val extraSearchQuery: String?,
     // KMK -->
-    private val runManually: Boolean = mangaIds.size == 1,
+    private val isSmartSearchSingleEntry: Boolean = false,
     // KMK <--
 ) : Screen() {
 
@@ -45,14 +45,17 @@ class MigrationListScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { MigrationListScreenModel(mangaIds, extraSearchQuery, /* KMK --> */ runManually /* KMK <-- */) }
+        // KMK -->
+        val singleEntryNoSmartSearch = mangaIds.size == 1 && !isSmartSearchSingleEntry
+        // KMK <--
+        val screenModel = rememberScreenModel { MigrationListScreenModel(mangaIds, extraSearchQuery, /* KMK --> */ singleEntryNoSmartSearch /* KMK <-- */) }
         val state by screenModel.state.collectAsState()
         val context = LocalContext.current
 
         // KMK -->
         var hasPushedManual by rememberSaveable(mangaIds) { mutableStateOf(false) }
         LaunchedEffect(mangaIds) {
-            if (runManually && !hasPushedManual) {
+            if (singleEntryNoSmartSearch && !hasPushedManual) {
                 @Suppress("AssignedValueIsNeverRead")
                 hasPushedManual = true
                 navigator.push(MigrateSearchScreen(mangaIds.single()))
