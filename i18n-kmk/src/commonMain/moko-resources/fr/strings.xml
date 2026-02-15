@@ -25,7 +25,7 @@
     <string name="update_check_notification_preview_available">Mises à jour à venir (bientôt) !</string>
     <string name="changelogs">Journaux des modifications</string>
     <string name="related_mangas_more">Dans le même style...</string>
-    <string name="too_many_in_feed">Trop de sources dans votre flux, ne peut pas ajouter plus que limité (20)</string>
+    <string name="too_many_in_feed">Trop de sources dans votre flux, vous ne pouvez pas en ajouter plus de 20</string>
     <string name="current_">Actuellement : %1$s</string>
     <string name="pref_theme_cover_based">Thème basé sur la couverture</string>
     <string name="pref_theme_cover_based_style_neutral">Neutre</string>
@@ -101,7 +101,6 @@
     <string name="action_scroll_to_bottom">Défiler vers le bas</string>
     <string name="action_scroll_to_previous">Défiler vers le précédent</string>
     <string name="action_scroll_to_next">Défiler vers le suivant</string>
-    <string name="migrating_all_entries">Migrer toutes les entrées de la source</string>
     <string name="label_to_be_updated">A mettre à jour</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Téléchargement manuel</string>

@@ -105,7 +105,6 @@
     <string name="action_scroll_to_bottom">Прокрутити до кінця</string>
     <string name="action_scroll_to_previous">Прокрутити до попереднього</string>
     <string name="action_scroll_to_next">Перейти до наступного</string>
-    <string name="migrating_all_entries">Міграція всіх записів з джерела</string>
     <string name="label_to_be_updated">Оновлювати</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Ручне завантаження</string>

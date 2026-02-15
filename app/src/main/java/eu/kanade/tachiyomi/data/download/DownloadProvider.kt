@@ -10,6 +10,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.displayablePath
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StorageManager
@@ -29,6 +30,9 @@ class DownloadProvider(
     private val context: Context,
     private val storageManager: StorageManager = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    // SY -->
+    private val downloadPreferences: DownloadPreferences = Injekt.get(),
+    // SY <--
 ) {
 
     private val downloadsDir: UniFile?
@@ -209,6 +213,9 @@ class DownloadProvider(
         chapterScanlator: String?,
         chapterUrl: String,
         disallowNonAsciiFilenames: Boolean = libraryPreferences.disallowNonAsciiFilenames().get(),
+        // SY -->
+        includeChapterUrlHash: Boolean = downloadPreferences.includeChapterUrlHash().get(),
+        // SY <--
     ): String {
         var dirName = sanitizeChapterName(chapterName)
         if (!chapterScanlator.isNullOrBlank()) {
@@ -216,7 +223,7 @@ class DownloadProvider(
         }
         // Subtract 7 bytes for hash and underscore, 4 bytes for .cbz
         dirName = DiskUtil.buildValidFilename(dirName, DiskUtil.MAX_FILE_NAME_BYTES - 11, disallowNonAsciiFilenames)
-        dirName += "_" + md5(chapterUrl).take(6)
+        /* SY --> */ if (includeChapterUrlHash) /* SY <-- */ dirName += "_" + md5(chapterUrl).take(6)
         return dirName
     }
 
@@ -243,7 +250,7 @@ class DownloadProvider(
         )
 
         // Get the filename that would be generated if the user were
-        // using the other value for the disallow non-ASCII
+        // using the other value for the disallow non-ASCII or non-hash
         // filenames setting. This ensures that chapters downloaded
         // before the user changed the setting can still be found.
         val otherChapterDirName =
@@ -252,6 +259,9 @@ class DownloadProvider(
                 chapterScanlator,
                 chapterUrl,
                 !libraryPreferences.disallowNonAsciiFilenames().get(),
+                // SY -->
+                !downloadPreferences.includeChapterUrlHash().get(),
+                // SY <--
             )
 
         return buildList(2) {

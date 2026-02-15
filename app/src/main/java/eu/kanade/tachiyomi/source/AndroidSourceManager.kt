@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.StubSourceRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -75,6 +77,9 @@ class AndroidSourceManager(
     private val exhPreferences: ExhPreferences by injectLazy()
     private val sourcePreferences: SourcePreferences by injectLazy()
     // SY <--
+    // KMK -->
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+    // KMK <--
 
     init {
         scope.launch {
@@ -237,6 +242,14 @@ class AndroidSourceManager(
         }
     // SY <--
 
+    // KMK -->
+    override suspend fun getMergedSources(mangaId: Long): List<Source> {
+        val sources = getMergedReferencesById.await(mangaId)
+        return sources.distinctBy { it.mangaSourceId }
+            .map { getOrStub(it.mangaSourceId) }
+    }
+    // KMK <--
+
     private fun registerStubSource(source: StubSource) {
         scope.launch {
             val dbSource = sourceRepository.getStubSource(source.id)
@@ -299,6 +312,13 @@ class AndroidSourceManager(
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
                 NHentai::class,
+                true,
+            ),
+            DelegatedSource(
+                "LANraragi",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.lanraragi.LANraragi",
+                Lanraragi::class,
                 true,
             ),
         ).associateBy { it.originalSourceQualifiedClassName }

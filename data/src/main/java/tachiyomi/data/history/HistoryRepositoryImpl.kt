@@ -2,6 +2,7 @@ package tachiyomi.data.history
 
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
+import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.history.model.History
@@ -14,11 +15,23 @@ class HistoryRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : HistoryRepository {
 
-    override fun getHistory(query: String): Flow<List<HistoryWithRelations>> {
+    override fun getHistory(
+        query: String,
+        // KMK -->
+        unfinishedManga: Boolean?,
+        unfinishedChapter: Boolean?,
+        nonLibraryEntries: Boolean?,
+        // KMK <--
+    ): Flow<List<HistoryWithRelations>> {
         return handler.subscribeToList {
             historyViewQueries.history(
+                // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
+                unfinishedManga?.toLong(),
+                unfinishedChapter,
+                nonLibraryEntries,
+                // KMK <--
                 query,
                 HistoryMapper::mapHistoryWithRelations,
             )
@@ -43,17 +56,21 @@ class HistoryRepositoryImpl(
         return handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, HistoryMapper::mapHistory) }
     }
 
-    override suspend fun resetHistory(historyId: Long) {
+    // KMK -->
+    override suspend fun resetHistory(historyIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryById(historyId) }
+            handler.await { historyQueries.resetHistoryByIds(historyIds) }
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
         }
     }
 
-    override suspend fun resetHistoryByMangaId(mangaId: Long) {
+    // KMK -->
+    override suspend fun resetHistoryByMangaIds(mangaIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryByMangaId(mangaId) }
+            handler.await { historyQueries.resetHistoryByMangaIds(mangaIds) }
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
         }

@@ -19,8 +19,21 @@ class GetUpdates(
         return repository.awaitWithRead(read, after, limit = 500)
     }
 
-    fun subscribe(instant: Instant): Flow<List<UpdatesWithRelations>> {
-        return repository.subscribeAll(instant.toEpochMilli(), limit = 500)
+    fun subscribe(
+        instant: Instant,
+        unread: Boolean?,
+        started: Boolean?,
+        bookmarked: Boolean?,
+        hideExcludedScanlators: Boolean,
+    ): Flow<List<UpdatesWithRelations>> {
+        return repository.subscribeAll(
+            instant.toEpochMilli(),
+            limit = 500,
+            unread = unread,
+            started = started,
+            bookmarked = bookmarked,
+            hideExcludedScanlators = hideExcludedScanlators,
+        )
             // SY -->
             .catchNPE()
         // SY <--

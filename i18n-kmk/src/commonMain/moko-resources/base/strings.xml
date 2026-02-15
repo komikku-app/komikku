@@ -17,7 +17,10 @@
     <string name="action_open_folder">Open folder</string>
     <string name="action_clear_manga">Clear manga</string>
     <string name="action_update">Update</string>
-
+        <!-- History section -->
+    <string name="action_filter_unfinished_manga">Unfinished manga</string>
+    <string name="action_filter_unfinished_chapter">Unfinished chapter</string>
+    <string name="action_filter_non_library_entries">Non-library entries</string>
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
@@ -35,7 +38,6 @@
     <string name="scale_type_20_9">20:9</string>
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
-
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>
@@ -94,6 +96,8 @@
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
     <string name="pref_show_empty_categories_search">Show empty categories during search/filtering</string>
+    <string name="pref_sync_manga_on_add">Sync manga when adding to library</string>
+    <string name="pref_sync_manga_on_add_description">Automatically fetches the metadata and chapter list of a new manga when adding it to the library</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
@@ -114,6 +118,15 @@
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">WebDAV Server URL</string>
+    <string name="pref_webdav_url_summ">Enter the WebDAV server address</string>
+    <string name="pref_webdav_username">Username</string>
+    <string name="pref_webdav_username_summ">Enter your WebDAV account username</string>
+    <string name="pref_webdav_password">Password</string>
+    <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
+    <string name="pref_webdav_folder">WebDAV data folder</string>
+    <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
@@ -137,7 +150,6 @@
     <string name="action_skip_all_duplicate_manga">Skip all</string>
     <string name="downloaded_data">Downloaded data</string>
     <string name="chapters_from_database">Chapters &amp; History from Database</string>
-
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
     <string name="update_completed">Update completed</string>
@@ -171,14 +183,12 @@
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
-    <string name="migrating_all_entries">Migrating all entries from source</string>
     <!-- Misc -->
     <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
     <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>
     <string name="label_to_be_updated">To be updated</string>
     <string name="sponsor_me">Sponsor Me</string>
     <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
-
     <!-- Connections section -->
     <string name="special_services">Special Services</string>
     <string name="pref_category_connections">Connections</string>
@@ -202,7 +212,6 @@
     <string name="active_account">Active Account</string>
     <string name="no_accounts_found">No accounts found</string>
     <string name="login_failed">Failed to login</string>
-
     <!-- Discord section -->
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">Using</string>
@@ -211,7 +220,6 @@
     <string name="discord_status_messing">Messing around with</string>
     <string name="discord_download_button">Read on %s</string>
     <string name="discord_app_description">Komikku - a manga reader app</string>
-
     <!-- Discord RPC Customization -->
     <string name="pref_category_discord_customization">Discord Customization</string>
     <string name="pref_discord_custom_message">Custom Message</string>

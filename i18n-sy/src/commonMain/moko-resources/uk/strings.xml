@@ -198,7 +198,7 @@
     <string name="skip_queue_on_retry_summary">Типово, якщо натиснути кнопку повторити завантаження, програма чекатиме, доки завантажувач завершить завантажувати останню сторінку, а потім перейде до сторінки, на якій стався збій. Увімкнення цієї опції змусить програму почати перезавантаження невдалої сторінки, щойно ви натиснете кнопку.</string>
     <string name="reader_preload_amount">Кількість перезавантажених сторінок</string>
     <string name="reader_cache_size">Розмір кешу читалки</string>
-    <string name="reader_cache_size_summary">Кількість зображень збережених на пристрої під час читання. Вищі значення забезпечать більш плавне читання, але збільшать використання дискового простору.</string>
+    <string name="reader_cache_size_summary">Кількість зображень збережених на пристрої під час читання. Вищі значення забезпечать більш плавне читання, але збільшать використання дискового простору</string>
     <string name="preserve_reading_position">Зберігати позицію читання для прочитаних розділів</string>
     <string name="reader_preload_amount_4_pages">4 сторінки</string>
     <string name="reader_preload_amount_6_pages">6 сторінок</string>
@@ -208,9 +208,9 @@
     <string name="reader_preload_amount_14_pages">14 сторінок</string>
     <string name="reader_preload_amount_16_pages">16 сторінок</string>
     <string name="reader_preload_amount_20_pages">20 сторінок</string>
-    <string name="reader_preload_amount_summary">Кількість попередньо завантажених сторінок під час читання. Вищі значення забезпечать більш плавне читання, але ціною більшого використання кешу, тому рекомендується збільшити виділений обсяг кешу за вищих значень.</string>
+    <string name="reader_preload_amount_summary">Кількість попередньо завантажених сторінок під час читання. Вищі значення забезпечать більш плавне читання, але ціною більшого використання кешу, тому рекомендується збільшити виділений обсяг кешу за вищих значень</string>
     <string name="auto_webtoon_mode">Автоматично визначити webtoon</string>
-    <string name="auto_webtoon_mode_summary">Автоматично використовує довгу смугу, якщо запис імовірно є webtoon.</string>
+    <string name="auto_webtoon_mode_summary">Автоматично використовує довгу смугу, якщо запис імовірно є webtoon</string>
     <string name="tap_scroll_page">Натисніть для прокручування сторінки</string>
     <string name="tap_scroll_page_summary">Якщо цю опцію увімкнено, прокручування відбуватиметься за розміром сторінки, а не екрана</string>
     <string name="reader_bottom_buttons">Нижні кнопки читалки</string>
@@ -228,4 +228,19 @@
     <string name="pref_archive_reader_mode_summary">Спосіб завантаження зображень всередині архівів, таких як CBZ або CBR</string>
     <string name="az_recommends">Див. рекомендації</string>
     <string name="information_empty_tags">У вас немає тегів. Натисніть кнопку плюс, щоб створити їх для сортування бібліотеки за тегами</string>
+    <string name="put_recommends_in_overflow">Рекомендації у випадаючому меню</string>
+    <string name="put_recommends_in_overflow_summary">Розмістити кнопку «Рекомендації» у випадаючому меню замість розміщення на відомостях серії</string>
+    <string name="put_merge_in_overflow">Об\'єднання у випадаючому меню</string>
+    <string name="put_merge_in_overflow_summary">Розмістити кнопку «Об’єднання» у випадаючому меню замість розміщення на відомостях серії</string>
+    <string name="pref_previews_row_count">Розмір сітки для попереднього перегляду</string>
+    <string name="pref_category_navbar">Панель навігації</string>
+    <string name="pref_hide_updates_button">Вкладка «Оновлення» на панелі навігації</string>
+    <string name="pref_hide_history_button">Вкладка «Історія» на панелі навігації</string>
+    <string name="pref_show_bottom_bar_labels">Назви вкладок на панелі навігації</string>
+    <string name="pref_sorting_settings">Налаштування сортування</string>
+    <string name="pref_skip_pre_migration_summary">Використати останні збережені передміграційні налаштування та джерела для масового перенесення</string>
+    <string name="library_group_updates">Оновлення бібліотеки для динамічних категорій</string>
+    <string name="library_group_updates_global">Завжди запускати глобальні оновлення</string>
+    <string name="library_group_updates_all_but_ungrouped">Глобальні оновлення тільки для групи «Не групувати». Інші групи використовують оновлення категорій</string>
+    <string name="library_group_updates_all">Постійно запускати оновлення категорій</string>
 </resources>

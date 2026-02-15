@@ -14,14 +14,14 @@ class LibraryPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
-    fun displayMode() = preferenceStore.getObject(
+    fun displayMode() = preferenceStore.getObjectFromString(
         "pref_display_mode_library",
         LibraryDisplayMode.default,
         LibraryDisplayMode.Serializer::serialize,
         LibraryDisplayMode.Serializer::deserialize,
     )
 
-    fun sortingMode() = preferenceStore.getObject(
+    fun sortingMode() = preferenceStore.getObjectFromString(
         "library_sorting_mode",
         LibrarySort.default,
         LibrarySort.Serializer::serialize,
@@ -72,6 +72,10 @@ class LibraryPreferences(
     )
 
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
+
+    // KMK -->
+    fun syncOnAdd() = preferenceStore.getBoolean("sync_on_add", false)
+    // KMK <--
 
     fun showContinueReadingButton() = preferenceStore.getBoolean(
         "display_continue_reading_button",

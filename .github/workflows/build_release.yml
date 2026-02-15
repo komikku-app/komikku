@@ -31,7 +31,7 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
 
       - name: Clone Repository (${{ steps.get_tag.outputs.VERSION_TAG }})
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
@@ -87,12 +87,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Clone Repository (${{ needs.prepare-build.outputs.VERSION_TAG }})
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
       - name: Set up JDK
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: 17
           distribution: temurin
@@ -112,7 +112,7 @@ jobs:
           write-mode: overwrite
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5
+        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5
 
       - name: Check code format
         run: ./gradlew spotlessCheck
@@ -124,13 +124,13 @@ jobs:
         run: ./gradlew testReleaseUnitTest
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: "**/*.apk"
           retention-days: 1
 
       - name: Upload mapping
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: mapping-${{ github.sha }}
           path: app/build/outputs/mapping/release
@@ -142,7 +142,7 @@ jobs:
       - build-app
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           merge-multiple: true
 
@@ -163,27 +163,13 @@ jobs:
           set -e
 
           mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
-          echo "APK_UNIVERSAL_SHA=$sha" >> $GITHUB_OUTPUT
-
           mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
-          echo "APK_ARM64_V8A_SHA=$sha" >> $GITHUB_OUTPUT
-
           mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
-          echo "APK_ARMEABI_V7A_SHA=$sha" >> $GITHUB_OUTPUT
-
           mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
-          echo "APK_X86_SHA=$sha" >> $GITHUB_OUTPUT
-
           mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          sha=`sha256sum Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk | awk '{ print $1 }'`
-          echo "APK_X86_64_SHA=$sha" >> $GITHUB_OUTPUT
 
       - name: Create release
-        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
           name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
@@ -202,19 +188,10 @@ jobs:
 
             **Full Changelog**: [komikku-app/komikku@${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}](https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }})
 
-            ---
-
-            ### Checksums
-
-            | Variant | SHA-256 |
-            | ------- | ------- |
-            | Universal | ${{ steps.get_sha.outputs.APK_UNIVERSAL_SHA }} |
-            | arm64-v8a | ${{ steps.get_sha.outputs.APK_ARM64_V8A_SHA }} |
-            | armeabi-v7a | ${{ steps.get_sha.outputs.APK_ARMEABI_V7A_SHA }} |
-            | x86 | ${{ steps.get_sha.outputs.APK_X86_SHA }} |
-            | x86_64 | ${{ steps.get_sha.outputs.APK_X86_64_SHA }} |
-
-            ### If you are unsure which apk to download then go with `Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk`
+            <!-->
+            > [!TIP]
+            >
+            > ### If you are unsure which version to download then go with `Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk`
           files: |
             Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
             Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk

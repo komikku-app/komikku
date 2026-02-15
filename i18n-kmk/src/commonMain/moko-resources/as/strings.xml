@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="too_many_in_feed">ফিডত বহুতো উৎস, ২০তকৈ অধিক যোগ কৰিব নোৱাৰি</string>
+    <string name="too_many_in_feed">আপোনাৰ ফিডত বেছি সংখ্যক উৎস আছে, ২০ টাতকৈ অধিক যোগ কৰিব নোৱাৰিব</string>
     <string name="action_copy_to_clipboard_first_page">প্ৰথম পৃষ্ঠা ক্লিপব’ৰ্ডলৈ কপি কৰক</string>
     <string name="action_toggle_nsfw_only">কেৱল NSFW টগল</string>
     <string name="action_faq_and_guides">FAQ আৰু গাইড</string>
@@ -134,7 +134,6 @@
     <string name="action_sort_feed">ফিড ছৰ্ট কৰক</string>
     <string name="sort_feed_confirmation">আপুনি ফিডবোৰ বৰ্ণানুক্ৰমে ছৰ্ট কৰিব বিচাৰে নেকি?</string>
     <string name="current_">বৰ্তমান: %1$s</string>
-    <string name="migrating_all_entries">উৎসৰ পৰা সকলো এণ্ট্ৰি মাইগ্ৰেট কৰি আছে</string>
     <string name="label_to_be_updated">আপডেট কৰিবলগীয়া</string>
     <string name="sponsor_me">মোক স্পনছৰ কৰক</string>
     <string name="batch_add_description">সমৰ্থন: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>

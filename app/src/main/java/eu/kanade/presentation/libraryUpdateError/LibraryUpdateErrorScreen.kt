@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -61,7 +62,7 @@ fun LibraryUpdateErrorScreen(
     state: LibraryUpdateErrorScreenState,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
     onErrorsDelete: () -> Unit,
@@ -189,7 +190,7 @@ fun LibraryUpdateErrorScreen(
 private fun LibraryUpdateErrorBottomBar(
     modifier: Modifier = Modifier,
     selected: List<LibraryUpdateErrorItem>,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     enableScrollToTop: Boolean,
     enableScrollToBottom: Boolean,
     scrollToTop: () -> Unit,
@@ -216,10 +217,10 @@ private fun LibraryUpdateErrorBottomBar(
     ) {
         val haptic = LocalHapticFeedback.current
         val confirm = remember { mutableStateListOf(false, false, false, false, false) }
-        var resetJob: Job? = remember { null }
+        var resetJob by remember { mutableStateOf<Job?>(null) }
         val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            (0 until 5).forEach { i -> confirm[i] = i == toConfirmIndex }
+            confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
             resetJob?.cancel()
             resetJob = scope.launch {
                 delay(1.seconds)

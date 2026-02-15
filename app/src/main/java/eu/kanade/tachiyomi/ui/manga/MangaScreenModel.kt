@@ -1823,7 +1823,16 @@ class MangaScreenModel(
                 trackerManager.loggedInTrackersFlow(),
             ) { mangaTracks, loggedInTrackers ->
                 // Show only if the service supports this manga's source
-                val supportedTrackers = loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(source!!) ?: true }
+                // KMK -->
+                val supportedTrackers = source?.let { source ->
+                    val sources = if (source is MergedSource) {
+                        state.mergedData?.sources ?: emptyList()
+                    } else {
+                        listOf(source)
+                    }
+                    loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(sources) ?: true }
+                } ?: loggedInTrackers.filterNot { it is EnhancedTracker }
+                // KMK <--
                 val supportedTrackerIds = supportedTrackers.map { it.id }.toHashSet()
                 val supportedTrackerTracks = mangaTracks.filter { it.trackerId in supportedTrackerIds }
                 supportedTrackerTracks to supportedTrackers
@@ -1898,7 +1907,7 @@ class MangaScreenModel(
         ) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
-        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
         data class SetFetchInterval(val manga: Manga) : Dialog
 
         // SY -->
@@ -1937,7 +1946,7 @@ class MangaScreenModel(
 
     fun showMigrateDialog(duplicate: Manga) {
         val manga = successState?.manga ?: return
-        updateSuccessState { it.copy(dialog = Dialog.Migrate(newManga = manga, oldManga = duplicate)) }
+        updateSuccessState { it.copy(dialog = Dialog.Migrate(target = manga, current = duplicate)) }
     }
 
     fun setExcludedScanlators(excludedScanlators: Set<String>) {

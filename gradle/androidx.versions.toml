@@ -1,7 +1,7 @@
 [versions]
-agp_version = "8.13.0"
-lifecycle_version = "2.9.4"
-paging_version = "3.3.6"
+agp_version = "8.13.2"
+lifecycle_version = "2.10.0"
+paging_version = "3.4.0"
 interpolator_version = "1.0.0"
 
 [libraries]
@@ -12,7 +12,7 @@ appcompat = "androidx.appcompat:appcompat:1.7.1"
 biometricktx = "androidx.biometric:biometric-ktx:1.2.0-alpha05"
 constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
 corektx = "androidx.core:core-ktx:1.17.0"
-splashscreen = "androidx.core:core-splashscreen:1.0.1"
+splashscreen = "androidx.core:core-splashscreen:1.2.0"
 recyclerview = "androidx.recyclerview:recyclerview:1.4.0"
 viewpager = "androidx.viewpager:viewpager:1.1.0"
 profileinstaller = "androidx.profileinstaller:profileinstaller:1.4.1"
@@ -21,7 +21,7 @@ lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref
 lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle_version" }
 lifecycle-runtimektx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_version" }
 
-workmanager = "androidx.work:work-runtime:2.11.0"
+workmanager = "androidx.work:work-runtime:2.11.1"
 
 paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging_version" }
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging_version" }

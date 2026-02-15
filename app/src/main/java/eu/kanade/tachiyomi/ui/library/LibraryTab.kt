@@ -29,7 +29,6 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
@@ -47,7 +46,6 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -68,6 +66,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.category.model.Category
@@ -87,6 +86,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data object LibraryTab : Tab {
+    @Suppress("unused")
     private fun readResolve(): Any = LibraryTab
 
     override val options: TabOptions
@@ -202,29 +202,24 @@ data object LibraryTab : Tab {
                     onDownloadClicked = screenModel::performDownloadAction
                         .takeIf { state.selectedManga.fastAll { !it.isLocal() } },
                     onDeleteClicked = screenModel::openDeleteMangaDialog,
-                    // SY -->
-                    onClickCleanTitles = screenModel::cleanTitles.takeIf { state.showCleanTitles },
-                    onClickMigrate = {
-                        val selectedMangaIds = state.selectedManga
+                    onMigrateClicked = {
+                        val selection = state
+                            // KMK -->
+                            .selectedManga
                             .filterNot { it.source == MERGED_SOURCE_ID }
                             .map { it.id }
+                        // KMK <--
                         screenModel.clearSelection()
-                        if (selectedMangaIds.isNotEmpty()) {
-                            PreMigrationScreen.navigateToMigration(
-                                Injekt.get<SourcePreferences>().skipPreMigration().get(),
-                                navigator,
-                                selectedMangaIds,
-                            )
-                        } else {
+                        // KMK -->
+                        if (selection.isEmpty()) {
                             context.toast(SYMR.strings.no_valid_entry)
+                        } else {
+                            // KMK <--
+                            navigator.push(MigrationConfigScreen(selection))
                         }
                     },
-                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
-                    onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
-                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
-                    // SY <--
                     // KMK -->
-                    onClickMerge = {
+                    onMergeClicked = {
                         if (state.selection.size == 1) {
                             val manga = state.selectedManga.first()
                             // Invoke merging for this manga
@@ -262,8 +257,8 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
-                    onClickRefreshSelected = {
-                        val started = screenModel.refreshSelectedManga()
+                    onSelectionUpdateClicked = {
+                        val started = screenModel.updateSelectedManga()
                         scope.launch {
                             val msgRes = if (started) {
                                 KMR.strings.updating
@@ -277,6 +272,12 @@ data object LibraryTab : Tab {
                         }
                     },
                     // KMK <--
+                    // SY -->
+                    onClickCleanTitles = screenModel::cleanTitles.takeIf { state.showCleanTitles },
+                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
+                    onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
+                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
+                    // SY <--
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

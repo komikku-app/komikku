@@ -105,7 +105,6 @@
     <string name="action_scroll_to_bottom">Rolar para o final</string>
     <string name="action_scroll_to_previous">Rolar para o anterior</string>
     <string name="action_scroll_to_next">Rolar para o próximo</string>
-    <string name="migrating_all_entries">Migrando todas as entradas da fonte</string>
     <string name="label_to_be_updated">A ser atualizado</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Download Manual</string>
@@ -139,4 +138,13 @@
     <string name="pref_landscape_zoom_type">Modo de zoom para imagens amplas</string>
     <string name="scale_type_double">Zoom duplo</string>
     <string name="pref_webtoon_scale_type">Escala automática para tela grande</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Zonas de toque menores</string>
+    <string name="pref_smart_scale_long_strip_gap">Aplicar Escala inteligente para Tira longa com espaços</string>
+    <string name="pref_top_align_cover">Alinhar capa com o topo</string>
+    <string name="pref_top_align_cover_summary">Mostrar capa alinhada com o topo junto à informação do mangá</string>
+    <string name="theme_doom">Doom</string>
+    <string name="theme_mocha">Mocha</string>
+    <string name="custom_theme_palette_casual">Casual</string>
+    <string name="custom_theme_palette_outrun">Outrun</string>
+    <string name="pref_track_on_add_library">Abrir menu \'Acompanhar\' ao adicionar à biblioteca</string>
 </resources>

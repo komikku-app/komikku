@@ -45,7 +45,6 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
@@ -70,9 +69,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -105,6 +101,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.feature.migration.config.MigrationConfigScreen
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
@@ -367,13 +365,7 @@ class MangaScreen(
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                // SY -->
-                PreMigrationScreen.navigateToMigration(
-                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
-                    navigator,
-                    listOfNotNull(successState.manga.id),
-                )
-                // SY <--
+                navigator.push(MigrationConfigScreen(successState.manga.id))
             }.takeIf { successState.manga.favorite },
             // SY -->
             previewsRowCount = successState.previewsRowCount,
@@ -520,13 +512,12 @@ class MangaScreen(
             }
 
             is MangaScreenModel.Dialog.Migrate -> {
-                MigrateDialog(
-                    oldManga = dialog.oldManga,
-                    newManga = dialog.newManga,
-                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    // Initiated from the context of [dialog.target] so we show [dialog.current].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
                     onDismissRequest = onDismissRequest,
-                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = onDismissRequest,
                 )
             }
             MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
