@@ -269,6 +269,9 @@ class BackupRestorer(
 
                 try {
                     extensionRepoRestorer(it)
+                } catch (e: CancellationException) {
+                    // Re-throw CancellationException so structured cancellation propagates correctly
+                    throw e
                 } catch (e: Exception) {
                     errors.add(Date() to "Error Adding Repo: ${it.name} : ${e.message}")
                 }
