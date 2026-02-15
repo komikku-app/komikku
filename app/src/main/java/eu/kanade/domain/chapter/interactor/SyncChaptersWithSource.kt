@@ -70,14 +70,21 @@ class SyncChaptersWithSource(
                     .copy(mangaId = manga.id, sourceOrder = i.toLong())
             }
 
-        val dbChapters = getChaptersByMangaId.await(manga.id)
+        val dbChaptersIncludeDeleted = chapterRepository.getChapterByMangaId(manga.id, includeDeleted = true)
+        val dbChapters = dbChaptersIncludeDeleted.filterNot { it.deleted }
 
         val newChapters = mutableListOf<Chapter>()
         val updatedChapters = mutableListOf<Chapter>()
-        val removedChapters = dbChapters.filterNot { dbChapter ->
+        val chaptersToSoftDelete = dbChapters.filterNot { dbChapter ->
             sourceChapters.any { sourceChapter ->
                 dbChapter.url == sourceChapter.url
             }
+        }
+        val chaptersToUndelete = dbChaptersIncludeDeleted.filter { dbChapter ->
+            dbChapter.deleted &&
+                sourceChapters.any { sourceChapter ->
+                    dbChapter.url == sourceChapter.url
+                }
         }
 
         // Used to not set upload date of older chapters
@@ -102,9 +109,11 @@ class SyncChaptersWithSource(
             )
             chapter = chapter.copy(chapterNumber = chapterNumber)
 
-            val dbChapter = dbChapters.find { it.url == chapter.url }
+            val existingChapter = dbChapters.find { it.url == chapter.url }
+                ?: dbChaptersIncludeDeleted.find { it.url == chapter.url && it.deleted }
 
-            if (dbChapter == null) {
+            if (existingChapter == null) {
+                // Chapter is new, so add it
                 val toAddChapter = if (chapter.dateUpload == 0L) {
                     val altDateUpload = if (maxSeenUploadDate == 0L) nowMillis else maxSeenUploadDate
                     chapter.copy(dateUpload = altDateUpload)
@@ -114,12 +123,13 @@ class SyncChaptersWithSource(
                 }
                 newChapters.add(toAddChapter)
             } else {
-                if (shouldUpdateDbChapter.await(dbChapter, chapter)) {
-                    val shouldRenameChapter = downloadProvider.isChapterDirNameChanged(dbChapter, chapter) &&
+                // Chapter exists in DB (deleted or not), check for updates
+                if (shouldUpdateDbChapter.await(existingChapter, chapter)) {
+                    val shouldRenameChapter = downloadProvider.isChapterDirNameChanged(existingChapter, chapter) &&
                         downloadManager.isChapterDownloaded(
-                            dbChapter.name,
-                            dbChapter.scanlator,
-                            dbChapter.url,
+                            existingChapter.name,
+                            existingChapter.scanlator,
+                            existingChapter.url,
                             // SY -->
                             // manga.title,
                             manga.ogTitle,
@@ -128,10 +138,10 @@ class SyncChaptersWithSource(
                         )
 
                     if (shouldRenameChapter) {
-                        downloadManager.renameChapter(source, manga, dbChapter, chapter)
+                        downloadManager.renameChapter(source, manga, existingChapter, chapter)
                     }
 
-                    var toChangeChapter = dbChapter.copy(
+                    var toChangeChapter = existingChapter.copy(
                         name = chapter.name,
                         chapterNumber = chapter.chapterNumber,
                         scanlator = chapter.scanlator,
@@ -147,7 +157,7 @@ class SyncChaptersWithSource(
         }
 
         // Return if there's nothing to add, delete, or update to avoid unnecessary db transactions.
-        if (newChapters.isEmpty() && removedChapters.isEmpty() && updatedChapters.isEmpty()) {
+        if (newChapters.isEmpty() && chaptersToSoftDelete.isEmpty() && chaptersToUndelete.isEmpty() && updatedChapters.isEmpty()) {
             if (manualFetch || manga.fetchInterval == 0 || manga.nextUpdate < fetchWindow.first) {
                 updateManga.awaitUpdateFetchInterval(
                     manga,
@@ -170,13 +180,13 @@ class SyncChaptersWithSource(
             .map { it.chapterNumber }
             .toSet()
 
-        removedChapters.forEach { chapter ->
+        chaptersToSoftDelete.forEach { chapter ->
             if (chapter.read) deletedReadChapterNumbers.add(chapter.chapterNumber)
             if (chapter.bookmark) deletedBookmarkedChapterNumbers.add(chapter.chapterNumber)
             deletedChapterNumbers.add(chapter.chapterNumber)
         }
 
-        val deletedChapterNumberDateFetchMap = removedChapters.sortedByDescending { it.dateFetch }
+        val deletedChapterNumberDateFetchMap = chaptersToSoftDelete.sortedByDescending { it.dateFetch }
             .associate { it.chapterNumber to it.dateFetch }
 
         val markDuplicateAsRead = libraryPreferences.markDuplicateReadChapterAsRead().get()
@@ -228,9 +238,16 @@ class SyncChaptersWithSource(
         }
         // <-- EXH
 
-        if (removedChapters.isNotEmpty()) {
-            val toDeleteIds = removedChapters.map { it.id }
-            chapterRepository.removeChaptersWithIds(toDeleteIds)
+        if (chaptersToSoftDelete.isNotEmpty()) {
+            val toSoftDeleteIds = chaptersToSoftDelete.map { it.id }
+            chapterRepository.softDeleteChaptersWithIds(toSoftDeleteIds)
+        }
+
+        if (chaptersToUndelete.isNotEmpty()) {
+            val chapterUpdates = chaptersToUndelete.map {
+                it.toChapterUpdate().copy(deleted = false)
+            }
+            updateChapter.awaitAll(chapterUpdates)
         }
 
         if (updatedToAdd.isNotEmpty()) {
