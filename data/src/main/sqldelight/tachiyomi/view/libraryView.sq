@@ -32,7 +32,7 @@ LEFT JOIN (
     AND chapters.scanlator = excluded_scanlators.scanlator
     LEFT JOIN history
     ON chapters._id = history.chapter_id
-    WHERE ex_scanlator IS NULL
+    WHERE ex_scanlator IS NULL AND chapters.deleted = 0
     GROUP BY chapters.manga_id
 ) AS C
 ON M._id = C.manga_id
@@ -84,7 +84,7 @@ LEFT JOIN(
     ON chapters._id = history.chapter_id
     LEFT JOIN merged ME
     ON ME.manga_id = chapters.manga_id
-    WHERE ex_scanlator IS NULL
+    WHERE ex_scanlator IS NULL AND chapters.deleted = 0
     GROUP BY ME.merge_id
 ) AS C
 ON M._id = C.merge_id  -- ON ME.merge_id = C.merge_id
