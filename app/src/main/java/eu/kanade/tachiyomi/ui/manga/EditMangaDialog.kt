@@ -340,12 +340,20 @@ private fun onViewCreated(
                 SYMR.strings.description_hint,
                 manga.ogDescription?.takeIf { it.isNotBlank() }?.replace("\n", " ")?.chop(20) ?: "",
             )
+        // KMK -->
+        val thumbnailUrlHints = listOfNotNull(
+            manga.ogThumbnailUrl?.let {
+                it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
+            },
+            "file:///storage/emulated/0/Pictures/Komikku/Cover.jpg",
+        )
+        // KMK <--
         binding.thumbnailUrl.hint =
             context.stringResource(
                 SYMR.strings.thumbnail_url_hint,
-                manga.ogThumbnailUrl?.let {
-                    it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
-                } ?: "",
+                // KMK -->
+                thumbnailUrlHints.joinToString("\nor\n"),
+                // KMK <--
             )
     }
     binding.mangaGenresTags.clearFocus()

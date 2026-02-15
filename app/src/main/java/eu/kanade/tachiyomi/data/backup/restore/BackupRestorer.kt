@@ -151,8 +151,9 @@ class BackupRestorer(
         }
     }
 
-    private fun CoroutineScope.restoreCategories(backupCategories: List<BackupCategory>) = launch(dispatcher) {
-        ensureActive()
+    context(scope: CoroutineScope)
+    private /* KMK --> */suspend /* KMK <-- */ fun restoreCategories(backupCategories: List<BackupCategory>) {
+        scope.ensureActive()
         categoriesRestorer(backupCategories)
 
         restoreProgress.incrementAndGet()

@@ -1,10 +1,7 @@
 package eu.kanade.presentation.manga
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,9 +29,11 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.State
@@ -91,6 +90,7 @@ import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.isIncognitoModeEnabled
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -109,6 +109,7 @@ import exh.source.isEhBasedManga
 import exh.ui.metadata.adapters.EHentaiDescription
 import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.HBrowseDescription
+import exh.ui.metadata.adapters.LanraragiDescription
 import exh.ui.metadata.adapters.MangaDexDescription
 import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.PururinDescription
@@ -123,7 +124,6 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
-import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -537,12 +537,23 @@ private fun MangaScreenSmallImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            AnimatedVisibility(
-                visible = isFABVisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                // KMK -->
-                modifier = Modifier
+            SmallExtendedFloatingActionButton(
+                text = {
+                    val isReading = remember(state.chapters) {
+                        state.chapters.fastAny { it.chapter.read }
+                    }
+                    Text(
+                        text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
+                    )
+                },
+                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                onClick = onContinueReading,
+                expanded = chapterListState.shouldExpandFAB(),
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFABVisible,
+                    alignment = Alignment.BottomEnd,
+                )
+                    // KMK -->
                     .offset { IntOffset(offsetX.roundToInt(), 0) }
                     .onGloballyPositioned { coordinates ->
                         fabSize = coordinates.size
@@ -566,25 +577,9 @@ private fun MangaScreenSmallImpl(
                             }
                         }
                     },
+                containerColor = MaterialTheme.colorScheme.primary,
                 // KMK <--
-            ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        val isReading = remember(state.chapters) {
-                            state.chapters.fastAny { it.chapter.read }
-                        }
-                        Text(
-                            text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
-                        )
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                    onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
-                    // KMK -->
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    // KMK <--
-                )
-            }
+            )
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
@@ -702,7 +697,7 @@ private fun MangaScreenSmallImpl(
                             // SY -->
                             doSearch = onSearch,
                             searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source, state.manga.genre)
+                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
                             },
                             // SY <--
                         )
@@ -1002,12 +997,25 @@ private fun MangaScreenLargeImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            AnimatedVisibility(
-                visible = isFABVisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                // KMK -->
-                modifier = Modifier
+            SmallExtendedFloatingActionButton(
+                text = {
+                    val isReading = remember(state.chapters) {
+                        state.chapters.fastAny { it.chapter.read }
+                    }
+                    Text(
+                        text = stringResource(
+                            if (isReading) MR.strings.action_resume else MR.strings.action_start,
+                        ),
+                    )
+                },
+                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                onClick = onContinueReading,
+                expanded = chapterListState.shouldExpandFAB(),
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFABVisible,
+                    alignment = Alignment.BottomEnd,
+                )
+                    // KMK -->
                     .offset { IntOffset(offsetX.roundToInt(), 0) }
                     .onGloballyPositioned { coordinates ->
                         fabSize = coordinates.size
@@ -1031,27 +1039,9 @@ private fun MangaScreenLargeImpl(
                             }
                         }
                     },
+                containerColor = MaterialTheme.colorScheme.primary,
                 // KMK <--
-            ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        val isReading = remember(state.chapters) {
-                            state.chapters.fastAny { it.chapter.read }
-                        }
-                        Text(
-                            text = stringResource(
-                                if (isReading) MR.strings.action_resume else MR.strings.action_start,
-                            ),
-                        )
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                    onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
-                    // KMK -->
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    // KMK <--
-                )
-            }
+            )
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
@@ -1143,7 +1133,7 @@ private fun MangaScreenLargeImpl(
                             // SY -->
                             doSearch = onSearch,
                             searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source, state.manga.genre)
+                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
                             },
                             // SY <--
                         )
@@ -1456,6 +1446,9 @@ fun metadataDescription(source: Source): MetadataDescriptionComposable? {
             }
             is Tsumino -> { state, openMetadataViewer, _ ->
                 TsuminoDescription(state, openMetadataViewer)
+            }
+            is Lanraragi -> { state, openMetadataViewer, _ ->
+                LanraragiDescription(state, openMetadataViewer)
             }
             else -> null
         }

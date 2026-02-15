@@ -1,6 +1,7 @@
 package eu.kanade.domain.sync
 
 import eu.kanade.domain.sync.models.SyncSettings
+import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.models.SyncTriggerOptions
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -17,6 +18,13 @@ class SyncPreferences(
 
     fun syncInterval() = preferenceStore.getInt("sync_interval", 0)
     fun syncService() = preferenceStore.getInt("sync_service", 0)
+
+    // KMK -->
+    fun webDavUrl() = preferenceStore.getString("webdav_url", "")
+    fun webDavUsername() = preferenceStore.getString("webdav_username", "")
+    fun webDavPassword() = preferenceStore.getString("webdav_password", "")
+    fun webDavFolder() = preferenceStore.getString("webdav_folder", "komikku")
+    // KMK <--
 
     fun googleDriveAccessToken() = preferenceStore.getString(
         Preference.appStateKey("google_drive_access_token"),
@@ -42,7 +50,7 @@ class SyncPreferences(
     }
 
     fun isSyncEnabled(): Boolean {
-        return syncService().get() != 0
+        return syncService().get() != SyncManager.SyncService.NONE.value
     }
 
     fun getSyncSettings(): SyncSettings {

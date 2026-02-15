@@ -102,7 +102,6 @@
     <string name="action_scroll_to_bottom">Přejít na konec</string>
     <string name="action_scroll_to_previous">Přejít na předchozí</string>
     <string name="action_scroll_to_next">Přejít na další</string>
-    <string name="migrating_all_entries">Migrovat všechny záznamy ze zdroje</string>
     <string name="label_to_be_updated">Bude aktualizováno</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Ruční stahování</string>

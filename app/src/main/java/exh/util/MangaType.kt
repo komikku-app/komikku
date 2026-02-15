@@ -54,7 +54,7 @@ fun Manga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(source
  * read types
  */
 fun Manga.defaultReaderType(type: MangaType = mangaType()): Int? {
-    return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
+    return if (type in setOf(MangaType.TYPE_MANHUA, MangaType.TYPE_MANHWA, MangaType.TYPE_WEBTOON)) {
         ReadingMode.WEBTOON.flagValue
     } else {
         null

@@ -102,7 +102,6 @@
     <string name="action_scroll_to_bottom">Derulează până jos</string>
     <string name="action_scroll_to_previous">Derulează până la anterioară</string>
     <string name="action_scroll_to_next">Derulează mai departe</string>
-    <string name="migrating_all_entries">Migrarea tuturor intrărilor de la sursă</string>
     <string name="label_to_be_updated">A se actualiza</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Descărcare manuală</string>

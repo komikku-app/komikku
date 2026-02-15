@@ -4,8 +4,8 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
-import exh.smartsearch.SmartSourceSearchEngine
 import kotlinx.coroutines.CancellationException
+import mihon.feature.migration.list.search.SmartSourceSearchEngine
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
@@ -19,14 +19,14 @@ class SmartSearchScreenModel(
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<SmartSearchScreenModel.SearchResults?>(null) {
-    private val smartSearchEngine = SmartSourceSearchEngine()
+    private val smartSearchEngine = SmartSourceSearchEngine(null)
 
     val source = sourceManager.get(sourceId) as CatalogueSource
 
     init {
         screenModelScope.launchIO {
             val result = try {
-                val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
+                val resultManga = smartSearchEngine.deepSearch(source, config.origTitle)
                 if (resultManga != null) {
                     val localManga = networkToLocalManga(resultManga)
                     SearchResults.Found(localManga)

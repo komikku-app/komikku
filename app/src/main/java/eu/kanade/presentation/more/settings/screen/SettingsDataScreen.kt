@@ -97,6 +97,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsDataScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsDataScreen
 
     val restorePreferenceKeyString = MR.strings.label_backup
@@ -222,7 +223,7 @@ object SettingsDataScreen : SearchableSettings {
                         // KMK <--
                         pickStorageLocation.launch(null)
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     context.toast(MR.strings.file_picker_error)
                 }
             },
@@ -549,6 +550,7 @@ object SettingsDataScreen : SearchableSettings {
     // SY -->
     @Composable
     private fun getSyncPreferences(syncPreferences: SyncPreferences, syncService: Int): List<Preference> {
+        val context = LocalContext.current
         return listOf(
             Preference.PreferenceGroup(
                 title = stringResource(SYMR.strings.pref_sync_service_category),
@@ -559,9 +561,21 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
+                            // KMK -->
+                            SyncManager.SyncService.WebDAV.value to stringResource(KMR.strings.web_dav),
+                            // KMK <--
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
-                        onValueChanged = { true },
+                        onValueChanged = {
+                            // KMK -->
+                            if (it != SyncManager.SyncService.NONE.value) {
+                                SyncDataJob.setupTask(context)
+                            } else {
+                                SyncDataJob.setupTask(context, prefInterval = 0)
+                            }
+                            // KMK <--
+                            true
+                        },
                     ),
                 ),
             ),
@@ -591,6 +605,9 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.NONE -> emptyList()
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
+            // KMK -->
+            SyncManager.SyncService.WebDAV -> getWebDavPreferences(syncPreferences)
+            // KMK <--
         }
 
         return if (syncServiceType != SyncManager.SyncService.NONE) {
@@ -763,6 +780,60 @@ object SettingsDataScreen : SearchableSettings {
         )
     }
 
+    // KMK -->
+    @Composable
+    private fun getWebDavPreferences(syncPreferences: SyncPreferences): List<Preference> {
+        val scope = rememberCoroutineScope()
+
+        return listOf(
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavUrl(),
+                title = stringResource(KMR.strings.pref_webdav_url),
+                subtitle = stringResource(KMR.strings.pref_webdav_url_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavUrl().set(newValue.trim())
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavUsername(),
+                title = stringResource(KMR.strings.pref_webdav_username),
+                subtitle = stringResource(KMR.strings.pref_webdav_username_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavUsername().set(newValue.trim())
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavPassword(),
+                title = stringResource(KMR.strings.pref_webdav_password),
+                subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavPassword().set(newValue)
+                    }
+                    true
+                },
+            ),
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.webDavFolder(),
+                title = stringResource(KMR.strings.pref_webdav_folder),
+                subtitle = stringResource(KMR.strings.pref_webdav_folder_summ),
+                onValueChanged = { newValue ->
+                    scope.launch {
+                        syncPreferences.webDavFolder().set(newValue.trim())
+                    }
+                    true
+                },
+            ),
+        )
+    }
+    // MK <--
+
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {
         val context = LocalContext.current
@@ -819,7 +890,7 @@ object SettingsDataScreen : SearchableSettings {
                     ),
                     title = stringResource(SYMR.strings.pref_sync_interval),
                     onValueChanged = {
-                        SyncDataJob.setupTask(context, it)
+                        SyncDataJob.setupTask(context, prefInterval = it)
                         true
                     },
                 ),

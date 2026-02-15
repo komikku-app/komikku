@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.ComposeStars
 import com.gowtham.ratingbar.RatingBarStyle
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
@@ -43,6 +43,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.GenreColor
+import exh.util.SourceTagsUtil.genreTextColor
 import exh.util.floor
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.core.common.i18n.pluralStringResource
@@ -266,16 +267,20 @@ fun BrowseSourceEHentaiListItem(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     horizontalAlignment = Alignment.Start,
                 ) {
-                    RatingBar(
+                    ComposeStars(
                         value = rating,
-                        onValueChange = {},
-                        onRatingChanged = {},
-                        isIndicator = true,
                         numOfStars = 5,
                         size = 18.dp,
+                        spaceBetween = 2.dp,
+                        hideInactiveStars = false,
                         style = RatingBarStyle.Fill(),
+                        painterEmpty = null,
+                        painterFilled = null,
                     )
                     val color = genre?.first?.color
+                    // KMK -->
+                    val textColor = genre?.first?.let(::genreTextColor)?.let(::Color) ?: Color.Unspecified
+                    // KMK <--
                     val res = genre?.second
                     Card(
                         colors = if (color != null) {
@@ -290,6 +295,9 @@ fun BrowseSourceEHentaiListItem(
                             } else {
                                 metadata.genre.orEmpty()
                             },
+                            // KMK -->
+                            color = textColor,
+                            // KMK <--
                             modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
                             maxLines = 1,
                             style = MaterialTheme.typography.bodyMedium,

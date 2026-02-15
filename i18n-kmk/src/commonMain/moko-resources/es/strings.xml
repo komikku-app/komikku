@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Buscar fuente</string>
+    <string name="action_source_search">Buscar en fuente</string>
     <string name="action_toggle_nsfw_only">Alternar solo NSFW</string>
     <string name="action_bulk_select">Modo de selección masiva</string>
     <string name="action_faq_and_guides">Preguntas frecuentes y guías</string>
@@ -25,7 +25,7 @@
     <string name="update_check_notification_preview_available">¡Próximas actualizaciones (pronto)!</string>
     <string name="changelogs">Registro de cambios</string>
     <string name="related_mangas_more">Más así...</string>
-    <string name="too_many_in_feed">Demasiadas fuentes en su contenido, no puede añadir más de 20</string>
+    <string name="too_many_in_feed">Demasiadas fuentes en tu feed, no se pueden agregar más de 20</string>
     <string name="current_">Actual: %1$s</string>
     <string name="pref_theme_cover_based">Tema según la portada</string>
     <string name="pref_theme_cover_based_style_tonalspot">Spot Tonal</string>
@@ -103,7 +103,6 @@
     <string name="action_scroll_to_bottom">Desplazar al final</string>
     <string name="action_scroll_to_previous">Desplazar al anterior</string>
     <string name="action_scroll_to_next">Desplazar al siguiente</string>
-    <string name="migrating_all_entries">Migrando todas las entradas desde la fuente</string>
     <string name="label_to_be_updated">Para actualizar</string>
     <string name="pref_manga_info">Información del manga</string>
     <string name="manual_download">Descarga manual</string>
@@ -118,4 +117,21 @@
     <string name="auto_update_app_disable_auto_download">No descargar actualización automática</string>
     <string name="action_remove_merged">¿Eliminar entradas originales de la biblioteca?</string>
     <string name="batch_add_description">Soporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_open_folder">Abrir carpeta</string>
+    <string name="action_update">Actualizar</string>
+    <string name="error_opening_folder">Fallo al abrir la carpeta</string>
+    <string name="pref_pinch_to_zoom">Pellizcar para hacer zoom</string>
+    <string name="pref_paged_disable_zoom_in">Deshabilitar acercar</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="pref_top_align_cover">Alinear portada a la parte superior</string>
+    <string name="pref_top_align_cover_summary">Mostrar la portada alineada en la parte superior junto a la información del manga</string>
+    <string name="custom_theme_palette_casual">Casual</string>
+    <string name="pref_library_filter_categories_details">Entradas en las categorías excluidas no se mostrarán incluso si están en las categorías incluidas.</string>
+    <string name="updating">Actualizando</string>
+    <string name="pref_show_empty_categories_search">Mostrar categorías vacías durante la búsqueda/filtrado</string>
+    <string name="pref_track_on_add_library">Abrir menú de seguimiento al añadir a la biblioteca</string>
+    <string name="downloaded_data">Datos descargados</string>
 </resources>

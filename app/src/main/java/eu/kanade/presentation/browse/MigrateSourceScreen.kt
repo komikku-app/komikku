@@ -3,6 +3,7 @@ package eu.kanade.presentation.browse
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -29,26 +30,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
+import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.source.EHENTAI_EXT_SOURCES
-import exh.source.EXHENTAI_EXT_SOURCES
+import exh.source.ExhPreferences
+import exh.source.eHentaiSourceIds
 import kotlinx.collections.immutable.ImmutableList
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
-import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
@@ -119,107 +120,118 @@ private fun MigrateSourceList(
     // KMK -->
     val lazyListState = rememberLazyListState()
     var filterObsoleteSource by rememberSaveable { mutableStateOf(false) }
-    val isHentaiEnabled = remember { Injekt.get<UnsortedPreferences>().isHentaiEnabled().get() }
+    val isHentaiEnabled = remember { Injekt.get<ExhPreferences>().isHentaiEnabled().get() }
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
         onChangeSearchQuery("")
     }
 
     Column(
-        // Wrap around so we can use stickyHeader
         modifier = Modifier.padding(contentPadding),
     ) {
-        AnimatedFloatingSearchBox(
-            listState = lazyListState,
-            searchQuery = state.searchQuery,
-            onChangeSearchQuery = onChangeSearchQuery,
-            placeholderText = stringResource(KMR.strings.action_search_for_source),
+        // KMK <--
+        Row(
             modifier = Modifier
-                .padding(
-                    horizontal = MaterialTheme.padding.medium,
-                    vertical = MaterialTheme.padding.small,
-                ),
-        )
-
-        FastScrollLazyColumn(
-            state = lazyListState,
-            // contentPadding = contentPadding + topSmallPaddingValues,
-            // KMK <--
+                .background(MaterialTheme.colorScheme.background)
+                .padding(start = MaterialTheme.padding.medium),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            stickyHeader(key = STICKY_HEADER_KEY_PREFIX) {
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(start = MaterialTheme.padding.medium),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(MR.strings.migration_selection_prompt),
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.header,
-                    )
+            Text(
+                text = stringResource(MR.strings.migration_selection_prompt),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.header,
+            )
 
-                    // KMK -->
-                    IconButton(onClick = { filterObsoleteSource = !filterObsoleteSource }) {
-                        Icon(
-                            Icons.Outlined.NewReleases,
-                            contentDescription = stringResource(MR.strings.ext_obsolete),
-                            tint = MaterialTheme.colorScheme.error
-                                .takeIf { filterObsoleteSource } ?: LocalContentColor.current,
-                        )
-                    }
+            // KMK -->
+            IconButton(onClick = { filterObsoleteSource = !filterObsoleteSource }) {
+                Icon(
+                    Icons.Outlined.NewReleases,
+                    contentDescription = stringResource(MR.strings.ext_obsolete),
+                    tint = MaterialTheme.colorScheme.error
+                        .takeIf { filterObsoleteSource } ?: LocalContentColor.current,
+                )
+            }
+            // KMK <--
+            IconButton(onClick = onToggleSortingMode) {
+                when (sortingMode) {
+                    SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
+                        Icons.Outlined.SortByAlpha,
+                        contentDescription = stringResource(MR.strings.action_sort_alpha),
+                    )
+                    SetMigrateSorting.Mode.TOTAL -> Icon(
+                        Icons.Outlined.Numbers,
+                        contentDescription = stringResource(MR.strings.action_sort_count),
+                    )
+                }
+            }
+            IconButton(onClick = onToggleSortingDirection) {
+                when (sortingDirection) {
+                    SetMigrateSorting.Direction.ASCENDING -> Icon(
+                        Icons.Outlined.ArrowUpward,
+                        contentDescription = stringResource(MR.strings.action_asc),
+                    )
+                    SetMigrateSorting.Direction.DESCENDING -> Icon(
+                        Icons.Outlined.ArrowDownward,
+                        contentDescription = stringResource(MR.strings.action_desc),
+                    )
+                }
+            }
+        }
+
+        // KMK -->
+        Box {
+            val density = LocalDensity.current
+            var searchBoxHeight by remember { mutableStateOf(SOURCE_SEARCH_BOX_HEIGHT) }
+
+            FastScrollLazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(top = searchBoxHeight),
+                // KMK <--
+            ) {
+                items(
+                    items = list
+                        // KMK -->
+                        .filter {
+                            !filterObsoleteSource ||
+                                (
+                                    it.first.installedExtension?.isObsolete != false &&
+                                        (!isHentaiEnabled || it.first.id !in eHentaiSourceIds)
+                                    )
+                        },
                     // KMK <--
-                    IconButton(onClick = onToggleSortingMode) {
-                        when (sortingMode) {
-                            SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
-                                Icons.Outlined.SortByAlpha,
-                                contentDescription = stringResource(MR.strings.action_sort_alpha),
-                            )
-                            SetMigrateSorting.Mode.TOTAL -> Icon(
-                                Icons.Outlined.Numbers,
-                                contentDescription = stringResource(MR.strings.action_sort_count),
-                            )
-                        }
-                    }
-                    IconButton(onClick = onToggleSortingDirection) {
-                        when (sortingDirection) {
-                            SetMigrateSorting.Direction.ASCENDING -> Icon(
-                                Icons.Outlined.ArrowUpward,
-                                contentDescription = stringResource(MR.strings.action_asc),
-                            )
-                            SetMigrateSorting.Direction.DESCENDING -> Icon(
-                                Icons.Outlined.ArrowDownward,
-                                contentDescription = stringResource(MR.strings.action_desc),
-                            )
-                        }
-                    }
+                    key = { (source, _) -> "migrate-${source.id}" },
+                ) { (source, count) ->
+                    MigrateSourceItem(
+                        // KMK -->
+                        // modifier = Modifier.animateItem(),
+                        modifier = Modifier.animateItemFastScroll()
+                            .padding(end = MaterialTheme.padding.small),
+                        // KMK <--
+                        source = source,
+                        count = count,
+                        onClickItem = { onClickItem(source) },
+                        onLongClickItem = { onLongClickItem(source) },
+                    )
                 }
             }
 
-            items(
-                items = list
-                    // KMK -->
-                    .filter {
-                        !filterObsoleteSource ||
-                            (
-                                it.first.installedExtension?.isObsolete != false &&
-                                    (!isHentaiEnabled || it.first.id !in (EHENTAI_EXT_SOURCES.keys + EXHENTAI_EXT_SOURCES.keys))
-                                )
-                    },
-                // KMK <--
-                key = { (source, _) -> "migrate-${source.id}" },
-            ) { (source, count) ->
-                MigrateSourceItem(
-                    // KMK -->
-                    // modifier = Modifier.animateItem(),
-                    modifier = Modifier.animateItemFastScroll(),
-                    // KMK <--
-                    source = source,
-                    count = count,
-                    onClickItem = { onClickItem(source) },
-                    onLongClickItem = { onLongClickItem(source) },
-                )
-            }
+            // KMK -->
+            AnimatedFloatingSearchBox(
+                listState = lazyListState,
+                searchQuery = state.searchQuery,
+                onChangeSearchQuery = onChangeSearchQuery,
+                placeholderText = stringResource(KMR.strings.action_search_for_source),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(
+                        horizontal = MaterialTheme.padding.medium,
+                    )
+                    .align(Alignment.TopCenter),
+                onGloballyPositioned = { layoutCoordinates ->
+                    searchBoxHeight = with(density) { layoutCoordinates.size.height.toDp() }
+                },
+            )
+            // KMK <--
         }
     }
 }

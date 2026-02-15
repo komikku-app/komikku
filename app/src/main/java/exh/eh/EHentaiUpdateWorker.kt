@@ -29,14 +29,13 @@ import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.source.ExhPreferences
 import exh.util.cancellable
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.core.common.preference.getAndSet
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -55,7 +54,7 @@ import kotlin.time.Duration.Companion.days
 
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
     private val libraryPreferences: LibraryPreferences by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
@@ -73,10 +72,11 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
     override suspend fun doWork(): Result {
         return try {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P &&
-                requiresWifiConnection(preferences) &&
+                requiresWifiConnection(exhPreferences) &&
                 !context.isConnectedToWifi()
             ) {
-                Result.retry() // retry again later
+                logger.d("Retry again later in next periodic run due to missing Wi-Fi connection...")
+                Result.success() // retry again later in next periodic run
             } else {
                 setForegroundSafely()
                 startUpdating()
@@ -84,7 +84,8 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 Result.success()
             }
         } catch (e: Exception) {
-            Result.retry() // retry again later
+            logger.d("Retry again later in next periodic run!", e)
+            Result.success() // retry again later in next periodic run
         } finally {
             updateNotifier.cancelProgressNotification()
         }
@@ -220,7 +221,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 updatedThisIteration++
             }
         } finally {
-            preferences.exhAutoUpdateStats().set(
+            exhPreferences.exhAutoUpdateStats().set(
                 Json.encodeToString(
                     EHentaiUpdaterStats(
                         startTime,
@@ -284,10 +285,10 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
 
         fun scheduleBackground(context: Context, prefInterval: Int? = null, prefRestrictions: Set<String>? = null) {
-            val preferences = Injekt.get<UnsortedPreferences>()
-            val interval = prefInterval ?: preferences.exhAutoUpdateFrequency().get()
+            val exhPreferences = Injekt.get<ExhPreferences>()
+            val interval = prefInterval ?: exhPreferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
-                val restrictions = prefRestrictions ?: preferences.exhAutoUpdateRequirements().get()
+                val restrictions = prefRestrictions ?: exhPreferences.exhAutoUpdateRequirements().get()
                 val acRestriction = DEVICE_CHARGING in restrictions
 
                 val networkRequestBuilder = NetworkRequest.Builder()
@@ -323,8 +324,8 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
     }
 
-    private fun requiresWifiConnection(preferences: UnsortedPreferences): Boolean {
-        val restrictions = preferences.exhAutoUpdateRequirements().get()
+    private fun requiresWifiConnection(exhPreferences: ExhPreferences): Boolean {
+        val restrictions = exhPreferences.exhAutoUpdateRequirements().get()
         return DEVICE_ONLY_ON_WIFI in restrictions
     }
 }

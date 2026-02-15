@@ -1091,12 +1091,13 @@ class MangaScreenModel(
                 true
             } else {
                 downloadManager.isChapterDownloaded(
-                    // SY -->
                     chapter.name,
                     chapter.scanlator,
+                    chapter.url,
+                    // SY -->
                     manga.ogTitle,
-                    manga.source,
                     // SY <--
+                    manga.source,
                 )
             }
             val downloadState = when {
@@ -1202,7 +1203,7 @@ class MangaScreenModel(
      */
     internal suspend fun fetchRelatedMangasFromSource(onDemand: Boolean = false, onFinish: (() -> Unit)? = null) {
         val expandRelatedMangas = uiPreferences.expandRelatedMangas().get()
-        if (!onDemand && !expandRelatedMangas || manga?.source == MERGED_SOURCE_ID) return
+        if ((!onDemand && !expandRelatedMangas) || manga?.source == MERGED_SOURCE_ID) return
 
         // start fetching related mangas
         setRelatedMangasFetchedStatus(false)
@@ -1516,7 +1517,7 @@ class MangaScreenModel(
                     if (state.source.id == MERGED_SOURCE_ID) {
                         chapters.groupBy { it.mangaId }.forEach { map ->
                             val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
-                            val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+                            val source = state.mergedData.sources.find { it.id != MERGED_SOURCE_ID && manga.source == it.id } ?: return@forEach
                             downloadManager.deleteChapters(
                                 map.value,
                                 manga,
@@ -1571,9 +1572,8 @@ class MangaScreenModel(
                 successState?.let { state ->
                     if (state.source.id == MERGED_SOURCE_ID) {
                         state.mergedData?.manga
-                            ?.filterNot { it.key == MERGED_SOURCE_ID }
                             ?.forEach { (_, manga) ->
-                                val source = state.mergedData.sources.find { manga.source == it.id } ?: return@forEach
+                                val source = state.mergedData.sources.find { it.id != MERGED_SOURCE_ID && manga.source == it.id } ?: return@forEach
 
                                 downloadManager.deleteManga(
                                     manga = manga,
@@ -1823,7 +1823,16 @@ class MangaScreenModel(
                 trackerManager.loggedInTrackersFlow(),
             ) { mangaTracks, loggedInTrackers ->
                 // Show only if the service supports this manga's source
-                val supportedTrackers = loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(source!!) ?: true }
+                // KMK -->
+                val supportedTrackers = source?.let { source ->
+                    val sources = if (source is MergedSource) {
+                        state.mergedData?.sources ?: emptyList()
+                    } else {
+                        listOf(source)
+                    }
+                    loggedInTrackers.filter { (it as? EnhancedTracker)?.accept(sources) ?: true }
+                } ?: loggedInTrackers.filterNot { it is EnhancedTracker }
+                // KMK <--
                 val supportedTrackerIds = supportedTrackers.map { it.id }.toHashSet()
                 val supportedTrackerTracks = mangaTracks.filter { it.trackerId in supportedTrackerIds }
                 supportedTrackerTracks to supportedTrackers
@@ -1898,7 +1907,7 @@ class MangaScreenModel(
         ) : Dialog
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
-        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
         data class SetFetchInterval(val manga: Manga) : Dialog
 
         // SY -->
@@ -1907,7 +1916,7 @@ class MangaScreenModel(
         // SY <--
 
         // KMK -->
-        data class ClearManga(val isMergedSource: Boolean) : Dialog
+        data object ClearManga : Dialog
         // KMK <--
 
         data object SettingsSheet : Dialog
@@ -1937,7 +1946,7 @@ class MangaScreenModel(
 
     fun showMigrateDialog(duplicate: Manga) {
         val manga = successState?.manga ?: return
-        updateSuccessState { it.copy(dialog = Dialog.Migrate(newManga = manga, oldManga = duplicate)) }
+        updateSuccessState { it.copy(dialog = Dialog.Migrate(target = manga, current = duplicate)) }
     }
 
     fun setExcludedScanlators(excludedScanlators: Set<String>) {
@@ -1972,8 +1981,8 @@ class MangaScreenModel(
     // SY <--
 
     // KMK -->
-    fun showClearMangaDialog(isMergedSource: Boolean) {
-        updateSuccessState { it.copy(dialog = Dialog.ClearManga(isMergedSource)) }
+    fun showClearMangaDialog() {
+        updateSuccessState { it.copy(dialog = Dialog.ClearManga) }
     }
     // KMK <--
 

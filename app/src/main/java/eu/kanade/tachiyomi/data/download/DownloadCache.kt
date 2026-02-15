@@ -137,6 +137,7 @@ class DownloadCache(
      *
      * @param chapterName the name of the chapter to query.
      * @param chapterScanlator scanlator of the chapter to query
+     * @param chapterUrl the url of the chapter to query
      * @param mangaTitle the title of the manga to query.
      * @param sourceId the id of the source of the chapter.
      * @param skipCache whether to skip the directory cache and check in the filesystem.
@@ -144,13 +145,14 @@ class DownloadCache(
     fun isChapterDownloaded(
         chapterName: String,
         chapterScanlator: String?,
+        chapterUrl: String,
         mangaTitle: String,
         sourceId: Long,
         skipCache: Boolean,
     ): Boolean {
         if (skipCache) {
             val source = sourceManager.getOrStub(sourceId)
-            return provider.findChapterDir(chapterName, chapterScanlator, mangaTitle, source) != null
+            return provider.findChapterDir(chapterName, chapterScanlator, chapterUrl, mangaTitle, source) != null
         }
 
         renewCache()
@@ -162,6 +164,7 @@ class DownloadCache(
                 return provider.getValidChapterDirNames(
                     chapterName,
                     chapterScanlator,
+                    chapterUrl,
                 ).any { it in mangaDir.chapterDirs }
             }
         }
@@ -252,7 +255,7 @@ class DownloadCache(
                     // SY <--
                 ),
             ] ?: return
-            provider.getValidChapterDirNames(chapter.name, chapter.scanlator).forEach {
+            provider.getValidChapterDirNames(chapter.name, chapter.scanlator, chapter.url).forEach {
                 if (it in mangaDir.chapterDirs) {
                     mangaDir.chapterDirs -= it
                 }
@@ -294,7 +297,7 @@ class DownloadCache(
                 ),
             ] ?: return
             chapters.forEach { chapter ->
-                provider.getValidChapterDirNames(chapter.name, chapter.scanlator).forEach {
+                provider.getValidChapterDirNames(chapter.name, chapter.scanlator, chapter.url).forEach {
                     if (it in mangaDir.chapterDirs) {
                         mangaDir.chapterDirs -= it
                     }

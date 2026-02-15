@@ -11,23 +11,19 @@ import eu.kanade.presentation.browse.MigrateSearchScreen
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import mihon.feature.migration.dialog.MigrateMangaDialog
+import mihon.feature.migration.list.MigrationListScreen
 
-/**
- * Manual search [validSources] for manga to migrate to.
- */
-class MigrateSearchScreen(private val mangaId: Long, private val validSources: List<Long>) : Screen() {
+class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel =
-            rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId, validSources = validSources) }
-        val state by screenModel.state.collectAsState()
 
-        val dialogScreenModel = rememberScreenModel { MigrateSearchScreenDialogScreenModel(mangaId = mangaId) }
-        val dialogState by dialogScreenModel.state.collectAsState()
+        val screenModel = rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId) }
+        val state by screenModel.state.collectAsState()
 
         // KMK -->
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
@@ -40,33 +36,31 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
 
         MigrateSearchScreen(
             state = state,
-            fromSourceId = state.fromSourceId,
+            fromSourceId = state.from?.source,
             navigateUp = navigator::pop,
             onChangeSearchQuery = screenModel::updateSearchQuery,
             onSearch = { screenModel.search() },
             getManga = { screenModel.getManga(it) },
             onChangeSearchFilter = screenModel::setSourceFilter,
             onToggleResults = screenModel::toggleFilterResults,
-            onClickSource = {
-                // SY -->
-                navigator.push(SourceSearchScreen(dialogState.manga!!, it.id, state.searchQuery))
-                // SY <--
-            },
-            onClickItem = { manga ->
+            onClickSource = { navigator.push(MigrateSourceSearchScreen(state.from!!, it.id, state.searchQuery)) },
+            onClickItem = {
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    bulkFavoriteScreenModel.toggleSelection(manga)
-                } else
+                    bulkFavoriteScreenModel.toggleSelection(it)
+                } else {
                     // KMK <--
-                    {
-                        // SY -->
-                        navigator.items
-                            .filterIsInstance<MigrationListScreen>()
-                            .last()
-                            .newSelectedItem = mangaId to manga.id
-                        navigator.popUntil { it is MigrationListScreen }
-                        // SY <--
+                    val migrateListScreen = navigator.items
+                        .filterIsInstance<MigrationListScreen>()
+                        .lastOrNull()
+
+                    if (migrateListScreen == null) {
+                        screenModel.setMigrateDialog(mangaId, it)
+                    } else {
+                        migrateListScreen.addMatchOverride(current = mangaId, target = it.id)
+                        navigator.popUntil { screen -> screen is MigrationListScreen }
                     }
+                }
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
             // KMK -->
@@ -74,6 +68,28 @@ class MigrateSearchScreen(private val mangaId: Long, private val validSources: L
             hasPinnedSources = screenModel.hasPinnedSources(),
             // KMK <--
         )
+
+        when (val dialog = state.dialog) {
+            is SearchScreenModel.Dialog.Migrate -> {
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    // Initiated from the context of [dialog.current] so we show [dialog.target].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.target.id, true)) },
+                    onDismissRequest = { screenModel.clearDialog() },
+                    onComplete = {
+                        if (navigator.lastItem is MangaScreen) {
+                            val lastItem = navigator.lastItem
+                            navigator.popUntil { navigator.items.contains(lastItem) }
+                            navigator.push(MangaScreen(dialog.target.id))
+                        } else {
+                            navigator.replace(MangaScreen(dialog.target.id))
+                        }
+                    },
+                )
+            }
+            else -> {}
+        }
 
         // KMK -->
         // Bulk-favorite actions only

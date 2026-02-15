@@ -3,10 +3,12 @@
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -21,6 +23,7 @@ import exh.source.EHENTAI_EXT_SOURCES
 import exh.source.EIGHTMUSES_SOURCE_ID
 import exh.source.EXHENTAI_EXT_SOURCES
 import exh.source.EnhancedHttpSource
+import exh.source.ExhPreferences
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
@@ -38,7 +41,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.StubSourceRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -71,19 +74,23 @@ class AndroidSourceManager(
     }
 
     // SY -->
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
+    private val sourcePreferences: SourcePreferences by injectLazy()
     // SY <--
+    // KMK -->
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+    // KMK <--
 
     init {
         scope.launch {
             extensionManager.installedExtensionsFlow
                 // SY -->
-                .combine(preferences.enableExhentai().changes()) { extensions, enableExhentai ->
+                .combine(exhPreferences.enableExhentai().changes()) { extensions, enableExhentai ->
                     extensions to enableExhentai
                 }
                 // KMK -->
                 .combine(
-                    preferences.isHentaiEnabled().changes(),
+                    exhPreferences.isHentaiEnabled().changes(),
                 ) { (a, b), c -> Triple(a, b, c) }
                 // KMK <--
                 // SY <--
@@ -95,7 +102,7 @@ class AndroidSourceManager(
                                 Injekt.get(),
                                 Injekt.get(),
                                 // SY -->
-                                preferences.allowLocalSourceHiddenFolders()::get,
+                                sourcePreferences.allowLocalSourceHiddenFolders()::get,
                                 // SY <--
                             ),
                         ),
@@ -235,6 +242,14 @@ class AndroidSourceManager(
         }
     // SY <--
 
+    // KMK -->
+    override suspend fun getMergedSources(mangaId: Long): List<Source> {
+        val sources = getMergedReferencesById.await(mangaId)
+        return sources.distinctBy { it.mangaSourceId }
+            .map { getOrStub(it.mangaSourceId) }
+    }
+    // KMK <--
+
     private fun registerStubSource(source: StubSource) {
         scope.launch {
             val dbSource = sourceRepository.getStubSource(source.id)
@@ -297,6 +312,13 @@ class AndroidSourceManager(
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
                 NHentai::class,
+                true,
+            ),
+            DelegatedSource(
+                "LANraragi",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.lanraragi.LANraragi",
+                Lanraragi::class,
                 true,
             ),
         ).associateBy { it.originalSourceQualifiedClassName }

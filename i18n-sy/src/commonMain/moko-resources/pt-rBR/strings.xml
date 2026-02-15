@@ -556,6 +556,7 @@
     <string name="password_protect_downloads">Proteja os downloads com senha</string>
     <string name="sync_on_app_resume">Sincronizar no aplicativo ao Retomar</string>
     <string name="set_cbz_zip_password">Definir senha de arquivo CBZ</string>
+    <string name="action_copy_first_page">Copie a primeira página</string>
     <string name="center_margin">Margem central</string>
     <string name="thumbnail_url_hint">URL da miniatura: %1$s</string>
     <string name="dedupe_most_chapters">Mostrar fonte com mais capítulos</string>
@@ -567,6 +568,8 @@
     <string name="delete_tag_confirmation">Você deseja excluir a tag %s?</string>
     <string name="page_previews">Pré-visualizações de página</string>
     <string name="pref_clear_page_preview_cache">Limpar cache de visualização de página</string>
+    <string name="action_copy_combined_page">Copiar página combinada</string>
+    <string name="action_copy_second_page">Copie a segunda página</string>
     <string name="add_tags">Adicionar tags</string>
     <string name="alt_titles">Títulos Alternativos</string>
     <string name="relation_monochrome">Monocromático</string>
@@ -649,4 +652,7 @@
     <string name="rec_no_results">Nenhuma recomendação encontrada</string>
     <string name="failed_merge">Falha ao mesclar a entrada: %1$s</string>
     <string name="select_tracker">Selecione um rastreador</string>
+    <string name="relation_prequel">Prólogo</string>
+    <string name="dedupe_priority">Eliminar duplicatas com base na prioridade</string>
+    <string name="no_dedupe">Sem remoção de duplicatas</string>
 </resources>
