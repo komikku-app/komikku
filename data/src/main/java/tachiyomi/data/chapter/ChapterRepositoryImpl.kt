@@ -155,11 +155,12 @@ class ChapterRepositoryImpl(
         }
     }
 
-    override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter? {
+    override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long, includeDeleted: Boolean): Chapter? {
         return handler.awaitOneOrNull {
             chaptersQueries.getChapterByUrlAndMangaId(
                 url,
                 mangaId,
+                includeDeleted.toLong(),
                 ChapterMapper::mapChapter,
             )
         }

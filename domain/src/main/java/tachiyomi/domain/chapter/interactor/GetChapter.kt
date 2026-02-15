@@ -18,9 +18,9 @@ class GetChapter(
         }
     }
 
-    suspend fun await(url: String, mangaId: Long): Chapter? {
+    suspend fun await(url: String, mangaId: Long, includeDeleted: Boolean = false): Chapter? {
         return try {
-            chapterRepository.getChapterByUrlAndMangaId(url, mangaId)
+            chapterRepository.getChapterByUrlAndMangaId(url, mangaId, includeDeleted)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             null

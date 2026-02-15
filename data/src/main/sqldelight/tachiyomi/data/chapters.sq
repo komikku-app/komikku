@@ -102,7 +102,7 @@ SELECT *
 FROM chapters
 WHERE url = :chapterUrl
 AND manga_id = :mangaId
-AND deleted = 0;
+AND (:includeDeleted = 1 OR deleted = 0);
 
 getMergedChaptersByMangaId:
 SELECT C.*

@@ -184,7 +184,7 @@ class MangaRestorer(
     }
 
     private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
-        val dbChaptersByUrl = getChaptersByMangaId.await(manga.id)
+        val dbChaptersByUrl = getChaptersByMangaId.await(manga.id, includeDeleted = true)
             .associateBy { it.url }
 
         val (existingChapters, newChapters) = backupChapters
@@ -410,7 +410,7 @@ class MangaRestorer(
 
             if (dbHistory == null) {
                 // KMK -->
-                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id) }
+                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id, 1L) }
                     .firstOrNull()
                 // KMK <--
                 return@mapNotNull if (chapter == null) {
