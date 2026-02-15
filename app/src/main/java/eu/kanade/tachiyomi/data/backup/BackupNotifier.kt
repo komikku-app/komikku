@@ -23,12 +23,12 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class BackupNotifier(private val context: Context) {
 
-    private val lock = ReentrantLock()
+    private val lock = Mutex()
 
     private val preferences: SecurityPreferences by injectLazy()
 
