@@ -70,8 +70,8 @@ class SyncChaptersWithSource(
                     .copy(mangaId = manga.id, sourceOrder = i.toLong())
             }
 
-        val dbChapters = getChaptersByMangaId.await(manga.id)
         val dbChaptersIncludeDeleted = chapterRepository.getChapterByMangaId(manga.id, includeDeleted = true)
+        val dbChapters = dbChaptersIncludeDeleted.filterNot { it.deleted }
 
         val newChapters = mutableListOf<Chapter>()
         val updatedChapters = mutableListOf<Chapter>()
