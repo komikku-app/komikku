@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -202,6 +203,9 @@ class BackupRestorer(
                 ensureActive()
                 try {
                     mangaRestorer.restore(it, backupCategories)
+                } catch (e: CancellationException) {
+                    // Re-throw CancellationException so structured cancellation propagates correctly
+                    throw e
                 } catch (e: Exception) {
                     val sourceName = sourceMapping[it.source] ?: it.source.toString()
                     errors.add(Date() to "${it.title} [$sourceName]: ${e.message}")
