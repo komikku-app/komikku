@@ -450,15 +450,6 @@ class LibraryScreenModel(
         val filterLewd = preferences.filterLewd
         // SY <--
 
-        // KMK -->
-        // Pre-compute track mappings for better performance
-        val mangaTrackIds = if (!isNotLoggedInAnyTrack && !trackFiltersIsIgnored) {
-            trackMap.mapValues { entry -> entry.value.map { it.trackerId } }
-        } else {
-            emptyMap()
-        }
-        // KMK <--
-
         val filterFnDownloaded: suspend (LibraryItem) -> Boolean = {
             applyFilter(filterDownloaded) {
                 it.libraryManga.manga.isLocal() ||
@@ -510,14 +501,11 @@ class LibraryScreenModel(
             if (isNotLoggedInAnyTrack || trackFiltersIsIgnored) return@tracking true
 
             // KMK -->
-            val mangaTracks = mangaTrackIds[item.id].orEmpty()
+            val mangaTracks = trackMap[item.id].orEmpty()
 
-            // Early return
-            if (mangaTracks.isEmpty() && includedTracks.isNotEmpty()) return@tracking false
+            val isExcluded = excludedTracks.isNotEmpty() && mangaTracks.fastAny { it.trackerId in excludedTracks }
+            val isIncluded = includedTracks.isEmpty() || mangaTracks.fastAny { it.trackerId in includedTracks }
             // KMK <--
-
-            val isExcluded = excludedTracks.isNotEmpty() && mangaTracks.fastAny { it in excludedTracks }
-            val isIncluded = includedTracks.isEmpty() || mangaTracks.fastAny { it in includedTracks }
 
             !isExcluded && isIncluded
         }
