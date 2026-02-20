@@ -27,7 +27,9 @@ class NamicomiHandler(currentClient: OkHttpClient, userAgent: String) {
                 "$apiUrl/images/chapter/$chapterId?newQualities=true",
                 headers,
             )
-        return pageListParse(client.newCall(request).awaitSuccess(), chapterId, dataSaver)
+        return client.newCall(request).awaitSuccess().use { response ->
+            pageListParse(response, chapterId, dataSaver)
+        }
     }
 
     private fun pageListParse(response: Response, chapterId: String, dataSaver: Boolean): List<Page> {

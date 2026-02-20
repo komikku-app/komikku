@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import okhttp3.Headers
@@ -54,7 +53,7 @@ class KomgaApi(
                     .newCall(
                         GET("${url.replace("/api/v1/series/", "/api/v2/series/")}/read-progress/tachiyomi", headers),
                     )
-                    .awaitSuccess().let {
+                    .awaitSuccess().use {
                         with(json) {
                             if (url.contains("/api/v1/series/")) {
                                 it.parseAs<ReadProgressV2Dto>()
@@ -95,6 +94,7 @@ class KomgaApi(
                 .build(),
         )
             .awaitSuccess()
+            .close()
         return getTrackSearch(track.tracking_url)
     }
 

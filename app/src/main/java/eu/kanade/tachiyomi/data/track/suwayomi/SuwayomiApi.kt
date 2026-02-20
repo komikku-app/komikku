@@ -34,7 +34,7 @@ class SuwayomiApi(private val trackId: Long) {
     private val baseUrl: String by lazy { source.baseUrl.trimEnd('/') }
     private val apiUrl: String by lazy { "$baseUrl/api/graphql" }
 
-    public fun sourcePreferences(): SharedPreferences = configurableSource.sourcePreferences()
+    fun sourcePreferences(): SharedPreferences = configurableSource.sourcePreferences()
 
     suspend fun getTrackSearch(mangaId: Long): TrackSearch = withIOContext {
         val query = $$"""
@@ -146,15 +146,14 @@ class SuwayomiApi(private val trackId: Long) {
                 }
             }
         }
-        with(json) {
-            client.newCall(
-                POST(
-                    apiUrl,
-                    body = markPayload.toString().toRequestBody(jsonMime),
-                ),
-            )
-                .awaitSuccess()
-        }
+        client.newCall(
+            POST(
+                apiUrl,
+                body = markPayload.toString().toRequestBody(jsonMime),
+            ),
+        )
+            .awaitSuccess()
+            .close()
 
         val trackQuery = $$"""
         |mutation TrackManga($mangaId: Int!) {
@@ -177,6 +176,7 @@ class SuwayomiApi(private val trackId: Long) {
                 ),
             )
                 .awaitSuccess()
+                .close()
         }
 
         return getTrackSearch(track.remote_id)

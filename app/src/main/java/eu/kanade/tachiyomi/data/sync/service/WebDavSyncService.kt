@@ -131,25 +131,25 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl()
         val request = GET(requestUrl, headers = headersBuilder.build())
-        val response = client.newCall(request).await()
-
-        return when (response.code) {
-            HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
-            HttpStatus.SC_NOT_FOUND -> Pair(null, "")
-            else -> {
-                if (response.isSuccessful) {
-                    val newETag = response.headers["ETag"]?.trim('"') ?: ""
-                    val bytes = response.body.byteStream().use { it.readBytes() }
-                    try {
-                        val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
-                        Pair(SyncData(backup = backup), newETag)
-                    } catch (e: Exception) {
-                        xLogE("Invalid backup format:", e)
-                        Pair(null, "")
+        return client.newCall(request).await().use { response ->
+            when (response.code) {
+                HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
+                HttpStatus.SC_NOT_FOUND -> Pair(null, "")
+                else -> {
+                    if (response.isSuccessful) {
+                        val newETag = response.headers["ETag"]?.trim('"') ?: ""
+                        val bytes = response.body.byteStream().use { it.readBytes() }
+                        try {
+                            val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
+                            Pair(SyncData(backup = backup), newETag)
+                        } catch (e: Exception) {
+                            xLogE("Invalid backup format:", e)
+                            Pair(null, "")
+                        }
+                    } else {
+                        val body = response.body.string()
+                        throw WebDavException("Failed to download: $body")
                     }
-                } else {
-                    val body = response.body.string()
-                    throw WebDavException("Failed to download: $body")
                 }
             }
         }
@@ -169,23 +169,25 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl()
         val request = PUT(requestUrl, headers = headersBuilder.build(), body = body)
-        val response = client.newCall(request).await()
+        client.newCall(request).await().use { response ->
+            when {
+                response.isSuccessful -> {
+                    val newETag = response.headers["ETag"]?.trim('"') ?: ""
+                    if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
+                    xLogI("WebDAV sync completed")
+                }
 
-        when {
-            response.isSuccessful -> {
-                val newETag = response.headers["ETag"]?.trim('"') ?: ""
-                if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
-                xLogI("WebDAV sync completed")
-            }
-            response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
-                val message = "Sync conflict detected. Another device may have updated the remote backup. " +
-                    "Please retry syncing or check your WebDAV folder."
-                xLogW(message)
-                notifier.showSyncError(message)
-            }
-            else -> {
-                val bodyStr = response.body.string()
-                throw WebDavException("Upload failed: $bodyStr")
+                response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
+                    val message = "Sync conflict detected. Another device may have updated the remote backup. " +
+                        "Please retry syncing or check your WebDAV folder."
+                    xLogW(message)
+                    notifier.showSyncError(message)
+                }
+
+                else -> {
+                    val bodyStr = response.body.string()
+                    throw WebDavException("Upload failed: $bodyStr")
+                }
             }
         }
     }

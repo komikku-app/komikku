@@ -113,6 +113,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                     .build(),
             )
                 .awaitSuccess()
+                .close()
 
             track
         }
@@ -127,6 +128,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                 ),
             )
                 .awaitSuccess()
+                .close()
         }
     }
 

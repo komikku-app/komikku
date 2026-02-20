@@ -30,13 +30,13 @@ class ComikeyHandler(cloudflareClient: OkHttpClient, userAgent: String) {
         val httpUrl = externalUrl.toHttpUrl()
         val mangaId = getMangaId(httpUrl.pathSegments[1])
         val response = client.newCall(pageListRequest(mangaId, httpUrl.pathSegments[2])).awaitSuccess()
-        val request = getActualPageList(response) ?: return listOf(Page(0, urlForbidden, urlForbidden))
-        return pageListParse(client.newCall(request).awaitSuccess())
+        val request = response.use { getActualPageList(it) } ?: return listOf(Page(0, urlForbidden, urlForbidden))
+        return client.newCall(request).awaitSuccess().use { pageListParse(it) }
     }
 
     suspend fun getMangaId(mangaUrl: String): Int {
         val response = client.newCall(GET("$baseUrl/read/$mangaUrl")).awaitSuccess()
-        val url = response.asJsoup().selectFirst("meta[property=og:url]")!!.attr("content")
+        val url = response.use { it.asJsoup().selectFirst("meta[property=og:url]")!!.attr("content") }
         return url.trimEnd('/').substringAfterLast('/').toInt()
     }
 

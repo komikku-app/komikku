@@ -28,7 +28,7 @@ class MangaHotHandler(currentClient: OkHttpClient, userAgent: String) {
                     .replace("viewer", "v1/works/storyDetail"),
                 headers,
             )
-        return pageListParse(client.newCall(request).awaitSuccess())
+        return client.newCall(request).awaitSuccess().use { pageListParse(it) }
     }
 
     fun pageListParse(response: Response): List<Page> {
