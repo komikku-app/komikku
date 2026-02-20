@@ -163,14 +163,15 @@ fun MigrationConfigScreenSheet(
                     // KMK <--
                     MigrationSheetDividerItem()
                     // KMK -->
+                    val migrationSmartSearchSingleEntryPref = preferences.migrationSmartSearchSingleEntry()
+                    val isSmartSearchSingleEntry by migrationSmartSearchSingleEntryPref.collectAsState()
                     if (isSingleEntry) {
                         MigrationSheetSwitchItem(
                             title = stringResource(KMR.strings.migrationConfigScreen_smartSearchSingleEntryTitle),
                             subtitle = stringResource(KMR.strings.migrationConfigScreen_smartSearchSingleEntrySubtitle),
-                            preference = preferences.migrationSmartSearchSingleEntry(),
+                            preference = migrationSmartSearchSingleEntryPref,
                         )
                     }
-                    val isSmartSearchSingleEntry by preferences.migrationSmartSearchSingleEntry().collectAsState()
                     if (!isSingleEntry || isSmartSearchSingleEntry) {
                         // KMK <--
                         MigrationSheetWarningItem(stringResource(MR.strings.migrationConfigScreen_enhancedOptionsWarning))
