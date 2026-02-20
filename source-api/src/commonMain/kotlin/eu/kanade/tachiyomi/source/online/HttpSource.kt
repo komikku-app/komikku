@@ -163,7 +163,7 @@ abstract class HttpSource : CatalogueSource {
         return client.newCall(popularMangaRequest(page))
             .asObservableSuccess()
             .map { response ->
-                popularMangaParse(response)
+                response.use { popularMangaParse(it) }
             }
     }
 
@@ -219,7 +219,7 @@ abstract class HttpSource : CatalogueSource {
             }
         }
             .map { response ->
-                searchMangaParse(response)
+                response.use { searchMangaParse(it) }
             }
     }
 
@@ -266,7 +266,7 @@ abstract class HttpSource : CatalogueSource {
         return client.newCall(latestUpdatesRequest(page))
             .asObservableSuccess()
             .map { response ->
-                latestUpdatesParse(response)
+                response.use { latestUpdatesParse(it) }
             }
     }
 
@@ -310,7 +310,7 @@ abstract class HttpSource : CatalogueSource {
         return client.newCall(mangaDetailsRequest(manga))
             .asObservableSuccess()
             .map { response ->
-                mangaDetailsParse(response).apply { initialized = true }
+                response.use { mangaDetailsParse(it).apply { initialized = true } }
             }
     }
 
@@ -355,7 +355,7 @@ abstract class HttpSource : CatalogueSource {
         async {
             client.newCall(relatedMangaListRequest(manga))
                 .execute()
-                .let { response ->
+                .use { response ->
                     relatedMangaListParse(response)
                 }
         }.await()
@@ -405,7 +405,7 @@ abstract class HttpSource : CatalogueSource {
         return client.newCall(chapterListRequest(manga))
             .asObservableSuccess()
             .map { response ->
-                chapterListParse(response)
+                response.use { chapterListParse(it) }
             }
     }
 
@@ -458,7 +458,7 @@ abstract class HttpSource : CatalogueSource {
         return client.newCall(pageListRequest(chapter))
             .asObservableSuccess()
             .map { response ->
-                pageListParse(response)
+                response.use { pageListParse(it) }
             }
     }
 
@@ -503,7 +503,9 @@ abstract class HttpSource : CatalogueSource {
     open fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
             .asObservableSuccess()
-            .map { imageUrlParse(it) }
+            .map { response ->
+                response.use { imageUrlParse(it) }
+            }
     }
 
     /**
