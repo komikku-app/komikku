@@ -362,7 +362,6 @@ class UpdatesScreenModel(
     /** Bundles all of the boolean flags for update‐selection into one type */
     data class UpdateSelectionOptions(
         val selected: Boolean,
-        val userSelected: Boolean = false,
         val fromLongPress: Boolean = false,
         val isGroup: Boolean = false,
         val isExpanded: Boolean = false,
@@ -376,7 +375,7 @@ class UpdatesScreenModel(
         // KMK <--
     ) {
         // KMK -->
-        val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        val (selected, fromLongPress, isGroup, isExpanded) = selectionOptions
         // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
@@ -409,7 +408,7 @@ class UpdatesScreenModel(
                 }
                 // KMK <--
 
-                if (selected && userSelected && fromLongPress) {
+                if (selected && fromLongPress) {
                     if (firstSelection) {
                         selectedPositions[0] = selectedIndex
                         selectedPositions[1] = selectedIndex
@@ -435,7 +434,7 @@ class UpdatesScreenModel(
                             }
                         }
                     }
-                } else if (userSelected && !fromLongPress) {
+                } else if (!fromLongPress) {
                     if (!selected) {
                         if (selectedIndex == selectedPositions[0]) {
                             selectedPositions[0] = indexOfFirst { it.selected }
