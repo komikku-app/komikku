@@ -94,6 +94,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import tachiyomi.domain.chapter.interactor.GetBookmarkedChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
@@ -134,6 +135,7 @@ class LibraryScreenModel(
     private val getTracksPerManga: GetTracksPerManga = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
+    private val getBookmarkedChaptersByMangaId: GetBookmarkedChaptersByMangaId = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -891,15 +893,19 @@ class LibraryScreenModel(
      * Queues the amount specified of unread chapters from the list of selected manga
      */
     fun performDownloadAction(action: DownloadAction) {
-        val mangas = state.value.selectedManga
-        val amount = when (action) {
-            DownloadAction.NEXT_1_CHAPTER -> 1
-            DownloadAction.NEXT_5_CHAPTERS -> 5
-            DownloadAction.NEXT_10_CHAPTERS -> 10
-            DownloadAction.NEXT_25_CHAPTERS -> 25
-            DownloadAction.UNREAD_CHAPTERS -> null
+        when (action) {
+            DownloadAction.NEXT_1_CHAPTER -> downloadNextChapters(1)
+            DownloadAction.NEXT_5_CHAPTERS -> downloadNextChapters(5)
+            DownloadAction.NEXT_10_CHAPTERS -> downloadNextChapters(10)
+            DownloadAction.NEXT_25_CHAPTERS -> downloadNextChapters(25)
+            DownloadAction.UNREAD_CHAPTERS -> downloadNextChapters(null)
+            DownloadAction.BOOKMARKED_CHAPTERS -> downloadBookmarkedChapters()
         }
         clearSelection()
+    }
+
+    private fun downloadNextChapters(amount: Int?) {
+        val mangas = state.value.selectedManga
         screenModelScope.launchNonCancellable {
             mangas.forEach { manga ->
                 // SY -->
@@ -944,6 +950,54 @@ class LibraryScreenModel(
                     }
                     .let { if (amount != null) it.take(amount) else it }
 
+                downloadManager.downloadChapters(manga, chapters)
+            }
+        }
+    }
+
+    private fun downloadBookmarkedChapters() {
+        val mangas = state.value.selectedManga
+        screenModelScope.launchNonCancellable {
+            mangas.forEach { manga ->
+                // SY -->
+                if (manga.source == MERGED_SOURCE_ID) {
+                    val mergedMangas = getMergedMangaById.await(manga.id)
+                        .associateBy { it.id }
+                    getBookmarkedChaptersByMangaId.await(manga.id)
+                        .groupBy { it.mangaId }
+                        .forEach ab@{ (mangaId, chapters) ->
+                            val mergedManga = mergedMangas[mangaId] ?: return@ab
+                            val downloadChapters = chapters.fastFilterNot { chapter ->
+                                downloadManager.queueState.value.fastAny { chapter.id == it.chapter.id } ||
+                                    downloadManager.isChapterDownloaded(
+                                        chapter.name,
+                                        chapter.scanlator,
+                                        chapter.url,
+                                        mergedManga.ogTitle,
+                                        mergedManga.source,
+                                    )
+                            }
+
+                            downloadManager.downloadChapters(mergedManga, downloadChapters)
+                        }
+
+                    return@forEach
+                }
+                // SY <--
+
+                val chapters = getBookmarkedChaptersByMangaId.await(manga.id)
+                    .fastFilterNot { chapter ->
+                        downloadManager.getQueuedDownloadOrNull(chapter.id) != null ||
+                            downloadManager.isChapterDownloaded(
+                                chapter.name,
+                                chapter.scanlator,
+                                chapter.url,
+                                // SY -->
+                                manga.ogTitle,
+                                // SY <--
+                                manga.source,
+                            )
+                    }
                 downloadManager.downloadChapters(manga, chapters)
             }
         }
