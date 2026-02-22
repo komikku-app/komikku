@@ -134,4 +134,5 @@
     <string name="pref_show_empty_categories_search">Mostrar categorías vacías durante la búsqueda/filtrado</string>
     <string name="pref_track_on_add_library">Abrir menú de seguimiento al añadir a la biblioteca</string>
     <string name="downloaded_data">Datos descargados</string>
+    <string name="login_failed">Error al iniciar sesión</string>
 </resources>
