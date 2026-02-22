@@ -68,6 +68,7 @@ class ChapterRepositoryImpl(
                     chapterId = chapterUpdate.id,
                     version = chapterUpdate.version,
                     isSyncing = 0,
+                    deleted = chapterUpdate.deleted,
                 )
             }
         }
@@ -81,16 +82,30 @@ class ChapterRepositoryImpl(
         }
     }
 
-    override suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean): List<Chapter> {
+    override suspend fun softDeleteChaptersWithIds(chapterIds: List<Long>) {
+        try {
+            handler.await { chaptersQueries.softDeleteChaptersWithIds(chapterIds) }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+        }
+    }
+
+    override suspend fun getChapterByMangaId(
+        mangaId: Long,
+        applyFilter: Boolean,
+        includeDeleted: Boolean,
+    ): List<Chapter> {
         return handler.awaitList {
             chaptersQueries.getChaptersByMangaId(
-                mangaId,
-                applyFilter.toLong(),
+                mangaId = mangaId,
+                // IMPORTANT: use named args to avoid ordering issues in generated signature
+                includeDeleted = includeDeleted.toLong(),
+                applyFilter = applyFilter.toLong(),
                 // KMK -->
-                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
-                Manga.CHAPTER_SHOW_BOOKMARKED,
+                bookmarkUnmask = Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                bookmarkMask = Manga.CHAPTER_SHOW_BOOKMARKED,
                 // KMK <--
-                ChapterMapper::mapChapter,
+                mapper = ChapterMapper::mapChapter,
             )
         }
     }
@@ -120,25 +135,32 @@ class ChapterRepositoryImpl(
         return handler.awaitOneOrNull { chaptersQueries.getChapterById(id, ChapterMapper::mapChapter) }
     }
 
-    override suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyFilter: Boolean): Flow<List<Chapter>> {
+    override suspend fun getChapterByMangaIdAsFlow(
+        mangaId: Long,
+        applyFilter: Boolean,
+        includeDeleted: Boolean,
+    ): Flow<List<Chapter>> {
         return handler.subscribeToList {
             chaptersQueries.getChaptersByMangaId(
-                mangaId,
-                applyFilter.toLong(),
+                mangaId = mangaId,
+                // IMPORTANT: use named args to avoid ordering issues in generated signature
+                includeDeleted = includeDeleted.toLong(),
+                applyFilter = applyFilter.toLong(),
                 // KMK -->
-                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
-                Manga.CHAPTER_SHOW_BOOKMARKED,
+                bookmarkUnmask = Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                bookmarkMask = Manga.CHAPTER_SHOW_BOOKMARKED,
                 // KMK <--
-                ChapterMapper::mapChapter,
+                mapper = ChapterMapper::mapChapter,
             )
         }
     }
 
-    override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter? {
+    override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long, includeDeleted: Boolean): Chapter? {
         return handler.awaitOneOrNull {
             chaptersQueries.getChapterByUrlAndMangaId(
                 url,
                 mangaId,
+                includeDeleted.toLong(),
                 ChapterMapper::mapChapter,
             )
         }

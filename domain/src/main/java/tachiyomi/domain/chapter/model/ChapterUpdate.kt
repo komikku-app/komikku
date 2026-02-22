@@ -14,6 +14,7 @@ data class ChapterUpdate(
     val chapterNumber: Double? = null,
     val scanlator: String? = null,
     val version: Long? = null,
+    val deleted: Boolean? = null,
 )
 
 fun Chapter.toChapterUpdate(): ChapterUpdate {
@@ -31,5 +32,6 @@ fun Chapter.toChapterUpdate(): ChapterUpdate {
         chapterNumber,
         scanlator,
         version,
+        deleted,
     )
 }

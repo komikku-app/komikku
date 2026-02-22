@@ -72,15 +72,16 @@ class MangaBackupCreator(
         }
 
         if (options.chapters) {
-            // Backup all the chapters
+            // Backup all the chapters, including deleted ones for sync
             handler.awaitList {
                 chaptersQueries.getChaptersByMangaId(
                     mangaId = manga.id,
-                    applyFilter = 0, // false
+                    includeDeleted = 1, // include soft-deleted chapters in backups
+                    applyFilter = 0, // no filtering during backup
                     // KMK -->
-                    Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
-                    Manga.CHAPTER_SHOW_BOOKMARKED,
-                    // KMK <--
+                    bookmarkUnmask = Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                    bookmarkMask = Manga.CHAPTER_SHOW_BOOKMARKED,
+                    // KMK <‐‐
                     mapper = backupChapterMapper,
                 )
             }

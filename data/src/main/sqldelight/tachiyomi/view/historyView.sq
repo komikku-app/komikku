@@ -31,6 +31,7 @@ JOIN (
     SELECT chapters.manga_id,chapters._id AS chapter_id, MAX(history.last_read) AS last_read
     FROM chapters JOIN history
     ON chapters._id = history.chapter_id
+    WHERE chapters.deleted = 0
     GROUP BY chapters.manga_id
 ) AS max_last_read
 ON chapters.manga_id = max_last_read.manga_id
@@ -47,10 +48,11 @@ LEFT JOIN(
     LEFT JOIN excluded_scanlators
     ON chapters.manga_id = excluded_scanlators.manga_id
     AND chapters.scanlator = excluded_scanlators.scanlator
-    WHERE ex_scanlator IS NULL
+    WHERE ex_scanlator IS NULL AND chapters.deleted = 0
     GROUP BY chapters.manga_id
 ) AS C
-ON mangas._id = C.manga_id;
+ON mangas._id = C.manga_id
+WHERE chapters.deleted = 0;
 -- KMK <--
 
 history:
