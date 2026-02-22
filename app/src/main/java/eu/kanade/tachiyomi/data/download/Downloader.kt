@@ -530,6 +530,7 @@ class Downloader(
                 response.body.source().saveTo(file.openOutputStream())
                 val extension = getImageExtension(response, file)
                 file.renameTo("$filename.$extension")
+                response.close()
             } catch (e: Exception) {
                 response.close()
                 file.delete()

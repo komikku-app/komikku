@@ -165,9 +165,8 @@ class MangaCoverFetcher(
             }
 
             // Fetch from network
-            val response = executeNetworkRequest()
-            val responseBody = checkNotNull(response.body) { "Null response source" }
-            try {
+            executeNetworkRequest().use { response ->
+                val responseBody = checkNotNull(response.body) { "Null response source" }
                 // Read from cover cache after library manga cover updated
                 val responseCoverCache = writeResponseToCoverCache(response, libraryCoverCacheFile)
                 if (responseCoverCache != null) {
@@ -202,9 +201,6 @@ class MangaCoverFetcher(
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
-            } catch (e: Exception) {
-                responseBody.close()
-                throw e
             }
         } catch (e: Exception) {
             snapshot?.close()
@@ -309,7 +305,7 @@ class MangaCoverFetcher(
         } catch (e: Exception) {
             try {
                 editor.abort()
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
             throw e
         }

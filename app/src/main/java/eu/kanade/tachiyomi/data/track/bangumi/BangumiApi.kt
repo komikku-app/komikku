@@ -56,6 +56,7 @@ class BangumiApi(
             // Returns with 202 Accepted on success with no body
             authClient.newCall(POST(url, body = body, headers = headersOf("Content-Type", APP_JSON)))
                 .awaitSuccess()
+                .close()
             track
         }
     }
@@ -80,6 +81,7 @@ class BangumiApi(
             // Returns with 204 No Content
             authClient.newCall(request)
                 .awaitSuccess()
+                .close()
 
             track
         }
