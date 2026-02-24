@@ -1851,7 +1851,7 @@ class MangaScreenModel(
                             }
                             // KMK: auto track MangaDex
                             mdTrack.id !in tracks.map { it.trackerId } -> {
-                                tracks + createMdListTrack()
+                                (tracks + createMdListTrack()).filterNotNull()
                             }
                             else -> tracks
                         }
@@ -1880,13 +1880,14 @@ class MangaScreenModel(
     }
 
     // SY -->
-    private suspend fun createMdListTrack(): Track {
+    private suspend fun createMdListTrack(): Track? {
         val state = successState!!
         val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
             ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
             ?: throw IllegalArgumentException("Could not create initial track")
         val track = trackerManager.mdList.createInitialTracker(state.manga, mdManga)
-            .toDomainTrack(false)!!
+            .toDomainTrack(false)
+            ?: return null
         insertTrack.await(track)
         /* KMK -->
         return TrackItem(
@@ -1894,7 +1895,7 @@ class MangaScreenModel(
              trackerManager.mdList,
          )
         KMK <-- */
-        return getTracks.await(mangaId).first { it.trackerId == trackerManager.mdList.id }
+        return getTracks.await(mangaId).firstOrNull { it.trackerId == trackerManager.mdList.id }
     }
     // SY <--
 
