@@ -25,7 +25,7 @@
     <string name="update_check_notification_preview_available">¡Próximas actualizaciones (pronto)!</string>
     <string name="changelogs">Registro de cambios</string>
     <string name="related_mangas_more">Más así...</string>
-    <string name="too_many_in_feed">Demasiadas fuentes en su contenido, no puede añadir más de 20</string>
+    <string name="too_many_in_feed">Demasiadas fuentes en tu feed, no se pueden agregar más de 20</string>
     <string name="current_">Actual: %1$s</string>
     <string name="pref_theme_cover_based">Tema según la portada</string>
     <string name="pref_theme_cover_based_style_tonalspot">Spot Tonal</string>
@@ -134,4 +134,5 @@
     <string name="pref_show_empty_categories_search">Mostrar categorías vacías durante la búsqueda/filtrado</string>
     <string name="pref_track_on_add_library">Abrir menú de seguimiento al añadir a la biblioteca</string>
     <string name="downloaded_data">Datos descargados</string>
+    <string name="login_failed">Error al iniciar sesión</string>
 </resources>

@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.online.HttpSource
+import exh.source.getMainSource
 import logcat.LogPriority
 import okhttp3.CacheControl
 import okhttp3.Call
@@ -249,7 +250,7 @@ class PagePreviewFetcher(
                 isInCache = { pagePreviewCache.isImageInCache(data.imageUrl) },
                 writeToCache = { pagePreviewCache.putImageToCache(data.imageUrl, it) },
                 diskCacheKeyLazy = lazy { imageLoader.components.key(data, options)!! },
-                sourceLazy = lazy { sourceManager.get(data.source) as? PagePreviewSource },
+                sourceLazy = lazy { sourceManager.get(data.source)?.getMainSource<PagePreviewSource>() },
                 callFactoryLazy = callFactoryLazy,
                 imageLoader = imageLoader,
             )

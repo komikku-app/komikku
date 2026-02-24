@@ -63,6 +63,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class AboutScreen : Screen() {
+    @Suppress("unused")
     private fun readResolve(): Any = AboutScreen
 
     @Composable
@@ -402,7 +403,7 @@ class AboutScreen : Screen() {
                             Injekt.get<UiPreferences>().dateFormat().get(),
                         ),
                     )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 BuildConfig.BUILD_TIME
             }
         }

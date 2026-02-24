@@ -5,19 +5,15 @@ package exh.md.utils
 import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.service.TrackPreferences
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.PkceUtil
 import exh.md.dto.MangaAttributesDto
 import exh.md.dto.MangaDataDto
 import exh.source.getMainSource
-import exh.util.dropBlank
-import exh.util.floor
 import exh.util.nullIfZero
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
@@ -27,7 +23,9 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.jsoup.parser.Parser
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.SimpleDateFormat
@@ -41,20 +39,9 @@ class MdUtil {
         const val baseUrl = "https://mangadex.org"
         const val chapterSuffix = "/chapter/"
 
-        const val similarCacheMapping = "https://api.similarmanga.com/mapping/mdex2search.csv"
-        const val similarCacheMangas = "https://api.similarmanga.com/manga/"
         const val similarBaseApi = "https://api.similarmanga.com/similar/"
 
-        const val groupSearchUrl = "$baseUrl/groups/0/1/"
-        const val reportUrl = "https://api.mangadex.network/report"
-
-        const val mdAtHomeTokenLifespan = 10 * 60 * 1000
         const val mangaLimit = 20
-
-        /**
-         * Get the manga offset pages are 1 based, so subtract 1
-         */
-        fun getMangaListOffset(page: Int): String = (mangaLimit * (page - 1)).toString()
 
         val jsonParser =
             Json {
@@ -67,15 +54,8 @@ class MdUtil {
 
         private const val scanlatorSeparator = " & "
 
-        const val contentRatingSafe = "safe"
-        const val contentRatingSuggestive = "suggestive"
-        const val contentRatingErotica = "erotica"
-        const val contentRatingPornographic = "pornographic"
-
-        val validOneShotFinalChapters = listOf("0", "1")
-
-        val markdownLinksRegex = "\\[([^]]+)\\]\\(([^)]+)\\)".toRegex()
-        val markdownItalicBoldRegex = "\\*+\\s*([^\\*]*)\\s*\\*+".toRegex()
+        val markdownLinksRegex = "\\[([^]]+)]\\(([^)]+)\\)".toRegex()
+        val markdownItalicBoldRegex = "\\*+\\s*([^*]*)\\s*\\*+".toRegex()
         val markdownItalicRegex = "_+\\s*([^_]*)\\s*_+".toRegex()
 
         fun buildMangaUrl(mangaUuid: String): String {
@@ -96,45 +76,8 @@ class MdUtil {
                 .trim()
         }
 
-        fun getImageUrl(attr: String): String {
-            // Some images are hosted elsewhere
-            if (attr.startsWith("http")) {
-                return attr
-            }
-            return baseUrl + attr
-        }
-
-        fun getScanlators(scanlators: String?): Set<String> {
-            return scanlators?.split(scanlatorSeparator)?.dropBlank()?.toSet().orEmpty()
-        }
-
         fun getScanlatorString(scanlators: Set<String>): String {
             return scanlators.sorted().joinToString(scanlatorSeparator)
-        }
-
-        fun getMissingChapterCount(chapters: List<SChapter>, mangaStatus: Int): String? {
-            if (mangaStatus == SManga.COMPLETED) return null
-
-            val remove0ChaptersFromCount = chapters.distinctBy {
-                /*if (it.chapter_txt.isNotEmpty()) {
-                    it.vol + it.chapter_txt
-                } else {*/
-                it.name
-                /*}*/
-            }.sortedByDescending { it.chapter_number }
-
-            remove0ChaptersFromCount.firstOrNull()?.let { chapter ->
-                val chpNumber = chapter.chapter_number.floor()
-                val allChapters = (1..chpNumber).toMutableSet()
-
-                remove0ChaptersFromCount.forEach {
-                    allChapters.remove(it.chapter_number.floor())
-                }
-
-                if (allChapters.isEmpty()) return null
-                return allChapters.size.toString()
-            }
-            return null
         }
 
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+SSS", Locale.US)
@@ -146,7 +89,7 @@ class MdUtil {
         fun createMangaEntry(json: MangaDataDto, lang: String): SManga {
             return SManga(
                 url = buildMangaUrl(json.id),
-                title = getTitleFromManga(json.attributes, lang),
+                title = getTitleFromManga(json.attributes, lang, true),
                 thumbnail_url = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
@@ -157,12 +100,33 @@ class MdUtil {
             )
         }
 
-        fun getTitleFromManga(json: MangaAttributesDto, lang: String): String {
-            return getFromLangMap(json.title.asMdMap(), lang, json.originalLanguage)
-                ?: getAltTitle(json.altTitles, lang, json.originalLanguage)
-                ?: json.title.asMdMap<String>()[json.originalLanguage]
-                ?: json.altTitles.firstNotNullOfOrNull { it[json.originalLanguage] }
-                    .orEmpty()
+        fun getTitleFromManga(json: MangaAttributesDto, lang: String, preferExtensionLangTitle: Boolean): String {
+            val titleMap = json.title.asMdMap<String>()
+            val altTitles = json.altTitles
+            val originalLang = json.originalLanguage
+
+            titleMap[lang]?.let { return it }
+
+            val mainTitle = titleMap.values.firstOrNull()
+            // KMK -->
+            val langAltTitle = altTitles.firstNotNullOfOrNull { it[lang] }
+            // KMK <--
+            val enTitle = findTitleInMaps("en", titleMap, altTitles)
+            val originalLangTitle = findTitleInMaps("$originalLang-ro", titleMap, altTitles) ?: findTitleInMaps(
+                originalLang,
+                titleMap,
+                altTitles,
+            )
+
+            val ordered = if (preferExtensionLangTitle) {
+                listOf(langAltTitle, mainTitle, enTitle, originalLangTitle)
+            } else {
+                listOf(mainTitle, langAltTitle, enTitle, originalLangTitle)
+            }
+
+            // KMM -->
+            return ordered.firstNotNullOfOrNull { it } ?: ""
+            // KMM <--
         }
 
         fun getFromLangMap(langMap: Map<String, String>, currentLang: String, originalLanguage: String): String? {
@@ -176,15 +140,12 @@ class MdUtil {
                 }
         }
 
-        fun getAltTitle(langMaps: List<Map<String, String>>, currentLang: String, originalLanguage: String): String? {
-            return langMaps.firstNotNullOfOrNull { it[currentLang] }
-                ?: langMaps.firstNotNullOfOrNull { it["en"] }
-                ?: if (originalLanguage == "ja") {
-                    langMaps.firstNotNullOfOrNull { it["ja-ro"] }
-                        ?: langMaps.firstNotNullOfOrNull { it["jp-ro"] }
-                } else {
-                    null
-                }
+        fun findTitleInMaps(
+            lang: String,
+            titleMap: Map<String, String>,
+            altTitleMaps: List<Map<String, String>>,
+        ): String? {
+            return titleMap[lang] ?: altTitleMaps.firstNotNullOfOrNull { it[lang] }
         }
 
         fun cdnCoverUrl(dexId: String, fileName: String): String {
@@ -202,7 +163,7 @@ class MdUtil {
         fun loadOAuth(preferences: TrackPreferences, mdList: MdList): MALOAuth? {
             return try {
                 jsonParser.decodeFromString<MALOAuth>(preferences.trackToken(mdList).get())
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -232,7 +193,10 @@ class MdUtil {
             return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
         }
 
-        fun getEnabledMangaDex(sourcePreferences: SourcePreferences = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
+        fun getEnabledMangaDex(
+            sourcePreferences: SourcePreferences = Injekt.get(),
+            sourceManager: SourceManager = Injekt.get(),
+        ): MangaDex? {
             return getEnabledMangaDexs(sourcePreferences, sourceManager).let { mangadexs ->
                 sourcePreferences.preferredMangaDexId().get().toLongOrNull()?.nullIfZero()
                     ?.let { preferredMangaDexId ->
@@ -242,7 +206,10 @@ class MdUtil {
             }
         }
 
-        fun getEnabledMangaDexs(preferences: SourcePreferences, sourceManager: SourceManager = Injekt.get()): List<MangaDex> {
+        fun getEnabledMangaDexs(
+            preferences: SourcePreferences,
+            sourceManager: SourceManager = Injekt.get(),
+        ): List<MangaDex> {
             val languages = preferences.enabledLanguages().get()
             val disabledSourceIds = preferences.disabledSources().get()
 
@@ -264,8 +231,30 @@ class MdUtil {
                 description
             } else {
                 val altTitlesDesc = altTitles
-                    .joinToString("\n", "${Injekt.get<Application>().getString(R.string.alt_titles)}:\n") { "• $it" }
-                description + (if (description.isBlank()) "" else "\n\n") + Parser.unescapeEntities(altTitlesDesc, false)
+                    .joinToString(
+                        "\n",
+                        "${Injekt.get<Application>().stringResource(SYMR.strings.alt_titles)}:\n",
+                    ) { "• $it" }
+                description + (if (description.isBlank()) "" else "\n\n") + Parser.unescapeEntities(
+                    altTitlesDesc,
+                    false,
+                )
+            }
+        }
+
+        fun addFinalChapterToDesc(description: String, lastVolume: String?, lastChapter: String?): String {
+            val parts = listOfNotNull(
+                lastVolume?.takeIf { it.isNotEmpty() }?.let { "Vol.$it" },
+                lastChapter?.takeIf { it.isNotEmpty() }?.let { "Ch.$it" },
+            )
+
+            return if (parts.isEmpty()) {
+                description
+            } else {
+                description + (if (description.isBlank()) "" else "\n\n") + parts.joinToString(
+                    " ",
+                    "${Injekt.get<Application>().stringResource(SYMR.strings.final_chapter)}:\n",
+                )
             }
         }
     }

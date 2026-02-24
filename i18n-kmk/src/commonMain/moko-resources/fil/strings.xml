@@ -168,4 +168,16 @@
     <string name="job_failed_schedule_update_check">Nabigong mag-iskedyul ng awtomatikong pag-update sa aklatan: %s</string>
     <string name="job_failed_schedule_backup_check">Nabigong mag-iskedyul ng awtomatikong pag-backup: %s</string>
     <string name="pref_discord_online">🟢 Naka-online</string>
+    <string name="action_filter_unfinished_manga">Di natapos na manga</string>
+    <string name="action_filter_unfinished_chapter">Di natapos na kabanata</string>
+    <string name="action_filter_non_library_entries">Mga entry na wala sa aklatan</string>
+    <string name="custom_theme_palette_casual">Kaswal</string>
+    <string name="pref_sync_manga_on_add">I-sync ang manga kapag nagdadagdag sa aklatan</string>
+    <string name="pref_sync_manga_on_add_description">Awtomatikong kinukuha ang metadata at listahan ng kabanata ng isang bagong manga kapag idinagdag ito sa aklatan</string>
+    <string name="pref_webdav_url">Server URL ng WebDAV</string>
+    <string name="pref_webdav_url_summ">Ipasok ang address ng WebDAV server</string>
+    <string name="pref_webdav_username_summ">Ipasok ang iyong username ng WebDAV account</string>
+    <string name="pref_webdav_password_summ">Ipasok ang iyong password ng WebDAV account</string>
+    <string name="pref_webdav_folder_summ">Ise-save ng aplikasyon ang data sa folder na ito</string>
+    <string name="pref_discord_rpc">Rich Presence ng Discord</string>
 </resources>

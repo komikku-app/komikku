@@ -141,13 +141,25 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         Injekt.importModule(PreferenceModule(this))
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
+        // KMK -->
+        Injekt.importModule(KMKDomainModule())
+        // KMK <--
         // SY -->
         Injekt.importModule(SYPreferenceModule(this))
         Injekt.importModule(SYDomainModule())
         // SY <--
-        // KMK -->
-        Injekt.importModule(KMKDomainModule())
-        // KMK <--
+
+        setupExhLogging() // EXH logging
+        if (!LogcatLogger.isInstalled) {
+            val minLogPriority = when {
+                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
+                BuildConfig.DEBUG -> LogPriority.DEBUG
+                else -> LogPriority.INFO
+            }
+            LogcatLogger.install()
+            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
+            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
+        }
 
         setupNotificationChannels()
 
@@ -212,18 +224,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         // Updates widget update
         WidgetManager(Injekt.get(), Injekt.get()).apply { init(scope) }
-
-        setupExhLogging() // EXH logging
-        if (!LogcatLogger.isInstalled) {
-            val minLogPriority = when {
-                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
-                BuildConfig.DEBUG -> LogPriority.DEBUG
-                else -> LogPriority.INFO
-            }
-            LogcatLogger.install()
-            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
-            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
-        }
 
         if (!WorkManager.isInitialized()) {
             WorkManager.initialize(this, Configuration.Builder().build())

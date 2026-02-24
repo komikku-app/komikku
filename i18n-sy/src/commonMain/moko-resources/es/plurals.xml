@@ -6,9 +6,9 @@
         <item quantity="other">Limpieza realizada. %d carpetas eliminadas</item>
     </plurals>
     <plurals name="num_lock_times">
-        <item quantity="one">%d tiempo de bloqueo</item>
-        <item quantity="many">%d tiempos de bloqueo</item>
-        <item quantity="other">%d tiempos de bloqueo</item>
+        <item quantity="one">duración del bloqueo %d</item>
+        <item quantity="many">duración de los bloqueos %d</item>
+        <item quantity="other">duración de los bloqueos %d</item>
     </plurals>
     <plurals name="eh_retry_toast">
         <item quantity="one">Reintentando %1$d página fallida…</item>
@@ -27,52 +27,52 @@
     </plurals>
     <plurals name="entry_migrated">
         <item quantity="one">%d entrada migrada</item>
-        <item quantity="many">%d entradas migradas</item>
+        <item quantity="many">%d de entradas migradas</item>
         <item quantity="other">%d entradas migradas</item>
     </plurals>
     <plurals name="num_pages">
         <item quantity="one">%1$d página</item>
-        <item quantity="many">%1$d páginas</item>
+        <item quantity="many">%1$d de páginas</item>
         <item quantity="other">%1$d páginas</item>
     </plurals>
     <plurals name="browse_language_and_pages">
         <item quantity="one">%2$s %1$d página</item>
-        <item quantity="many">%2$s %1$d páginas</item>
+        <item quantity="many">%2$s %1$d de páginas</item>
         <item quantity="other">%2$s %1$d páginas</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="one">hace %1$d año</item>
-        <item quantity="many">hace %1$d años</item>
+        <item quantity="many">hace %1$d de años</item>
         <item quantity="other">hace %1$d años</item>
     </plurals>
     <plurals name="humanize_month">
         <item quantity="one">hace %1$d mes</item>
-        <item quantity="many">hace %1$d meses</item>
+        <item quantity="many">hace %1$d de meses</item>
         <item quantity="other">hace %1$d meses</item>
     </plurals>
     <plurals name="humanize_week">
         <item quantity="one">hace %1$d semana</item>
-        <item quantity="many">hace %1$d semanas</item>
+        <item quantity="many">hace %1$d de semanas</item>
         <item quantity="other">hace %1$d semanas</item>
     </plurals>
     <plurals name="humanize_day">
         <item quantity="one">hace %1$d día</item>
-        <item quantity="many">hace %1$d días</item>
+        <item quantity="many">hace %1$d de días</item>
         <item quantity="other">hace %1$d días</item>
     </plurals>
     <plurals name="humanize_hour">
         <item quantity="one">hace %1$d hora</item>
-        <item quantity="many">hace %1$d horas</item>
+        <item quantity="many">hace %1$d de horas</item>
         <item quantity="other">hace %1$d horas</item>
     </plurals>
     <plurals name="humanize_minute">
         <item quantity="one">hace %1$d minuto</item>
-        <item quantity="many">hace %1$d minutos</item>
+        <item quantity="many">hace %1$d de minutos</item>
         <item quantity="other">hace %1$d minutos</item>
     </plurals>
     <plurals name="humanize_second">
         <item quantity="one">hace %1$d segundo</item>
-        <item quantity="many">hace %1$d segundos</item>
+        <item quantity="many">hace %1$d de segundos</item>
         <item quantity="other">hace %1$d segundos</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
@@ -82,7 +82,7 @@
     </plurals>
     <plurals name="row_count">
         <item quantity="one">%d fila</item>
-        <item quantity="many">%d filas</item>
+        <item quantity="many">%d de filas</item>
         <item quantity="other">%d filas</item>
     </plurals>
 </resources>

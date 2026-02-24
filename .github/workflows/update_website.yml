@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Update website on release
-        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
+        uses: benc-uk/workflow-dispatch@a54f9d194fed472732282ed1597dc4909e4b4080 # v1.3.0
         with:
           workflow: Deploy
           repo: komikku-app/komikku-app.github.io

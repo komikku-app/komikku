@@ -5,10 +5,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
-import androidx.compose.material.icons.outlined.Panorama
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,13 +35,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import tachiyomi.presentation.core.theme.active
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 
@@ -68,13 +69,13 @@ fun UpdateScreen(
     // KMK <--
     onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdatesScreenModel.UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
+    onFilterClicked: () -> Unit,
+    hasActiveFilters: Boolean,
     // KMK -->
+    usePanoramaCover: Boolean,
     collapseToggle: (key: String) -> Unit,
     // KMK <--
 ) {
-    // KMK -->
-    val usePanoramaCover = remember { mutableStateOf(false) }
-    // KMK <--
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
     Scaffold(
@@ -82,15 +83,13 @@ fun UpdateScreen(
             UpdatesAppBar(
                 onCalendarClicked = { onCalendarClicked() },
                 onUpdateLibrary = { onUpdateLibrary() },
+                onFilterClicked = { onFilterClicked() },
+                hasFilters = hasActiveFilters,
                 actionModeCounter = state.selected.size,
                 onSelectAll = { onSelectAll(true) },
                 onInvertSelection = { onInvertSelection() },
                 onCancelActionMode = { onSelectAll(false) },
                 scrollBehavior = scrollBehavior,
-                // KMK -->
-                usePanoramaCover = usePanoramaCover.value,
-                usePanoramaCoverClick = { usePanoramaCover.value = !usePanoramaCover.value },
-                // KMK
             )
         },
         bottomBar = {
@@ -139,7 +138,7 @@ fun UpdateScreen(
                             // KMK -->
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
-                            usePanoramaCover = usePanoramaCover.value,
+                            usePanoramaCover = usePanoramaCover,
                             // KMK <--
                             selectionMode = state.selectionMode,
                             // SY -->
@@ -166,16 +165,14 @@ fun UpdateScreen(
 private fun UpdatesAppBar(
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Unit,
+    onFilterClicked: () -> Unit,
+    hasFilters: Boolean,
     // For action mode
     actionModeCounter: Int,
     onSelectAll: () -> Unit,
     onInvertSelection: () -> Unit,
     onCancelActionMode: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
-    // KMK -->
-    usePanoramaCover: Boolean,
-    usePanoramaCoverClick: () -> Unit,
-    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     AppBar(
@@ -184,14 +181,12 @@ private fun UpdatesAppBar(
         actions = {
             AppBarActions(
                 persistentListOf(
-                    // KMK -->
                     AppBar.Action(
-                        title = stringResource(KMR.strings.action_panorama_cover),
-                        icon = Icons.Outlined.Panorama,
-                        iconTint = MaterialTheme.colorScheme.primary.takeIf { usePanoramaCover },
-                        onClick = usePanoramaCoverClick,
+                        title = stringResource(MR.strings.action_filter),
+                        icon = Icons.Outlined.FilterList,
+                        iconTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
+                        onClick = onFilterClicked,
                     ),
-                    // KMK <--
                     AppBar.Action(
                         title = stringResource(MR.strings.action_view_upcoming),
                         icon = Icons.Outlined.CalendarMonth,

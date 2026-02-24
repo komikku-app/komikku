@@ -1,6 +1,6 @@
 package eu.kanade.presentation.history.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -38,9 +40,11 @@ import eu.kanade.tachiyomi.util.lang.toTimestampString
 import exh.debug.DebugToggles
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.selectedBackground
 
 private val HistoryItemHeight = 96.dp
 
@@ -48,11 +52,15 @@ private val HistoryItemHeight = 96.dp
 fun HistoryItem(
     history: HistoryWithRelations,
     onClickCover: () -> Unit,
-    onClickResume: () -> Unit,
+    // KMK -->
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    // KMK <--
     onClickDelete: () -> Unit,
     onClickFavorite: () -> Unit,
     modifier: Modifier = Modifier,
     // KMK -->
+    selected: Boolean,
     readProgress: String?,
     hasUnread: Boolean,
     usePanoramaCover: Boolean,
@@ -60,11 +68,21 @@ fun HistoryItem(
     // KMK <--
 ) {
     // KMK -->
+    val haptic = LocalHapticFeedback.current
     val textAlpha = if (history.read) DISABLED_ALPHA else 1f
     // KMK <--
     Row(
         modifier = modifier
-            .clickable(onClick = onClickResume)
+            // KMK -->
+            .selectedBackground(selected)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                },
+            )
+            // KMK <--
             .height(HistoryItemHeight)
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
         verticalAlignment = Alignment.CenterVertically,
@@ -77,16 +95,24 @@ fun HistoryItem(
         if (DebugToggles.HIDE_COVER_IMAGE_ONLY_SHOW_COLOR.enabled) {
             MangaCoverHide.Book(
                 modifier = Modifier.fillMaxHeight(),
-                bgColor = bgColor,
+                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { selected },
                 tint = onBgColor,
                 size = MangaCover.Size.Medium,
             )
         } else {
             if (usePanoramaCover && coverIsWide) {
                 MangaCover.Panorama(
-                    modifier = Modifier.fillMaxHeight(),
+                    modifier = Modifier.fillMaxHeight()
+                        // KMK -->
+                        .combinedClickable(
+                            onClick = onClickCover,
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onLongClick()
+                            },
+                        ),
+                    // KMK <--
                     data = mangaCover,
-                    onClick = onClickCover,
                     // KMK -->
                     bgColor = bgColor,
                     tint = onBgColor,
@@ -100,9 +126,17 @@ fun HistoryItem(
             } else {
                 // KMK <--
                 MangaCover.Book(
-                    modifier = Modifier.fillMaxHeight(),
+                    modifier = Modifier.fillMaxHeight()
+                        // KMK -->
+                        .combinedClickable(
+                            onClick = onClickCover,
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onLongClick()
+                            },
+                        ),
+                    // KMK <--
                     data = mangaCover,
-                    onClick = onClickCover,
                     // KMK -->
                     bgColor = bgColor,
                     tint = onBgColor,
@@ -139,7 +173,7 @@ fun HistoryItem(
                 if (hasUnread) {
                     Icon(
                         imageVector = Icons.Filled.Circle,
-                        contentDescription = stringResource(MR.strings.unread),
+                        contentDescription = stringResource(KMR.strings.action_filter_unfinished_manga),
                         modifier = Modifier
                             .height(8.dp)
                             .padding(end = 4.dp),
@@ -208,12 +242,18 @@ private fun HistoryItemPreviews(
             HistoryItem(
                 history = historyWithRelations,
                 onClickCover = {},
-                onClickResume = {},
+                // KMK -->
+                onClick = {},
+                onLongClick = {},
+                // KMK <--
                 onClickDelete = {},
                 onClickFavorite = {},
                 readProgress = "Page 5",
+                // KMK -->
                 hasUnread = true,
+                selected = true,
                 usePanoramaCover = false,
+                // KMK <--
             )
         }
     }

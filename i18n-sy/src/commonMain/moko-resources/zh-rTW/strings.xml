@@ -677,4 +677,9 @@
     <string name="rec_initializing">初始化中</string>
     <string name="rec_collecting">正在收集推薦</string>
     <string name="rec_group_source">來源的推薦</string>
+    <string name="scan_qr_code">掃描 QR code</string>
+    <string name="filename">檔案名稱</string>
+    <string name="file_extension">副檔名</string>
+    <string name="base_url">基礎url</string>
+    <string name="final_chapter">終章</string>
 </resources>

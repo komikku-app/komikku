@@ -44,6 +44,8 @@ class ApiMangaParser(
         coverFileName: String?,
         coverQuality: String,
         altTitlesInDesc: Boolean,
+        finalChapterInDesc: Boolean,
+        preferExtensionLangTitle: Boolean,
     ): SManga {
         val mangaId = getManga.await(manga.url, sourceId)?.id
         val metadata = if (mangaId != null) {
@@ -53,7 +55,17 @@ class ApiMangaParser(
             newMetaInstance()
         }
 
-        parseIntoMetadata(metadata, input, simpleChapters, statistics, coverFileName, coverQuality, altTitlesInDesc)
+        parseIntoMetadata(
+            metadata,
+            input,
+            simpleChapters,
+            statistics,
+            coverFileName,
+            coverQuality,
+            altTitlesInDesc,
+            finalChapterInDesc,
+            preferExtensionLangTitle,
+        )
         if (mangaId != null) {
             metadata.mangaId = mangaId
             insertFlatMetadata.await(metadata.flatten())
@@ -70,13 +82,24 @@ class ApiMangaParser(
         coverFileName: String?,
         coverQuality: String,
         altTitlesInDesc: Boolean,
+        finalChapterInDesc: Boolean,
+        preferExtensionLangTitle: Boolean,
     ) {
         with(metadata) {
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.getTitleFromManga(mangaAttributesDto, lang)
-                altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
+                title = MdUtil.getTitleFromManga(mangaAttributesDto, lang, preferExtensionLangTitle)
+                altTitles = mangaAttributesDto.altTitles
+                    // KMK -->
+                    .mapNotNull { langMap ->
+                        langMap
+                            .filter { it.key == lang || it.key == "${mangaAttributesDto.originalLanguage}-ro" }
+                            .takeIf { it.isNotEmpty() }
+                    }
+                    .flatMap { it.values }
+                    // KMK <--
+                    .nullIfEmpty()
 
                 val mangaRelationshipsDto = mangaDto.data.relationships
                 cover = if (!coverFileName.isNullOrEmpty()) {
@@ -96,9 +119,19 @@ class ApiMangaParser(
                     originalLanguage = mangaAttributesDto.originalLanguage,
                 ).orEmpty()
 
-                val cleanDesc = MdUtil.cleanDescription(rawDesc)
-
-                description = if (altTitlesInDesc) MdUtil.addAltTitleToDesc(cleanDesc, altTitles) else cleanDesc
+                description = MdUtil.cleanDescription(rawDesc)
+                    .let { if (altTitlesInDesc) MdUtil.addAltTitleToDesc(it, altTitles) else it }
+                    .let {
+                        if (finalChapterInDesc) {
+                            MdUtil.addFinalChapterToDesc(
+                                it,
+                                mangaAttributesDto.lastVolume,
+                                mangaAttributesDto.lastChapter,
+                            )
+                        } else {
+                            it
+                        }
+                    }
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)
@@ -148,7 +181,11 @@ class ApiMangaParser(
                     mangaAttributesDto.contentRating
                         ?.takeUnless { it == "safe" }
                         ?.let {
-                            RaisedTag("Content Rating", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT)
+                            RaisedTag(
+                                "Content Rating",
+                                it.capitalize(Locale.US),
+                                MangaDexSearchMetadata.TAG_TYPE_DEFAULT,
+                            )
                         },
                 )
 

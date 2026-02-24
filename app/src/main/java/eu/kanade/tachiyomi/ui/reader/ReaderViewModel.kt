@@ -761,7 +761,10 @@ class ReaderViewModel @JvmOverloads constructor(
 
     /**
      * Determines if deleting option is enabled and nth to last chapter actually exists.
-     * If both conditions are satisfied enqueues chapter for delete
+     * If both conditions are satisfied enqueues chapter for delete.
+     *
+     * This deletes chapters from reading list (filtered, unduplicated if any set).
+     *
      * @param currentChapter current chapter, which is going to be marked as read.
      */
     private fun deleteChapterIfNeeded(currentChapter: ReaderChapter) {
@@ -779,6 +782,23 @@ class ReaderViewModel @JvmOverloads constructor(
             enqueueDeleteReadChapters(chapterToDelete)
         }
     }
+
+    // KMK -->
+    /**
+     * Deletes duplicate chapters when `removeAfterReadSlots` = "Last read chapter" (0).
+     *
+     * Ignore the case where `removeAfterReadSlots` > 0 while `skipDupe` = true as we don't know
+     * where the chapters to be deleted are in the filtered [chapterList].
+     *
+     * For the case where `skipDupe` = false, chapters at should be deleted normally by [deleteChapterIfNeeded]
+     * based on the `removeAfterReadSlots` offset while the user is reading sequentially.
+     */
+    private fun deleteDupChapterIfNeeded(chapterToDelete: ReaderChapter) {
+        val removeAfterReadSlots = downloadPreferences.removeAfterReadSlots().get()
+        if (removeAfterReadSlots != 0) return
+        enqueueDeleteReadChapters(chapterToDelete)
+    }
+    // KMK <--
 
     /**
      * Saves the chapter progress (last read page and whether it's read)
@@ -866,9 +886,9 @@ class ReaderViewModel @JvmOverloads constructor(
                     chapter.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
                 ) {
                     ChapterUpdate(id = chapter.id, read = true)
-                        // SY -->
-                        .also { deleteChapterIfNeeded(ReaderChapter(chapter)) }
-                    // SY <--
+                        // KMK -->
+                        .also { deleteDupChapterIfNeeded(ReaderChapter(chapter.copy(read = true))) }
+                    // KMK <--
                 } else {
                     null
                 }

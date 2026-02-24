@@ -6,7 +6,7 @@
     <string name="action_edit_info">Editar información</string>
     <string name="entry_type_manhwa">Manhwa</string>
     <string name="entry_type_manhua">Manhua</string>
-    <string name="entry_type_comic">Cómico</string>
+    <string name="entry_type_comic">Historieta o cómic</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_mangadex">MangaDex</string>
     <string name="pref_ehentai_summary">Inicio de sesión en E/ExHentai, sincronización de galería</string>
@@ -629,4 +629,7 @@
     <string name="pref_tracker_resolve_using_source_metadata_summary">Encuentra el título automáticamente si la fuente ya enlaza con el servicio de seguimiento. De momento solo funciona en MangaDex</string>
     <string name="pref_tracker_resolve_using_source_metadata">Elegir títulos a través de los metadatos de la fuente</string>
     <string name="scan_qr_code">Escanear un código QR</string>
+    <string name="final_chapter">Capítulo final</string>
+    <string name="file_extension">Extensión de archivo</string>
+    <string name="base_url">URL base</string>
 </resources>

@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncData
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
+import eu.kanade.tachiyomi.data.sync.service.WebDavSyncService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
@@ -55,6 +56,9 @@ class SyncManager(
         NONE(0),
         SYNCYOMI(1),
         GOOGLE_DRIVE(2),
+        // KMK -->
+        WebDAV(3),
+        // KMK <--
         ;
 
         companion object {
@@ -136,6 +140,12 @@ class SyncManager(
             SyncService.GOOGLE_DRIVE -> {
                 GoogleDriveSyncService(context, json, syncPreferences)
             }
+
+            // KMK -->
+            SyncService.WebDAV -> {
+                WebDavSyncService(context, json, syncPreferences, notifier)
+            }
+            // KMK <--
 
             else -> {
                 logcat(LogPriority.ERROR) { "Invalid sync service type: $syncService" }

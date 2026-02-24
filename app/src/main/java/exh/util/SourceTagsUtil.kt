@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.graphics.toColorInt
 import exh.metadata.metadata.base.RaisedTag
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
+import exh.source.eHentaiSourceIds
+import exh.source.lanraragiSourceIds
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
 import tachiyomi.presentation.core.icons.FlagEmoji.Companion.getEmojiLangFlag
@@ -26,12 +26,12 @@ object SourceTagsUtil {
         fullTag: String? = null,
     ): String? {
         return if (
-            sourceId == EXH_SOURCE_ID ||
-            sourceId == EH_SOURCE_ID ||
+            sourceId in eHentaiSourceIds ||
             sourceId in nHentaiSourceIds ||
             sourceId in mangaDexSourceIds ||
             sourceId == PURURIN_SOURCE_ID ||
-            sourceId == TSUMINO_SOURCE_ID
+            sourceId == TSUMINO_SOURCE_ID ||
+            sourceId in lanraragiSourceIds
         ) {
             val parsed = when {
                 fullTag != null -> parseTag(fullTag)

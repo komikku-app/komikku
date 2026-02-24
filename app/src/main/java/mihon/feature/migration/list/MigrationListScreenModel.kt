@@ -39,7 +39,6 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.manga.interactor.GetManga
-import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -47,8 +46,11 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MigrationListScreenModel(
-    mangaIds: List<Long>,
+    mangaIds: Collection<Long>,
     extraSearchQuery: String?,
+    // KMK -->
+    runManually: Boolean = false,
+    // KMK <--
     val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -57,12 +59,10 @@ class MigrationListScreenModel(
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val migrateManga: MigrateMangaUseCase = Injekt.get(),
-    // SY -->
-    private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
-    // SY <--
 ) : StateScreenModel<MigrationListScreenModel.State>(State()) {
 
     private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
+
     // SY -->
     private val throttleManager = ThrottleManager()
     // SY <--
@@ -96,20 +96,26 @@ class MigrationListScreenModel(
                             source = sourceManager.getOrStub(manga.source).getNameForMangaInfo(
                                 // KMK -->
                                 if (manga.source == MERGED_SOURCE_ID) {
-                                    getMergedReferencesById.await(manga.id)
-                                        .map { sourceManager.getOrStub(it.mangaSourceId) }
+                                    sourceManager.getMergedSources(manga.id)
                                 } else {
                                     null
                                 },
                                 // KMK <--
                             ),
                             parentContext = screenModelScope.coroutineContext,
-                        )
+                            // KMK -->
+                        ).apply {
+                            if (runManually) searchResult.value = SearchResult.NotFound
+                            // KMK <--
+                        }
                     }
                 }
                 .awaitAll()
                 .filterNotNull()
             mutableState.update { it.copy(items = manga.toImmutableList()) }
+            // KMK -->
+            if (runManually) return@launchIO
+            // KMK <--
             runMigrations(manga)
         }
     }
@@ -133,8 +139,10 @@ class MigrationListScreenModel(
     }
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
-        // KMK -->
+        // SY -->
         throttleManager.resetThrottle()
+        // SY <--
+        // KMK -->
         // val prioritizeByChapters = preferences.migrationPrioritizeByChapters().get()
         // val deepSearchMode = preferences.migrationDeepSearchMode().get()
         // KMK <--
@@ -222,14 +230,13 @@ class MigrationListScreenModel(
 
             val localManga = networkToLocalManga(searchResult)
             try {
-                val chapters =
-                    // KMK -->
-                    if (source is EHentai) {
-                        source.getChapterList(localManga.toSManga(), throttleManager::throttle)
-                    } else {
-                        // KMK <--
-                        source.getChapterList(localManga.toSManga())
-                    }
+                // SY -->
+                val chapters = if (source is EHentai) {
+                    source.getChapterList(localManga.toSManga(), throttleManager::throttle)
+                } else {
+                    // SY <--
+                    source.getChapterList(localManga.toSManga())
+                }
                 syncChaptersWithSource.await(chapters, localManga, source)
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
@@ -271,7 +278,13 @@ class MigrationListScreenModel(
                 val manga = getManga.await(target) ?: return@async null
                 try {
                     val source = sourceManager.get(manga.source)!!
-                    val chapters = source.getChapterList(manga.toSManga())
+                    // SY -->
+                    val chapters = if (source is EHentai) {
+                        source.getChapterList(manga.toSManga(), throttleManager::throttle)
+                    } else {
+                        // SY <--
+                        source.getChapterList(manga.toSManga())
+                    }
                     syncChaptersWithSource.await(chapters, manga, source)
                 } catch (_: Exception) {
                     return@async null

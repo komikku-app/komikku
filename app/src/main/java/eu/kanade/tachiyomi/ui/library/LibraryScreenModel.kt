@@ -553,7 +553,7 @@ class LibraryScreenModel(
                 // SY <--
                 // KMK -->
                 filterFnCategories(it)
-            // KMK <---
+            // KMK <--
         }
     }
 
@@ -1012,9 +1012,9 @@ class LibraryScreenModel(
     }
 
     fun resetInfo() {
-        state.value.selectedManga.fastForEach { manga ->
+        state.value.selection.forEach { id ->
             val mangaInfo = CustomMangaInfo(
-                id = manga.id,
+                id = id,
                 title = null,
                 author = null,
                 artist = null,
@@ -1034,7 +1034,7 @@ class LibraryScreenModel(
     /**
      * Update Selected Mangas
      */
-    fun refreshSelectedManga(): Boolean {
+    fun updateSelectedManga(): Boolean {
         val mangaIds = state.value.selection.toList()
         return LibraryUpdateJob.startNow(
             context = preferences.context,
@@ -1176,10 +1176,17 @@ class LibraryScreenModel(
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
                 if (query.startsWith("id:", true)) {
-                    val id = query.substringAfter("id:").toLongOrNull()
-                    return@filter mangaId == id
+                    return@filter mangaId == query.substringAfter("id:").toLongOrNull()
                 }
                 val sourceId = item.libraryManga.manga.source
+                if (query.startsWith("src:", true)) {
+                    val querySource = query.substringAfter("src:")
+                    return@filter if (querySource.equals(LOCAL_SOURCE_ID_ALIAS, ignoreCase = true)) {
+                        sourceId == LocalSource.ID
+                    } else {
+                        sourceId == querySource.toLongOrNull()
+                    }
+                }
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
                     val titles = getSearchTitles.await(mangaId)
