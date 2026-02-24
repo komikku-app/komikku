@@ -211,6 +211,10 @@ fun MangaScreen(
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
+
+    // My stuff
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
+    // <--: Long) -> Unit,
 ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
@@ -280,6 +284,9 @@ fun MangaScreen(
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
+
+            //My Stuff
+            onClickFilterMergedMangaBySource = onClickFilterMergedMangaBySource
         )
     } else {
         MangaScreenLargeImpl(
@@ -420,6 +427,7 @@ private fun MangaScreenSmallImpl(
     coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -748,7 +756,7 @@ private fun MangaScreenSmallImpl(
                     // KMK <--
 
                     // SY -->
-                    if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
+                    if (!state.showRecommendationsInOverflow || state.showMergeWithAnother || state.mergedData != null) {
                         item(
                             key = MangaScreenItem.INFO_BUTTONS,
                             contentType = MangaScreenItem.INFO_BUTTONS,
@@ -758,6 +766,10 @@ private fun MangaScreenSmallImpl(
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+                                //My stuff
+                                showMergedSources = state.mergedData != null,
+                                mergedMangaData = state.mergedData,
+                                filterMergedMangaBySource = onClickFilterMergedMangaBySource,
                             )
                         }
                     }
@@ -1136,12 +1148,18 @@ private fun MangaScreenLargeImpl(
                             // SY <--
                         )
                         // SY -->
-                        if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
+                        if (!state.showRecommendationsInOverflow || state.showMergeWithAnother || state.mergedData != null) {
+                            val onClickFilterMergedMangaBySource = null
                             MangaInfoButtons(
                                 showRecommendsButton = !state.showRecommendationsInOverflow,
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+                                //My stuff
+                                showMergedSources = state.mergedData != null,
+                                mergedMangaData = state.mergedData,
+                                filterMergedMangaBySource = { onClickFilterMergedMangaBySource },
+
                             )
                         }
                         if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {
