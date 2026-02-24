@@ -97,7 +97,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
 
     suspend fun getChapterList(mangaUrl: String): List<SChapter> {
         val response = client.newCall(mangaDetailsApiRequest(mangaUrl)).awaitSuccess()
-        return chapterListParse(response)
+        return response.use { chapterListParse(it) }
     }
 
     fun chapterListParse(response: Response): List<SChapter> {
@@ -120,7 +120,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
 
     private suspend fun fetchPageList(chapterUrl: String): List<Page> {
         val response = client.newCall(pageListRequest(chapterUrl)).awaitSuccess()
-        return pageListParse(response)
+        return response.use { pageListParse(it) }
     }
 
     private fun pageListRequest(chapterUrl: String): Request {
@@ -156,7 +156,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
 
     suspend fun getImageUrl(page: Page): String {
         val response = client.newCall(imageUrlRequest(page)).awaitSuccess()
-        return imageUrlParse(response)
+        return response.use { imageUrlParse(it) }
     }
 
     fun fetchImageUrl(page: Page): Observable<String> {

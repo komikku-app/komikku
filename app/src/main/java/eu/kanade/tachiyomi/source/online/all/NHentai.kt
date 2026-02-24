@@ -68,7 +68,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         val response = client.newCall(mangaDetailsRequest(manga)).awaitSuccess()
-        return parseToManga(manga, response)
+        return response.use { parseToManga(manga, it) }
     }
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {

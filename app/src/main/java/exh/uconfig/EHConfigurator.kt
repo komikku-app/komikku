@@ -62,7 +62,7 @@ class EHConfigurator(val context: Context) {
                 .url(HATH_PERKS_URL)
                 .build(),
         )
-            .awaitSuccess().asJsoup()
+            .awaitSuccess().use { it.asJsoup() }
 
         val hathPerks = EHHathPerksResponse()
 
@@ -92,13 +92,13 @@ class EHConfigurator(val context: Context) {
     private suspend fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
         // Delete old app profiles
         val scanReq = source.requestWithCreds().url(source.uconfigUrl).build()
-        val resp = configuratorClient.newCall(scanReq).awaitSuccess().asJsoup()
+        val resp = configuratorClient.newCall(scanReq).awaitSuccess().use { it.asJsoup() }
         var lastDoc = resp
         resp.select(PROFILE_SELECTOR).forEach {
             if (it.text() == PROFILE_NAME) {
                 val id = it.attr("value")
                 // Delete old profile
-                lastDoc = source.execProfileActions("delete", "", id, id.toInt()).asJsoup()
+                lastDoc = source.execProfileActions("delete", "", id, id.toInt()).use { resp -> resp.asJsoup() }
             }
         }
 
@@ -115,7 +115,7 @@ class EHConfigurator(val context: Context) {
         // Create profile in available slot
 
         val slot = availableProfiles.first()
-        val response = source.execProfileActions(
+        val res = source.execProfileActions(
             "create",
             PROFILE_NAME,
             slot.toString(),
@@ -132,28 +132,31 @@ class EHConfigurator(val context: Context) {
                 .post(form)
                 .build(),
         ).awaitSuccess()
+            .close()
 
         // Persist slot + sk
         source.spPref().set(slot)
 
-        val keyCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
-            it.startsWith("sk=")
-        }?.removePrefix("sk=")?.substringBefore(';')
-        val sessionCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
-            it.startsWith("s=")
-        }?.removePrefix("s=")?.substringBefore(';')
-        val hathPerksCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
-            it.startsWith("hath_perks=")
-        }?.removePrefix("hath_perks=")?.substringBefore(';')
+        res.use { response ->
+            val keyCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
+                it.startsWith("sk=")
+            }?.removePrefix("sk=")?.substringBefore(';')
+            val sessionCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
+                it.startsWith("s=")
+            }?.removePrefix("s=")?.substringBefore(';')
+            val hathPerksCookie = response.headers.toMultimap()["Set-Cookie"]?.find {
+                it.startsWith("hath_perks=")
+            }?.removePrefix("hath_perks=")?.substringBefore(';')
 
-        if (keyCookie != null) {
-            exhPreferences.exhSettingsKey().set(keyCookie)
-        }
-        if (sessionCookie != null) {
-            exhPreferences.exhSessionCookie().set(sessionCookie)
-        }
-        if (hathPerksCookie != null) {
-            exhPreferences.exhHathPerksCookies().set(hathPerksCookie)
+            if (keyCookie != null) {
+                exhPreferences.exhSettingsKey().set(keyCookie)
+            }
+            if (sessionCookie != null) {
+                exhPreferences.exhSessionCookie().set(sessionCookie)
+            }
+            if (hathPerksCookie != null) {
+                exhPreferences.exhHathPerksCookies().set(hathPerksCookie)
+            }
         }
     }
 

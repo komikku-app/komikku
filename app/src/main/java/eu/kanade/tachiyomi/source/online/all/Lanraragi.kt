@@ -57,7 +57,7 @@ class Lanraragi(delegate: HttpSource, val context: Context) :
     // Helper
     private suspend fun getRandomID(query: String): String {
         val searchRandom = client.newCall(GET("$baseUrl/api/search/random?count=1&$query", headers)).awaitSuccess()
-        val data = jsonParser.parseToJsonElement(searchRandom.body.string()).jsonObject["data"]
+        val data = searchRandom.use { jsonParser.parseToJsonElement(it.body.string()).jsonObject["data"] }
         val archive = data!!.jsonArray.firstOrNull()?.jsonObject
 
         // 0.8.2~0.8.7 = id, 0.8.8+ = arcid
@@ -77,7 +77,7 @@ class Lanraragi(delegate: HttpSource, val context: Context) :
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         val response = client.newCall(customMangaDetailsRequest(manga)).awaitSuccess()
-        return parseToManga(manga, response)
+        return response.use { parseToManga(manga, it) }
     }
 
     override suspend fun parseIntoMetadata(metadata: LanraragiSearchMetadata, input: Response) {
@@ -191,7 +191,7 @@ class Lanraragi(delegate: HttpSource, val context: Context) :
                 getApiUriBuilder("/api/minion/$jobId").build().toString(),
                 headers = headers,
             ),
-        ).awaitSuccess().let {
+        ).awaitSuccess().use {
             with(jsonParser) {
                 it.parseAs<TaskProgress>().state == "finished"
             }
@@ -211,8 +211,10 @@ class Lanraragi(delegate: HttpSource, val context: Context) :
                     }
                     val jobDone = minionJobDone(task.job)
                 } while (!jobDone && tries++ < 3)
+                it.close()
                 requestPreviewImage(page, cacheControl).apply {
                     if (code == 202) {
+                        close()
                         throw IOException("Thumbnail not ready")
                     }
                 }
