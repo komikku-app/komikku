@@ -116,6 +116,17 @@ object SettingsLibraryScreen : SearchableSettings {
                         true
                     },
                 ),
+                // KMK -->
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_duplicated_entries),
+                    subtitle = stringResource(KMR.strings.pref_duplicated_entries_summary),
+                    onClick = {
+                        navigator.push(
+                            eu.kanade.tachiyomi.ui.library.LibraryDuplicatesScreen(),
+                        )
+                    },
+                ),
+                // KMK <--
             ),
         )
     }
