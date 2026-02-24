@@ -38,30 +38,22 @@ class GetAllDuplicateLibraryManga(
             }
         }
 
-        // Compare all pairs to find duplicates
-        for (i in normalizedList.indices) {
-            for (j in i + 1 until normalizedList.size) {
-                val m1 = normalizedList[i]
-                val m2 = normalizedList[j]
-
-                val isDuplicate = when {
-                    // Exact normalized title match
-                    m1.title == m2.title -> true
-
-                    // Check if m1 title is in m2's alternate titles
-                    m2.altTitles.any { it == m1.title } -> true
-
-                    // Check if m2 title is in m1's alternate titles
-                    m1.altTitles.any { it == m2.title } -> true
-
-                    // Check if they share any alternate titles
-                    m1.altTitles.intersect(m2.altTitles.toSet()).isNotEmpty() -> true
-
-                    else -> false
+        // Use a map to link titles to manga indices for faster lookups
+        val titleMap = mutableMapOf<String, MutableList<Int>>()
+        normalizedList.forEachIndexed { index, normalizedManga ->
+            val allTitles = listOf(normalizedManga.title) + normalizedManga.altTitles
+            allTitles.forEach { title ->
+                if (title.isNotBlank()) {
+                    titleMap.getOrPut(title) { mutableListOf() }.add(index)
                 }
+            }
+        }
 
-                if (isDuplicate) {
-                    union(i, j)
+        // Union manga that share a title
+        titleMap.values.forEach { indices ->
+            if (indices.size > 1) {
+                for (i in 1 until indices.size) {
+                    union(indices[0], indices[i])
                 }
             }
         }

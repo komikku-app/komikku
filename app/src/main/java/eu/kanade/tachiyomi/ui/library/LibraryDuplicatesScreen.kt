@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.CompareArrows
-import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -41,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -256,9 +253,10 @@ private fun DuplicateMangaItem(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (!manga.author.isNullOrBlank()) {
+            val author = manga.author
+            if (!author.isNullOrBlank()) {
                 Text(
-                    text = manga.author!!,
+                    text = author,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
