@@ -25,6 +25,7 @@ import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.manga.MangaMapper.mapManga
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.applyFilter
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -262,11 +263,12 @@ class SyncManager(
     private suspend fun isMangaDifferent(localManga: Manga, remoteManga: BackupManga): Boolean {
         val localChapters = handler.await {
             chaptersQueries.getChaptersByMangaId(
-                localManga.id,
-                0,
+                mangaId = localManga.id,
+                includeDeleted = 1,
+                applyFilter = 0,
                 // KMK -->
-                Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
-                Manga.CHAPTER_SHOW_BOOKMARKED,
+                bookmarkUnmask = Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
+                bookmarkMask = Manga.CHAPTER_SHOW_BOOKMARKED,
                 // KMK <--
             ).executeAsList()
         }

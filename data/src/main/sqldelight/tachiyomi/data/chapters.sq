@@ -16,6 +16,7 @@ CREATE TABLE chapters(
     last_modified_at INTEGER NOT NULL DEFAULT 0,
     version INTEGER NOT NULL DEFAULT 0,
     is_syncing INTEGER NOT NULL DEFAULT 0,
+    deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY(manga_id) REFERENCES mangas (_id)
     ON DELETE CASCADE
 );
@@ -64,6 +65,9 @@ ON C.manga_id = ES.manga_id
 AND C.scanlator = ES.scanlator
 WHERE C.manga_id = :mangaId
 AND (
+    :includeDeleted = 1 OR C.deleted = 0
+)
+AND (
     :applyFilter = 0
     -- KMK -->
     OR (
@@ -77,24 +81,28 @@ AND (
 getScanlatorsByMangaId:
 SELECT scanlator
 FROM chapters
-WHERE manga_id = :mangaId;
+WHERE manga_id = :mangaId
+AND deleted = 0;
 
 getBookmarkedChaptersByMangaId:
 SELECT *
 FROM chapters
 WHERE bookmark
-AND manga_id = :mangaId;
+AND manga_id = :mangaId
+AND deleted = 0;
 
 getChapterByUrl:
 SELECT *
 FROM chapters
-WHERE url = :chapterUrl;
+WHERE url = :chapterUrl
+AND deleted = 0;
 
 getChapterByUrlAndMangaId:
 SELECT *
 FROM chapters
 WHERE url = :chapterUrl
-AND manga_id = :mangaId;
+AND manga_id = :mangaId
+AND (:includeDeleted = 1 OR deleted = 0);
 
 getMergedChaptersByMangaId:
 SELECT C.*
@@ -110,6 +118,7 @@ AND C.scanlator = ES.scanlator
 JOIN mangas MA ON MA._id = :mangaId
 -- KMK <--
 WHERE M.merge_id = :mangaId
+AND C.deleted = 0
 AND (
     :applyFilter = 0
     -- KMK -->
@@ -127,7 +136,8 @@ FROM (
     SELECT manga_id FROM merged WHERE merge_id = ?
 ) AS M
 JOIN chapters
-ON chapters.manga_id = M.manga_id;
+ON chapters.manga_id = M.manga_id
+WHERE chapters.deleted = 0;
 
 removeChaptersWithIds:
 DELETE FROM chapters
@@ -139,8 +149,8 @@ SET is_syncing = 0
 WHERE is_syncing = 1;
 
 insert:
-INSERT INTO chapters(manga_id, url, name, scanlator, read, bookmark, last_page_read, chapter_number, source_order, date_fetch, date_upload, last_modified_at, version, is_syncing)
-VALUES (:mangaId, :url, :name, :scanlator, :read, :bookmark, :lastPageRead, :chapterNumber, :sourceOrder, :dateFetch, :dateUpload, 0, :version, 0);
+INSERT INTO chapters(manga_id, url, name, scanlator, read, bookmark, last_page_read, chapter_number, source_order, date_fetch, date_upload, last_modified_at, version, is_syncing, deleted)
+VALUES (:mangaId, :url, :name, :scanlator, :read, :bookmark, :lastPageRead, :chapterNumber, :sourceOrder, :dateFetch, :dateUpload, 0, :version, 0, 0);
 
 update:
 UPDATE chapters
@@ -156,8 +166,16 @@ SET manga_id = coalesce(:mangaId, manga_id),
     date_fetch = coalesce(:dateFetch, date_fetch),
     date_upload = coalesce(:dateUpload, date_upload),
     version = coalesce(:version, version),
-    is_syncing = coalesce(:isSyncing, is_syncing)
+    is_syncing = coalesce(:isSyncing, is_syncing),
+    deleted = coalesce(:deleted, deleted)
 WHERE _id = :chapterId;
+
+-- removed getChaptersByMangaIdIncludeDeleted: merged into getChaptersByMangaId with :includeDeleted flag
+
+softDeleteChaptersWithIds:
+UPDATE chapters
+SET deleted = 1
+WHERE _id IN :chapterIds;
 
 selectLastInsertedRowId:
 SELECT last_insert_rowid();
