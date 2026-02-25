@@ -426,7 +426,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
             }
         }
 
-        private fun updateSources(save: Boolean = true, action: (List<MigrationSource>) -> List<MigrationSource>) {
+        private fun updateSources(action: (List<MigrationSource>) -> List<MigrationSource>) {
             mutableState.update { state ->
                 val updatedSources = action(state.sources)
                 val includedSources = updatedSources.mapNotNull { if (!it.isSelected) null else it.id }
@@ -435,7 +435,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                 // KMK <--
                 state.copy(sources = updatedSources.sortedWith(sourcesComparator(includedSources)))
             }
-            if (save) saveSources()
+            saveSources()
         }
 
         private fun initSources() {
@@ -451,9 +451,6 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                 .asSequence()
                 .filterIsInstance<HttpSource>()
                 .filter { it.lang in languages }
-                // KMK -->
-                .sortedWith(compareBy { includedSources[it.id] ?: Int.MAX_VALUE })
-                // KMK <--
                 .map {
                     val source = Source(
                         id = it.id,
@@ -473,7 +470,9 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                 }
                 .toList()
 
-            updateSources(save = false) { sources }
+            mutableState.update { state ->
+                state.copy(sources = sources.sortedWith(sourcesComparator(includedSources)))
+            }
         }
 
         fun toggleSelection(id: Long) {
