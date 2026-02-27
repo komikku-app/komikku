@@ -75,6 +75,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.utils.FollowStatus
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
@@ -1881,21 +1882,27 @@ class MangaScreenModel(
 
     // SY -->
     private suspend fun createMdListTrack(): Track? {
-        val state = successState!!
-        val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
-            ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
-            ?: return null
-        val track = trackerManager.mdList.createInitialTracker(state.manga, mdManga)
-            .toDomainTrack(false)
-            ?: return null
-        insertTrack.await(track)
-        /* KMK -->
-        return TrackItem(
-            getTracks.await(mangaId).first { it.trackerId == trackerManager.mdList.id },
-             trackerManager.mdList,
-         )
-        KMK <-- */
-        return getTracks.await(mangaId).firstOrNull { it.trackerId == trackerManager.mdList.id }
+        try {
+            val state = successState!!
+            val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
+                ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
+                ?: throw IllegalArgumentException("Entry does not belong to MangaDex")
+            val track = trackerManager.mdList.createInitialTracker(state.manga, mdManga)
+                .toDomainTrack(false)
+                ?: throw IllegalStateException("Could not create initial track")
+            insertTrack.await(track)
+            /* KMK -->
+            return TrackItem(
+                getTracks.await(mangaId).first { it.trackerId == trackerManager.mdList.id },
+                 trackerManager.mdList,
+             )
+            KMK <-- */
+            return getTracks.await(mangaId).firstOrNull { it.trackerId == trackerManager.mdList.id }
+                ?: throw IllegalStateException("Could not get MangaDex track for current entry")
+        } catch (e: Exception) {
+            xLogE("Failed to create MangaDex track", e)
+            return null
+        }
     }
     // SY <--
 
