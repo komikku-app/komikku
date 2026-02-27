@@ -5,8 +5,14 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.PUT
 import eu.kanade.tachiyomi.network.await
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -34,7 +40,26 @@ class SyncYomiSyncService(
 
     private class SyncYomiException(message: String?) : Exception(message)
 
+    @Serializable
+    private data class SyncEvent(
+        val event: SyncEventStatus,
+        @SerialName("device_name")
+        val deviceName: String? = null,
+        val message: String? = null,
+    )
+
+    @Serializable
+    private enum class SyncEventStatus {
+        SYNC_STARTED,
+        SYNC_SUCCESS,
+        SYNC_FAILED,
+        SYNC_ERROR,
+        SYNC_CANCELLED,
+    }
+
     override suspend fun doSync(syncData: SyncData): Backup? {
+        reportSyncEvent(SyncEventStatus.SYNC_STARTED)
+
         try {
             val (remoteData, etag) = pullSyncData()
 
@@ -52,11 +77,23 @@ class SyncYomiSyncService(
                 syncData
             }
 
-            pushSyncData(finalSyncData, etag)
+            val success = pushSyncData(finalSyncData, etag)
+
+            if (success) {
+                reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
+            } else {
+                reportSyncEvent(SyncEventStatus.SYNC_FAILED, "Failed to push sync data")
+            }
+
             return finalSyncData.backup
         } catch (e: Exception) {
+            if (e is CancellationException) {
+                reportSyncEvent(SyncEventStatus.SYNC_CANCELLED, e.message)
+                throw e
+            }
             logcat(LogPriority.ERROR) { "Error syncing: ${e.message}" }
             notifier.showSyncError(e.message)
+            reportSyncEvent(SyncEventStatus.SYNC_ERROR, e.message)
             return null
         }
     }
@@ -123,8 +160,8 @@ class SyncYomiSyncService(
     /**
      * Return true if update success
      */
-    private suspend fun pushSyncData(syncData: SyncData, eTag: String) {
-        val backup = syncData.backup ?: return
+    private suspend fun pushSyncData(syncData: SyncData, eTag: String): Boolean {
+        val backup = syncData.backup ?: return true
 
         val host = syncPreferences.clientHost().get()
         val apiKey = syncPreferences.clientAPIKey().get()
@@ -163,13 +200,49 @@ class SyncYomiSyncService(
                 .takeIf { it?.isNotEmpty() == true } ?: throw SyncYomiException("Missing ETag")
             syncPreferences.lastSyncEtag().set(newETag)
             logcat(LogPriority.DEBUG) { "SyncYomi sync completed" }
+            return true
         } else if (response.code == HttpStatus.SC_PRECONDITION_FAILED) {
             // other clients updated remote data, will try next time
             logcat(LogPriority.DEBUG) { "SyncYomi sync failed with 412" }
+            return false
         } else {
             val responseBody = response.body.string()
             notifier.showSyncError("Failed to upload sync data: $responseBody")
             logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
+            return false
+        }
+    }
+
+    private suspend fun reportSyncEvent(event: SyncEventStatus, message: String? = null) {
+        withContext(NonCancellable) {
+            try {
+                val host = syncPreferences.clientHost().get()
+                val apiKey = syncPreferences.clientAPIKey().get()
+                val url = "$host/api/sync/event"
+
+                val headersBuilder = Headers.Builder().add("X-API-Token", apiKey)
+                val headers = headersBuilder.build()
+
+                val bodyObj = SyncEvent(
+                    event = event,
+                    deviceName = android.os.Build.MODEL,
+                    message = message,
+                )
+
+                val jsonBody = json.encodeToString(SyncEvent.serializer(), bodyObj)
+                val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = POST(
+                    url = url,
+                    headers = headers,
+                    body = requestBody,
+                )
+
+                val client = OkHttpClient()
+                client.newCall(request).await().close()
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR) { "Failed to report sync event: ${e.message}" }
+            }
         }
     }
 }
