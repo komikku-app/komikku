@@ -143,8 +143,8 @@
     <string name="pref_sorting_settings">Paramètres de tri</string>
     <string name="pref_skip_pre_migration_summary">Utilisez les dernières préférences et sources de pré-migration enregistrées pour migrer en masse</string>
     <string name="library_group_updates">Mises à jour des catégories dynamiques de la bibliothèque</string>
-    <string name="library_group_updates_global">Lancez toujours les mises à jour mondiales</string>
-    <string name="library_group_updates_all_but_ungrouped">Lancer des mises à jour globales uniquement pour les mises à jour de catégories non groupées pour les autres</string>
+    <string name="library_group_updates_global">Toujours lancer des mises à jour globales</string>
+    <string name="library_group_updates_all_but_ungrouped">Lancer des mises à jour globales uniquement pour les entrées non regroupées, lancer des mises à jour par catégorie pour les autres</string>
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
     <!-- Browse settings -->
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>
@@ -669,4 +669,10 @@
     <string name="mangadex_push_favorites_to_mangadex_summary">Synchronise toutes les séries non suivies par MdList vers MangaDex en tant que lecture en cours.</string>
     <string name="similar_titles">Titres similaires</string>
     <string name="select_scanlators">Groupes de scantrad à afficher</string>
+    <string name="pref_include_chapter_url_hash">Inclure le hash de l\'URL du chapitre</string>
+    <string name="pref_include_chapter_url_hash_desc">Ajoutez les six premiers caractères du hachage MD5 de l\'URL du chapitre au nom du fichier ou du dossier du chapitre.</string>
+    <string name="filename">Nom du fichier</string>
+    <string name="file_extension">Extension du fichier</string>
+    <string name="base_url">URL de base</string>
+    <string name="final_chapter">Chapitre final</string>
 </resources>
