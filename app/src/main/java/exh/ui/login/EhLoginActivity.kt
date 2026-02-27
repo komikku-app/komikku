@@ -93,14 +93,30 @@ class EhLoginActivity : BaseActivity() {
         xLogD(url)
         val parsedUrl = url.toUri()
         if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
-            // Hide distracting content
-            if (!parsedUrl.queryParameterNames.contains(PARAM_SKIP_INJECT)) {
-                view.evaluateJavascript(HIDE_JS, null)
-            }
-            // Check login result
+            view.evaluateJavascript(
+                """
+                    (function() {
+                        let html = document.documentElement.innerHTML;
+                        return html.includes("/cdn-cgi/");
+                    })();
+                """.trimIndent(),
+            ) { result ->
+                val isCloudflareBlock = result == "true"
 
-            if (parsedUrl.getQueryParameter("code")?.toInt() != 0) {
-                if (checkLoginCookies(url)) view.loadUrl("https://exhentai.org/")
+                if (isCloudflareBlock) {
+                    xLogD("Cloudflare block detected — skipping logic")
+                    return@evaluateJavascript
+                }
+
+                // Hide distracting content
+                if (!parsedUrl.queryParameterNames.contains(PARAM_SKIP_INJECT)) {
+                    view.evaluateJavascript(HIDE_JS, null)
+                }
+                // Check login result
+
+                if (parsedUrl.getQueryParameter("code")?.toInt() != 0) {
+                    if (checkLoginCookies(url)) view.loadUrl("https://exhentai.org/")
+                }
             }
         } else if (parsedUrl.host.equals("exhentai.org", ignoreCase = true)) {
             // At ExHentai, check that everything worked out...
