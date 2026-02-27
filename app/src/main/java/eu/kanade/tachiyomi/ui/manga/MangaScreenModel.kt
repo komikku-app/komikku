@@ -1884,7 +1884,7 @@ class MangaScreenModel(
         val state = successState!!
         val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
             ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
-            ?: throw IllegalArgumentException("Could not create initial track")
+            ?: return null
         val track = trackerManager.mdList.createInitialTracker(state.manga, mdManga)
             .toDomainTrack(false)
             ?: return null
