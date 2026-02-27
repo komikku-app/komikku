@@ -1897,8 +1897,7 @@ class MangaScreenModel(
                  trackerManager.mdList,
              )
             KMK <-- */
-            return getTracks.await(mangaId).firstOrNull { it.trackerId == trackerManager.mdList.id }
-                ?: throw IllegalStateException("Could not get MangaDex track for current entry")
+            return getTracks.await(mangaId).first { it.trackerId == trackerManager.mdList.id }
         } catch (e: Exception) {
             xLogE("Failed to create MangaDex track", e)
             return null
