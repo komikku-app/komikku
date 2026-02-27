@@ -587,7 +587,7 @@
     <string name="deduplication_entry_info">Informacije unosa:</string>
     <string name="follow_status">Stanje praćenja</string>
     <string name="language_translated">%1$s prevedeno</string>
-    <string name="media_id">ID madija</string>
+    <string name="media_id">ID medija</string>
     <string name="last_update_check">Zadnja provjera aktualiziranja</string>
     <string name="watched_tags">Praćene oznake</string>
     <string name="watched_tags_summary">Otvara web prikaz za tvoju E/ExHentai stranicu praćenih oznaka</string>
@@ -620,4 +620,10 @@
     <string name="feed_tab_empty">Nemaš nijedan izvor u svom feedu, idi gore desno za dodavanje izvora</string>
     <string name="feed_add">Dodati %1$s u feed?</string>
     <string name="download_threads">Preuzmi teme</string>
+    <string name="filename">Ime datoteke</string>
+    <string name="file_extension">Sufiks datoteke</string>
+    <string name="base_url">Osnovni URL</string>
+    <string name="final_chapter">Završno poglavlje</string>
+    <string name="pref_include_chapter_url_hash">Uključi hash URL-a poglavlja</string>
+    <string name="pref_include_chapter_url_hash_desc">Dodaj prvih šest znakova MD5 hash-a URL-a poglavlja imenu datoteke ili mapi poglavlja.</string>
 </resources>

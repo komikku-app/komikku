@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="other">클린업 완료. %d 폴더를 삭제했습니다</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="other">%d 락 타임</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="other">실패한 페이지 %1$d 재시도 중…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="other">정렬 리스트에 %1$d개 태그 추가. 라이브러리에 우선순위 기반 태그 목록을 기준으로 정렬하는 옵션을 추가합니다. 즉, 항목이 원하는 태그를 가진 항목을 우선하는 방식으로 정렬됩니다</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="other">%1$d%2$s 항목을 이동하시겠습니까?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="other">%1$d%2$s 항목을 복사하시겠습니까?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="other">%d개 항목 이동됨</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="other">%1$d 페이지</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="other">%2$s, %1$d 페이지</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="other">%1$d년 전</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="other">%1$d개월 전</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="other">%1$d주 전</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="other">%1$d일 전</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="other">%1$d시간 전</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="other">%1$d분 전</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="other">%1$d초 전</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="other">%d 행</item>
+    </plurals>
+</resources>

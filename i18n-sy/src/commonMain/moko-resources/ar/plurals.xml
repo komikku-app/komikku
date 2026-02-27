@@ -91,10 +91,10 @@
     <plurals name="num_lock_times">
         <item quantity="zero">وقت الإنغلاق</item>
         <item quantity="one">‬وقت الإغلاق</item>
-        <item quantity="two"/>
-        <item quantity="few"/>
-        <item quantity="many"/>
-        <item quantity="other"/>
+        <item quantity="two">‬اوقات الإغلاق</item>
+        <item quantity="few">‬اوقات الإغلاق</item>
+        <item quantity="many">‬اوقات الإغلاق</item>
+        <item quantity="other">‬اوقات الإغلاق</item>
     </plurals>
     <plurals name="migrate_entry">
         <item quantity="zero">ترحيل ‫ المدخل؟</item>

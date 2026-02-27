@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_search_manually">Buscar manualmente</string>
+    <string name="action_search_manually">Búsqueda manual</string>
     <string name="action_migrate_now">Migrar ahora</string>
     <string name="action_clean_titles">Limpiar títulos</string>
     <string name="action_edit_info">Editar información</string>
@@ -19,7 +19,7 @@
     <string name="use_hentai_at_home_option_2">Solo clientes de puerto predeterminado</string>
     <string name="show_japanese_titles">Mostrar títulos japoneses en los resultados de búsqueda</string>
     <string name="tag_filtering_threshhold_error">¡Debe estar entre -9999 y 0!</string>
-    <string name="tag_watching_threshhold_error">¡Debe estar entre 0 y 9999!</string>
+    <string name="tag_watching_threshhold_error">Escribe un número entre 0 y 9999</string>
     <string name="eh_image_quality_1280">1280x</string>
     <string name="pref_enhanced_e_hentai_view">Exploración E/ExHentai mejorada</string>
     <string name="action_skip_entry">No migrar</string>
@@ -28,7 +28,7 @@
     <string name="entry_type_webtoon">Webtoon</string>
     <string name="entry_type_manga">Manga</string>
     <string name="pref_category_all_sources">Todas las fuentes</string>
-    <string name="pref_category_fork">Ajustes de Bifurcación</string>
+    <string name="pref_category_fork">Ajustes de esta versión de la aplicación</string>
     <string name="use_hentai_at_home">Use la red Hentai@Home</string>
     <string name="use_hentai_at_home_summary">Desea cargar imágenes a través de la red de Hentai@Home, si está disponible? Deshabilitar esta opción reducirá la cantidad de páginas que puede ver
 \nOpciones:
@@ -39,27 +39,25 @@
     <string name="use_original_images">Utiliza imágenes originales</string>
     <string name="use_original_images_on">Actualmente usando imágenes originales</string>
     <string name="watched_tags">Etiquetas vistas</string>
-    <string name="language_filtering">Filtrado de idioma</string>
+    <string name="language_filtering">Filtrar idiomas</string>
     <string name="eh_image_quality_1600">1600x</string>
     <string name="frong_page_categories">Categorías de la página principal</string>
     <string name="eh_image_quality_2400">2400x</string>
     <string name="eh_image_quality_summary">La calidad de las imágenes descargadas</string>
     <string name="eh_image_quality">Calidad de imagen</string>
-    <string name="eh_image_quality_auto">Auto</string>
+    <string name="eh_image_quality_auto">Automática</string>
     <string name="eh_image_quality_980">980x</string>
     <string name="disable_favorites_uploading">Desactivar la subida de favoritos</string>
     <string name="eh_image_quality_780">780x</string>
     <string name="show_japanese_titles_option_2">Actualmente se muestran los títulos en inglés/romanizado en los resultados de búsqueda. Borra la caché de capítulos después de cambiar esto (en la sección Avanzado)</string>
     <string name="watched_tags_summary">Abre una vista web a tu página de etiquetas vistas de E/ExHentai</string>
-    <string name="fromt_page_categories_summary">¿Qué categorías te gustaría mostrar por defecto en la página principal y en las búsquedas? Aún pueden habilitarse activando sus filtros</string>
-    <string name="language_filtering_summary">Si deseas ocultar galerías en ciertos idiomas de la lista de galerías y búsquedas, selecciónalas en el cuadro de diálogo que aparecerá.
-\nTen en cuenta que las galerías coincidentes nunca aparecerán, sin importar tu consulta de búsqueda.
-\nTldr marcado = excluir</string>
+    <string name="fromt_page_categories_summary">¿Qué categorías te gustaría mostrar por defecto en la página principal y en las búsquedas? El resto se puede seguir viendo activando filtros</string>
+    <string name="language_filtering_summary">Si deseas ocultar galerías en ciertos idiomas de la lista de galerías y búsquedas, márcalas a continuación. \nTen en cuenta que las galerías que marcadas nunca aparecerán, aunque las busques. \nEn pocas palabras: si está marcado = se excluye</string>
     <string name="watched_tags_exh">Etiquetas Observadas en ExHentai</string>
     <string name="tag_filtering_threshold">Umbral de Filtrado de Etiquetas</string>
-    <string name="tag_watching_threshhold">Umbral de Monitoreo de Etiquetas</string>
+    <string name="tag_watching_threshhold">Umbral de monitoreo de etiquetas</string>
     <string name="tag_watching_threshhold_summary">Las galerías recientemente subidas se incluirán en la pantalla de observación si tienen al menos una etiqueta observada con peso positivo, y la suma de los pesos de sus etiquetas observadas alcanza este valor o es mayor. Este umbral se puede establecer entre 0 y 9999. Actualmente: %1$d</string>
-    <string name="watched_list_default">Estado Predeterminado del Filtro de la Lista Observada</string>
+    <string name="watched_list_default">Estado predeterminado del filtro de la lista de favoritos</string>
     <string name="watched_list_state_summary">Al navegar en ExHentai/E-Hentai, ¿debería estar habilitado el filtro de la lista de seguimiento de forma predeterminada?</string>
     <string name="pref_enhanced_e_hentai_view_summary">Habilitar/Deshabilitar el menú de navegación mejorado hecho para E/ExHentai</string>
     <string name="favorites_sync">Sincronización de Favoritos de E-Hentai</string>
@@ -67,15 +65,15 @@
     <string name="disable_favorites_uploading_summary">Los favoritos solo se descargan desde ExHentai. Cualquier cambio en los favoritos en la aplicación no se cargará. Previene la pérdida accidental de favoritos en ExHentai. Ten en cuenta que las eliminaciones aún se descargarán (si eliminas un favorito en ExHentai, también se eliminará en la aplicación).</string>
     <string name="show_favorite_sync_notes">Mostrar notas sincronizadas de favoritos</string>
     <string name="show_favorite_sync_notes_summary">Mostrar información sobre la función de sincronización de favoritos</string>
-    <string name="please_login">¡Por favor inicia sesión!</string>
+    <string name="please_login">¡Tienes que iniciar sesión!</string>
     <string name="ignore_sync_errors">Ignorar errores de sincronización cuando sea posible</string>
-    <string name="force_sync_state_reset">Forzar el restablecimiento del estado de sincronización</string>
-    <string name="sync_state_reset">Restablecimiento del estado de sincronización</string>
+    <string name="force_sync_state_reset">Restablece el estado de sincronización</string>
+    <string name="sync_state_reset">Restablecer estado de sincronización</string>
     <string name="ignore_sync_errors_summary">No canceles el proceso de sincronización inmediatamente si encuentras errores. Los errores se seguirán mostrando cuando se complete la sincronización. En algunos casos, puede provocar la pérdida de favoritos. Resulta útil cuando se sincronizan bibliotecas grandes.</string>
     <string name="force_sync_state_reset_summary">Realiza una resincronización completa en la próxima sincronización. Las eliminaciones no se sincronizarán. Todos los favoritos de la aplicación se volverán a cargar en ExHentai y todos los favoritos de ExHentai se volverán a descargar en la aplicación. Útil para reparar la sincronización después de que se haya interrumpido.</string>
-    <string name="gallery_update_checker">Comprobador de actualizaciones de la galería</string>
-    <string name="auto_update_restrictions">Restricciones para actualizaciones automáticas</string>
-    <string name="time_between_batches">Tiempo entre actualizaciones</string>
+    <string name="gallery_update_checker">Comprobar actualizaciones de la galería</string>
+    <string name="auto_update_restrictions">Restringir actualizaciones automáticas</string>
+    <string name="time_between_batches">Intervalo de tiempo entre actualizaciones</string>
     <string name="time_between_batches_never">Nunca actualizar las galerías</string>
     <string name="time_between_batches_1_hour">1 hora</string>
     <string name="time_between_batches_2_hours">2 horas</string>
@@ -91,21 +89,19 @@
     <string name="gallery_updater_stats_text">El actualizador ejecutó %1$s por última vez, y comprobó %2$d de las %3$d galerías que estaban listas para ser comprobadas.</string>
     <string name="gallery_updater_not_ran_yet">El actualizador aún no se ha ejecutado.</string>
     <string name="settings_profile_note">Nota de perfil de configuración</string>
-    <string name="eh_settings_successfully_uploaded">¡Ajustes cargados correctamente!</string>
-    <string name="eh_settings_configuration_failed">¡Error en la configuración!</string>
+    <string name="eh_settings_successfully_uploaded">¡Los ajustes se han subido!</string>
+    <string name="eh_settings_configuration_failed">¡Hubo un error en la configuración!</string>
     <string name="eh_settings_configuration_failed_message">Se ha producido un error durante el proceso de configuración: %1$s</string>
-    <string name="eh_settings_uploading_to_server">Cargar la configuración en el servidor</string>
+    <string name="eh_settings_uploading_to_server">Subiendo ajustes al servidor</string>
     <string name="time_between_batches_summary_2">%1$s comprueba/actualiza las galerías por lotes. Esto significa que esperará %2$d hora(s), comprobará %3$d galerías, esperará %2$d hora(s), comprobará %3$d y así sucesivamente…</string>
-    <string name="gallery_updater_stats_time">\nGalerías que se comprobaron en:\n- hora: %1$d\n- 6 horas: %2$d\n- 12 horas: %3$d\n- día: %4$d\n- 2 días: %5$d\n- semana: %6$d\n- mes: %7$d\n- año: %8$d</string>
-    <string name="settings_profile_note_message">La aplicación añadirá ahora un nuevo perfil de configuración en E-Hentai y ExHentai para optimizar el rendimiento de la aplicación. Asegúrate de tener menos de tres perfiles en ambos sitios.
-\n
-\nSi no tienes ni idea de lo que son los perfiles de configuración, probablemente no importe, simplemente pulsa \"Aceptar\".</string>
-    <string name="eh_settings_uploading_to_server_message">Por favor espere, esto puede tardar algún tiempo…</string>
-    <string name="eh_settings_out_of_slots_error">¡No tienes espacios en tu perfil %1$s, por favor elimine un perfil!</string>
-    <string name="recheck_login_status">Vuelva a verificar el estado de inicio de sesión</string>
+    <string name="gallery_updater_stats_time">\nGalerías que se comprobaron hace:\n- una hora: %1$d\n- 6 horas: %2$d\n- 12 horas: %3$d\n- un día: %4$d\n- 2 días: %5$d\n- una semana: %6$d\n- un mes: %7$d\n- un año: %8$d</string>
+    <string name="settings_profile_note_message">La aplicación añadirá ahora un nuevo perfil de configuración en E-Hentai y ExHentai para optimizar el rendimiento de la aplicación. Asegúrate de tener menos de tres perfiles en ambos sitios. \n \nSi no tienes ni idea de lo que son los perfiles de configuración no te preocupes por esto y pulsa «Aceptar».</string>
+    <string name="eh_settings_uploading_to_server_message">Espera un momento, puede tardar un poco…</string>
+    <string name="eh_settings_out_of_slots_error">¡No tienes espacio en tu perfil %1$s, primero elimina un perfil ya existente!</string>
+    <string name="recheck_login_status">Recomprobar estado de inicio de sesión</string>
     <string name="alternative_login_page">Página de inicio de sesión alternativa</string>
     <string name="skip_page_restyling">Saltar el cambio de estilo de la página</string>
-    <string name="custom_igneous_cookie">Cookie ígneo personalizado</string>
+    <string name="custom_igneous_cookie">Cookie «igneus» personalizada</string>
     <string name="custom_igneous_cookie_message">Algunos usuarios no pueden acceder a ExHentai de la manera normal y deben ingresar un valor específico de cookie ígneo. Esta opción es para esos usuarios.</string>
     <string name="developer_tools">Herramientas de desarrollador</string>
     <string name="toggle_hentai_features">Activar funciones integradas de hentai</string>
@@ -113,51 +109,49 @@
     <string name="toggle_delegated_sources">Activar fuentes delegadas</string>
     <string name="toggle_delegated_sources_summary">Aplicar %1$s mejoras a las siguientes fuentes si están instaladas: %2$s</string>
     <string name="log_level">Nivel de registro</string>
-    <string name="log_level_summary">Cambiar esto puede afectar el rendimiento de la aplicación. Reinicie la aplicación forzosamente después de realizar el cambio. Valor actual: %s</string>
+    <string name="log_level_summary">Cambiar esto puede afectar el rendimiento de la aplicación. Reinicia la aplicación manualmente tras el cambio. Valor actual: %s</string>
     <string name="enable_source_blacklist">Activar lista negra de fuentes</string>
-    <string name="enable_source_blacklist_summary">Ocultar extensiones/fuentes que son incompatibles con %1$s. Reinicie la aplicación forzosamente después de realizar el cambio.</string>
+    <string name="enable_source_blacklist_summary">Ocultar extensiones/fuentes que son incompatibles con %1$s. Reinicia la aplicación manualmente tras el cambio.</string>
     <string name="open_debug_menu">Abrir menú de depuración</string>
-    <string name="open_debug_menu_summary"><![CDATA[¡NO TOQUE ESTE MENÚ A MENOS QUE SEPA LO QUE ESTÁ HACIENDO! <font color=\'red\'>¡PUEDE CORROMPER SU BIBLIOTECA!</font>]]></string>
-    <string name="starting_cleanup">Comenzando la limpieza</string>
+    <string name="open_debug_menu_summary"><![CDATA[¡NO TOQUES ESTE MENÚ A MENOS QUE SEPAS LO QUE HACES! <font color=\'red\'>¡PUEDES CORROMPER TU BIBLIOTECA!</font>]]></string>
+    <string name="starting_cleanup">Comenzando el borrado</string>
     <string name="clean_up_downloaded_chapters">Limpiar capítulos descargados</string>
-    <string name="delete_unused_chapters">Eliminar carpetas de capítulos inexistentes, parcialmente descargadas y leídas</string>
-    <string name="no_folders_to_cleanup">No hay carpetas para limpiar</string>
-    <string name="clean_orphaned_downloads">Limpiar huérfanos</string>
-    <string name="clean_read_downloads">Limpiar leídos</string>
-    <string name="clean_read_entries_not_in_library">Limpiar entradas no en la biblioteca</string>
+    <string name="delete_unused_chapters">Elimina carpetas de capítulos inexistentes, parcialmente descargados, o ya leídos</string>
+    <string name="no_folders_to_cleanup">No hay ninguna carpeta que limpiar</string>
+    <string name="clean_orphaned_downloads">Borrar descargas huérfanas</string>
+    <string name="clean_read_downloads">Borrar ya leídos</string>
+    <string name="clean_read_entries_not_in_library">Borrar lo que no esté en la biblioteca</string>
     <string name="data_saver">Ahorro de datos</string>
-    <string name="data_saver_summary">Comprimir imágenes antes de descargarlas o cargarlas en el lector</string>
-    <string name="data_saver_downloader">Usar ahorrador de datos en el descargador</string>
+    <string name="data_saver_summary">Comprimir imágenes antes de descargarlas o verlas en el visor</string>
+    <string name="data_saver_downloader">Descargar con el ahorrador de datos</string>
     <string name="data_saver_ignore_jpeg">Ignorar imágenes JPEG</string>
     <string name="data_saver_ignore_gif">Ignorar animaciones GIF</string>
     <string name="data_saver_image_quality">Calidad de imagen</string>
-    <string name="data_saver_image_format">Comprimir a Jpeg</string>
-    <string name="data_saver_image_format_summary_on">El tamaño del archivo Jpeg es considerablemente más pequeño que el de Webp (lo que significa que se guarda más datos), pero también hace que las imágenes pierdan más calidad.
-\nActualmente, se comprime a Jpeg</string>
-    <string name="data_saver_image_quality_summary">Valores más altos significan que se guarda un mayor porcentaje de la calidad de la imagen, pero también implica que el tamaño del archivo es mayor; un 80 por ciento es una buena media entre el tamaño del archivo y la calidad de la imagen</string>
-    <string name="data_saver_image_format_summary_off">El tamaño de; archivo JPEG es considerablemente mas pequeño que el WEBP (lo que significa que ser guardan mas datos), pero tambien hace que las imagenes pierdan mucha calidad.
-\nActualmente se comprimen en WEBP</string>
+    <string name="data_saver_image_format">Comprimir como JPEG</string>
+    <string name="data_saver_image_format_summary_on">El tamaño de un archivo JPEG es considerablemente más pequeño que el de WebP (lo que significa que te ahorras datos de descarga), pero también hace que las imágenes pierdan más calidad.\nAhora mismo se comprime utilizando JPEG.</string>
+    <string name="data_saver_image_quality_summary">Al poner un porcentaje mayor aumenta la calidad de la imagen, pero también lo hace el tamaño en disco. Dejarlo en 80% es un término medio entre tamaño aceptable y con calidad.</string>
+    <string name="data_saver_image_format_summary_off">El tamaño de un archivo JPEG es considerablemente más pequeño que el de WebP (lo que significa que te ahorras datos de descarga), pero también hace que las imágenes pierdan más calidad.\nAhora mismo se comprime utilizando WEBP.</string>
     <string name="data_saver_color_bw">Convertir en Blanco &amp; Negro</string>
     <string name="bandwidth_hero">Bandwidth Hero ( Requiere un servidor proxy )</string>
     <string name="wsrv">wsrv.nl</string>
-    <string name="data_saver_server_summary">Pom aqui la URl del Servidor Proxy de Bandwidth Hero</string>
+    <string name="data_saver_server_summary">Pega aquí la dirección URL del servidor proxy de Bandwidth Hero</string>
     <string name="clear_db_exclude_read">Conservar obras con capítulos leídos</string>
     <string name="bandwidth_data_saver_server">Servidor Proxy de Bandwidth Hero</string>
-    <string name="log_minimal">Minimo</string>
+    <string name="log_minimal">Mínimo</string>
     <string name="log_extra">Extra</string>
     <string name="log_extreme">Extremo</string>
-    <string name="log_minimal_desc">Solo errores criticos</string>
-    <string name="log_extra_desc">Todos los registros</string>
-    <string name="log_extreme_desc">Modo de inspeccion de red</string>
+    <string name="log_minimal_desc">Solo errores críticos</string>
+    <string name="log_extra_desc">Registrar todos los mensajes</string>
+    <string name="log_extreme_desc">Modo de inspección de red</string>
     <string name="toggle_expand_search_filters">Ampliar todos los filtros de búsqueda de forma predeterminada</string>
-    <string name="pref_previews_row_count">Vista previa del recuento de filas</string>
+    <string name="pref_previews_row_count">Filas en vista previa</string>
     <string name="pref_hide_updates_button">Mostrar actualizaciones en la barra de navegación</string>
     <string name="pref_hide_history_button">Mostrar historial en la barra de navegación</string>
     <string name="pref_show_bottom_bar_labels">Mostrar siempre las etiquetas de navegación</string>
     <string name="pref_category_navbar">Barra de navegación</string>
-    <string name="put_recommends_in_overflow">Mostrar recomendaciones en el menú</string>
-    <string name="put_recommends_in_overflow_summary">Coloque el botón de recomendaciones en el menú adicional en lugar de en la página de entrada</string>
-    <string name="put_merge_in_overflow">Fusionar en el menú adicional</string>
+    <string name="put_recommends_in_overflow">Recomendaciones en menú lateral</string>
+    <string name="put_recommends_in_overflow_summary">Poner el botón de recomendaciones en el menú lateral en vez de en la página de la obra</string>
+    <string name="put_merge_in_overflow">Fusionar en el menú lateral</string>
     <string name="put_merge_in_overflow_summary">Coloque el botón de fusión en el menú adicional en lugar de en la página de entrada</string>
     <string name="pref_sorting_settings">Ajustes de ordenación</string>
     <string name="pref_skip_pre_migration_summary">Utilizar las últimas preferencias y fuentes guardadas antes de la migración para migrar</string>
@@ -168,7 +162,7 @@
     <string name="pref_library_mark_duplicate_chapters">Marcar nuevos capítulos duplicados como leídos</string>
     <string name="pref_library_mark_duplicate_chapters_summary">Marcar automáticamente nuevos capítulos como leídos si se han leído antes</string>
     <string name="update_1hour">Cada hora</string>
-    <string name="pref_hide_feed">Ocultar pestaña Feed</string>
+    <string name="pref_hide_feed">Ocultar pestaña de novedades</string>
     <string name="pref_source_source_filtering_summery">Filtrar las fuentes que están en categorías, haciendo que las fuentes no se pongan debajo del idioma si están en una categoría</string>
     <string name="pref_source_navigation_summery">Reemplace el botón más reciente con una vista de exploración personalizada que incluya tanto lo más reciente como la exploración</string>
     <string name="all_read_entries">Todas las obras leídas</string>
@@ -177,8 +171,8 @@
     <string name="update_30min">Cada 30 minutos</string>
     <string name="pref_source_source_filtering">Filtrar las fuentes en categorías</string>
     <string name="update_3hour">Cada 3 horas</string>
-    <string name="pref_feed_position">Posición de la pestaña Feed</string>
-    <string name="pref_feed_position_summery">¿Quieres que la pestaña feed sea la primera pestaña en navegar? Esto hará que sea la pestaña predeterminada al abrir la navegación, no se recomienda si está con datos móviles o una red medida</string>
+    <string name="pref_feed_position">Posición de la pestaña de novedades</string>
+    <string name="pref_feed_position_summery">¿Quieres que la pestaña de novedades sea la inicial? No te recomendamos que lo actives si tienes datos móviles o datos limitados</string>
     <string name="pref_source_navigation">Reemplazar el botón más reciente</string>
     <string name="pref_local_source_hidden_folders">Carpetas ocultas de fuente local</string>
     <string name="pref_local_source_hidden_folders_summery">Permite a la fuente local leer carpetas ocultas</string>
@@ -217,10 +211,10 @@
     <string name="action_edit_biometric_lock_times">Editar horarios de bloqueo</string>
     <string name="biometric_lock_times_empty">No tienes horarios de bloqueo biométrico. Pulsa el botón «+» para añadir uno.</string>
     <string name="biometric_lock_time_conflicts">¡Una hora de bloqueo entra en conflicto con otra existente!</string>
-    <string name="biometric_lock_start_time">Introducir hora de inicio</string>
-    <string name="biometric_lock_end_time">Introducir hora de finalización</string>
+    <string name="biometric_lock_start_time">Introduce una hora de inicio</string>
+    <string name="biometric_lock_end_time">Introduce una hora de finalización</string>
     <string name="delete_time_range">Eliminar intervalo de tiempo</string>
-    <string name="delete_time_range_confirmation">¿Deseas eliminar el intervalo de tiempo %s?</string>
+    <string name="delete_time_range_confirmation">¿Quieres borrar el intervalo de tiempo %s?</string>
     <string name="biometric_lock_days">Días de bloqueo biométrico</string>
     <string name="biometric_lock_days_summary">Días para tener la aplicación bloqueada</string>
     <string name="sunday">Domingo</string>
@@ -242,7 +236,7 @@
     <string name="thursday">Jueves</string>
     <string name="encrypt_database">Cifrar base de datos</string>
     <string name="friday">Viernes</string>
-    <string name="encrypt_database_subtitle">Requiere reiniciar la aplicación para que surta efecto</string>
+    <string name="encrypt_database_subtitle">Es necesario reiniciar la aplicación para que surta efecto</string>
     <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>ACTIVAR ESTO CREARÁ UNA NUEVA BASE DE DATOS. USA ESTOS PASOS PARA MANTENER TUS DATOS<br>1. AJUSTES -> COPIA DE SEGURIDAD -> CREAR<br>2. AJUSTES DEL SISTEMA -> BORRAR LOS DATOS DE LA APLICACIÓN<br>3. ABRIR LA APLICACIÓN Y ACTIVAR ESTO<br>4. AJUSTES DEL SISTEMA -> FORZAR REINICIO<br>5. AJUSTES -> COPIA DE SEGURIDAD -> RESTAURAR</font>]]></string>
     <string name="password_protect_downloads">Descargas protegidas por contraseña</string>
     <string name="password_protect_downloads_summary">Encripta las descargas de archivos CBZ con la contraseña dada.\nADVERTENCIA: LOS DATOS DE LOS ARCHIVOS SE PERDERÁN PARA SIEMPRE SI SE OLVIDA LA CONTRASEÑA</string>
@@ -435,7 +429,7 @@
     <string name="favorites_sync_removing_galleries">Eliminando %1$d galerías del servidor remoto</string>
     <string name="favorites_sync_unable_to_delete">¡No se pudo eliminar las galerías del servidor remoto!</string>
     <string name="tracking_status">Estado de seguimiento</string>
-    <string name="not_tracked">Sin seguir</string>
+    <string name="not_tracked">Sin seguimiento</string>
     <string name="sync_favorites">Sincronizar favoritos de EH</string>
     <string name="favorites_sync_reset">¿Estás seguro?</string>
     <string name="favorites_sync_reset_message">Restablecer el estado de sincronización puede hacer que la próxima sincronización sea extremadamente lenta.</string>
@@ -490,7 +484,7 @@
     <string name="relation_spin_off">Derivado de</string>
     <string name="relation_alternate_story">Historia alternativa</string>
     <string name="relation_alternate_version">Versión alternativa</string>
-    <string name="feed_add">¿Añadir %1$s al feed?</string>
+    <string name="feed_add">¿Añadir %1$s a novedades?</string>
     <string name="error_with_reason">Error: %1$s</string>
     <string name="could_not_open_entry">No se pudo abrir esta entrada:\n\n%1$s</string>
     <string name="launching_app">Iniciando aplicación…</string>
@@ -549,11 +543,11 @@
     <string name="pref_crop_borders_continuous_vertical">Recortar el borde vertical</string>
     <string name="humanize_fallback">hace unos instantes</string>
     <string name="pref_crop_borders_webtoon">Recortar bordes Webtoon</string>
-    <string name="feed">Feed</string>
-    <string name="feed_delete">¿Borrar artículo de feed?</string>
+    <string name="feed">Novedades</string>
+    <string name="feed_delete">¿Borrar el elemento de novedades?</string>
     <string name="action_add_tags_message">¡Lee esto! ¡Etiquetas deben ser exactas, no hay coincidencias parciales, no puedes hacer netorare para excluir mujer:netorare o similar!\nEl estilo para etiquetas de nombre es\n\"mujer: solo mujer\"\n¡sin citas!\n¡Se pueden añadir multiples variantes de la misma etiqueta, así que puedes hacer \"etiqueta:netorare\" para NHentai y \"mujer:netorare\" para E-Hentai!</string>
     <string name="select_none">Selecciona ninguno</string>
-    <string name="feed_tab_empty">No tiene fuentes en su feed, navegar a la parte superior derecha para añadir una</string>
+    <string name="feed_tab_empty">No tienes ninguna fuente en novedades, añade alguna desde la parte superior derecha</string>
     <string name="skip_pre_migration">Saltar pre-migración</string>
     <string name="search_parameter">Buscar parámetro (p. ej. idioma:inglés)</string>
     <string name="lewd">Lascivo</string>
@@ -584,7 +578,7 @@
     <string name="page_count">Número de páginas</string>
     <string name="parent">Padre</string>
     <string name="uploader">Cargador</string>
-    <string name="url">URL</string>
+    <string name="url">Dirección URL</string>
     <string name="uploader_capital">Cargador principal</string>
     <string name="follow_status">Seguir estado</string>
     <string name="language_translated">%1$s TR</string>
@@ -610,7 +604,7 @@
     <string name="relation_monochrome">Monocromo</string>
     <string name="entry_not_tracked">El título no tiene seguimiento.</string>
     <string name="select_tracker">Elige un servicio de seguimiento</string>
-    <string name="fill_from_tracker">Rellenar desde el serv. de seguimiento</string>
+    <string name="fill_from_tracker">Rellenar desde seguim.</string>
     <string name="favorites_sync_unable_to_add_to_remote">No se puede añadir la galería al servidor remoto: \'%1$s\' (GID: %2$s)!</string>
     <string name="rec_error_title">La búsqueda no se ha podido completar</string>
     <string name="rec_common_recommendations">Recomendaciones en común</string>
@@ -626,10 +620,13 @@
     <string name="rec_group_source">Recomendaciones de la fuente</string>
     <string name="rec_services_to_search">Servicios de recomendación en los que buscar</string>
     <string name="rec_hide_library_entries">Ocultar elementos que ya estén en la biblioteca</string>
-    <string name="pref_tracker_resolve_using_source_metadata_summary">Encuentra el título automáticamente si la fuente ya enlaza con el servicio de seguimiento. De momento solo funciona en MangaDex</string>
-    <string name="pref_tracker_resolve_using_source_metadata">Elegir títulos a través de los metadatos de la fuente</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Encuentra la obra automáticamente si la fuente ya enlaza con el servicio de seguimiento. De momento solo funciona en MangaDex</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Elegir obras a través de los metadatos de la fuente</string>
     <string name="scan_qr_code">Escanear un código QR</string>
     <string name="final_chapter">Capítulo final</string>
     <string name="file_extension">Extensión de archivo</string>
-    <string name="base_url">URL base</string>
+    <string name="base_url">Dirección URL base</string>
+    <string name="filename">Nombre de archivo</string>
+    <string name="pref_include_chapter_url_hash_desc">Añade las primeras seis letras del hash MD5 de la dirección URL del capítulo al nombre de archivo o carpeta local.</string>
+    <string name="pref_include_chapter_url_hash">Incluir el hash de la URL del capítulo</string>
 </resources>

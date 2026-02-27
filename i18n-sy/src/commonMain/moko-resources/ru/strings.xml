@@ -694,4 +694,6 @@
     <string name="file_extension">Расширение файла</string>
     <string name="base_url">Главный URL</string>
     <string name="final_chapter">Последняя глава</string>
+    <string name="pref_include_chapter_url_hash">Включать URL хэш главы</string>
+    <string name="pref_include_chapter_url_hash_desc">Добавить первые шесть символов хеша MD5 URL-адреса главы к имени файла или папки главы.</string>
 </resources>
