@@ -215,7 +215,7 @@
     <string name="use_hentai_at_home">استخدم شبكة Hentai@Home</string>
     <string name="show_japanese_titles_option_2">يتم حاليًا عرض العناوين الإنجليزية/الحروف اللاتينية في نتائج البحث. امسح ذاكرة التخزين المؤقت للفصل بعد تغيير هذا (في القسم المتقدم)</string>
     <string name="watched_tags_exh">فئاتExHentai التي شاهدتها</string>
-    <string name="tag_filtering_threshhold_error">يجب ان تكون القيمة بين صفر و ٩٩٩٩‐</string>
+    <string name="tag_filtering_threshhold_error">يجب ان تكون القيمة بين صفر و ٩٩٩٩‐!</string>
     <string name="tag_watching_threshhold_summary">سيتم تضمين المعارض التي تم تحميلها مؤخرًا على شاشة المشاهدة إذا كانت تحتوي على علامة مشاهدة واحدة على الأقل ذات وزن إيجابي، ويصل مجموع الأوزان على العلامات التي تمت مشاهدتها إلى هذه القيمة أو أعلى. يمكن تعيين هذه العتبة بين ٠ و٩٩٩٩. حاليًا القيمة :%1$d</string>
     <string name="tag_watching_threshhold_error">يجب ان تكون القيمة بين صفر و ٩٩٩٩ !</string>
     <string name="language_filtering_summary">إذا كنت ترغب في إخفاء المعارض التى بلغات معينة من قائمة المعرض والبحث، اختارها في الحوار الذى سوف يظهر.
@@ -245,16 +245,7 @@
     <string name="show_updater_statistics">عرض إحصائيات التحديث</string>
     <string name="gallery_updater_statistics_collection">جارٍ جمع الإحصائيات…</string>
     <string name="gallery_updater_statistics">إحصائيات تحديث المعرض</string>
-    <string name="gallery_updater_stats_time">"
-\nالمعارض التي تم فحصها في الماضي
-\n- ساعة : %1$d
-\n-٦ ساعات : %2$d
-\n-١٢ ساعة : %3$d
-\n-يوم : %4$d
-\n-يومين: %5$d
-\n-أسبوع : %6$d
-\n-شهر : %7$d
-\n-سنة : %8$d"</string>
+    <string name="gallery_updater_stats_time">\nالمعارض التي تم فحصها في الماضي\n\n- ساعة : %1$d\n\n-٦ ساعات : %2$d\n\n-١٢ ساعة : %3$d\n\n-يوم : %4$d\n\n-يومين: %5$d\n\n-أسبوع : %6$d\n\n-شهر : %7$d\n\n-سنة : %8$d</string>
     <string name="skip_page_restyling">تخطي إعادة تصميم الصفحة</string>
     <string name="eh_settings_uploading_to_server">تحميل الإعدادات إلى الخادم</string>
     <string name="eh_settings_configuration_failed_message">حدث خطأ أثناء عملية التكوين:%1$s</string>
@@ -538,7 +529,7 @@
     <string name="favorites_sync_notes">ملاحظات مزامنة المفضلة الهامة</string>
     <string name="eh_batch_add_finish">إنهاء</string>
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\'%2$s</string>
-    <string name="rating9">رائع</string>
+    <string name="rating9">مدهش</string>
     <string name="relation_alternate_story">قصة بديلة</string>
     <string name="similar_titles">عناوين متشابهة</string>
     <string name="mangadex_preffered_source">مصدر MangaDex المفضل</string>
@@ -575,7 +566,7 @@
     <string name="page_preview_page_go_to">ادخل إلى</string>
     <string name="rating2">مؤلم</string>
     <string name="no_rating">لا تقييم</string>
-    <string name="artist_cg">‬الفنان</string>
+    <string name="artist_cg">فنان رسومات حاسوبية</string>
     <string name="genre">النوع</string>
     <string name="merged_toggle_download_chapters_error">خطأ في تنزيل الفصول</string>
     <string name="merged_references_invalid">اندماج المراجع غير صالح</string>
@@ -636,10 +627,15 @@
     <string name="select_scanlators">مجموعات المسح للعرض</string>
     <string name="relation_spin_off">تدور خارج</string>
     <string name="doujinshi">دوجينشي</string>
-    <string name="non_h">Non-H</string>
+    <string name="non_h">غير إباحي</string>
     <string name="asian_porn">إباحيات آسياوية</string>
     <string name="id">المُعرّف</string>
     <string name="is_exhentai_gallery">is Exhentai gallery</string>
     <string name="language_translated">%1$s مترجم</string>
     <string name="relation_doujinshi">دوجينشي</string>
+    <string name="filename">اسم الملف</string>
+    <string name="file_extension">امتداد الملف</string>
+    <string name="base_url">عنوان URL الأساسي</string>
+    <string name="final_chapter">الفصل الأخير</string>
+    <string name="pref_include_chapter_url_hash_desc">أضف الأحرف الستة الأولى من تجزئة MD5 الخاصة بعنوان URL الخاص بالفصل إلى اسم ملف أو مجلد الفصل.</string>
 </resources>

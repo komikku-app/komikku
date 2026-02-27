@@ -567,7 +567,7 @@
     <string name="follow_status">Takip etme durumu</string>
     <string name="mal_id">Mal id</string>
     <string name="is_visible">Görülebilir: %1$s</string>
-    <string name="language_translated">%1$s ÇVR</string>
+    <string name="language_translated">%1$s Çeviri</string>
     <string name="delete_merged_entry">Emin misiniz?</string>
     <string name="delete_merged_entry_desc">Girdi birleştirmeden kaldırılacaktır, ayrıca birleştirilmiş girdiye uygulanmış kaydedilmeyen değişiklikler kaybolacaktır</string>
     <string name="chapter_updates_merged_entry">Bölüm güncellemelerini ayarla</string>
@@ -624,4 +624,6 @@
     <string name="file_extension">Dosya uzantısı</string>
     <string name="base_url">Ana url</string>
     <string name="final_chapter">Son bölüm</string>
+    <string name="pref_include_chapter_url_hash">Bölüm URL hash\'ini ekle</string>
+    <string name="pref_include_chapter_url_hash_desc">Bölüm URL\'sinin MD5 hash değerinin ilk altı karakterini bölüm dosyasının veya klasörünün adına ekleyin.</string>
 </resources>

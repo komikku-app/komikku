@@ -531,7 +531,7 @@
     <string name="data_saver_downloader">Usar economia de dados no baixador</string>
     <string name="bandwidth_hero">Bandwidth Hero (Requer um servidor proxy Bandwidth Hero)</string>
     <string name="wsrv">wsrv.nl</string>
-    <string name="put_merge_in_overflow">Mesclar em transborde</string>
+    <string name="put_merge_in_overflow">Mesclar em caso de excesso</string>
     <string name="put_merge_in_overflow_summary">Colocar o botão de mesclar no menu flutuante ao invés da pagina inicial</string>
     <string name="pref_feed_position_summery">Você quer que a aba Feed seja a primeira aba em Navegar? Isso irá fazer dela a aba principal ao abrir Navegar, não é recomendado se você estiver usando uma rede medida ou dados móveis</string>
     <string name="label_triggers">Gatilhos</string>
@@ -542,7 +542,7 @@
     <string name="pref_sync_interval">Frequência de sincronização</string>
     <string name="error_deleting_google_drive_lock_file">Error ao Deletar Ficheiro de Bloqueio no Google Drive</string>
     <string name="pref_sync_options_summ">Pode ser usado para criar gatilhos de sincronização</string>
-    <string name="sync_on_chapter_read">Sincronizar após Leitura de Capitulo</string>
+    <string name="sync_on_chapter_read">Sincronizar com a leitura do capítulo</string>
     <string name="pref_purge_confirmation_title">Confirmação de Limpeza</string>
     <string name="pref_sync_options">Criar gatilhos de sincronização</string>
     <string name="sync_on_chapter_open">Sincronizar após abrir capítulo</string>
@@ -655,4 +655,11 @@
     <string name="relation_prequel">Prólogo</string>
     <string name="dedupe_priority">Eliminar duplicatas com base na prioridade</string>
     <string name="no_dedupe">Sem remoção de duplicatas</string>
+    <string name="pref_include_chapter_url_hash">Incluir o hash da URL do capítulo</string>
+    <string name="pref_include_chapter_url_hash_desc">Adicione os seis primeiros caracteres do hash MD5 da URL do capítulo ao nome do arquivo ou pasta do capítulo.</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Selecione entradas usando metadados de origem</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Seleciona automaticamente o título correspondente se a fonte fornecer links para rastreadores. Atualmente compatível com MangaDex</string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>HABILITAR ESTA OPÇÃO CRIARÁ UM NOVO BANCO DE DADOS. SIGA ESTAS EPATAS PARA MANTER SEUS DADOS SEGUROS<br>1. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> CRIAR BACKUP<br>2. CONFIGURAÇÕES DO SISTEMA -> LIMPAR DADOS DO APP<br>3. ABRA O APP E ATIVE ISSO<br>4. CONFIGURAÇÕES DO SISTEMA -> FORÇAR REINICIALIZAÇÃO<br>5. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> RESTAURAR BACKUP</font>]]></string>
+    <string name="aes_256">AES 256</string>
+    <string name="aes_128">AES 128</string>
 </resources>
