@@ -682,4 +682,6 @@
     <string name="file_extension">副檔名</string>
     <string name="base_url">基礎url</string>
     <string name="final_chapter">終章</string>
+    <string name="pref_include_chapter_url_hash">包含章節網址雜湊值</string>
+    <string name="pref_include_chapter_url_hash_desc">將章節網址的 MD5 雜湊值前六個字元附加至章節檔案或資料夾名。</string>
 </resources>
