@@ -99,6 +99,7 @@ class MigrateMangaUseCase(
                                 // SY <--
                                 dateFetch = prevChapter.dateFetch,
                                 bookmark = prevChapter.bookmark,
+                                lastPageRead = prevChapter.lastPageRead,
                             )
                             // SY -->
                             // KMK -->
