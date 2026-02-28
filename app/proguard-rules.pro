@@ -307,3 +307,5 @@
 -dontwarn org.ietf.jgss.GSSManager
 -dontwarn org.ietf.jgss.GSSName
 -dontwarn org.ietf.jgss.Oid
+-dontwarn com.google.re2j.Matcher
+-dontwarn com.google.re2j.Pattern
