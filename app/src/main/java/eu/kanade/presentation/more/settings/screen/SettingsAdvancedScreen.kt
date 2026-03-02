@@ -91,7 +91,6 @@ import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
@@ -917,15 +916,15 @@ object SettingsAdvancedScreen : SearchableSettings {
         userAgentPref: BasePreference<String>,
         context: android.content.Context,
     ) {
+        val networkHelper: NetworkHelper by injectLazy()
         val json: Json by injectLazy()
         val jsonMediaType = "application/json".toMediaType()
-        val client = OkHttpClient.Builder().build()
 
         try {
             withContext(Dispatchers.IO) {
                 val flareSolverUrl = flareSolverrUrlPref.get().trim()
                 val flareSolverResponse = with(json) {
-                    client.newCall(
+                    networkHelper.client.newCall(
                         POST(
                             url = flareSolverUrl,
                             body =
