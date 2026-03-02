@@ -4,6 +4,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
@@ -23,8 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipDefaults.rememberTooltipPositionProvider
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -40,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -128,6 +132,10 @@ fun AppBar(
     isActionMode: Boolean = false,
     onCancelActionMode: () -> Unit = {},
 
+    // KMK -->
+    goHome: (() -> Boolean?)? = null,
+    // KMK <--
+
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     Column(
@@ -143,10 +151,21 @@ fun AppBar(
                         )
                     }
                 } else {
-                    navigateUp?.let {
-                        IconButton(onClick = it) {
-                            UpIcon(navigationIcon = navigationIcon)
+                    // KMK -->
+                    Row {
+                        // KMK <--
+                        navigateUp?.let {
+                            IconButton(onClick = it) {
+                                UpIcon(navigationIcon = navigationIcon)
+                            }
                         }
+                        // KMK -->
+                        goHome?.let {
+                            IconButton(onClick = { it.invoke() }) {
+                                UpIcon(navigationIcon = Icons.Filled.Home)
+                            }
+                        }
+                        // KMK <--
                     }
                 }
             },
@@ -198,13 +217,14 @@ fun AppBarActions(
 
     actions.filterIsInstance<AppBar.Action>().map {
         TooltipBox(
-            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
             tooltip = {
                 PlainTooltip {
                     Text(it.title)
                 }
             },
             state = rememberTooltipState(),
+            focusable = false,
         ) {
             IconButton(
                 onClick = it.onClick,
@@ -222,7 +242,7 @@ fun AppBarActions(
     // KMK -->
     actions.filterIsInstance<AppBar.ActionCompose>().map {
         TooltipBox(
-            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
             tooltip = {
                 PlainTooltip {
                     Text(it.title)
@@ -245,13 +265,14 @@ fun AppBarActions(
     val overflowActions = actions.filterIsInstance<AppBar.OverflowAction>()
     if (overflowActions.isNotEmpty()) {
         TooltipBox(
-            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
             tooltip = {
                 PlainTooltip {
                     Text(stringResource(MR.strings.action_menu_overflow_description))
                 }
             },
             state = rememberTooltipState(),
+            focusable = false,
         ) {
             IconButton(
                 onClick = { showMenu = !showMenu },
@@ -316,6 +337,7 @@ fun SearchToolbar(
                 onSearch(searchQuery)
                 focusManager.clearFocus()
                 keyboardController?.hide()
+                focusManager.moveFocus(FocusDirection.Next)
             }
 
             BasicTextField(
@@ -372,13 +394,14 @@ fun SearchToolbar(
                     // Don't show search action
                 } else if (searchQuery == null) {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                         tooltip = {
                             PlainTooltip {
                                 Text(stringResource(MR.strings.action_search))
                             }
                         },
                         state = rememberTooltipState(),
+                        focusable = false,
                     ) {
                         IconButton(
                             onClick = onClick,
@@ -391,13 +414,14 @@ fun SearchToolbar(
                     }
                 } else if (searchQuery.isNotEmpty()) {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                         tooltip = {
                             PlainTooltip {
                                 Text(stringResource(MR.strings.action_reset))
                             }
                         },
                         state = rememberTooltipState(),
+                        focusable = false,
                     ) {
                         IconButton(
                             onClick = {

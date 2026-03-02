@@ -13,6 +13,7 @@
         android:layout_gravity="center_horizontal">
 
         <TextView
+            android:id="@+id/dedupe_switch_label"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="@string/allow_deduplication"
@@ -28,39 +29,36 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/dedupe_mode_label"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/deduplication_mode"
+        android:padding="8dp"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/deduplication_mode"
-            android:padding="8dp"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"/>
+    <Spinner
+        android:id="@+id/dedupe_mode_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="8dp"/>
 
-        <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/dedupe_mode_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="8dp"
-            style="@style/Widget.AppCompat.Spinner.DropDown"/>
+    <TextView
+        android:id="@+id/manga_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/deduplication_entry_info"
+        android:padding="8dp"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"/>
 
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/deduplication_entry_info"
-            android:padding="8dp"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal"/>
-
-        <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/manga_info_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="8dp"
-            style="@style/Widget.AppCompat.Spinner.DropDown"/>
+    <Spinner
+        android:id="@+id/manga_info_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="8dp"/>
 
 </LinearLayout>

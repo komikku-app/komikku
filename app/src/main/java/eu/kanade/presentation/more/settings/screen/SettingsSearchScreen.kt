@@ -183,7 +183,7 @@ private fun SearchResult(
                                     emptySequence()
                                 }
                             }
-                            is Preference.PreferenceItem<*> -> sequenceOf(null to p)
+                            is Preference.PreferenceItem<*, *> -> sequenceOf(null to p)
                         }
                     }
                     // Don't show info preference
@@ -291,6 +291,9 @@ private val settingScreens = listOf(
     SettingsReaderScreen,
     SettingsDownloadScreen,
     SettingsTrackingScreen,
+    // AM (CONNECTIONS) -->
+    SettingsConnectionScreen,
+    // <-- AM (CONNECTIONS)
     SettingsBrowseScreen,
     SettingsDataScreen,
     SettingsSecurityScreen,

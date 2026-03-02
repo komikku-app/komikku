@@ -5,6 +5,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
+import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.connections.discord.RICH_PRESENCE_TAG
 import eu.kanade.tachiyomi.util.system.buildNotificationChannel
 import eu.kanade.tachiyomi.util.system.buildNotificationChannelGroup
 import tachiyomi.core.common.i18n.stringResource
@@ -40,6 +42,9 @@ object Notifications {
     private const val GROUP_DOWNLOADER = "group_downloader"
     const val CHANNEL_DOWNLOADER_PROGRESS = "downloader_progress_channel"
     const val ID_DOWNLOAD_CHAPTER_PROGRESS = -201
+    // KMK -->
+    const val ID_DOWNLOAD_CHAPTER_PAUSED = -203
+    // KMK <--
     const val CHANNEL_DOWNLOADER_ERROR = "downloader_error_channel"
     const val ID_DOWNLOAD_CHAPTER_ERROR = -202
 
@@ -51,7 +56,7 @@ object Notifications {
     const val GROUP_NEW_CHAPTERS = "eu.kanade.tachiyomi.NEW_CHAPTERS"
 
     /**
-     * Notification channel and ids used by the backup/restore system.
+     * Notification channel and ids used by the backup/restore/sync system.
      */
     private const val GROUP_BACKUP_RESTORE = "group_backup_restore"
     const val CHANNEL_BACKUP_RESTORE_PROGRESS = "backup_restore_progress_channel"
@@ -60,12 +65,23 @@ object Notifications {
     const val CHANNEL_BACKUP_RESTORE_COMPLETE = "backup_restore_complete_channel_v2"
     const val ID_BACKUP_COMPLETE = -502
     const val ID_RESTORE_COMPLETE = -504
+    const val CHANNEL_SYNC_LIBRARY = "syncing_library_channel"
+    const val ID_SYNC_PROGRESS = -505
+    const val ID_SYNC_COMPLETE = -506
 
     /**
      * Notification channel used for Incognito Mode
      */
     const val CHANNEL_INCOGNITO_MODE = "incognito_mode_channel"
     const val ID_INCOGNITO_MODE = -701
+
+    // AM (DISCORD) -->
+    /**
+     * Notification channel used for Discord RPC
+     */
+    const val CHANNEL_DISCORD_RPC = "${RICH_PRESENCE_TAG}_channel"
+    const val ID_DISCORD_RPC = -1701
+    // <-- AM (DISCORD)
 
     /**
      * Notification channel and ids used for app and extension updates.
@@ -165,6 +181,11 @@ object Notifications {
                     setShowBadge(false)
                     setSound(null, null)
                 },
+                buildNotificationChannel(CHANNEL_SYNC_LIBRARY, IMPORTANCE_LOW) {
+                    setName(context.stringResource(MR.strings.syncing_library))
+                    setGroup(GROUP_BACKUP_RESTORE)
+                    setShowBadge(false)
+                },
                 buildNotificationChannel(CHANNEL_INCOGNITO_MODE, IMPORTANCE_LOW) {
                     setName(context.stringResource(MR.strings.pref_incognito_mode))
                 },
@@ -176,6 +197,11 @@ object Notifications {
                     setGroup(GROUP_APK_UPDATES)
                     setName(context.stringResource(MR.strings.channel_ext_updates))
                 },
+                // AM (DISCORD) -->
+                buildNotificationChannel(CHANNEL_DISCORD_RPC, IMPORTANCE_LOW) {
+                    setName(context.getString(R.string.pref_discord_rpc))
+                },
+                // <-- AM (DISCORD)
                 // SY -->
                 buildNotificationChannel(CHANNEL_LIBRARY_EHENTAI, IMPORTANCE_LOW) {
                     setName("EHentai")

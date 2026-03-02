@@ -17,8 +17,9 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogD
 import exh.source.BlacklistedSources
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
+import exh.source.EHENTAI_EXT_SOURCES
+import exh.source.EXHENTAI_EXT_SOURCES
+import exh.source.ExhPreferences
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -89,12 +90,24 @@ class ExtensionManager(
 
     private var subLanguagesEnabledOnFirstRun = preferences.enabledLanguages().isSet()
 
-    fun getAppIconForSource(sourceId: Long): Drawable? {
-        val pkgName = installedExtensionMapFlow.value.values
-            .find { ext ->
-                ext.sources.any { it.id == sourceId }
-            }
+    fun getExtensionPackage(sourceId: Long): String? {
+        return installedExtensionsFlow.value.find { extension ->
+            extension.sources.any { it.id == sourceId }
+        }
             ?.pkgName
+    }
+
+    fun getExtensionPackageAsFlow(sourceId: Long): Flow<String?> {
+        return installedExtensionsFlow.map { extensions ->
+            extensions.find { extension ->
+                extension.sources.any { it.id == sourceId }
+            }
+                ?.pkgName
+        }
+    }
+
+    fun getAppIconForSource(sourceId: Long): Drawable? {
+        val pkgName = getExtensionPackage(sourceId)
         if (pkgName != null) {
             return iconMap[pkgName] ?: iconMap.getOrPut(pkgName) {
                 ExtensionLoader.getExtensionPackageInfoFromPkgName(context, pkgName)!!.applicationInfo!!
@@ -104,8 +117,10 @@ class ExtensionManager(
 
         // SY -->
         return when (sourceId) {
-            EH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
-            EXH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
+            // KMK -->
+            in EHENTAI_EXT_SOURCES -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
+            in EXHENTAI_EXT_SOURCES -> ContextCompat.getDrawable(context, R.mipmap.ic_exhentai_source)
+            // KMK <--
             MERGED_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_merged_source)
             else -> null
         }
@@ -154,8 +169,17 @@ class ExtensionManager(
         }
     }
 
-    private fun Extension.isBlacklisted(blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get()): Boolean {
-        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
+    private fun Extension.isBlacklisted(
+        blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
+        // KMK -->
+        isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get(),
+        // KMK <--
+    ): Boolean {
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&
+            blacklistEnabled &&
+            // KMK -->
+            isHentaiEnabled
+        // KMK <--
     }
     // EXH <--
 
@@ -168,7 +192,7 @@ class ExtensionManager(
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             withUIContext { context.toast(MR.strings.extension_api_error) }
-            emptyList()
+            return
         }
 
         enableAdditionalSubLanguages(extensions)

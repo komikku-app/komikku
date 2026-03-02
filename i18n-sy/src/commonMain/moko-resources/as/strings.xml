@@ -51,7 +51,7 @@
     <string name="action_search_manually">হাতৰে অনুসন্ধান কৰক</string>
     <string name="action_migrate_now">এতিয়াই মাইগ্ৰেট কৰক</string>
     <string name="action_copy_now">এতিয়াই কপি কৰক</string>
-    <string name="action_clean_titles">শিৰোনামা পৰিষ্কাৰ কৰক</string>
+    <string name="action_clean_titles">শিৰোনাম পৰিষ্কাৰ কৰক</string>
     <string name="action_start_reading">পঢ়া আৰম্ভ কৰক</string>
     <string name="action_edit_info">তথ্য সম্পাদনা কৰক</string>
     <string name="entry_type_manga">মাঙ্গা</string>
@@ -74,11 +74,11 @@
 \n- ডিফল্ট প\'ৰ্ট ক্লায়েন্টবোৰ মাত্ৰ (বিলম্বিত হ\'ব পাৰে। ফায়াৰৱাল/প্ৰক্সি থকা অৱস্থাত সক্ৰিয় কৰক যি উত্তৰণ বিৰোধী প\'ৰ্টৰ ব্লক কৰে।)</string>
     <string name="enable_exhentai">এক্সহেণ্টাই সক্ৰিয় কৰক</string>
     <string name="requires_login">লগইন প্ৰয়োজন</string>
-    <string name="show_japanese_titles">অনুসন্ধান ফলাফলত জাপানী শিৰোনামাসমূহ দেখুৱাওক</string>
-    <string name="show_japanese_titles_option_1">বৰ্তমান জাপানী শিৰোনামাসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
+    <string name="show_japanese_titles">অনুসন্ধান ফলাফলত জাপানী শিৰোনামসমূহ দেখুৱাওক</string>
+    <string name="show_japanese_titles_option_1">বৰ্তমান জাপানী শিৰোনামসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
     <string name="use_hentai_at_home_option_1">যিকোনো ক্লায়েন্ট (সুপৰিশৃত)</string>
     <string name="use_hentai_at_home_option_2">ডিফল্ট প\'ৰ্ট ক্লায়েন্টবোৰ মাত্ৰ</string>
-    <string name="show_japanese_titles_option_2">বৰ্তমান ইংৰাজী/ৰোমানীকৃত শিৰোনামাসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
+    <string name="show_japanese_titles_option_2">বৰ্তমান ইংৰাজী/ৰোমানীকৃত শিৰোনামসমূহ অনুসন্ধান ফলাফলত দেখুওৱা হৈছে। এইটো পৰিবৰ্তন কৰাৰ পিছত অধ্যায় কেচ সাফ কৰক (উন্নত বিভাগত)</string>
     <string name="use_original_images">মূল চিত্ৰসমূহ ব্যৱহাৰ কৰক</string>
     <string name="use_original_images_on">বৰ্তমান মূল চিত্ৰসমূহ ব্যৱহাৰ কৰা হৈছে</string>
     <string name="use_original_images_off">বৰ্তমান পুনঃনমিত চিত্ৰসমূহ ব্যৱহাৰ কৰা হৈছে</string>
@@ -399,7 +399,7 @@
     <string name="delete_tag">টেগ মচি পেলাওক</string>
     <string name="delete_tag_confirmation">আপুনি টেগ %s মচি পেলাবলৈ ইচ্ছা কৰে নেকি?</string>
     <string name="ext_redundant">অপ্রয়োজনীয়</string>
-    <string name="redundant_extension_message">এই এক্সটেনশন অপ্রয়োজনীয় আৰু Tachiyomiৰ এই সংস্কৰণত ব্যৱহৃত নহ\'ব।</string>
+    <string name="redundant_extension_message">এই এক্সটেনশন অপ্রয়োজনীয় আৰু Komikkuৰ এই সংস্কৰণত ব্যৱহৃত নহ\'ব।</string>
     <string name="select_sources">উৎস বাচক</string>
     <string name="select_none">কোনো বাচক নকৰিব</string>
     <string name="migration">মাইগ্ৰেচন</string>
@@ -601,7 +601,6 @@
     <string name="random">যিকোনো</string>
     <string name="mangadex_push_favorites_to_mangadex">লাইব্ৰেৰীৰ প্ৰৱেশবোৰ মাঙ্গাডেক্সলৈ চিঞৰাওক</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">যিকোনো MdList ট্ৰেক কৰা প্ৰৱেশবোৰ মাঙ্গাডেক্সত পঢ়া হিচাপে চিঞৰাই দিব।</string>
-    <string name="mangadex_similar">মাঙ্গাডেক্স সাদৃশ</string>
     <string name="community_recommendations">সম্প্ৰদায়ৰ পৰামৰ্শ</string>
     <string name="select_scanlators">স্কেনলেটৰ গোটসমূহ দেখুৱাওক</string>
     <string name="similar">%1$sৰ সৈতে সাদৃশ</string>
@@ -620,11 +619,30 @@
     <string name="relation_colored">ৰঙিন</string>
     <string name="relation_serialization">ছৰিয়েলাইজেচন</string>
     <string name="relation_alternate_version">বিকল্প সংস্কৰণ</string>
-    <string name="password_protect_downloads_summary">দিয়া পাসৱৰ্ডৰ সৈতে CBZ আর্কাইভ ডাউনলোড এনক্ৰিপ্ট কৰে। 
+    <string name="password_protect_downloads_summary">দিয়া পাসৱৰ্ডৰ সৈতে CBZ আর্কাইভ ডাউনলোড এনক্ৰিপ্ট কৰে।
 \nসতর্কতা: পাসৱৰ্ড ভুলিলে আর্কাইভৰ ভিতৰ ডাটা চিৰদিনৰ বাবে হেৰাই যাব</string>
     <string name="rating5">মধ্যমীয়া</string>
     <string name="relation_sequel">ছিকুৱেল</string>
     <string name="add_tags">টেগ যোগ কৰক</string>
     <string name="multi_tags_comma_separated">টেগ(সমূহ), ক\'মা ব্যৱহাৰ কৰি প্ৰৱেশ কৰক।</string>
     <string name="alt_titles">বিকল্প শিৰোনামসমূহ</string>
+    <string name="fill_from_tracker">ট্ৰেকাৰৰ পৰা পূৰণ কৰক</string>
+    <string name="select_tracker">এটা ট্ৰেকাৰ নিৰ্ব্বাচন কৰক</string>
+    <string name="favorites_sync_unable_to_add_to_remote">গ্যালাৰীটো ৰিম\'ট ছাৰ্ভাৰত যোগ কৰিব পৰা নগ\'ল: \'%1$s\' (GID: %2$s)!</string>
+    <string name="entry_not_tracked">প্ৰৱেশটো অনুসৰণ কৰা হোৱা নাই।</string>
+    <string name="similar_titles">একেধৰণৰ শিৰোনামসমূহ</string>
+    <string name="rec_collecting">পৰামৰ্শ সংগ্ৰহ কৰা</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">স্বয়ংক্ৰিয়ভাৱে মিল থকা শিৰোনাম নিৰ্ব্বাচন কৰে যদি উৎসই ট্ৰেকাৰসমূহলে সংযোগসমূহ প্ৰদান কৰে। বৰ্তমান MangaDex দ্বাৰা সমৰ্থিত</string>
+    <string name="pref_tracker_resolve_using_source_metadata">উৎস মেটাডাটা ব্যৱহাৰ কৰি প্ৰৱেশসমূহ নিৰ্ব্বাচন কৰক</string>
+    <string name="rec_search">সাধাৰণ পৰামৰ্শ বিচাৰি উলিয়াওক</string>
+    <string name="rec_hide_library_entries">আপোনাৰ লাইব্ৰেৰীত ইতিমধ্যে ফলাফল লুকুৱাওক</string>
+    <string name="rec_services_to_search">সন্ধান কৰিবলৈ পৰামৰ্শ সেৱা</string>
+    <string name="rec_group_source">উৎসৰ পৰামৰ্শ</string>
+    <string name="rec_group_tracker">ট্ৰেকাৰৰ পৰামৰ্শ</string>
+    <string name="rec_common_recommendations">সাধাৰণ পৰামৰ্শ</string>
+    <string name="rec_search_short">পৰামৰ্শ বিচাৰি উলিয়াওক</string>
+    <string name="rec_no_results">কোনো পৰামৰ্শ পোৱা নগ\'ল</string>
+    <string name="rec_error_title">সন্ধান বিফল হ\'ল</string>
+    <string name="rec_error_string">সন্ধান প্ৰক্ৰিয়াৰ সময়ত এটা ভুল হৈছে: %1$s</string>
+    <string name="rec_processing_state">%2$d ৰ %1$d প্ৰৱেশ প্ৰক্ৰিয়া কৰা হৈছে</string>
 </resources>

@@ -1,18 +1,37 @@
-<p align="center">
- <img width=200px height=200px src="./.github/readme-images/app-icon.png"/>
-</p>
+<div align="center">
 
-<h1 align="center"> Komikku </h1>
+<a href="https://komikku-app.github.io">
+  <img width=200px height=200px src="./.github/readme-images/app-icon.png"/>
+</a><br/>
+<a href="https://trendshift.io/repositories/13696" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13696" alt="komikku-app%2Fkomikku | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+ <h1 align="center"> Komikku </h1>
 
-| Releases | Preview | CI builds | Discussions |
-|----------|---------|-----------|-------------|
-| [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/total?label=Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases) [![Stable](https://img.shields.io/github/release/komikku-app/komikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/komikku/releases/latest) [![Build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_release.yml?labelColor=27303D)](https://github.com/komikku-app/komikku/actions/workflows/build_release.yml) | [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku-preview/total?label=Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku-preview/releases) [![Beta](https://img.shields.io/github/v/release/komikku-app/komikku-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/komikku-preview/releases/latest) [![Beta build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku-preview/build_app.yml?labelColor=27303D)](https://github.com/komikku-app/komikku-preview/actions/workflows/build_app.yml) | [![CI](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_check.yml?labelColor=27303D)](https://github.com/komikku-app/komikku/actions/workflows/build_check.yml) | [![Discord](https://img.shields.io/discord/1242381704459452488?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/85jB7V5AJR) |
+| Releases | Preview |
+|----------|---------|
+| <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases) [![Stable build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_release.yml?labelColor=27303D&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/komikku/actions/workflows/build_release.yml) | <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku-preview/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku-preview/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku-preview/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku-preview/releases) [![Preview build](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku-preview/build_app.yml?labelColor=27303D&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/komikku-preview/actions/workflows/build_app.yml) |
 
-**[Help translate](https://crowdin.com/project/komikku/invite?h=f922abd4193e77309b084a08c74b89872112170)**
+*Requires Android 8.0 or higher.*
 
+[![Discord](https://img.shields.io/discord/1242381704459452488.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
+[![CI](https://img.shields.io/github/actions/workflow/status/komikku-app/komikku/build_push.yml?labelColor=27303D&label=CI)](https://github.com/komikku-app/komikku/actions/workflows/build_push.yml)
+[![License: Apache-2.0](https://img.shields.io/github/license/komikku-app/komikku?labelColor=27303D&color=0877d2)](/LICENSE)
+[![Translation status](https://img.shields.io/weblate/progress/komikku-app?labelColor=27303D&color=946300)](https://hosted.weblate.org/engage/komikku-app/)
+
+## Download
+
+[![Stable](https://img.shields.io/github/release/komikku-app/komikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/komikku/releases/latest)
+[![Preview](https://img.shields.io/github/v/release/komikku-app/komikku-preview.svg?maxAge=3600&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/komikku-preview/releases/latest)
+
+*Requires Android 8.0 or higher.*
+
+[![Sponsor me on GitHub](https://custom-icon-badges.demolab.com/badge/-Sponsor-ea4aaa?style=for-the-badge&logo=heart&logoColor=white)](https://github.com/sponsors/cuong-tran "Sponsor me on GitHub")
+
+<div align="left">
 A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachiyomi. This fork is meant to provide new & useful features while regularly take features/updates from Mihon or other forks like SY, J2K and Neko...
 
 ![screenshots of app](./.github/readme-images/screens.png)
+
+<div align="left">
 
 ## Features
 
@@ -22,21 +41,28 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 - `Auto theme color` based on each entry's cover for entry View & Reader.
 - `App custom theme` with `Color palettes` for endless color lover.
 - `Bulk-favorite` multiple entries all at once.
+- Source & Language icon on Library & various places. (Some language flags are not really accurate)
 - `Feed` now supports **all** sources, with more items (20 for now).
+- Fast browsing (for who with large library experiencing slow loading)
+- Grouped entries in Update tab (inspired by J2K).
+- Update notification with manga cover.
 - Auto `2-way sync` progress with trackers.
 - Chips for `Saved search` in source browse
 - `Panorama cover` showing wide cover in full.
 - `Merge multiple` library entries together at same time.
 - `Range-selection` for Migration.
-- Ability to `enable/disable repo`.
+- Ability to `enable/disable repo`, with icon.
 - `Update Error` screen & migrating them away.
 - `to-be-updated` screen: which entries are going to be checked with smart-update?
 - `Search for sources` & Quick NSFW sources filter in Extensions, Browse & Migration screen.
 - `Feed` backup/restore/sync/re-order.
 - Long-click to add/remove single entry to/from library, everywhere.
-- Docking Read/Resume button.
-- Banner shows Library syncing / Backup restoring / Library updating progress.
+- Docking Read/Resume button to left/right.
+- In-app progress banner shows Library syncing / Backup restoring / Library updating progress.
+- Auto-install app update.
 - Configurable interval to refresh entries from downloaded storage.
+- Forked from SY so everything from SY.
+- Always up-to-date with Mihon & SY
 - More app themes & better UI, improvements...
 
 
@@ -99,13 +125,9 @@ Additional features for some extensions, features include custom description, op
 * Mangadex
 * NHentai
 * Puruin
-* Tsumino
+* LANraragi
 
 </details>
-
-## Download
-* [Stable](https://github.com/komikku-app/komikku/releases/latest)
-* [Preview](https://github.com/komikku-app/komikku-preview/releases/latest) to try latest features.
 
 ## Issues, Feature Requests and Contributing
 
@@ -113,8 +135,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 <details><summary>Issues</summary>
 
-1. **Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://github.com/komikku-app/komikku/releases) and the already opened [issues](https://github.com/komikku-app/komikku/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1242381704459452488)](https://discord.gg/85jB7V5AJR)
+[Website](https://komikku-app.github.io/)
+
+1. **Before reporting a new issue, take a look at the [FAQ](https://komikku-app.github.io/docs/faq/general), the [changelog](https://github.com/komikku-app/komikku/releases) and the already opened [issues](https://github.com/komikku-app/komikku/issues).**
+2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1242381704459452488.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
 
 </details>
 
@@ -148,6 +172,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 </details>
 
+<div align="center">
+
 ### Credits
 
 Thank you to all the people who have contributed!
@@ -156,15 +182,13 @@ Thank you to all the people who have contributed!
     <img src="https://contrib.rocks/image?repo=komikku-app/komikku" alt="Komikku app contributors" title="Komikku app contributors" width="800"/>
 </a>
 
+![Visitor Count](https://count.getloli.com/get/@komikku-app?theme=capoo-2)
+
 ### Disclaimer
 
 The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
 
-## FAQ
-
-* Komikku [website](https://komikku-app.github.io/) / [Discord](https://discord.gg/85jB7V5AJR)
-
-* Mihon [website](https://mihon.app/) / [Discord](https://discord.gg/mihon)
+<div align="left">
 
 ## License
 
@@ -181,7 +205,3 @@ The developer(s) of this application does not have any affiliation with the cont
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
-## Disclaimer
-
-The developer of this application does not have any affiliation with the content providers available.

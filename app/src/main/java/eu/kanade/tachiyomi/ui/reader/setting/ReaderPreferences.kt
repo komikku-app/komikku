@@ -2,11 +2,13 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import android.os.Build
 import androidx.compose.ui.graphics.BlendMode
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 
 class ReaderPreferences(
@@ -37,9 +39,9 @@ class ReaderPreferences(
 
     fun fullscreen() = preferenceStore.getBoolean("fullscreen", true)
 
-    fun cutoutShort() = preferenceStore.getBoolean("cutout_short", true)
+    fun drawUnderCutout() = preferenceStore.getBoolean("cutout_short", true)
 
-    fun keepScreenOn() = preferenceStore.getBoolean("pref_keep_screen_on_key", true)
+    fun keepScreenOn() = preferenceStore.getBoolean("pref_keep_screen_on_key", false)
 
     fun defaultReadingMode() = preferenceStore.getInt(
         "pref_default_reading_mode_key",
@@ -53,7 +55,18 @@ class ReaderPreferences(
 
     fun webtoonDoubleTapZoomEnabled() = preferenceStore.getBoolean("pref_enable_double_tap_zoom_webtoon", true)
 
+    // KMK -->
+    fun pagedDoubleTapZoomEnabled() = preferenceStore.getBoolean("pref_enable_double_tap_zoom_paged", true)
+
+    fun webtoonPinchToZoomEnabled() = preferenceStore.getBoolean("pref_enable_pinch_to_zoom_webtoon", true)
+    // KMK <--
+
     fun imageScaleType() = preferenceStore.getInt("pref_image_scale_type_key", 1)
+
+    // KMK -->
+    fun webtoonScaleType() = preferenceStore.getEnum("pref_webtoon_scale_type_key", WebtoonScaleType.FIT)
+    fun longStripGapSmartScale() = preferenceStore.getBoolean("pref_webtoon_smart_scale_long_strip_gap", false)
+    // KMK <--
 
     fun zoomStart() = preferenceStore.getInt("pref_zoom_start_key", 1)
 
@@ -66,6 +79,10 @@ class ReaderPreferences(
     fun navigateToPan() = preferenceStore.getBoolean("navigate_pan", true)
 
     fun landscapeZoom() = preferenceStore.getBoolean("landscape_zoom", true)
+
+    // KMK -->
+    fun landscapeZoomType() = preferenceStore.getEnum("landscape_zoom_type", LandscapeZoomScaleType.FIT)
+    // KMK <--
 
     fun cropBordersWebtoon() = preferenceStore.getBoolean("crop_borders_webtoon", false)
 
@@ -82,6 +99,10 @@ class ReaderPreferences(
     fun skipDupe() = preferenceStore.getBoolean("skip_dupe", false)
 
     fun webtoonDisableZoomOut() = preferenceStore.getBoolean("webtoon_disable_zoom_out", false)
+
+    // KMK -->
+    fun pagedDisableZoomIn() = preferenceStore.getBoolean("paged_disable_zoom_in", false)
+    // KMK <--
 
     // endregion
 
@@ -143,6 +164,10 @@ class ReaderPreferences(
 
     fun showNavigationOverlayOnStart() = preferenceStore.getBoolean("reader_navigation_overlay_on_start", false)
 
+    // KMK -->
+    fun smallerTapZone() = preferenceStore.getBoolean("reader_navigation_smaller_tap_zone", false)
+    // KMK <--
+
     // endregion
 
     // SY -->
@@ -184,8 +209,6 @@ class ReaderPreferences(
     fun centerMarginType() = preferenceStore.getInt("center_margin_type", PagerConfig.CenterMarginType.NONE)
 
     fun archiveReaderMode() = preferenceStore.getInt("archive_reader_mode", ArchiveReaderMode.LOAD_FROM_FILE)
-
-    fun markReadDupe() = preferenceStore.getBoolean("mark_read_dupe", false)
     // SY <--
 
     enum class FlashColor {
@@ -211,6 +234,26 @@ class ReaderPreferences(
         LOW(31),
         LOWEST(47),
     }
+
+    // KMK -->
+    enum class LandscapeZoomScaleType(
+        val titleRes: StringResource,
+    ) {
+        FIT(MR.strings.scale_type_fit_screen),
+        DOUBLE(KMR.strings.scale_type_double),
+    }
+
+    enum class WebtoonScaleType(
+        val titleRes: StringResource,
+        val ratio: Float,
+    ) {
+        FIT(MR.strings.scale_type_fit_screen, 0f),
+        R4_3(KMR.strings.scale_type_4_3, 3f / 4f),
+        R3_2(KMR.strings.scale_type_3_2, 2f / 3f),
+        R16_9(KMR.strings.scale_type_16_9, 9f / 16f),
+        R20_9(KMR.strings.scale_type_20_9, 9f / 20f),
+    }
+    // KMK <--
 
     object ArchiveReaderMode {
         const val LOAD_FROM_FILE = 0
@@ -248,6 +291,13 @@ class ReaderPreferences(
             MR.strings.zoom_start_right,
             MR.strings.zoom_start_center,
         )
+
+        // KMK -->
+        val zoomWideImagesAllowedList = listOf(
+            SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE,
+            SubsamplingScaleImageView.SCALE_TYPE_ORIGINAL_SIZE,
+        )
+        // KMK <--
 
         val ColorFilterMode = buildList {
             addAll(

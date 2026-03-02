@@ -66,6 +66,11 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             .ifEmpty { null }
             ?.joinToString { it.name }
 
+        // Set group (if we can find one)
+        val group = tags.ofNamespace(EH_GROUP_NAMESPACE)
+            .ifEmpty { null }
+            ?.joinToString { it.name }
+
         // Copy tags -> genres
         val genres = tagsToGenreString()
 
@@ -80,13 +85,12 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        val description = null
-
         return manga.copy(
             url = key ?: manga.url,
             title = title ?: manga.title,
-            artist = artist ?: manga.artist,
-            description = description,
+            artist = group ?: manga.artist,
+            author = artist ?: manga.artist,
+            description = null,
             genre = genres,
             status = status,
             thumbnail_url = cover ?: manga.thumbnail_url,
@@ -145,6 +149,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
         const val EH_GENRE_NAMESPACE = "genre"
         private const val EH_ARTIST_NAMESPACE = "artist"
+        private const val EH_GROUP_NAMESPACE = "group"
         const val EH_LANGUAGE_NAMESPACE = "language"
         const val EH_META_NAMESPACE = "meta"
         const val EH_UPLOADER_NAMESPACE = "uploader"

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    app:cardBackgroundColor="?android:attr/colorBackground"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardElevation="0dp"
     app:cardForegroundColor="@color/draggable_card_foreground">
 

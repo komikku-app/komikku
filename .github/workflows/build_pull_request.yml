@@ -8,12 +8,9 @@ on:
   pull_request:
     paths:
       - '**'
-      - '!i18n/src/commonMain/moko-resources/**/strings.xml'
-      - '!i18n/src/commonMain/moko-resources/**/plurals.xml'
-      - 'i18n/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n/src/commonMain/moko-resources/base/plurals.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/strings.xml'
-      - 'i18n-sy/src/commonMain/moko-resources/base/plurals.xml'
+      - '!**.md'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/strings.xml'
+      - '!i18n-kmk/src/commonMain/moko-resources/**/plurals.xml'
       - 'i18n-kmk/src/commonMain/moko-resources/base/strings.xml'
       - 'i18n-kmk/src/commonMain/moko-resources/base/plurals.xml'
   # Dispatch or Manual triggers
@@ -29,32 +26,28 @@ permissions:
 jobs:
   build:
     name: Build app
-    runs-on: ubuntu-latest
-    if: github.repository == github.event.pull_request.head.repo.full_name
+    runs-on: 'ubuntu-24.04'
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
-
       - name: Dependency Review
-        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4.5.0
+        uses: actions/dependency-review-action@05fe4576374b728f0c523d6a13d64c25081e0803 # v4.8.3
 
-      - name: Setup Android SDK
-        run: |
-          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
 
       - name: Set up JDK
-        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4.6.0
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: 17
           distribution: temurin
 
       - name: Write google-services.json
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
@@ -62,6 +55,7 @@ jobs:
           write-mode: overwrite
 
       - name: Write client_secrets.json
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
@@ -69,24 +63,52 @@ jobs:
           write-mode: overwrite
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
+        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5
 
-      - name: Build app and run unit tests
-        run: ./gradlew spotlessCheck assembleStandardPreview testStandardPreviewUnitTest testReleaseUnitTest --stacktrace
+      - name: Check code format
+        run: ./gradlew spotlessCheck
+
+      - name: Build app
+        if: github.repository == github.event.pull_request.head.repo.full_name
+        run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
+
+      - name: Build app
+        if: github.repository != github.event.pull_request.head.repo.full_name
+        run: ./gradlew assemblePreview
+
+      - name: Run unit tests
+        id: unit_tests
+        run: ./gradlew testReleaseUnitTest
+
+      - name: Upload test report
+        if: steps.unit_tests.outcome == 'failure'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: test-report-${{ github.sha }}
+          path: app/build/reports/tests/testReleaseUnitTest
 
       - name: Sign APK
-        uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
+        if: github.repository == github.event.pull_request.head.repo.full_name
+        uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
-          releaseDirectory: app/build/outputs/apk/standard/preview
+          releaseDirectory: app/build/outputs/apk/preview
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '35.0.1'
+
+      - name: Signed File name
+        id: signed_filename
+        if: github.repository == github.event.pull_request.head.repo.full_name
+        run: |
+          echo "SIGNED_TRAIL=-signed" >> $GITHUB_OUTPUT
 
       - name: Rename apk
         id: current_commit
         run: |
-          set -x
+          set -e
           echo "The git ref is: ${{ github.ref }}"
           version_tag=p$(echo ${{ github.ref }} | cut -d '/' -f 3)
           commit_count=$(git rev-list --count HEAD)
@@ -94,11 +116,16 @@ jobs:
           echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
           echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/standard/preview/app-standard-universal-preview-unsigned-signed.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/preview/app-universal-preview${{ steps.signed_filename.outputs.SIGNED_TRAIL }}.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
-          retention-days: 1
+
+      - name: Upload mapping
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: mapping-${{ github.sha }}
+          path: app/build/outputs/mapping/preview

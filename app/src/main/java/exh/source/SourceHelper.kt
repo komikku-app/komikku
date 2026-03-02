@@ -1,6 +1,7 @@
 package exh.source
 
 import eu.kanade.tachiyomi.source.AndroidSourceManager
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -19,6 +20,7 @@ private val DELEGATED_METADATA_SOURCES by lazy {
         HBrowse::class,
         EightMuses::class,
         NHentai::class,
+        Lanraragi::class,
     )
 }
 
@@ -40,6 +42,13 @@ fun handleSourceLibrary() {
     mangaDexSourceIds = AndroidSourceManager.currentDelegatedSources
         .filter {
             it.value.newSourceClass == MangaDex::class
+        }
+        .map { it.value.sourceId }
+        .sorted()
+
+    lanraragiSourceIds = AndroidSourceManager.currentDelegatedSources
+        .filter {
+            it.value.newSourceClass == Lanraragi::class
         }
         .map { it.value.sourceId }
         .sorted()

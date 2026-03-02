@@ -30,6 +30,10 @@ class SmartSearchMerge(
     private val getCategories: GetCategories = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
 ) {
+    /**
+     * @param originalMangaId ID of the existed merged entry or the original manga which will be used to create the new merged entry
+     * @param manga The manga which will be merged into existed merged entry or the new merged entry (newly created by using [originalMangaId])
+     */
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
         // KMK -->
         val context = Injekt.get<Application>()
@@ -117,7 +121,7 @@ class SmartSearchMerge(
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
-            mergedManga = networkToLocalManga.await(mergedManga)
+            mergedManga = networkToLocalManga(mergedManga)
 
             getCategories.await(originalMangaId)
                 .let { categories ->

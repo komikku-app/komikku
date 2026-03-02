@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.util.system.toast
@@ -38,6 +40,9 @@ class EditMergedSettingsState(
     private val onDeleteClick: (MergedMangaReference) -> Unit,
     private val onDismissRequest: () -> Unit,
     private val onPositiveClick: (List<MergedMangaReference>) -> Unit,
+    // KMK -->
+    private val onOpenEntryClick: (MergedMangaReference) -> Unit,
+    // KMK <--
 ) : EditMergedMangaAdapter.EditMergedMangaItemListener {
     var mergedMangas: List<Pair<Manga?, MergedMangaReference>> by mutableStateOf(emptyList())
     var mergeReference: MergedMangaReference? by mutableStateOf(null)
@@ -49,6 +54,9 @@ class EditMergedSettingsState(
         binding: EditMergedSettingsDialogBinding,
         mergedManga: List<Manga>,
         mergedReferences: List<MergedMangaReference>,
+        // KMK -->
+        colorScheme: AndroidViewColorScheme,
+        // KMK <--
     ) {
         if (mergedReferences.isEmpty() || mergedReferences.size == 1) {
             context.toast(SYMR.strings.merged_references_invalid)
@@ -62,8 +70,20 @@ class EditMergedSettingsState(
         val isPriorityOrder =
             mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
 
-        mergedMangaAdapter = EditMergedMangaAdapter(this, isPriorityOrder)
-        mergedMangaHeaderAdapter = EditMergedSettingsHeaderAdapter(this, mergedMangaAdapter!!)
+        mergedMangaAdapter = EditMergedMangaAdapter(
+            this,
+            isPriorityOrder,
+            // KMK -->
+            colorScheme,
+            // KMK <--
+        )
+        mergedMangaHeaderAdapter = EditMergedSettingsHeaderAdapter(
+            this,
+            mergedMangaAdapter!!,
+            // KMK -->
+            colorScheme,
+            // KMK <--
+        )
 
         binding.recycler.adapter = ConcatAdapter(mergedMangaHeaderAdapter, mergedMangaAdapter)
         binding.recycler.layoutManager = LinearLayoutManager(context)
@@ -87,6 +107,14 @@ class EditMergedSettingsState(
             )
         }
     }
+
+    // KMK -->
+    override fun onOpenEntryClick(position: Int) {
+        val mergedMangaAdapter = mergedMangaAdapter ?: return
+        val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
+        onOpenEntryClick(mergeMangaReference)
+    }
+    // KMK <--
 
     override fun onDeleteClick(position: Int) {
         val mergedMangaAdapter = mergedMangaAdapter ?: return
@@ -175,10 +203,25 @@ fun EditMergedSettingsDialog(
     mergedData: MergedMangaData,
     onDeleteClick: (MergedMangaReference) -> Unit,
     onPositiveClick: (List<MergedMangaReference>) -> Unit,
+    // KMK -->
+    onOpenEntryClick: (MergedMangaReference) -> Unit,
+    // KMK <--
 ) {
+    // KMK -->
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
+    // KMK <--
+
     val context = LocalContext.current
     val state = remember {
-        EditMergedSettingsState(context, onDeleteClick, onDismissRequest, onPositiveClick)
+        EditMergedSettingsState(
+            context,
+            onDeleteClick,
+            onDismissRequest,
+            onPositiveClick,
+            // KMK -->
+            onOpenEntryClick,
+            // KMK <--
+        )
     }
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -201,7 +244,15 @@ fun EditMergedSettingsDialog(
                 AndroidView(
                     factory = { factoryContext ->
                         val binding = EditMergedSettingsDialogBinding.inflate(LayoutInflater.from(factoryContext))
-                        state.onViewCreated(factoryContext, binding, mergedData.manga.values.toList(), mergedData.references)
+                        state.onViewCreated(
+                            factoryContext,
+                            binding,
+                            mergedData.manga.values.toList(),
+                            mergedData.references,
+                            // KMK -->
+                            colorScheme,
+                            // KMK <--
+                        )
                         binding.root
                     },
                     modifier = Modifier.fillMaxWidth(),

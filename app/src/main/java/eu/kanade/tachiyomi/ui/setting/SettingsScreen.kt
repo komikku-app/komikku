@@ -35,7 +35,7 @@ class SettingsScreen(
         if (!isTabletUi()) {
             Navigator(
                 screen = when (destination) {
-                    Destination.About.id -> AboutScreen
+                    Destination.About.id -> AboutScreen()
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
                     else -> SettingsMainScreen
@@ -56,7 +56,7 @@ class SettingsScreen(
         } else {
             Navigator(
                 screen = when (destination) {
-                    Destination.About.id -> AboutScreen
+                    Destination.About.id -> AboutScreen()
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
                     else -> SettingsAppearanceScreen

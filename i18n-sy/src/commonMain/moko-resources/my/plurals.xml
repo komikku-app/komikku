@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="other">ရှင်းလင်းမှုပြီးပါပြီ။ %d ဖိုင်တွဲကို ဖယ်ရှားခဲ့သည်။</item>
+    </plurals>
+</resources>

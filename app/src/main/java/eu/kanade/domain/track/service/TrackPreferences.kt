@@ -38,10 +38,19 @@ class TrackPreferences(
 
     fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
 
+    fun trackOnAddingToLibrary() = preferenceStore.getBoolean("track_on_adding_to_library", true)
+
     fun autoUpdateTrackOnMarkRead() = preferenceStore.getEnum(
         "pref_auto_update_manga_on_mark_read",
         AutoTrackState.ALWAYS,
     )
+
+    // SY -->
+    fun resolveUsingSourceMetadata() = preferenceStore.getBoolean(
+        "pref_resolve_using_source_metadata_key",
+        true,
+    )
+    // SY <--
 
     // KMK -->
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)

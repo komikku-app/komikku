@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -30,7 +31,8 @@ internal class DownloadNotifier(private val context: Context) {
 
     private val progressNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_PROGRESS) {
-            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setAutoCancel(false)
             setOnlyAlertOnce(true)
         }
@@ -38,6 +40,8 @@ internal class DownloadNotifier(private val context: Context) {
 
     private val errorNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_DOWNLOADER_ERROR) {
+            setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setAutoCancel(false)
         }
     }
@@ -57,11 +61,21 @@ internal class DownloadNotifier(private val context: Context) {
     }
 
     /**
-     * Dismiss the downloader's notification. Downloader error notifications use a different id, so
-     * those can only be dismissed by the user.
+     * Dismiss the downloader's progress and paused notifications. Error notifications use a
+     * different id, so those can only be dismissed by the user.
      */
     fun dismissProgress() {
         context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS)
+        // KMK -->
+        context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
+    }
+
+    /**
+     * Dismiss the pause notification. Called when resuming downloads.
+     */
+    fun dismissPaused() {
+        context.cancelNotification(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
+        // KMK <--
     }
 
     /**
@@ -143,7 +157,9 @@ internal class DownloadNotifier(private val context: Context) {
                 NotificationReceiver.clearDownloadsPendingBroadcast(context),
             )
 
-            show(Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS)
+            // KMK -->
+            show(Notifications.ID_DOWNLOAD_CHAPTER_PAUSED)
+            // KMK <--
         }
 
         // Reset initial values

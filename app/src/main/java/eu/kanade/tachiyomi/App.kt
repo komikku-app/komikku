@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Looper
 import android.webkit.WebView
@@ -19,6 +20,9 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.allowRgb565
 import coil3.request.crossfade
@@ -49,6 +53,7 @@ import eu.kanade.tachiyomi.data.coil.MangaKeyer
 import eu.kanade.tachiyomi.data.coil.PagePreviewFetcher
 import eu.kanade.tachiyomi.data.coil.PagePreviewKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.di.AppModule
@@ -57,12 +62,16 @@ import eu.kanade.tachiyomi.di.SYPreferenceModule
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
+import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
+import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.notify
+import eu.kanade.tachiyomi.util.system.telemetryIncluded
 import exh.log.CrashlyticsPrinter
 import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
@@ -71,11 +80,12 @@ import exh.log.xLogD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
-import mihon.core.firebase.FirebaseConfig
 import mihon.core.migration.Migrator
 import mihon.core.migration.migrations.migrations
+import mihon.telemetry.TelemetryConfig
 import org.conscrypt.Conscrypt
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
@@ -105,10 +115,14 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     override fun onCreate() {
         super<Application>.onCreate()
         patchInjekt()
-        FirebaseConfig.init(applicationContext)
+        TelemetryConfig.init(
+            applicationContext,
+            isPreviewBuildType,
+            BuildConfig.COMMIT_COUNT,
+        )
 
         // KMK -->
-        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        if (isDebugBuildType) Timber.plant(Timber.DebugTree())
         // KMK <--
 
         GlobalExceptionHandler.initialize(applicationContext, CrashActivity::class.java)
@@ -127,16 +141,25 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         Injekt.importModule(PreferenceModule(this))
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
+        // KMK -->
+        Injekt.importModule(KMKDomainModule())
+        // KMK <--
         // SY -->
         Injekt.importModule(SYPreferenceModule(this))
         Injekt.importModule(SYDomainModule())
         // SY <--
-        // KMK -->
-        Injekt.importModule(KMKDomainModule())
-        // KMK <--
 
         setupExhLogging() // EXH logging
-        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
+        if (!LogcatLogger.isInstalled) {
+            val minLogPriority = when {
+                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
+                BuildConfig.DEBUG -> LogPriority.DEBUG
+                else -> LogPriority.INFO
+            }
+            LogcatLogger.install()
+            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
+            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
+        }
 
         setupNotificationChannels()
 
@@ -155,13 +178,15 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                     ) {
                         setContentTitle(stringResource(MR.strings.pref_incognito_mode))
                         setContentText(stringResource(MR.strings.notification_incognito_text))
-                        setSmallIcon(R.drawable.ic_glasses_24dp)
+                        setSmallIcon(R.drawable.ic_glasses_with_hat_24dp)
+                        setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
+                        setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.komikku))
                         setOngoing(true)
 
                         val pendingIntent = PendingIntent.getBroadcast(
                             this@App,
                             0,
-                            Intent(ACTION_DISABLE_INCOGNITO_MODE),
+                            Intent(ACTION_DISABLE_INCOGNITO_MODE).setPackage(BuildConfig.APPLICATION_ID),
                             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
                         )
                         setContentIntent(pendingIntent)
@@ -175,12 +200,12 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         privacyPreferences.analytics()
             .changes()
-            .onEach(FirebaseConfig::setAnalyticsEnabled)
+            .onEach(TelemetryConfig::setAnalyticsEnabled)
             .launchIn(scope)
 
         privacyPreferences.crashlytics()
             .changes()
-            .onEach(FirebaseConfig::setCrashlyticsEnabled)
+            .onEach(TelemetryConfig::setCrashlyticsEnabled)
             .launchIn(scope)
 
         basePreferences.hardwareBitmapThreshold().let { preference ->
@@ -199,10 +224,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         // Updates widget update
         WidgetManager(Injekt.get(), Injekt.get()).apply { init(scope) }
-
-        /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
-            LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
-        }*/
 
         if (!WorkManager.isInitialized()) {
             WorkManager.initialize(this, Configuration.Builder().build())
@@ -254,6 +275,19 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 // SY <--
             }
 
+            diskCache(
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache"))
+                    .maxSizePercent(0.02)
+                    .build(),
+            )
+
+            memoryCache(
+                MemoryCache.Builder()
+                    .maxSizePercent(context)
+                    .build(),
+            )
+
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(DeviceUtil.isLowRamDevice(this@App))
             if (networkPreferences.verboseLogging().get()) logger(DebugLogger())
@@ -273,27 +307,37 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppResume) {
             SyncDataJob.startNow(this@App)
         }
+
+        // AM (DISCORD) -->
+        DiscordRPCService.start(applicationContext)
+        // <-- AM (DISCORD)
     }
 
     override fun onStop(owner: LifecycleOwner) {
         SecureActivityDelegate.onApplicationStopped()
+
+        // AM (DISCORD) -->
+        DiscordRPCService.stop(applicationContext)
+        // <-- AM (DISCORD)
     }
 
     override fun getPackageName(): String {
         try {
             // Override the value passed as X-Requested-With in WebView requests
             val stackTrace = Looper.getMainLooper().thread.stackTrace
-            val chromiumElement = stackTrace.find {
-                it.className.equals(
-                    "org.chromium.base.BuildInfo",
-                    ignoreCase = true,
-                )
+            // KMK -->
+            val chromiumClasses = setOf("org.chromium.base.buildinfo", "org.chromium.base.apkinfo")
+            val chromiumMethods = setOf("getall", "getpackagename", "<init>")
+            // KMK <--
+            val isChromiumCall = stackTrace.any { trace ->
+                trace.className.lowercase() in chromiumClasses &&
+                    trace.methodName.lowercase() in chromiumMethods
             }
-            if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
-                return WebViewUtil.SPOOF_PACKAGE_NAME
-            }
+
+            if (isChromiumCall) return WebViewUtil.spoofedPackageName(applicationContext)
         } catch (_: Exception) {
         }
+
         return super.getPackageName()
     }
 
@@ -311,7 +355,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         val logLevel = when {
             EHLogLevel.shouldLog(EHLogLevel.EXTREME) -> LogLevel.ALL
-            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || BuildConfig.DEBUG -> LogLevel.DEBUG
+            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || isDebugBuildType -> LogLevel.DEBUG
             else -> LogLevel.WARN
         }
 
@@ -335,7 +379,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                             return super.generateFileName(
                                 logLevel,
                                 timestamp,
-                            ) + "-${BuildConfig.BUILD_TYPE}.log"
+                            ) + "-${BuildConfig.BUILD_TYPE}.txt"
                         }
                     }
                     flattener { timeMillis, level, tag, message ->
@@ -346,7 +390,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         }
 
         // Install Crashlytics in prod
-        if (!BuildConfig.DEBUG) {
+        if (telemetryIncluded) {
             printers += CrashlyticsPrinter(LogLevel.ERROR)
         }
 
@@ -356,19 +400,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         )
 
         xLogD("Application booting...")
-        xLogD(
-            """
-                App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
-                Build version: ${BuildConfig.COMMIT_COUNT}
-                Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
-                Android build ID: ${Build.DISPLAY}
-                Device brand: ${Build.BRAND}
-                Device manufacturer: ${Build.MANUFACTURER}
-                Device name: ${Build.DEVICE}
-                Device model: ${Build.MODEL}
-                Device product name: ${Build.PRODUCT}
-            """.trimIndent(),
-        )
+        xLogD(CrashLogUtil(applicationContext).getDebugInfo())
     }
 
     private inner class DisableIncognitoReceiver : BroadcastReceiver() {

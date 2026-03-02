@@ -5,7 +5,8 @@
     android:id="@+id/holder"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="?android:attr/colorBackground"
+    android:layout_marginVertical="4dp"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardElevation="0dp"
     app:cardForegroundColor="@color/draggable_card_foreground">
 
@@ -16,37 +17,36 @@
 
         <ImageView
             android:id="@+id/reorder"
-            android:layout_width="56dp"
+            android:layout_width="48dp"
             android:layout_height="0dp"
             android:layout_alignParentStart="true"
             android:layout_gravity="start"
-            android:scaleType="center"
             android:alpha="1"
+            android:scaleType="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_drag_handle_24dp"
             app:tint="?android:attr/textColorHint" />
 
+        <ImageView
+            android:id="@+id/cover"
+            android:layout_width="0dp"
+            android:layout_height="90dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="w,2:3"
+            app:layout_constraintStart_toEndOf="@+id/reorder"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@mipmap/ic_launcher" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/infoLayout"
             android:layout_width="0dp"
             android:layout_height="80dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/reorder"
+            app:layout_constraintStart_toEndOf="@+id/cover"
             app:layout_constraintTop_toTopOf="parent">
-
-
-            <ImageView
-                android:id="@+id/cover"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="h,3:2"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:src="@mipmap/ic_launcher" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -56,7 +56,7 @@
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/cover"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
@@ -87,7 +87,7 @@
             android:layout_height="40dp"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/reorder"
+            app:layout_constraintStart_toEndOf="@+id/cover"
             app:layout_constraintTop_toBottomOf="@+id/infoLayout">
 
             <ImageButton
@@ -101,8 +101,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/download"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_delete_24dp"
-                app:tint="?android:attr/textColorPrimary" />
+                app:srcCompat="@drawable/ic_delete_24dp" />
 
             <ImageButton
                 android:id="@+id/download"
@@ -115,8 +114,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/get_chapter_updates"
                 app:layout_constraintStart_toEndOf="@+id/remove"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_get_app_24dp"
-                app:tint="?android:attr/textColorPrimary" />
+                app:srcCompat="@drawable/ic_get_app_24dp" />
 
             <ImageButton
                 android:id="@+id/get_chapter_updates"
@@ -129,8 +127,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/download"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_sync_24dp"
-                app:tint="?android:attr/textColorPrimary" />
+                app:srcCompat="@drawable/ic_sync_24dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

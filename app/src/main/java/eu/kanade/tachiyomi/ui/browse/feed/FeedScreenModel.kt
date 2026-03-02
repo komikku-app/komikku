@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import androidx.compose.runtime.Composable
@@ -6,7 +8,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -22,6 +23,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -29,6 +31,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
@@ -42,7 +46,6 @@ import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.FeedSavedSearch
-import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -80,6 +83,7 @@ open class FeedScreenModel(
         getFeedSavedSearchGlobal.subscribe()
             .distinctUntilChanged()
             .onEach {
+                sourceManager.isInitialized.first { it }
                 val items = getSourcesToGetFeed(it).map { (feed, savedSearch) ->
                     createCatalogueSearchItem(
                         feed = feed,
@@ -90,7 +94,10 @@ open class FeedScreenModel(
                 }
                 mutableState.update { state ->
                     state.copy(
-                        items = items,
+                        items = items
+                            // KMK -->
+                            .toImmutableList(),
+                        // KMK <--
                     )
                 }
                 getFeed(items)
@@ -105,7 +112,10 @@ open class FeedScreenModel(
             val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
             mutableState.update { state ->
                 state.copy(
-                    items = newItems,
+                    items = newItems
+                        // KMK -->
+                        .toImmutableList(),
+                    // KMK <--
                 )
             }
             getFeed(newItems)
@@ -158,16 +168,12 @@ open class FeedScreenModel(
     // KMK -->
     fun openActionsDialog(
         feed: FeedItemUI,
-        canMoveUp: Boolean,
-        canMoveDown: Boolean,
     ) {
         screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
                     dialog = Dialog.FeedActions(
                         feedItem = feed,
-                        canMoveUp = canMoveUp,
-                        canMoveDown = canMoveDown,
                     ),
                 )
             }
@@ -218,30 +224,9 @@ open class FeedScreenModel(
     }
 
     // KMK -->
-    fun moveUp(feed: FeedSavedSearch) {
+    fun changeOrder(feed: FeedSavedSearch, newIndex: Int) {
         screenModelScope.launch {
-            reorderFeed.moveUp(feed)
-        }
-    }
-
-    fun moveDown(feed: FeedSavedSearch) {
-        screenModelScope.launch {
-            reorderFeed.moveDown(feed)
-        }
-    }
-
-    fun sortAlphabetically() {
-        screenModelScope.launch {
-            reorderFeed.sortAlphabetically(
-                state.value.items
-                    ?.sortedBy { feed -> feed.title }
-                    ?.mapIndexed { index, feed ->
-                        FeedSavedSearchUpdate(
-                            id = feed.feed.id,
-                            feedOrder = index.toLong(),
-                        )
-                    },
-            )
+            reorderFeed.changeOrder(feed, newIndex)
         }
     }
     // KMK <--
@@ -303,7 +288,7 @@ open class FeedScreenModel(
                                 } else {
                                     itemUI.source.getSearchManga(
                                         1,
-                                        itemUI.savedSearch.query.orEmpty(),
+                                        itemUI.savedSearch.query?.sanitize().orEmpty(),
                                         getFilterList(itemUI.savedSearch, itemUI.source),
                                     )
                                 }
@@ -317,9 +302,10 @@ open class FeedScreenModel(
 
                     val result = withIOContext {
                         itemUI.copy(
-                            results = page.map {
-                                networkToLocalManga.await(it.toDomainManga(itemUI.source!!.id))
-                            }
+                            results = page
+                                .map { it.toDomainManga(itemUI.source!!.id) }
+                                .distinctBy { it.url }
+                                .let { networkToLocalManga(it) }
                                 // KMK -->
                                 .filter { !hideInLibraryFeedItems.get() || !it.favorite },
                             // KMK <--
@@ -328,7 +314,10 @@ open class FeedScreenModel(
 
                     mutableState.update { state ->
                         state.copy(
-                            items = state.items?.map { if (it.feed.id == result.feed.id) result else it },
+                            items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
+                                // KMK -->
+                                ?.toImmutableList(),
+                            // KMK <--
                         )
                     }
                 }
@@ -387,11 +376,7 @@ open class FeedScreenModel(
         // KMK -->
         data class FeedActions(
             val feedItem: FeedItemUI,
-            val canMoveUp: Boolean,
-            val canMoveDown: Boolean,
         ) : Dialog()
-
-        data object SortAlphabetically : Dialog()
         // KMK <--
     }
 
@@ -403,7 +388,7 @@ open class FeedScreenModel(
 
 data class FeedScreenState(
     val dialog: FeedScreenModel.Dialog? = null,
-    val items: List<FeedItemUI>? = null,
+    val items: ImmutableList<FeedItemUI>? = null,
 ) {
     val isLoading
         get() = items == null

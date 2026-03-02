@@ -21,7 +21,8 @@ data class KitsuListSearchResult(
         val manga = included[0].attributes
 
         return TrackSearch.create(TrackerManager.KITSU).apply {
-            remote_id = userData.id
+            remote_id = included[0].id
+            library_id = userData.id
             title = manga.canonicalTitle
             total_chapters = manga.chapterCount ?: 0
             cover_url = manga.posterImage?.original ?: ""
@@ -42,6 +43,7 @@ data class KitsuListSearchResult(
             }
             score = userDataAttrs.ratingTwenty?.let { it / 2.0 } ?: 0.0
             last_chapter_read = userDataAttrs.progress.toDouble()
+            private = userDataAttrs.private
         }
     }
 }
@@ -59,6 +61,7 @@ data class KitsuListSearchItemDataAttributes(
     val finishedAt: String?,
     val ratingTwenty: Int?,
     val progress: Int,
+    val private: Boolean,
 )
 
 @Serializable

@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.download
 import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme.Companion.setColors
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.databinding.DownloadItemBinding
@@ -52,8 +53,7 @@ class DownloadHolder(private val view: View, val adapter: DownloadAdapter) :
             notifyDownloadedPages()
         }
         // KMK -->
-        binding.downloadProgress.trackColor = adapter.progressTrackColor
-        binding.downloadProgress.setIndicatorColor(adapter.progressIndicatorColor)
+        binding.downloadProgress.setColors(adapter.colorScheme)
         // KMK <--
     }
 

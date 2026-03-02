@@ -29,9 +29,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var mediaId: String? = null
 
-    // AZ -->
     var mediaServer: Int? = null
-    // AZ <--
 
     var japaneseTitle by titleDelegate(TITLE_TYPE_JAPANESE)
     var englishTitle by titleDelegate(TITLE_TYPE_ENGLISH)
@@ -49,9 +47,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         val key = nhId?.let { nhIdToPath(it) }
 
         val cover = if (mediaId != null) {
-            // AZ -->
+            // Default media server for cover is always 1 (see in page header)
             val server = mediaServer ?: 1
-            // AZ <--
             typeToExtension(coverImageType)?.let {
                 "https://t$server.nhentai.net/galleries/$mediaId/cover.$it"
             }
@@ -70,6 +67,11 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
         }
 
+        // Set group (if we can find one)
+        val group = tags.ofNamespace(NHENTAI_GROUP_NAMESPACE).let { tags ->
+            if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
+        }
+
         // Copy tags -> genres
         val genres = tagsToGenreString()
 
@@ -84,16 +86,15 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        val description = null
-
         return manga.copy(
             url = key ?: manga.url,
             thumbnail_url = cover ?: manga.thumbnail_url,
             title = title,
-            artist = artist ?: manga.artist,
+            artist = group ?: manga.artist,
+            author = artist ?: manga.artist,
             genre = genres,
             status = status,
-            description = description,
+            description = null,
         )
     }
 
@@ -133,6 +134,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         const val BASE_URL = "https://nhentai.net"
 
         private const val NHENTAI_ARTIST_NAMESPACE = "artist"
+        private const val NHENTAI_GROUP_NAMESPACE = "group"
         const val NHENTAI_CATEGORIES_NAMESPACE = "category"
 
         fun typeToExtension(t: String?) =

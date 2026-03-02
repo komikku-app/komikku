@@ -11,6 +11,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.notificationManager
+import eu.kanade.tachiyomi.util.system.updaterEnabled
 import exh.log.xLogE
 import kotlinx.coroutines.coroutineScope
 import java.util.concurrent.TimeUnit
@@ -20,6 +21,10 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
+            if (!updaterEnabled) {
+                cancelTask(context)
+                return@coroutineScope Result.success()
+            }
             AppUpdateChecker().checkForUpdate(context)
             Result.success()
         } catch (e: Exception) {
@@ -55,7 +60,9 @@ class AppUpdateJob(private val context: Context, workerParams: WorkerParameters)
         }
 
         fun cancelTask(context: Context) {
+            // cancel and remove job
             WorkManager.getInstance(context).cancelAllWorkByTag(TAG)
+            WorkManager.getInstance(context).pruneWork()
         }
     }
 }

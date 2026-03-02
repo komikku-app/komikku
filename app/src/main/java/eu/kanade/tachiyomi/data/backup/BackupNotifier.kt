@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.backup
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -34,8 +35,9 @@ class BackupNotifier(private val context: Context) {
     private val progressNotificationBuilder = context.notificationBuilder(
         Notifications.CHANNEL_BACKUP_RESTORE_PROGRESS,
     ) {
-        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
         setSmallIcon(R.drawable.ic_komikku)
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
         setAutoCancel(false)
         setOngoing(true)
         setOnlyAlertOnce(true)
@@ -44,12 +46,13 @@ class BackupNotifier(private val context: Context) {
     private val completeNotificationBuilder = context.notificationBuilder(
         Notifications.CHANNEL_BACKUP_RESTORE_COMPLETE,
     ) {
-        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
         setSmallIcon(R.drawable.ic_komikku)
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
         setAutoCancel(false)
     }
 
-    private fun NotificationCompat.Builder.show(id: Int) {
+    internal fun NotificationCompat.Builder.show(id: Int) {
         context.notify(id, build())
     }
 
@@ -60,7 +63,11 @@ class BackupNotifier(private val context: Context) {
             setProgress(0, 0, true)
         }
 
-        builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_BACKUP_PROGRESS)
+        // KMK <--
 
         return builder
     }
@@ -87,7 +94,7 @@ class BackupNotifier(private val context: Context) {
             addAction(
                 R.drawable.ic_share_24dp,
                 context.stringResource(MR.strings.action_share),
-                NotificationReceiver.shareBackupPendingBroadcast(context, file.uri),
+                NotificationReceiver.shareBackupPendingActivity(context, file.uri),
             )
 
             show(Notifications.ID_BACKUP_COMPLETE)
@@ -126,7 +133,11 @@ class BackupNotifier(private val context: Context) {
             )
         }
 
-        builder.show(Notifications.ID_RESTORE_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_RESTORE_PROGRESS)
+        // KMK <--
 
         return builder
     }

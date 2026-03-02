@@ -5,6 +5,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -12,16 +14,21 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.structuralEqualityPolicy
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.more.settings.widget.ConnectionPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.InfoWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
+import eu.kanade.presentation.more.settings.widget.PrefsVerticalPadding
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.TitleFontSize
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
 import kotlinx.coroutines.launch
-import tachiyomi.presentation.core.components.SliderItem
+import tachiyomi.presentation.core.components.BaseSliderItem
 import tachiyomi.presentation.core.util.collectAsState
 
 val LocalPreferenceHighlighted = compositionLocalOf(structuralEqualityPolicy()) { false }
@@ -29,7 +36,7 @@ val LocalPreferenceMinHeight = compositionLocalOf(structuralEqualityPolicy()) { 
 
 @Composable
 fun StatusWrapper(
-    item: Preference.PreferenceItem<*>,
+    item: Preference.PreferenceItem<*, *>,
     highlightKey: String?,
     content: @Composable () -> Unit,
 ) {
@@ -50,7 +57,7 @@ fun StatusWrapper(
 
 @Composable
 internal fun PreferenceItem(
-    item: Preference.PreferenceItem<*>,
+    item: Preference.PreferenceItem<*, *>,
     highlightKey: String?,
 ) {
     val scope = rememberCoroutineScope()
@@ -60,7 +67,7 @@ internal fun PreferenceItem(
     ) {
         when (item) {
             is Preference.PreferenceItem.SwitchPreference -> {
-                val value by item.pref.collectAsState()
+                val value by item.preference.collectAsState()
                 SwitchPreferenceWidget(
                     title = item.title,
                     subtitle = item.subtitle,
@@ -69,29 +76,34 @@ internal fun PreferenceItem(
                     onCheckedChanged = { newValue ->
                         scope.launch {
                             if (item.onValueChanged(newValue)) {
-                                item.pref.set(newValue)
+                                item.preference.set(newValue)
                             }
                         }
                     },
                 )
             }
             is Preference.PreferenceItem.SliderPreference -> {
-                // TODO: use different composable?
-                SliderItem(
-                    label = item.title,
-                    min = item.min,
-                    max = item.max,
+                BaseSliderItem(
                     value = item.value,
-                    valueText = item.subtitle.takeUnless { it.isNullOrEmpty() } ?: item.value.toString(),
+                    valueRange = item.valueRange,
+                    steps = item.steps,
+                    title = item.title,
+                    subtitle = item.subtitle,
+                    valueString = item.valueString.takeUnless { it.isNullOrEmpty() } ?: item.value.toString(),
                     onChange = {
                         scope.launch {
                             item.onValueChanged(it)
                         }
                     },
+                    titleStyle = MaterialTheme.typography.titleLarge.copy(fontSize = TitleFontSize),
+                    modifier = Modifier.padding(
+                        horizontal = PrefsHorizontalPadding,
+                        vertical = PrefsVerticalPadding,
+                    ),
                 )
             }
             is Preference.PreferenceItem.ListPreference<*> -> {
-                val value by item.pref.collectAsState()
+                val value by item.preference.collectAsState()
                 ListPreferenceWidget(
                     value = value,
                     title = item.title,
@@ -118,14 +130,14 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.MultiSelectListPreference -> {
-                val values by item.pref.collectAsState()
+                val values by item.preference.collectAsState()
                 MultiSelectListPreferenceWidget(
                     preference = item,
                     values = values,
                     onValuesChange = { newValues ->
                         scope.launch {
                             if (item.onValueChanged(newValues)) {
-                                item.pref.set(newValues.toMutableSet())
+                                item.preference.set(newValues.toMutableSet())
                             }
                         }
                     },
@@ -140,7 +152,7 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.EditTextPreference -> {
-                val values by item.pref.collectAsState()
+                val values by item.preference.collectAsState()
                 EditTextPreferenceWidget(
                     title = item.title,
                     subtitle = item.subtitle,
@@ -148,7 +160,7 @@ internal fun PreferenceItem(
                     value = values,
                     onConfirm = {
                         val accepted = item.onValueChanged(it)
-                        if (accepted) item.pref.set(it)
+                        if (accepted) item.preference.set(it)
                         accepted
                     },
                 )
@@ -163,6 +175,17 @@ internal fun PreferenceItem(
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
                 )
             }
+            // AM (CONNECTIONS) -->
+            is Preference.PreferenceItem.ConnectionPreference -> {
+                val isLoggedIn by item.service.isLoggedInFlow.collectAsState(item.service.isLogged)
+                ConnectionPreferenceWidget(
+                    service = item.service,
+                    checked = isLoggedIn,
+                    onClick = { if (isLoggedIn) item.openSettings() else item.login() },
+                    subtitle = item.subtitle,
+                )
+            }
+            // <-- AM (CONNECTIONS)
             is Preference.PreferenceItem.InfoPreference -> {
                 InfoWidget(text = item.title)
             }

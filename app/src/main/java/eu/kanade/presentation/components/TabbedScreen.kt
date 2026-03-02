@@ -65,17 +65,18 @@ fun TabbedScreen(
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
-                        feedState.items?.forEach {
-                            it.results?.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
+                        feedState.items?.let { result ->
+                            result.mapNotNull { it.results }
+                                .flatten()
+                                .forEach { bulkFavoriteScreenModel.select(it) }
                         }
                     },
                     onReverseSelection = {
-                        feedState.items
-                            ?.mapNotNull { it.results }
-                            ?.flatten()
-                            ?.let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        feedState.items?.let { result ->
+                            result.mapNotNull { it.results }
+                                .flatten()
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        }
                     },
                 )
             } else {

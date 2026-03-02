@@ -7,10 +7,10 @@ CREATE TABLE merged(
     chapter_sort_mode INTEGER NOT NULL,
     chapter_priority INTEGER NOT NULL,
     download_chapters INTEGER AS Boolean NOT NULL,
-    merge_id INTEGER NOT NULL,
-    merge_url TEXT NOT NULL,
-    manga_id INTEGER,
-    manga_url TEXT NOT NULL,
+    merge_id INTEGER NOT NULL, -- Point to the fake manga which was created as a merge entry
+    merge_url TEXT NOT NULL, -- URL of the merge entry, usually is the original first manga used to create a merge entry
+    manga_id INTEGER, -- Point to actual children manga entry which is a part of this merge entry
+    manga_url TEXT NOT NULL, -- URL of the actual children manga entry which is a part of this merge entry
     manga_source INTEGER NOT NULL,
     FOREIGN KEY(manga_id) REFERENCES mangas (_id)
     ON DELETE SET NULL,

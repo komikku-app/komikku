@@ -1,10 +1,7 @@
 package eu.kanade.presentation.manga
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,9 +29,11 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.State
@@ -64,7 +63,7 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.RelatedMangaTitle
@@ -88,8 +87,10 @@ import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
+import eu.kanade.tachiyomi.source.isIncognitoModeEnabled
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -108,6 +109,7 @@ import exh.source.isEhBasedManga
 import exh.ui.metadata.adapters.EHentaiDescription
 import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.HBrowseDescription
+import exh.ui.metadata.adapters.LanraragiDescription
 import exh.ui.metadata.adapters.MangaDexDescription
 import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.PururinDescription
@@ -122,7 +124,6 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
-import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -145,7 +146,7 @@ fun MangaScreen(
     isTabletUi: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
-    onBackClicked: () -> Unit,
+    navigateUp: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
@@ -170,6 +171,7 @@ fun MangaScreen(
     onEditCategoryClicked: (() -> Unit)?,
     onEditFetchIntervalClicked: (() -> Unit)?,
     onMigrateClicked: (() -> Unit)?,
+    onEditNotesClicked: () -> Unit,
     // SY -->
     onMetadataViewerClicked: () -> Unit,
     onEditInfoClicked: () -> Unit,
@@ -198,6 +200,9 @@ fun MangaScreen(
 
     // KMK -->
     getMangaState: @Composable (Manga) -> State<Manga>,
+    onClickSourceSettingsClicked: (() -> Unit)?,
+    onClearManga: () -> Unit,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -223,7 +228,7 @@ fun MangaScreen(
             nextUpdate = nextUpdate,
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
-            onBackClicked = onBackClicked,
+            navigateUp = navigateUp,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
             onAddToLibraryClicked = onAddToLibraryClicked,
@@ -242,6 +247,7 @@ fun MangaScreen(
             onEditCategoryClicked = onEditCategoryClicked,
             onEditIntervalClicked = onEditFetchIntervalClicked,
             onMigrateClicked = onMigrateClicked,
+            onEditNotesClicked = onEditNotesClicked,
             // SY -->
             onMetadataViewerClicked = onMetadataViewerClicked,
             onEditInfoClicked = onEditInfoClicked,
@@ -263,6 +269,9 @@ fun MangaScreen(
             onInvertSelection = onInvertSelection,
             // KMK -->
             getMangaState = getMangaState,
+            onClickSourceSettingsClicked = onClickSourceSettingsClicked,
+            onClearManga = onClearManga,
+            onOpenMangaFolder = onOpenMangaFolder,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -281,7 +290,7 @@ fun MangaScreen(
             chapterSwipeStartAction = chapterSwipeStartAction,
             chapterSwipeEndAction = chapterSwipeEndAction,
             nextUpdate = nextUpdate,
-            onBackClicked = onBackClicked,
+            navigateUp = navigateUp,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
             onAddToLibraryClicked = onAddToLibraryClicked,
@@ -300,6 +309,7 @@ fun MangaScreen(
             onEditCategoryClicked = onEditCategoryClicked,
             onEditIntervalClicked = onEditFetchIntervalClicked,
             onMigrateClicked = onMigrateClicked,
+            onEditNotesClicked = onEditNotesClicked,
             // SY -->
             onMetadataViewerClicked = onMetadataViewerClicked,
             onEditInfoClicked = onEditInfoClicked,
@@ -321,6 +331,9 @@ fun MangaScreen(
             onInvertSelection = onInvertSelection,
             // KMK -->
             getMangaState = getMangaState,
+            onClickSourceSettingsClicked = onClickSourceSettingsClicked,
+            onClearManga = onClearManga,
+            onOpenMangaFolder = onOpenMangaFolder,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -342,7 +355,7 @@ private fun MangaScreenSmallImpl(
     nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
-    onBackClicked: () -> Unit,
+    navigateUp: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
@@ -368,6 +381,7 @@ private fun MangaScreenSmallImpl(
     onEditCategoryClicked: (() -> Unit)?,
     onEditIntervalClicked: (() -> Unit)?,
     onMigrateClicked: (() -> Unit)?,
+    onEditNotesClicked: () -> Unit,
     // SY -->
     onMetadataViewerClicked: () -> Unit,
     onEditInfoClicked: () -> Unit,
@@ -396,6 +410,9 @@ private fun MangaScreenSmallImpl(
 
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
+    onClickSourceSettingsClicked: (() -> Unit)?,
+    onClearManga: () -> Unit,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -436,14 +453,13 @@ private fun MangaScreenSmallImpl(
     val readButtonPosition = uiPreferences.readButtonPosition()
     // KMK <--
 
-    val internalOnBackPressed = {
+    BackHandler(onBack = {
         if (isAnySelected) {
             onAllChapterSelected(false)
         } else {
-            onBackClicked()
+            navigateUp()
         }
-    }
-    BackHandler(onBack = internalOnBackPressed)
+    })
 
     Scaffold(
         topBar = {
@@ -456,29 +472,31 @@ private fun MangaScreenSmallImpl(
             val isFirstItemScrolled by remember {
                 derivedStateOf { chapterListState.firstVisibleItemScrollOffset > 0 }
             }
-            val animatedTitleAlpha by animateFloatAsState(
+            val titleAlpha by animateFloatAsState(
                 if (!isFirstItemVisible) 1f else 0f,
                 label = "Top Bar Title",
             )
-            val animatedBgAlpha by animateFloatAsState(
+            val backgroundAlpha by animateFloatAsState(
                 if (!isFirstItemVisible || isFirstItemScrolled) 1f else 0f,
                 label = "Top Bar Background",
             )
             MangaToolbar(
                 title = state.manga.title,
-                titleAlphaProvider = { animatedTitleAlpha },
-                backgroundAlphaProvider = { animatedBgAlpha },
                 hasFilters = state.filterActive,
-                onBackClicked = internalOnBackPressed,
+                navigateUp = navigateUp,
                 onClickFilter = onFilterClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
                 onClickEditCategory = onEditCategoryClicked,
                 onClickRefresh = onRefresh,
                 onClickMigrate = onMigrateClicked,
+                onClickEditNotes = onEditNotesClicked,
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
+                onClickSourceSettings = onClickSourceSettingsClicked,
+                onClearManga = onClearManga,
+                onOpenMangaFolder = onOpenMangaFolder,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
@@ -490,8 +508,11 @@ private fun MangaScreenSmallImpl(
                 onClickMerge = onMergeClicked.takeIf { state.showMergeInOverflow },
                 // SY <--
                 actionModeCounter = selectedChapterCount,
+                onCancelActionMode = { onAllChapterSelected(false) },
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                titleAlphaProvider = { titleAlpha },
+                backgroundAlphaProvider = { backgroundAlpha },
                 // KMK -->
                 onPaletteScreenClick = onPaletteScreenClick,
                 // KMK <--
@@ -516,12 +537,23 @@ private fun MangaScreenSmallImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            AnimatedVisibility(
-                visible = isFABVisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                // KMK -->
-                modifier = Modifier
+            SmallExtendedFloatingActionButton(
+                text = {
+                    val isReading = remember(state.chapters) {
+                        state.chapters.fastAny { it.chapter.read }
+                    }
+                    Text(
+                        text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
+                    )
+                },
+                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                onClick = onContinueReading,
+                expanded = chapterListState.shouldExpandFAB(),
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFABVisible,
+                    alignment = Alignment.BottomEnd,
+                )
+                    // KMK -->
                     .offset { IntOffset(offsetX.roundToInt(), 0) }
                     .onGloballyPositioned { coordinates ->
                         fabSize = coordinates.size
@@ -539,28 +571,15 @@ private fun MangaScreenSmallImpl(
                             },
                         ) { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount
+                            val newOffsetX = offsetX + dragAmount
+                            if (!newOffsetX.isNaN()) {
+                                offsetX = newOffsetX
+                            }
                         }
                     },
+                containerColor = MaterialTheme.colorScheme.primary,
                 // KMK <--
-            ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        val isReading = remember(state.chapters) {
-                            state.chapters.fastAny { it.chapter.read }
-                        }
-                        Text(
-                            text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
-                        )
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                    onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
-                    // KMK -->
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    // KMK <--
-                )
-            }
+            )
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
@@ -572,9 +591,7 @@ private fun MangaScreenSmallImpl(
             .onGloballyPositioned { coordinates ->
                 layoutSize = coordinates.size
             }
-            .haze(
-                state = hazeState,
-            ),
+            .hazeSource(state = hazeState),
         // KMK <--
     ) { contentPadding ->
         val topPadding = contentPadding.calculateTopPadding()
@@ -610,6 +627,9 @@ private fun MangaScreenSmallImpl(
                             manga = state.manga,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
                             isStubSource = remember { state.source is StubSource },
+                            // KMK -->
+                            isSourceIncognito = remember { state.source.isIncognitoModeEnabled() },
+                            // KMK <--
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
@@ -667,15 +687,17 @@ private fun MangaScreenSmallImpl(
                         contentType = MangaScreenItem.DESCRIPTION_WITH_TAG,
                     ) {
                         ExpandableMangaDescription(
-                            defaultExpandState = state.isFromSource,
+                            defaultExpandState = state.isFromSource && !state.manga.favorite,
                             description = state.manga.description,
                             tagsProvider = { state.manga.genre },
+                            notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
+                            onEditNotes = onEditNotesClicked,
                             // SY -->
                             doSearch = onSearch,
                             searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source, state.manga.genre)
+                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
                             },
                             // SY <--
                         )
@@ -797,7 +819,7 @@ private fun MangaScreenLargeImpl(
     nextUpdate: Instant?,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
     chapterSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
-    onBackClicked: () -> Unit,
+    navigateUp: () -> Unit,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
@@ -823,6 +845,7 @@ private fun MangaScreenLargeImpl(
     onEditCategoryClicked: (() -> Unit)?,
     onEditIntervalClicked: (() -> Unit)?,
     onMigrateClicked: (() -> Unit)?,
+    onEditNotesClicked: () -> Unit,
     // SY -->
     onMetadataViewerClicked: () -> Unit,
     onEditInfoClicked: () -> Unit,
@@ -851,6 +874,9 @@ private fun MangaScreenLargeImpl(
 
     // KMK -->
     getMangaState: @Composable ((Manga) -> State<Manga>),
+    onClickSourceSettingsClicked: (() -> Unit)?,
+    onClearManga: () -> Unit,
+    onOpenMangaFolder: (() -> Unit)?,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -895,14 +921,13 @@ private fun MangaScreenLargeImpl(
 
     val chapterListState = rememberLazyListState()
 
-    val internalOnBackPressed = {
+    BackHandler(onBack = {
         if (isAnySelected) {
             onAllChapterSelected(false)
         } else {
-            onBackClicked()
+            navigateUp()
         }
-    }
-    BackHandler(onBack = internalOnBackPressed)
+    })
 
     Scaffold(
         topBar = {
@@ -912,19 +937,22 @@ private fun MangaScreenLargeImpl(
             MangaToolbar(
                 modifier = Modifier.onSizeChanged { topBarHeight = it.height },
                 title = state.manga.title,
-                titleAlphaProvider = { if (isAnySelected) 1f else 0f },
-                backgroundAlphaProvider = { 1f },
                 hasFilters = state.filterActive,
-                onBackClicked = internalOnBackPressed,
+                navigateUp = navigateUp,
                 onClickFilter = onFilterButtonClicked,
                 onClickShare = onShareClicked,
                 onClickDownload = onDownloadActionClicked,
                 onClickEditCategory = onEditCategoryClicked,
                 onClickRefresh = onRefresh,
                 onClickMigrate = onMigrateClicked,
+                onClickEditNotes = onEditNotesClicked,
+                onCancelActionMode = { onAllChapterSelected(false) },
                 // SY -->
                 onClickEditInfo = onEditInfoClicked.takeIf { state.manga.favorite },
                 // KMK -->
+                onClickSourceSettings = onClickSourceSettingsClicked,
+                onClearManga = onClearManga,
+                onOpenMangaFolder = onOpenMangaFolder,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
@@ -938,6 +966,8 @@ private fun MangaScreenLargeImpl(
                 actionModeCounter = selectedChapterCount,
                 onSelectAll = { onAllChapterSelected(true) },
                 onInvertSelection = { onInvertSelection() },
+                titleAlphaProvider = { 1f },
+                backgroundAlphaProvider = { 1f },
                 // KMK -->
                 onPaletteScreenClick = onPaletteScreenClick,
                 // KMK <--
@@ -967,12 +997,25 @@ private fun MangaScreenLargeImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            AnimatedVisibility(
-                visible = isFABVisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                // KMK -->
-                modifier = Modifier
+            SmallExtendedFloatingActionButton(
+                text = {
+                    val isReading = remember(state.chapters) {
+                        state.chapters.fastAny { it.chapter.read }
+                    }
+                    Text(
+                        text = stringResource(
+                            if (isReading) MR.strings.action_resume else MR.strings.action_start,
+                        ),
+                    )
+                },
+                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                onClick = onContinueReading,
+                expanded = chapterListState.shouldExpandFAB(),
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFABVisible,
+                    alignment = Alignment.BottomEnd,
+                )
+                    // KMK -->
                     .offset { IntOffset(offsetX.roundToInt(), 0) }
                     .onGloballyPositioned { coordinates ->
                         fabSize = coordinates.size
@@ -990,30 +1033,15 @@ private fun MangaScreenLargeImpl(
                             },
                         ) { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount
+                            val newOffsetX = offsetX + dragAmount
+                            if (!newOffsetX.isNaN()) {
+                                offsetX = newOffsetX
+                            }
                         }
                     },
+                containerColor = MaterialTheme.colorScheme.primary,
                 // KMK <--
-            ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        val isReading = remember(state.chapters) {
-                            state.chapters.fastAny { it.chapter.read }
-                        }
-                        Text(
-                            text = stringResource(
-                                if (isReading) MR.strings.action_resume else MR.strings.action_start,
-                            ),
-                        )
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                    onClick = onContinueReading,
-                    expanded = chapterListState.shouldExpandFAB(),
-                    // KMK -->
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    // KMK <--
-                )
-            }
+            )
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
@@ -1025,9 +1053,7 @@ private fun MangaScreenLargeImpl(
             .onGloballyPositioned { coordinates ->
                 layoutSize = coordinates.size
             }
-            .haze(
-                state = hazeState,
-            ),
+            .hazeSource(state = hazeState),
         // KMK <--
     ) { contentPadding ->
         PullRefresh(
@@ -1057,6 +1083,9 @@ private fun MangaScreenLargeImpl(
                             manga = state.manga,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
                             isStubSource = remember { state.source is StubSource },
+                            // KMK -->
+                            isSourceIncognito = remember { state.source.isIncognitoModeEnabled() },
+                            // KMK <--
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
@@ -1097,12 +1126,14 @@ private fun MangaScreenLargeImpl(
                             defaultExpandState = true,
                             description = state.manga.description,
                             tagsProvider = { state.manga.genre },
+                            notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
+                            onEditNotes = onEditNotesClicked,
                             // SY -->
                             doSearch = onSearch,
                             searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source, state.manga.genre)
+                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
                             },
                             // SY <--
                         )
@@ -1415,6 +1446,9 @@ fun metadataDescription(source: Source): MetadataDescriptionComposable? {
             }
             is Tsumino -> { state, openMetadataViewer, _ ->
                 TsuminoDescription(state, openMetadataViewer)
+            }
+            is Lanraragi -> { state, openMetadataViewer, _ ->
+                LanraragiDescription(state, openMetadataViewer)
             }
             else -> null
         }

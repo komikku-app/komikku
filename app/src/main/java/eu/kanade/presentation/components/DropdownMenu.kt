@@ -25,6 +25,10 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import androidx.compose.material3.DropdownMenu as ComposeDropdownMenu
 
+// KMK -->
+val DefaultDropdownMenuOffset = DpOffset(8.dp, (-56).dp)
+// KMK <--
+
 /**
  * DropdownMenu but overlaps anchor and has width constraints to better
  * match non-Compose implementation.
@@ -34,7 +38,7 @@ fun DropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    offset: DpOffset = DpOffset(8.dp, (-56).dp),
+    offset: DpOffset = /* KMK --> */ DefaultDropdownMenuOffset, /* KMK <-- */
     scrollState: ScrollState = rememberScrollState(),
     properties: PopupProperties = PopupProperties(focusable = true),
     content: @Composable ColumnScope.() -> Unit,

@@ -146,6 +146,12 @@
 -keepclassmembers class net.zetetic.database.sqlcipher.SQLiteDebug$* { *; }
 # SY <--
 
+# KMK -->
+# Coil3
+-keep class * extends coil3.util.DecoderServiceLoaderTarget { *; }
+-keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
+# KMK <--
+
 # Design library
 -dontwarn com.google.android.material.**
 -keep class com.google.android.material.** { *; }

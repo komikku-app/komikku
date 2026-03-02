@@ -1,7 +1,7 @@
 package eu.kanade.presentation.reader.settings
 
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,14 +20,14 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 
 @Composable
-internal fun ColumnScope.ColorFilterPage(screenModel: ReaderSettingsScreenModel) {
+internal fun ColorFilterPage(screenModel: ReaderSettingsScreenModel) {
     val customBrightness by screenModel.preferences.customBrightness().collectAsState()
     CheckboxItem(
         label = stringResource(MR.strings.pref_custom_brightness),
         pref = screenModel.preferences.customBrightness(),
     )
 
-    /**
+    /*
      * Sets the brightness of the screen. Range is [-75, 100].
      * From -75 to -1 a semi-transparent black view is shown at the top with the minimum brightness.
      * From 1 to 100 it sets that value as brightness.
@@ -36,12 +36,12 @@ internal fun ColumnScope.ColorFilterPage(screenModel: ReaderSettingsScreenModel)
     if (customBrightness) {
         val customBrightnessValue by screenModel.preferences.customBrightnessValue().collectAsState()
         SliderItem(
-            label = stringResource(MR.strings.pref_custom_brightness),
-            min = -75,
-            max = 100,
             value = customBrightnessValue,
-            valueText = customBrightnessValue.toString(),
+            valueRange = -75..100,
+            steps = 0,
+            label = stringResource(MR.strings.pref_custom_brightness),
             onChange = { screenModel.preferences.customBrightnessValue().set(it) },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
     }
 
@@ -53,48 +53,52 @@ internal fun ColumnScope.ColorFilterPage(screenModel: ReaderSettingsScreenModel)
     if (colorFilter) {
         val colorFilterValue by screenModel.preferences.colorFilterValue().collectAsState()
         SliderItem(
-            label = stringResource(MR.strings.color_filter_r_value),
-            max = 255,
             value = colorFilterValue.red,
-            valueText = colorFilterValue.red.toString(),
+            valueRange = 0..255,
+            steps = 0,
+            label = stringResource(MR.strings.color_filter_r_value),
             onChange = { newRValue ->
                 screenModel.preferences.colorFilterValue().getAndSet {
                     getColorValue(it, newRValue, RED_MASK, 16)
                 }
             },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
         SliderItem(
-            label = stringResource(MR.strings.color_filter_g_value),
-            max = 255,
             value = colorFilterValue.green,
-            valueText = colorFilterValue.green.toString(),
+            valueRange = 0..255,
+            steps = 0,
+            label = stringResource(MR.strings.color_filter_g_value),
             onChange = { newGValue ->
                 screenModel.preferences.colorFilterValue().getAndSet {
                     getColorValue(it, newGValue, GREEN_MASK, 8)
                 }
             },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
         SliderItem(
-            label = stringResource(MR.strings.color_filter_b_value),
-            max = 255,
             value = colorFilterValue.blue,
-            valueText = colorFilterValue.blue.toString(),
+            valueRange = 0..255,
+            steps = 0,
+            label = stringResource(MR.strings.color_filter_b_value),
             onChange = { newBValue ->
                 screenModel.preferences.colorFilterValue().getAndSet {
                     getColorValue(it, newBValue, BLUE_MASK, 0)
                 }
             },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
         SliderItem(
-            label = stringResource(MR.strings.color_filter_a_value),
-            max = 255,
             value = colorFilterValue.alpha,
-            valueText = colorFilterValue.alpha.toString(),
+            valueRange = 0..255,
+            steps = 0,
+            label = stringResource(MR.strings.color_filter_a_value),
             onChange = { newAValue ->
                 screenModel.preferences.colorFilterValue().getAndSet {
                     getColorValue(it, newAValue, ALPHA_MASK, 24)
                 }
             },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
 
         val colorFilterMode by screenModel.preferences.colorFilterMode().collectAsState()

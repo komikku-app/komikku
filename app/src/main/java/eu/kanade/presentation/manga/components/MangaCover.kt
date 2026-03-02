@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.presentation.manga.components
 
 import androidx.annotation.ColorInt
@@ -28,6 +30,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
+import eu.kanade.presentation.manga.components.MangaCover.Companion.COVER_TEMPLATE_SIZE_BIG
+import eu.kanade.presentation.manga.components.MangaCover.Companion.COVER_TEMPLATE_SIZE_MEDIUM
+import eu.kanade.presentation.manga.components.MangaCover.Companion.COVER_TEMPLATE_SIZE_NORMAL
+import eu.kanade.presentation.manga.components.MangaCover.Size
 import eu.kanade.tachiyomi.R
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
@@ -99,9 +105,9 @@ enum class MangaCover(val ratio: Float) {
                         modifier = Modifier
                             .size(
                                 when (size) {
-                                    Size.Big -> 16.dp
-                                    Size.Medium -> 24.dp
-                                    else -> 32.dp
+                                    Size.Big -> COVER_TEMPLATE_SIZE_BIG
+                                    Size.Medium -> COVER_TEMPLATE_SIZE_MEDIUM
+                                    else -> COVER_TEMPLATE_SIZE_NORMAL
                                 },
                             )
                             .align(Alignment.Center),
@@ -122,9 +128,9 @@ enum class MangaCover(val ratio: Float) {
                         modifier = Modifier
                             .size(
                                 when (size) {
-                                    Size.Big -> 16.dp
-                                    Size.Medium -> 24.dp
-                                    else -> 32.dp
+                                    Size.Big -> COVER_TEMPLATE_SIZE_BIG
+                                    Size.Medium -> COVER_TEMPLATE_SIZE_MEDIUM
+                                    else -> COVER_TEMPLATE_SIZE_NORMAL
                                 },
                             )
                             .align(Alignment.Center),
@@ -149,6 +155,12 @@ enum class MangaCover(val ratio: Float) {
             contentScale = scale,
         )
     }
+
+    companion object {
+        val COVER_TEMPLATE_SIZE_BIG = 16.dp
+        val COVER_TEMPLATE_SIZE_MEDIUM = 24.dp
+        val COVER_TEMPLATE_SIZE_NORMAL = 32.dp
+    }
 }
 
 enum class MangaCoverHide(private val ratio: Float) {
@@ -167,6 +179,7 @@ enum class MangaCoverHide(private val ratio: Float) {
         bgColor: Color? = CoverPlaceholderColor,
         /** onBackground color, which used for loading/error indicator */
         @ColorInt tint: Int? = null,
+        size: Size = Size.Normal,
     ) {
         val modifierColored = modifier
             .aspectRatio(ratio)
@@ -190,7 +203,13 @@ enum class MangaCoverHide(private val ratio: Float) {
                 imageVector = ImageVector.vectorResource(R.drawable.ic_baseline_menu_book_24),
                 contentDescription = contentDescription,
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(
+                        when (size) {
+                            Size.Big -> COVER_TEMPLATE_SIZE_BIG
+                            Size.Medium -> COVER_TEMPLATE_SIZE_MEDIUM
+                            else -> COVER_TEMPLATE_SIZE_NORMAL
+                        },
+                    )
                     .align(Alignment.Center),
                 colorFilter = ColorFilter.tint(
                     tint?.let { Color(it) } ?: CoverPlaceholderOnBgColor,
@@ -200,7 +219,7 @@ enum class MangaCoverHide(private val ratio: Float) {
     }
 }
 
-internal val RatioSwitchToPanorama = 0.75f
+internal const val RatioSwitchToPanorama = 0.75f
 
 internal val CoverPlaceholderColor = Color(0x1F888888)
 internal val CoverPlaceholderOnBgColor = Color(0x8F888888)

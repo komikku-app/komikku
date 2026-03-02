@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.EXHMigrations
+import exh.source.MERGED_SOURCE_ID
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
@@ -31,6 +32,7 @@ import uy.kohesive.injekt.api.get
 import java.time.ZonedDateTime
 import java.util.Date
 import kotlin.math.max
+import kotlin.math.min
 
 class MangaRestorer(
     private var isSync: Boolean = false,
@@ -63,7 +65,10 @@ class MangaRestorer(
 
         return backupMangas
             .sortedWith(
-                compareBy<BackupManga> { it.url in urlsBySource[it.source].orEmpty() }
+                // KMK -->
+                compareBy<BackupManga> { it.source == MERGED_SOURCE_ID }
+                    // KMK <--
+                    .then(compareBy { it.url in urlsBySource[it.source].orEmpty() })
                     .then(compareByDescending { it.lastModifiedAt }),
             )
     }
@@ -142,13 +147,15 @@ class MangaRestorer(
             mangasQueries.update(
                 source = manga.source,
                 url = manga.url,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre?.joinToString(separator = ", "),
-                title = manga.title,
-                status = manga.status,
-                thumbnailUrl = manga.thumbnailUrl,
+                // SY -->
+                artist = manga.ogArtist,
+                author = manga.ogAuthor,
+                description = manga.ogDescription,
+                genre = manga.ogGenre?.joinToString(separator = ", "),
+                title = manga.ogTitle,
+                status = manga.ogStatus,
+                thumbnailUrl = manga.ogThumbnailUrl,
+                // SY <--
                 favorite = manga.favorite,
                 lastUpdate = manga.lastUpdate,
                 nextUpdate = null,
@@ -162,6 +169,7 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
                 version = manga.version,
                 isSyncing = 1,
+                notes = manga.notes,
             )
         }
         return manga
@@ -171,9 +179,7 @@ class MangaRestorer(
         manga: Manga,
     ): Manga {
         return manga.copy(
-            initialized = manga.description != null,
             id = insertManga(manga),
-            version = manga.version,
         )
     }
 
@@ -189,7 +195,7 @@ class MangaRestorer(
                 when {
                     dbChapter == null -> chapter // New chapter
                     chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
-                    else -> updateChapterBasedOnSyncState(chapter, dbChapter)
+                    else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
                 }
             }
             .partition { it.id > 0 }
@@ -205,23 +211,45 @@ class MangaRestorer(
                 bookmark = chapter.bookmark || dbChapter.bookmark,
                 read = chapter.read,
                 lastPageRead = chapter.lastPageRead,
-                sourceOrder = chapter.sourceOrder,
+                // KMK -->
+                sourceOrder = max(chapter.sourceOrder, dbChapter.sourceOrder),
+                dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
+                // KMK <--
             )
         } else {
-            chapter.copyFrom(dbChapter).let {
-                when {
-                    dbChapter.read && !it.read -> it.copy(read = true, lastPageRead = dbChapter.lastPageRead)
-                    it.lastPageRead == 0L && dbChapter.lastPageRead != 0L -> it.copy(
-                        lastPageRead = dbChapter.lastPageRead,
-                    )
-                    else -> it
+            chapter.copyFrom(dbChapter)
+                // KMK -->
+                .copy(
+                    id = dbChapter.id,
+                    bookmark = chapter.bookmark || dbChapter.bookmark,
+                    sourceOrder = max(chapter.sourceOrder, dbChapter.sourceOrder),
+                    dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
+                )
+                // KMK <--
+                .let {
+                    when {
+                        dbChapter.read && !it.read -> it.copy(read = true, lastPageRead = dbChapter.lastPageRead)
+                        it.lastPageRead == 0L && dbChapter.lastPageRead != 0L -> it.copy(
+                            lastPageRead = dbChapter.lastPageRead,
+                        )
+                        else -> it
+                    }
                 }
-            }
         }
     }
 
     private fun Chapter.forComparison() =
-        this.copy(id = 0L, mangaId = 0L, dateFetch = 0L, dateUpload = 0L, lastModifiedAt = 0L, version = 0L)
+        this.copy(
+            id = 0L,
+            mangaId = 0L,
+            dateFetch = 0L,
+            // KMK -->
+            // dateUpload = 0L, some time source loses dateUpload so we overwrite with backup
+            // sourceOrder = 0L, although sourceOrder will be updated on refresh, we want to avoid order mixed up anyway
+            // KMK <--
+            lastModifiedAt = 0L,
+            version = 0L,
+        )
 
     private suspend fun insertNewChapters(chapters: List<Chapter>) {
         handler.await(true) {
@@ -256,9 +284,11 @@ class MangaRestorer(
                     bookmark = chapter.bookmark,
                     lastPageRead = chapter.lastPageRead,
                     chapterNumber = null,
-                    sourceOrder = if (isSync) chapter.sourceOrder else null,
                     dateFetch = null,
-                    dateUpload = null,
+                    // KMK -->
+                    sourceOrder = chapter.sourceOrder,
+                    dateUpload = chapter.dateUpload,
+                    // KMK <--
                     chapterId = chapter.id,
                     version = chapter.version,
                     isSyncing = 1,
@@ -277,13 +307,15 @@ class MangaRestorer(
             mangasQueries.insert(
                 source = manga.source,
                 url = manga.url,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre,
-                title = manga.title,
-                status = manga.status,
-                thumbnailUrl = manga.thumbnailUrl,
+                // SY -->
+                artist = manga.ogArtist,
+                author = manga.ogAuthor,
+                description = manga.ogDescription,
+                genre = manga.ogGenre,
+                title = manga.ogTitle,
+                status = manga.ogStatus,
+                thumbnailUrl = manga.ogThumbnailUrl,
+                // SY <--
                 favorite = manga.favorite,
                 lastUpdate = manga.lastUpdate,
                 nextUpdate = 0L,
@@ -295,6 +327,7 @@ class MangaRestorer(
                 dateAdded = manga.dateAdded,
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
+                notes = manga.notes,
             )
             mangasQueries.selectLastInsertedRowId()
         }
@@ -331,6 +364,7 @@ class MangaRestorer(
 
     /**
      * Restores the categories a manga is in.
+     * Only if [backupCategories] is provided and user chooses to restore it.
      *
      * @param manga the manga whose categories have to be restored.
      * @param categories the categories to restore.
@@ -365,12 +399,17 @@ class MangaRestorer(
 
     private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
         val toUpdate = backupHistory.mapNotNull { history ->
-            val dbHistory = handler.awaitOneOrNull { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
+            // KMK -->
+            val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
+                .firstOrNull()
+            // KMK <--
             val item = history.getHistoryImpl()
 
             if (dbHistory == null) {
-                val chapter = handler.awaitList { chaptersQueries.getChapterByUrl(history.url) }
-                    .find { it.manga_id == manga.id }
+                // KMK -->
+                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id) }
+                    .firstOrNull()
+                // KMK <--
                 return@mapNotNull if (chapter == null) {
                     // Chapter doesn't exist; skip
                     null
@@ -450,6 +489,7 @@ class MangaRestorer(
                         track.remoteUrl,
                         track.startDate,
                         track.finishDate,
+                        track.private,
                         track.id,
                     )
                 }
@@ -474,41 +514,50 @@ class MangaRestorer(
         }
 
         // Iterate over them
-        backupMergedMangaReferences.forEach { backupMergedMangaReference ->
-            // If the backupMergedMangaReference isn't in the db,
-            // remove the id and insert a new backupMergedMangaReference
-            // Store the inserted id in the backupMergedMangaReference
-            if (dbMergedMangaReferences.none {
-                    backupMergedMangaReference.mergeUrl == it.mergeUrl &&
-                        backupMergedMangaReference.mangaUrl == it.mangaUrl
-                }
-            ) {
-                // Let the db assign the id
-                val mergedManga = handler.awaitOneOrNull {
-                    mangasQueries.getMangaByUrlAndSource(
-                        backupMergedMangaReference.mangaUrl,
-                        backupMergedMangaReference.mangaSourceId,
-                        MangaMapper::mapManga,
-                    )
-                } ?: return@forEach
-                backupMergedMangaReference.getMergedMangaReference().run {
-                    handler.await {
-                        mergedQueries.insert(
-                            infoManga = isInfoManga,
-                            getChapterUpdates = getChapterUpdates,
-                            chapterSortMode = chapterSortMode.toLong(),
-                            chapterPriority = chapterPriority.toLong(),
-                            downloadChapters = downloadChapters,
-                            mergeId = mergeMangaId,
-                            mergeUrl = mergeUrl,
-                            mangaId = mergedManga.id,
-                            mangaUrl = mangaUrl,
-                            mangaSource = mangaSourceId,
+        backupMergedMangaReferences
+            // KMK -->
+            .map { EXHMigrations.migrateBackupMergedMangaReference(it) }
+            // KMK <--
+            .forEach { backupMergedMangaReference ->
+                // If the backupMergedMangaReference isn't in the db,
+                // remove the id and insert a new backupMergedMangaReference
+                // Store the inserted id in the backupMergedMangaReference
+                if (dbMergedMangaReferences.none {
+                        backupMergedMangaReference.mergeUrl == it.mergeUrl &&
+                            backupMergedMangaReference.mangaUrl == it.mangaUrl
+                    }
+                ) {
+                    // Let the db assign the id
+                    // KMK -->
+                    val mergedManga = handler.awaitList {
+                        // KMK <--
+                        mangasQueries.getMangaByUrlAndSource(
+                            backupMergedMangaReference.mangaUrl,
+                            backupMergedMangaReference.mangaSourceId,
+                            MangaMapper::mapManga,
                         )
+                        // KMK -->
+                    }.firstOrNull()
+                        // KMK <--
+                        ?: return@forEach
+                    backupMergedMangaReference.getMergedMangaReference().run {
+                        handler.await {
+                            mergedQueries.insert(
+                                infoManga = isInfoManga,
+                                getChapterUpdates = getChapterUpdates,
+                                chapterSortMode = chapterSortMode.toLong(),
+                                chapterPriority = chapterPriority.toLong(),
+                                downloadChapters = downloadChapters,
+                                mergeId = mergeMangaId,
+                                mergeUrl = mergeUrl,
+                                mangaId = mergedManga.id,
+                                mangaUrl = mangaUrl,
+                                mangaSource = mangaSourceId,
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 
     private suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {
@@ -522,7 +571,7 @@ class MangaRestorer(
         setCustomMangaInfo.set(mangaJson)
     }
 
-    fun BackupManga.getCustomMangaInfo(): CustomMangaInfo? {
+    private fun BackupManga.getCustomMangaInfo(): CustomMangaInfo? {
         if (customTitle != null ||
             customArtist != null ||
             customAuthor != null ||
@@ -558,10 +607,12 @@ class MangaRestorer(
         if (excludedScanlators.isEmpty()) return
         val existingExcludedScanlators = handler.awaitList {
             excluded_scanlatorsQueries.getExcludedScanlatorsByMangaId(manga.id)
-        }
-        val toInsert = excludedScanlators.filter { it !in existingExcludedScanlators }
+            // KMK -->
+        }.toSet()
+        val toInsert = excludedScanlators.toSet().subtract(existingExcludedScanlators)
         if (toInsert.isNotEmpty()) {
-            handler.await {
+            handler.await(inTransaction = true) {
+                // KMK <--
                 toInsert.forEach {
                     excluded_scanlatorsQueries.insert(manga.id, it)
                 }

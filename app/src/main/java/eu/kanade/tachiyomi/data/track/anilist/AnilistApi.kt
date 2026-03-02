@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALAddMangaResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
+import eu.kanade.tachiyomi.data.track.anilist.dto.ALIdSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALMangaMetadata
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALSearchResult
@@ -44,9 +45,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun addLibManga(track: Track): Track {
         return withIOContext {
-            val query = """
-            |mutation AddManga(${'$'}mangaId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus) {
-                |SaveMediaListEntry (mediaId: ${'$'}mangaId, progress: ${'$'}progress, status: ${'$'}status) {
+            val query = $$"""
+            |mutation AddManga($mangaId: Int, $progress: Int, $status: MediaListStatus, $private: Boolean) {
+                |SaveMediaListEntry (mediaId: $mangaId, progress: $progress, status: $status, private: $private) {
                 |   id
                 |   status
                 |}
@@ -59,6 +60,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     put("mangaId", track.remote_id)
                     put("progress", track.last_chapter_read.toInt())
                     put("status", track.toApiStatus())
+                    put("private", track.private)
                 }
             }
             with(json) {
@@ -80,14 +82,14 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun updateLibManga(track: Track): Track {
         return withIOContext {
-            val query = """
+            val query = $$"""
             |mutation UpdateManga(
-                |${'$'}listId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus,
-                |${'$'}score: Int, ${'$'}startedAt: FuzzyDateInput, ${'$'}completedAt: FuzzyDateInput
+                |$listId: Int, $progress: Int, $status: MediaListStatus, $private: Boolean,
+                |$score: Int, $startedAt: FuzzyDateInput, $completedAt: FuzzyDateInput
             |) {
                 |SaveMediaListEntry(
-                    |id: ${'$'}listId, progress: ${'$'}progress, status: ${'$'}status,
-                    |scoreRaw: ${'$'}score, startedAt: ${'$'}startedAt, completedAt: ${'$'}completedAt
+                    |id: $listId, progress: $progress, status: $status, private: $private,
+                    |scoreRaw: $score, startedAt: $startedAt, completedAt: $completedAt
                 |) {
                     |id
                     |status
@@ -105,6 +107,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     put("score", track.score.toInt())
                     put("startedAt", createDate(track.started_reading_date))
                     put("completedAt", createDate(track.finished_reading_date))
+                    put("private", track.private)
                 }
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
@@ -115,9 +118,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun deleteLibManga(track: DomainTrack) {
         withIOContext {
-            val query = """
-            |mutation DeleteManga(${'$'}listId: Int) {
-                |DeleteMediaListEntry(id: ${'$'}listId) {
+            val query = $$"""
+            |mutation DeleteManga($listId: Int) {
+                |DeleteMediaListEntry(id: $listId) {
                     |deleted
                 |}
             |}
@@ -136,11 +139,24 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun search(search: String): List<TrackSearch> {
         return withIOContext {
-            val query = """
-            |query Search(${'$'}query: String) {
+            val query = $$"""
+            |query Search($query: String) {
                 |Page (perPage: 50) {
-                    |media(search: ${'$'}query, type: MANGA, format_not_in: [NOVEL]) {
+                    |media(search: $query, type: MANGA, format_not_in: [NOVEL]) {
                         |id
+                        |staff {
+                            |edges {
+                                |role
+                                |id
+                                |node {
+                                    |name {
+                                        |full
+                                        |userPreferred
+                                        |native
+                                    |}
+                                |}
+                            |}
+                        |}
                         |title {
                             |userPreferred
                         |}
@@ -185,14 +201,15 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun findLibManga(track: Track, userid: Int): Track? {
         return withIOContext {
-            val query = """
-            |query (${'$'}id: Int!, ${'$'}manga_id: Int!) {
+            val query = $$"""
+            |query ($id: Int!, $manga_id: Int!) {
                 |Page {
-                    |mediaList(userId: ${'$'}id, type: MANGA, mediaId: ${'$'}manga_id) {
+                    |mediaList(userId: $id, type: MANGA, mediaId: $manga_id) {
                         |id
                         |status
                         |scoreRaw: score(format: POINT_100)
                         |progress
+                        |private
                         |startedAt {
                             |year
                             |month
@@ -219,6 +236,19 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                                 |year
                                 |month
                                 |day
+                            |}
+                            |staff {
+                                |edges {
+                                    |role
+                                    |id
+                                    |node {
+                                        |name {
+                                            |full
+                                            |userPreferred
+                                            |native
+                                        |}
+                                    |}
+                                |}
                             |}
                         |}
                     |}
@@ -307,9 +337,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     |staff {
                         |edges {
                             |role
+                            |id
                             |node {
                                 |name {
+                                    |full
                                     |userPreferred
+                                    |native
                                 |}
                             |}
                         |}
@@ -341,13 +374,13 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             thumbnailUrl = media.coverImage.large,
                             description = media.description?.htmlDecode()?.ifEmpty { null },
                             authors = media.staff.edges
-                                .filter { it.role == "Story" || it.role == "Story & Art" }
-                                .map { it.node.name.userPreferred }
+                                .filter { "Story" in it.role }
+                                .mapNotNull { it.node.name() }
                                 .joinToString(", ")
                                 .ifEmpty { null },
                             artists = media.staff.edges
-                                .filter { it.role == "Art" || it.role == "Story & Art" }
-                                .map { it.node.name.userPreferred }
+                                .filter { "Art" in it.role }
+                                .mapNotNull { it.node.name() }
                                 .joinToString(", ")
                                 .ifEmpty { null },
                         )
@@ -355,6 +388,56 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
         }
     }
+
+    // SY -->
+    suspend fun searchById(id: String): TrackSearch {
+        return withIOContext {
+            val query = """
+            |query (${'$'}mangaId: Int!) {
+                |Media (id: ${'$'}mangaId) {
+                    |id
+                    |title {
+                        |userPreferred
+                    |}
+                    |coverImage {
+                        |large
+                    |}
+                    |format
+                    |status
+                    |chapters
+                    |description
+                    |startDate {
+                        |year
+                        |month
+                        |day
+                    |}
+                    |averageScore
+                |}
+            |}
+            |
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") {
+                    put("mangaId", id)
+                }
+            }
+            with(json) {
+                authClient.newCall(
+                    POST(
+                        API_URL,
+                        body = payload.toString().toRequestBody(jsonMime),
+                    ),
+                )
+                    .awaitSuccess()
+                    .parseAs<ALIdSearchResult>()
+                    .data.media
+                    .toALManga()
+                    .toTrack()
+            }
+        }
+    }
+    // SY <--
 
     private fun createDate(dateValue: Long): JsonObject {
         if (dateValue == 0L) {

@@ -56,23 +56,16 @@ fun GlobalSearchScreen(
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
-                        state.filteredItems.forEach { (_, result) ->
-                            when (result) {
-                                is SearchItemResult.Success -> {
-                                    result.result.forEach { manga ->
-                                        bulkFavoriteScreenModel.select(manga)
-                                    }
-                                }
-                                else -> {}
-                            }
-                        }
+                        state.filteredItems.values
+                            .filterIsInstance<SearchItemResult.Success>()
+                            .flatMap { it.result }
+                            .forEach { bulkFavoriteScreenModel.select(it) }
                     },
                     onReverseSelection = {
-                        bulkFavoriteScreenModel.reverseSelection(
-                            state.filteredItems.values
-                                .filterIsInstance<SearchItemResult.Success>()
-                                .flatMap { it.result },
-                        )
+                        state.filteredItems.values
+                            .filterIsInstance<SearchItemResult.Success>()
+                            .flatMap { it.result }
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {
@@ -84,6 +77,7 @@ fun GlobalSearchScreen(
                     navigateUp = navigateUp,
                     onChangeSearchQuery = onChangeSearchQuery,
                     onSearch = onSearch,
+                    hideSourceFilter = false,
                     sourceFilter = state.sourceFilter,
                     onChangeSearchFilter = onChangeSearchFilter,
                     onlyShowHasResults = state.onlyShowHasResults,

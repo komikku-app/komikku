@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -30,6 +33,7 @@ import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -37,6 +41,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import tachiyomi.presentation.core.theme.active
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 
@@ -57,8 +62,19 @@ fun UpdateScreen(
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
-    onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
+    // KMK -->
+    updateSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
+    updateSwipeEndAction: LibraryPreferences.ChapterSwipeAction,
+    onUpdateSwipe: (UpdatesItem, LibraryPreferences.ChapterSwipeAction) -> Unit,
+    // KMK <--
+    onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdatesScreenModel.UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
+    onFilterClicked: () -> Unit,
+    hasActiveFilters: Boolean,
+    // KMK -->
+    usePanoramaCover: Boolean,
+    collapseToggle: (key: String) -> Unit,
+    // KMK <--
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
@@ -67,6 +83,8 @@ fun UpdateScreen(
             UpdatesAppBar(
                 onCalendarClicked = { onCalendarClicked() },
                 onUpdateLibrary = { onUpdateLibrary() },
+                onFilterClicked = { onFilterClicked() },
+                hasFilters = hasActiveFilters,
                 actionModeCounter = state.selected.size,
                 onSelectAll = { onSelectAll(true) },
                 onInvertSelection = { onInvertSelection() },
@@ -117,6 +135,11 @@ fun UpdateScreen(
 
                         updatesUiItems(
                             uiModels = state.getUiModel(),
+                            // KMK -->
+                            expandedState = state.expandedState,
+                            collapseToggle = collapseToggle,
+                            usePanoramaCover = usePanoramaCover,
+                            // KMK <--
                             selectionMode = state.selectionMode,
                             // SY -->
                             preserveReadingPosition = preserveReadingPosition,
@@ -125,6 +148,11 @@ fun UpdateScreen(
                             onClickCover = onClickCover,
                             onClickUpdate = onOpenChapter,
                             onDownloadChapter = onDownloadChapter,
+                            // KMK -->
+                            updateSwipeStartAction = updateSwipeStartAction,
+                            updateSwipeEndAction = updateSwipeEndAction,
+                            onUpdateSwipe = onUpdateSwipe,
+                            // KMK <--
                         )
                     }
                 }
@@ -137,6 +165,8 @@ fun UpdateScreen(
 private fun UpdatesAppBar(
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Unit,
+    onFilterClicked: () -> Unit,
+    hasFilters: Boolean,
     // For action mode
     actionModeCounter: Int,
     onSelectAll: () -> Unit,
@@ -151,6 +181,12 @@ private fun UpdatesAppBar(
         actions = {
             AppBarActions(
                 persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_filter),
+                        icon = Icons.Outlined.FilterList,
+                        iconTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
+                        onClick = onFilterClicked,
+                    ),
                     AppBar.Action(
                         title = stringResource(MR.strings.action_view_upcoming),
                         icon = Icons.Outlined.CalendarMonth,
@@ -221,6 +257,11 @@ private fun UpdatesBottomBar(
 }
 
 sealed interface UpdatesUiModel {
-    data class Header(val date: LocalDate) : UpdatesUiModel
-    data class Item(val item: UpdatesItem) : UpdatesUiModel
+    data class Header(val date: LocalDate, val mangaCount: Int) : UpdatesUiModel
+    open class Item(open val item: UpdatesItem, open val isExpandable: Boolean = false) : UpdatesUiModel
+
+    // KMK -->
+    /** The first [Item] in a group of chapters from same manga */
+    data class Leader(override val item: UpdatesItem, override val isExpandable: Boolean) : Item(item)
+    // KMK <--
 }

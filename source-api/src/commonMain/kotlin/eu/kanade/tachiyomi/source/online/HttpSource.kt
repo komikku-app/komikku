@@ -95,8 +95,7 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Headers used for requests.
      */
-    /* SY --> */
-    open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
+    /* SY --> */ open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
 
     /**
      * Default network client for doing requests.
@@ -334,6 +333,7 @@ abstract class HttpSource : CatalogueSource {
     protected abstract fun mangaDetailsParse(response: Response): SManga
 
     // KMK -->
+
     /**
      * Whether parsing related mangas in manga page or extension provide custom related mangas request.
      *

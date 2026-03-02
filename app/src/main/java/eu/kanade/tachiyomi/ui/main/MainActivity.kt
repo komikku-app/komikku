@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -52,6 +53,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.AppStateBanners
 import eu.kanade.presentation.components.DownloadedOnlyBannerBackgroundColor
@@ -61,6 +64,7 @@ import eu.kanade.presentation.components.RestoringBannerBackgroundColor
 import eu.kanade.presentation.components.SyncingBannerBackgroundColor
 import eu.kanade.presentation.components.UpdatingBannerBackgroundColor
 import eu.kanade.presentation.more.settings.screen.ConfigureExhDialog
+import eu.kanade.presentation.more.settings.screen.about.AboutScreen.Companion.getReleaseNotes
 import eu.kanade.presentation.more.settings.screen.about.WhatsNewDialog
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
@@ -70,32 +74,38 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.SyncStatus
+import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.download.DownloadCache
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
+import eu.kanade.tachiyomi.ui.more.WhatsNewScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
+import eu.kanade.tachiyomi.util.system.updaterEnabled
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
 import exh.log.DebugModeOverlay
-import exh.source.BlacklistedSources
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
+import exh.source.ExhPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -104,17 +114,21 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import mihon.core.migration.Migrator
+import mihon.core.migration.Migrator.scope
 import tachiyomi.core.common.Constants
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -128,7 +142,7 @@ class MainActivity : BaseActivity() {
     private val preferences: BasePreferences by injectLazy()
 
     // SY -->
-    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
     // SY <--
 
     // KMK -->
@@ -142,10 +156,16 @@ class MainActivity : BaseActivity() {
     private val downloadCache: DownloadCache by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
 
+    private val getIncognitoState: GetIncognitoState by injectLazy()
+
     // To be checked by splash screen. If true then splash screen will be removed.
     var ready = false
 
     private var navigator: Navigator? = null
+
+    // AM (CONNECTIONS) -->
+    private val connectionsPreferences: ConnectionsPreferences by injectLazy()
+    // <-- AM (CONNECTIONS)
 
     init {
         registerSecureActivity(this)
@@ -194,13 +214,13 @@ class MainActivity : BaseActivity() {
 
         // SY -->
         @Suppress("KotlinConstantConditions")
-        val hasDebugOverlay = (BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest")
+        val hasDebugOverlay = (isDebugBuildType || BuildConfig.BUILD_TYPE == "releaseTest")
         // SY <--
 
         setComposeContent {
             val context = LocalContext.current
 
-            val incognito by preferences.incognitoMode().collectAsState()
+            var incognito by remember { mutableStateOf(getIncognitoState.await(null)) }
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
             // KMK -->
@@ -257,8 +277,8 @@ class MainActivity : BaseActivity() {
                         // SY -->
                         initWhenIdle {
                             // Upload settings
-                            if (unsortedPreferences.enableExhentai().get() &&
-                                unsortedPreferences.exhShowSettingsUploadWarning().get()
+                            if (exhPreferences.enableExhentai().get() &&
+                                exhPreferences.exhShowSettingsUploadWarning().get()
                             ) {
                                 runExhConfigureDialog = true
                             }
@@ -268,6 +288,16 @@ class MainActivity : BaseActivity() {
                         }
                         // SY <--
                     }
+                }
+                LaunchedEffect(navigator.lastItem) {
+                    (
+                        (navigator.lastItem as? BrowseSourceScreen)?.sourceId
+                            // KMK -->
+                            ?: (navigator.lastItem as? SourceFeedScreen)?.sourceId
+                        // KMK <--
+                        )
+                        .let(getIncognitoState::subscribe)
+                        .collectLatest { incognito = it }
                 }
 
                 val scaffoldInsets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
@@ -328,10 +358,35 @@ class MainActivity : BaseActivity() {
                             }
                         }
                         .launchIn(this)
+
+                    // AM (DISCORD) -->
+                    connectionsPreferences.enableDiscordRPC().changes()
+                        .drop(1)
+                        .onEach {
+                            if (it) {
+                                DiscordRPCService.start(this@MainActivity.applicationContext)
+                            } else {
+                                DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
+                            }
+                        }.launchIn(this)
+
+                    connectionsPreferences.discordRPCStatus().changes()
+                        .drop(1)
+                        .onEach {
+                            with(DiscordRPCService) {
+                                discordScope.launchIO {
+                                    restart(this@MainActivity.applicationContext)
+                                }
+                            }
+                        }.launchIn(this)
+                    // <-- AM (DISCORD)
                 }
 
                 HandleOnNewIntent(context = context, navigator = navigator)
 
+                // KMK -->
+                RearmJobs()
+                // KMK <--
                 CheckForUpdates()
                 ShowOnboarding()
             }
@@ -353,23 +408,47 @@ class MainActivity : BaseActivity() {
                 0,
             )
             val previewCurrentVersion = BuildConfig.COMMIT_COUNT.toInt()
+            var isCheckingWhatsNew by remember { mutableStateOf(false) }
             // KMK <--
 
             var showChangelog by remember {
                 mutableStateOf(
                     // KMK -->
-                    // BuildConfig.DEBUG ||
-                    isReleaseBuildType &&
-                        didMigration ||
-                        isPreviewBuildType &&
-                        previewCurrentVersion > previewLastVersion.get(),
+                    (isReleaseBuildType && didMigration) ||
+                        (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
                     // KMK <--
                 )
             }
             if (showChangelog) {
-                // SY -->
-                WhatsNewDialog(onDismissRequest = { showChangelog = false })
-                // SY <--
+                // KMK -->
+                WhatsNewDialog(
+                    onDismissRequest = { showChangelog = false },
+                    onOpenWhatsNew = {
+                        showChangelog = false
+                        if (!isCheckingWhatsNew) {
+                            scope.launch {
+                                isCheckingWhatsNew = true
+
+                                getReleaseNotes(
+                                    context = context,
+                                    onAvailableUpdate = { result ->
+                                        val whatsNewScreen = WhatsNewScreen(
+                                            currentVersion = BuildConfig.VERSION_NAME,
+                                            versionName = result.release.version,
+                                            changelogInfo = result.release.info,
+                                            releaseLink = result.release.releaseLink,
+                                        )
+                                        navigator?.push(whatsNewScreen)
+                                    },
+                                    onFinish = {
+                                        isCheckingWhatsNew = false
+                                    },
+                                )
+                            }
+                        }
+                    },
+                )
+                // KMK <--
             }
             // KMK -->
             previewLastVersion.set(previewCurrentVersion)
@@ -392,13 +471,6 @@ class MainActivity : BaseActivity() {
                 chapterCache.clear()
             }
         }
-
-        // SY -->
-        if (!unsortedPreferences.isHentaiEnabled().get()) {
-            BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
-            BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
-        }
-        // SY -->
     }
 
     // KMK -->
@@ -430,6 +502,46 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    // KMK -->
+    @Composable
+    private fun RearmJobs() {
+        val context = LocalContext.current
+
+        LaunchedEffect(Unit) {
+            launchIO {
+                try {
+                    if (!LibraryUpdateJob.isPeriodicUpdateScheduled(context)) {
+                        LibraryUpdateJob.setupTask(context)
+                    }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            context,
+                            stringResource(KMR.strings.job_failed_schedule_update_check, stringResource(MR.strings.unknown_error)),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
+                try {
+                    if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {
+                        BackupCreateJob.setupTask(context)
+                    }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            context,
+                            stringResource(KMR.strings.job_failed_schedule_backup_check, stringResource(MR.strings.unknown_error)),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+    // KMK <--
+
     @Composable
     private fun CheckForUpdates() {
         val context = LocalContext.current
@@ -437,7 +549,7 @@ class MainActivity : BaseActivity() {
 
         // App updates
         LaunchedEffect(Unit) {
-            if (BuildConfig.INCLUDE_UPDATER) {
+            if (updaterEnabled) {
                 try {
                     // KMK -->
                     AppUpdateJob.setupTask(context)
@@ -448,7 +560,7 @@ class MainActivity : BaseActivity() {
                             versionName = result.release.version,
                             changelogInfo = result.release.info,
                             releaseLink = result.release.releaseLink,
-                            downloadLink = result.release.getDownloadLink(),
+                            downloadLink = result.release.downloadLink,
                         )
                         navigator.push(updateScreen)
                     }

@@ -12,8 +12,10 @@ import tachiyomi.domain.manga.model.Manga
  */
 fun List<Chapter>.getNextUnread(
     manga: Manga,
-    downloadManager: DownloadManager /* SY --> */,
-    mergedManga: Map<Long, Manga>, /* SY <-- */
+    downloadManager: DownloadManager,
+    // SY -->
+    mergedManga: Map<Long, Manga>,
+    // SY <--
 ): Chapter? {
     return applyFilters(manga, downloadManager/* SY --> */, mergedManga/* SY <-- */).let { chapters ->
         // SY -->

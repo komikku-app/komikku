@@ -10,7 +10,7 @@ data class MergedMangaReference(
     // If false the manga will not grab chapter updates
     val getChapterUpdates: Boolean,
 
-    // The mode in which the chapters are handeled, only set in the main merge reference
+    // The mode in which the chapters are handled, only set in the main merge reference
     val chapterSortMode: Int,
 
     // chapter priority the deduplication uses
@@ -36,9 +36,8 @@ data class MergedMangaReference(
 ) {
     companion object {
         const val CHAPTER_SORT_NONE = 0
-        const val CHAPTER_SORT_NO_DEDUPE = 1
-        const val CHAPTER_SORT_PRIORITY = 2
-        const val CHAPTER_SORT_MOST_CHAPTERS = 3
-        const val CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER = 4
+        const val CHAPTER_SORT_PRIORITY = 1
+        const val CHAPTER_SORT_MOST_CHAPTERS = 2
+        const val CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER = 3
     }
 }

@@ -28,23 +28,26 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun LibraryContent(
     categories: List<Category>,
+    // KMK -->
+    activeCategoryIndex: Int,
+    // KMK <--
     searchQuery: String?,
-    selection: List<LibraryManga>,
+    selection: Set<Long>,
     contentPadding: PaddingValues,
-    currentPage: () -> Int,
+    currentPage: Int,
     hasActiveFilters: Boolean,
     showPageTabs: Boolean,
     onChangeCurrentPage: (Int) -> Unit,
-    onMangaClicked: (Long) -> Unit,
+    onClickManga: (Long) -> Unit,
     onContinueReadingClicked: ((LibraryManga) -> Unit)?,
-    onToggleSelection: (LibraryManga) -> Unit,
-    onToggleRangeSelection: (LibraryManga) -> Unit,
-    onRefresh: (Category?) -> Boolean,
+    onToggleSelection: (Category, LibraryManga) -> Unit,
+    onToggleRangeSelection: (Category, LibraryManga) -> Unit,
+    onRefresh: () -> Boolean,
     onGlobalSearchClicked: () -> Unit,
-    getNumberOfMangaForCategory: (Category) -> Int?,
+    getItemCountForCategory: (Category) -> Int?,
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
-    getLibraryForPage: (Int) -> List<LibraryItem>,
+    getItemsForCategory: (Category) -> List<LibraryItem>,
 ) {
     Column(
         modifier = Modifier.padding(
@@ -53,40 +56,42 @@ fun LibraryContent(
             end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
         ),
     ) {
-        // SY -->
-        val coercedCurrentPage = remember(categories) { currentPage().coerceIn(0, categories.lastIndex) }
-        val pagerState = rememberPagerState(coercedCurrentPage) { categories.size }
-        // SY <--
+        val pagerState = rememberPagerState(currentPage) { categories.size }
 
         val scope = rememberCoroutineScope()
         var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
 
-        if (showPageTabs && categories.size > 1) {
+        if (showPageTabs && categories.isNotEmpty() && (categories.size > 1 || !categories.first().isSystemCategory)) {
             LaunchedEffect(categories) {
-                if (categories.size <= pagerState.currentPage) {
-                    pagerState.scrollToPage(categories.size - 1)
+                // KMK -->
+                val targetPage = when {
+                    categories.isEmpty() -> 0
+                    activeCategoryIndex != pagerState.currentPage -> activeCategoryIndex.coerceAtMost(categories.size - 1)
+                    pagerState.currentPage >= categories.size -> categories.size - 1
+                    else -> pagerState.currentPage
                 }
+                if (targetPage != pagerState.currentPage) {
+                    pagerState.scrollToPage(targetPage)
+                }
+                // KMK <--
             }
             LibraryTabs(
                 categories = categories,
                 pagerState = pagerState,
-                getNumberOfMangaForCategory = getNumberOfMangaForCategory,
-            ) { scope.launch { pagerState.animateScrollToPage(it) } }
-        }
-
-        val notSelectionMode = selection.isEmpty()
-        val onClickManga = { manga: LibraryManga ->
-            if (notSelectionMode) {
-                onMangaClicked(manga.manga.id)
-            } else {
-                onToggleSelection(manga)
-            }
+                getItemCountForCategory = getItemCountForCategory,
+                onTabItemClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(it)
+                    }
+                },
+            )
         }
 
         PullRefresh(
             refreshing = isRefreshing,
+            enabled = selection.isEmpty(),
             onRefresh = {
-                val started = onRefresh(categories.getOrNull(currentPage()) ?: return@PullRefresh)
+                val started = onRefresh()
                 if (!started) return@PullRefresh
                 scope.launch {
                     // Fake refresh status but hide it after a second as it's a long running task
@@ -95,19 +100,25 @@ fun LibraryContent(
                     isRefreshing = false
                 }
             },
-            enabled = notSelectionMode,
         ) {
             LibraryPager(
                 state = pagerState,
                 contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                 hasActiveFilters = hasActiveFilters,
-                selectedManga = selection,
+                selection = selection,
                 searchQuery = searchQuery,
                 onGlobalSearchClicked = onGlobalSearchClicked,
+                getCategoryForPage = { page -> categories[page] },
                 getDisplayMode = getDisplayMode,
                 getColumnsForOrientation = getColumnsForOrientation,
-                getLibraryForPage = getLibraryForPage,
-                onClickManga = onClickManga,
+                getItemsForCategory = getItemsForCategory,
+                onClickManga = { category, manga ->
+                    if (selection.isNotEmpty()) {
+                        onToggleSelection(category, manga)
+                    } else {
+                        onClickManga(manga.manga.id)
+                    }
+                },
                 onLongClickManga = onToggleRangeSelection,
                 onClickContinueReading = onContinueReadingClicked,
             )

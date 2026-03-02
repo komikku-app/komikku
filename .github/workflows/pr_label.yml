@@ -1,0 +1,31 @@
+name: Label PRs
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  label_pr:
+    runs-on: 'ubuntu-24.04'
+
+    steps:
+      - name: Check PR and Add Label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+
+            if (prAuthor === 'weblate') {
+              const labels = ['translations'];
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: labels
+              });
+            }

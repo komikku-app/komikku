@@ -11,10 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterEhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel.State
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
@@ -34,9 +36,11 @@ fun EHentaiDescription(
 ) {
     val context = LocalContext.current
     // KMK -->
-    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
+    val iconColor = colorScheme.iconColor
+    val ratingBarColor = colorScheme.ratingBarColor
+    val ratingBarSecondaryColor = colorScheme.ratingBarSecondaryColor
     val textColor = LocalContentColor.current.toArgb()
-    val ratingBarSecondaryColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
     // KMK <--
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
@@ -89,7 +93,7 @@ fun EHentaiDescription(
             val length = meta.length ?: 0
             binding.pages.text = context.pluralStringResource(SYMR.plurals.num_pages, length, length)
             // KMK -->
-            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor)
+            binding.pages.bindDrawable(context, R.drawable.ic_baseline_menu_book_24, iconColor, 4.dpToPx)
             binding.pages.setTextColor(textColor)
             // KMK <--
 
@@ -116,7 +120,7 @@ fun EHentaiDescription(
             binding.rating.text =
                 (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
             // KMK -->
-            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(iconColor)
+            binding.ratingBar.supportProgressTintList = ColorStateList.valueOf(ratingBarColor)
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 

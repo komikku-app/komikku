@@ -14,34 +14,31 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.model.installedExtension
+import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.SourceFeedOrderScreen
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.presentation.browse.SourceFeedUI
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.FeedActionsDialog
-import eu.kanade.presentation.browse.components.FeedSortAlphabeticallyDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
+import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.AddDuplicateMangaDialog
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.ChangeMangaCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
-import eu.kanade.tachiyomi.ui.browse.RemoveMangaDialog
-import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
+import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.ExhPreferences
+import exh.source.anyIs
 import exh.source.isEhBasedSource
-import exh.ui.ifSourcesLoaded
 import exh.util.nullIfBlank
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -50,7 +47,8 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.domain.source.model.Source as ModelSource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class SourceFeedScreen(val sourceId: Long) : Screen() {
 
@@ -86,6 +84,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
         val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
 
+        val isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get()
+        val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
+            (screenModel.source.isEhBasedSource() && isHentaiEnabled)
+
         val haptic = LocalHapticFeedback.current
 
         BackHandler(enabled = bulkFavoriteState.selectionMode || showingFeedOrderScreen.value) {
@@ -102,11 +104,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 SourceFeedOrderScreen(
                     state = state,
                     onClickDelete = screenModel::openDeleteFeed,
-                    onClickMoveUp = screenModel::moveUp,
-                    onClickMoveDown = screenModel::moveDown,
-                    onClickSortAlphabetically = {
-                        screenModel.showDialog(SourceFeedScreenModel.Dialog.SortAlphabetically)
-                    },
+                    onChangeOrder = screenModel::changeOrder,
                     navigateUp = { showingFeedOrderScreen.value = false },
                 )
             } else {
@@ -124,13 +122,13 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     // onClickDelete = screenModel::openDeleteFeed,
                     onLongClickFeed = screenModel::openActionsDialog,
                     // KMK <--
-                    onClickManga = {
+                    onClickManga = { manga ->
                         // KMK -->
                         if (bulkFavoriteState.selectionMode) {
-                            bulkFavoriteScreenModel.toggleSelection(it)
+                            bulkFavoriteScreenModel.toggleSelection(manga)
                         } else {
                             // KMK <--
-                            onMangaClick(navigator, it)
+                            onMangaClick(navigator, manga)
                         }
                     },
                     onClickSearch = { onSearchClick(navigator, screenModel.source, it) },
@@ -149,24 +147,16 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                             ),
                         )
                     }.takeIf { screenModel.source is HttpSource },
+                    onToggleIncognito = screenModel::toggleIncognitoMode,
                     onSourceSettingClick = {
-                        val dummy = ModelSource(
-                            sourceId,
-                            "",
-                            "",
-                            supportsLatest = false,
-                            isStub = false,
-                        )
-                        dummy.installedExtension?.let {
-                            navigator.push(ExtensionDetailsScreen(it.pkgName))
+                        when {
+                            screenModel.source.isEhBasedSource() && isHentaiEnabled ->
+                                navigator.push(SettingsEhScreen)
+                            screenModel.source.anyIs<ConfigurableSource>() ->
+                                navigator.push(SourcePreferencesScreen(screenModel.source.id))
+                            else -> {}
                         }
-                    }.takeIf {
-                        !screenModel.source.isLocalOrStub() &&
-                            !screenModel.source.isEhBasedSource() &&
-                            screenModel.state.value.items
-                                .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
-                                .isNotEmpty()
-                    },
+                    }.takeIf { isConfigurableSource },
                     onSortFeedClick = { showingFeedOrderScreen.value = true }
                         .takeIf {
                             screenModel.state.value.items
@@ -212,18 +202,8 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 FeedActionsDialog(
                     feed = dialog.feedItem.feed,
                     title = dialog.feedItem.title,
-                    canMoveUp = dialog.canMoveUp,
-                    canMoveDown = dialog.canMoveDown,
                     onDismissRequest = screenModel::dismissDialog,
                     onClickDelete = { screenModel.openDeleteFeed(it) },
-                    onMoveUp = { screenModel.moveUp(it) },
-                    onMoveDown = { screenModel.moveDown(it) },
-                )
-            }
-            is SourceFeedScreenModel.Dialog.SortAlphabetically -> {
-                FeedSortAlphabeticallyDialog(
-                    onDismissRequest = screenModel::dismissDialog,
-                    onSort = { screenModel.sortAlphabetically() },
                 )
             }
             // KMK <--
@@ -306,19 +286,10 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         }
 
         // KMK -->
-        when (bulkFavoriteState.dialog) {
-            is BulkFavoriteScreenModel.Dialog.AddDuplicateManga ->
-                AddDuplicateMangaDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.RemoveManga ->
-                RemoveMangaDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.ChangeMangaCategory ->
-                ChangeMangaCategoryDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
-                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                AllowDuplicateDialog(bulkFavoriteScreenModel)
-            else -> {}
-        }
+        BulkFavoriteDialogs(
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+            dialog = bulkFavoriteState.dialog,
+        )
         // KMK <--
     }
 

@@ -9,7 +9,7 @@ class DeleteLibraryUpdateErrors(
     private val libraryUpdateErrorRepository: LibraryUpdateErrorRepository,
 ) {
 
-    suspend fun await() = withNonCancellableContext {
+    suspend fun deleteAll() = withNonCancellableContext {
         try {
             libraryUpdateErrorRepository.deleteAll()
             Result.Success
@@ -19,9 +19,9 @@ class DeleteLibraryUpdateErrors(
         }
     }
 
-    suspend fun await(errorId: Long) = withNonCancellableContext {
+    suspend fun delete(errorIds: List<Long>) = withNonCancellableContext {
         try {
-            libraryUpdateErrorRepository.delete(errorId)
+            libraryUpdateErrorRepository.delete(errorIds)
             Result.Success
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
@@ -29,9 +29,9 @@ class DeleteLibraryUpdateErrors(
         }
     }
 
-    suspend fun deleteMangaError(mangaId: Long) = withNonCancellableContext {
+    suspend fun deleteMangaError(mangaIds: List<Long>) = withNonCancellableContext {
         try {
-            libraryUpdateErrorRepository.deleteMangaError(mangaId)
+            libraryUpdateErrorRepository.deleteMangaError(mangaIds)
             Result.Success
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)

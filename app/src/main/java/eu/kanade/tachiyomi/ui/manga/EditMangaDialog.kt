@@ -2,15 +2,11 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.os.Build
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.annotation.ColorInt
-import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -44,7 +39,9 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.components.SpinnerAdapter
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
+import eu.kanade.presentation.theme.colorscheme.AndroidViewColorScheme
 import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
@@ -105,19 +102,11 @@ fun EditMangaDialog(
     val getTracks = remember { Injekt.get<GetTracks>() }
     val trackerManager = remember { Injekt.get<TrackerManager>() }
     val tracks = remember { mutableStateOf(emptyList<Pair<Track, Tracker>>()) }
+
     // KMK -->
-    val colors = EditMangaDialogColors(
-        textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-        textHighlightColor = MaterialTheme.colorScheme.inversePrimary.toArgb(),
-        iconColor = MaterialTheme.colorScheme.primary.toArgb(),
-        tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
-        tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-        btnTextColor = MaterialTheme.colorScheme.onPrimary.toArgb(),
-        btnBgColor = MaterialTheme.colorScheme.surfaceTint.toArgb(),
-        dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant.toArgb(),
-        dialogBgColor = MaterialTheme.colorScheme.surfaceContainerHigh.toArgb(),
-    )
+    val colorScheme = AndroidViewColorScheme(MaterialTheme.colorScheme)
     // KMK <--
+
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -176,7 +165,7 @@ fun EditMangaDialog(
                                     tracks,
                                     showTrackerSelectionDialogue,
                                     // KMK -->
-                                    colors,
+                                    colorScheme,
                                     coverRatio = coverRatio,
                                     // KMK <--
                                 )
@@ -242,20 +231,6 @@ private fun TrackerSelectDialog(
     )
 }
 
-// KMK -->
-data class EditMangaDialogColors(
-    @ColorInt val textColor: Int,
-    @ColorInt val textHighlightColor: Int,
-    @ColorInt val iconColor: Int,
-    @ColorInt val tagColor: Int,
-    @ColorInt val tagTextColor: Int,
-    @ColorInt val btnTextColor: Int,
-    @ColorInt val btnBgColor: Int,
-    @ColorInt val dropdownBgColor: Int,
-    @ColorInt val dialogBgColor: Int,
-)
-// KMK <--
-
 private fun onViewCreated(
     manga: Manga,
     context: Context,
@@ -266,7 +241,7 @@ private fun onViewCreated(
     tracks: MutableState<List<Pair<Track, Tracker>>>,
     showTrackerSelectionDialogue: MutableState<Boolean>,
     // KMK -->
-    colors: EditMangaDialogColors,
+    colorScheme: AndroidViewColorScheme,
     coverRatio: MutableFloatState,
     // KMK <--
 ) {
@@ -294,7 +269,7 @@ private fun onViewCreated(
             MR.strings.on_hiatus,
         ).map { context.stringResource(it) },
         // KMK -->
-        colors,
+        colorScheme,
         // KMK <--
     )
 
@@ -318,13 +293,13 @@ private fun onViewCreated(
     // Set Spinner's selected item's background color to transparent
     binding.status.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-            if (view != null) (view as TextView).setBackgroundColor(0x00000000)
+            if (view != null) (view as TextView).setBackgroundColor(Color.TRANSPARENT)
         }
         override fun onNothingSelected(parent: AdapterView<*>?) = Unit
     }
 
     // Set Spinner's dropdown caret color
-    binding.status.backgroundTintList = ColorStateList.valueOf(colors.iconColor)
+    binding.status.backgroundTintList = ColorStateList.valueOf(colorScheme.iconColor)
     // KMK
 
     if (manga.isLocal()) {
@@ -337,7 +312,7 @@ private fun onViewCreated(
         binding.mangaArtist.setText(manga.artist.orEmpty())
         binding.thumbnailUrl.setText(manga.thumbnailUrl.orEmpty())
         binding.mangaDescription.setText(manga.description.orEmpty())
-        binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope, colors)
+        binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope, colorScheme)
     } else {
         if (manga.title != manga.ogTitle) {
             binding.title.append(manga.title)
@@ -354,7 +329,7 @@ private fun onViewCreated(
         if (manga.description != manga.ogDescription) {
             binding.mangaDescription.append(manga.description.orEmpty())
         }
-        binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope, colors)
+        binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope, colorScheme)
 
         binding.title.hint = context.stringResource(SYMR.strings.title_hint, manga.ogTitle)
 
@@ -365,12 +340,20 @@ private fun onViewCreated(
                 SYMR.strings.description_hint,
                 manga.ogDescription?.takeIf { it.isNotBlank() }?.replace("\n", " ")?.chop(20) ?: "",
             )
+        // KMK -->
+        val thumbnailUrlHints = listOfNotNull(
+            manga.ogThumbnailUrl?.let {
+                it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
+            },
+            "file:///storage/emulated/0/Pictures/Komikku/Cover.jpg",
+        )
+        // KMK <--
         binding.thumbnailUrl.hint =
             context.stringResource(
                 SYMR.strings.thumbnail_url_hint,
-                manga.ogThumbnailUrl?.let {
-                    it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
-                } ?: "",
+                // KMK -->
+                thumbnailUrlHints.joinToString("\nor\n"),
+                // KMK <--
             )
     }
     binding.mangaGenresTags.clearFocus()
@@ -383,23 +366,7 @@ private fun onViewCreated(
         binding.thumbnailUrl,
         binding.mangaDescription,
     ).forEach {
-        it.setTextColor(colors.textColor)
-        it.highlightColor = colors.textHighlightColor
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            it.textSelectHandle?.let { drawable ->
-                drawable.setTint(colors.iconColor)
-                it.setTextSelectHandle(drawable)
-            }
-            it.textSelectHandleLeft?.let { drawable ->
-                drawable.setTint(colors.iconColor)
-                it.setTextSelectHandleLeft(drawable)
-            }
-            it.textSelectHandleRight?.let { drawable ->
-                drawable.setTint(colors.iconColor)
-                it.setTextSelectHandleRight(drawable)
-            }
-        }
+        colorScheme.setEditTextColor(it)
     }
     listOf(
         binding.titleOutline,
@@ -408,21 +375,19 @@ private fun onViewCreated(
         binding.thumbnailUrlOutline,
         binding.mangaDescriptionOutline,
     ).forEach {
-        it.boxStrokeColor = colors.iconColor
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            it.cursorColor = ColorStateList.valueOf(colors.iconColor)
-        }
+        colorScheme.setTextInputLayoutColor(it)
     }
 
-    binding.resetTags.setTextColor(colors.btnTextColor)
-    binding.resetTags.setBackgroundColor(colors.btnBgColor)
-    binding.resetInfo.setTextColor(colors.btnTextColor)
-    binding.resetInfo.setBackgroundColor(colors.btnBgColor)
+    binding.autofillFromTracker.setTextColor(colorScheme.btnTextColor)
+    binding.autofillFromTracker.setBackgroundColor(colorScheme.btnBgColor)
+    binding.resetTags.setTextColor(colorScheme.btnTextColor)
+    binding.resetTags.setBackgroundColor(colorScheme.btnBgColor)
+    binding.resetInfo.setTextColor(colorScheme.btnTextColor)
+    binding.resetInfo.setBackgroundColor(colorScheme.btnBgColor)
     // KMK <--
 
-    binding.resetTags.setOnClickListener { resetTags(manga, binding, scope, colors) }
-    binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope, colors) }
+    binding.resetTags.setOnClickListener { resetTags(manga, binding, scope, colorScheme) }
+    binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope, colorScheme) }
     binding.autofillFromTracker.setOnClickListener {
         scope.launch {
             getTrackers(manga, binding, context, getTracks, trackerManager, tracks, showTrackerSelectionDialogue)
@@ -431,8 +396,8 @@ private fun onViewCreated(
 }
 
 private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>) {
-    tracks.value = getTracks.await(manga.id).map { track ->
-        track to trackerManager.get(track.trackerId)!!
+    tracks.value = getTracks.await(manga.id).mapNotNull { track ->
+        track to (trackerManager.get(track.trackerId) ?: return@mapNotNull null)
     }
         .filterNot { (_, tracker) -> tracker is EnhancedTracker }
 
@@ -457,11 +422,11 @@ private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: 
     try {
         val trackerMangaMetadata = tracker.getMangaMetadata(track)
 
-        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata?.title)
-        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata?.authors)
-        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata?.artists)
-        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata?.thumbnailUrl)
-        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata?.description)
+        setTextIfNotBlank(binding.title::setText, trackerMangaMetadata.title)
+        setTextIfNotBlank(binding.mangaAuthor::setText, trackerMangaMetadata.authors)
+        setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata.artists)
+        setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata.thumbnailUrl)
+        setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata.description)
     } catch (e: Throwable) {
         tracker.logcat(LogPriority.ERROR, e)
         binding.root.context.toast(
@@ -479,13 +444,13 @@ private fun resetTags(
     binding: EditMangaDialogBinding,
     scope: CoroutineScope,
     // KMK -->
-    colors: EditMangaDialogColors,
+    colorScheme: AndroidViewColorScheme,
     // KMK <--
 ) {
     if (manga.genre.isNullOrEmpty() || manga.isLocal()) {
-        binding.mangaGenresTags.setChips(emptyList(), scope, colors)
+        binding.mangaGenresTags.setChips(emptyList(), scope, colorScheme)
     } else {
-        binding.mangaGenresTags.setChips(manga.ogGenre.orEmpty(), scope, colors)
+        binding.mangaGenresTags.setChips(manga.ogGenre.orEmpty(), scope, colorScheme)
     }
 }
 
@@ -516,7 +481,7 @@ private fun resetInfo(
     binding: EditMangaDialogBinding,
     scope: CoroutineScope,
     // KMK -->
-    colors: EditMangaDialogColors,
+    colorScheme: AndroidViewColorScheme,
     // KMK <--
 ) {
     binding.title.text?.clear()
@@ -524,33 +489,33 @@ private fun resetInfo(
     binding.mangaArtist.text?.clear()
     binding.thumbnailUrl.text?.clear()
     binding.mangaDescription.text?.clear()
-    resetTags(manga, binding, scope, colors)
+    resetTags(manga, binding, scope, colorScheme)
 }
 
 private fun ChipGroup.setChips(
     items: List<String>,
     scope: CoroutineScope,
     // KMK -->
-    colors: EditMangaDialogColors,
+    colorScheme: AndroidViewColorScheme,
     // KMK <--
 ) {
     removeAllViews()
 
     // KMK -->
-    val colorStateList = ColorStateList.valueOf(colors.tagColor)
+    val colorStateList = ColorStateList.valueOf(colorScheme.tagColor)
     // KMK <--
 
     items.asSequence().map { item ->
         Chip(context).apply {
             text = item
             // KMK -->
-            setTextColor(colors.tagTextColor)
+            setTextColor(colorScheme.tagTextColor)
             // KMK <--
 
             isCloseIconVisible = true
             // KMK -->
             // closeIcon?.setTint(context.getResourceColor(R.attr.colorAccent))
-            closeIcon?.setTint(colors.iconColor)
+            closeIcon?.setTint(colorScheme.iconColor)
             // KMK <--
             setOnCloseIconClickListener {
                 removeView(this)
@@ -567,14 +532,14 @@ private fun ChipGroup.setChips(
     val addTagChip = Chip(context).apply {
         text = SYMR.strings.add_tags.getString(context)
         // KMK -->
-        setTextColor(colors.tagTextColor)
+        setTextColor(colorScheme.tagTextColor)
         // KMK <--
 
         chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)?.apply {
             isChipIconVisible = true
             // KMK -->
             // setTint(context.getResourceColor(R.attr.colorAccent))
-            setTint(colors.iconColor)
+            setTint(colorScheme.iconColor)
             // KMK <--
         }
 
@@ -595,7 +560,7 @@ private fun ChipGroup.setChips(
                     // KMK <--
                     val newTags = it.trimOrNull()
                     newTags?.let { tags ->
-                        setChips(items + tags.split(",").mapNotNull { tag -> tag.trimOrNull() }, scope, colors)
+                        setChips(items + tags.split(",").mapNotNull { tag -> tag.trimOrNull() }, scope, colorScheme)
                     }
                     // KMK -->
                 }
@@ -603,7 +568,7 @@ private fun ChipGroup.setChips(
                     dialog?.dismissDialog()
                 }
                 .setTextEdit()
-                .setColors(colors)
+                .setColors(colorScheme)
 
             dialog = builder.create()
             dialog.setView(binding.root)
@@ -621,49 +586,3 @@ private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
         null
     }
 }.toList()
-
-// KMK -->
-private class SpinnerAdapter(
-    context: Context,
-    @LayoutRes val resource: Int,
-    objects: List<String>,
-    val colors: EditMangaDialogColors,
-) : ArrayAdapter<String>(context, resource, objects) {
-    private val mInflater = LayoutInflater.from(context)
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        return createViewFromResource(mInflater, position, convertView, parent, resource)
-    }
-
-    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-        return createViewFromResource(mInflater, position, convertView, parent, resource)
-    }
-
-    private fun createViewFromResource(
-        inflater: LayoutInflater,
-        position: Int,
-        convertView: View?,
-        parent: ViewGroup,
-        resource: Int,
-    ): View {
-        val text: TextView
-
-        val view = convertView ?: inflater.inflate(resource, parent, false)
-
-        try {
-            //  If no custom field is assigned, assume the whole resource is a TextView
-            text = view as TextView
-        } catch (e: ClassCastException) {
-            throw IllegalStateException("ArrayAdapter requires the resource ID to be a TextView", e)
-        }
-
-        val item: String? = getItem(position)
-        if (item != null) text.text = item
-
-        text.setTextColor(colors.textColor)
-        text.setBackgroundColor(colors.dropdownBgColor)
-
-        return view
-    }
-}
-// KMK <--

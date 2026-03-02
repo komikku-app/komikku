@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.data.updater
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
@@ -20,14 +22,17 @@ import tachiyomi.i18n.kmk.KMR
 
 internal class AppUpdateNotifier(private val context: Context) {
 
-    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE)
+    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE) {
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
+    }
 
     /**
      * Call to show notification.
      *
      * @param id id of the notification channel.
      */
-    private fun NotificationCompat.Builder.show(id: Int = Notifications.ID_APP_UPDATER) {
+    internal fun NotificationCompat.Builder.show(id: Int = Notifications.ID_APP_UPDATER) {
         context.notify(id, build())
     }
 
@@ -43,7 +48,7 @@ internal class AppUpdateNotifier(private val context: Context) {
     fun promptUpdate(release: Release) {
         val updateIntent = NotificationReceiver.downloadAppUpdatePendingBroadcast(
             context,
-            release.getDownloadLink(),
+            release.downloadLink,
             release.version,
         )
 
@@ -97,7 +102,13 @@ internal class AppUpdateNotifier(private val context: Context) {
                 NotificationReceiver.cancelDownloadAppUpdatePendingBroadcast(context),
             )
         }
-        notificationBuilder.show()
+
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // notificationBuilder.show()
+        // KMK <--
+
         return notificationBuilder
     }
 
@@ -142,27 +153,6 @@ internal class AppUpdateNotifier(private val context: Context) {
                 R.drawable.ic_close_24dp,
                 context.stringResource(MR.strings.action_cancel),
                 NotificationReceiver.dismissNotificationPendingBroadcast(context, Notifications.ID_APP_UPDATE_PROMPT),
-            )
-        }
-        notificationBuilder.show(Notifications.ID_APP_UPDATE_PROMPT)
-    }
-
-    /**
-     * Some people are still installing the app from F-Droid, so we avoid prompting GitHub-based
-     * updates.
-     *
-     * We can prompt them to migrate to the GitHub version though.
-     */
-    fun promptFdroidUpdate() {
-        with(notificationBuilder) {
-            setContentTitle(context.stringResource(MR.strings.update_check_notification_update_available))
-            setContentText(context.stringResource(MR.strings.update_check_fdroid_migration_info))
-            setSmallIcon(R.drawable.ic_komikku)
-            setContentIntent(
-                NotificationHandler.openUrl(
-                    context,
-                    "https://mihon.app/docs/faq/general#how-do-i-update-from-the-f-droid-builds",
-                ),
             )
         }
         notificationBuilder.show(Notifications.ID_APP_UPDATE_PROMPT)
@@ -216,13 +206,19 @@ internal class AppUpdateNotifier(private val context: Context) {
     }
 
     // KMK -->
-    fun onInstalling() {
+    fun onInstalling(uri: Uri) {
+        val installIntent = NotificationHandler.installApkPendingActivity(context, uri)
         with(notificationBuilder) {
             setContentText(context.stringResource(MR.strings.ext_installing))
             setSmallIcon(android.R.drawable.stat_sys_download)
             setProgress(0, 0, true)
             setOnlyAlertOnce(true)
             clearActions()
+            addAction(
+                R.drawable.ic_system_update_alt_white_24dp,
+                context.stringResource(KMR.strings.action_manual_install),
+                installIntent,
+            )
             show(Notifications.ID_APP_INSTALL)
         }
     }

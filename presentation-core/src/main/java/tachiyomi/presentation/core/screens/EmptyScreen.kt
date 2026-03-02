@@ -90,7 +90,7 @@ fun EmptyScreen(
         )
 
         // KMK -->
-        help?.let { help() }
+        help?.invoke()
         // KMK <--
 
         if (!actions.isNullOrEmpty()) {
@@ -119,6 +119,12 @@ private val ErrorFaces = listOf(
     "(˘･_･˘)",
     "(；￣Д￣)",
     "(･Д･。",
+    "(╬ಠ益ಠ)",
+    "(╥﹏╥)",
+    "(⋟﹏⋞)",
+    "Ò︵Ó",
+    " ˙ᯅ˙)",
+    "(¬_¬)",
 )
 
 private fun getRandomErrorFace(): String {

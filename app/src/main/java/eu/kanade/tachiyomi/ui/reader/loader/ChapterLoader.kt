@@ -34,7 +34,7 @@ class ChapterLoader(
     private val sourceManager: SourceManager,
     private val readerPrefs: ReaderPreferences,
     private val mergedReferences: List<MergedMangaReference>,
-    private val mergedManga: Map<Long, Manga>,
+    private val mergedManga: Map<Long, Manga>?,
     // SY <--
 ) {
 
@@ -94,8 +94,11 @@ class ChapterLoader(
         val dbChapter = chapter.chapter
         val isDownloaded = downloadManager.isChapterDownloaded(
             chapterName = dbChapter.name,
-            chapterScanlator = dbChapter.scanlator, /* SY --> */
-            mangaTitle = manga.ogTitle /* SY <-- */,
+            chapterScanlator = dbChapter.scanlator,
+            chapterUrl = dbChapter.url,
+            // SY -->
+            mangaTitle = manga.ogTitle,
+            // SY <--
             sourceId = manga.source,
             skipCache = true,
         )
@@ -107,10 +110,11 @@ class ChapterLoader(
                 } ?: error("Merge reference null")
                 val source = sourceManager.get(mangaReference.mangaSourceId)
                     ?: error("Source ${mangaReference.mangaSourceId} was null")
-                val manga = mergedManga[chapter.chapter.manga_id] ?: error("Manga for merged chapter was null")
+                val manga = mergedManga?.get(chapter.chapter.manga_id) ?: error("Manga for merged chapter was null")
                 val isMergedMangaDownloaded = downloadManager.isChapterDownloaded(
                     chapterName = chapter.chapter.name,
                     chapterScanlator = chapter.chapter.scanlator,
+                    chapterUrl = chapter.chapter.url,
                     mangaTitle = manga.ogTitle,
                     sourceId = manga.source,
                     skipCache = true,

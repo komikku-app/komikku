@@ -21,7 +21,7 @@ class WhatsNewScreen(
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
         val changelogInfoNoChecksum = remember {
-            changelogInfo.replace("""---(\R|.)*Checksums(\R|.)*""".toRegex(), "")
+            changelogInfo
         }
 
         WhatsNewScreen(

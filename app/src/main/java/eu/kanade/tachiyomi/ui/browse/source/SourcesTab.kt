@@ -49,39 +49,34 @@ fun Screen.sourcesTab(
             true -> MR.strings.label_sources
             false -> SYMR.strings.find_in_another_source
         },
-        actions = if (smartSearchConfig == null) {
-            persistentListOf(
-                AppBar.Action(
-                    title = stringResource(MR.strings.action_global_search),
-                    icon = Icons.Outlined.TravelExplore,
-                    onClick = { navigator.push(GlobalSearchScreen()) },
-                ),
-                // KMK -->
-                AppBar.Action(
-                    title = stringResource(KMR.strings.action_toggle_nsfw_only),
-                    icon = Icons.Outlined._18UpRating,
-                    iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    onClick = { screenModel.toggleNsfwOnly() },
-                ),
-                // KMK <--
-                AppBar.Action(
-                    title = stringResource(MR.strings.action_filter),
-                    icon = Icons.Outlined.FilterList,
-                    onClick = { navigator.push(SourcesFilterScreen()) },
-                ),
-            )
-        } else {
-            // Merge: find in another source
-            persistentListOf(
-                // KMK -->
-                AppBar.Action(
-                    title = stringResource(KMR.strings.action_toggle_nsfw_only),
-                    icon = Icons.Outlined._18UpRating,
-                    iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    onClick = { screenModel.toggleNsfwOnly() },
-                ),
-                // KMK <--
-            )
+        actions = persistentListOf(
+            AppBar.Action(
+                title = stringResource(MR.strings.action_global_search),
+                icon = Icons.Outlined.TravelExplore,
+                onClick = { navigator.push(GlobalSearchScreen(smartSearchConfig?.origTitle ?: "")) },
+            ),
+            // KMK -->
+            AppBar.Action(
+                title = stringResource(KMR.strings.action_toggle_nsfw_only),
+                icon = Icons.Outlined._18UpRating,
+                iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                onClick = { screenModel.toggleNsfwOnly() },
+            ),
+            // KMK <--
+        ).let {
+            when (smartSearchConfig) {
+                null -> {
+                    it.add(
+                        AppBar.Action(
+                            title = stringResource(MR.strings.action_filter),
+                            icon = Icons.Outlined.FilterList,
+                            onClick = { navigator.push(SourcesFilterScreen()) },
+                        ),
+                    )
+                }
+                // Merge: find in another source
+                else -> it
+            }
         },
         // SY <--
         content = { contentPadding, snackbarHostState ->

@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.sync
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.SyncStatus
@@ -24,20 +25,22 @@ class SyncNotifier(private val context: Context) {
     // KMK <--
 
     private val progressNotificationBuilder = context.notificationBuilder(
-        Notifications.CHANNEL_BACKUP_RESTORE_PROGRESS,
+        Notifications.CHANNEL_SYNC_LIBRARY,
     ) {
-        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
         setSmallIcon(R.drawable.ic_komikku)
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
         setAutoCancel(false)
         setOngoing(true)
         setOnlyAlertOnce(true)
     }
 
     private val completeNotificationBuilder = context.notificationBuilder(
-        Notifications.CHANNEL_BACKUP_RESTORE_PROGRESS,
+        Notifications.CHANNEL_SYNC_LIBRARY,
     ) {
-        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
         setSmallIcon(R.drawable.ic_komikku)
+        setColor(ContextCompat.getColor(context, R.color.ic_launcher))
+        setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
         setAutoCancel(false)
     }
 
@@ -67,34 +70,38 @@ class SyncNotifier(private val context: Context) {
             addAction(
                 R.drawable.ic_close_24dp,
                 context.getString(R.string.action_cancel),
-                NotificationReceiver.cancelSyncPendingBroadcast(context, Notifications.ID_RESTORE_PROGRESS),
+                NotificationReceiver.cancelSyncPendingBroadcast(context, Notifications.ID_SYNC_PROGRESS),
             )
         }
 
-        builder.show(Notifications.ID_RESTORE_PROGRESS)
+        // KMK -->
+        // Avoid calling show() before returning builder for ForegroundInfo.
+        // Calling show() here can cause duplicate notifications, as setForegroundSafely will display the notification using the returned builder.
+        // builder.show(Notifications.ID_SYNC_PROGRESS)
+        // KMK <--
 
         return builder
     }
 
     fun showSyncError(error: String?) {
-        context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+        context.cancelNotification(Notifications.ID_SYNC_PROGRESS)
 
         with(completeNotificationBuilder) {
             setContentTitle(context.getString(R.string.sync_error))
             setContentText(error)
 
-            show(Notifications.ID_RESTORE_COMPLETE)
+            show(Notifications.ID_SYNC_COMPLETE)
         }
     }
 
     fun showSyncSuccess(message: String?) {
-        context.cancelNotification(Notifications.ID_RESTORE_PROGRESS)
+        context.cancelNotification(Notifications.ID_SYNC_PROGRESS)
 
         with(completeNotificationBuilder) {
             setContentTitle(context.getString(R.string.sync_complete))
             setContentText(message)
 
-            show(Notifications.ID_RESTORE_COMPLETE)
+            show(Notifications.ID_SYNC_COMPLETE)
         }
     }
 }

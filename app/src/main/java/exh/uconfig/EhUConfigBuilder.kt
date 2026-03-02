@@ -1,18 +1,18 @@
 package exh.uconfig
 
+import exh.source.ExhPreferences
 import okhttp3.FormBody
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class EhUConfigBuilder {
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
 
     fun build(hathPerks: EHHathPerksResponse): FormBody {
         val configItems = mutableListOf<ConfigItem>()
 
         configItems += when (
-            preferences.imageQuality()
+            exhPreferences.imageQuality()
                 .get()
                 .lowercase(Locale.getDefault())
         ) {
@@ -25,19 +25,19 @@ class EhUConfigBuilder {
             else -> Entry.ImageSize.AUTO
         }
 
-        configItems += when (preferences.useHentaiAtHome().get()) {
+        configItems += when (exhPreferences.useHentaiAtHome().get()) {
             2 -> Entry.UseHentaiAtHome.NO
             1 -> Entry.UseHentaiAtHome.DEFAULTONLY
             else -> Entry.UseHentaiAtHome.ANY
         }
 
-        configItems += if (preferences.useJapaneseTitle().get()) {
+        configItems += if (exhPreferences.useJapaneseTitle().get()) {
             Entry.TitleDisplayLanguage.JAPANESE
         } else {
             Entry.TitleDisplayLanguage.DEFAULT
         }
 
-        configItems += if (preferences.exhUseOriginalImages().get()) {
+        configItems += if (exhPreferences.exhUseOriginalImages().get()) {
             Entry.UseOriginalImages.YES
         } else {
             Entry.UseOriginalImages.NO
@@ -61,13 +61,13 @@ class EhUConfigBuilder {
         configItems += Entry.UseMPV()
         configItems += Entry.ShowPopularRightNowPane()
 
-        configItems += Entry.TagFilteringThreshold(preferences.ehTagFilterValue().get())
-        configItems += Entry.TagWatchingThreshold(preferences.ehTagWatchingValue().get())
+        configItems += Entry.TagFilteringThreshold(exhPreferences.ehTagFilterValue().get())
+        configItems += Entry.TagWatchingThreshold(exhPreferences.ehTagWatchingValue().get())
 
-        configItems += Entry.LanguageSystem().getLanguages(preferences.exhSettingsLanguages().get().split("\n"))
+        configItems += Entry.LanguageSystem().getLanguages(exhPreferences.exhSettingsLanguages().get().split("\n"))
 
         configItems += Entry.Categories().categoryConfigs(
-            preferences.exhEnabledCategories().get().split(",").map {
+            exhPreferences.exhEnabledCategories().get().split(",").map {
                 it.toBoolean()
             },
         )

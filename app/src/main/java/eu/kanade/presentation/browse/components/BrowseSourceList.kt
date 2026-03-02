@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
@@ -17,6 +17,7 @@ import eu.kanade.presentation.library.components.MangaListItem
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
+import exh.metadata.metadata.RankedSearchMetadata
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
@@ -101,11 +102,10 @@ internal fun BrowseSourceListItem(
             // SY -->
             if (metadata is MangaDexSearchMetadata) {
                 metadata.followStatus?.let { followStatus ->
-                    val text = LocalContext.current
-                        .resources
-                        .let {
-                            remember {
-                                it.getStringArray(R.array.md_follows_options)
+                    val text = LocalResources.current
+                        .let { resources ->
+                            remember(resources, followStatus) {
+                                resources.getStringArray(R.array.md_follows_options)
                                     .getOrNull(followStatus)
                             }
                         }
@@ -119,6 +119,14 @@ internal fun BrowseSourceListItem(
                 metadata.relation?.let {
                     Badge(
                         text = stringResource(it.res),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textColor = MaterialTheme.colorScheme.onTertiary,
+                    )
+                }
+            } else if (metadata is RankedSearchMetadata) {
+                metadata.rank?.let {
+                    Badge(
+                        text = "+$it",
                         color = MaterialTheme.colorScheme.tertiary,
                         textColor = MaterialTheme.colorScheme.onTertiary,
                     )

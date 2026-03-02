@@ -23,7 +23,7 @@ class GetPagePreviews(
         return try {
             val pagePreviews = try {
                 pagePreviewCache.getPageListFromCache(manga, chapterIds, page)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 source.getPagePreviewList(manga.toSManga(), chapters.map { it.toSChapter() }, page).also {
                     pagePreviewCache.putPageListToCache(manga, chapterIds, it)
                 }

@@ -84,7 +84,7 @@ abstract class PagerViewer(
             field = value
             if (value) {
                 awaitingIdleViewerChapters?.let { viewerChapters ->
-                    setChaptersDoubleShift(viewerChapters)
+                    setChaptersInternal(viewerChapters)
                     awaitingIdleViewerChapters = null
                     if (viewerChapters.currChapter.pages?.size == 1) {
                         adapter.nextTransition?.to?.let(activity::requestPreloadChapter)
@@ -116,11 +116,7 @@ abstract class PagerViewer(
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
         pager.adapter = adapter
-        pager.addOnPageChangeListener(
-            // SY -->
-            pagerListener,
-            // SY <--
-        )
+        pager.addOnPageChangeListener(pagerListener)
         pager.tapListener = { event ->
             val viewPosition = IntArray(2)
             pager.getLocationOnScreen(viewPosition)
@@ -292,7 +288,7 @@ abstract class PagerViewer(
      */
     override fun setChapters(chapters: ViewerChapters) {
         if (isIdle) {
-            setChaptersDoubleShift(chapters)
+            setChaptersInternal(chapters)
         } else {
             awaitingIdleViewerChapters = chapters
         }
@@ -301,10 +297,14 @@ abstract class PagerViewer(
     /**
      * Sets the active [chapters] on this pager.
      */
-    private fun setChaptersInternal(chapters: ViewerChapters) {
-        val forceTransition =
-            config.alwaysShowChapterTransition ||
-                adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
+    internal fun setChaptersInternal(chapters: ViewerChapters) {
+        // Remove listener so the change in item doesn't trigger it
+        // since we're about to change the size of the items
+        // If we don't the size change could put us on a new chapter
+        pager.removeOnPageChangeListener(pagerListener)
+
+        val forceTransition = config.alwaysShowChapterTransition ||
+            adapter.joinedItems.getOrNull(pager.currentItem)?.first is ChapterTransition
         adapter.setChapters(chapters, forceTransition)
 
         // Layout the pager once a chapter is being set
@@ -314,6 +314,11 @@ abstract class PagerViewer(
             moveToPage(pages[min(chapters.currChapter.requestedPage, pages.lastIndex)])
             pager.isVisible = true
         }
+
+        pager.addOnPageChangeListener(pagerListener)
+        // Since we removed the listener while shifting,
+        // Manually call onPageChange to update the UI
+        onPageChange(pager.currentItem)
     }
 
     /**
@@ -384,17 +389,31 @@ abstract class PagerViewer(
     }
 
     /**
-     * Moves to the page at the top (or previous).
+     * Pans to the top of the page or if already on the top moves to the previous page.
      */
     protected open fun moveUp() {
-        moveToPrevious()
+        // KMK -->
+        val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
+        if (holder != null && holder.canPanUp()) {
+            holder.panUp()
+        } else {
+            // KMK <--
+            moveToPrevious()
+        }
     }
 
     /**
-     * Moves to the page at the bottom (or next).
+     * Pans to the bottom of the page or if already on the bottom moves to the next page.
      */
     protected open fun moveDown() {
-        moveToNext()
+        // KMK -->
+        val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
+        if (holder != null && holder.canPanDown()) {
+            holder.panDown()
+        } else {
+            // KMK <--
+            moveToNext()
+        }
     }
 
     /**
@@ -483,16 +502,6 @@ abstract class PagerViewer(
     }
 
     // SY -->
-    fun setChaptersDoubleShift(chapters: ViewerChapters) {
-        // Remove Listener since we're about to change the size of the items
-        // If we don't the size change could put us on a new chapter
-        pager.removeOnPageChangeListener(pagerListener)
-        setChaptersInternal(chapters)
-        pager.addOnPageChangeListener(pagerListener)
-        // Since we removed the listener while shifting, call page change to update the ui
-        onPageChange(pager.currentItem)
-    }
-
     fun updateShifting(page: ReaderPage? = null) {
         adapter.pageToShift = page ?: adapter.joinedItems.getOrNull(pager.currentItem)?.first as? ReaderPage
     }

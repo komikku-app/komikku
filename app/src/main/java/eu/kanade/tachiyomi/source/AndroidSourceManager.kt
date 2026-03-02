@@ -1,10 +1,14 @@
+@file:Suppress("PropertyName")
+
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -15,10 +19,11 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 import exh.log.xLogD
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
-import exh.source.EH_SOURCE_ID
+import exh.source.EHENTAI_EXT_SOURCES
 import exh.source.EIGHTMUSES_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
+import exh.source.EXHENTAI_EXT_SOURCES
 import exh.source.EnhancedHttpSource
+import exh.source.ExhPreferences
 import exh.source.HBROWSE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
@@ -36,7 +41,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.StubSourceRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -69,18 +74,27 @@ class AndroidSourceManager(
     }
 
     // SY -->
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
+    private val sourcePreferences: SourcePreferences by injectLazy()
     // SY <--
+    // KMK -->
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+    // KMK <--
 
     init {
         scope.launch {
             extensionManager.installedExtensionsFlow
                 // SY -->
-                .combine(preferences.enableExhentai().changes()) { extensions, enableExhentai ->
+                .combine(exhPreferences.enableExhentai().changes()) { extensions, enableExhentai ->
                     extensions to enableExhentai
                 }
+                // KMK -->
+                .combine(
+                    exhPreferences.isHentaiEnabled().changes(),
+                ) { (a, b), c -> Triple(a, b, c) }
+                // KMK <--
                 // SY <--
-                .collectLatest { (extensions, enableExhentai) ->
+                .collectLatest { (extensions, enableExhentai/* KMK --> */, isHentaiEnabled/* KMK <-- */) ->
                     val mutableMap = ConcurrentHashMap<Long, Source>(
                         mapOf(
                             LocalSource.ID to LocalSource(
@@ -88,21 +102,29 @@ class AndroidSourceManager(
                                 Injekt.get(),
                                 Injekt.get(),
                                 // SY -->
-                                preferences.allowLocalSourceHiddenFolders()::get,
+                                sourcePreferences.allowLocalSourceHiddenFolders()::get,
                                 // SY <--
                             ),
                         ),
                     ).apply {
-                        // SY -->
-                        put(EH_SOURCE_ID, EHentai(EH_SOURCE_ID, false, context))
-                        if (enableExhentai) {
-                            put(EXH_SOURCE_ID, EHentai(EXH_SOURCE_ID, true, context))
+                        // KMK -->
+                        if (isHentaiEnabled) {
+                            EHENTAI_EXT_SOURCES.forEach { (id, lang) ->
+                                put(id, EHentai(id, false, context, lang))
+                            }
+                            if (enableExhentai) {
+                                EXHENTAI_EXT_SOURCES.forEach { (id, lang) ->
+                                    put(id, EHentai(id, true, context, lang))
+                                }
+                            }
                         }
+                        // KMK <--
+                        // SY -->
                         put(MERGED_SOURCE_ID, MergedSource())
                         // SY <--
                     }
                     extensions.forEach { extension ->
-                        extension.sources.mapNotNull { it.toInternalSource() }.forEach {
+                        extension.sources.mapNotNull { it.toInternalSource(/* KMK --> */isHentaiEnabled/* KMK <-- */) }.forEach {
                             mutableMap[it.id] = it
                             registerStubSource(StubSource.from(it))
                         }
@@ -123,7 +145,11 @@ class AndroidSourceManager(
         }
     }
 
-    private fun Source.toInternalSource(): Source? {
+    private fun Source.toInternalSource(
+        // KMK -->
+        isHentaiEnabled: Boolean,
+        // KMK <--
+    ): Source? {
         // EXH -->
         val sourceQName = this::class.qualifiedName
         val factories = DELEGATED_SOURCES.entries
@@ -158,7 +184,12 @@ class AndroidSourceManager(
             this
         }
 
-        return if (id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
+        return if (
+            // KMK -->
+            isHentaiEnabled &&
+            // KMK <--
+            id in BlacklistedSources.BLACKLISTED_EXT_SOURCES
+        ) {
             xLogD(
                 "Removing blacklisted source: (id: %s, name: %s, lang: %s)!",
                 id,
@@ -210,6 +241,14 @@ class AndroidSourceManager(
             enhancedHttpSource.enhancedSource as? DelegatedHttpSource
         }
     // SY <--
+
+    // KMK -->
+    override suspend fun getMergedSources(mangaId: Long): List<Source> {
+        val sources = getMergedReferencesById.await(mangaId)
+        return sources.distinctBy { it.mangaSourceId }
+            .map { getOrStub(it.mangaSourceId) }
+    }
+    // KMK <--
 
     private fun registerStubSource(source: StubSource) {
         scope.launch {
@@ -273,6 +312,13 @@ class AndroidSourceManager(
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
                 NHentai::class,
+                true,
+            ),
+            DelegatedSource(
+                "LANraragi",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.lanraragi.LANraragi",
+                Lanraragi::class,
                 true,
             ),
         ).associateBy { it.originalSourceQualifiedClassName }

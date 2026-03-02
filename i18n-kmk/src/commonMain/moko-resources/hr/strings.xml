@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="theme_cloudflare">Cloudflare</string>
-  <string name="theme_cottoncandy">Cotton Candy</string>
-  <string name="theme_doom">Doom</string>
-  <string name="theme_matrix">Matrix</string>
-  <string name="theme_mocha">Mocha</string>
-  <string name="theme_sapphire">Sapphire</string>
+    <string name="theme_cloudflare">Cloudflare</string>
+    <string name="too_many_in_feed">Previše izvora u tvom feedu, ne možeš dodati više od 20</string>
 </resources>

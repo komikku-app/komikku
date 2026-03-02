@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.view.LayoutInflater
 import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
+import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
@@ -23,12 +24,14 @@ import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import okio.Buffer
 import okio.BufferedSource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
+import tachiyomi.i18n.MR
 import kotlin.math.max
 
 /**
@@ -122,16 +125,16 @@ class PagerPageHolder(
             }
             page.statusFlow.collectLatest { state ->
                 when (state) {
-                    Page.State.QUEUE -> setQueued()
-                    Page.State.LOAD_PAGE -> setLoading()
-                    Page.State.DOWNLOAD_IMAGE -> {
+                    Page.State.Queue -> setQueued()
+                    Page.State.LoadPage -> setLoading()
+                    Page.State.DownloadImage -> {
                         setDownloading()
                         page.progressFlow.collectLatest { value ->
                             progressIndicator?.setProgress(value)
                         }
                     }
-                    Page.State.READY -> setImage()
-                    Page.State.ERROR -> setError()
+                    Page.State.Ready -> setImage()
+                    is Page.State.Error -> setError(state.error)
                 }
             }
         }
@@ -213,6 +216,11 @@ class PagerPageHolder(
                         cropBorders = viewer.config.imageCropBorders,
                         zoomStartPosition = viewer.config.imageZoomType,
                         landscapeZoom = viewer.config.landscapeZoom,
+                        // KMK -->
+                        disableZoomIn = viewer.config.disableZoomIn,
+                        doubleTapZoom = viewer.config.doubleTapZoom,
+                        landscapeZoomScaleType = viewer.config.landscapeZoomScaleType,
+                        // KMK <--
                     ),
                 )
                 if (!isAnimated) {
@@ -223,7 +231,7 @@ class PagerPageHolder(
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
             withUIContext {
-                setError()
+                setError(e)
             }
         }
     }
@@ -415,9 +423,9 @@ class PagerPageHolder(
     /**
      * Called when the page has an error.
      */
-    private fun setError() {
+    private fun setError(error: Throwable?) {
         progressIndicator?.hide()
-        showErrorLayout()
+        showErrorLayout(error)
     }
 
     override fun onImageLoaded() {
@@ -428,9 +436,9 @@ class PagerPageHolder(
     /**
      * Called when an image fails to decode.
      */
-    override fun onImageLoadError() {
-        super.onImageLoadError()
-        setError()
+    override fun onImageLoadError(error: Throwable?) {
+        super.onImageLoadError(error)
+        setError(error)
     }
 
     /**
@@ -441,7 +449,7 @@ class PagerPageHolder(
         viewer.activity.hideMenu()
     }
 
-    private fun showErrorLayout(): ReaderErrorBinding {
+    private fun showErrorLayout(error: Throwable?): ReaderErrorBinding {
         if (errorLayout == null) {
             errorLayout = ReaderErrorBinding.inflate(LayoutInflater.from(context), this, true)
             errorLayout?.actionRetry?.viewer = viewer
@@ -456,11 +464,16 @@ class PagerPageHolder(
             if (imageUrl.startsWith("http", true)) {
                 errorLayout?.actionOpenInWebView?.viewer = viewer
                 errorLayout?.actionOpenInWebView?.setOnClickListener {
-                    val intent = WebViewActivity.newIntent(context, imageUrl)
+                    val sourceId = viewer.activity.viewModel.manga?.source
+
+                    val intent = WebViewActivity.newIntent(context, imageUrl, sourceId)
                     context.startActivity(intent)
                 }
             }
         }
+
+        errorLayout?.errorMessage?.text = with(context) { error?.formattedMessage }
+            ?: context.stringResource(MR.strings.decode_image_error)
 
         errorLayout?.root?.isVisible = true
         return errorLayout!!

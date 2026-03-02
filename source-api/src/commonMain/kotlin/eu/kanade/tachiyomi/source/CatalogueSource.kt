@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.source
 
-import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
@@ -9,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.system.logcat
 
 /**
@@ -68,6 +68,7 @@ interface CatalogueSource : Source {
     fun getFilterList(): FilterList
 
     // KMK -->
+
     /**
      * Whether parsing related mangas in manga page or extension provide custom related mangas request.
      * @default false
@@ -125,15 +126,7 @@ interface CatalogueSource : Source {
         runCatching { fetchRelatedMangaList(manga) }
             .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
             .onFailure { e ->
-                @Suppress("KotlinConstantConditions")
-                if (BuildConfig.BUILD_TYPE == "release") {
-                    logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
-                } else {
-                    throw UnsupportedOperationException(
-                        "Extension doesn't support site's related entries," +
-                            " please report an issue to Komikku.",
-                    )
-                }
+                logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
             }
     }
 
@@ -193,10 +186,11 @@ interface CatalogueSource : Source {
         if (words.isEmpty()) return
 
         coroutineScope {
+            val filterList = getFilterList()
             words.map { keyword ->
                 launch {
                     runCatching {
-                        getSearchManga(1, keyword, FilterList()).mangas
+                        getSearchManga(1, keyword.sanitize(), filterList).mangas
                     }
                         .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
                         .onFailure { e ->

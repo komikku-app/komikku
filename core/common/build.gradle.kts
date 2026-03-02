@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.bundles.js.engine)
 
     testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     // SY -->
     implementation(sylibs.xlog)

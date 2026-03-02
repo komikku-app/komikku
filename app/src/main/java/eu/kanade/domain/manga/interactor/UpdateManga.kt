@@ -4,6 +4,7 @@ import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.model.SManga
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
@@ -32,9 +33,8 @@ class UpdateManga(
         remoteManga: SManga,
         manualFetch: Boolean,
         coverCache: CoverCache = Injekt.get(),
-        // SY -->
+        libraryPreferences: LibraryPreferences = Injekt.get(),
         downloadManager: DownloadManager = Injekt.get(),
-        // SY <--
     ): Boolean {
         val remoteTitle = try {
             remoteManga.title
@@ -42,14 +42,13 @@ class UpdateManga(
             ""
         }
 
-        // SY -->
-        val title = if (remoteTitle.isNotBlank() && localManga.ogTitle != remoteTitle) {
-            downloadManager.renameMangaDir(localManga.ogTitle, remoteTitle, localManga.source)
-            remoteTitle
-        } else {
-            null
-        }
-        // SY <--
+        // if the manga isn't a favorite (or 'update titles' preference is enabled), set its title from source and update in db
+        val title =
+            if (remoteTitle.isNotEmpty() && (!localManga.favorite || libraryPreferences.updateMangaTitles().get())) {
+                remoteTitle
+            } else {
+                null
+            }
 
         val coverLastModified =
             when {
@@ -69,7 +68,7 @@ class UpdateManga(
 
         val thumbnailUrl = remoteManga.thumbnail_url?.takeIf { it.isNotEmpty() }
 
-        return mangaRepository.update(
+        val success = mangaRepository.update(
             MangaUpdate(
                 id = localManga.id,
                 title = title,
@@ -84,6 +83,10 @@ class UpdateManga(
                 initialized = true,
             ),
         )
+        if (success && title != null) {
+            downloadManager.renameManga(localManga, title)
+        }
+        return success
     }
 
     suspend fun awaitUpdateFetchInterval(

@@ -17,8 +17,8 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.FeedRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
+import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
-import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -118,7 +118,7 @@ class BackupRestorer(
             }
             // SY <--
             if (options.appSettings) {
-                restoreAppPreferences(backup.backupPreferences)
+                restoreAppPreferences(backup.backupPreferences, backup.backupCategories.takeIf { options.categories })
             }
             if (options.sourceSettings) {
                 restoreSourcePreferences(backup.backupSourcePreferences)
@@ -134,17 +134,23 @@ class BackupRestorer(
         }
     }
 
-    private fun CoroutineScope.restoreCategories(backupCategories: List<BackupCategory>) = launch {
-        ensureActive()
+    context(scope: CoroutineScope)
+    private /* KMK --> */suspend /* KMK <-- */ fun restoreCategories(backupCategories: List<BackupCategory>) {
+        scope.ensureActive()
         categoriesRestorer(backupCategories)
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.categories),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.categories),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     // SY -->
@@ -161,12 +167,17 @@ class BackupRestorer(
         // KMK <--
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(KMR.strings.saved_searches_feeds),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(KMR.strings.saved_searches_feeds),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
     // SY <--
 
@@ -175,7 +186,6 @@ class BackupRestorer(
         backupCategories: List<BackupCategory>,
     ) = launch {
         mangaRestorer.sortByNew(backupMangas)
-            /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */
             .forEach {
                 ensureActive()
 
@@ -187,21 +197,37 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                notifier.showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
+                with(notifier) {
+                    showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
+                        // KMK -->
+                        .show(Notifications.ID_RESTORE_PROGRESS)
+                    // KMK <--
+                }
             }
     }
 
-    private fun CoroutineScope.restoreAppPreferences(preferences: List<BackupPreference>) = launch {
+    private fun CoroutineScope.restoreAppPreferences(
+        preferences: List<BackupPreference>,
+        categories: List<BackupCategory>?,
+    ) = launch {
         ensureActive()
-        preferenceRestorer.restoreApp(preferences)
+        preferenceRestorer.restoreApp(
+            preferences,
+            categories,
+        )
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.app_settings),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.app_settings),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     private fun CoroutineScope.restoreSourcePreferences(preferences: List<BackupSourcePreferences>) = launch {
@@ -209,12 +235,17 @@ class BackupRestorer(
         preferenceRestorer.restoreSource(preferences)
 
         restoreProgress += 1
-        notifier.showRestoreProgress(
-            context.stringResource(MR.strings.source_settings),
-            restoreProgress,
-            restoreAmount,
-            isSync,
-        )
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.source_settings),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            )
+                // KMK -->
+                .show(Notifications.ID_RESTORE_PROGRESS)
+            // KMK <--
+        }
     }
 
     private fun CoroutineScope.restoreExtensionRepos(
@@ -231,12 +262,17 @@ class BackupRestorer(
                 }
 
                 restoreProgress += 1
-                notifier.showRestoreProgress(
-                    context.stringResource(MR.strings.extensionRepo_settings),
-                    restoreProgress,
-                    restoreAmount,
-                    isSync,
-                )
+                with(notifier) {
+                    showRestoreProgress(
+                        context.stringResource(MR.strings.extensionRepo_settings),
+                        restoreProgress,
+                        restoreAmount,
+                        isSync,
+                    )
+                        // KMK -->
+                        .show(Notifications.ID_RESTORE_PROGRESS)
+                    // KMK <--
+                }
             }
     }
 
@@ -253,7 +289,7 @@ class BackupRestorer(
                 }
                 return file
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Empty
         }
         return File("")

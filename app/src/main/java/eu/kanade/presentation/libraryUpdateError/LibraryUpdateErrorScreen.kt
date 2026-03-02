@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
@@ -31,6 +32,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -60,9 +62,11 @@ fun LibraryUpdateErrorScreen(
     state: LibraryUpdateErrorScreenState,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    onErrorsDelete: () -> Unit,
+    onErrorDelete: (Long) -> Unit,
     onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
     navigateUp: () -> Unit,
 ) {
@@ -112,6 +116,7 @@ fun LibraryUpdateErrorScreen(
                 onClickUnselectAll = { onSelectAll(false) },
                 onClickSelectAll = { onSelectAll(true) },
                 onClickInvertSelection = onInvertSelection,
+                onClickDeleteErrors = onErrorsDelete,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -173,6 +178,7 @@ fun LibraryUpdateErrorScreen(
                         onErrorSelected = onErrorSelected,
                         onClick = onClick,
                         onClickCover = onClickCover,
+                        onDelete = onErrorDelete,
                     )
                 }
             }
@@ -184,7 +190,7 @@ fun LibraryUpdateErrorScreen(
 private fun LibraryUpdateErrorBottomBar(
     modifier: Modifier = Modifier,
     selected: List<LibraryUpdateErrorItem>,
-    onMultiMigrateClicked: (() -> Unit),
+    onMultiMigrateClicked: () -> Unit,
     enableScrollToTop: Boolean,
     enableScrollToBottom: Boolean,
     scrollToTop: () -> Unit,
@@ -211,10 +217,10 @@ private fun LibraryUpdateErrorBottomBar(
     ) {
         val haptic = LocalHapticFeedback.current
         val confirm = remember { mutableStateListOf(false, false, false, false, false) }
-        var resetJob: Job? = remember { null }
+        var resetJob by remember { mutableStateOf<Job?>(null) }
         val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            (0 until 5).forEach { i -> confirm[i] = i == toConfirmIndex }
+            confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
             resetJob?.cancel()
             resetJob = scope.launch {
                 delay(1.seconds)
@@ -303,6 +309,7 @@ private fun LibraryUpdateErrorAppBar(
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
+    onClickDeleteErrors: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     AppBar(
@@ -326,6 +333,11 @@ private fun LibraryUpdateErrorAppBar(
         actionModeActions = {
             AppBarActions(
                 persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_delete),
+                        icon = Icons.Outlined.DeleteOutline,
+                        onClick = onClickDeleteErrors,
+                    ),
                     AppBar.Action(
                         title = stringResource(MR.strings.action_select_all),
                         icon = Icons.Outlined.SelectAll,

@@ -4,20 +4,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
-import eu.kanade.domain.manga.model.toDomainManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.interactor.ToggleIncognito
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
+import exh.source.EH_PACKAGE
+import exh.source.LOCAL_SOURCE_PACKAGE
 import exh.source.getMainSource
+import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfBlank
 import kotlinx.collections.immutable.ImmutableList
@@ -33,8 +40,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import mihon.domain.manga.model.toDomainManga
+import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
@@ -49,11 +57,12 @@ import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
-import tachiyomi.domain.source.model.FeedSavedSearchUpdate
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -74,6 +83,10 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
+    private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    private val toggleIncognito: ToggleIncognito = Injekt.get(),
+    private val extensionManager: ExtensionManager = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<SourceFeedState>(SourceFeedState()) {
 
@@ -84,6 +97,10 @@ open class SourceFeedScreenModel(
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
+
+    // KMK -->
+    var incognitoMode = mutableStateOf(getIncognitoState.await(source.id))
+    // KMK <--
 
     init {
         // KMK -->
@@ -101,6 +118,13 @@ open class SourceFeedScreenModel(
             setFilters(source.getFilterList())
             // KMK -->
             reloadSavedSearches()
+
+            getIncognitoState.subscribe(sourceId)
+                .onEach {
+                    if (!it) sourcePreferences.lastUsedSource().set(source.id)
+                    incognitoMode.value = it
+                }
+                .launchIn(screenModelScope)
             // KMK <--
             getFeedSavedSearchBySourceId.subscribe(source.id)
                 .onEach {
@@ -117,6 +141,18 @@ open class SourceFeedScreenModel(
     }
 
     // KMK-->
+    fun toggleIncognitoMode() {
+        val packageName = when {
+            source is StubSource -> null
+            source.isLocal() -> LOCAL_SOURCE_PACKAGE
+            source.isEhBasedSource() -> EH_PACKAGE
+            else -> extensionManager.getExtensionPackage(sourceId)
+        }
+        packageName?.let {
+            toggleIncognito.await(it, !incognitoMode.value)
+        }
+    }
+
     fun resetFilters() {
         val source = source
         if (source !is CatalogueSource) return
@@ -156,31 +192,9 @@ open class SourceFeedScreenModel(
     }
 
     // KMK -->
-    fun moveUp(feed: FeedSavedSearch) {
+    fun changeOrder(feed: FeedSavedSearch, newIndex: Int) {
         screenModelScope.launch {
-            reorderFeed.moveUp(feed, false)
-        }
-    }
-
-    fun moveDown(feed: FeedSavedSearch) {
-        screenModelScope.launch {
-            reorderFeed.moveDown(feed, false)
-        }
-    }
-
-    fun sortAlphabetically() {
-        screenModelScope.launchNonCancellable {
-            reorderFeed.sortAlphabetically(
-                state.value.items
-                    .filterIsInstance<SourceFeedUI.SourceSavedSearch>()
-                    .sortedBy { feed -> feed.title }
-                    .mapIndexed { index, feed ->
-                        FeedSavedSearchUpdate(
-                            id = feed.feed.id,
-                            feedOrder = index.toLong(),
-                        )
-                    },
-            )
+            reorderFeed.changeOrder(feed, newIndex, false)
         }
     }
     // KMK <--
@@ -207,6 +221,10 @@ open class SourceFeedScreenModel(
             .toImmutableList()
     }
 
+    // KMK -->
+    private val hideInLibraryFeedItems = sourcePreferences.hideInLibraryFeedItems().get()
+    // KMK <--
+
     /**
      * Initiates get manga per feed.
      */
@@ -225,7 +243,7 @@ open class SourceFeedScreenModel(
                                 is SourceFeedUI.Latest -> source.getLatestUpdates(1)
                                 is SourceFeedUI.SourceSavedSearch -> source.getSearchManga(
                                     page = 1,
-                                    query = sourceFeed.savedSearch.query.orEmpty(),
+                                    query = sourceFeed.savedSearch.query?.sanitize().orEmpty(),
                                     filters = getFilterList(sourceFeed.savedSearch, source),
                                 )
                             }
@@ -235,9 +253,12 @@ open class SourceFeedScreenModel(
                     }
 
                     val titles = withIOContext {
-                        page.map {
-                            networkToLocalManga.await(it.toDomainManga(source.id))
-                        }
+                        page.map { it.toDomainManga(source.id) }
+                            .distinctBy { it.url }
+                            .let { networkToLocalManga(it) }
+                            // KMK -->
+                            .filter { !hideInLibraryFeedItems || !it.favorite }
+                        // KMK <--
                     }
 
                     mutableState.update { state ->
@@ -387,16 +408,12 @@ open class SourceFeedScreenModel(
     // KMK -->
     fun openActionsDialog(
         feed: SourceFeedUI.SourceSavedSearch,
-        canMoveUp: Boolean,
-        canMoveDown: Boolean,
     ) {
         screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
                     dialog = Dialog.FeedActions(
                         feedItem = feed,
-                        canMoveUp = canMoveUp,
-                        canMoveDown = canMoveDown,
                     ),
                 )
             }
@@ -428,11 +445,7 @@ open class SourceFeedScreenModel(
         // KMK -->
         data class FeedActions(
             val feedItem: SourceFeedUI.SourceSavedSearch,
-            val canMoveUp: Boolean,
-            val canMoveDown: Boolean,
         ) : Dialog()
-
-        data object SortAlphabetically : Dialog()
         // KMK <--
     }
 

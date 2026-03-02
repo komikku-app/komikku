@@ -20,8 +20,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KEIYOUSHI_REPO_SIGNATURE
-import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.OFFICIAL_REPO_SIGNATURE
 import mihon.domain.extensionrepo.interactor.GetExtensionRepo
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.core.common.util.system.logcat
@@ -59,8 +57,6 @@ internal object ExtensionLoader {
     private const val METADATA_SOURCE_CLASS = "tachiyomi.extension.class"
     private const val METADATA_SOURCE_FACTORY = "tachiyomi.extension.factory"
     private const val METADATA_NSFW = "tachiyomi.extension.nsfw"
-    private const val METADATA_HAS_README = "tachiyomi.extension.hasReadme"
-    private const val METADATA_HAS_CHANGELOG = "tachiyomi.extension.hasChangelog"
     const val LIB_VERSION_MIN = 1.4
     const val LIB_VERSION_MAX = 1.5
 
@@ -292,12 +288,10 @@ internal object ExtensionLoader {
                 libVersion,
                 signatures.last(),
                 // KMK -->
-                repoName = when {
-                    isOfficiallySigned(signatures) -> "Komikku"
-                    isKeiyoushiSigned(signatures) -> "Keiyoushi"
-                    else -> repos.firstOrNull { repo ->
-                        signatures.all { it == repo.signingKeyFingerprint }
-                    }?.name
+                repoName = repos.firstOrNull { repo ->
+                    signatures.all { it == repo.signingKeyFingerprint }
+                }?.let { repo ->
+                    repo.shortName.takeIf { !it.isNullOrBlank() } ?: repo.name
                 },
                 // KMK <--
             )
@@ -310,9 +304,6 @@ internal object ExtensionLoader {
             logcat(LogPriority.WARN) { "NSFW extension $pkgName not allowed" }
             return LoadResult.Error
         }
-
-        val hasReadme = appInfo.metaData.getInt(METADATA_HAS_README, 0) == 1
-        val hasChangelog = appInfo.metaData.getInt(METADATA_HAS_CHANGELOG, 0) == 1
 
         val classLoader = try {
             ChildFirstPathClassLoader(appInfo.sourceDir, null, context.classLoader)
@@ -361,20 +352,16 @@ internal object ExtensionLoader {
             libVersion = libVersion,
             lang = lang,
             isNsfw = isNsfw,
-            hasReadme = hasReadme,
-            hasChangelog = hasChangelog,
             sources = sources,
             pkgFactory = appInfo.metaData.getString(METADATA_SOURCE_FACTORY),
             icon = appInfo.loadIcon(pkgManager),
             isShared = extensionInfo.isShared,
             // KMK -->
             signatureHash = signatures.last(),
-            repoName = when {
-                isOfficiallySigned(signatures) -> "Komikku"
-                isKeiyoushiSigned(signatures) -> "Keiyoushi"
-                else -> repos.firstOrNull { repo ->
-                    signatures.all { it == repo.signingKeyFingerprint }
-                }?.name
+            repoName = repos.firstOrNull { repo ->
+                signatures.all { it == repo.signingKeyFingerprint }
+            }?.let { repo ->
+                repo.shortName.takeIf { !it.isNullOrBlank() } ?: repo.name
             },
             // KMK <--
         )
@@ -432,14 +419,6 @@ internal object ExtensionLoader {
         }
             ?.map { Hash.sha256(it.toByteArray()) }
             ?.toList()
-    }
-
-    private fun isOfficiallySigned(signatures: List<String>): Boolean {
-        return signatures.all { it == OFFICIAL_REPO_SIGNATURE }
-    }
-
-    private fun isKeiyoushiSigned(signatures: List<String>): Boolean {
-        return signatures.all { it == KEIYOUSHI_REPO_SIGNATURE }
     }
 
     /**

@@ -159,7 +159,7 @@ class BackupCreator(
         return sourcesBackupCreator(mangas)
     }
 
-    fun backupAppPreferences(options: BackupOptions): List<BackupPreference> {
+    /* KMK --> */ suspend /* KMK <-- */ fun backupAppPreferences(options: BackupOptions): List<BackupPreference> {
         if (!options.appSettings) return emptyList()
 
         return preferenceBackupCreator.createApp(includePrivatePreferences = options.privateSettings)

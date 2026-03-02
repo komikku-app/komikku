@@ -14,7 +14,6 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
@@ -25,11 +24,11 @@ import tachiyomi.presentation.core.i18n.stringResource
 fun BrowseSourceSimpleToolbar(
     navigateUp: () -> Unit,
     title: String,
-    displayMode: LibraryDisplayMode,
+    displayMode: LibraryDisplayMode?,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
-    toggleSelectionMode: () -> Unit,
+    toggleSelectionMode: (() -> Unit)?,
     isRunning: Boolean,
     // KMK <--
 ) {
@@ -38,25 +37,32 @@ fun BrowseSourceSimpleToolbar(
         title = title,
         actions = {
             var selectingDisplayMode by remember { mutableStateOf(false) }
+            // KMK -->
             AppBarActions(
-                // SY -->
-                actions = persistentListOf(
-                    AppBar.Action(
-                        title = stringResource(MR.strings.action_display_mode),
-                        // KMK -->
-                        icon = if (displayMode == LibraryDisplayMode.List) {
-                            Icons.AutoMirrored.Filled.ViewList
-                        } else {
-                            Icons.Filled.ViewModule
-                        },
-                        // KMK <--
-                        onClick = { selectingDisplayMode = true },
-                    ),
-                    // KMK -->
-                    bulkSelectionButton(isRunning, toggleSelectionMode),
-                    // KMK <--
-                ),
+                actions = persistentListOf<AppBar.AppBarAction>().builder()
+                    .apply {
+                        displayMode?.let {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(MR.strings.action_display_mode),
+                                    icon = if (displayMode == LibraryDisplayMode.List) {
+                                        Icons.AutoMirrored.Filled.ViewList
+                                    } else {
+                                        Icons.Filled.ViewModule
+                                    },
+                                    onClick = { selectingDisplayMode = true },
+                                ),
+                            )
+                        }
+                        toggleSelectionMode?.let {
+                            add(
+                                bulkSelectionButton(isRunning, toggleSelectionMode),
+                            )
+                        }
+                    }
+                    .build(),
             )
+            // KMK <--
             DropdownMenu(
                 expanded = selectingDisplayMode,
                 onDismissRequest = { selectingDisplayMode = false },

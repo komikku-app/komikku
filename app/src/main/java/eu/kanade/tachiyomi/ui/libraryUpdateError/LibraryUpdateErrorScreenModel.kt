@@ -5,19 +5,26 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.presentation.libraryUpdateError.components.LibraryUpdateErrorUiModel
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
 import tachiyomi.domain.libraryUpdateError.interactor.GetLibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateErrorWithRelations
 import tachiyomi.domain.libraryUpdateErrorMessage.interactor.GetLibraryUpdateErrorMessages
 import tachiyomi.domain.libraryUpdateErrorMessage.model.LibraryUpdateErrorMessage
+import tachiyomi.domain.manga.model.MangaCover
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class LibraryUpdateErrorScreenModel(
     private val getLibraryUpdateErrorWithRelations: GetLibraryUpdateErrorWithRelations = Injekt.get(),
     private val getLibraryUpdateErrorMessages: GetLibraryUpdateErrorMessages = Injekt.get(),
+    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<LibraryUpdateErrorScreenState>(LibraryUpdateErrorScreenState()) {
 
     // First and last selected index in list
@@ -32,7 +39,7 @@ class LibraryUpdateErrorScreenModel(
                     mutableState.update {
                         it.copy(
                             isLoading = false,
-                            items = toLibraryUpdateErrorItems(errors),
+                            items = errors.toLibraryUpdateErrorItems(),
                             messages = errorMessages,
                         )
                     }
@@ -40,13 +47,16 @@ class LibraryUpdateErrorScreenModel(
         }
     }
 
-    private fun toLibraryUpdateErrorItems(errors: List<LibraryUpdateErrorWithRelations>): List<LibraryUpdateErrorItem> {
-        return errors.map { error ->
+    private fun List<LibraryUpdateErrorWithRelations>.toLibraryUpdateErrorItems(): List<LibraryUpdateErrorItem> {
+        return map { error ->
             LibraryUpdateErrorItem(
                 error = error,
+                sourceName = sourceManager.getOrStub(error.mangaSource).name,
                 selected = error.errorId in selectedErrorIds,
             )
         }
+            // Sort by messageId to group errors by type, preserving last_update order within groups (from DB)
+            .sortedBy { it.error.messageId }
     }
 
     fun toggleSelection(
@@ -137,6 +147,26 @@ class LibraryUpdateErrorScreenModel(
         selectedPositions[0] = -1
         selectedPositions[1] = -1
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun deleteSelected() {
+        launchIO {
+            deleteLibraryUpdateErrors.delete(selectedErrorIds.toList())
+            withUIContext {
+                selectedErrorIds.clear()
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun delete(errorId: Long) {
+        launchIO {
+            deleteLibraryUpdateErrors.delete(listOf(errorId))
+            withUIContext {
+                selectedErrorIds.remove(errorId)
+            }
+        }
+    }
 }
 
 @Immutable
@@ -154,7 +184,7 @@ data class LibraryUpdateErrorScreenState(
         val errorMap = items.groupBy { it.error.messageId }
         errorMap.forEach { (messageId, errors) ->
             val message = messages.find { it.id == messageId }
-            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message))
+            uiModels.add(LibraryUpdateErrorUiModel.Header(message!!.message, errors.size))
             uiModels.addAll(errors.map { LibraryUpdateErrorUiModel.Item(it) })
         }
         return uiModels
@@ -169,5 +199,14 @@ data class LibraryUpdateErrorScreenState(
 @Immutable
 data class LibraryUpdateErrorItem(
     val error: LibraryUpdateErrorWithRelations,
+    val sourceName: String,
     val selected: Boolean,
-)
+) {
+    val mangaCover = MangaCover(
+        mangaId = error.mangaId,
+        sourceId = error.mangaSource,
+        isMangaFavorite = error.favorite,
+        ogUrl = error.mangaThumbnail,
+        lastModified = error.coverLastModified,
+    )
+}

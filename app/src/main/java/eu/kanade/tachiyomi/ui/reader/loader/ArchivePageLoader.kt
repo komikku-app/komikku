@@ -90,7 +90,7 @@ internal class ArchivePageLoader(private val reader: ArchiveReader) : PageLoader
                     // SY -->
                     stream = { imageBytes?.copyOf()?.inputStream() ?: reader.getInputStream(entry.name)!! }
                     // SY <--
-                    status = Page.State.READY
+                    status = Page.State.Ready
                 }
             }
             .toList()

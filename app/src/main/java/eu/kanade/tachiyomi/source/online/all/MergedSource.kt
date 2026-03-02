@@ -166,7 +166,7 @@ class MergedSource : HttpSource() {
         var manga = getManga.await(mangaUrl, mangaSourceId)
         val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
-            val newManga = networkToLocalManga.await(
+            val newManga = networkToLocalManga(
                 Manga.create().copy(
                     source = mangaSourceId,
                     url = mangaUrl,

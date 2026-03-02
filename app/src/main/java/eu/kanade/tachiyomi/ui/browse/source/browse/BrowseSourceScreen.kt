@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -36,24 +37,25 @@ import androidx.compose.ui.platform.LocalUriHandler
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
+import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
+import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.ChangeMangasCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -61,16 +63,18 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.ExhPreferences
+import exh.source.anyIs
 import exh.source.isEhBasedSource
-import exh.ui.ifSourcesLoaded
+import exh.source.isMdBasedSource
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -83,7 +87,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data class BrowseSourceScreen(
-    private val sourceId: Long,
+    val sourceId: Long,
     private val listingQuery: String?,
     // SY -->
     private val filtersJson: String? = null,
@@ -171,9 +175,21 @@ data class BrowseSourceScreen(
             assistUrl = (screenModel.source as? HttpSource)?.baseUrl
         }
 
+        // KMK -->
+        val mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems()
+
+        val isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get()
+        val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
+            (screenModel.source.isEhBasedSource() && isHentaiEnabled)
+        // KMK <--
+
         Scaffold(
             topBar = {
-                Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+                Column(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .pointerInput(Unit) {},
+                ) {
                     // KMK -->
                     if (bulkFavoriteState.selectionMode) {
                         BulkSelectionToolbar(
@@ -182,12 +198,14 @@ data class BrowseSourceScreen(
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                             onSelectAll = {
-                                state.mangaDisplayingList.forEach { manga ->
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first }
+                                    .forEach { bulkFavoriteScreenModel.select(it) }
                             },
                             onReverseSelection = {
-                                bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
+                                mangaList.itemSnapshotList.items
+                                    .map { it.value.first }
+                                    .let { bulkFavoriteScreenModel.reverseSelection(it) }
                             },
                         )
                     } else {
@@ -206,7 +224,18 @@ data class BrowseSourceScreen(
                             navigateUp = navigateUp,
                             onWebViewClick = onWebViewClick,
                             onHelpClick = onHelpClick,
-                            onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
+                            // KMK -->
+                            onToggleIncognito = screenModel::toggleIncognitoMode,
+                            onSettingsClick = {
+                                when {
+                                    screenModel.source.isEhBasedSource() && isHentaiEnabled ->
+                                        navigator.push(SettingsEhScreen)
+                                    screenModel.source.anyIs<ConfigurableSource>() ->
+                                        navigator.push(SourcePreferencesScreen(sourceId))
+                                    else -> {}
+                                }
+                            }.takeIf { isConfigurableSource },
+                            // KMK <--
                             onSearch = screenModel::search,
                             // KMK -->
                             toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
@@ -314,7 +343,7 @@ data class BrowseSourceScreen(
         ) { paddingValues ->
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = screenModel.mangaPagerFlowFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -325,21 +354,21 @@ data class BrowseSourceScreen(
                 onWebViewClick = onWebViewClick,
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = onHelpClick,
-                onMangaClick = {
+                onMangaClick = { manga ->
                     // KMK -->
                     if (bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.toggleSelection(it)
+                        bulkFavoriteScreenModel.toggleSelection(manga)
                     } else {
                         // KMK <--
                         navigator.push(
                             MangaScreen(
-                                it.id,
+                                mangaId = manga.id,
                                 // KMK -->
                                 // Finding the entry to be merged to, so we don't want to expand description
                                 // so that user can see the `Merge to another` button
-                                smartSearchConfig != null,
+                                fromSource = smartSearchConfig == null,
                                 // KMK <--
-                                smartSearchConfig,
+                                smartSearchConfig = smartSearchConfig,
                             ),
                         )
                     }
@@ -351,16 +380,11 @@ data class BrowseSourceScreen(
                     } else {
                         // KMK <--
                         scope.launchIO {
-                            val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
+                            val duplicates = screenModel.getDuplicateLibraryManga(manga)
                             when {
-                                manga.favorite -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.RemoveManga(manga),
-                                )
-                                duplicateManga != null -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(
-                                        manga,
-                                        duplicateManga,
-                                    ),
+                                manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                                duplicates.isNotEmpty() -> screenModel.setDialog(
+                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(manga, duplicates),
                                 )
                                 else -> screenModel.addFavorite(manga)
                             }
@@ -370,7 +394,6 @@ data class BrowseSourceScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
-                browseSourceState = state,
                 // KMK <--
             )
         }
@@ -397,7 +420,7 @@ data class BrowseSourceScreen(
                     // KMK -->
                     onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_delete),
                     // KMK <--
-                    openMangaDexRandom = if (screenModel.sourceIsMangaDex) {
+                    openMangaDexRandom = if (screenModel.source.isMdBasedSource()) {
                         {
                             screenModel.onMangaDexRandom {
                                 navigator.replace(
@@ -411,9 +434,12 @@ data class BrowseSourceScreen(
                     } else {
                         null
                     },
-                    openMangaDexFollows = if (screenModel.sourceIsMangaDex) {
+                    openMangaDexFollows = if (screenModel.source.isMdBasedSource()) {
                         {
-                            navigator.replace(MangaDexFollowsScreen(sourceId))
+                            // KMK -->
+                            // navigator.replace(MangaDexFollowsScreen(sourceId))
+                            navigator.push(MangaDexFollowsScreen(sourceId))
+                            // KMK <--
                         }
                     } else {
                         null
@@ -423,22 +449,24 @@ data class BrowseSourceScreen(
             }
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
+                    duplicates = dialog.duplicates,
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
-                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
-                    onMigrate = {
-                        // SY -->
-                        PreMigrationScreen.navigateToMigration(
-                            Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                            navigator,
-                            dialog.duplicate.id,
-                            dialog.manga.id,
-                        )
-                        // SY <--
-                    },
+                    onOpenManga = { navigator.push(MangaScreen(it.id)) },
+                    onMigrate = { screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(dialog.manga, it)) },
                     // KMK -->
-                    duplicate = dialog.duplicate,
+                    targetManga = dialog.manga,
                     // KMK <--
+                )
+            }
+
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    // Initiated from the context of [dialog.target] so we show [dialog.current].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
+                    onDismissRequest = onDismissRequest,
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {
@@ -477,13 +505,11 @@ data class BrowseSourceScreen(
         }
 
         // KMK -->
-        when (bulkFavoriteState.dialog) {
-            is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory ->
-                ChangeMangasCategoryDialog(bulkFavoriteScreenModel)
-            is BulkFavoriteScreenModel.Dialog.AllowDuplicate ->
-                AllowDuplicateDialog(bulkFavoriteScreenModel)
-            else -> {}
-        }
+        // Bulk-favorite actions only
+        BulkFavoriteDialogs(
+            bulkFavoriteScreenModel = bulkFavoriteScreenModel,
+            dialog = bulkFavoriteState.dialog,
+        )
         // KMK <--
 
         LaunchedEffect(Unit) {

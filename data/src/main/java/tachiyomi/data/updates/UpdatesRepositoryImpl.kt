@@ -1,13 +1,11 @@
 package tachiyomi.data.updates
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import tachiyomi.data.AndroidDatabaseHandler
+import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.domain.updates.repository.UpdatesRepository
-import tachiyomi.view.UpdatesView
 
 class UpdatesRepositoryImpl(
     private val databaseHandler: DatabaseHandler,
@@ -28,14 +26,25 @@ class UpdatesRepositoryImpl(
         }
     }
 
-    override fun subscribeAll(after: Long, limit: Long): Flow<List<UpdatesWithRelations>> {
+    override fun subscribeAll(
+        after: Long,
+        limit: Long,
+        unread: Boolean?,
+        started: Boolean?,
+        bookmarked: Boolean?,
+        hideExcludedScanlators: Boolean,
+    ): Flow<List<UpdatesWithRelations>> {
         return databaseHandler.subscribeToList {
-            updatesViewQueries.getRecentUpdates(after, limit, ::mapUpdatesWithRelations)
-        }.map {
-            databaseHandler.awaitListExecutable {
-                (databaseHandler as AndroidDatabaseHandler).getUpdatesQuery(after, limit)
-            }
-                .map(::mapUpdatesView)
+            updatesViewQueries.getRecentUpdatesWithFilters(
+                after = after,
+                limit = limit,
+                // invert because unread in Kotlin -> read column in SQL
+                read = unread?.let { !it },
+                started = started?.toLong(),
+                bookmarked = bookmarked,
+                hideExcludedScanlators = hideExcludedScanlators.toLong(),
+                mapper = ::mapUpdatesWithRelations,
+            )
         }
     }
 
@@ -60,6 +69,7 @@ class UpdatesRepositoryImpl(
         chapterId: Long,
         chapterName: String,
         scanlator: String?,
+        chapterUrl: String,
         read: Boolean,
         bookmark: Boolean,
         lastPageRead: Long,
@@ -67,8 +77,9 @@ class UpdatesRepositoryImpl(
         favorite: Boolean,
         thumbnailUrl: String?,
         coverLastModified: Long,
-        dateUpload: Long,
+        @Suppress("UNUSED_PARAMETER") dateUpload: Long,
         dateFetch: Long,
+        excludedScanlator: String?,
     ): UpdatesWithRelations = UpdatesWithRelations(
         mangaId = mangaId,
         // SY -->
@@ -77,6 +88,7 @@ class UpdatesRepositoryImpl(
         chapterId = chapterId,
         chapterName = chapterName,
         scanlator = scanlator,
+        chapterUrl = chapterUrl,
         read = read,
         bookmark = bookmark,
         lastPageRead = lastPageRead,
@@ -90,26 +102,4 @@ class UpdatesRepositoryImpl(
             lastModified = coverLastModified,
         ),
     )
-
-    fun mapUpdatesView(updatesView: UpdatesView): UpdatesWithRelations {
-        return UpdatesWithRelations(
-            mangaId = updatesView.mangaId,
-            ogMangaTitle = updatesView.mangaTitle,
-            chapterId = updatesView.chapterId,
-            chapterName = updatesView.chapterName,
-            scanlator = updatesView.scanlator,
-            read = updatesView.read,
-            bookmark = updatesView.bookmark,
-            lastPageRead = updatesView.last_page_read,
-            sourceId = updatesView.source,
-            dateFetch = updatesView.datefetch,
-            coverData = MangaCover(
-                mangaId = updatesView.mangaId,
-                sourceId = updatesView.source,
-                isMangaFavorite = updatesView.favorite,
-                ogUrl = updatesView.thumbnailUrl,
-                lastModified = updatesView.coverLastModified,
-            ),
-        )
-    }
 }

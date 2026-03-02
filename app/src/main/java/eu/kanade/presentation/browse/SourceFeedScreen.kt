@@ -2,9 +2,13 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -12,18 +16,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.presentation.browse.components.bulkSelectionButton
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
-import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.manga.model.Manga
@@ -31,6 +34,7 @@ import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -94,7 +98,7 @@ fun SourceFeedScreen(
     onClickSavedSearch: (SavedSearch) -> Unit,
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
-    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     onClickSearch: (String) -> Unit,
@@ -104,6 +108,7 @@ fun SourceFeedScreen(
     // KMK -->
     navigateUp: () -> Unit,
     onWebViewClick: (() -> Unit)?,
+    onToggleIncognito: () -> Unit,
     onSourceSettingClick: (() -> Unit?)?,
     onSortFeedClick: (() -> Unit)?,
     onLongClickManga: (Manga) -> Unit,
@@ -124,17 +129,14 @@ fun SourceFeedScreen(
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
-                        items.forEach {
-                            it.results?.forEach { manga ->
-                                bulkFavoriteScreenModel.select(manga)
-                            }
-                        }
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .forEach { bulkFavoriteScreenModel.select(it) }
                     },
                     onReverseSelection = {
-                        bulkFavoriteScreenModel.reverseSelection(
-                            items.mapNotNull { it.results }
-                                .flatten(),
-                        )
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {
@@ -148,6 +150,7 @@ fun SourceFeedScreen(
                     // KMK -->
                     navigateUp = navigateUp,
                     onWebViewClick = onWebViewClick,
+                    onToggleIncognito = onToggleIncognito,
                     onSourceSettingClick = onSourceSettingClick,
                     onSortFeedClick = onSortFeedClick,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
@@ -157,10 +160,21 @@ fun SourceFeedScreen(
             }
         },
         floatingActionButton = {
-            BrowseSourceFloatingActionButton(
-                isVisible = hasFilters,
-                onFabClick = onFabClick,
+            // KMK -->
+            SmallExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = if (hasFilters) {
+                            stringResource(MR.strings.action_filter)
+                        } else {
+                            stringResource(SYMR.strings.saved_searches)
+                        },
+                    )
+                },
+                icon = { Icon(Icons.Outlined.FilterList, contentDescription = "") },
+                onClick = onFabClick,
             )
+            // KMK <--
         },
     ) { paddingValues ->
         Crossfade(targetState = isLoading, label = "source_feed") { state ->
@@ -200,7 +214,7 @@ fun SourceFeedList(
     onClickSavedSearch: (SavedSearch) -> Unit,
     // KMK -->
     // onClickDelete: (FeedSavedSearch) -> Unit,
-    onLongClickFeed: (SourceFeedUI.SourceSavedSearch, Boolean, Boolean) -> Unit,
+    onLongClickFeed: (SourceFeedUI.SourceSavedSearch) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
@@ -212,10 +226,10 @@ fun SourceFeedList(
         contentPadding = paddingValues + topSmallPaddingValues,
     ) {
         // KMK -->
-        itemsIndexed(
+        items(
             items,
-            key = { _, it -> "source-feed-${it.id}" },
-        ) { index, item ->
+            key = { "source-feed-${it.id}" },
+        ) { item ->
             // KMK <--
             GlobalSearchResultItem(
                 modifier = Modifier.animateItem(),
@@ -231,11 +245,7 @@ fun SourceFeedList(
                 onLongClick = if (item is SourceFeedUI.SourceSavedSearch) {
                     {
                         // KMK -->
-                        onLongClickFeed(
-                            item,
-                            index != items.size - items.filterIsInstance<SourceFeedUI.SourceSavedSearch>().size,
-                            index != items.lastIndex,
-                        )
+                        onLongClickFeed(item)
                         // KMK <--
                     }
                 } else {
@@ -305,6 +315,7 @@ fun SourceFeedToolbar(
     // KMK -->
     navigateUp: () -> Unit,
     onWebViewClick: (() -> Unit)?,
+    onToggleIncognito: () -> Unit,
     onSourceSettingClick: (() -> Unit?)?,
     onSortFeedClick: (() -> Unit)?,
     toggleSelectionMode: () -> Unit,
@@ -338,6 +349,15 @@ fun SourceFeedToolbar(
                                 ),
                             )
                         }
+
+                        // KMK -->
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(MR.strings.pref_incognito_mode),
+                                onClick = onToggleIncognito,
+                            ),
+                        )
+                        // KMK <--
 
                         onSortFeedClick?.let {
                             add(

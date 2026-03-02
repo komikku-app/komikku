@@ -19,11 +19,11 @@ class GetMergedChaptersByMangaId(
     suspend fun await(
         mangaId: Long,
         dedupe: Boolean = true,
-        applyScanlatorFilter: Boolean = false,
+        applyFilter: Boolean = false,
     ): List<Chapter> {
         return transformMergedChapters(
             getMergedReferencesById.await(mangaId),
-            getFromDatabase(mangaId, applyScanlatorFilter),
+            getFromDatabase(mangaId, applyFilter),
             dedupe,
         )
     }
@@ -31,10 +31,10 @@ class GetMergedChaptersByMangaId(
     suspend fun subscribe(
         mangaId: Long,
         dedupe: Boolean = true,
-        applyScanlatorFilter: Boolean = false,
+        applyFilter: Boolean = false,
     ): Flow<List<Chapter>> {
         return try {
-            chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId, applyScanlatorFilter)
+            chapterRepository.getMergedChapterByMangaIdAsFlow(mangaId, applyFilter)
                 .combine(getMergedReferencesById.subscribe(mangaId)) { chapters, references ->
                     transformMergedChapters(references, chapters, dedupe)
                 }
@@ -46,10 +46,10 @@ class GetMergedChaptersByMangaId(
 
     private suspend fun getFromDatabase(
         mangaId: Long,
-        applyScanlatorFilter: Boolean = false,
+        applyFilter: Boolean = false,
     ): List<Chapter> {
         return try {
-            chapterRepository.getMergedChapterByMangaId(mangaId, applyScanlatorFilter)
+            chapterRepository.getMergedChapterByMangaId(mangaId, applyFilter)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             emptyList()
@@ -69,7 +69,7 @@ class GetMergedChaptersByMangaId(
         chapterList: List<Chapter>,
     ): List<Chapter> {
         return when (mangaReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }?.chapterSortMode) {
-            MergedMangaReference.CHAPTER_SORT_NO_DEDUPE, MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
+            MergedMangaReference.CHAPTER_SORT_NONE -> chapterList
             MergedMangaReference.CHAPTER_SORT_PRIORITY -> dedupeByPriority(mangaReferences, chapterList)
             MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> {
                 findSourceWithMostChapters(chapterList)?.let { mangaId ->

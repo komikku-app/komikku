@@ -8,6 +8,7 @@ import eu.kanade.core.preference.asState
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.log.xLogE
+import exh.source.ExhPreferences
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -16,18 +17,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class BatchAddScreenModel(
-    private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
+    private val exhPreferences: ExhPreferences = Injekt.get(),
 ) : StateScreenModel<BatchAddState>(BatchAddState()) {
     private val galleryAdder by lazy { GalleryAdder() }
 
     // KMK -->
-    val isHentaiEnabled by Injekt.get<UnsortedPreferences>().isHentaiEnabled().asState(screenModelScope)
+    val isHentaiEnabled by Injekt.get<ExhPreferences>().isHentaiEnabled().asState(screenModelScope)
     // KMK <--
 
     fun addGalleries(context: Context) {
@@ -43,7 +43,7 @@ class BatchAddScreenModel(
 
     private fun addGalleries(context: Context, galleries: String) {
         val splitGalleries = if (ehVisitedRegex.containsMatchIn(galleries)) {
-            val url = if (unsortedPreferences.enableExhentai().get()) {
+            val url = if (exhPreferences.enableExhentai().get()) {
                 "https://exhentai.org/g/"
             } else {
                 "https://e-hentai.org/g/"
@@ -137,7 +137,7 @@ class BatchAddScreenModel(
     }
 
     sealed class Dialog {
-        object NoGalleriesSpecified : Dialog()
+        data object NoGalleriesSpecified : Dialog()
     }
 
     companion object {

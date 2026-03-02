@@ -1,5 +1,5 @@
 name: Remote Dispatch Preview Build
-# Manually send a dispatch to build standard preview (master) or dev preview (other refs)
+# Manually send a dispatch to build preview
 
 on:
   # Dispatch or Manual triggers
@@ -16,6 +16,9 @@ on:
 #      - '.github/scripts/**'
 #      - '.github/workflows/**'
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -23,23 +26,19 @@ concurrency:
 jobs:
   trigger_preview_build:
     name: Trigger preview build
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-24.04'
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@0bdd871935719febd78681f197cd39af5b6e16a6 # v4
 
       - name: Prepare build
         id: prepare_build
         run: |
-          set -e
-
           commit_count=$(git rev-list --count HEAD)
+          echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
 
       - name: Create Tag 'r${{ steps.prepare_build.outputs.COMMIT_COUNT }}'
@@ -47,13 +46,14 @@ jobs:
         run: |
           git tag "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
           git push origin "r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
+          echo "New tag created: r${{ steps.prepare_build.outputs.COMMIT_COUNT }}"
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8.0.1
+        uses: tj-actions/branch-names@5250492686b253f06fa55861556d1027b067aeb5 # v9.0.2
 
       - name: Invoke workflow in preview repo
-        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
+        uses: benc-uk/workflow-dispatch@a54f9d194fed472732282ed1597dc4909e4b4080 # v1.3.0
         with:
           workflow: build_app.yml
           repo: komikku-app/komikku-preview

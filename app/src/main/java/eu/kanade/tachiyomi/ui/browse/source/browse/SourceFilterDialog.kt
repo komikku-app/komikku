@@ -30,6 +30,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.CollapsibleBox
 import tachiyomi.presentation.core.components.HeadingItem
+import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.SelectItem
 import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TextItem
@@ -62,7 +63,9 @@ fun SourceFilterDialog(
 
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
         LazyColumn {
-            stickyHeader {
+            stickyHeader(
+                key = "$STICKY_HEADER_KEY_PREFIX-title",
+            ) {
                 Row(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.background)
@@ -199,22 +202,24 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
             ) {
                 Column {
                     filter.values.mapIndexed { index, item ->
+                        val sortAscending = filter.state?.ascending
+                            ?.takeIf { index == filter.state?.index }
                         SortItem(
                             label = item,
-                            sortDescending = filter.state?.ascending?.not()
-                                ?.takeIf { index == filter.state?.index },
-                        ) {
-                            val ascending = if (index == filter.state?.index) {
-                                !filter.state!!.ascending
-                            } else {
-                                filter.state!!.ascending
-                            }
-                            filter.state = Filter.Sort.Selection(
-                                index = index,
-                                ascending = ascending,
-                            )
-                            onUpdate()
-                        }
+                            sortDescending = if (sortAscending != null) !sortAscending else null,
+                            onClick = {
+                                val ascending = if (index == filter.state?.index) {
+                                    !filter.state!!.ascending
+                                } else {
+                                    filter.state?.ascending ?: true
+                                }
+                                filter.state = Filter.Sort.Selection(
+                                    index = index,
+                                    ascending = ascending,
+                                )
+                                onUpdate()
+                            },
+                        )
                     }
                 }
             }

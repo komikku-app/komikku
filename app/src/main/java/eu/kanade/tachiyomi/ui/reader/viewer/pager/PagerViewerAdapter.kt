@@ -151,7 +151,7 @@ class PagerViewerAdapter(
 
         // Will skip insert page otherwise
         if (insertPageLastPage != null) {
-            viewer.moveToPage(insertPageLastPage!!)
+            viewer.moveToPage(insertPageLastPage)
         }
     }
 

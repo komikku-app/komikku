@@ -32,6 +32,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
@@ -44,8 +46,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
-import tachiyomi.presentation.core.util.isScrolledToStart
-import tachiyomi.presentation.core.util.isScrollingDown
+import tachiyomi.presentation.core.util.isItemScrollingUp
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
@@ -55,13 +56,14 @@ fun AnimatedFloatingSearchBox(
     searchQuery: String?,
     onChangeSearchQuery: (String?) -> Unit,
     modifier: Modifier = Modifier,
+    onGloballyPositioned: (LayoutCoordinates) -> Unit = { },
     placeholderText: String? = null,
     focusManager: FocusManager = LocalFocusManager.current,
     focusRequester: FocusRequester = remember { FocusRequester() },
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
 ) {
     AnimatedVisibility(
-        visible = listState.isScrolledToStart() || !listState.isScrollingDown(),
+        visible = listState.isItemScrollingUp(),
         enter = expandVertically(),
         exit = shrinkVertically(),
         modifier = modifier,
@@ -69,6 +71,7 @@ fun AnimatedFloatingSearchBox(
         SourcesSearchBox(
             searchQuery = searchQuery,
             onChangeSearchQuery = onChangeSearchQuery,
+            onGloballyPositioned = onGloballyPositioned,
             placeholderText = placeholderText,
             focusManager = focusManager,
             focusRequester = focusRequester,
@@ -82,6 +85,7 @@ fun SourcesSearchBox(
     searchQuery: String?,
     onChangeSearchQuery: (String?) -> Unit,
     modifier: Modifier = Modifier,
+    onGloballyPositioned: (LayoutCoordinates) -> Unit = { },
     placeholderText: String? = null,
     focusManager: FocusManager = LocalFocusManager.current,
     focusRequester: FocusRequester = remember { FocusRequester() },
@@ -109,6 +113,7 @@ fun SourcesSearchBox(
         value = searchQuery ?: "",
         onValueChange = onChangeSearchQuery,
         modifier = modifier
+            .onGloballyPositioned(onGloballyPositioned)
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged { isFocused = it.isFocused }
@@ -207,6 +212,8 @@ fun SearchBoxTrailingIcon(
         }
     }
 }
+
+internal val SOURCE_SEARCH_BOX_HEIGHT = 65.dp
 
 @Preview
 @Composable

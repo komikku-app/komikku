@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.updatePadding
 import coil3.asDrawable
 import coil3.imageLoader
@@ -126,7 +127,7 @@ fun MangaCoverDialog(
                                 ),
                             ),
                         )
-                        if (onEditClick != null) {
+                        if (onEditClick != null && manga.favorite) {
                             Box {
                                 var expanded by remember { mutableStateOf(false) }
                                 IconButton(
@@ -211,12 +212,13 @@ fun MangaCoverDialog(
 
                                 // Copy bitmap in case it came from memory cache
                                 // Because SSIV needs to thoroughly read the image
-                                val copy = (drawable as? BitmapDrawable)?.let {
-                                    BitmapDrawable(
-                                        view.context.resources,
-                                        it.bitmap.copy(Bitmap.Config.HARDWARE, false),
-                                    )
-                                } ?: drawable
+                                // KMK -->
+                                val src = (drawable as? BitmapDrawable)?.bitmap
+                                val config = src?.config?.takeIf { it != Bitmap.Config.HARDWARE } ?: Bitmap.Config.ARGB_8888
+                                // KMK <--
+                                val copy = src?.copy(config, false)
+                                    ?.toDrawable(view.context.resources)
+                                    ?: drawable
                                 view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
                             }
                             .build()

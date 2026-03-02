@@ -11,17 +11,13 @@ class LibraryUpdateErrorRepositoryImpl(
 
     override suspend fun getAll(): List<LibraryUpdateError> {
         return handler.awaitList {
-            libraryUpdateErrorQueries.getAllErrors(
-                libraryUpdateErrorMapper,
-            )
+            libraryUpdateErrorQueries.getAllErrors(libraryUpdateErrorMapper)
         }
     }
 
     override fun getAllAsFlow(): Flow<List<LibraryUpdateError>> {
         return handler.subscribeToList {
-            libraryUpdateErrorQueries.getAllErrors(
-                libraryUpdateErrorMapper,
-            )
+            libraryUpdateErrorQueries.getAllErrors(libraryUpdateErrorMapper)
         }
     }
 
@@ -29,19 +25,15 @@ class LibraryUpdateErrorRepositoryImpl(
         return handler.await { libraryUpdateErrorQueries.deleteAllErrors() }
     }
 
-    override suspend fun delete(errorId: Long) {
+    override suspend fun delete(errorIds: List<Long>) {
         return handler.await {
-            libraryUpdateErrorQueries.deleteError(
-                _id = errorId,
-            )
+            libraryUpdateErrorQueries.deleteErrors(_ids = errorIds)
         }
     }
 
-    override suspend fun deleteMangaError(mangaId: Long) {
+    override suspend fun deleteMangaError(mangaIds: List<Long>) {
         return handler.await {
-            libraryUpdateErrorQueries.deleteMangaError(
-                mangaId = mangaId,
-            )
+            libraryUpdateErrorQueries.deleteMangaErrors(mangaIds = mangaIds)
         }
     }
 

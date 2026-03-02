@@ -153,9 +153,18 @@
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
     <string name="clear_db_exclude_read">Keep entries with read chapters</string>
+    <string name="pref_include_chapter_url_hash">Include chapter URL hash</string>
+    <string name="pref_include_chapter_url_hash_desc">Append the first six characters of the chapter URL's MD5 hash to the chapter file or folder name.</string>
+
+    <string name= "flare_solver_error">Error contacting FlareSolverr</string>
+    <string name="pref_enable_flare_solverr">Enable FlareSolverr</string>
+    <string name="pref_enable_flare_solverr_summary">Use FlareSolverr to bypass Cloudflare\'s anti-bot protection</string>
+    <string name="pref_flare_solverr_url">FlareSolverr URL</string>
+    <string name="pref_flare_solverr_url_summary">URL of the FlareSolverr instance to use for example http://192.168.1.202:8191/v1</string>
+    <string name="pref_test_flare_solverr_and_update_user_agent">Test FlareSolverr and update user agent</string>
+    <string name="pref_test_flare_solverr_and_update_user_agent_summary">Test FlareSolverr to update the user agent. Only required once; then toggle as needed.</string>
     <string name="flare_solver_user_agent_update_success">FlareSolverr is working. User agent updated. Please restart the app</string>
     <string name="flare_solver_update_user_agent_failed">FlareSolverr is not working. User agent not updated. Please check your settings</string>
-    <string name= "flare_solver_error">Error contacting FlareSolverr</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
@@ -178,6 +187,10 @@
     <string name="pref_hide_updates_button">Show updates in the nav</string>
     <string name="pref_hide_history_button">Show history in the nav</string>
     <string name="pref_show_bottom_bar_labels">Always show nav labels</string>
+
+    <!-- Tracker settings -->
+    <string name="pref_tracker_resolve_using_source_metadata">Select entries using source metadata</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Automatically selects the matching title if the source provides links to trackers. Currently supported by MangaDex</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Sorting Settings</string>
@@ -228,6 +241,7 @@
     <string name="pref_sync_interval">Synchronization frequency</string>
     <string name="pref_choose_what_to_sync">Choose what to sync</string>
     <string name="syncyomi">SyncYomi</string>
+    <string name="scan_qr_code">Scan a QR code</string>
     <string name="last_synchronization">Last Synchronization: %1$s</string>
     <string name="google_drive">Google Drive</string>
     <string name="pref_google_drive_sign_in">Sign in</string>
@@ -350,6 +364,9 @@
     <string name="action_share_second_page">Share second page</string>
     <string name="action_save_combined_page">Save combined page</string>
     <string name="action_share_combined_page">Share combined page</string>
+    <string name="action_copy_first_page">Copy first page</string>
+    <string name="action_copy_second_page">Copy second page</string>
+    <string name="action_copy_combined_page">Copy combined page</string>
 
     <!-- Reader Sharing -->
     <string name="share_pages_info">%1$s: %2$s, pages %3$s</string>
@@ -452,7 +469,7 @@
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
-    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Tachiyomi.</string>
+    <string name="redundant_extension_message">This extension is redundant and will not be used inside this version of Komikku.</string>
 
     <!-- Migration -->
     <string name="select_sources">Select sources</string>
@@ -478,6 +495,21 @@
     <string name="stop_migrating">Stop migrating?</string>
     <string name="action_stop">Stop</string>
     <string name="skipping_">(skipping %1$d)</string>
+
+    <!-- Bulk recommendation search -->
+    <string name="rec_search">Find common recommendations</string>
+    <string name="rec_hide_library_entries">Hide results already in your library</string>
+    <string name="rec_services_to_search">Recommendation services to search</string>
+    <string name="rec_group_source">Source recommendations</string>
+    <string name="rec_group_tracker">Tracker recommendations</string>
+    <string name="rec_common_recommendations">Common recommendations</string>
+    <string name="rec_search_short">Find recommendations</string>
+    <string name="rec_no_results">No recommendations found</string>
+    <string name="rec_error_title">Search failed</string>
+    <string name="rec_error_string">An error occurred during the search process: %1$s</string>
+    <string name="rec_processing_state">Processing entry %1$d of %2$d</string>
+    <string name="rec_collecting">Collecting recommendations</string>
+    <string name="rec_initializing">Initializing</string>
 
     <!-- Library -->
     <!-- Library Actions -->
@@ -647,6 +679,9 @@
     <string name="manga_updates_id">Manga updates id</string>
     <string name="anime_planet_id">Anime planet id</string>
     <string name="translated">Translated</string>
+    <string name="filename">File name</string>
+    <string name="file_extension">File extension</string>
+    <string name="base_url">Base url</string>
 
     <!-- Extra gallery info -->
     <string name="is_visible">Visible: %1$s</string>
@@ -683,9 +718,10 @@
     <string name="random">Random</string>
     <string name="mangadex_push_favorites_to_mangadex">Sync library entries to MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked entries to MangaDex as reading.</string>
-    <string name="mangadex_similar">MangaDex similar</string>
     <string name="community_recommendations">Community recommendations</string>
-    <string name="alt_titles">Alternative Titles</string>
+    <string name="similar_titles">Similar titles</string>
+    <string name="alt_titles">Alternative titles</string>
+    <string name="final_chapter">Final chapter</string>
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Scanlator groups to show</string>

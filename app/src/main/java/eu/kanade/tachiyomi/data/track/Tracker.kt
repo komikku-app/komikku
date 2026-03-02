@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.track
 
 import androidx.annotation.CallSuper
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -23,8 +22,7 @@ interface Tracker {
     // Application and remote support for reading dates
     val supportsReadingDates: Boolean
 
-    @ColorInt
-    fun getLogoColor(): Int
+    val supportsPrivateTracking: Boolean
 
     @DrawableRes
     fun getLogo(): Int
@@ -76,7 +74,7 @@ interface Tracker {
 
     suspend fun setRemoteStatus(track: Track, status: Long)
 
-    suspend fun setRemoteLastChapterRead(track: Track, chapterNumber: Int)
+    suspend fun setRemoteLastChapterRead(track: Track, chapterNumber: Int): /* KMK --> */ Track /* KMK <-- */
 
     suspend fun setRemoteScore(track: Track, scoreString: String)
 
@@ -84,7 +82,13 @@ interface Tracker {
 
     suspend fun setRemoteFinishDate(track: Track, epochMillis: Long)
 
-    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata?
+    suspend fun setRemotePrivate(track: Track, private: Boolean)
+
+    // SY -->
+    suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
+
+    suspend fun searchById(id: String): TrackSearch?
+    // SY <--
 
     // KMK -->
     fun hasNotStartedReading(status: Long): Boolean

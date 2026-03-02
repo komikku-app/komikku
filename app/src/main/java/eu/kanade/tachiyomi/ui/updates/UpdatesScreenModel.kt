@@ -4,11 +4,11 @@ import android.app.Application
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.util.fastFilter
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
-import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.updates.UpdatesUiModel
@@ -23,6 +23,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -30,11 +31,16 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.system.logcat
@@ -43,9 +49,11 @@ import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.updates.interactor.GetUpdates
 import tachiyomi.domain.updates.model.UpdatesWithRelations
+import tachiyomi.domain.updates.service.UpdatesPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.ZonedDateTime
@@ -60,6 +68,7 @@ class UpdatesScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val getChapter: GetChapter = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    private val updatesPreferences: UpdatesPreferences = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // SY -->
     readerPreferences: ReaderPreferences = Injekt.get(),
@@ -85,19 +94,52 @@ class UpdatesScreenModel(
             val limit = ZonedDateTime.now().minusMonths(3).toInstant()
 
             combine(
-                getUpdates.subscribe(limit).distinctUntilChanged(),
+                // needed for SQL filters (unread, started, bookmarked, etc)
+                getUpdatesItemPreferenceFlow()
+                    .distinctUntilChanged()
+                    .flatMapLatest {
+                        getUpdates.subscribe(
+                            limit,
+                            unread = it.filterUnread.toBooleanOrNull(),
+                            started = it.filterStarted.toBooleanOrNull(),
+                            bookmarked = it.filterBookmarked.toBooleanOrNull(),
+                            hideExcludedScanlators = it.filterExcludedScanlators,
+                        ).distinctUntilChanged()
+                    },
                 downloadCache.changes,
                 downloadManager.queueState,
-            ) { updates, _, _ -> updates }
+                // needed for Kotlin filters (downloaded)
+                getUpdatesItemPreferenceFlow().distinctUntilChanged { old, new ->
+                    old.filterDownloaded == new.filterDownloaded
+                },
+            ) { updates, _, _, itemPreferences ->
+                updates
+                    .toUpdateItems()
+                    .applyFilters(itemPreferences)
+                    .toPersistentList()
+            }
                 .catch {
                     logcat(LogPriority.ERROR, it)
                     _events.send(Event.InternalError)
                 }
-                .collectLatest { updates ->
-                    mutableState.update {
-                        it.copy(
+                .collectLatest { updateItems ->
+                    mutableState.update { state ->
+                        state.copy(
                             isLoading = false,
-                            items = updates.toUpdateItems(),
+                            items = updateItems
+                                // KMK -->
+                                .groupBy { it.update.dateFetch.toLocalDate() }
+                                .flatMap { (_, mangas) ->
+                                    mangas.groupBy { it.update.mangaId }
+                                        .values
+                                        .flatMap { mangaChapters ->
+                                            val (unread, read) = mangaChapters.partition { !it.update.read }
+                                            unread.sortedBy { it.update.dateFetch } +
+                                                read.sortedByDescending { it.update.dateFetch }
+                                        }
+                                }
+                                .toPersistentList(),
+                            // KMK <--
                         )
                     }
                 }
@@ -108,15 +150,50 @@ class UpdatesScreenModel(
                 .catch { logcat(LogPriority.ERROR, it) }
                 .collect(this@UpdatesScreenModel::updateDownloadState)
         }
+
+        getUpdatesItemPreferenceFlow()
+            .map { prefs ->
+                listOf(
+                    prefs.filterUnread,
+                    prefs.filterDownloaded,
+                    prefs.filterStarted,
+                    prefs.filterBookmarked,
+                )
+                    .any { it != TriState.DISABLED }
+            }
+            .distinctUntilChanged()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(hasActiveFilters = it)
+                }
+            }
+            .launchIn(screenModelScope)
     }
 
-    private fun List<UpdatesWithRelations>.toUpdateItems(): PersistentList<UpdatesItem> {
+    private fun List<UpdatesItem>.applyFilters(
+        preferences: ItemPreferences,
+    ): List<UpdatesItem> {
+        val filterDownloaded = preferences.filterDownloaded
+
+        val filterFnDownloaded: (UpdatesItem) -> Boolean = {
+            applyFilter(filterDownloaded) {
+                it.downloadStateProvider() == Download.State.DOWNLOADED
+            }
+        }
+
+        return fastFilter {
+            filterFnDownloaded(it)
+        }
+    }
+
+    private fun List<UpdatesWithRelations>.toUpdateItems(): List<UpdatesItem> {
         return this
             .map { update ->
                 val activeDownload = downloadManager.getQueuedDownloadOrNull(update.chapterId)
                 val downloaded = downloadManager.isChapterDownloaded(
                     update.chapterName,
                     update.scanlator,
+                    update.chapterUrl,
                     // SY -->
                     update.ogMangaTitle,
                     // SY <--
@@ -134,7 +211,6 @@ class UpdatesScreenModel(
                     selected = update.chapterId in selectedChapterIds,
                 )
             }
-            .toPersistentList()
     }
 
     fun updateLibrary(): Boolean {
@@ -265,7 +341,14 @@ class UpdatesScreenModel(
                     val manga = getManga.await(mangaId) ?: return@forEach
                     val source = sourceManager.get(manga.source) ?: return@forEach
                     val chapters = updates.mapNotNull { getChapter.await(it.update.chapterId) }
-                    downloadManager.deleteChapters(chapters, manga, source)
+                    downloadManager.deleteChapters(
+                        chapters,
+                        manga,
+                        source,
+                        // KMK -->
+                        ignoreCategoryExclusion = true,
+                        // KMK <--
+                    )
                 }
         }
         toggleAllSelection(false)
@@ -275,12 +358,26 @@ class UpdatesScreenModel(
         setDialog(Dialog.DeleteConfirmation(updatesItem))
     }
 
+    // KMK -->
+    /** Bundles all of the boolean flags for update‐selection into one type */
+    data class UpdateSelectionOptions(
+        val selected: Boolean,
+        val userSelected: Boolean = false,
+        val fromLongPress: Boolean = false,
+        val isGroup: Boolean = false,
+        val isExpanded: Boolean = false,
+    )
+    // KMK <--
+
     fun toggleSelection(
         item: UpdatesItem,
-        selected: Boolean,
-        userSelected: Boolean = false,
-        fromLongPress: Boolean = false,
+        // KMK -->
+        selectionOptions: UpdateSelectionOptions,
+        // KMK <--
     ) {
+        // KMK -->
+        val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
@@ -292,6 +389,25 @@ class UpdatesScreenModel(
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+
+                // KMK -->
+                if (isGroup && !isExpanded) {
+                    val selectedItemDate = selectedItem.update.dateFetch.toLocalDate()
+                    val zone = java.time.ZoneId.systemDefault()
+                    val dayStartMillis = selectedItemDate.atStartOfDay(zone).toInstant().toEpochMilli()
+                    val dayEndMillis = selectedItemDate.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+
+                    state.items.mapIndexed { index, item -> index to item }
+                        .filter {
+                            it.second.update.mangaId == selectedItem.update.mangaId &&
+                                it.second.update.dateFetch in dayStartMillis..<dayEndMillis
+                        }
+                        .forEach { (index, item) ->
+                            set(index, item.copy(selected = selected))
+                            selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+                        }
+                }
+                // KMK <--
 
                 if (selected && userSelected && fromLongPress) {
                     if (firstSelection) {
@@ -372,37 +488,157 @@ class UpdatesScreenModel(
         libraryPreferences.newUpdatesCount().set(0)
     }
 
+    // KMK -->
+    fun toggleExpandedState(key: String) {
+        mutableState.update {
+            it.copy(
+                expandedState = it.expandedState.toMutableSet().apply {
+                    if (it.expandedState.contains(key)) remove(key) else add(key)
+                },
+            )
+        }
+    }
+
+    val chapterSwipeStartAction by libraryPreferences.swipeToEndAction().asState(screenModelScope)
+    val chapterSwipeEndAction by libraryPreferences.swipeToStartAction().asState(screenModelScope)
+
+    /**
+     * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
+     */
+    fun updateSwipe(updateItem: UpdatesItem, swipeAction: LibraryPreferences.ChapterSwipeAction) {
+        screenModelScope.launch {
+            executeUpdateSwipeAction(updateItem, swipeAction)
+        }
+    }
+
+    /**
+     * @throws IllegalStateException if the swipe action is [LibraryPreferences.ChapterSwipeAction.Disabled]
+     */
+    private fun executeUpdateSwipeAction(
+        updateItem: UpdatesItem,
+        swipeAction: LibraryPreferences.ChapterSwipeAction,
+    ) {
+        val update = updateItem.update
+        when (swipeAction) {
+            LibraryPreferences.ChapterSwipeAction.ToggleRead -> {
+                markUpdatesRead(listOf(updateItem), !update.read)
+            }
+            LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> {
+                bookmarkUpdates(listOf(updateItem), !update.bookmark)
+            }
+            LibraryPreferences.ChapterSwipeAction.Download -> {
+                val downloadAction = when (updateItem.downloadStateProvider()) {
+                    Download.State.ERROR,
+                    Download.State.NOT_DOWNLOADED,
+                    -> ChapterDownloadAction.START_NOW
+                    Download.State.QUEUE,
+                    Download.State.DOWNLOADING,
+                    -> ChapterDownloadAction.CANCEL
+                    Download.State.DOWNLOADED -> ChapterDownloadAction.DELETE
+                }
+                downloadChapters(
+                    items = listOf(updateItem),
+                    action = downloadAction,
+                )
+            }
+            LibraryPreferences.ChapterSwipeAction.Disabled -> throw IllegalStateException()
+        }
+    }
+    // KMK <--
+
+    private fun getUpdatesItemPreferenceFlow(): Flow<ItemPreferences> {
+        return combine(
+            updatesPreferences.filterDownloaded().changes(),
+            updatesPreferences.filterUnread().changes(),
+            updatesPreferences.filterStarted().changes(),
+            updatesPreferences.filterBookmarked().changes(),
+            updatesPreferences.filterExcludedScanlators().changes(),
+        ) { downloaded, unread, started, bookmarked, excludedScanlators ->
+            ItemPreferences(
+                filterDownloaded = downloaded,
+                filterUnread = unread,
+                filterStarted = started,
+                filterBookmarked = bookmarked,
+                filterExcludedScanlators = excludedScanlators,
+            )
+        }
+    }
+
+    fun showFilterDialog() {
+        mutableState.update { it.copy(dialog = Dialog.FilterSheet) }
+    }
+
+    @Immutable
+    private data class ItemPreferences(
+        val filterDownloaded: TriState,
+        val filterUnread: TriState,
+        val filterStarted: TriState,
+        val filterBookmarked: TriState,
+        val filterExcludedScanlators: Boolean,
+    )
+
     @Immutable
     data class State(
         val isLoading: Boolean = true,
+        val hasActiveFilters: Boolean = false,
         val items: PersistentList<UpdatesItem> = persistentListOf(),
+        // KMK -->
+        val expandedState: Set<String> = persistentSetOf(),
+        // KMK <--
         val dialog: Dialog? = null,
     ) {
         val selected = items.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
 
         fun getUiModel(): List<UpdatesUiModel> {
+            // KMK -->
             return items
-                .map { UpdatesUiModel.Item(it) }
-                .insertSeparators { before, after ->
-                    val beforeDate = before?.item?.update?.dateFetch?.toLocalDate()
-                    val afterDate = after?.item?.update?.dateFetch?.toLocalDate()
-                    when {
-                        beforeDate != afterDate && afterDate != null -> UpdatesUiModel.Header(afterDate)
-                        // Return null to avoid adding a separator between two items.
-                        else -> null
+                .groupBy { it.update.dateFetch.toLocalDate() }
+                .flatMap { (date, mangas) ->
+                    val header = UpdatesUiModel.Header(date, mangas.size)
+                    val mangaItems = mangas
+                        .groupBy { it.update.mangaId }
+                        .values
+                        .flatMap { mangaChapters ->
+                            val isExpandable = mangaChapters.size > 1
+                            var lastMangaId = -1L
+                            mangaChapters.map { chapter ->
+                                if (chapter.update.mangaId != lastMangaId) {
+                                    lastMangaId = chapter.update.mangaId
+                                    UpdatesUiModel.Leader(chapter, isExpandable)
+                                } else {
+                                    UpdatesUiModel.Item(chapter, isExpandable)
+                                }
+                            }
+                        }
+                    listOf(header) + mangaItems
+                }
+                .distinctBy {
+                    when (it) {
+                        is UpdatesUiModel.Header -> it.hashCode()
+                        is UpdatesUiModel.Item -> "${it.item.update.mangaId}-${it.item.update.chapterId}"
                     }
                 }
+            // KMK <--
         }
     }
 
     sealed interface Dialog {
         data class DeleteConfirmation(val toDelete: List<UpdatesItem>) : Dialog
+        data object FilterSheet : Dialog
     }
 
     sealed interface Event {
         data object InternalError : Event
         data class LibraryUpdateTriggered(val started: Boolean) : Event
+    }
+}
+
+private fun TriState.toBooleanOrNull(): Boolean? {
+    return when (this) {
+        TriState.DISABLED -> null
+        TriState.ENABLED_IS -> true
+        TriState.ENABLED_NOT -> false
     }
 }
 
@@ -419,3 +655,8 @@ data class UpdatesItem(
     }
     // SY <--
 }
+
+// KMK -->
+/** String to identify which manga's update on which day it is collapsing */
+fun UpdatesWithRelations.groupByDateAndManga() = "${dateFetch.toLocalDate().toEpochDay()}-$mangaId"
+// KMK <--

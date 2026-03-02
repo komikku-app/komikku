@@ -4,13 +4,14 @@ import android.content.Context
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.md.utils.MangaDexRelation
+import exh.metadata.metadata.base.TrackerIdMetadata
 import kotlinx.serialization.Serializable
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 
 @Serializable
-class MangaDexSearchMetadata : RaisedSearchMetadata() {
+class MangaDexSearchMetadata : RaisedSearchMetadata(), TrackerIdMetadata {
     var mdUuid: String? = null
 
     // var mdUrl: String? = null
@@ -31,11 +32,11 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     var rating: Float? = null
     // var users: String? = null
 
-    var anilistId: String? = null
-    var kitsuId: String? = null
-    var myAnimeListId: String? = null
-    var mangaUpdatesId: String? = null
-    var animePlanetId: String? = null
+    override var anilistId: String? = null
+    override var kitsuId: String? = null
+    override var myAnimeListId: String? = null
+    override var mangaUpdatesId: String? = null
+    override var animePlanetId: String? = null
 
     var status: Int? = null
 

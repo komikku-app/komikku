@@ -1,0 +1,21 @@
+name: Update website
+
+on:
+  release:
+    types:
+      - published
+      - deleted
+      - edited
+
+jobs:
+  update_website:
+    runs-on: 'ubuntu-24.04'
+
+    steps:
+      - name: Update website on release
+        uses: benc-uk/workflow-dispatch@a54f9d194fed472732282ed1597dc4909e4b4080 # v1.3.0
+        with:
+          workflow: Deploy
+          repo: komikku-app/komikku-app.github.io
+          ref: "refs/heads/main"
+          token: "${{ secrets.BOT_PAT }}"

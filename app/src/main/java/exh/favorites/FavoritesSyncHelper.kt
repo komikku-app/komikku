@@ -2,24 +2,24 @@ package exh.favorites
 
 import android.content.Context
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.PowerManager
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLog
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
+import exh.source.ExhPreferences
 import exh.source.isEhBasedManga
+import exh.util.ThrottleManager
+import exh.util.createPartialWakeLock
+import exh.util.createWifiLock
 import exh.util.ignore
-import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,6 @@ import okhttp3.Request
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
@@ -58,7 +57,7 @@ class FavoritesSyncHelper(val context: Context) {
     private val createCategoryWithName: CreateCategoryWithName by injectLazy()
     private val updateCategory: UpdateCategory by injectLazy()
 
-    private val prefs: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
 
     private val exh by lazy {
         Injekt.get<SourceManager>().get(EXH_SOURCE_ID) as? EHentai
@@ -69,7 +68,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val galleryAdder by lazy { GalleryAdder() }
 
-    private val throttleManager by lazy { EHentaiThrottleManager() }
+    private val throttleManager by lazy { ThrottleManager() }
 
     private var wifiLock: WifiManager.WifiLock? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -91,7 +90,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private suspend fun beginSync() {
         // Check if logged in
-        if (!prefs.enableExhentai().get()) {
+        if (!exhPreferences.enableExhentai().get()) {
             status.value = FavoritesSyncStatus.SyncError.NotLoggedInSyncError
             return
         }
@@ -130,34 +129,16 @@ class FavoritesSyncHelper(val context: Context) {
         try {
             // Take wake + wifi locks
             ignore { wakeLock?.release() }
-            wakeLock = ignore {
-                context.powerManager.newWakeLock(
-                    PowerManager.PARTIAL_WAKE_LOCK,
-                    "teh:ExhFavoritesSyncWakelock",
-                )
-            }
+            wakeLock = ignore { context.createPartialWakeLock("teh:ExhFavoritesSyncWakelock") }
             ignore { wifiLock?.release() }
-            wifiLock = ignore {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    context.wifiManager.createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
-                        "teh:ExhFavoritesSyncWifi",
-                    )
-                } else {
-                    @Suppress("DEPRECATION")
-                    context.wifiManager.createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                        "teh:ExhFavoritesSyncWifi",
-                    )
-                }
-            }
+            wifiLock = ignore { context.createWifiLock("teh:ExhFavoritesSyncWifi") }
 
             // Do not update galleries while syncing favorites
             EHentaiUpdateWorker.cancelBackground(context)
 
             status.value = FavoritesSyncStatus.Processing.CalculatingRemoteChanges
             val remoteChanges = storage.getChangedRemoteEntries(favorites.first)
-            val localChanges = if (prefs.exhReadOnlySync().get()) {
+            val localChanges = if (exhPreferences.exhReadOnlySync().get()) {
                 null // Do not build local changes if they are not going to be applied
             } else {
                 status.value = FavoritesSyncStatus.Processing.CalculatingLocalChanges
@@ -257,7 +238,7 @@ class FavoritesSyncHelper(val context: Context) {
                 gallery.gid,
             )
 
-            if (prefs.exhLenientSync().get()) {
+            if (exhPreferences.exhLenientSync().get()) {
                 errorList += error
             } else {
                 status.value = error
@@ -308,7 +289,7 @@ class FavoritesSyncHelper(val context: Context) {
             )
 
             if (!explicitlyRetryExhRequest(10, request)) {
-                if (prefs.exhLenientSync().get()) {
+                if (exhPreferences.exhLenientSync().get()) {
                     errorList += FavoritesSyncStatus.SyncError.GallerySyncError.UnableToDeleteFromRemote
                 } else {
                     status.value = FavoritesSyncStatus.SyncError.GallerySyncError.UnableToDeleteFromRemote
@@ -400,18 +381,12 @@ class FavoritesSyncHelper(val context: Context) {
                 }
 
                 val error = when (result) {
-                    is GalleryAddEvent.Fail.Error -> FavoritesSyncStatus.SyncError.GallerySyncError.GalleryAddFail(
-                        it.title, result.logMessage,
-                    )
-                    is GalleryAddEvent.Fail.UnknownType -> FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail(
-                        it.title, result.galleryUrl,
-                    )
-                    is GalleryAddEvent.Fail.UnknownSource -> FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail(
-                        it.title, result.galleryUrl,
-                    )
+                    is GalleryAddEvent.Fail.Error -> FavoritesSyncStatus.SyncError.GallerySyncError.GalleryAddFail(it.title, result.logMessage)
+                    is GalleryAddEvent.Fail.UnknownType -> FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail(it.title, result.galleryUrl)
+                    is GalleryAddEvent.Fail.UnknownSource -> FavoritesSyncStatus.SyncError.GallerySyncError.InvalidGalleryFail(it.title, result.galleryUrl)
                 }
 
-                if (prefs.exhLenientSync().get()) {
+                if (exhPreferences.exhLenientSync().get()) {
                     errorList += error
                 } else {
                     status.value = error

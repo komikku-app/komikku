@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- Storage -->
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
       <!-- Permission to save cover into Pictures. It isn't required from API 29 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -213,6 +216,13 @@
             android:label="EHentaiLogin"
             android:exported="false"/>
 
+        <service
+            android:name=".data.connections.discord.DiscordRPCService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync">
+        </service>
+
         <receiver
             android:name=".data.notification.NotificationReceiver"
             android:exported="false" />
@@ -349,7 +359,7 @@
                 <data android:scheme="https" />
                 <data android:scheme="http" />
 
-                <data android:host="pururin.io" />
+                <data android:host="pururin.me" />
 
                 <data android:pathPattern="/gallery/..*" />
             </intent-filter>
@@ -403,6 +413,10 @@
                     android:scheme="tachiyomisy" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            tools:remove="screenOrientation" />
     </application>
 
 </manifest>

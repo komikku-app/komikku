@@ -12,9 +12,9 @@ import uy.kohesive.injekt.api.get
 
 class GoogleDriveLoginActivity : BaseOAuthLoginActivity() {
     private val googleDriveService = Injekt.get<GoogleDriveService>()
-    override fun handleResult(data: Uri?) {
-        val code = data?.getQueryParameter("code")
-        val error = data?.getQueryParameter("error")
+    override fun handleResult(uri: Uri) {
+        val code = uri.getQueryParameter("code")
+        val error = uri.getQueryParameter("error")
         if (code != null) {
             lifecycleScope.launchIO {
                 googleDriveService.handleAuthorizationCode(
