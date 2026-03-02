@@ -10,9 +10,9 @@ import eu.kanade.tachiyomi.network.parseAs
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -70,13 +70,13 @@ class FlareSolverrInterceptor(
         private val jsonMediaType = "application/json".toMediaType()
         private val mutex = Mutex()
 
-        @Serializable
+        @InternalSerializationApi @Serializable
         data class FlareSolverCookie(
             val name: String,
             val value: String,
         )
 
-        @Serializable
+        @InternalSerializationApi @Serializable
         data class FlareSolverRequest(
             val cmd: String,
             val url: String,
@@ -90,7 +90,7 @@ class FlareSolverrInterceptor(
             val postData: String? = null, // only used with cmd 'request.post'
         )
 
-        @Serializable
+        @InternalSerializationApi @Serializable
         data class FlareSolverSolutionCookie(
             val name: String,
             val value: String,
@@ -104,7 +104,7 @@ class FlareSolverrInterceptor(
             val sameSite: String,
         )
 
-        @Serializable
+        @InternalSerializationApi @Serializable
         data class FlareSolverSolution(
             val url: String,
             val status: Int,
@@ -114,7 +114,7 @@ class FlareSolverrInterceptor(
             val userAgent: String,
         )
 
-        @Serializable
+        @InternalSerializationApi @Serializable
         data class FlareSolverResponse(
             val solution: FlareSolverSolution,
             val status: String,
@@ -124,6 +124,7 @@ class FlareSolverrInterceptor(
             val version: String,
         )
 
+        @OptIn(InternalSerializationApi::class)
         suspend fun resolveWithFlareSolverr(
             originalRequest: Request,
             networkPreferences: NetworkPreferences,
@@ -197,6 +198,7 @@ class FlareSolverrInterceptor(
             }
         }
 
+        @OptIn(InternalSerializationApi::class)
         private fun buildCookieString(cookie: FlareSolverSolutionCookie, domain: String): String {
             val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
             val expires = if (cookie.expires != null && cookie.expires > 0) {

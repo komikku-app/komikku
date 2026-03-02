@@ -3,6 +3,7 @@ package eu.kanade.presentation.more.settings.screen
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
 import android.webkit.WebStorage
 import android.webkit.WebView
@@ -85,7 +86,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
 import okhttp3.Headers
@@ -367,12 +368,12 @@ object SettingsAdvancedScreen : SearchableSettings {
                     },
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = enableFlareSolverrPref,
+                    preference = enableFlareSolverrPref,
                     title = stringResource(MR.strings.pref_enable_flare_solverr),
                     subtitle = stringResource(MR.strings.pref_enable_flare_solverr_summary),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
-                    pref = flareSolverrUrlPref,
+                    preference = flareSolverrUrlPref,
                     title = stringResource(MR.strings.pref_flare_solverr_url),
                     enabled = enableFlareSolverr,
                     subtitle = stringResource(MR.strings.pref_flare_solverr_url_summary),
@@ -910,6 +911,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         )
     }
 
+    @OptIn(InternalSerializationApi::class)
     private suspend fun testFlareSolverrAndUpdateUserAgent(
         flareSolverrUrlPref: BasePreference<String>,
         userAgentPref: BasePreference<String>,

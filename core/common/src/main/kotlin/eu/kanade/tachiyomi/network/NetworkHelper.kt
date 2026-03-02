@@ -114,7 +114,7 @@ import kotlin.random.Random
         callTimeout: Long = 120,
     ) = clientBuilder(connectTimeout, readTimeout, callTimeout)
         .addInterceptor(
-            CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
+            CloudflareInterceptor(context, cookieJar, preferences, ::defaultUserAgentProvider),
         )
         .build()
 
