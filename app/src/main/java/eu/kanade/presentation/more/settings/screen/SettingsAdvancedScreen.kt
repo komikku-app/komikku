@@ -369,19 +369,19 @@ object SettingsAdvancedScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = enableFlareSolverrPref,
-                    title = stringResource(MR.strings.pref_enable_flare_solverr),
-                    subtitle = stringResource(MR.strings.pref_enable_flare_solverr_summary),
+                    title = stringResource(SYMR.strings.pref_enable_flare_solverr),
+                    subtitle = stringResource(SYMR.strings.pref_enable_flare_solverr_summary),
                 ),
                 Preference.PreferenceItem.EditTextPreference(
                     preference = flareSolverrUrlPref,
-                    title = stringResource(MR.strings.pref_flare_solverr_url),
+                    title = stringResource(SYMR.strings.pref_flare_solverr_url),
                     enabled = enableFlareSolverr,
-                    subtitle = stringResource(MR.strings.pref_flare_solverr_url_summary),
+                    subtitle = stringResource(SYMR.strings.pref_flare_solverr_url_summary),
                 ),
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent),
+                    title = stringResource(SYMR.strings.pref_test_flare_solverr_and_update_user_agent),
                     enabled = enableFlareSolverr,
-                    subtitle = stringResource(MR.strings.pref_test_flare_solverr_and_update_user_agent_summary),
+                    subtitle = stringResource(SYMR.strings.pref_test_flare_solverr_and_update_user_agent_summary),
                     onClick = {
                         scope.launch {
                             testFlareSolverrAndUpdateUserAgent(flareSolverrUrlPref, userAgentPref, context)
