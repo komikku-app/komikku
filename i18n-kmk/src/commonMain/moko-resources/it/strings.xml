@@ -199,4 +199,5 @@
     <string name="pref_discord_show_buttons_summary">Visualizza i pulsanti per scaricare l\'app o unirti al server Discord</string>
     <string name="pref_webtoon_scale_type">Regolazione automatica per la visualizzazione su schermo panoramico</string>
     <string name="pref_track_on_add_library">Apri il menu tracciamento quando aggiungi una voce alla libreria</string>
+    <string name="discord_status_browsing">Naviga</string>
 </resources>
