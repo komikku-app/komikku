@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.network.interceptor
 
-import android.util.Log
 import android.webkit.CookieManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
@@ -14,12 +13,14 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import logcat.LogPriority
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
+import tachiyomi.core.common.util.system.logcat
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -43,7 +44,7 @@ class FlareSolverrInterceptor(
             return chain.proceed(originalRequest)
         }
 
-        Log.d("FlareSolverrInterceptor", "Intercepting request: ${originalRequest.url}")
+        logcat { "Intercepting request: ${originalRequest.url}" }
 
         return try {
             originalResponse.close()
@@ -135,7 +136,7 @@ class FlareSolverrInterceptor(
             val flareSolverTag = "FlareSolverr"
             val flareSolverrUrl = networkPreferences.flareSolverrUrl().get()
 
-            Log.d(flareSolverTag, "Requesting challenge solution for ${originalRequest.url}")
+            logcat(tag = flareSolverTag) { "Requesting challenge solution for ${originalRequest.url}" }
 
             val flareSolverResponse =
                 with(json) {
@@ -162,18 +163,16 @@ class FlareSolverrInterceptor(
                 }
 
             if (flareSolverResponse.solution.status in 200..299) {
-                Log.d(flareSolverTag, "Received challenge solution for ${originalRequest.url}")
-                Log.d(flareSolverTag, "Received cookies from FlareSolverr\n${flareSolverResponse.solution.cookies.joinToString("; ")}")
+                logcat(tag = flareSolverTag) { "Received challenge solution for ${originalRequest.url}" }
 
                 flareSolverResponse.solution.cookies.forEach { cookie ->
-                    Log.d(flareSolverTag, "Creating cookie for ${cookie.name}")
+                    logcat(tag = flareSolverTag) { "Creating cookie for ${cookie.name}" }
                     try {
                         val domain = cookie.domain.removePrefix(".")
                         val cookieString = buildCookieString(cookie, domain)
-                        Log.d(flareSolverTag, "Adding cookie string to CookieManager: $cookieString")
                         cookieManager.setCookie("https://$domain", cookieString)
                     } catch (e: Exception) {
-                        Log.e(flareSolverTag, "Error creating cookie for ${cookie.name}", e)
+                        logcat(LogPriority.ERROR, e, flareSolverTag) { "Error creating cookie for ${cookie.name}" }
                         throw e
                     }
                 }
@@ -182,18 +181,15 @@ class FlareSolverrInterceptor(
                 val allCookies = flareSolverResponse.solution.cookies.mapNotNull { cookie ->
                     val domain = cookie.domain.removePrefix(".")
                     val setCookie = cookieManager.getCookie("https://$domain")
-                    Log.d(flareSolverTag, "Set cookies in CookieManager for $domain: $setCookie")
                     setCookie
                 }.joinToString("; ")
-
-                Log.d(flareSolverTag, "Final cookies\n$allCookies")
 
                 return originalRequest.newBuilder()
                     .header("Cookie", allCookies)
                     .header("User-Agent", flareSolverResponse.solution.userAgent)
                     .build()
             } else {
-                Log.d(flareSolverTag, "Failed to solve challenge: ${flareSolverResponse.message}")
+                logcat(tag = flareSolverTag) { "Failed to solve challenge: ${flareSolverResponse.message}" }
                 throw CloudflareBypassException()
             }
         }
