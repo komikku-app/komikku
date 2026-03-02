@@ -62,13 +62,6 @@ import kotlin.random.Random
             .addInterceptor(UserAgentInterceptor(::defaultUserAgentProvider))
             .addNetworkInterceptor(IgnoreGzipInterceptor())
             .addNetworkInterceptor(BrotliInterceptor)
-            .addNetworkInterceptor(
-                FlareSolverrInterceptor(
-                    preferences = preferences,
-                    network = this,
-                    json = json,
-                ),
-            )
 
         if (isDebugBuild) {
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
@@ -98,6 +91,13 @@ import kotlin.random.Random
 
     /* SY --> */ open /* SY <-- */ val client /* KMK --> */ by lazy /* KMK <-- */ {
         clientBuilder()
+            .addNetworkInterceptor(
+                FlareSolverrInterceptor(
+                    preferences = preferences,
+                    network = this,
+                    json = json,
+                ),
+            )
             .addInterceptor(
                 CloudflareInterceptor(context, cookieJar, preferences, ::defaultUserAgentProvider),
             )
@@ -113,6 +113,13 @@ import kotlin.random.Random
         readTimeout: Long = 30,
         callTimeout: Long = 120,
     ) = clientBuilder(connectTimeout, readTimeout, callTimeout)
+        .addNetworkInterceptor(
+            FlareSolverrInterceptor(
+                preferences = preferences,
+                network = this,
+                json = json,
+            ),
+        )
         .addInterceptor(
             CloudflareInterceptor(context, cookieJar, preferences, ::defaultUserAgentProvider),
         )
