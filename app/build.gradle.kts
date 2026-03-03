@@ -26,7 +26,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.komikku"
+        applicationId = "app.kmhmubin.akazn"
 
         versionCode = 78
         versionName = "1.13.6"
