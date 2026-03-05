@@ -172,6 +172,7 @@ internal fun PreferenceItem(
                 TrackingPreferenceWidget(
                     tracker = item.tracker,
                     checked = isLoggedIn,
+                    supportLabel = item.supportLabel,
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
                 )
             }

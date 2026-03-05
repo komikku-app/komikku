@@ -17,6 +17,13 @@ data class ALUserListMangaPage(
 @Serializable
 data class ALUserListMediaList(
     val mediaList: List<ALUserListItem>,
+    val pageInfo: ALUserListPageInfo? = null,
+)
+
+@Serializable
+data class ALUserListPageInfo(
+    val currentPage: Int,
+    val hasNextPage: Boolean,
 )
 
 @Serializable

@@ -114,6 +114,39 @@ fun SourceIconBadge(
 }
 // KMK <--
 
+@Composable
+internal fun TrackerLabelBadge(label: String) {
+    if (label.isNotBlank()) {
+        Badge(
+            text = label,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+    }
+}
+
+@Composable
+internal fun TrackerStatusBadge(label: String?) {
+    if (!label.isNullOrBlank()) {
+        Badge(
+            text = label,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    }
+}
+
+@Composable
+internal fun TrackerProgressBadge(progress: String?) {
+    if (!progress.isNullOrBlank()) {
+        Badge(
+            text = progress,
+            color = MaterialTheme.colorScheme.tertiary,
+            textColor = MaterialTheme.colorScheme.onTertiary,
+        )
+    }
+}
+
 @PreviewLightDark
 @Composable
 private fun BadgePreview() {

@@ -45,6 +45,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -119,28 +120,38 @@ data object LibraryTab : Tab {
         val snackbarHostState = remember { SnackbarHostState() }
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
-            // SY -->
-            val started = LibraryUpdateJob.startNow(
-                context = context,
-                category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
-                group = state.groupType,
-                groupExtra = when (state.groupType) {
-                    LibraryGroup.BY_DEFAULT -> null
-                    LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
-                    LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
-                    else -> null
-                },
-            )
-            // SY <--
-            scope.launch {
-                val msgRes = when {
-                    !started -> MR.strings.update_already_running
-                    category != null -> MR.strings.updating_category
-                    else -> MR.strings.updating_library
+            if (category?.id == TrackStatus.NOT_IN_LIBRARY.int.toLong()) {
+                val started = screenModel.refreshRemoteTrackerItems()
+                scope.launch {
+                    if (started) {
+                        snackbarHostState.showSnackbar(context.stringResource(MR.strings.refreshing_tracker_entries))
+                    }
                 }
-                snackbarHostState.showSnackbar(context.stringResource(msgRes))
+                started
+            } else {
+                // SY -->
+                val started = LibraryUpdateJob.startNow(
+                    context = context,
+                    category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
+                    group = state.groupType,
+                    groupExtra = when (state.groupType) {
+                        LibraryGroup.BY_DEFAULT -> null
+                        LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
+                        LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
+                        else -> null
+                    },
+                )
+                // SY <--
+                scope.launch {
+                    val msgRes = when {
+                        !started -> MR.strings.update_already_running
+                        category != null -> MR.strings.updating_category
+                        else -> MR.strings.updating_library
+                    }
+                    snackbarHostState.showSnackbar(context.stringResource(msgRes))
+                }
+                started
             }
-            started
         }
 
         Scaffold(
@@ -286,7 +297,7 @@ data object LibraryTab : Tab {
                 state.isLoading -> {
                     LoadingScreen(Modifier.padding(contentPadding))
                 }
-                state.searchQuery.isNullOrEmpty() && !state.hasActiveFilters && state.isLibraryEmpty -> {
+                state.searchQuery.isNullOrEmpty() && !state.hasActiveFilters && state.isLibraryEmpty && !state.hasRemoteTrackerItems -> {
                     val handler = LocalUriHandler.current
                     EmptyScreen(
                         stringRes = MR.strings.information_empty_library,
@@ -314,6 +325,9 @@ data object LibraryTab : Tab {
                         showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
                         onChangeCurrentPage = screenModel::updateActiveCategoryIndex,
                         onClickManga = { navigator.push(MangaScreen(it)) },
+                        onClickRemoteTrack = { item ->
+                            navigator.push(GlobalSearchScreen(item.track.title))
+                        },
                         onContinueReadingClicked = { it: LibraryManga ->
                             scope.launchIO {
                                 val chapter = screenModel.getNextUnreadChapter(it.manga)
@@ -339,7 +353,7 @@ data object LibraryTab : Tab {
                         getItemCountForCategory = { state.getItemCountForCategory(it) },
                         getDisplayMode = { screenModel.getDisplayMode() },
                         getColumnsForOrientation = { screenModel.getColumnsForOrientation(it) },
-                        getItemsForCategory = { state.getItemsForCategory(it) },
+                        getDisplayItemsForCategory = { state.getDisplayItemsForCategory(it) },
                     )
                 }
             }

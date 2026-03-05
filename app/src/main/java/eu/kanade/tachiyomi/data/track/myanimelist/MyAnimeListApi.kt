@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALManga
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALMangaMetadata
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALSearchResult
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUserListResult
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUser
 import eu.kanade.tachiyomi.network.DELETE
 import eu.kanade.tachiyomi.network.GET
@@ -175,6 +176,21 @@ class MyAnimeListApi(
         }
     }
 
+    suspend fun getNotInLibraryEntries(offset: Int = 0): List<TrackSearch> {
+        return withIOContext {
+            val listPage = getUserListPage(offset)
+            val entries = listPage.data.mapNotNull { item ->
+                item.listStatus?.let { parseListSearchItem(item.node, it) }
+            }
+
+            if (!listPage.paging.next.isNullOrBlank()) {
+                entries + getNotInLibraryEntries(offset + LIST_PAGINATION_AMOUNT)
+            } else {
+                entries
+            }
+        }
+    }
+
     // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
@@ -234,6 +250,27 @@ class MyAnimeListApi(
         }
     }
 
+    private suspend fun getUserListPage(offset: Int): MALUserListResult {
+        return withIOContext {
+            val urlBuilder = "$BASE_API_URL/users/@me/mangalist".toUri().buildUpon()
+                .appendQueryParameter("fields", LIST_FIELDS)
+                .appendQueryParameter("limit", LIST_PAGINATION_AMOUNT.toString())
+            if (offset > 0) {
+                urlBuilder.appendQueryParameter("offset", offset.toString())
+            }
+
+            val request = Request.Builder()
+                .url(urlBuilder.build().toString())
+                .get()
+                .build()
+            with(json) {
+                authClient.newCall(request)
+                    .awaitSuccess()
+                    .parseAs()
+            }
+        }
+    }
+
     private fun parseMangaItem(listStatus: MALListItemStatus, track: Track): Track {
         return track.apply {
             val isRereading = listStatus.isRereading
@@ -267,6 +304,18 @@ class MyAnimeListApi(
         }
     }
 
+    private fun parseListSearchItem(
+        searchItem: MALManga,
+        listStatus: MALListItemStatus,
+    ): TrackSearch {
+        return parseSearchItem(searchItem).apply {
+            val isRereading = listStatus.isRereading
+            status = if (isRereading) MyAnimeList.REREADING else getStatus(listStatus.status)
+            last_chapter_read = listStatus.numChaptersRead
+            score = listStatus.score.toDouble()
+        }
+    }
+
     private fun parseDate(isoDate: String): Long {
         return SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(isoDate)?.time ?: 0L
     }
@@ -292,6 +341,9 @@ class MyAnimeListApi(
 
         private const val SEARCH_FIELDS =
             "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date,authors{first_name,last_name}"
+
+        private const val LIST_FIELDS =
+            "$SEARCH_FIELDS,list_status{is_rereading,status,num_chapters_read,score,start_date,finish_date}"
 
         private const val LIST_PAGINATION_AMOUNT = 250
 
