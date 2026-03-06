@@ -68,9 +68,31 @@ internal fun RemoteTrackerTrack.toTrackSearch(): TrackSearch {
     }
 }
 
+/**
+ * Packs tracker and remote ids into a stable synthetic cover id.
+ *
+ * Layout:
+ * - sign bit set to 1 to keep synthetic ids separate from local ids
+ * - 7 bits for tracker id
+ * - 56 bits for remote id
+ */
 internal fun trackerCoverId(
     trackerId: Long,
     remoteId: Long,
 ): Long {
-    return Long.MIN_VALUE or ((trackerId and 0x7FL) shl 56) or (remoteId and 0x00FFFFFFFFFFFFFFL)
+    require(trackerId in 0L..TRACKER_COVER_ID_TRACKER_MASK) {
+        "trackerId must fit in 7 bits, was $trackerId"
+    }
+    require(remoteId in 0L..TRACKER_COVER_ID_REMOTE_MASK) {
+        "remoteId must fit in 56 bits, was $remoteId"
+    }
+
+    return TRACKER_COVER_ID_PREFIX or
+        ((trackerId and TRACKER_COVER_ID_TRACKER_MASK) shl TRACKER_COVER_ID_TRACKER_SHIFT) or
+        (remoteId and TRACKER_COVER_ID_REMOTE_MASK)
 }
+
+private val TRACKER_COVER_ID_PREFIX = Long.MIN_VALUE
+private const val TRACKER_COVER_ID_TRACKER_SHIFT = 56
+private const val TRACKER_COVER_ID_TRACKER_MASK = 0x7FL
+private const val TRACKER_COVER_ID_REMOTE_MASK = 0x00FFFFFFFFFFFFFFL

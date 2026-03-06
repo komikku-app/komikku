@@ -25,6 +25,7 @@ import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.bindTrackSearchToManga
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -455,15 +456,15 @@ open class BrowseSourceScreenModel(
 
     private suspend fun bindPendingTrackSearch(mangaId: Long) {
         val trackSearch = pendingTrackSearch ?: return
-        val tracker = trackerManager.get(trackSearch.tracker_id) ?: return
-
-        try {
-            addTracks.bind(tracker, trackSearch, mangaId)
+        if (
+            bindTrackSearchToManga(
+                trackSearch = trackSearch,
+                mangaId = mangaId,
+                trackerManager = trackerManager,
+                addTracks = addTracks,
+            )
+        ) {
             pendingTrackSearch = null
-        } catch (e: Exception) {
-            logcat(LogPriority.WARN, e) {
-                "Failed to bind pending tracker entry trackerId=${trackSearch.tracker_id} remoteId=${trackSearch.remote_id}"
-            }
         }
     }
 

@@ -40,6 +40,7 @@ import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.bindTrackSearchToManga
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.TrackChapter
 import eu.kanade.domain.track.model.AutoTrackState
@@ -996,15 +997,15 @@ class MangaScreenModel(
 
     private suspend fun bindPendingTrackSearch(mangaId: Long) {
         val trackSearch = pendingTrackSearch ?: return
-        val tracker = trackerManager.get(trackSearch.tracker_id) ?: return
-
-        try {
-            addTracks.bind(tracker, trackSearch, mangaId)
+        if (
+            bindTrackSearchToManga(
+                trackSearch = trackSearch,
+                mangaId = mangaId,
+                trackerManager = trackerManager,
+                addTracks = addTracks,
+            )
+        ) {
             pendingTrackSearch = null
-        } catch (e: Exception) {
-            logcat(LogPriority.WARN, e) {
-                "Failed to bind pending tracker entry trackerId=${trackSearch.tracker_id} remoteId=${trackSearch.remote_id}"
-            }
         }
     }
 

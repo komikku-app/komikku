@@ -82,15 +82,15 @@ fun LibraryPager(
 
         when (displayMode) {
             LibraryDisplayMode.List -> {
-            LibraryList(
-                items = items,
-                contentPadding = contentPadding,
-                selection = selection,
-                onClick = onClickManga,
-                onClickRemoteTrack = onClickRemoteTrack,
-                onLongClick = onLongClickManga,
-                onClickContinueReading = onClickContinueReading,
-                searchQuery = searchQuery,
+                LibraryList(
+                    items = items,
+                    contentPadding = contentPadding,
+                    selection = selection,
+                    onClick = onClickManga,
+                    onClickRemoteTrack = onClickRemoteTrack,
+                    onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
+                    searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
             }

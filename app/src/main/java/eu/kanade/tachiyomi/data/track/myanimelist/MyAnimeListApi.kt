@@ -178,16 +178,22 @@ class MyAnimeListApi(
 
     suspend fun getNotInLibraryEntries(offset: Int = 0): List<TrackSearch> {
         return withIOContext {
-            val listPage = getUserListPage(offset)
-            val entries = listPage.data.mapNotNull { item ->
-                item.listStatus?.let { parseListSearchItem(item.node, it) }
+            val entries = mutableListOf<TrackSearch>()
+            var currentOffset = offset
+
+            while (true) {
+                val listPage = getUserListPage(currentOffset)
+                entries += listPage.data.mapNotNull { item ->
+                    item.listStatus?.let { parseListSearchItem(item.node, it) }
+                }
+
+                if (listPage.paging.next.isNullOrBlank()) {
+                    break
+                }
+                currentOffset += LIST_PAGINATION_AMOUNT
             }
 
-            if (!listPage.paging.next.isNullOrBlank()) {
-                entries + getNotInLibraryEntries(offset + LIST_PAGINATION_AMOUNT)
-            } else {
-                entries
-            }
+            entries
         }
     }
 

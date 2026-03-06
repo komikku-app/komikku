@@ -178,7 +178,10 @@ class LibraryScreenModel(
 
     init {
         mutableState.update { state ->
-            state.copy(activeCategoryIndex = libraryPreferences.lastUsedCategory().get())
+            state.copy(
+                activeCategoryIndex = libraryPreferences.lastUsedCategory().get(),
+                notInLibraryCategoryName = preferences.context.stringResource(TrackStatus.NOT_IN_LIBRARY.res),
+            )
         }
         screenModelScope.launchIO {
             combine(
@@ -1768,38 +1771,20 @@ class LibraryScreenModel(
         val filterCategory: Boolean = false,
         val includedCategories: ImmutableSet<Long> = persistentSetOf(),
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
+        val notInLibraryCategoryName: String = "",
         // KMK <--
     ) {
         /**
          * The grouped tabs which is displayed above the library screen.
          * They can be actual [Category] or [Source], [Track]...
          */
-        val displayedCategories: List<Category> = buildList {
-            val localCategories = groupedFavorites.keys.toList()
-            val localCategoriesToDisplay = if (
-                groupType == LibraryGroup.BY_TRACK_STATUS &&
-                remoteTrackerItems.isNotEmpty() &&
-                localCategories.size == 1 &&
-                localCategories.first().id == 0L &&
-                groupedFavorites.values.firstOrNull().isNullOrEmpty()
-            ) {
-                emptyList()
-            } else {
-                localCategories
-            }
-            addAll(localCategoriesToDisplay)
-            if (remoteTrackerItems.isNotEmpty()) {
-                add(
-                    Category(
-                        id = TrackStatus.NOT_IN_LIBRARY.int.toLong(),
-                        name = Injekt.get<Application>().stringResource(TrackStatus.NOT_IN_LIBRARY.res),
-                        order = TrackStatus.NOT_IN_LIBRARY.ordinal.toLong(),
-                        flags = 0,
-                        hidden = false,
-                    ),
-                )
-            }
-        }
+        val displayedCategories: List<Category>
+            get() = buildDisplayedCategories(
+                groupedFavorites = groupedFavorites,
+                remoteTrackerItems = remoteTrackerItems,
+                groupType = groupType,
+                notInLibraryCategoryName = notInLibraryCategoryName,
+            )
 
         val coercedActiveCategoryIndex = /* KMK --> */ displayedCategories.indexOfFirst { it.id == activeCategoryId }
             .takeIf { it != -1 } ?: activeCategoryIndex
@@ -1926,6 +1911,40 @@ class LibraryScreenModel(
         }
     }
     // KMK <--
+}
+
+internal fun buildDisplayedCategories(
+    groupedFavorites: Map<Category, List<Long>>,
+    remoteTrackerItems: List<RemoteTrackerLibraryItem>,
+    groupType: Int,
+    notInLibraryCategoryName: String,
+): List<Category> {
+    return buildList {
+        val localCategories = groupedFavorites.keys.toList()
+        val localCategoriesToDisplay = if (
+            groupType == LibraryGroup.BY_TRACK_STATUS &&
+            remoteTrackerItems.isNotEmpty() &&
+            localCategories.size == 1 &&
+            localCategories.first().id == 0L &&
+            groupedFavorites.values.firstOrNull().isNullOrEmpty()
+        ) {
+            emptyList()
+        } else {
+            localCategories
+        }
+        addAll(localCategoriesToDisplay)
+        if (remoteTrackerItems.isNotEmpty()) {
+            add(
+                Category(
+                    id = TrackStatus.NOT_IN_LIBRARY.int.toLong(),
+                    name = notInLibraryCategoryName,
+                    order = TrackStatus.NOT_IN_LIBRARY.ordinal.toLong(),
+                    flags = 0,
+                    hidden = false,
+                ),
+            )
+        }
+    }
 }
 
 internal data class RemoteTrackKey(

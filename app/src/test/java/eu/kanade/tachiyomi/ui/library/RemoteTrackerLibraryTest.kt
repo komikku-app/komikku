@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.library
 
 import android.content.Context
 import eu.kanade.tachiyomi.data.track.BaseTracker
+import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import io.mockk.every
@@ -9,7 +10,10 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -170,6 +174,52 @@ class RemoteTrackerLibraryTest {
         assertEquals("MAL", trackerBadgeLabel(1L, "MyAnimeList"))
         assertEquals("AL", trackerBadgeLabel(TrackerManager.ANILIST, "AniList"))
         assertEquals("Custom", trackerBadgeLabel(99L, "Custom"))
+    }
+
+    @Test
+    fun trackerCoverId_packsValuesAndRejectsOutOfRangeInputs() {
+        assertEquals(
+            Long.MIN_VALUE or (1L shl 56) or 2L,
+            trackerCoverId(trackerId = 1L, remoteId = 2L),
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            trackerCoverId(trackerId = 128L, remoteId = 2L)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            trackerCoverId(trackerId = 1L, remoteId = 0x0100000000000000L)
+        }
+    }
+
+    @Test
+    fun buildDisplayedCategories_appendsSyntheticNotInLibraryCategory() {
+        val localCategory = Category(
+            id = 1L,
+            name = "Reading",
+            order = 1L,
+            flags = 0,
+            hidden = false,
+        )
+
+        val categories = buildDisplayedCategories(
+            groupedFavorites = mapOf(localCategory to listOf(1L)),
+            remoteTrackerItems = listOf(
+                RemoteTrackerLibraryItem(
+                    track = remoteTrack(trackerId = 1L, remoteId = 100L, title = "Blue Box"),
+                    trackerName = "MyAnimeList",
+                    trackerShortName = "MAL",
+                    statusText = "Reading",
+                    progressText = "1/10",
+                ),
+            ),
+            groupType = LibraryGroup.BY_TRACK_STATUS,
+            notInLibraryCategoryName = "Not in Library",
+        )
+
+        assertEquals(
+            listOf(1L, TrackStatus.NOT_IN_LIBRARY.int.toLong()),
+            categories.map { it.id },
+        )
+        assertEquals("Not in Library", categories.last().name)
     }
 
     private fun trackerManager(vararg trackers: BaseTracker): TrackerManager {
