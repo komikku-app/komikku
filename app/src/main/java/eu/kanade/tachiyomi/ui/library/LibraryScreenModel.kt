@@ -2000,8 +2000,8 @@ internal fun RemoteTrackerLibraryItem.matchesQuery(query: String): Boolean {
 
     return track.title.contains(normalizedQuery, ignoreCase = true) ||
         trackerName.contains(normalizedQuery, ignoreCase = true) ||
-        (statusText?.contains(normalizedQuery, ignoreCase = true) == true) ||
-        (progressText?.contains(normalizedQuery, ignoreCase = true) == true)
+        statusText?.contains(normalizedQuery, ignoreCase = true) == true ||
+        progressText?.contains(normalizedQuery, ignoreCase = true) == true
 }
 
 internal fun remoteTrackerProgressText(track: RemoteTrackerTrack): String? {
