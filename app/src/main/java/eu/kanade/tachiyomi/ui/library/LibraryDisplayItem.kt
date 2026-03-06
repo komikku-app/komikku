@@ -57,6 +57,17 @@ internal fun TrackSearch.toRemoteTrackerTrack(): RemoteTrackerTrack {
     )
 }
 
+internal fun RemoteTrackerTrack.toTrackSearch(): TrackSearch {
+    return TrackSearch.create(trackerId).apply {
+        remote_id = this@toTrackSearch.remoteId
+        title = this@toTrackSearch.title
+        status = this@toTrackSearch.status
+        last_chapter_read = this@toTrackSearch.lastChapterRead
+        total_chapters = this@toTrackSearch.totalChapters
+        tracking_url = this@toTrackSearch.trackingUrl
+    }
+}
+
 internal fun trackerCoverId(
     trackerId: Long,
     remoteId: Long,

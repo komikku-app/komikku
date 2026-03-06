@@ -57,6 +57,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
@@ -178,6 +179,7 @@ class MangaScreenModel(
     // SY -->
     /** If it is opened from Source then it will auto expand the manga description */
     private val isFromSource: Boolean,
+    private val initialTrackSearch: TrackSearch? = null,
     private val smartSearched: Boolean,
     // SY <--
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
@@ -270,6 +272,7 @@ class MangaScreenModel(
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
+    private var pendingTrackSearch: TrackSearch? = initialTrackSearch
 
     internal var showTrackDialogAfterCategorySelection: Boolean = false
 
@@ -844,6 +847,7 @@ class MangaScreenModel(
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(defaultCategory)
+                        onMangaAddedToLibrary(manga, state.source, openTrackDialog = true)
                     }
 
                     // Automatic 'Default' or no categories
@@ -851,19 +855,15 @@ class MangaScreenModel(
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(null)
+                        onMangaAddedToLibrary(manga, state.source, openTrackDialog = true)
                     }
 
                     // Choose a category
                     else -> {
                         showTrackDialogAfterCategorySelection = true
                         showChangeCategoryDialog()
+                        return@launchIO
                     }
-                }
-
-                // Finally match with enhanced tracking when available
-                addTracks.bindEnhancedTrackers(manga, state.source)
-                if (autoOpenTrack && !showTrackDialogAfterCategorySelection) {
-                    showTrackDialog()
                 }
             }
         }
@@ -974,7 +974,37 @@ class MangaScreenModel(
         if (manga.favorite) return
 
         screenModelScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
+            if (updateManga.awaitUpdateFavorite(manga.id, true)) {
+                successState?.source?.let { source ->
+                    onMangaAddedToLibrary(manga, source, openTrackDialog = false)
+                }
+            }
+        }
+    }
+
+    private suspend fun onMangaAddedToLibrary(
+        manga: Manga,
+        source: Source,
+        openTrackDialog: Boolean,
+    ) {
+        bindPendingTrackSearch(manga.id)
+        addTracks.bindEnhancedTrackers(manga, source)
+        if (autoOpenTrack && openTrackDialog) {
+            showTrackDialog()
+        }
+    }
+
+    private suspend fun bindPendingTrackSearch(mangaId: Long) {
+        val trackSearch = pendingTrackSearch ?: return
+        val tracker = trackerManager.get(trackSearch.tracker_id) ?: return
+
+        try {
+            addTracks.bind(tracker, trackSearch, mangaId)
+            pendingTrackSearch = null
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) {
+                "Failed to bind pending tracker entry trackerId=${trackSearch.tracker_id} remoteId=${trackSearch.remote_id}"
+            }
         }
     }
 

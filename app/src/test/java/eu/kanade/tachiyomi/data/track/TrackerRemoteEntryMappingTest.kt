@@ -12,7 +12,9 @@ import eu.kanade.tachiyomi.data.track.anilist.dto.ALStaffNode
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserListItem
 import eu.kanade.tachiyomi.data.track.anilist.dto.ItemCover
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.ui.library.RemoteTrackerTrack
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUserListResult
+import eu.kanade.tachiyomi.ui.library.toTrackSearch
 import eu.kanade.tachiyomi.ui.library.toRemoteTrackerTrack
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -132,5 +134,29 @@ class TrackerRemoteEntryMappingTest {
         assertEquals(22.0, result.lastChapterRead)
         assertEquals(24L, result.totalChapters)
         assertEquals("https://example.com/title", result.trackingUrl)
+    }
+
+    @Test
+    fun remoteTrackerTrack_mapsBackToTrackSearch_forPendingBinding() {
+        val track = RemoteTrackerTrack(
+            trackerId = 1L,
+            remoteId = 321L,
+            title = "Blue Box",
+            coverUrl = "https://example.com/cover.jpg",
+            status = 4L,
+            lastChapterRead = 40.0,
+            totalChapters = 100L,
+            trackingUrl = "https://example.com/tracking",
+        )
+
+        val result = track.toTrackSearch()
+
+        assertEquals(1L, result.tracker_id)
+        assertEquals(321L, result.remote_id)
+        assertEquals("Blue Box", result.title)
+        assertEquals(4L, result.status)
+        assertEquals(40.0, result.last_chapter_read)
+        assertEquals(100L, result.total_chapters)
+        assertEquals("https://example.com/tracking", result.tracking_url)
     }
 }

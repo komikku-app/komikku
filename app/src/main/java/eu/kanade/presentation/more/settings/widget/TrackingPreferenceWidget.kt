@@ -12,13 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
 import eu.kanade.presentation.track.components.TrackLogoIcon
@@ -82,27 +80,20 @@ private fun TrackerLabel(
             fontSize = TitleFontSize,
         )
         supportLabel?.let {
-            SupportPill(text = it)
+            SupportLabel(text = it)
         }
     }
 }
 
 @Composable
-private fun SupportPill(
+private fun SupportLabel(
     text: String,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 8.dp,
 ) {
-    Surface(
+    Text(
+        text = text,
         modifier = modifier,
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = horizontalPadding, vertical = 2.dp),
-            style = MaterialTheme.typography.labelSmall,
-        )
-    }
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelSmall,
+    )
 }

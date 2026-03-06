@@ -28,6 +28,8 @@ import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -102,6 +104,7 @@ open class BrowseSourceScreenModel(
     // SY -->
     private val filtersJson: String? = null,
     private val savedSearch: Long? = null,
+    private val initialTrackSearch: TrackSearch? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
@@ -115,6 +118,7 @@ open class BrowseSourceScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    private val trackerManager: TrackerManager = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
     // KMK -->
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
@@ -132,6 +136,7 @@ open class BrowseSourceScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
+    private var pendingTrackSearch: TrackSearch? = initialTrackSearch
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
 
@@ -419,10 +424,13 @@ open class BrowseSourceScreenModel(
                 new = new.removeCovers(coverCache)
             } else {
                 setMangaDefaultChapterFlags.await(manga)
-                addTracks.bindEnhancedTrackers(manga, source)
             }
 
             updateManga.await(new.toMangaUpdate())
+            if (new.favorite) {
+                bindPendingTrackSearch(manga.id)
+                addTracks.bindEnhancedTrackers(manga, source)
+            }
             // KMK -->
             if (new.favorite && libraryPreferences.syncOnAdd().get()) {
                 withIOContext {
@@ -442,6 +450,20 @@ open class BrowseSourceScreenModel(
                 }
             }
             // KMK <--
+        }
+    }
+
+    private suspend fun bindPendingTrackSearch(mangaId: Long) {
+        val trackSearch = pendingTrackSearch ?: return
+        val tracker = trackerManager.get(trackSearch.tracker_id) ?: return
+
+        try {
+            addTracks.bind(tracker, trackSearch, mangaId)
+            pendingTrackSearch = null
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) {
+                "Failed to bind pending tracker entry trackerId=${trackSearch.tracker_id} remoteId=${trackSearch.remote_id}"
+            }
         }
     }
 

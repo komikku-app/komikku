@@ -537,7 +537,7 @@
     <string name="tracking_info">One-way sync to update the chapter progress in external tracker services. Set up tracking for individual entries from their tracking button.</string>
     <string name="pref_tracker_show_not_in_library_entries">Show tracker entries not in library</string>
     <string name="pref_tracker_show_not_in_library_entries_summary">When grouping by tracker status, add a Not in Library tab for supported trackers.</string>
-    <string name="tracker_not_in_library_supported">Not in Library</string>
+    <string name="tracker_not_in_library_supported">Supports &quot;Not in Library&quot; tracking</string>
     <string name="enhanced_services">Enhanced trackers</string>
     <string name="enhanced_services_not_installed">Available but source not installed: %s</string>
     <string name="enhanced_tracking_info">Provides enhanced features for specific sources. Entries are automatically tracked when added to your library.</string>

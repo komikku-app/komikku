@@ -326,7 +326,7 @@ data object LibraryTab : Tab {
                         onChangeCurrentPage = screenModel::updateActiveCategoryIndex,
                         onClickManga = { navigator.push(MangaScreen(it)) },
                         onClickRemoteTrack = { item ->
-                            navigator.push(GlobalSearchScreen(item.track.title))
+                            navigator.push(GlobalSearchScreen(item.track.title, initialTrackSearch = item.track.toTrackSearch()))
                         },
                         onContinueReadingClicked = { it: LibraryManga ->
                             scope.launchIO {
