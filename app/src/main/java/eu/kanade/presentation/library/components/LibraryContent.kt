@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.tachiyomi.ui.library.LibraryItem
+import eu.kanade.tachiyomi.ui.library.LibraryDisplayItem
+import eu.kanade.tachiyomi.ui.library.RemoteTrackerLibraryItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.domain.category.model.Category
@@ -39,6 +41,7 @@ fun LibraryContent(
     showPageTabs: Boolean,
     onChangeCurrentPage: (Int) -> Unit,
     onClickManga: (Long) -> Unit,
+    onClickRemoteTrack: (RemoteTrackerLibraryItem) -> Unit,
     onContinueReadingClicked: ((LibraryManga) -> Unit)?,
     onToggleSelection: (Category, LibraryManga) -> Unit,
     onToggleRangeSelection: (Category, LibraryManga) -> Unit,
@@ -47,7 +50,7 @@ fun LibraryContent(
     getItemCountForCategory: (Category) -> Int?,
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
-    getItemsForCategory: (Category) -> List<LibraryItem>,
+    getDisplayItemsForCategory: (Category) -> List<LibraryDisplayItem>,
 ) {
     Column(
         modifier = Modifier.padding(
@@ -111,12 +114,17 @@ fun LibraryContent(
                 getCategoryForPage = { page -> categories[page] },
                 getDisplayMode = getDisplayMode,
                 getColumnsForOrientation = getColumnsForOrientation,
-                getItemsForCategory = getItemsForCategory,
+                getDisplayItemsForCategory = getDisplayItemsForCategory,
                 onClickManga = { category, manga ->
                     if (selection.isNotEmpty()) {
                         onToggleSelection(category, manga)
                     } else {
                         onClickManga(manga.manga.id)
+                    }
+                },
+                onClickRemoteTrack = { item ->
+                    if (selection.isEmpty()) {
+                        onClickRemoteTrack(item)
                     }
                 },
                 onLongClickManga = onToggleRangeSelection,

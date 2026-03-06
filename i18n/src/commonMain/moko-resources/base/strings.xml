@@ -535,6 +535,9 @@
     <string name="pref_auto_update_manga_on_mark_read">Update progress when marked as read</string>
     <string name="services">Trackers</string>
     <string name="tracking_info">One-way sync to update the chapter progress in external tracker services. Set up tracking for individual entries from their tracking button.</string>
+    <string name="pref_tracker_show_not_in_library_entries">Show tracker entries not in library</string>
+    <string name="pref_tracker_show_not_in_library_entries_summary">When grouping by tracker status, add a Not in Library tab for supported trackers.</string>
+    <string name="tracker_not_in_library_supported">Supports &quot;Not in Library&quot; tracking</string>
     <string name="enhanced_services">Enhanced trackers</string>
     <string name="enhanced_services_not_installed">Available but source not installed: %s</string>
     <string name="enhanced_tracking_info">Provides enhanced features for specific sources. Entries are automatically tracked when added to your library.</string>
@@ -885,6 +888,8 @@
     <string name="copy">Copy</string>
     <string name="empty_screen">Well, this is awkward</string>
     <string name="not_installed">Not installed</string>
+    <string name="not_in_library">Not in Library</string>
+    <string name="refreshing_tracker_entries">Refreshing tracker entries</string>
 
     <!-- Crash screen -->
     <string name="crash_screen_title">Whoops!</string>
