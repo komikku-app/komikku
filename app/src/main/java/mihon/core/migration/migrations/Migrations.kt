@@ -51,10 +51,13 @@ val migrations: List<Migration>
         // KMK <--
         TrustExtensionRepositoryMigration(),
         CategoryPreferencesCleanupMigration(),
+        // SY -->
         RemoveDuplicateReaderPreferenceMigration(),
+        // SY <--
         // KMK -->
         DisabledRepoMigration(),
         SyncPrefKeyMigration(),
         ChapterUrlHashMigration(),
         // KMK <--
+        InstallationIdMigration(),
     )
