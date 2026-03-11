@@ -1,69 +1,111 @@
 package tachiyomi.macrobenchmark
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.performClick
+import android.content.Context
+import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import eu.kanade.tachiyomi.ui.main.MainActivity
-import org.junit.Rule
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import eu.kanade.tachiyomi.BuildConfig
+import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+private const val APP_PACKAGE = BuildConfig.APPLICATION_ID
+private const val LAUNCH_TIMEOUT_MS = 10_000L
+private const val UI_TIMEOUT_MS = 5_000L
+
 /**
- * Instrumented tests for the Library screen.
+ * Instrumented tests for the Library screen using UiAutomator.
  *
- * These tests navigate to the Library tab and verify common UI elements
- * without requiring any actual manga entries in the library.
+ * Navigates to the Library tab and verifies common UI affordances.
  */
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class LibraryScreenTest {
 
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    private lateinit var device: UiDevice
+
+    @Before
+    fun setUp() {
+        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+        device.pressHome()
+        device.waitForIdle()
+
+        val context: Context = ApplicationProvider.getApplicationContext()
+        val intent = context.packageManager
+            .getLaunchIntentForPackage(APP_PACKAGE)
+            ?.apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK) }
+        checkNotNull(intent) { "Could not resolve launch intent for $APP_PACKAGE" }
+        context.startActivity(intent)
+
+        device.wait(Until.hasObject(By.pkg(APP_PACKAGE).depth(0)), LAUNCH_TIMEOUT_MS)
+
+        // Complete onboarding if this is a fresh install.
+        initAppData(device, UI_TIMEOUT_MS)
+    }
 
     private fun openLibrary() {
-        composeTestRule
-            .onNodeWithContentDescription("Library")
-            .performClick()
-        composeTestRule.waitForIdle()
+        val tab = device.wait(Until.findObject(By.text("Library")), UI_TIMEOUT_MS)
+        assertNotNull("Library tab must be reachable", tab)
+        tab.click()
+        device.waitForIdle()
     }
 
     /**
-     * Verifies that the Library screen is displayed after tapping the Library tab.
+     * Verifies the Library screen is displayed after tapping the Library tab.
      */
     @Test
     fun libraryScreen_isDisplayedAfterTabTap() {
         openLibrary()
-        // The Library tab/screen should render without crashing.
-        composeTestRule.waitForIdle()
+        assertNotNull(
+            "App window should still be present after opening Library",
+            device.findObject(By.pkg(APP_PACKAGE).depth(0)),
+        )
     }
 
     /**
-     * Verifies the search icon is visible on the Library screen and can be tapped.
+     * Verifies the search icon is visible on the Library screen.
      */
     @Test
     fun libraryScreen_searchIconIsVisible() {
         openLibrary()
-        composeTestRule
-            .onNodeWithContentDescription("Search")
-            .assertIsDisplayed()
+        val searchBtn = device.wait(Until.findObject(By.descContains("Search")), UI_TIMEOUT_MS)
+        assertNotNull("Search button should be visible on the Library screen", searchBtn)
     }
 
     /**
-     * Taps the filter icon (if present) to confirm it doesn't crash the app.
+     * Taps the search button and verifies the app does not crash.
      */
     @Test
-    fun libraryScreen_filterIconDoesNotCrash() {
+    fun libraryScreen_searchTap_doesNotCrash() {
         openLibrary()
-        runCatching {
-            composeTestRule
-                .onNodeWithContentDescription("Filter")
-                .performClick()
-            composeTestRule.waitForIdle()
-        }
-        // No crash = pass
+        val searchBtn = device.wait(Until.findObject(By.descContains("Search")), UI_TIMEOUT_MS)
+        searchBtn?.click()
+        device.waitForIdle()
+        assertNotNull(
+            "App window should still be present after tapping Search",
+            device.findObject(By.pkg(APP_PACKAGE).depth(0)),
+        )
+    }
+
+    /**
+     * Taps the filter icon (if present) and verifies the app does not crash.
+     */
+    @Test
+    fun libraryScreen_filterTap_doesNotCrash() {
+        openLibrary()
+        // Filter button may or may not be present depending on library state.
+        device.findObject(By.descContains("Filter"))?.click()
+        device.waitForIdle()
+        assertNotNull(
+            "App window should still be present after tapping Filter",
+            device.findObject(By.pkg(APP_PACKAGE).depth(0)),
+        )
     }
 }

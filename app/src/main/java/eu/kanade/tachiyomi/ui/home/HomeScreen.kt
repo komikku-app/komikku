@@ -66,6 +66,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object HomeScreen : Screen() {
+    @Suppress("unused")
     private fun readResolve(): Any = HomeScreen
 
     private val librarySearchEvent = Channel<String>()
@@ -220,7 +221,9 @@ object HomeScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
         val selected = tabNavigator.current::class == tab::class
+        val description = tab.options.title
         NavigationBarItem(
+            modifier = Modifier.semantics { contentDescription = description },
             selected = selected,
             onClick = {
                 if (!selected) {

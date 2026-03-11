@@ -319,6 +319,7 @@ dependencies {
     // Instrumented tests
     androidTestImplementation(androidx.test.ext)
     androidTestImplementation(androidx.test.espresso.core)
+    androidTestImplementation(androidx.test.uiautomator)
     androidTestImplementation(compose.ui.test.junit4)
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/
