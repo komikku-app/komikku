@@ -68,6 +68,7 @@ internal fun Project.configureCompose(commonExtension: CommonExtension<*, *, *, 
 
         dependencies {
             "implementation"(platform(compose.bom))
+            "androidTestImplementation"(platform(compose.bom))
         }
     }
 
