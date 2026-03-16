@@ -424,15 +424,21 @@ open class BrowseSourceScreenModel(
 
             updateManga.await(new.toMangaUpdate())
             // KMK -->
-            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
+            val fetchMetadataOnAdd = libraryPreferences.fetchMetadataOnAdd().get()
+            val fetchChaptersOnAdd = libraryPreferences.fetchChaptersOnAdd().get()
+            if (new.favorite && (fetchMetadataOnAdd || fetchChaptersOnAdd)) {
                 withIOContext {
                     try {
                         val sManga = manga.toSManga()
-                        val remoteManga = source.getMangaDetails(sManga)
-                        val chapters = source.getChapterList(sManga)
-                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                        syncChaptersWithSource.await(chapters, manga, source, false)
+                        if (fetchMetadataOnAdd) {
+                            val remoteMetadata = source.getMangaDetails(sManga)
+                            // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                            updateManga.awaitUpdateFromSource(manga, remoteMetadata, false, coverCache)
+                        }
+                        if (fetchChaptersOnAdd) {
+                            val chapters = source.getChapterList(sManga)
+                            syncChaptersWithSource.await(chapters, manga, source, false)
+                        }
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
                         screenModelScope.launch {

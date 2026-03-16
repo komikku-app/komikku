@@ -293,9 +293,14 @@ object SettingsLibraryScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.syncOnAdd(),
-                    title = stringResource(KMR.strings.pref_sync_manga_on_add),
-                    subtitle = stringResource(KMR.strings.pref_sync_manga_on_add_description),
+                    preference = libraryPreferences.fetchMetadataOnAdd(),
+                    title = stringResource(KMR.strings.pref_fetch_manga_metadata_on_add),
+                    subtitle = stringResource(KMR.strings.pref_fetch_manga_metadata_on_add_description),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.fetchChaptersOnAdd(),
+                    title = stringResource(KMR.strings.pref_fetch_manga_chapters_on_add),
+                    subtitle = stringResource(KMR.strings.pref_fetch_manga_chapters_on_add_description),
                 ),
                 // KMK <--
             ),
