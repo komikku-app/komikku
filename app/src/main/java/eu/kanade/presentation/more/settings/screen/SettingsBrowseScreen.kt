@@ -85,7 +85,7 @@ object SettingsBrowseScreen : SearchableSettings {
                         enabled = sourcePreferences.relatedMangas().get(),
                     ),
                     // KMK <--
-                    kotlin.run {
+                    run {
                         val count by sourcePreferences.sourcesTabCategories().collectAsState()
                         Preference.PreferenceItem.TextPreference(
                             title = stringResource(MR.strings.action_edit_categories),

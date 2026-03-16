@@ -48,6 +48,7 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.screen.SettingsSecurityScreen.PasswordDialog
 import eu.kanade.presentation.more.settings.screen.data.CreateBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.StorageInfo
@@ -808,17 +809,26 @@ object SettingsDataScreen : SearchableSettings {
                     true
                 },
             ),
-            Preference.PreferenceItem.EditTextPreference(
-                preference = syncPreferences.webDavPassword(),
-                title = stringResource(KMR.strings.pref_webdav_password),
-                subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        syncPreferences.webDavPassword().set(newValue)
-                    }
-                    true
-                },
-            ),
+            run {
+                var dialogOpen by remember { mutableStateOf(false) }
+                if (dialogOpen) {
+                    PasswordDialog(
+                        onDismissRequest = { dialogOpen = false },
+                        onReturnPassword = { password ->
+                            dialogOpen = false
+                            syncPreferences.webDavPassword().set(password.replace("\n", ""))
+                        },
+                        title = KMR.strings.pref_webdav_password,
+                    )
+                }
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_webdav_password),
+                    subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
+                    onClick = {
+                        dialogOpen = true
+                    },
+                )
+            },
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavFolder(),
                 title = stringResource(KMR.strings.pref_webdav_folder),
