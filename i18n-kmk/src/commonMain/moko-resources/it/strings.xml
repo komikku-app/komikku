@@ -137,7 +137,7 @@
     <string name="pref_discord_custom_message_summary">Messaggio personalizzato che verrà mostrato su Discord</string>
     <string name="pref_discord_dnd">⛔ Non disturbare</string>
     <string name="pref_discord_idle">🌙 Inattivo</string>
-    <string name="pref_discord_incognito">Modalità incognita discord</string>
+    <string name="pref_discord_incognito">Modalità incognita Discord</string>
     <string name="pref_discord_online">🟢 Online</string>
     <string name="pref_discord_show_buttons">Mostra pulsanti</string>
     <string name="pref_discord_show_progress">Mostra progressi</string>
