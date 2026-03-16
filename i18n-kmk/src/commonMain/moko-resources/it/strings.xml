@@ -160,7 +160,7 @@
     <string name="pref_webdav_folder_summ">L\'applicazione salverà i dati in questa cartella</string>
     <string name="pref_webdav_url">WebDAV Server URL</string>
     <string name="pref_webdav_url_summ">Inserisci l\'indirizzo server di WebDAV</string>
-    <string name="downloaded_data">Data installati</string>
+    <string name="downloaded_data">Dati scaricati</string>
     <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Usa ricerca intelligente</string>
     <string name="sponsor_me">Sponsorizzami</string>
     <string name="connections_discord">Discord</string>
@@ -195,7 +195,7 @@
     <string name="pref_enable_discord_rpc">Abilita Discord Rich Presence</string>
     <string name="pref_discord_incognito_summary">Ignora se la modalità di navigazione in incognito è attiva</string>
     <string name="pref_discord_incognito_categories_details">Le voci in categorie incluse non verranno visualizzate su Discord</string>
-    <string name="discord_app_description">Komikku - Un app per leggere manga</string>
+    <string name="discord_app_description">Komikku - Un\'app per leggere manga</string>
     <string name="pref_discord_show_buttons_summary">Visualizza i pulsanti per scaricare l\'app o unirti al server Discord</string>
     <string name="pref_webtoon_scale_type">Regolazione automatica per la visualizzazione su schermo panoramico</string>
     <string name="pref_track_on_add_library">Apri il menu tracciamento quando aggiungi una voce alla libreria</string>
