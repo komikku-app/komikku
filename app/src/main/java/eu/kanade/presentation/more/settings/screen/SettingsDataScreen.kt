@@ -562,7 +562,7 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                             // KMK -->
-                            SyncManager.SyncService.WebDAV.value to stringResource(KMR.strings.web_dav),
+                            SyncManager.SyncService.WEB_DAV.value to stringResource(KMR.strings.web_dav),
                             // KMK <--
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
@@ -606,7 +606,7 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
             // KMK -->
-            SyncManager.SyncService.WebDAV -> getWebDavPreferences(syncPreferences)
+            SyncManager.SyncService.WEB_DAV -> getWebDavPreferences(syncPreferences)
             // KMK <--
         }
 
@@ -832,7 +832,7 @@ object SettingsDataScreen : SearchableSettings {
             ),
         )
     }
-    // MK <--
+    // KMK <--
 
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {
