@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse
 
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -60,7 +59,6 @@ class BulkFavoriteScreenModel(
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
-    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -272,7 +270,6 @@ class BulkFavoriteScreenModel(
                 }
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
-                snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
             }
         }
     }
@@ -374,7 +371,6 @@ class BulkFavoriteScreenModel(
                         }
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
                     }
                 }
             }

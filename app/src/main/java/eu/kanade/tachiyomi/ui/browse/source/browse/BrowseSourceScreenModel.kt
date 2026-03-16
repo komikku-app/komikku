@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.content.res.Configuration
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -120,7 +119,6 @@ open class BrowseSourceScreenModel(
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
-    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // KMK <--
 
     // SY -->
@@ -441,9 +439,6 @@ open class BrowseSourceScreenModel(
                         }
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e)
-                        screenModelScope.launch {
-                            snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
-                        }
                     }
                 }
             }
