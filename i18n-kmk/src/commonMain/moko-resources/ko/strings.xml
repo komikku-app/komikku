@@ -47,7 +47,7 @@
     <string name="pref_panorama_cover">파노라마 표지</string>
     <string name="pref_panorama_cover_summary">넓은 이미지인 경우 가로 모드로 표지 표시</string>
     <string name="pref_panorama_cover_flow">파노라마 표지 흐름</string>
-    <string name="pref_panorama_cover_flow_summary">글로벌 검색 &amp; 제안으로 파노라마 표지 표시</string>
+    <string name="pref_panorama_cover_flow_summary">글로벌 검색 &amp; 제안에 파노라마 표지 표시</string>
     <string name="pref_top_align_cover">표지를 상단에 정렬</string>
     <string name="pref_top_align_cover_summary">Manga 정보와 표지를 상단에 정렬하여 표시</string>
     <string name="action_display_comfortable_grid_panorama">파노라마 편안한 그리드</string>
