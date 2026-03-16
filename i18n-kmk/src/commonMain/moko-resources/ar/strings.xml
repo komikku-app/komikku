@@ -124,10 +124,10 @@
     <string name="batch_add_description">الدعم: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
     <string name="action_open_folder">فتح مجلد</string>
     <string name="action_update">تحديث</string>
-    <string name="action_filter_unfinished_manga">مانجا غير مقروءة</string>
-    <string name="action_filter_unfinished_chapter">فصل غير مقروء</string>
+    <string name="action_filter_unfinished_manga">مانجا غير مكتملة</string>
+    <string name="action_filter_unfinished_chapter">فصل غير مكتملة</string>
     <string name="action_filter_non_library_entries">عناصر خارج المكتبة</string>
-    <string name="pref_viewer_nav_smaller_tap_zone">نطاق نقر اصغر</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">نطاق نقر أصغر</string>
     <string name="error_opening_folder">فشل فتح المجلد</string>
     <string name="pref_pinch_to_zoom">ضم الأصابع للتكبير</string>
     <string name="pref_paged_disable_zoom_in">إلغاء تفعيل التكبير</string>
