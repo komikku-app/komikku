@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 ساعات</string>
     <string name="download_cache_renew_interval_12hour">12 ساعة</string>
     <string name="download_cache_renew_interval_24hour">1 يوم</string>
-    <string name="download_cache_renew_interval_info">إذا تم تعيين إلى \"يدوي\"، إما فم بتحديث كل مانجا أو باستخدام \"إعادة الفهرسة للتنزيلات\" في \"المتقدم\"</string>
+    <string name="download_cache_renew_interval_info">إذا تم تعيين إلى \"يدوي\"، إما قم بتحديث كل مانجا أو باستخدام \"إعادة الفهرسة للتنزيلات\" في \"المتقدم\"</string>
     <string name="pref_clean_invalid_downloads">تنظيف التنزيلات غير صالحة</string>
     <string name="pref_clean_invalid_downloads_summary">العثور على جميع التنزيلات والملفات والمجلدات التي لم يتم حفظها في مكتبتك وإزالتها</string>
     <string name="invalid_downloads_cleaned">تم تنظيف التنزيلات غير صالحة</string>
