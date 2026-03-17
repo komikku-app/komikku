@@ -158,4 +158,15 @@
     <string name="pref_discord_incognito">Discord Inkognito tilstand</string>
     <string name="pref_discord_show_progress">Vis Fremskridt</string>
     <string name="connections_discord">Uenighed</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Brugernavn</string>
+    <string name="pref_webdav_password">Adgangskode</string>
+    <string name="action_manual_install">Manuel installation</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Bruger:</string>
+    <string name="updating">Opdaterer</string>
+    <string name="action_open_folder">Åbn mappe</string>
+    <string name="action_update">Opdater</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_3_2">3: 2</string>
 </resources>
