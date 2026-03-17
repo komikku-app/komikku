@@ -171,4 +171,14 @@
     <string name="pref_discord_incognito">Режим інкогніто Discord</string>
     <string name="pref_discord_show_progress">Показувати поступ</string>
     <string name="connections_discord">Discord</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="discord_status_using">Використовує:</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Ім\'я користувача</string>
+    <string name="pref_webdav_password">Пароль</string>
+    <string name="pref_pinch_to_zoom">Прищемити, щоб масштабувати</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="discord_download_button">Читати на %s</string>
 </resources>
