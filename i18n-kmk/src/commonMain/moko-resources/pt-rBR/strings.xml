@@ -181,4 +181,11 @@
     <string name="pref_discord_dnd">⛔ Não perturbe</string>
     <string name="pref_discord_idle">🌙 Idle</string>
     <string name="pref_discord_online">🟢 Online</string>
+    <string name="discord_status_description">%2$s do %1$s</string>
+    <string name="discord_download_button">Leia em %s</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Nome de usuário</string>
+    <string name="pref_webdav_password">Senha</string>
+    <string name="discord_status_using">Uso</string>
+    <string name="sponsor_me">Tornar-se patrocinador</string>
 </resources>
