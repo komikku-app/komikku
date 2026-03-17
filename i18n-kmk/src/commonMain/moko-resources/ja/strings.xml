@@ -179,4 +179,11 @@
     <string name="pref_discord_rpc">Discord Rich Presence</string>
     <string name="active_account">アクティブなアカウント</string>
     <string name="pref_discord_dnd">⛔ マナーモード</string>
+    <string name="sponsor_me">スポンサーになりませんか</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">ユーザー名</string>
+    <string name="pref_webdav_password">パスワード</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">使用:</string>
+    <string name="discord_download_button">%s で読む</string>
 </resources>
