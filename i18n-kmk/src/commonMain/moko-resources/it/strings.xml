@@ -173,7 +173,6 @@
     <string name="pref_discord_configuration">Apri per configurare Discord RPC</string>
     <string name="error_opening_folder">Impossibile aprire cartella</string>
     <string name="pref_show_empty_categories_search">Mostra categorie vuote durante ricerca/filtraggio</string>
-    <string name="pref_sync_manga_on_add">Sincronizzare i manga quando vengono aggiunti alla libreria</string>
     <string name="chapters_from_database">Capitoli e cronologia dal database</string>
     <string name="job_failed_schedule_update_check">Pianificazione aggiornamento automatico libreria fallita: %s</string>
     <string name="job_failed_schedule_backup_check">Pianificazione backup automatico fallito: %s</string>
@@ -186,7 +185,6 @@
     <string name="pref_top_align_cover_summary">Mostra copertina allineata in alto accanto alle informazioni sul manga</string>
     <string name="theme_doom">Doom</string>
     <string name="pref_library_filter_categories_details">Le voci nelle categorie escluse non verranno mostrate anche se presenti nelle categorie incluse.</string>
-    <string name="pref_sync_manga_on_add_description">Recupera automaticamente i metadati e l\'elenco dei capitoli di un nuovo manga quando lo aggiungi alla libreria</string>
     <string name="web_dav">WebDAV</string>
     <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">Se abilitato, seleziona automaticamente il risultato con la corrispondenza migliore. Altrimenti, mostra tutti i risultati della ricerca per la selezione manuale.</string>
     <string name="pref_connections_summary">Discord, altri in arrivo...</string>
