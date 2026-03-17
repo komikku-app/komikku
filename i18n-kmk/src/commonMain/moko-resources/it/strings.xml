@@ -200,4 +200,9 @@
     <string name="discord_status_browsing">Naviga</string>
     <string name="pref_pinch_to_zoom">Pizzica per ingrandire</string>
     <string name="discord_status_using">Utilizzando:</string>
+    <string name="pref_category_discord_incognito">RPC Incognito</string>
+    <string name="discord_status_scrolling">Scorrimento attraverso</string>
+    <string name="discord_status_messing">Messaggiare con</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Recupera automaticamente i metadati e l\'elenco dei capitoli di un nuovo manga quando lo aggiungi alla libreria</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Recupera automaticamente i metadati e l\'elenco dei capitoli di un nuovo manga quando lo aggiungi alla libreria</string>
 </resources>
