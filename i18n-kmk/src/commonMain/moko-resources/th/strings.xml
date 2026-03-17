@@ -56,4 +56,5 @@
     <string name="pref_discord_online">ออนไลน์</string>
     <string name="pref_discord_rpc">ดิสครอด Rich Presence</string>
     <string name="action_move_down">เลื่อนลง</string>
+    <string name="updating">กำลังอัปเดต</string>
 </resources>
