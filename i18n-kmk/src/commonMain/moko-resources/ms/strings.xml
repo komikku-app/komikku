@@ -1,4 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_search_for_source">Cari sumber</string>
+    <string name="download_cache_renew_interval_1hour">1 jam</string>
+    <string name="download_cache_renew_interval_2hour">2 Jam</string>
+    <string name="download_cache_renew_interval_12hour">12 jam (AM/PM)</string>
+    <string name="download_cache_renew_interval_24hour">1 Hari</string>
+    <string name="pref_webdav_password">Kata Laluan</string>
+    <string name="auto_update_app">Auto-kemas kini apl</string>
+    <string name="action_skip_all_duplicate_manga">Langkau semua</string>
+    <string name="pref_source_related_mangas">Pengesyoran</string>
+    <string name="pref_enable_discord_rpc">Dayakan Discord Rich Presence</string>
+    <string name="pref_theme_cover_based_style_content">Content</string>
+    <string name="action_move_down">Bergerak ke bawah</string>
+    <string name="theme_custom">Tema Kustom</string>
+    <string name="action_hide">Sembunyi</string>
+    <string name="pref_theme_cover_based_style_neutral">Neutral</string>
+    <string name="action_move_up">Bergerak ke atas</string>
+    <string name="action_faq_and_guides">Soalan Lazim dan Panduan</string>
+    <string name="theme_doom">azab</string>
+    <string name="action_open_folder">Buka folder</string>
+    <string name="action_update">Kemas kini</string>
+    <string name="pref_theme_cover_based_style_monochrome">Monokrom</string>
+    <string name="theme_sapphire">nilam</string>
+    <string name="updating">Mengemaskini</string>
+    <string name="download_cache_renew_interval_manual">Manual</string>
+    <string name="pref_webdav_username">Nama pengguna</string>
+    <string name="update_completed">kemas kini siap</string>
+    <string name="open">Open</string>
+    <string name="pref_category_connections">Hubungan</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_download_button">Baca terus %s</string>
+    <string name="pref_pinch_to_zoom">Cubit untuk zum</string>
+    <string name="pref_theme_cover_based_style_rainbow">pelangi</string>
+    <string name="theme_cloudflare">Cloudflare</string>
+    <string name="theme_matrix">Matriks</string>
+    <string name="custom_theme_palette_raspberry">Rasberi</string>
+    <string name="release_page">Halaman keluaran</string>
+    <string name="could_not_install_update">Tidak dapat memasang kemas kini</string>
+    <string name="connections_discord">Discord</string>
+    <string name="pref_discord_show_download_button">Tunjukkan butang muat turun</string>
+    <string name="pref_discord_rpc">Discord Rich Presence</string>
+    <string name="pref_discord_dnd">Jangan ganggu</string>
+    <string name="pref_discord_idle">Terbiar</string>
+    <string name="pref_discord_online">Di talian</string>
 </resources>
