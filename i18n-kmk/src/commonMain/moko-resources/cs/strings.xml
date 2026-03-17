@@ -158,4 +158,19 @@
     <string name="pref_category_discord_customization">Přizpůsobení Discordu</string>
     <string name="theme_sapphire">Sapphire</string>
     <string name="pref_discord_show_buttons">Zobrazit tlačítka</string>
+    <string name="pref_webdav_username">Uživatelské jméno</string>
+    <string name="pref_webdav_password">Heslo</string>
+    <string name="action_manual_install">Ruční instalace</string>
+    <string name="sponsor_me">Podpoř mě</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="pref_track_on_add_library">Otevřít nabídku stopování při přidávání do knihovny</string>
+    <string name="action_open_folder">Otevřít složku</string>
+    <string name="action_update">Aktualizace</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Používání</string>
+    <string name="discord_download_button">Číst na %s</string>
+    <string name="updating">Aktualizace</string>
+    <string name="error_opening_folder">Nelze otevřít složku.</string>
 </resources>
