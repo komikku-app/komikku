@@ -196,4 +196,7 @@
     <string name="pref_discord_show_download_button">إظهار زر التحميل</string>
     <string name="pref_discord_show_discord_button_summary">يعرض زرًا للانضمام إلى خادم ديسكورد</string>
     <string name="pref_discord_incognito">وضع التخفي ديسكورد</string>
+    <string name="discord_status_using">باستخدام:</string>
+    <string name="sponsor_me">إدعمني</string>
+    <string name="discord_status_description">%1$s %2$s</string>
 </resources>
