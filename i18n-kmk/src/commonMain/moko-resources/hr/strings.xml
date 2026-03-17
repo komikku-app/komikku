@@ -59,4 +59,9 @@
     <string name="auto_update_app">Automatsko aktualiziranje programa</string>
     <string name="open">Open</string>
     <string name="action_update">Ažuriraj</string>
+    <string name="theme_matrix">Matrix</string>
+    <string name="theme_cottoncandy">Cotton Candy</string>
+    <string name="theme_doom">Doom</string>
+    <string name="theme_mocha">Mocha</string>
+    <string name="theme_sapphire">Sapphire</string>
 </resources>
