@@ -200,7 +200,7 @@ class SyncChaptersWithSource(
                 bookmark = chapter.chapterNumber in deletedBookmarkedChapterNumbers,
             )
 
-            // Try to to use the fetch date of the original entry to not pollute 'Updates' tab
+            // Try to use the fetch date of the original entry to not pollute 'Updates' tab
             deletedChapterNumberDateFetchMap[chapter.chapterNumber]?.let {
                 chapter = chapter.copy(dateFetch = it)
             }
