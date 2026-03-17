@@ -121,4 +121,18 @@
     <string name="theme_sapphire">Szafir</string>
     <string name="custom_theme_palette_patagonia">Patagonia</string>
     <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="pref_webdav_username">Nazwa użytkownika</string>
+    <string name="pref_webdav_password">Hasło</string>
+    <string name="action_open_folder">Otwórz folder</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="error_opening_folder">Nie udało się otworzyć folderu.</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="updating">Aktualizowanie</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Wykorzystując:</string>
+    <string name="sponsor_me">Wesprzyj mnie</string>
+    <string name="pref_track_on_add_library">Otwórz menu po dodaniu do biblioteki</string>
+    <string name="action_update">Aktualizacja</string>
 </resources>
