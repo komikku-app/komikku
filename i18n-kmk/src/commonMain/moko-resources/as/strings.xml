@@ -171,4 +171,7 @@
     <string name="pref_enable_discord_rpc">ডিস্ক’ৰ্ড ৰিচ প্ৰেজেন্স সক্ৰিয় কৰক</string>
     <string name="pref_discord_status">ডিস্ক’ৰ্ডৰ স্থিতি</string>
     <string name="pref_discord_dnd">⛔ বিৰক্ত নকৰিব</string>
+    <string name="pref_webdav_username">ইউজাৰনেম</string>
+    <string name="pref_webdav_password">পাছৱাৰ্ড</string>
+    <string name="discord_status_description">%1$s %2$s</string>
 </resources>
