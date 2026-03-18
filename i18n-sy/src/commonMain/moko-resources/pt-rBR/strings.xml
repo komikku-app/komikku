@@ -662,4 +662,9 @@
     <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>HABILITAR ESTA OPÇÃO CRIARÁ UM NOVO BANCO DE DADOS. SIGA ESTAS ETAPAS PARA MANTER SEUS DADOS SEGUROS<br>1. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> CRIAR BACKUP<br>2. CONFIGURAÇÕES DO SISTEMA -> LIMPAR DADOS DO APP<br>3. ABRA O APP E ATIVE ISSO<br>4. CONFIGURAÇÕES DO SISTEMA -> FORÇAR REINICIALIZAÇÃO<br>5. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> RESTAURAR BACKUP</font>]]></string>
     <string name="aes_256">AES 256</string>
     <string name="aes_128">AES 128</string>
+    <string name="eh_boost_invalid_loader">Esta página não pode ser impulsionada (carregador de página inválido)!</string>
+    <string name="pref_center_margin_summary">Insira um espaçador para preencher o espaço morto em dispositivos dobráveis.</string>
+    <string name="pref_archive_reader_mode_summary">A forma como as imagens dentro de arquivos, como CBZ ou CBR, são carregadas.</string>
+    <string name="entry_not_tracked">A entrada não é rastreada.</string>
+    <string name="fill_from_tracker">Preencher a partir do rastreador</string>
 </resources>

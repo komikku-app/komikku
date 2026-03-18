@@ -620,4 +620,10 @@
     <string name="rec_error_string">தேடல் செயல்பாட்டின் போது பிழை ஏற்பட்டது: %1$s</string>
     <string name="rec_processing_state">செயலாக்க நுழைவு %1$d %2$d</string>
     <string name="similar_titles">ஒத்த தலைப்புகள்</string>
+    <string name="pref_include_chapter_url_hash">அத்தியாய முகவரி ஆசைச் சேர்க்கவும்</string>
+    <string name="pref_include_chapter_url_hash_desc">அத்தியாயம் முகவரி இன் MD5 ஆசின் முதல் ஆறு எழுத்துக்களை அத்தியாயக் கோப்பு அல்லது கோப்புறை பெயரில் இணைக்கவும்.</string>
+    <string name="filename">கோப்பு பெயர்</string>
+    <string name="file_extension">கோப்பு நீட்டிப்பு</string>
+    <string name="base_url">அடிப்படை முகவரி</string>
+    <string name="final_chapter">இறுதி அத்தியாயம்</string>
 </resources>
