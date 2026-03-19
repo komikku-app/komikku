@@ -55,6 +55,7 @@ import eu.kanade.presentation.track.TrackStatusSelector
 import eu.kanade.presentation.track.TrackerSearch
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.track.DeletableTracker
+import eu.kanade.tachiyomi.data.track.doujin.DoujinTracker
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
@@ -819,8 +820,14 @@ data class TrackerSearchScreen(
                 screenModel.registerTracking(selected)
                 navigator.pop()
             },
+            onCreateManualEntry = { private ->
+                screenModel.createManualEntry(textFieldState.text.toString(), private)
+                navigator.pop()
+            },
             onDismissRequest = navigator::pop,
             supportsPrivateTracking = screenModel.supportsPrivateTracking,
+            supportsManualCreate = screenModel.supportsManualCreate,
+            manualCreateLabel = screenModel.manualCreateLabel,
         )
     }
 
@@ -832,6 +839,12 @@ data class TrackerSearchScreen(
     ) : StateScreenModel<Model.State>(State()) {
 
         val supportsPrivateTracking = tracker.supportsPrivateTracking
+        val supportsManualCreate = tracker is DoujinTracker
+        val manualCreateLabel = if (supportsManualCreate) {
+            "Create manual entry in Doujin Tracker"
+        } else {
+            ""
+        }
 
         init {
             // Run search on first launch
@@ -864,6 +877,16 @@ data class TrackerSearchScreen(
 
         fun registerTracking(item: TrackSearch) {
             screenModelScope.launchNonCancellable { tracker.register(item, mangaId) }
+        }
+
+        fun createManualEntry(query: String, private: Boolean) {
+            val normalizedTitle = query.sanitize().ifBlank { return }
+            val item = TrackSearch.create(tracker.id).apply {
+                title = normalizedTitle
+                tracking_url = "doujin://new"
+                this.private = private
+            }
+            registerTracking(item)
         }
 
         fun updateSelection(selected: TrackSearch) {
