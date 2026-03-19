@@ -95,11 +95,11 @@ fun TrackerSearch(
     selected: TrackSearch?,
     onSelectedChange: (TrackSearch) -> Unit,
     onConfirmSelection: (private: Boolean) -> Unit,
-    onCreateManualEntry: (private: Boolean) -> Unit,
+    onCreateManualEntry: (private: Boolean) -> Unit = {},
     onDismissRequest: () -> Unit,
     supportsPrivateTracking: Boolean,
-    supportsManualCreate: Boolean,
-    manualCreateLabel: String,
+    supportsManualCreate: Boolean = false,
+    manualCreateLabel: String = "",
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
