@@ -82,7 +82,7 @@ class DoujinTrackerApi(
 
     companion object {
         // Emulator localhost mapping; swap to your production bridge URL when needed.
-        const val baseUrl = "http://10.0.2.2:3000"
+        const val baseUrl = "https://doujin-tracker-bridge.onrender.com"
     }
 }
 
