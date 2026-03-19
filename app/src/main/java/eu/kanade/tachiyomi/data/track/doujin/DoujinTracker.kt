@@ -130,7 +130,12 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
                     last_chapter_read = remote.progress.toDouble()
                     status = mapStatusFromApi(remote.status)
                     cover_url = remote.coverUrl.orEmpty()
-                    summary = "Synced entry from Doujin Tracker"
+                    authors = listOfNotNull(remote.author)
+                    artists = listOfNotNull(remote.circle)
+                    publishing_type = remote.event.orEmpty()
+                    publishing_status = remote.parody.orEmpty()
+                    summary = remote.description
+                        ?: "Synced entry from Doujin Tracker"
                 }
             }
     }
@@ -182,6 +187,11 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
             last_chapter_read = remote.progress.toDouble()
             status = mapStatusFromApi(remote.status)
             cover_url = remote.coverUrl.orEmpty()
+            authors = listOfNotNull(remote.author)
+            artists = listOfNotNull(remote.circle)
+            publishing_type = remote.event.orEmpty()
+            publishing_status = remote.parody.orEmpty()
+            summary = remote.description.orEmpty()
         }
     }
 
