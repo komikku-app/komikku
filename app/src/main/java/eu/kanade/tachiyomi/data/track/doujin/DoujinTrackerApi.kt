@@ -30,6 +30,21 @@ class DoujinTrackerApi(
         }
     }
 
+    suspend fun refreshSession(refreshToken: String): LoginResponse {
+        val payload = """{"refreshToken":"$refreshToken"}"""
+        val request = Request.Builder()
+            .url("$baseUrl/auth/refresh")
+            .post(payload.toRequestBody(jsonMime))
+            .header("Content-Type", "application/json")
+            .build()
+
+        return with(json) {
+            client.newCall(request)
+                .awaitSuccess()
+                .parseAs<LoginResponse>()
+        }
+    }
+
     suspend fun getTitles(token: String): TitlesResponse {
         val request = Request.Builder()
             .url("$baseUrl/tracker/titles")
@@ -90,6 +105,8 @@ class DoujinTrackerApi(
 data class LoginResponse(
     val token: String,
     val userId: String,
+    val refreshToken: String? = null,
+    val expiresAt: Long? = null,
 )
 
 @Serializable

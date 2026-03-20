@@ -7,8 +7,14 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import kotlinx.coroutines.delay
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import java.net.SocketTimeoutException
 import kotlin.math.absoluteValue
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
@@ -32,6 +38,7 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
 
     private val api by lazy { DoujinTrackerApi(client) }
     private val getManga: GetManga by injectLazy()
+    private val json: Json by injectLazy()
 
     override fun getLogo() = R.drawable.brand_suwayomi
 
@@ -68,29 +75,32 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
             }
         }
 
-        val token = getPassword()
         val titleId = track.tracking_url.titleIdFromUrl()
 
         if (titleId == null) {
             // Not yet created remotely; create then continue with local track info.
             val manga = getManga.await(track.manga_id)
-            val created = api.addTitle(
-                token,
-                buildAddTitleRequest(track, mapStatusToApi(track.status), manga),
-            )
+            val created = withAuthorizedToken { token ->
+                api.addTitle(
+                    token,
+                    buildAddTitleRequest(track, mapStatusToApi(track.status), manga),
+                )
+            }
             track.remote_id = created.id.hashCode().toLong().absoluteValue
             track.tracking_url = trackUrl(created.id)
             return track
         }
 
-        api.updateTitle(
-            token = token,
-            titleId = titleId,
-            requestBody = UpdateTitleRequest(
-                status = mapStatusToApi(track.status),
-                progress = track.last_chapter_read.toInt(),
-            ),
-        )
+        withAuthorizedToken { token ->
+            api.updateTitle(
+                token = token,
+                titleId = titleId,
+                requestBody = UpdateTitleRequest(
+                    status = mapStatusToApi(track.status),
+                    progress = track.last_chapter_read.toInt(),
+                ),
+            )
+        }
         return track
     }
 
@@ -101,13 +111,14 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
             return refresh(track)
         }
 
-        val token = getPassword()
         val status = if (hasReadChapters) READING else PLAN_TO_READ
         val manga = getManga.await(track.manga_id)
-        val created = api.addTitle(
-            token,
-            buildAddTitleRequest(track, mapStatusToApi(status), manga),
-        )
+        val created = withAuthorizedToken { token ->
+            api.addTitle(
+                token,
+                buildAddTitleRequest(track, mapStatusToApi(status), manga),
+            )
+        }
 
         track.status = status
         track.remote_id = created.id.hashCode().toLong().absoluteValue
@@ -118,32 +129,34 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
     override suspend fun search(query: String): List<TrackSearch> {
         if (query.isBlank()) return emptyList()
 
-        val token = getPassword()
-        return api.getTitles(token).titles
-            .filter { it.title.contains(query, ignoreCase = true) }
-            .map { remote ->
-                TrackSearch.create(id).apply {
-                    title = remote.title
-                    remote_id = remote.id.hashCode().toLong().absoluteValue
-                    tracking_url = trackUrl(remote.id)
-                    total_chapters = (remote.totalChapters ?: 0).toLong()
-                    last_chapter_read = remote.progress.toDouble()
-                    status = mapStatusFromApi(remote.status)
-                    cover_url = remote.coverUrl.orEmpty()
-                    authors = listOfNotNull(remote.author)
-                    artists = listOfNotNull(remote.circle)
-                    publishing_type = remote.event.orEmpty()
-                    publishing_status = remote.parody.orEmpty()
-                    summary = remote.description
-                        ?: "Synced entry from Doujin Tracker"
+        return withAuthorizedToken { token ->
+            api.getTitles(token).titles
+                .filter { it.title.contains(query, ignoreCase = true) }
+                .map { remote ->
+                    TrackSearch.create(id).apply {
+                        title = remote.title
+                        remote_id = remote.id.hashCode().toLong().absoluteValue
+                        tracking_url = trackUrl(remote.id)
+                        total_chapters = (remote.totalChapters ?: 0).toLong()
+                        last_chapter_read = remote.progress.toDouble()
+                        status = mapStatusFromApi(remote.status)
+                        cover_url = remote.coverUrl.orEmpty()
+                        authors = listOfNotNull(remote.author)
+                        artists = listOfNotNull(remote.circle)
+                        publishing_type = remote.event.orEmpty()
+                        publishing_status = remote.parody.orEmpty()
+                        summary = remote.description
+                            ?: "Synced entry from Doujin Tracker"
+                    }
                 }
-            }
+        }
     }
 
     override suspend fun refresh(track: Track): Track {
-        val token = getPassword()
         val titleId = track.tracking_url.titleIdFromUrl() ?: return track
-        val remote = api.getTitles(token).titles.firstOrNull { it.id == titleId } ?: return track
+        val remote = withAuthorizedToken { token ->
+            api.getTitles(token).titles.firstOrNull { it.id == titleId }
+        } ?: return track
 
         track.title = remote.title
         track.status = mapStatusFromApi(remote.status)
@@ -156,18 +169,19 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
 
     override suspend fun login(username: String, password: String) {
         val response = api.login(username, password)
-        saveCredentials(response.userId, response.token)
+        saveSession(response.userId, response.token, response.refreshToken)
     }
 
     override suspend fun delete(track: DomainTrack) {
-        val token = getPassword()
         val titleId = track.remoteUrl.titleIdFromUrl() ?: return
-        api.deleteTitle(token, titleId)
+        withAuthorizedToken { token -> api.deleteTitle(token, titleId) }
     }
 
     override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         val titleId = track.remoteUrl.titleIdFromUrl() ?: return TrackMangaMetadata()
-        val remote = api.getTitles(getPassword()).titles.firstOrNull { it.id == titleId }
+        val remote = withAuthorizedToken { token ->
+            api.getTitles(token).titles.firstOrNull { it.id == titleId }
+        }
             ?: return TrackMangaMetadata()
 
         return TrackMangaMetadata(
@@ -178,7 +192,9 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
     }
 
     override suspend fun searchById(id: String): TrackSearch? {
-        val remote = api.getTitles(getPassword()).titles.firstOrNull { it.id == id } ?: return null
+        val remote = withAuthorizedToken { token ->
+            api.getTitles(token).titles.firstOrNull { it.id == id }
+        } ?: return null
         return TrackSearch.create(this.id).apply {
             title = remote.title
             remote_id = remote.id.hashCode().toLong().absoluteValue
@@ -241,4 +257,64 @@ class DoujinTracker(id: Long) : BaseTracker(id, "Doujin Tracker"), DeletableTrac
             sourceId = manga?.url,
         )
     }
+
+    private suspend fun <T> withAuthorizedToken(block: suspend (token: String) -> T): T {
+        val session = getSession()
+
+        return try {
+            withTimeoutRetry { block(session.accessToken) }
+        } catch (error: Throwable) {
+            if (!error.isUnauthorized()) throw error
+
+            val refreshToken = session.refreshToken ?: throw error
+            val refreshed = api.refreshSession(refreshToken)
+            saveSession(
+                userId = if (refreshed.userId.isNotBlank()) refreshed.userId else getUsername(),
+                accessToken = refreshed.token,
+                refreshToken = refreshed.refreshToken ?: refreshToken,
+            )
+            withTimeoutRetry { block(refreshed.token) }
+        }
+    }
+
+    private suspend fun <T> withTimeoutRetry(block: suspend () -> T): T {
+        return try {
+            block()
+        } catch (error: Throwable) {
+            if (!error.isTimeoutLike()) throw error
+            delay(1200)
+            block()
+        }
+    }
+
+    private fun getSession(): StoredSession {
+        val raw = getPassword()
+        return try {
+            json.decodeFromString<StoredSession>(raw)
+        } catch (_: Throwable) {
+            StoredSession(accessToken = raw, refreshToken = null)
+        }
+    }
+
+    private fun saveSession(userId: String, accessToken: String, refreshToken: String?) {
+        val payload = json.encodeToString(StoredSession(accessToken, refreshToken))
+        saveCredentials(userId, payload)
+    }
+
+    private fun Throwable.isUnauthorized(): Boolean {
+        val text = message?.lowercase().orEmpty()
+        return text.contains("401") || text.contains("unauthorized") || text.contains("invalid token")
+    }
+
+    private fun Throwable.isTimeoutLike(): Boolean {
+        if (this is SocketTimeoutException) return true
+        val text = message?.lowercase().orEmpty()
+        return text.contains("timeout") || text.contains("timed out")
+    }
 }
+
+@Serializable
+private data class StoredSession(
+    val accessToken: String,
+    val refreshToken: String? = null,
+)
