@@ -59,11 +59,16 @@ import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.lang.ref.WeakReference
+
+private val lock = Any()
 
 class AppModule(val app: Application) : InjektModule {
     // SY -->
     private val securityPreferences: SecurityPreferences by injectLazy()
     // SY <--
+
+    private var sqlDriverRef: WeakReference<SqlDriver>? = null
 
     override fun InjektRegistrar.registerInjectables() {
         addSingleton(app)
@@ -76,27 +81,32 @@ class AppModule(val app: Application) : InjektModule {
             }
             // SY <--
 
-            AndroidxSqliteDriver(
-                // KMK -->
-                driver = if (encryptDatabase) {
-                    SQLCipherDriver(CbzCrypto.getDecryptedPasswordSql(), null, null)
-                } else {
-                    BundledSQLiteDriver()
-                },
-                databaseType = AndroidxSqliteDatabaseType.FileProvider(
-                    app,
-                    if (encryptDatabase) CbzCrypto.DATABASE_NAME else "tachiyomi.db",
-                ),
-                // KMK <--
-                schema = Database.Schema,
-                configuration = AndroidxSqliteConfiguration(
-                    isForeignKeyConstraintsEnabled = true,
+            synchronized(lock) {
+                sqlDriverRef?.get()?.let { return@synchronized it }
+
+                AndroidxSqliteDriver(
                     // KMK -->
-                    // Prevent crash when using Database Inspector
-                    cacheSize = if (isDebugBuildType) 0 else 25,
+                    driver = if (encryptDatabase) {
+                        SQLCipherDriver(CbzCrypto.getDecryptedPasswordSql(), null, null)
+                    } else {
+                        BundledSQLiteDriver()
+                    },
+                    databaseType = AndroidxSqliteDatabaseType.FileProvider(
+                        app,
+                        if (encryptDatabase) CbzCrypto.DATABASE_NAME else "tachiyomi.db",
+                    ),
                     // KMK <--
-                ),
-            )
+                    schema = Database.Schema,
+                    configuration = AndroidxSqliteConfiguration(
+                        isForeignKeyConstraintsEnabled = true,
+                        // KMK -->
+                        // Prevent crash when using Database Inspector
+                        cacheSize = if (isDebugBuildType) 0 else 25,
+                        // KMK <--
+                    ),
+                )
+                    .also { sqlDriverRef = WeakReference(it) }
+            }
         }
         addSingletonFactory {
             Database(
