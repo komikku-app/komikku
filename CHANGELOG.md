@@ -11,6 +11,31 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - `Other` - for technical stuff.
 
 ## [Unreleased]
+### Improved
+- Show informative error when trying to add unapproved titles to list on MAL ([@MajorTanya](https://github.com/MajorTanya)) ([#3155](https://github.com/mihonapp/mihon/pull/3155))
+
+## [v0.19.7] - 2026-03-23
+Same as v0.19.6
+
+## [v0.19.6] - 2026-03-23
+### Fixed
+- Fix app crashing when trying to add extension repo with existing signature ([@AntsyLich](https://github.com/AntsyLich)) ([`cb0e329`](https://github.com/mihonapp/mihon/commit/cb0e329))
+- Potentially fix 'database is locked' crash ([@AntsyLich](https://github.com/AntsyLich)) ([`f8e82b9`](https://github.com/mihonapp/mihon/commit/f8e82b9))
+- Fix occasional crash when mass installing/uninstalling extension using `PackageManager` ([@AntsyLich](https://github.com/AntsyLich)) ([`42daa3f`](https://github.com/mihonapp/mihon/commit/42daa3f))
+- Fix app crash on startup on some Android TV ([@AntsyLich](https://github.com/AntsyLich)) ([`b40f1d3`](https://github.com/mihonapp/mihon/commit/b40f1d3))
+
+## [v0.19.5] - 2026-03-20
+### Changed
+- Retry in reader now redownloads image ([@AntsyLich](https://github.com/AntsyLich)) ([#3089](https://github.com/mihonapp/mihon/pull/3089))
+
+### Fixed
+- Fix performance regression introduced in v0.19.4 ([@AntsyLich](https://github.com/AntsyLich)) ([#3082](https://github.com/mihonapp/mihon/pull/3082))
+- Fix duplicate key crash in duplicate detection ([@leodyversemilla07](https://github.com/leodyversemilla07)) ([#3040](https://github.com/mihonapp/mihon/pull/3040))
+- Fix MangaUpdates HTTP 4XX errors ([@leodyversemilla07](https://github.com/leodyversemilla07)) ([#3021](https://github.com/mihonapp/mihon/pull/3021))
+- Fix WebView JavaScript dialogs popup after screen is closed ([@leodyversemilla07](https://github.com/leodyversemilla07)) ([#3041](https://github.com/mihonapp/mihon/pull/3041))
+- Fix extension actions disappearing after installing and uninstalling in same session ([@leodyversemilla07](https://github.com/leodyversemilla07)) ([#3049](https://github.com/mihonapp/mihon/pull/3049))
+
+## [v0.19.4] - 2026-02-25
 ### Added
 - Automatically remove downloads on Suwayomi after reading, configurable via extension settings ([@cpiber](https://github.com/cpiber)) ([#2673](https://github.com/mihonapp/mihon/pull/2673))
 - Display author & artist name in MAL search results ([@MajorTanya](https://github.com/MajorTanya)) ([#2833](https://github.com/mihonapp/mihon/pull/2833))
