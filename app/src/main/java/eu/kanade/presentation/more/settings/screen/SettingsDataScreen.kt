@@ -644,8 +644,21 @@ object SettingsDataScreen : SearchableSettings {
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(SYMR.strings.pref_google_drive_sign_in),
                 onClick = {
-                    val intent = googleDriveSync.getSignInIntent()
-                    context.startActivity(intent)
+                    try {
+                        val intent = googleDriveSync.getSignInIntent()
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, throwable = e) {
+                            "Failed to open Google Drive sign-in"
+                        }
+                        context.toast(
+                            context.stringResource(
+                                SYMR.strings.google_drive_login_failed,
+                                e.localizedMessage ?: "Google Drive OAuth is not configured for this build",
+                            ),
+                            duration = 7000,
+                        )
+                    }
                 },
             ),
             getGoogleDrivePurge(),
