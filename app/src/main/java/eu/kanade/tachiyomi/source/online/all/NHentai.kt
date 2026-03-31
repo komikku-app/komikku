@@ -29,6 +29,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.Response
+import tachiyomi.core.common.util.lang.withIOContext
 import java.io.IOException
 
 class NHentai(delegate: HttpSource, val context: Context) :
@@ -71,11 +72,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        val server = (1..4).random()
-        val json = input.body.string().replace(
-            UNICODE_ESCAPE_REGEX,
-        ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
-        val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)
+        if (nhConfig == null) getNhConfig()
+        val jsonResponse = jsonParser.decodeFromString<JsonResponse>(input.body.string())
 
         with(metadata) {
             nhId = jsonResponse.id
@@ -85,8 +83,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
             favoritesCount = jsonResponse.numFavorites
 
             mediaId = jsonResponse.mediaId
-
-            mediaServer = server
 
             jsonResponse.title?.let { title ->
                 japaneseTitle = title.japanese
@@ -127,12 +123,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
     }
 
-    // KMK -->
-    /**
-     * Site JSON is saying cover of type `w` but instead it's using cover like `cover.jpg.webp`
-     */
-    private fun String.parseType(): String = this.substringAfterLast('/').substringAfter('.').first().toString()
-    // KMK <--
+    // Site converted all the images to webp, like `cover.jpg.webp`
+    private fun String.parseType(): String = this.substringAfterLast('.').first().toString()
 
     @Serializable
     data class JsonConfig(
@@ -198,6 +190,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun getPagePreviewList(manga: SManga, chapters: List<SChapter>, page: Int): PagePreviewPage {
+        if (nhConfig == null) getNhConfig()
         val metadata = fetchOrLoadMetadata(manga.id()) {
             client.newCall(mangaDetailsRequest(manga)).awaitSuccess()
         }
@@ -214,21 +207,23 @@ class NHentai(delegate: HttpSource, val context: Context) :
         )
     }
 
-    val nhConfig: JsonConfig by lazy {
+    var nhConfig: JsonConfig? = null
+    suspend fun getNhConfig() {
         try {
-            val response = client.newCall(GET("https://nhentai.net/api/v2/config", headers)).execute()
+            val response =
+                withIOContext { client.newCall(GET("https://nhentai.net/api/v2/config", headers)).awaitSuccess() }
             val body = response.body.string()
-            jsonParser.decodeFromString<JsonConfig>(body)
-        } catch (_: IOException) {
-            JsonConfig(
-                (1..4).map { n -> "https://i$n.nhentai.net" }.toList(),
-                (1..4).map { n -> "https://t$n.nhentai.net" }.toList(),
+            nhConfig = jsonParser.decodeFromString<JsonConfig>(body)
+        } catch (_: Exception) {
+            nhConfig = JsonConfig(
+                (1..4).map { n -> "https://i$n.nhentai.net" },
+                (1..4).map { n -> "https://t$n.nhentai.net" },
             )
         }
     }
 
     val thumbServer
-        get() = nhConfig.thumbServers.random()
+        get() = nhConfig?.thumbServers?.random()
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
         return client.newCachelessCallWithProgress(
