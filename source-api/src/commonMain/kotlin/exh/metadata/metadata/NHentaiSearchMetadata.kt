@@ -1,7 +1,6 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import android.util.Log
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil

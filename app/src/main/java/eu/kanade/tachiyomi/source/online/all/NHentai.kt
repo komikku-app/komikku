@@ -30,7 +30,6 @@ import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.Response
 import tachiyomi.core.common.util.lang.withIOContext
-import java.io.IOException
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
