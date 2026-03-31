@@ -40,6 +40,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     override val metaClass = NHentaiSearchMetadata::class
     override fun newMetaInstance() = NHentaiSearchMetadata()
     override val lang = delegate.lang
+    override val versionId = 2
 
     private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)
