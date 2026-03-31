@@ -122,7 +122,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
     }
 
-    // Site converted all the images to webp, like `cover.jpg.webp`
     private fun String.parseType(): String = this.substringAfterLast('.').first().toString()
 
     @Serializable
