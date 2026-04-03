@@ -34,12 +34,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
     var shortTitle by titleDelegate(TITLE_TYPE_SHORT)
 
     var coverImageUrl: String? = null
-    var coverImageType: String? = null
-
     var pageImagePreviewUrls: List<String> = emptyList()
-
-    var thumbnailImageUrl: String? = null
-    var thumbnailImageType: String? = null
 
     var scanlator: String? = null
 
@@ -80,7 +75,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
         return manga.copy(
             url = key ?: manga.url,
-            thumbnail_url = coverImageUrl ?: thumbnailImageUrl ?: manga.thumbnail_url,
+            thumbnail_url = coverImageUrl ?: manga.thumbnail_url,
             title = title,
             artist = group ?: manga.artist,
             author = artist ?: manga.artist,
@@ -108,9 +103,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
                 getItem(japaneseTitle) { stringResource(SYMR.strings.japanese_title) },
                 getItem(englishTitle) { stringResource(SYMR.strings.english_title) },
                 getItem(shortTitle) { stringResource(SYMR.strings.short_title) },
-                getItem(coverImageType) { stringResource(SYMR.strings.cover_image_file_type) },
+                getItem(coverImageUrl) { stringResource(SYMR.strings.thumbnail_url) },
                 getItem(pageImagePreviewUrls.size) { stringResource(SYMR.strings.page_count) },
-                getItem(thumbnailImageType) { stringResource(SYMR.strings.thumbnail_image_file_type) },
                 getItem(scanlator) { stringResource(MR.strings.scanlator) },
             )
         }
@@ -128,15 +122,6 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         private const val NHENTAI_ARTIST_NAMESPACE = "artist"
         private const val NHENTAI_GROUP_NAMESPACE = "group"
         const val NHENTAI_CATEGORIES_NAMESPACE = "category"
-
-        fun typeToExtension(t: String?) =
-            when (t) {
-                "p" -> "png"
-                "j" -> "jpg"
-                "g" -> "gif"
-                "w" -> "webp"
-                else -> null
-            }
 
         fun nhUrlToId(url: String) =
             url.split("/").last { it.isNotBlank() }.toLong()
