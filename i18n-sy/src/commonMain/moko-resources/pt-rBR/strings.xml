@@ -667,4 +667,11 @@
     <string name="pref_archive_reader_mode_summary">A forma como as imagens dentro de arquivos, como CBZ ou CBR, são carregadas.</string>
     <string name="entry_not_tracked">A entrada não é rastreada.</string>
     <string name="fill_from_tracker">Preencher a partir do rastreador</string>
+    <string name="favorites_sync_unable_to_add_to_remote">Não foi possível adicionar a galeria ao servidor remoto: \'%1$s\' (GID: %2$s)!</string>
+    <string name="filename">Nome do arquivo</string>
+    <string name="file_extension">Extensão de arquivo</string>
+    <string name="final_chapter">Capítulo final</string>
+    <string name="data_saver_stop_exclude">Parar de excluir da economia de dados</string>
+    <string name="rec_processing_state">Processando entrada %1$d de %2$d</string>
+    <string name="base_url">Url base</string>
 </resources>

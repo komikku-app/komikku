@@ -665,4 +665,6 @@
     <string name="only_show_updated_entries">新しい章を含むエントリーのみを表示する</string>
     <string name="rec_search">共通の推奨事項を見つける</string>
     <string name="rec_hide_library_entries">ライブラリに既に存在する結果を非表示にする</string>
+    <string name="pref_include_chapter_url_hash">章のURLハッシュを含める</string>
+    <string name="pref_include_chapter_url_hash_desc">章の URL の MD5 ハッシュの最初の 6 文字を章のファイル名またはフォルダ名に追加します。</string>
 </resources>
