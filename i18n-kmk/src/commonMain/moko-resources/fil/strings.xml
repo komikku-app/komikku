@@ -201,4 +201,6 @@
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="pref_webdav_username">Username (pangalan)</string>
     <string name="pref_webdav_password">Password</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Gamitin ang matalinong paghahanap</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">Kapag napagana, awtomatikong pipiliin ang pinaka-akmang resulta. Kung hindi, ipakikita ang lahat ng resulta para manual na makapili.</string>
 </resources>
