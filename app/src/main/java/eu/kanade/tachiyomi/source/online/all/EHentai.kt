@@ -878,8 +878,9 @@ class EHentai(
      */
     private fun favoritesPrevCursor(doc: Document): String? {
         val anchor = doc.selectFirst("a#uprev[href]") ?: return null
-        val href = anchor.absUrl("href").ifBlank { anchor.attr("href") }
-        return href.toHttpUrlOrNull()?.queryParameter("prev")?.takeIf { it.isNotBlank() }
+        val href = anchor.attr("href")
+        val url = baseUrl.toHttpUrl().resolve(href) ?: return null
+        return url.queryParameter("prev")?.takeIf { it.isNotBlank() }
     }
 
     private fun favoritesListRequest(prevCursor: String?, inlineSet: String): Request {
@@ -899,7 +900,7 @@ class EHentai(
         val result = mutableListOf<ParsedManga>()
         var prevCursor: String? = "1-0"
 
-        var favNames: List<String>? = null
+        var favNames = emptyList<String>()
 
         do {
             val response2 = withIOContext {
@@ -911,9 +912,9 @@ class EHentai(
             // Each page is still ordered newest→oldest; reverse so batches concatenate oldest→newest.
             result += parsed.first.asReversed()
 
-            if (favNames == null) {
+            if (favNames.isEmpty()) {
                 favNames = doc.select(".fp:not(.fps)").mapNotNull {
-                    it.child(2).text()
+                    it.children().getOrNull(2)?.text()
                 }
             }
 
