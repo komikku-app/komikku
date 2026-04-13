@@ -53,6 +53,7 @@ import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.EH_PACKAGE
+import exh.source.ExhFavoritesSyncSort
 import exh.source.ExhPreferences
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
@@ -871,8 +872,8 @@ object SettingsEhScreen : SearchableSettings {
         return Preference.PreferenceItem.ListPreference(
             preference = exhPreferences.exhFavoritesSyncSort(),
             entries = persistentMapOf(
-                "fs_f" to stringResource(SYMR.strings.favorites_sync_sort_favorited),
-                "fs_p" to stringResource(SYMR.strings.favorites_sync_sort_published),
+                ExhFavoritesSyncSort.FAVORITED to stringResource(SYMR.strings.favorites_sync_sort_favorited),
+                ExhFavoritesSyncSort.PUBLISHED to stringResource(SYMR.strings.favorites_sync_sort_published),
             ),
             title = stringResource(SYMR.strings.favorites_sync_sort),
         )
