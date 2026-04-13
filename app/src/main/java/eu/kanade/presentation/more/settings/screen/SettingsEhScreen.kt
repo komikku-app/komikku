@@ -168,6 +168,7 @@ object SettingsEhScreen : SearchableSettings {
             Preference.PreferenceGroup(
                 stringResource(SYMR.strings.favorites_sync),
                 preferenceItems = persistentListOf(
+                    favoritesSyncSort(exhPreferences),
                     readOnlySync(exhPreferences),
                     syncFavoriteNotes(),
                     lenientSync(exhPreferences),
@@ -862,6 +863,18 @@ object SettingsEhScreen : SearchableSettings {
             preference = exhPreferences.enhancedEHentaiView(),
             title = stringResource(SYMR.strings.pref_enhanced_e_hentai_view),
             subtitle = stringResource(SYMR.strings.pref_enhanced_e_hentai_view_summary),
+        )
+    }
+
+    @Composable
+    fun favoritesSyncSort(exhPreferences: ExhPreferences): Preference.PreferenceItem.ListPreference<String> {
+        return Preference.PreferenceItem.ListPreference(
+            preference = exhPreferences.exhFavoritesSyncSort(),
+            entries = persistentMapOf(
+                "fs_f" to stringResource(SYMR.strings.favorites_sync_sort_favorited),
+                "fs_p" to stringResource(SYMR.strings.favorites_sync_sort_published),
+            ),
+            title = stringResource(SYMR.strings.favorites_sync_sort),
         )
     }
 

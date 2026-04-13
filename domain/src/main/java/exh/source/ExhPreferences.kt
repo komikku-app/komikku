@@ -54,6 +54,8 @@ class ExhPreferences(
 
     fun exhLenientSync() = preferenceStore.getBoolean("eh_lenient_sync", false)
 
+    fun exhFavoritesSyncSort() = preferenceStore.getString("eh_favorites_sync_sort", "fs_f")
+
     fun exhShowSettingsUploadWarning() = preferenceStore.getBoolean("eh_showSettingsUploadWarning2", true)
 
     fun logLevel() = preferenceStore.getInt("eh_log_level", 0)
