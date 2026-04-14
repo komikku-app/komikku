@@ -46,18 +46,19 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         .build()
 
     private fun Response.parseALError() {
-        val bodyString = peekBody(Long.MAX_VALUE).string()
-        try {
-            val errorObj = json.decodeFromString<ALError>(bodyString)
-            errorObj.errors?.firstOrNull()?.let {
-                val msg = it.message
-                if (msg.contains("Invalid token") || code == 401) {
-                    throw Exception("AniList token expired, please login again")
-                }
-                throw Exception(msg)
-            }
+        val bodyString = peekBody(1024 * 1024).string()
+        val errorObj = try {
+            json.decodeFromString<ALError>(bodyString)
         } catch (e: Exception) {
-            if (e.message?.contains("AniList") == true || e.message?.contains("token") == true) throw e
+            null
+        }
+
+        errorObj?.errors?.firstOrNull()?.let {
+            val msg = it.message
+            if (msg.contains("Invalid token") || it.status == 401) {
+                throw Exception("AniList token expired, please login again")
+            }
+            throw Exception(msg)
         }
     }
 
