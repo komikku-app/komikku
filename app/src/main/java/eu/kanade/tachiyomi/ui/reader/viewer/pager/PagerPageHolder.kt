@@ -338,8 +338,8 @@ class PagerPageHolder(
         return if (
             !ImageUtil.isAnimatedAndSupported(imageSource) &&
             ImageUtil.isWideImage(imageSource) &&
-            viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 ||
-            viewer.config.imageCropBorders
+            (viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 ||
+                viewer.config.imageCropBorders)
         ) {
             ImageUtil.addHorizontalCenterMargin(imageSource, height, context, viewer.config.imageCropBorders)
         } else {
