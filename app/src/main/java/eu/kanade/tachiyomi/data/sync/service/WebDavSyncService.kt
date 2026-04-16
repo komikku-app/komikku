@@ -40,7 +40,7 @@ class WebDavSyncService(
     private val url: String = syncPreferences.webDavUrl().get().trim()
     private val folder: String = syncPreferences.webDavFolder().get().trim('/')
     private val username: String = syncPreferences.webDavUsername().get().trim()
-    private val password: String = syncPreferences.webDavPassword().get().trim()
+    private val password: String = syncPreferences.webDavPassword().get()
     private val credentials: String = Credentials.basic(username, password)
 
     private fun buildWebDavFileUrl(fileName: String = "backup.proto"): String {
