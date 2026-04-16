@@ -760,7 +760,9 @@ object SettingsDataScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.pref_sync_api_key),
                     subtitle = stringResource(SYMR.strings.pref_sync_api_key_summ),
                     onConfirm = {
-                        syncPreferences.clientAPIKey().set(it)
+                        scope.launch {
+                            syncPreferences.clientAPIKey().set(it)
+                        }
                         true
                     },
                     icon = null,
@@ -816,7 +818,9 @@ object SettingsDataScreen : SearchableSettings {
                         onDismissRequest = { dialogOpen = false },
                         onReturnPassword = { password ->
                             dialogOpen = false
-                            syncPreferences.webDavPassword().set(password.replace("\n", ""))
+                            scope.launch {
+                                syncPreferences.webDavPassword().set(password.replace("\n", ""))
+                            }
                         },
                         title = KMR.strings.pref_webdav_password,
                     )
