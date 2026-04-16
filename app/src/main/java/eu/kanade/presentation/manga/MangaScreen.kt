@@ -214,7 +214,7 @@ fun MangaScreen(
     hazeState: HazeState,
     // KMK <--
 
-    // My stuff
+    // filter merged entries by source
     onClickFilterMergedMangaBySource: (source: Source) -> Unit,
     // <--: Long) -> Unit,
 ) {
@@ -287,7 +287,6 @@ fun MangaScreen(
             hazeState = hazeState,
             // KMK <--
 
-            //My Stuff
             onClickFilterMergedMangaBySource = onClickFilterMergedMangaBySource
         )
     } else {
@@ -351,6 +350,8 @@ fun MangaScreen(
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
+
+            onClickFilterMergedMangaBySource = onClickFilterMergedMangaBySource
         )
     }
 }
@@ -768,10 +769,11 @@ private fun MangaScreenSmallImpl(
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-                                //My stuff
+                                //For merged entries only
                                 showMergedSources = state.mergedData != null,
                                 mergedMangaData = state.mergedData,
                                 filterMergedMangaBySource = onClickFilterMergedMangaBySource,
+                                selectedSource = state.selectedSource
                             )
                         }
                     }
@@ -899,6 +901,9 @@ private fun MangaScreenLargeImpl(
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
+
+    // Filter Merged Entries by Source
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -1151,16 +1156,16 @@ private fun MangaScreenLargeImpl(
                         )
                         // SY -->
                         if (!state.showRecommendationsInOverflow || state.showMergeWithAnother || state.mergedData != null) {
-                            val onClickFilterMergedMangaBySource = null
                             MangaInfoButtons(
                                 showRecommendsButton = !state.showRecommendationsInOverflow,
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-                                //My stuff
+                                //for merged entries
                                 showMergedSources = state.mergedData != null,
                                 mergedMangaData = state.mergedData,
-                                filterMergedMangaBySource = { onClickFilterMergedMangaBySource },
+                                filterMergedMangaBySource = onClickFilterMergedMangaBySource,
+                                selectedSource = state.selectedSource
 
                             )
                         }

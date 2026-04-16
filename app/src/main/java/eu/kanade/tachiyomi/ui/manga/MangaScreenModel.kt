@@ -260,9 +260,6 @@ class MangaScreenModel(
     private val filteredChapters: List<ChapterList.Item>?
         get() = successState?.processedChapters
 
-//    //My Stuff
-//    private val filterMergedChaptersBySource: List<ChapterList.Item>?
-//        get() = successState?.filterMergedChaptersBySource
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
     private var autoTrackState = trackPreferences.autoUpdateTrackOnMarkRead().get()
@@ -501,8 +498,8 @@ class MangaScreenModel(
                     previewsRowCount = uiPreferences.previewsRowCount().get(),
                     // SY <--
 
-                    // My Stuff
-                    selectedSource = mergedData?.sources[0]
+                    // Temporary solution for default selection
+                    selectedSource = mergedData?.sources?.find { it.name == "MergedSource" }
                 )
             }
 
@@ -1684,13 +1681,11 @@ class MangaScreenModel(
             setMangaChapterFlags.awaitSetBookmarkFilter(manga, flag)
         }
     }
-
     fun getChaptersBySource(source: Source) {
         val manga = successState?.manga ?: return
 
         // Change which selected filter we are on, default null
         updateSuccessState { it.copy(selectedSource = source) }
-
 
         successState?.chapters?.applyFilters(manga)
 
@@ -2048,7 +2043,7 @@ class MangaScreenModel(
             val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) },
             // KMK <--
 
-            // My Stuff
+            // For merged entries only
             val selectedSource: Source? = null,
         ) : State {
             // KMK -->
@@ -2128,7 +2123,7 @@ class MangaScreenModel(
                     .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
                     // Filter by selected source for merged entries
                     .filter { item ->
-                        if (selectedSource == null || mergedData == null) return@filter true
+                        if (selectedSource == null || mergedData == null || selectedSource.name == "MergedSource") return@filter true
                         item.sourceName == selectedSource.name
                     }
                     .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }

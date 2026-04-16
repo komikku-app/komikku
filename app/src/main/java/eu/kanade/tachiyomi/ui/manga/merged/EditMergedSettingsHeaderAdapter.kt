@@ -28,17 +28,15 @@ class EditMergedSettingsHeaderAdapter(
 
     private val sourceManager: SourceManager by injectLazy()
 
-    private lateinit var binding: EditMergedSettingsHeaderBinding
-
     val editMergedMangaItemSortingListener: SortingListener = adapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder {
-        binding = EditMergedSettingsHeaderBinding.inflate(
+        val binding = EditMergedSettingsHeaderBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false,
         )
-        return HeaderViewHolder(binding.root)
+        return HeaderViewHolder(binding)
     }
 
     override fun getItemCount(): Int = 1
@@ -47,8 +45,9 @@ class EditMergedSettingsHeaderAdapter(
         holder.bind()
     }
 
-    inner class HeaderViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    inner class HeaderViewHolder(private val binding: EditMergedSettingsHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind() {
+            val view = itemView
             // KMK -->
             // val dedupeAdapter: ArrayAdapter<String> = ArrayAdapter(
             val dedupeAdapter = SpinnerAdapter(
@@ -64,6 +63,12 @@ class EditMergedSettingsHeaderAdapter(
                 colorScheme,
                 // KMK <--
             )
+
+            // Clear listeners before setting values to prevent feedback loops during re-bind
+            binding.dedupeModeSpinner.onItemSelectedListener = null
+            binding.dedupeSwitch.setOnCheckedChangeListener(null)
+            binding.mangaInfoSpinner.onItemSelectedListener = null
+
             binding.dedupeModeSpinner.adapter = dedupeAdapter
             state.mergeReference?.let {
                 binding.dedupeModeSpinner.setSelection(
@@ -83,22 +88,29 @@ class EditMergedSettingsHeaderAdapter(
                     position: Int,
                     id: Long,
                 ) {
+                    // Only update state if deduplication is actually enabled
+                    if (!binding.dedupeSwitch.isChecked) return
+
+                    val newMode = when (position) {
+                        0 -> MergedMangaReference.CHAPTER_SORT_PRIORITY
+                        1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
+                        2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
+                        else -> MergedMangaReference.CHAPTER_SORT_NONE
+                    }
+
+                    if (state.mergeReference?.chapterSortMode == newMode) return
+
                     state.mergeReference = state.mergeReference?.copy(
-                        chapterSortMode = when (position) {
-                            0 -> MergedMangaReference.CHAPTER_SORT_PRIORITY
-                            1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
-                            2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
-                            else -> MergedMangaReference.CHAPTER_SORT_NONE
-                        },
+                        chapterSortMode = newMode,
                     )
                     xLogD(state.mergeReference?.chapterSortMode)
-                    editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
 
                     // Set Spinner's selected item's background color to transparent
                     if (view != null) (view as TextView).setBackgroundColor(Color.TRANSPARENT)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
+                    if (!binding.dedupeSwitch.isChecked) return
                     state.mergeReference = state.mergeReference?.copy(
                         chapterSortMode = MergedMangaReference.CHAPTER_SORT_NONE,
                     )
@@ -123,11 +135,8 @@ class EditMergedSettingsHeaderAdapter(
             binding.mangaInfoSpinner.adapter = mangaInfoAdapter
 
             mergedMangas.indexOfFirst { it.second.isInfoManga }.let {
-                if (it != -1) {
-                    binding.mangaInfoSpinner.setSelection(it)
-                } else {
-                    binding.mangaInfoSpinner.setSelection(0)
-                }
+                val selection = if (it != -1) it else 0
+                binding.mangaInfoSpinner.setSelection(selection)
             }
 
             binding.mangaInfoSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -169,12 +178,16 @@ class EditMergedSettingsHeaderAdapter(
                 }
                 state.mergeReference = state.mergeReference?.copy(
                     chapterSortMode = when (isChecked) {
-                        true -> MergedMangaReference.CHAPTER_SORT_PRIORITY
+                        true -> {
+                            when (binding.dedupeModeSpinner.selectedItemPosition) {
+                                1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
+                                2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
+                                else -> MergedMangaReference.CHAPTER_SORT_PRIORITY
+                            }
+                        }
                         false -> MergedMangaReference.CHAPTER_SORT_NONE
                     },
                 )
-
-                if (isChecked) binding.dedupeModeSpinner.setSelection(0)
             }
 
             binding.dedupeModeSpinner.isEnabled = binding.dedupeSwitch.isChecked
@@ -182,6 +195,9 @@ class EditMergedSettingsHeaderAdapter(
                 true -> 1F
                 false -> 0.5F
             }
+
+            // Always enable priority sorting independently of deduplication settings
+            editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
 
             // KMK -->
             binding.dedupeSwitchLabel.setTextColor(colorScheme.textColor)
@@ -198,8 +214,7 @@ class EditMergedSettingsHeaderAdapter(
         }
     }
 
-    fun canMove() =
-        state.mergeReference?.let { it.chapterSortMode == MergedMangaReference.CHAPTER_SORT_PRIORITY } ?: false
+    fun canMove() = true
 
     interface SortingListener {
         fun onSetPrioritySort(isPriorityOrder: Boolean)
