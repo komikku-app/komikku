@@ -1852,7 +1852,7 @@ class MangaScreenModel(
                             }
                             // KMK: auto track MangaDex
                             mdTrack.id !in tracks.map { it.trackerId } -> {
-                                (tracks + createMdListTrack()).filterNotNull()
+                                createMdListTrack()?.let { tracks + it } ?: tracks
                             }
                             else -> tracks
                         }
