@@ -204,6 +204,10 @@
     <string name="action_filter_unfinished_manga">Незаконченные тайтлы</string>
     <string name="action_filter_unfinished_chapter">Незаконченные главы</string>
     <string name="action_filter_non_library_entries">Тайтлы не в библиотеке</string>
-    <string name="pref_sync_manga_on_add">Синхронизировать тайтлы при добавлении в библиотеку</string>
-    <string name="pref_sync_manga_on_add_description">Автоматически загружает метаданные и список глав при добавлении в библиотеку</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Использовать умный поиск</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">Если включено, автоматически выбирает наиболее совпадающий результат. Иначе, показывает все результаты поиска для ручного выбора.</string>
+    <string name="pref_fetch_manga_metadata_on_add">Получать метаданные манги при добавлении</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Автоматически загружать обложку, описание и другую информацию при добавлении манги в библиотеку</string>
+    <string name="pref_fetch_manga_chapters_on_add">Получать главы при добавлении</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Автоматически обновлять список глав при добавлении манги в библиотеку</string>
 </resources>

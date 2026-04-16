@@ -172,12 +172,14 @@
     <string name="action_filter_unfinished_chapter">Di natapos na kabanata</string>
     <string name="action_filter_non_library_entries">Mga entry na wala sa aklatan</string>
     <string name="custom_theme_palette_casual">Kaswal</string>
-    <string name="pref_sync_manga_on_add">I-sync ang manga kapag nagdadagdag sa aklatan</string>
-    <string name="pref_sync_manga_on_add_description">Awtomatikong kinukuha ang metadata at listahan ng kabanata ng isang bagong manga kapag idinagdag ito sa aklatan</string>
     <string name="pref_webdav_url">Server URL ng WebDAV</string>
     <string name="pref_webdav_url_summ">Ipasok ang address ng WebDAV server</string>
     <string name="pref_webdav_username_summ">Ipasok ang iyong username ng WebDAV account</string>
     <string name="pref_webdav_password_summ">Ipasok ang iyong password ng WebDAV account</string>
     <string name="pref_webdav_folder_summ">Ise-save ng aplikasyon ang data sa folder na ito</string>
     <string name="pref_discord_rpc">Rich Presence ng Discord</string>
+    <string name="pref_fetch_manga_metadata_on_add">Kunin ang metadata ng manga kapag idinadagdag sa aklatan</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Awtomatikong kunin at i-update ang metadata ng manga kapag idinagdag mo ito sa iyong aklatan</string>
+    <string name="pref_fetch_manga_chapters_on_add">Kunin ang mga kabanata kapag idinadagdag ang manga sa aklatan</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Awtomatikong i-scan ang source para sa mga kabanata kapag idinagdag ang manga sa iyong aklatan</string>
 </resources>

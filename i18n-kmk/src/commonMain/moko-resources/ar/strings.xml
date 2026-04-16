@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">البحث عن مصدر</string>
+    <string name="action_source_search">البحث داخل المصدر</string>
     <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
     <string name="action_bulk_select">وضع التحديد بالجملة</string>
     <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 ساعات</string>
     <string name="download_cache_renew_interval_12hour">12 ساعة</string>
     <string name="download_cache_renew_interval_24hour">1 يوم</string>
-    <string name="download_cache_renew_interval_info">إذا تم تعيين إلى \"يدوي\"، إما تحديث كل مانغا أو باستخدام \"فهرس التنزيلات غير صحيح\" في \"المتقدم\"</string>
+    <string name="download_cache_renew_interval_info">إذا تم تعيين إلى \"يدوي\"، إما قم بتحديث كل مانجا أو باستخدام \"إعادة الفهرسة للتنزيلات\" في \"المتقدم\"</string>
     <string name="pref_clean_invalid_downloads">تنظيف التنزيلات غير صالحة</string>
     <string name="pref_clean_invalid_downloads_summary">العثور على جميع التنزيلات والملفات والمجلدات التي لم يتم حفظها في مكتبتك وإزالتها</string>
     <string name="invalid_downloads_cleaned">تم تنظيف التنزيلات غير صالحة</string>
@@ -120,6 +120,46 @@
     <string name="action_copy_to_clipboard_second_page">نسخ الصفحة الثانية إلى الحافظة</string>
     <string name="action_copy_to_clipboard_combined_page">نسخ الصفحة المدمجة إلى الحافظة</string>
     <string name="auto_update_app_disable_auto_download">عدم التحميل التلقائي للتحديث</string>
-    <string name="action_remove_merged">إزالة المدخلات الأصلية من المكتبة؟</string>
+    <string name="action_remove_merged">إزالة العناصر الأصلية من المكتبة؟</string>
     <string name="batch_add_description">الدعم: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="action_open_folder">فتح مجلد</string>
+    <string name="action_update">تحديث</string>
+    <string name="action_filter_unfinished_manga">مانجا غير مكتملة</string>
+    <string name="action_filter_unfinished_chapter">فصل غير مكتملة</string>
+    <string name="action_filter_non_library_entries">عناصر خارج المكتبة</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">نطاق نقر أصغر</string>
+    <string name="error_opening_folder">فشل فتح المجلد</string>
+    <string name="pref_pinch_to_zoom">ضم الأصابع للتكبير</string>
+    <string name="pref_paged_disable_zoom_in">إلغاء تفعيل التكبير</string>
+    <string name="pref_landscape_zoom_type">وضع التكبير للصور العريضة</string>
+    <string name="scale_type_double">تكبير مزدوج</string>
+    <string name="pref_webtoon_scale_type">تكبير ذكي للشاشات العريضة</string>
+    <string name="pref_smart_scale_long_strip_gap">تنفيذ التكبير الذكي ل \"شرائح طويلة مع فواصل\"</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="pref_top_align_cover">محاذاة الغلاف للأعلى</string>
+    <string name="pref_top_align_cover_summary">إظهار الغلاف محاذي للأعلى بجانب بيانات المانجا</string>
+    <string name="theme_doom">دمار</string>
+    <string name="pref_library_filter_categories_details">لن يتم عرض العناصر في الفئات المستبعدة حتى لو كانت موجودة أيضًا في الفئات المشمولة.</string>
+    <string name="updating">جاري التحديث</string>
+    <string name="pref_show_empty_categories_search">عرض الفئات الفارغة أثناء البحث/التصفية</string>
+    <string name="pref_track_on_add_library">فتح قائمة المزامنة عند الإضافة للمكتبة</string>
+    <string name="pref_fetch_manga_metadata_on_add">تحديث بيانات المانجا عند الإضافة للمكتبة</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">جلب العنوان والوصف والعلامات وغيرها عند إضافة المانجا إلى المكتبة</string>
+    <string name="pref_fetch_manga_chapters_on_add">جلب الفصول عند الإضافة للمكتبة</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">تحديث قائمة الفصول مباشرة بعد إضافة المانجا إلى المكتبة</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">رابط سيرفر WebDAV</string>
+    <string name="pref_webdav_url_summ">ادخل رابط سيرفر WebDAV</string>
+    <string name="pref_webdav_username">اسم المستخدم</string>
+    <string name="pref_webdav_username_summ">ادخل اسم مستخدم WebDAV الخاص بك</string>
+    <string name="pref_webdav_password">كلمة المرور</string>
+    <string name="pref_webdav_password_summ">ادخل كلمة المرور حساب WebDAV الخاص بك</string>
+    <string name="pref_webdav_folder">مجلد بيانات WebDAV</string>
+    <string name="pref_webdav_folder_summ">سيقوم التطبيق بتخزين البيانات في هذا المجلد</string>
+    <string name="downloaded_data">البيانات التي تم تنزيلها</string>
+    <string name="chapters_from_database">الفصول والسجل من قاعدة البيانات</string>
+    <string name="action_manual_install">تثبيت يدوي</string>
 </resources>

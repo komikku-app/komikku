@@ -195,6 +195,19 @@
     <string name="action_filter_unfinished_manga">尚未讀完</string>
     <string name="action_filter_unfinished_chapter">未讀完章節</string>
     <string name="action_filter_non_library_entries">未收藏項目</string>
-    <string name="pref_sync_manga_on_add">新增至書庫時自動同步</string>
-    <string name="pref_sync_manga_on_add_description">將新漫畫加入書庫時，自動取得其元資料及章節列表</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">WebDAV 伺服器 URL</string>
+    <string name="pref_webdav_url_summ">輸入 WebDAV 伺服器地址</string>
+    <string name="pref_webdav_username">使用者名稱</string>
+    <string name="pref_webdav_username_summ">輸入你的 WebDAV 帳戶使用者名稱</string>
+    <string name="pref_webdav_password">密碼</string>
+    <string name="pref_webdav_password_summ">輸入你的 WebDAV 帳戶密碼</string>
+    <string name="pref_webdav_folder">WebDAV 資料夾</string>
+    <string name="pref_webdav_folder_summ">應用將把資料儲存在這個資料夾中</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">使用智慧搜尋</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">若已啟用，自動選取最佳匹配結果，否則顯示所有搜尋結果供手動選擇</string>
+    <string name="pref_fetch_manga_metadata_on_add">新增至書櫃時更新漫畫資料</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">在將作品加入書櫃後，自動抓取標題、作者等最新漫畫資訊</string>
+    <string name="pref_fetch_manga_chapters_on_add">新增至書櫃時更新章節列表</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">在將作品加入書櫃後，自動抓取最新章節列表</string>
 </resources>
