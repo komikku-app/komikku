@@ -57,7 +57,7 @@ class SyncManager(
         SYNCYOMI(1),
         GOOGLE_DRIVE(2),
         // KMK -->
-        WebDAV(3),
+        WEB_DAV(3),
         // KMK <--
         ;
 
@@ -142,7 +142,7 @@ class SyncManager(
             }
 
             // KMK -->
-            SyncService.WebDAV -> {
+            SyncService.WEB_DAV -> {
                 WebDavSyncService(context, json, syncPreferences, notifier)
             }
             // KMK <--

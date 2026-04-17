@@ -738,7 +738,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(SYMR.strings.data_saver_image_quality_summary),
                     enabled = dataSaver != DataSaver.NONE,
                 ),
-                kotlin.run {
+                run {
                     val dataSaverImageFormatJpeg by sourcePreferences.dataSaverImageFormatJpeg()
                         .collectAsState()
                     Preference.PreferenceItem.SwitchPreference(
@@ -808,7 +808,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.log_level),
                     subtitle = stringResource(SYMR.strings.log_level_summary),
                 ),
-                kotlin.run {
+                run {
                     var enableEncryptDatabase by rememberSaveable { mutableStateOf(false) }
 
                     if (enableEncryptDatabase) {
