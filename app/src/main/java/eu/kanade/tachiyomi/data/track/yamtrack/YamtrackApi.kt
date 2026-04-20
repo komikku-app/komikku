@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -98,11 +99,7 @@ class YamtrackApi(
             } else {
                 put("media_id", mediaId)
             }
-            put("status", Yamtrack.statusToApi(track.status))
-            put("progress", track.last_chapter_read.toInt())
-            if (track.score > 0.0) {
-                put("score", track.score)
-            }
+            putTrackingFields(track)
         }
         authClient.newCall(
             POST(
@@ -114,11 +111,7 @@ class YamtrackApi(
 
     suspend fun updateMedia(track: Track, source: String, mediaId: String) {
         val body = buildJsonObject {
-            put("status", Yamtrack.statusToApi(track.status))
-            put("progress", track.last_chapter_read.toInt())
-            if (track.score > 0.0) {
-                put("score", track.score)
-            }
+            putTrackingFields(track)
         }
         authClient.newCall(
             PATCH(
@@ -126,6 +119,16 @@ class YamtrackApi(
                 body = body.toString().toRequestBody(jsonMime),
             ),
         ).awaitSuccess().close()
+    }
+
+    private fun JsonObjectBuilder.putTrackingFields(track: Track) {
+        put("status", Yamtrack.statusToApi(track.status))
+        put("progress", track.last_chapter_read.toInt())
+        if (track.score > 0.0) {
+            put("score", track.score)
+        }
+        Yamtrack.formatIsoDate(track.started_reading_date)?.let { put("start_date", it) }
+        Yamtrack.formatIsoDate(track.finished_reading_date)?.let { put("end_date", it) }
     }
 
     suspend fun deleteMedia(track: DomainTrack) {
