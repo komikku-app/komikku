@@ -18,6 +18,7 @@ import kotlinx.serialization.json.put
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.net.URLEncoder
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class YamtrackApi(
@@ -43,14 +44,14 @@ class YamtrackApi(
         return "$base/api/v1$path"
     }
 
+    private fun mediaPath(source: String, mediaId: String): String =
+        "/media/manga/${encodeSegment(source)}/${encodeSegment(mediaId)}/"
+
     suspend fun verifyCredentials(baseUrl: String, token: String) {
         val url = "${baseUrl.trimEnd('/')}/api/v1/statistics/"
         val authedClient = baseClient.newBuilder()
             .addInterceptor { chain ->
-                val authed = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .header("Accept", "application/json")
-                    .build()
+                val authed = YamtrackInterceptor.applyAuthHeaders(chain.request().newBuilder(), token).build()
                 chain.proceed(authed)
             }
             .build()
@@ -78,7 +79,7 @@ class YamtrackApi(
     suspend fun getMediaItem(source: String, mediaId: String): YTMediaItem? {
         return try {
             with(json) {
-                authClient.newCall(GET(apiUrl("/media/manga/$source/$mediaId/")))
+                authClient.newCall(GET(apiUrl(mediaPath(source, mediaId))))
                     .awaitSuccess()
                     .parseAs<YTMediaItem>()
             }
@@ -115,13 +116,13 @@ class YamtrackApi(
         val body = buildJsonObject {
             put("status", Yamtrack.statusToApi(track.status))
             put("progress", track.last_chapter_read.toInt())
-            if (track.score >= 0.0) {
+            if (track.score > 0.0) {
                 put("score", track.score)
             }
         }
         authClient.newCall(
             PATCH(
-                url = apiUrl("/media/manga/$source/$mediaId/"),
+                url = apiUrl(mediaPath(source, mediaId)),
                 body = body.toString().toRequestBody(jsonMime),
             ),
         ).awaitSuccess().close()
@@ -130,7 +131,12 @@ class YamtrackApi(
     suspend fun deleteMedia(track: DomainTrack) {
         val (source, mediaId) = Yamtrack.parseTrackingUrl(track.remoteUrl) ?: return
         authClient.newCall(
-            DELETE(url = apiUrl("/media/manga/$source/$mediaId/")),
+            DELETE(url = apiUrl(mediaPath(source, mediaId))),
         ).awaitSuccess().close()
+    }
+
+    companion object {
+        private fun encodeSegment(value: String): String =
+            URLEncoder.encode(value, Charsets.UTF_8).replace("+", "%20")
     }
 }

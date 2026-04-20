@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.data.track.yamtrack.dto.copyToTrack
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
+import java.net.URLDecoder
+import java.net.URLEncoder
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
@@ -23,11 +25,12 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
 
         const val SOURCE_MANUAL = "manual"
 
-        private const val API_STATUS_PLANNING = "Planning"
-        private const val API_STATUS_IN_PROGRESS = "In progress"
-        private const val API_STATUS_COMPLETED = "Completed"
-        private const val API_STATUS_PAUSED = "Paused"
-        private const val API_STATUS_DROPPED = "Dropped"
+        // Yamtrack's API represents statuses as integers (0-4); see MEDIA_STATUS_MAP in api/helpers.py.
+        private const val API_STATUS_PLANNING = 0
+        private const val API_STATUS_IN_PROGRESS = 1
+        private const val API_STATUS_PAUSED = 2
+        private const val API_STATUS_COMPLETED = 3
+        private const val API_STATUS_DROPPED = 4
 
         private val SCORE_LIST = (0..10)
             .flatMap { decimal ->
@@ -38,7 +41,7 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             }
             .toImmutableList()
 
-        fun statusToApi(status: Long): String = when (status) {
+        fun statusToApi(status: Long): Int = when (status) {
             PLANNING -> API_STATUS_PLANNING
             READING -> API_STATUS_IN_PROGRESS
             COMPLETED -> API_STATUS_COMPLETED
@@ -47,7 +50,7 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             else -> API_STATUS_PLANNING
         }
 
-        fun statusFromApi(status: String?): Long = when (status) {
+        fun statusFromApi(status: Int?): Long = when (status) {
             API_STATUS_PLANNING -> PLANNING
             API_STATUS_IN_PROGRESS -> READING
             API_STATUS_COMPLETED -> COMPLETED
@@ -64,18 +67,24 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
         }
 
         fun buildTrackingUrl(baseUrl: String, source: String, mediaId: String): String {
-            return "${baseUrl.trimEnd('/')}/media/manga/$source/$mediaId"
+            return "${baseUrl.trimEnd('/')}/media/manga/${encodeSegment(source)}/${encodeSegment(mediaId)}"
         }
 
         /**
          * Parses a tracking URL in the form `{base}/media/manga/{source}/{mediaId}` and returns
-         * `(source, mediaId)` if the format matches.
+         * the decoded `(source, mediaId)` if the format matches.
          */
         fun parseTrackingUrl(url: String): Pair<String, String>? {
             if (url.isBlank()) return null
             val match = Regex("""/media/manga/([^/]+)/([^/?#]+)""").find(url) ?: return null
-            return match.groupValues[1] to match.groupValues[2]
+            return decodeSegment(match.groupValues[1]) to decodeSegment(match.groupValues[2])
         }
+
+        private fun encodeSegment(value: String): String =
+            URLEncoder.encode(value, Charsets.UTF_8).replace("+", "%20")
+
+        private fun decodeSegment(value: String): String =
+            URLDecoder.decode(value, Charsets.UTF_8)
     }
 
     private val interceptor by lazy { YamtrackInterceptor(this) }
@@ -129,10 +138,13 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             ?: throw IllegalStateException("Invalid Yamtrack tracking URL: ${track.tracking_url}")
 
         val existing = api.getMediaItem(source, mediaId)
-        return if (existing != null) {
+        // Yamtrack's GET endpoint returns 200 with provider metadata even when the user hasn't
+        // tracked the item yet; `tracked` tells us whether it's actually in their library.
+        return if (existing?.tracked == true) {
             existing.copyToTrack(track)
             track
         } else {
+            existing?.maxProgress?.let { track.total_chapters = it.toLong() }
             if (track.status == 0L) {
                 track.status = if (hasReadChapters) READING else PLANNING
             }
@@ -166,7 +178,9 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
     override suspend fun refresh(track: Track): Track {
         val (source, mediaId) = parseTrackingUrl(track.tracking_url) ?: return track
         val remote = api.getMediaItem(source, mediaId) ?: return track
-        remote.copyToTrack(track)
+        if (remote.tracked) {
+            remote.copyToTrack(track)
+        }
         return track
     }
 
