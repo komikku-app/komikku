@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.data.track.yamtrack.dto.copyToTrack
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
+import java.net.URLDecoder
+import java.net.URLEncoder
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
@@ -64,18 +66,24 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
         }
 
         fun buildTrackingUrl(baseUrl: String, source: String, mediaId: String): String {
-            return "${baseUrl.trimEnd('/')}/media/manga/$source/$mediaId"
+            return "${baseUrl.trimEnd('/')}/media/manga/${encodeSegment(source)}/${encodeSegment(mediaId)}"
         }
 
         /**
          * Parses a tracking URL in the form `{base}/media/manga/{source}/{mediaId}` and returns
-         * `(source, mediaId)` if the format matches.
+         * the decoded `(source, mediaId)` if the format matches.
          */
         fun parseTrackingUrl(url: String): Pair<String, String>? {
             if (url.isBlank()) return null
             val match = Regex("""/media/manga/([^/]+)/([^/?#]+)""").find(url) ?: return null
-            return match.groupValues[1] to match.groupValues[2]
+            return decodeSegment(match.groupValues[1]) to decodeSegment(match.groupValues[2])
         }
+
+        private fun encodeSegment(value: String): String =
+            URLEncoder.encode(value, Charsets.UTF_8).replace("+", "%20")
+
+        private fun decodeSegment(value: String): String =
+            URLDecoder.decode(value, Charsets.UTF_8)
     }
 
     private val interceptor by lazy { YamtrackInterceptor(this) }
