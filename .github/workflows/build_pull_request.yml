@@ -47,9 +47,7 @@ jobs:
           distribution: temurin
 
       - name: Write google-services.json
-        if: env.GOOGLE_SERVICES_JSON != ''
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
@@ -57,9 +55,7 @@ jobs:
           write-mode: overwrite
 
       - name: Write client_secrets.json
-        if: env.GOOGLE_CLIENT_SECRETS_JSON != ''
-        env:
-          GOOGLE_CLIENT_SECRETS_JSON: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
@@ -73,15 +69,11 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build app
-        if: env.GOOGLE_SERVICES_JSON != ''
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        if: github.repository == github.event.pull_request.head.repo.full_name
         run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
 
       - name: Build app
-        if: env.GOOGLE_SERVICES_JSON == ''
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        if: github.repository != github.event.pull_request.head.repo.full_name
         run: ./gradlew assemblePreview
 
       - name: Run unit tests
@@ -96,10 +88,7 @@ jobs:
           path: app/build/reports/tests/testReleaseUnitTest
 
       - name: Sign APK
-        if: env.SIGNING_KEY != ''
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          BUILD_TOOLS_VERSION: '35.0.1'
+        if: github.repository == github.event.pull_request.head.repo.full_name
         uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
           releaseDirectory: app/build/outputs/apk/preview
@@ -107,12 +96,12 @@ jobs:
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '35.0.1'
 
       - name: Signed File name
         id: signed_filename
-        if: env.SIGNING_KEY != ''
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        if: github.repository == github.event.pull_request.head.repo.full_name
         run: |
           echo "SIGNED_TRAIL=-signed" >> $GITHUB_OUTPUT
 
