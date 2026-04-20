@@ -18,6 +18,8 @@ import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
 
+    override val supportsReadingDates: Boolean = true
+
     companion object {
         const val PLANNING = 1L
         const val READING = 2L
