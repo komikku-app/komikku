@@ -70,10 +70,16 @@ fun YTMediaItem.copyToTrack(track: Track) {
     track.status = Yamtrack.statusFromApi(consumption?.status)
     track.last_chapter_read = consumption?.progress?.toDouble() ?: track.last_chapter_read
     track.score = consumption?.score ?: 0.0
-    // Yamtrack's API falls back to `max_progress = 1` when the provider returns no chapter
-    // count (ongoing manga), so treat 1 as "unknown" and leave total_chapters at 0. That keeps
-    // the progress input unbounded in the UI instead of capping at 1.
-    maxProgress?.takeIf { it > 1 }?.let { track.total_chapters = it.toLong() }
+    track.total_chapters = resolveTotalChapters(maxProgress)
     consumption?.startDate?.let { track.started_reading_date = Yamtrack.parseIsoDate(it) }
     consumption?.endDate?.let { track.finished_reading_date = Yamtrack.parseIsoDate(it) }
 }
+
+/**
+ * Yamtrack's API falls back to `max_progress = 1` when the upstream provider reports no
+ * chapter count (typical for ongoing manga). The UI treats `total_chapters > 0` as a hard
+ * upper bound for the progress picker, so a placeholder `1` would cap users at chapter 1.
+ * Map `max_progress <= 1` to `0` ("unknown"), which lets the picker go up to 10000.
+ */
+internal fun resolveTotalChapters(maxProgress: Int?): Long =
+    if (maxProgress != null && maxProgress > 1) maxProgress.toLong() else 0L

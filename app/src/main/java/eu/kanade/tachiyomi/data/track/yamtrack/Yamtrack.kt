@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.yamtrack.dto.copyToTrack
+import eu.kanade.tachiyomi.data.track.yamtrack.dto.resolveTotalChapters
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
@@ -163,7 +164,7 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             existing.copyToTrack(track)
             track
         } else {
-            existing?.maxProgress?.let { track.total_chapters = it.toLong() }
+            track.total_chapters = resolveTotalChapters(existing?.maxProgress)
             if (track.status == 0L) {
                 track.status = if (hasReadChapters) READING else PLANNING
             }
