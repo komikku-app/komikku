@@ -35,18 +35,18 @@ data class YTMediaItem(
     val image: String? = null,
     @SerialName("media_type")
     val mediaType: String? = null,
-    val description: String? = null,
-    val status: String? = null,
+    val synopsis: String? = null,
+    val tracked: Boolean = false,
+    @SerialName("max_progress")
+    val maxProgress: Int? = null,
+    val consumptions: List<YTConsumption> = emptyList(),
+)
+
+@Serializable
+data class YTConsumption(
+    val status: Int? = null,
     val progress: Int? = null,
     val score: Double? = null,
-    @SerialName("start_date")
-    val startDate: String? = null,
-    @SerialName("end_date")
-    val endDate: String? = null,
-    val notes: String? = null,
-    @SerialName("total_chapters")
-    val totalChapters: Int? = null,
-    val url: String? = null,
 )
 
 fun YTSearchItem.toTrackSearch(trackerId: Long, baseUrl: String): TrackSearch {
@@ -62,8 +62,9 @@ fun YTSearchItem.toTrackSearch(trackerId: Long, baseUrl: String): TrackSearch {
 }
 
 fun YTMediaItem.copyToTrack(track: Track) {
-    track.status = Yamtrack.statusFromApi(status)
-    track.last_chapter_read = progress?.toDouble() ?: track.last_chapter_read
-    track.score = score ?: 0.0
-    totalChapters?.let { track.total_chapters = it.toLong() }
+    val consumption = consumptions.firstOrNull()
+    track.status = Yamtrack.statusFromApi(consumption?.status)
+    track.last_chapter_read = consumption?.progress?.toDouble() ?: track.last_chapter_read
+    track.score = consumption?.score ?: 0.0
+    maxProgress?.let { track.total_chapters = it.toLong() }
 }
