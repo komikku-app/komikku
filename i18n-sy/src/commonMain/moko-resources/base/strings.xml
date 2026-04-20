@@ -330,8 +330,18 @@
     <string name="eh_autoscroll">Autoscroll</string>
     <string name="eh_retry_all">Retry all</string>
     <string name="eh_boost_page">Boost page</string>
+    <string name="eh_autoscroll_gestures">Autoscroll gestures</string>
+    <string name="eh_autoscroll_gestures_summary">Enable tap, drag, and swipe controls for autoscroll in vertical scrolling modes</string>
+    <string name="eh_autoscroll_gestures_help">Autoscroll gestures help</string>
+    <string name="eh_autoscroll_gestures_help_message">These gestures are available in vertical scrolling reading modes.\n\nWith autoscroll turned on:\n- Tap once to pause or resume\n- Slide one finger up or down to adjust speed\n- Drag with two fingers to move through the chapter without disabling autoscroll\n- Swipe sideways with one finger to stop autoscroll\n\nWith autoscroll turned off:\n- Swipe sideways with one finger to start autoscroll\n\nThe gestures only work on the reading area while the reader menu is closed.</string>
+    <string name="eh_autoscroll_gesture_toasts">Gesture toasts</string>
+    <string name="eh_autoscroll_gesture_toasts_summary">Show toast messages when autoscroll gestures trigger an action</string>
+    <string name="eh_autoscroll_gesture_toasts_help">Gesture toasts help</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">When this option is enabled, the reader shows toast messages after autoscroll gestures perform actions such as start, pause, resume, stop, speed changes, or moving through the chapter.
+
+When this option is disabled, the gestures still work the same way, but those informational toast messages are not shown.</string>
     <string name="eh_autoscroll_help">Autoscroll help</string>
-    <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.</string>
+    <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.\n\nWhile autoscroll is active in webtoon mode and gestures are enabled:\n- Tap once to pause or resume\n- Slide one finger up or down to adjust speed\n- Drag with two fingers to move without disabling autoscroll\n- Swipe sideways to stop\n\nWhile autoscroll is inactive in webtoon mode and gestures are enabled:\n- Swipe sideways to start autoscroll\n\nYou can disable autoscroll gestures and their info toasts from the reader tools menu.</string>
     <string name="eh_autoscroll_freq_invalid">Invalid frequency</string>
     <string name="eh_retry_all_help">Retry all help</string>
     <string name="eh_retry_all_help_message">Re-add all failed pages to the download queue.</string>
