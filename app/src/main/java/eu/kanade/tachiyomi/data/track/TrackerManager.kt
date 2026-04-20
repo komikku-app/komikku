@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.suwayomi.Suwayomi
+import eu.kanade.tachiyomi.data.track.yamtrack.Yamtrack
 import kotlinx.coroutines.flow.combine
 
 class TrackerManager {
@@ -18,6 +19,10 @@ class TrackerManager {
         const val ANILIST = 2L
         const val KITSU = 3L
         const val KAVITA = 8L
+
+        // KMK -->
+        const val YAMTRACK = 10L
+        // KMK <--
 
         // SY --> Mangadex from Neko
         const val MDLIST = 60L
@@ -36,8 +41,26 @@ class TrackerManager {
     val kavita = Kavita(KAVITA)
     val suwayomi = Suwayomi(9L)
 
+    // KMK -->
+    val yamtrack = Yamtrack(YAMTRACK)
+    // KMK <--
+
     val trackers =
-        listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
+        listOf(
+            mdList,
+            myAnimeList,
+            aniList,
+            kitsu,
+            shikimori,
+            bangumi,
+            komga,
+            mangaUpdates,
+            kavita,
+            suwayomi,
+            // KMK -->
+            yamtrack,
+            // KMK <--
+        )
 
     fun loggedInTrackers() = trackers.filter { it.isLoggedIn }
 
