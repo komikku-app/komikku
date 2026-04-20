@@ -12,6 +12,8 @@ import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Locale
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
@@ -85,6 +87,21 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
 
         private fun decodeSegment(value: String): String =
             URLDecoder.decode(value, Charsets.UTF_8)
+
+        fun formatIsoDate(epochMillis: Long): String? {
+            if (epochMillis <= 0L) return null
+            return runCatching {
+                SimpleDateFormat("yyyy-MM-dd", Locale.US).format(epochMillis)
+            }.getOrNull()
+        }
+
+        fun parseIsoDate(value: String): Long {
+            // Yamtrack returns ISO dates (YYYY-MM-DD) or ISO datetimes. Take the date portion.
+            val dateOnly = value.take(10)
+            return runCatching {
+                SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dateOnly)?.time ?: 0L
+            }.getOrDefault(0L)
+        }
     }
 
     private val interceptor by lazy { YamtrackInterceptor(this) }

@@ -47,6 +47,10 @@ data class YTConsumption(
     val status: Int? = null,
     val progress: Int? = null,
     val score: Double? = null,
+    @SerialName("start_date")
+    val startDate: String? = null,
+    @SerialName("end_date")
+    val endDate: String? = null,
 )
 
 fun YTSearchItem.toTrackSearch(trackerId: Long, baseUrl: String): TrackSearch {
@@ -66,5 +70,10 @@ fun YTMediaItem.copyToTrack(track: Track) {
     track.status = Yamtrack.statusFromApi(consumption?.status)
     track.last_chapter_read = consumption?.progress?.toDouble() ?: track.last_chapter_read
     track.score = consumption?.score ?: 0.0
-    maxProgress?.let { track.total_chapters = it.toLong() }
+    // Yamtrack's API falls back to `max_progress = 1` when the provider returns no chapter
+    // count (ongoing manga), so treat 1 as "unknown" and leave total_chapters at 0. That keeps
+    // the progress input unbounded in the UI instead of capping at 1.
+    maxProgress?.takeIf { it > 1 }?.let { track.total_chapters = it.toLong() }
+    consumption?.startDate?.let { track.started_reading_date = Yamtrack.parseIsoDate(it) }
+    consumption?.endDate?.let { track.finished_reading_date = Yamtrack.parseIsoDate(it) }
 }
