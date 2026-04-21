@@ -60,7 +60,7 @@ fun YTSearchItem.toTrackSearch(trackerId: Long, baseUrl: String): TrackSearch {
         title = item.title
         cover_url = item.image.orEmpty()
         summary = item.description.orEmpty()
-        tracking_url = Yamtrack.buildTrackingUrl(baseUrl, item.source, item.mediaId)
+        tracking_url = Yamtrack.buildTrackingUrl(baseUrl, item.source, item.mediaId, item.title)
         publishing_type = item.mediaType.orEmpty()
     }
 }
