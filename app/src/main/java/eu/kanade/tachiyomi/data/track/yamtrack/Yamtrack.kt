@@ -13,6 +13,7 @@ import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.i18n.MR
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.Locale
 import tachiyomi.domain.track.model.Track as DomainTrack
@@ -71,18 +72,32 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             return hash and 0x7fffffffffffffffL
         }
 
-        fun buildTrackingUrl(baseUrl: String, source: String, mediaId: String): String {
-            return "${baseUrl.trimEnd('/')}/media/manga/${encodeSegment(source)}/${encodeSegment(mediaId)}"
+        fun buildTrackingUrl(baseUrl: String, source: String, mediaId: String, title: String? = null): String {
+            val base = baseUrl.trimEnd('/')
+            val sourceSeg = encodeSegment(source)
+            val idSeg = encodeSegment(mediaId)
+            val slug = title?.let { slugify(it) }.orEmpty()
+            return if (slug.isNotEmpty()) {
+                "$base/details/$sourceSeg/manga/$idSeg/$slug"
+            } else {
+                "$base/details/$sourceSeg/manga/$idSeg"
+            }
         }
 
         /**
-         * Parses a tracking URL in the form `{base}/media/manga/{source}/{mediaId}` and returns
-         * the decoded `(source, mediaId)` if the format matches.
+         * Parses a Yamtrack tracking URL and returns the decoded `(source, mediaId)`.
+         * Accepts both the current `/details/{source}/manga/{mediaId}[/{slug}]` format and
+         * the legacy `/media/manga/{source}/{mediaId}` format (for tracks saved before the fix).
          */
         fun parseTrackingUrl(url: String): Pair<String, String>? {
             if (url.isBlank()) return null
-            val match = Regex("""/media/manga/([^/]+)/([^/?#]+)""").find(url) ?: return null
-            return decodeSegment(match.groupValues[1]) to decodeSegment(match.groupValues[2])
+            Regex("""/details/([^/]+)/manga/([^/?#]+)""").find(url)?.let {
+                return decodeSegment(it.groupValues[1]) to decodeSegment(it.groupValues[2])
+            }
+            Regex("""/media/manga/([^/]+)/([^/?#]+)""").find(url)?.let {
+                return decodeSegment(it.groupValues[1]) to decodeSegment(it.groupValues[2])
+            }
+            return null
         }
 
         private fun encodeSegment(value: String): String =
@@ -90,6 +105,18 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
 
         private fun decodeSegment(value: String): String =
             URLDecoder.decode(value, Charsets.UTF_8)
+
+        private fun slugify(title: String): String {
+            // Approximate Django's slugify (Yamtrack is a Django app): strip diacritics,
+            // lowercase, keep [a-z0-9], collapse whitespace/hyphens to single '-'.
+            val normalized = Normalizer.normalize(title, Normalizer.Form.NFD)
+                .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+            return normalized
+                .lowercase(Locale.US)
+                .replace(Regex("[^a-z0-9\\s-]"), "")
+                .replace(Regex("[\\s-]+"), "-")
+                .trim('-')
+        }
 
         fun formatIsoDate(epochMillis: Long): String? {
             if (epochMillis <= 0L) return null
@@ -189,7 +216,7 @@ class Yamtrack(id: Long) : BaseTracker(id, "Yamtrack"), DeletableTracker {
             title = query
             cover_url = ""
             summary = ""
-            tracking_url = buildTrackingUrl(baseUrl, SOURCE_MANUAL, query)
+            tracking_url = buildTrackingUrl(baseUrl, SOURCE_MANUAL, query, query)
             publishing_type = "Manual entry"
         }
         return remoteResults + manualEntry
