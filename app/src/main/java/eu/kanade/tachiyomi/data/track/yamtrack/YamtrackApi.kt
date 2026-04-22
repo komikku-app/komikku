@@ -12,9 +12,6 @@ import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
@@ -75,17 +72,9 @@ class YamtrackApi(
         }
 
         val baseUrl = yamtrack.getBaseUrl().trimEnd('/')
-        val results = response.results
+        return response.results
             .filter { it.mediaId.isNotBlank() && it.source.isNotBlank() }
-
-        // The search endpoint only returns minimal fields; fetch each result's detail in
-        // parallel so the UI can show synopsis, score, start date, and the specific format
-        // (Manga / Manhwa / Manhua / etc.) instead of the generic "manga" media type.
-        return coroutineScope {
-            results.map { item ->
-                async { item.toTrackSearch(yamtrack.id, baseUrl, getMediaItem(item.source, item.mediaId)) }
-            }.awaitAll()
-        }
+            .map { it.toTrackSearch(yamtrack.id, baseUrl) }
     }
 
     suspend fun getMediaItem(source: String, mediaId: String): YTMediaItem? {
