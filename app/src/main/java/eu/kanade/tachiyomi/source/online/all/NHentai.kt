@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
@@ -30,7 +29,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.Response
-import org.jsoup.nodes.Document
+import tachiyomi.core.common.util.lang.withIOContext
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -72,12 +71,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        val body = input.body.string()
-        val server = MEDIA_SERVER_REGEX.find(body)?.groupValues?.get(1)?.toInt() ?: 1
-        val json = GALLERY_JSON_REGEX.find(body)!!.groupValues[1].replace(
-            UNICODE_ESCAPE_REGEX,
-        ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
-        val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)
+        if (nhConfig == null) getNhConfig()
+        val jsonResponse = jsonParser.decodeFromString<JsonResponse>(input.body.string())
 
         with(metadata) {
             nhId = jsonResponse.id
@@ -88,8 +83,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
             mediaId = jsonResponse.mediaId
 
-            mediaServer = server
-
             jsonResponse.title?.let { title ->
                 japaneseTitle = title.japanese
                 shortTitle = title.pretty
@@ -98,16 +91,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
             preferredTitle = this@NHentai.preferredTitle
 
-            jsonResponse.images?.let { images ->
-                coverImageType = input.asJsoup(body).parseCoverType()
-                    ?: images.cover?.type
-                images.pages.mapNotNull {
-                    it.type
-                }.let {
-                    pageImageTypes = it
-                }
-                thumbnailImageType = images.thumbnail?.type
-            }
+            coverImageUrl =
+                jsonResponse.cover?.path?.let { "$thumbServer/$it" }
+                    ?: jsonResponse.thumbnail?.path?.let { "$thumbServer/$it" }
+
+            pageImagePreviewUrls = jsonResponse.pages.mapNotNull { it.thumbnail }
 
             scanlator = jsonResponse.scanlator?.trimOrNull()
 
@@ -128,17 +116,13 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
     }
 
-    // KMK -->
-    /**
-     * Site JSON is saying cover of type `w` but instead it's using cover like `cover.jpg.webp`
-     */
-    private fun Document.parseCoverType(): String? {
-        return selectFirst("#cover > a > img")?.attr("data-src")
-            ?.substringAfterLast('/')
-            ?.substringAfter('.')
-            ?.first()?.toString()
-    }
-    // KMK <--
+    @Serializable
+    data class JsonConfig(
+        @SerialName("image_servers")
+        val imageServers: List<String> = emptyList(),
+        @SerialName("thumb_servers")
+        val thumbServers: List<String> = emptyList(),
+    )
 
     @Serializable
     data class JsonResponse(
@@ -146,7 +130,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
         @SerialName("media_id")
         val mediaId: String? = null,
         val title: JsonTitle? = null,
-        val images: JsonImages? = null,
+        val cover: JsonPage? = null,
+        val thumbnail: JsonPage? = null,
         val scanlator: String? = null,
         @SerialName("upload_date")
         val uploadDate: Long? = null,
@@ -155,6 +140,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         val numPages: Int? = null,
         @SerialName("num_favorites")
         val numFavorites: Long? = null,
+        val pages: List<JsonPage> = emptyList(),
     )
 
     @Serializable
@@ -165,20 +151,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
     )
 
     @Serializable
-    data class JsonImages(
-        val pages: List<JsonPage> = emptyList(),
-        val cover: JsonPage? = null,
-        val thumbnail: JsonPage? = null,
-    )
-
-    @Serializable
     data class JsonPage(
-        @SerialName("t")
-        val type: String? = null,
-        @SerialName("w")
+        val path: String? = null,
         val width: Long? = null,
-        @SerialName("h")
         val height: Long? = null,
+        val thumbnail: String? = null,
     )
 
     @Serializable
@@ -203,20 +180,16 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun getPagePreviewList(manga: SManga, chapters: List<SChapter>, page: Int): PagePreviewPage {
+        if (nhConfig == null) getNhConfig()
         val metadata = fetchOrLoadMetadata(manga.id()) {
             client.newCall(mangaDetailsRequest(manga)).awaitSuccess()
         }
         return PagePreviewPage(
             page,
-            metadata.pageImageTypes.mapIndexed { index, s ->
+            metadata.pageImagePreviewUrls.mapIndexed { index, path ->
                 PagePreviewInfo(
                     index + 1,
-                    imageUrl = thumbnailUrlFromType(
-                        metadata.mediaId!!,
-                        metadata.mediaServer ?: 1,
-                        index + 1,
-                        s,
-                    )!!,
+                    imageUrl = "$thumbServer/$path",
                 )
             },
             false,
@@ -224,14 +197,22 @@ class NHentai(delegate: HttpSource, val context: Context) :
         )
     }
 
-    private fun thumbnailUrlFromType(
-        mediaId: String,
-        mediaServer: Int,
-        page: Int,
-        t: String,
-    ) = NHentaiSearchMetadata.typeToExtension(t)?.let {
-        "https://t$mediaServer.nhentai.net/galleries/$mediaId/${page}t.$it"
+    var nhConfig: JsonConfig? = null
+    suspend fun getNhConfig() {
+        try {
+            val body = withIOContext { client.newCall(GET("https://nhentai.net/api/v2/config", headers)).awaitSuccess() }
+                .use { it.body.string() }
+            nhConfig = jsonParser.decodeFromString<JsonConfig>(body)
+        } catch (_: Exception) {
+            nhConfig = JsonConfig(
+                (1..4).map { n -> "https://i$n.nhentai.net" },
+                (1..4).map { n -> "https://t$n.nhentai.net" },
+            )
+        }
     }
+
+    val thumbServer
+        get() = nhConfig?.thumbServers?.randomOrNull() ?: "https://t1.nhentai.net"
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
         return client.newCachelessCallWithProgress(
@@ -248,10 +229,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
         private val jsonParser = Json {
             ignoreUnknownKeys = true
         }
-
-        private val GALLERY_JSON_REGEX = Regex(".parse\\(\"(.*)\"\\);")
-        private val MEDIA_SERVER_REGEX = Regex("media_server\\s*:\\s*(\\d+)")
-        private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
         private const val TITLE_PREF = "Display manga title as:"
     }
 }
