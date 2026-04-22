@@ -212,7 +212,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     val thumbServer
-        get() = nhConfig?.thumbServers?.random()
+        get() = nhConfig?.thumbServers?.randomOrNull() ?: "https://t1.nhentai.net"
 
     override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
         return client.newCachelessCallWithProgress(
