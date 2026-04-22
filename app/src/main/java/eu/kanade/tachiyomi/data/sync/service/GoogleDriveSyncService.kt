@@ -18,6 +18,7 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.sync.SyncManager
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -248,6 +249,21 @@ class GoogleDriveService(private val context: Context) {
         const val REDIRECT_URI = "eu.kanade.google.oauth:/oauth2redirect"
     }
     private val syncPreferences = Injekt.get<SyncPreferences>()
+    private val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
+
+    private fun clientSecretsOrNull(): GoogleClientSecrets? {
+        return try {
+            GoogleClientSecrets.load(
+                jsonFactory,
+                context.assets.open("client_secrets.json").reader(),
+            )
+        } catch (e: IOException) {
+            logcat(LogPriority.ERROR, throwable = e) {
+                "Google Drive OAuth is not configured for this build (missing client_secrets.json)"
+            }
+            null
+        }
+    }
 
     init {
         initGoogleDriveService()
@@ -292,11 +308,8 @@ class GoogleDriveService(private val context: Context) {
      * @return The authorization URL.
      */
     private fun generateAuthorizationUrl(): String {
-        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
-        val secrets = GoogleClientSecrets.load(
-            jsonFactory,
-            context.assets.open("client_secrets.json").reader(),
-        )
+        val secrets = clientSecretsOrNull()
+            ?: throw IllegalStateException("Google Drive OAuth is not configured for this build")
 
         val flow = GoogleAuthorizationCodeFlow.Builder(
             NetHttpTransport(),
@@ -307,17 +320,14 @@ class GoogleDriveService(private val context: Context) {
 
         return flow.newAuthorizationUrl()
             .setRedirectUri(REDIRECT_URI)
-            .setApprovalPrompt("force")
+            .set("prompt", "consent")
             .build()
     }
     internal suspend fun refreshToken() = withIOContext {
         val refreshToken = syncPreferences.googleDriveRefreshToken().get()
 
-        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
-        val secrets = GoogleClientSecrets.load(
-            jsonFactory,
-            context.assets.open("client_secrets.json").reader(),
-        )
+        val secrets = clientSecretsOrNull()
+            ?: throw Exception("Google Drive OAuth is not configured for this build")
 
         val credential = GoogleCredential.Builder()
             .setJsonFactory(jsonFactory)
@@ -364,11 +374,10 @@ class GoogleDriveService(private val context: Context) {
      * @param refreshToken The refresh token obtained from the SyncPreferences.
      */
     private fun setupGoogleDriveService(accessToken: String, refreshToken: String) {
-        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
-        val secrets = GoogleClientSecrets.load(
-            jsonFactory,
-            context.assets.open("client_secrets.json").reader(),
-        )
+        val secrets = clientSecretsOrNull() ?: run {
+            driveService = null
+            return
+        }
 
         val credential = GoogleCredential.Builder()
             .setJsonFactory(jsonFactory)
@@ -403,29 +412,37 @@ class GoogleDriveService(private val context: Context) {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit,
     ) {
-        val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
-        val secrets = GoogleClientSecrets.load(
-            jsonFactory,
-            context.assets.open("client_secrets.json").reader(),
-        )
-
-        val tokenResponse: GoogleTokenResponse = GoogleAuthorizationCodeTokenRequest(
-            NetHttpTransport(),
-            jsonFactory,
-            secrets.installed.clientId,
-            secrets.installed.clientSecret,
-            authorizationCode,
-            REDIRECT_URI,
-        ).setGrantType("authorization_code").execute()
+        val secrets = clientSecretsOrNull()
+        if (secrets == null) {
+            activity.runOnUiThread {
+                onFailure("Google Drive OAuth is not configured for this build")
+            }
+            return
+        }
 
         try {
+            val tokenResponse: GoogleTokenResponse = GoogleAuthorizationCodeTokenRequest(
+                NetHttpTransport(),
+                jsonFactory,
+                secrets.installed.clientId,
+                secrets.installed.clientSecret,
+                authorizationCode,
+                REDIRECT_URI,
+            ).setGrantType("authorization_code").execute()
+
             // Save the access token and refresh token
             val accessToken = tokenResponse.accessToken
             val refreshToken = tokenResponse.refreshToken
+                ?: syncPreferences.googleDriveRefreshToken().get()
+
+            if (refreshToken.isBlank()) {
+                throw IllegalStateException("No refresh token returned. Revoke Google access and sign in again")
+            }
 
             // Save the tokens to SyncPreferences
             syncPreferences.googleDriveAccessToken().set(accessToken)
             syncPreferences.googleDriveRefreshToken().set(refreshToken)
+            syncPreferences.syncService().set(SyncManager.SyncService.GOOGLE_DRIVE.value)
 
             setupGoogleDriveService(accessToken, refreshToken)
             initGoogleDriveService()
