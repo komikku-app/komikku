@@ -39,7 +39,21 @@ data class YTMediaItem(
     val tracked: Boolean = false,
     @SerialName("max_progress")
     val maxProgress: Int? = null,
+    val score: Double? = null,
+    val details: YTMediaDetails? = null,
     val consumptions: List<YTConsumption> = emptyList(),
+)
+
+@Serializable
+data class YTMediaDetails(
+    val format: String? = null,
+    @SerialName("start_date")
+    val startDate: String? = null,
+    @SerialName("end_date")
+    val endDate: String? = null,
+    val status: String? = null,
+    @SerialName("number_of_chapters")
+    val numberOfChapters: Int? = null,
 )
 
 @Serializable
@@ -53,15 +67,24 @@ data class YTConsumption(
     val endDate: String? = null,
 )
 
-fun YTSearchItem.toTrackSearch(trackerId: Long, baseUrl: String): TrackSearch {
+fun YTSearchItem.toTrackSearch(
+    trackerId: Long,
+    baseUrl: String,
+    detail: YTMediaItem? = null,
+): TrackSearch {
     val item = this
     return TrackSearch.create(trackerId).apply {
         remote_id = Yamtrack.buildRemoteId(item.source, item.mediaId)
         title = item.title
         cover_url = item.image.orEmpty()
-        summary = item.description.orEmpty()
+        // Yamtrack's search endpoint only returns id/source/title/image/media_type, so richer
+        // fields (synopsis, score, start date, format) come from the media detail lookup.
+        summary = detail?.synopsis ?: item.description.orEmpty()
         tracking_url = Yamtrack.buildTrackingUrl(baseUrl, item.source, item.mediaId, item.title)
-        publishing_type = item.mediaType.orEmpty()
+        publishing_type = detail?.details?.format ?: item.mediaType.orEmpty()
+        publishing_status = detail?.details?.status.orEmpty()
+        start_date = detail?.details?.startDate.orEmpty()
+        detail?.score?.let { score = it }
     }
 }
 
