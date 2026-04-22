@@ -21,7 +21,7 @@ class TrackerManager {
         const val KAVITA = 8L
 
         // KMK -->
-        const val YAMTRACK = 10L
+        const val YAMTRACK = 16L
         // KMK <--
 
         // SY --> Mangadex from Neko
