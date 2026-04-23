@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALAddMangaResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
+import eu.kanade.tachiyomi.data.track.anilist.dto.ALError
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALIdSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALMangaMetadata
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
@@ -26,6 +27,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import tachiyomi.core.common.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
 import java.time.Instant
@@ -42,6 +44,23 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         .addInterceptor(interceptor)
         .rateLimit(permits = 85, period = 1.minutes)
         .build()
+
+    private fun Response.parseALError() {
+        val bodyString = peekBody(1024 * 1024).string()
+        val errorObj = try {
+            json.decodeFromString<ALError>(bodyString)
+        } catch (e: Exception) {
+            null
+        }
+
+        errorObj?.errors?.firstOrNull()?.let {
+            val msg = it.message
+            if (msg.contains("Invalid token") || it.status == 401) {
+                throw Exception("AniList token expired, please login again")
+            }
+            throw Exception(msg)
+        }
+    }
 
     suspend fun addLibManga(track: Track): Track {
         return withIOContext {
@@ -71,6 +90,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALAddMangaResult>()
                     .let {
                         track.library_id = it.data.entry.id
@@ -112,6 +132,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
+                .also { it.parseALError() }
             track
         }
     }
@@ -134,6 +155,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
+                .also { it.parseALError() }
         }
     }
 
@@ -192,6 +214,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALSearchResult>()
                     .data.page.media
                     .map { it.toALManga().toTrack() }
@@ -271,6 +294,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALUserListMangaQueryResult>()
                     .data.page.mediaList
                     .map { it.toALUserManga() }
@@ -312,6 +336,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALCurrentUserResult>()
                     .let {
                         val viewer = it.data.viewer
@@ -365,6 +390,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALMangaMetadata>()
                     .let {
                         val media = it.data.media
@@ -430,6 +456,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    .also { it.parseALError() }
                     .parseAs<ALIdSearchResult>()
                     .data.media
                     .toALManga()
