@@ -428,10 +428,10 @@ class UpdatesScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.update.chapterId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.update.chapterId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }

@@ -62,7 +62,6 @@ class LibraryUpdateErrorScreenModel(
     fun toggleSelection(
         item: LibraryUpdateErrorItem,
         selected: Boolean,
-        userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
         mutableState.update { state ->
@@ -77,7 +76,7 @@ class LibraryUpdateErrorScreenModel(
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedErrorIds.addOrRemove(item.error.errorId, selected)
 
-                if (selected && userSelected && fromLongPress) {
+                if (selected && fromLongPress) {
                     if (firstSelection) {
                         selectedPositions[0] = selectedIndex
                         selectedPositions[1] = selectedIndex
@@ -96,14 +95,14 @@ class LibraryUpdateErrorScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedErrorIds.add(inbetweenItem.error.errorId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedErrorIds.add(inBetweenItem.error.errorId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }
-                } else if (userSelected && !fromLongPress) {
+                } else if (!fromLongPress) {
                     if (!selected) {
                         if (selectedIndex == selectedPositions[0]) {
                             selectedPositions[0] = indexOfFirst { it.selected }

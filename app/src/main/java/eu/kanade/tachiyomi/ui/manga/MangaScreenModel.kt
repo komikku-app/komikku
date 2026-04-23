@@ -555,8 +555,8 @@ class MangaScreenModel(
                         }
                         val vibrantColor = it.getBestColor() ?: return@launchIO
                         mangaCover.vibrantCoverColor = vibrantColor
-                        updateSuccessState {
-                            it.copy(seedColor = Color(vibrantColor))
+                        updateSuccessState { state ->
+                            state.copy(seedColor = Color(vibrantColor))
                         }
                     }
                 }
@@ -1759,10 +1759,10 @@ class MangaScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.id)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.id)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }
