@@ -247,26 +247,39 @@ open class BrowseSourceScreenModel(
      * Flow of Pager flow tied to [State.listing]
      */
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
-    val mangaPagerFlowFlow = state.map { it.listing to it.blacklistedTitles }
+    val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
-        .map { (listing, blacklistedTitles) ->
-            Pager(PagingConfig(pageSize = 25)) {
+        .map { listing ->
+            val blacklistedTitles = state.map { it.blacklistedTitles }.distinctUntilChanged()
+            val pagingFlow = Pager(PagingConfig(pageSize = 25)) {
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
-            }.flow.map { pagingData ->
-                pagingData.map { (manga, metadata) ->
-                    getManga.subscribe(manga.url, manga.source)
-                        .map { it ?: manga }
-                        // SY -->
-                        .combineMetadata(metadata)
-                        // SY <--
-                        .stateIn(ioCoroutineScope)
+            }.flow
+                .map { pagingData ->
+                    pagingData.map { (manga, metadata) ->
+                        getManga.subscribe(manga.url, manga.source)
+                            .map { it ?: manga }
+                            // SY -->
+                            .combineMetadata(metadata)
+                            // SY <--
+                            .stateIn(ioCoroutineScope)
+                    }
+                        .filter { !hideInLibraryItems || !it.value.first.favorite }
                 }
-                    .filter { !hideInLibraryItems || !it.value.first.favorite }
-                    .filter { blacklistedTitles.isEmpty() || it.value.first.title.toBlacklistNormalizedTitle() !in blacklistedTitles }
-            }
                 .cachedIn(ioCoroutineScope)
+
+            blacklistedTitles.flatMapLatest { titles ->
+                pagingFlow.map { pagingData ->
+                    if (titles.isEmpty()) {
+                        pagingData
+                    } else {
+                        pagingData.filter { mangaFlow ->
+                            mangaFlow.value.first.title.toBlacklistNormalizedTitle() !in titles
+                        }
+                    }
+                }
+            }
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 

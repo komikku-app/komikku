@@ -22,8 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
@@ -60,6 +60,8 @@ fun MangaActionsDialog(
                 text = manga.title,
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = MaterialTheme.padding.small),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
 
             TextPreferenceWidget(
@@ -88,8 +90,7 @@ fun MangaActionsDialog(
                 Text(
                     text = stringResource(MR.strings.action_cancel),
                     color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
         }

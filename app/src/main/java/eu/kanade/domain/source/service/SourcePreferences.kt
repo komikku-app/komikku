@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.core.common.preference.getLongArray
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -75,22 +76,26 @@ class SourcePreferences(
         val normalizedTitle = originalTitle.toBlacklistNormalizedTitle()
         if (originalTitle.isBlank() || normalizedTitle.isBlank()) return false
 
-        val entries = blacklistedSeries().get()
-        if (entries.any { it.normalizedTitle == normalizedTitle }) return false
-
-        blacklistedSeries().set(
-            entries + BlacklistedSeriesEntry(
-                originalTitle = originalTitle,
-                normalizedTitle = normalizedTitle,
-            ),
-        )
-        return true
+        var added = false
+        blacklistedSeries().getAndSet { entries ->
+            if (entries.any { it.normalizedTitle == normalizedTitle }) {
+                added = false
+                entries
+            } else {
+                added = true
+                entries + BlacklistedSeriesEntry(
+                    originalTitle = originalTitle,
+                    normalizedTitle = normalizedTitle,
+                )
+            }
+        }
+        return added
     }
 
     fun removeBlacklistedSeries(normalizedTitle: String) {
-        blacklistedSeries().set(
-            blacklistedSeries().get().filterNot { it.normalizedTitle == normalizedTitle },
-        )
+        blacklistedSeries().getAndSet { entries ->
+            entries.filterNot { it.normalizedTitle == normalizedTitle }
+        }
     }
 
     // KMK -->
