@@ -121,7 +121,6 @@ fun LibraryUpdateErrorScreen(
             )
         },
         bottomBar = {
-            val headerIndexes = remember(state.items) { state.getHeaderIndexes() }
             LibraryUpdateErrorBottomBar(
                 selected = state.selected,
                 onMultiMigrateClicked = onMultiMigrateClicked,
@@ -142,7 +141,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToPrevious = {
                     scope.launch {
                         listState.scrollToItem(
-                            headerIndexes
+                            headerIndexes.value
                                 .filter { it < listState.firstVisibleItemIndex }
                                 .maxOrNull() ?: 0,
                         )
@@ -151,7 +150,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToNext = {
                     scope.launch {
                         listState.scrollToItem(
-                            headerIndexes
+                            headerIndexes.value
                                 .filter { it > listState.firstVisibleItemIndex }
                                 .minOrNull() ?: 0,
                         )
