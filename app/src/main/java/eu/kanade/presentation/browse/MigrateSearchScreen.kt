@@ -45,6 +45,7 @@ fun MigrateSearchScreen(
                     isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
                     onSelectAll = {
                         state.filteredItems.values
                             .filterIsInstance<SearchItemResult.Success>()
