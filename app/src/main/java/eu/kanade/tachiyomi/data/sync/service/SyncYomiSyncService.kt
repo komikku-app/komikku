@@ -71,6 +71,7 @@ class SyncYomiSyncService(
         if (lastETag != "") {
             headersBuilder.add("If-None-Match", lastETag)
         }
+        headersBuilder.addCustomHeaders()
         val headers = headersBuilder.build()
 
         val downloadRequest = GET(
@@ -135,6 +136,7 @@ class SyncYomiSyncService(
         if (eTag.isNotEmpty()) {
             headersBuilder.add("If-Match", eTag)
         }
+        headersBuilder.addCustomHeaders()
         val headers = headersBuilder.build()
 
         // Set timeout to 30 seconds
@@ -171,5 +173,27 @@ class SyncYomiSyncService(
             notifier.showSyncError("Failed to upload sync data: $responseBody")
             logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
         }
+    }
+
+    private fun Headers.Builder.addCustomHeaders() {
+        val customHeaders = syncPreferences.clientCustomHeaders().get()
+        if (customHeaders.isBlank()) return
+
+        customHeaders.lines()
+            .take(10)
+            .forEach { line ->
+                val parts = line.split(":", limit = 2)
+                if (parts.size == 2) {
+                    val key = parts[0].trim()
+                    val value = parts[1].trim()
+                    if (key.isNotEmpty() && value.isNotEmpty()) {
+                        try {
+                            this.add(key, value)
+                        } catch (e: Exception) {
+                            logcat(LogPriority.ERROR) { "Invalid custom header: $line" }
+                        }
+                    }
+                }
+            }
     }
 }
