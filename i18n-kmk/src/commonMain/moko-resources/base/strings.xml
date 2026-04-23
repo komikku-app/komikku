@@ -171,6 +171,15 @@
     <string name="related_mangas_more">More like these...</string>
     <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
     <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>
+    <string name="pref_blacklist_series">Series blacklist</string>
+    <string name="blacklist_empty">No blacklisted series yet.</string>
+    <string name="blacklist_add_title">Add blacklisted title</string>
+    <string name="blacklist_add_hint">Original series title</string>
+    <string name="blacklist_delete_confirmation">Hide \"%s\" no longer?</string>
+    <string name="blacklist_invalid_title">Enter a series title.</string>
+    <string name="blacklist_title_exists">That title is already blacklisted.</string>
+    <string name="action_add_to_blacklist">Add to blacklist</string>
+    <string name="manga_actions">Manga actions</string>
     <!-- Error Screen -->
     <string name="option_label_library_update_errors">Library update errors</string>
     <string name="label_library_update_errors">Library update errors (%d)</string>

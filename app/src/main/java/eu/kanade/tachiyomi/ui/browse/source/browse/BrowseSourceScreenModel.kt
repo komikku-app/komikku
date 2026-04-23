@@ -18,6 +18,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
@@ -32,6 +33,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.EH_PACKAGE
@@ -56,7 +58,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import logcat.LogPriority
@@ -183,7 +184,7 @@ open class BrowseSourceScreenModel(
             val jsonFilters = filtersJson
             val filters = state.value.filters
             if (savedSearchId != null) {
-                val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchId) { filters } }
+                val savedSearch = getExhSavedSearch.awaitOne(savedSearchId) { filters }
                 if (savedSearch != null) {
                     search(
                         query = savedSearch.query,
@@ -216,6 +217,14 @@ open class BrowseSourceScreenModel(
                     incognitoMode.value = it
                 }
                 .launchIn(screenModelScope)
+
+            sourcePreferences.blacklistedSeries().changes()
+                .onEach { blacklist ->
+                    mutableState.update {
+                        it.copy(blacklistedTitles = blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle))
+                    }
+                }
+                .launchIn(screenModelScope)
             // KMK <--
         }
     }
@@ -238,9 +247,9 @@ open class BrowseSourceScreenModel(
      * Flow of Pager flow tied to [State.listing]
      */
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
-    val mangaPagerFlowFlow = state.map { it.listing }
+    val mangaPagerFlowFlow = state.map { it.listing to it.blacklistedTitles }
         .distinctUntilChanged()
-        .map { listing ->
+        .map { (listing, blacklistedTitles) ->
             Pager(PagingConfig(pageSize = 25)) {
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
@@ -255,6 +264,7 @@ open class BrowseSourceScreenModel(
                         .stateIn(ioCoroutineScope)
                 }
                     .filter { !hideInLibraryItems || !it.value.first.favorite }
+                    .filter { blacklistedTitles.isEmpty() || it.value.first.title.toBlacklistNormalizedTitle() !in blacklistedTitles }
             }
                 .cachedIn(ioCoroutineScope)
         }
@@ -575,6 +585,7 @@ open class BrowseSourceScreenModel(
         // SY -->
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
+        val blacklistedTitles: Set<String> = emptySet(),
         // SY <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
