@@ -54,6 +54,11 @@ class ExhPreferences(
 
     fun exhLenientSync() = preferenceStore.getBoolean("eh_lenient_sync", false)
 
+    fun exhFavoritesSyncSort() = preferenceStore.getString(
+        "eh_favorites_sync_sort",
+        ExhFavoritesSyncSort.FAVORITED,
+    )
+
     fun exhShowSettingsUploadWarning() = preferenceStore.getBoolean("eh_showSettingsUploadWarning2", true)
 
     fun logLevel() = preferenceStore.getInt("eh_log_level", 0)
@@ -80,4 +85,9 @@ class ExhPreferences(
     )
 
     fun enhancedEHentaiView() = preferenceStore.getBoolean("enhanced_e_hentai_view", true)
+}
+
+object ExhFavoritesSyncSort {
+    const val FAVORITED = "fs_f"
+    const val PUBLISHED = "fs_p"
 }
