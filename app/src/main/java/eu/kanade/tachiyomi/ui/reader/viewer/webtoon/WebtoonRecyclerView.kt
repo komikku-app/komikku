@@ -55,6 +55,25 @@ class WebtoonRecyclerView @JvmOverloads constructor(
 
     var tapListener: ((MotionEvent) -> Unit)? = null
     var longTapListener: ((MotionEvent) -> Boolean)? = null
+    var autoScrollTogglePauseListener: (() -> Unit)? = null
+    var autoScrollActivateListener: (() -> Unit)? = null
+    var autoScrollStopListener: (() -> Unit)? = null
+    var autoScrollSpeedChangeListener: ((Int) -> Unit)? = null
+    var autoScrollInteractionListener: (() -> Unit)? = null
+    var autoScrollGestureModeEnabled = false
+        set(value) {
+            field = value
+            if (!value) {
+                detector.resetAutoScrollGestureState()
+            }
+        }
+    var autoScrollActivationGestureEnabled = false
+        set(value) {
+            field = value
+            if (!value) {
+                detector.resetAutoScrollActivationGestureState()
+            }
+        }
 
     private var isManuallyScrolling = false
     private var tapDuringManualScroll = false
@@ -70,12 +89,28 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
+        if (autoScrollGestureModeEnabled && detector.handleAutoScrollTouchEvent(e)) {
+            return true
+        }
+
+        if (autoScrollActivationGestureEnabled) {
+            detector.trackAutoScrollActivationTouchEvent(e)
+        }
+
         if (e.actionMasked == MotionEvent.ACTION_DOWN) {
             tapDuringManualScroll = isManuallyScrolling
         }
 
         detector.onTouchEvent(e)
         return super.onTouchEvent(e)
+    }
+
+    fun isAutoScrollGestureModeEnabled(): Boolean {
+        return autoScrollGestureModeEnabled
+    }
+
+    fun isAutoScrollGestureInProgress(): Boolean {
+        return autoScrollGestureModeEnabled && detector.isAutoScrollGestureInProgress()
     }
 
     override fun onScrolled(dx: Int, dy: Int) {
@@ -282,9 +317,199 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         private var downX = 0
         private var downY = 0
         private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        private val tapTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+        private val autoScrollSpeedStep = resources.displayMetrics.density * 24f
+        private val autoScrollStopThreshold = touchSlop * 4
         private var isZoomDragging = false
         var isDoubleTapping = false
         var isQuickScaling = false
+        private var autoScrollPointerActive = false
+        private var autoScrollStartX = 0f
+        private var autoScrollStartY = 0f
+        private var autoScrollLastY = 0f
+        private var autoScrollSpeedAccumulator = 0f
+        private var autoScrollTwoFingerLastY = 0f
+        private var autoScrollTwoFingerRemainder = 0f
+        private var autoScrollDownTime = 0L
+        private var autoScrollMoved = false
+        private var autoScrollStopTriggered = false
+        private var autoScrollMode = AutoScrollGestureMode.NONE
+        private var autoScrollActivationTracking = false
+        private var autoScrollActivationStartX = 0f
+        private var autoScrollActivationStartY = 0f
+        private var autoScrollActivationMultiTouch = false
+
+        fun isAutoScrollGestureInProgress(): Boolean {
+            return autoScrollPointerActive
+        }
+
+        fun resetAutoScrollGestureState() {
+            autoScrollPointerActive = false
+            autoScrollSpeedAccumulator = 0f
+            autoScrollTwoFingerRemainder = 0f
+            autoScrollMoved = false
+            autoScrollStopTriggered = false
+            autoScrollMode = AutoScrollGestureMode.NONE
+        }
+
+        fun resetAutoScrollActivationGestureState() {
+            autoScrollActivationTracking = false
+            autoScrollActivationMultiTouch = false
+        }
+
+        fun trackAutoScrollActivationTouchEvent(ev: MotionEvent) {
+            if (!autoScrollActivationGestureEnabled || autoScrollGestureModeEnabled) return
+
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    resetAutoScrollActivationGestureState()
+                    autoScrollActivationTracking = true
+                    autoScrollActivationStartX = ev.x
+                    autoScrollActivationStartY = ev.y
+                }
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    autoScrollActivationMultiTouch = true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (ev.pointerCount > 1) {
+                        autoScrollActivationMultiTouch = true
+                    }
+                }
+                MotionEvent.ACTION_UP -> {
+                    val dx = ev.x - autoScrollActivationStartX
+                    val dy = ev.y - autoScrollActivationStartY
+                    val shouldActivate =
+                        autoScrollActivationTracking &&
+                            !autoScrollActivationMultiTouch &&
+                            currentScale == DEFAULT_RATE &&
+                            abs(dx) >= autoScrollStopThreshold &&
+                            abs(dx) > abs(dy)
+
+                    resetAutoScrollActivationGestureState()
+                    if (shouldActivate) {
+                        autoScrollActivateListener?.invoke()
+                    }
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    resetAutoScrollActivationGestureState()
+                }
+            }
+        }
+
+        fun handleAutoScrollTouchEvent(ev: MotionEvent): Boolean {
+            if (!autoScrollGestureModeEnabled) return false
+
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    resetAutoScrollGestureState()
+                    autoScrollPointerActive = true
+                    autoScrollStartX = ev.x
+                    autoScrollStartY = ev.y
+                    autoScrollLastY = ev.y
+                    autoScrollDownTime = ev.eventTime
+                    return true
+                }
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    autoScrollPointerActive = true
+                    autoScrollMode = AutoScrollGestureMode.MOVE
+                    autoScrollMoved = true
+                    autoScrollTwoFingerLastY = averageY(ev)
+                    autoScrollTwoFingerRemainder = 0f
+                    stopScroll()
+                    onManualScroll()
+                    autoScrollInteractionListener?.invoke()
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (ev.pointerCount >= 2 || autoScrollMode == AutoScrollGestureMode.MOVE) {
+                        val currentY = averageY(ev)
+                        val deltaY = currentY - autoScrollTwoFingerLastY
+                        autoScrollTwoFingerLastY = currentY
+
+                        autoScrollMode = AutoScrollGestureMode.MOVE
+                        autoScrollMoved = true
+                        autoScrollTwoFingerRemainder += -deltaY
+
+                        val scrollDelta = autoScrollTwoFingerRemainder.toInt()
+                        if (scrollDelta != 0) {
+                            autoScrollTwoFingerRemainder -= scrollDelta
+                            stopScroll()
+                            onManualScroll()
+                            scrollBy(0, scrollDelta)
+                        }
+                        autoScrollInteractionListener?.invoke()
+                        return true
+                    }
+
+                    val dx = ev.x - autoScrollStartX
+                    val dy = ev.y - autoScrollStartY
+                    if (autoScrollMode == AutoScrollGestureMode.NONE) {
+                        if (abs(dy) > touchSlop && abs(dy) >= abs(dx)) {
+                            autoScrollMode = AutoScrollGestureMode.SPEED
+                            autoScrollMoved = true
+                            autoScrollLastY = ev.y
+                            autoScrollSpeedAccumulator = 0f
+                            stopScroll()
+                            autoScrollInteractionListener?.invoke()
+                            return true
+                        }
+                        if (abs(dx) > touchSlop && abs(dx) > abs(dy)) {
+                            autoScrollMode = AutoScrollGestureMode.STOP
+                            autoScrollMoved = true
+                            stopScroll()
+                            autoScrollInteractionListener?.invoke()
+                        }
+                    }
+
+                    when (autoScrollMode) {
+                        AutoScrollGestureMode.SPEED -> {
+                            autoScrollSpeedAccumulator += autoScrollLastY - ev.y
+                            val steps = (autoScrollSpeedAccumulator / autoScrollSpeedStep).toInt()
+                            if (steps != 0) {
+                                autoScrollSpeedAccumulator -= steps * autoScrollSpeedStep
+                                autoScrollSpeedChangeListener?.invoke(steps)
+                                autoScrollInteractionListener?.invoke()
+                            }
+                            autoScrollLastY = ev.y
+                        }
+                        AutoScrollGestureMode.STOP -> {
+                            if (!autoScrollStopTriggered && abs(dx) >= autoScrollStopThreshold) {
+                                autoScrollStopTriggered = true
+                                autoScrollStopListener?.invoke()
+                                autoScrollInteractionListener?.invoke()
+                            }
+                        }
+                        else -> Unit
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_POINTER_UP -> {
+                    if (autoScrollMode == AutoScrollGestureMode.MOVE && ev.pointerCount - 1 < 2) {
+                        autoScrollMode = AutoScrollGestureMode.NONE
+                        autoScrollTwoFingerRemainder = 0f
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_UP -> {
+                    val shouldTogglePause =
+                        !autoScrollMoved &&
+                            !autoScrollStopTriggered &&
+                            autoScrollMode != AutoScrollGestureMode.MOVE &&
+                            ev.eventTime - autoScrollDownTime <= tapTimeout
+                    resetAutoScrollGestureState()
+                    if (shouldTogglePause) {
+                        autoScrollTogglePauseListener?.invoke()
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    resetAutoScrollGestureState()
+                    return true
+                }
+            }
+
+            return true
+        }
 
         override fun onTouchEvent(ev: MotionEvent): Boolean {
             val action = ev.actionMasked
@@ -361,7 +586,22 @@ class WebtoonRecyclerView @JvmOverloads constructor(
             }
             return super.onTouchEvent(ev)
         }
+
+        private fun averageY(event: MotionEvent): Float {
+            var total = 0f
+            for (index in 0 until event.pointerCount) {
+                total += event.getY(index)
+            }
+            return total / event.pointerCount
+        }
     }
+}
+
+private enum class AutoScrollGestureMode {
+    NONE,
+    SPEED,
+    MOVE,
+    STOP,
 }
 
 private const val ANIMATOR_DURATION_TIME = 200
