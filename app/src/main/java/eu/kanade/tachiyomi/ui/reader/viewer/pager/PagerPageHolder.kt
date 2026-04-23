@@ -287,7 +287,7 @@ class PagerPageHolder(
             return imageSource
         }
 
-        val imageBitmap = decodeImage(imageSource)
+        val imageBitmap = decodeImage(imageSource, viewer.config.imageCropBorders)
         if (imageBitmap == null) {
             imageSource2.close()
             page.fullPage = true
@@ -304,7 +304,7 @@ class PagerPageHolder(
             return imageSource
         }
 
-        val imageBitmap2 = decodeImage(imageSource2)
+        val imageBitmap2 = decodeImage(imageSource2, viewer.config.imageCropBorders)
         if (imageBitmap2 == null) {
             imageSource2.close()
             extraPage?.fullPage = true
@@ -338,18 +338,18 @@ class PagerPageHolder(
         return if (
             !ImageUtil.isAnimatedAndSupported(imageSource) &&
             ImageUtil.isWideImage(imageSource) &&
-            viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
-            !viewer.config.imageCropBorders
+            (viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 ||
+                viewer.config.imageCropBorders)
         ) {
-            ImageUtil.addHorizontalCenterMargin(imageSource, height, context)
+            ImageUtil.addHorizontalCenterMargin(imageSource, height, context, viewer.config.imageCropBorders)
         } else {
             imageSource
         }
     }
 
-    private fun decodeImage(imageSource: BufferedSource): Bitmap? {
+    private fun decodeImage(imageSource: BufferedSource, cropBorders: Boolean): Bitmap? {
         return try {
-            ImageDecoder.newInstance(imageSource.inputStream())?.decode()
+            ImageDecoder.newInstance(imageSource.inputStream(), cropBorders)?.decode()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Cannot decode image" }
             null
@@ -357,10 +357,9 @@ class PagerPageHolder(
     }
 
     private fun calculateCenterMargin(height: Int, height2: Int): Int {
-        return if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 &&
-            !viewer.config.imageCropBorders
-        ) {
-            96 / (this.height.coerceAtLeast(1) / max(height, height2).coerceAtLeast(1)).coerceAtLeast(1)
+        val hasSetting = viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0
+        return if (hasSetting || viewer.config.imageCropBorders) {
+            (if (viewer.config.imageCropBorders) 40 else 96) / (this.height.coerceAtLeast(1) / max(height, height2).coerceAtLeast(1)).coerceAtLeast(1)
         } else {
             0
         }
@@ -402,12 +401,10 @@ class PagerPageHolder(
             }
         }
 
-        val sideMargin = if ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) >
-            0 &&
-            viewer.config.doublePages &&
-            !viewer.config.imageCropBorders
+        val sideMargin = if (viewer.config.doublePages &&
+            ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) > 0 || viewer.config.imageCropBorders)
         ) {
-            48
+            if (viewer.config.imageCropBorders) 20 else 48
         } else {
             0
         }
