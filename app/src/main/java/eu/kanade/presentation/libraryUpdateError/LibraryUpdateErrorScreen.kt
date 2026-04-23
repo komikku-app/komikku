@@ -25,7 +25,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -39,6 +38,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.libraryUpdateError.components.LibraryUpdateErrorUiModel
 import eu.kanade.presentation.libraryUpdateError.components.libraryUpdateErrorUiItems
 import eu.kanade.presentation.manga.components.Button
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorItem
@@ -75,9 +75,11 @@ fun LibraryUpdateErrorScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    val headerIndexes = remember { mutableStateOf<List<Int>>(emptyList()) }
-    LaunchedEffect(state) {
-        headerIndexes.value = state.getHeaderIndexes()
+    val uiModels = remember(state) { state.getUiModel() }
+    val headerIndexes = remember(state) {
+        uiModels.withIndex()
+            .filter { it.value is LibraryUpdateErrorUiModel.Header }
+            .map { it.index }
     }
 
     val enableScrollToTop by remember {
@@ -94,12 +96,12 @@ fun LibraryUpdateErrorScreen(
 
     val enableScrollToPrevious by remember {
         derivedStateOf {
-            headerIndexes.value.any { it < listState.firstVisibleItemIndex }
+            headerIndexes.any { it < listState.firstVisibleItemIndex }
         }
     }
     val enableScrollToNext by remember {
         derivedStateOf {
-            headerIndexes.value.any { it > listState.firstVisibleItemIndex }
+            headerIndexes.any { it > listState.firstVisibleItemIndex }
         }
     }
 
@@ -141,7 +143,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToPrevious = {
                     scope.launch {
                         listState.scrollToItem(
-                            headerIndexes.value
+                            headerIndexes
                                 .filter { it < listState.firstVisibleItemIndex }
                                 .maxOrNull() ?: 0,
                         )
@@ -150,7 +152,7 @@ fun LibraryUpdateErrorScreen(
                 scrollToNext = {
                     scope.launch {
                         listState.scrollToItem(
-                            headerIndexes.value
+                            headerIndexes
                                 .filter { it > listState.firstVisibleItemIndex }
                                 .minOrNull() ?: 0,
                         )
@@ -167,7 +169,6 @@ fun LibraryUpdateErrorScreen(
             )
 
             else -> {
-                val uiModels = remember(state.items) { state.getUiModel() }
                 FastScrollLazyColumn(
                     // Using modifier instead of contentPadding so we can use stickyHeader
                     modifier = Modifier.padding(contentPadding),

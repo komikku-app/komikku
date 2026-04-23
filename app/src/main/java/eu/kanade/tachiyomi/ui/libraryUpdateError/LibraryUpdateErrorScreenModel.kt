@@ -189,11 +189,6 @@ data class LibraryUpdateErrorScreenState(
         }
         return uiModels
     }
-
-    fun getHeaderIndexes(): List<Int> = getUiModel()
-        .withIndex()
-        .filter { it.value is LibraryUpdateErrorUiModel.Header }
-        .map { it.index }
 }
 
 @Immutable
