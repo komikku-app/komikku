@@ -82,24 +82,24 @@ fun LibraryUpdateErrorScreen(
             .map { it.index }
     }
 
-    val enableScrollToTop by remember {
+    val enableScrollToTop by remember(listState) {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0
         }
     }
 
-    val enableScrollToBottom by remember {
+    val enableScrollToBottom by remember(listState) {
         derivedStateOf {
             listState.canScrollForward
         }
     }
 
-    val enableScrollToPrevious by remember {
+    val enableScrollToPrevious by remember(headerIndexes, listState) {
         derivedStateOf {
             headerIndexes.any { it < listState.firstVisibleItemIndex }
         }
     }
-    val enableScrollToNext by remember {
+    val enableScrollToNext by remember(headerIndexes, listState) {
         derivedStateOf {
             headerIndexes.any { it > listState.firstVisibleItemIndex }
         }
