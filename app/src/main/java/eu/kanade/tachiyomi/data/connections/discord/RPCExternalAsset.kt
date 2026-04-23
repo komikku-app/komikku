@@ -40,18 +40,19 @@ class RPCExternalAsset(
             .post("{\"urls\":[\"$imageUrl\"]}".toRequestBody("application/json".toMediaType()))
             .build()
         return try {
-            val res = client.newCall(request).await()
-            if (res.code == 429) {
-                // Rate limit hit
-                Timber.tag(TAG).e("Discord API rate limit reached: ${res.body.string()}")
-                return null
+            client.newCall(request).await().use { res ->
+                if (res.code == 429) {
+                    // Rate limit hit
+                    Timber.tag(TAG).e("Discord API rate limit reached: ${res.body.string()}")
+                    return null
+                }
+                if (!res.isSuccessful) {
+                    Timber.tag(TAG).e("Discord API error: HTTP ${res.code} - ${res.body.string()}")
+                    return null
+                }
+                json.decodeFromString<List<ExternalAsset>>(res.body.string())
+                    .firstOrNull()?.externalAssetPath?.let { "mp:$it" }
             }
-            if (!res.isSuccessful) {
-                Timber.tag(TAG).e("Discord API error: HTTP ${res.code} - ${res.body.string()}")
-                return null
-            }
-            json.decodeFromString<List<ExternalAsset>>(res.body.string())
-                .firstOrNull()?.externalAssetPath?.let { "mp:$it" }
         } catch (e: Exception) {
             Timber.tag(TAG).e("Exception while fetching Discord external asset: ${e.message}")
             null

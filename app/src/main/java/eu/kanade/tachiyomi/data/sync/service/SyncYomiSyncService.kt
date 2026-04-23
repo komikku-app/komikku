@@ -79,44 +79,44 @@ class SyncYomiSyncService(
         )
 
         val client = OkHttpClient()
-        val response = client.newCall(downloadRequest).await()
-
-        if (response.code == HttpStatus.SC_NOT_MODIFIED) {
-            // not modified
-            assert(lastETag.isNotEmpty())
-            logcat(LogPriority.INFO) {
-                "Remote server not modified"
-            }
-            return Pair(null, lastETag)
-        } else if (response.code == HttpStatus.SC_NOT_FOUND) {
-            // maybe got deleted from remote
-            return Pair(null, "")
-        }
-
-        if (response.isSuccessful) {
-            val newETag = response.headers["ETag"]
-                .takeIf { it?.isNotEmpty() == true } ?: throw SyncYomiException("Missing ETag")
-
-            val byteArray = response.body.byteStream().use {
-                return@use it.readBytes()
-            }
-
-            return try {
-                val backup = protoBuf.decodeFromByteArray(Backup.serializer(), byteArray)
-                return Pair(SyncData(backup = backup), newETag)
-            } catch (_: SerializationException) {
+        client.newCall(downloadRequest).await().use { response ->
+            if (response.code == HttpStatus.SC_NOT_MODIFIED) {
+                // not modified
+                assert(lastETag.isNotEmpty())
                 logcat(LogPriority.INFO) {
-                    "Bad content responsed from server"
+                    "Remote server not modified"
                 }
-                // the body is invalid
-                // return default value so we can overwrite it
-                Pair(null, "")
+                return Pair(null, lastETag)
+            } else if (response.code == HttpStatus.SC_NOT_FOUND) {
+                // maybe got deleted from remote
+                return Pair(null, "")
             }
-        } else {
-            val responseBody = response.body.string()
-            notifier.showSyncError("Failed to download sync data: $responseBody")
-            logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
-            throw SyncYomiException("Failed to download sync data: $responseBody")
+
+            if (response.isSuccessful) {
+                val newETag = response.headers["ETag"]
+                    .takeIf { it?.isNotEmpty() == true } ?: throw SyncYomiException("Missing ETag")
+
+                val byteArray = response.body.byteStream().use {
+                    return@use it.readBytes()
+                }
+
+                return try {
+                    val backup = protoBuf.decodeFromByteArray(Backup.serializer(), byteArray)
+                    return Pair(SyncData(backup = backup), newETag)
+                } catch (_: SerializationException) {
+                    logcat(LogPriority.INFO) {
+                        "Bad content responsed from server"
+                    }
+                    // the body is invalid
+                    // return default value so we can overwrite it
+                    Pair(null, "")
+                }
+            } else {
+                val responseBody = response.body.string()
+                notifier.showSyncError("Failed to download sync data: $responseBody")
+                logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
+                throw SyncYomiException("Failed to download sync data: $responseBody")
+            }
         }
     }
 
@@ -156,20 +156,20 @@ class SyncYomiSyncService(
             body = body,
         )
 
-        val response = client.newCall(uploadRequest).await()
-
-        if (response.isSuccessful) {
-            val newETag = response.headers["ETag"]
-                .takeIf { it?.isNotEmpty() == true } ?: throw SyncYomiException("Missing ETag")
-            syncPreferences.lastSyncEtag().set(newETag)
-            logcat(LogPriority.DEBUG) { "SyncYomi sync completed" }
-        } else if (response.code == HttpStatus.SC_PRECONDITION_FAILED) {
-            // other clients updated remote data, will try next time
-            logcat(LogPriority.DEBUG) { "SyncYomi sync failed with 412" }
-        } else {
-            val responseBody = response.body.string()
-            notifier.showSyncError("Failed to upload sync data: $responseBody")
-            logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
+        client.newCall(uploadRequest).await().use { response ->
+            if (response.isSuccessful) {
+                val newETag = response.headers["ETag"]
+                    .takeIf { it?.isNotEmpty() == true } ?: throw SyncYomiException("Missing ETag")
+                syncPreferences.lastSyncEtag().set(newETag)
+                logcat(LogPriority.DEBUG) { "SyncYomi sync completed" }
+            } else if (response.code == HttpStatus.SC_PRECONDITION_FAILED) {
+                // other clients updated remote data, will try next time
+                logcat(LogPriority.DEBUG) { "SyncYomi sync failed with 412" }
+            } else {
+                val responseBody = response.body.string()
+                notifier.showSyncError("Failed to upload sync data: $responseBody")
+                logcat(LogPriority.ERROR) { "SyncError: $responseBody" }
+            }
         }
     }
 }
