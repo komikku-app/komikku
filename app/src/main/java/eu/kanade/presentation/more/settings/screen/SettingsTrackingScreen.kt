@@ -149,6 +149,11 @@ object SettingsTrackingScreen : SearchableSettings {
                 preference = trackPreferences.autoSyncProgressFromTrackers(),
                 title = stringResource(KMR.strings.pref_auto_sync_progress_from_trackers),
             ),
+            Preference.PreferenceItem.SwitchPreference(
+                preference = trackPreferences.showNotInLibraryTrackerEntries(),
+                title = stringResource(MR.strings.pref_tracker_show_not_in_library_entries),
+                subtitle = stringResource(MR.strings.pref_tracker_show_not_in_library_entries_summary),
+            ),
             // KMK <--
             // SY -->
             Preference.PreferenceItem.SwitchPreference(
@@ -164,11 +169,13 @@ object SettingsTrackingScreen : SearchableSettings {
                         tracker = trackerManager.myAnimeList,
                         login = { context.openInBrowser(MyAnimeListApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.myAnimeList) },
+                        supportLabel = stringResource(MR.strings.tracker_not_in_library_supported),
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.aniList,
                         login = { context.openInBrowser(AnilistApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.aniList) },
+                        supportLabel = stringResource(MR.strings.tracker_not_in_library_supported),
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.kitsu,

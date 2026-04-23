@@ -51,6 +51,7 @@ import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -95,6 +96,7 @@ data class BrowseSourceScreen(
     /** being set when called from [SmartSearchScreen] or when click on a manga from this screen
      * which was previously opened from `SmartSearchScreen` */
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
+    private val initialTrackSearch: TrackSearch? = null,
     // SY <--
 ) : Screen(), AssistContentScreen {
 
@@ -116,6 +118,7 @@ data class BrowseSourceScreen(
                 // SY -->
                 filtersJson = filtersJson,
                 savedSearch = savedSearch,
+                initialTrackSearch = initialTrackSearch,
                 // SY <--
             )
         }
@@ -369,6 +372,7 @@ data class BrowseSourceScreen(
                                 fromSource = smartSearchConfig == null,
                                 // KMK <--
                                 smartSearchConfig = smartSearchConfig,
+                                initialTrackSearch = initialTrackSearch,
                             ),
                         )
                     }

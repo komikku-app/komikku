@@ -199,6 +199,107 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         }
     }
 
+    suspend fun getNotInLibraryEntries(userId: Int): List<TrackSearch> {
+        return withIOContext {
+            val entries = mutableListOf<TrackSearch>()
+            var page = 1
+
+            while (true) {
+                val query = $$"""
+            |query ($id: Int!, $page: Int!, $perPage: Int!) {
+                |Page(page: $page, perPage: $perPage) {
+                    |pageInfo {
+                        |currentPage
+                        |hasNextPage
+                    |}
+                    |mediaList(userId: $id, type: MANGA) {
+                        |id
+                        |status
+                        |scoreRaw: score(format: POINT_100)
+                        |progress
+                        |private
+                        |startedAt {
+                            |year
+                            |month
+                            |day
+                        |}
+                        |completedAt {
+                            |year
+                            |month
+                            |day
+                        |}
+                        |media {
+                            |id
+                            |title {
+                                |userPreferred
+                            |}
+                            |coverImage {
+                                |large
+                            |}
+                            |format
+                            |status
+                            |chapters
+                            |description
+                            |startDate {
+                                |year
+                                |month
+                                |day
+                            |}
+                            |averageScore
+                            |staff {
+                                |edges {
+                                    |role
+                                    |id
+                                    |node {
+                                        |name {
+                                            |full
+                                            |userPreferred
+                                            |native
+                                        |}
+                                    |}
+                                |}
+                            |}
+                        |}
+                    |}
+                |}
+            |}
+            |
+            """.trimMargin()
+                val payload = buildJsonObject {
+                    put("query", query)
+                    putJsonObject("variables") {
+                        put("id", userId)
+                        put("page", page)
+                        put("perPage", 50)
+                    }
+                }
+
+                val pageResult = with(json) {
+                    authClient.newCall(
+                        POST(
+                            API_URL,
+                            body = payload.toString().toRequestBody(jsonMime),
+                        ),
+                    )
+                        .awaitSuccess()
+                        .parseAs<ALUserListMangaQueryResult>()
+                        .data.page
+                }
+
+                entries += pageResult.mediaList
+                    .map { it.toALUserManga() }
+                    .map { it.toTrackSearch() }
+
+                if (pageResult.pageInfo?.hasNextPage != true) {
+                    break
+                }
+                page++
+            }
+
+            entries
+        }
+    }
+
     suspend fun findLibManga(track: Track, userid: Int): Track? {
         return withIOContext {
             val query = $$"""

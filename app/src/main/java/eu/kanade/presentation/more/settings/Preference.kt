@@ -148,6 +148,7 @@ sealed class Preference {
             val tracker: Tracker,
             val login: () -> Unit,
             val logout: () -> Unit,
+            val supportLabel: String? = null,
         ) : PreferenceItem<String, Unit>() {
             override val title: String = ""
             override val enabled: Boolean = true

@@ -61,6 +61,7 @@ import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
@@ -129,6 +130,7 @@ class MangaScreen(
      */
     val fromSource: Boolean = false,
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
+    private val initialTrackSearch: TrackSearch? = null,
 ) : Screen(), AssistContentScreen {
 
     private var assistUrl: String? = null
@@ -152,6 +154,7 @@ class MangaScreen(
                 lifecycle = lifecycleOwner.lifecycle,
                 mangaId = mangaId,
                 isFromSource = fromSource,
+                initialTrackSearch = initialTrackSearch,
                 smartSearched = smartSearchConfig != null,
             )
         }

@@ -24,9 +24,12 @@ import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.bindTrackSearchToManga
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -101,6 +104,7 @@ open class BrowseSourceScreenModel(
     // SY -->
     private val filtersJson: String? = null,
     private val savedSearch: Long? = null,
+    private val initialTrackSearch: TrackSearch? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
@@ -114,6 +118,7 @@ open class BrowseSourceScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    private val trackerManager: TrackerManager = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
     // KMK -->
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
@@ -130,6 +135,7 @@ open class BrowseSourceScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
+    private var pendingTrackSearch: TrackSearch? = initialTrackSearch
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
 
@@ -417,10 +423,13 @@ open class BrowseSourceScreenModel(
                 new = new.removeCovers(coverCache)
             } else {
                 setMangaDefaultChapterFlags.await(manga)
-                addTracks.bindEnhancedTrackers(manga, source)
             }
 
             updateManga.await(new.toMangaUpdate())
+            if (new.favorite) {
+                bindPendingTrackSearch(manga.id)
+                addTracks.bindEnhancedTrackers(manga, source)
+            }
             // KMK -->
             val fetchMetadataOnAdd = libraryPreferences.fetchMetadataOnAdd().get()
             val fetchChaptersOnAdd = libraryPreferences.fetchChaptersOnAdd().get()
@@ -443,6 +452,20 @@ open class BrowseSourceScreenModel(
                 }
             }
             // KMK <--
+        }
+    }
+
+    private suspend fun bindPendingTrackSearch(mangaId: Long) {
+        val trackSearch = pendingTrackSearch ?: return
+        if (
+            bindTrackSearchToManga(
+                trackSearch = trackSearch,
+                mangaId = mangaId,
+                trackerManager = trackerManager,
+                addTracks = addTracks,
+            )
+        ) {
+            pendingTrackSearch = null
         }
     }
 

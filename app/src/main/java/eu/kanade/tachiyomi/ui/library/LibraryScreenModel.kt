@@ -20,6 +20,7 @@ import eu.kanade.domain.manga.interactor.SmartSearchMerge
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
 import eu.kanade.presentation.manga.DownloadAction
@@ -29,6 +30,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.TrackerWithNotInLibrary
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -63,8 +65,10 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
+import kotlinx.coroutines.async
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -144,6 +148,7 @@ class LibraryScreenModel(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
+    private val trackPreferences: TrackPreferences = Injekt.get(),
     // SY -->
     private val exhPreferences: ExhPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
@@ -167,11 +172,16 @@ class LibraryScreenModel(
     val recommendationSearch = RecommendationSearchHelper(preferences.context)
 
     private var recommendationSearchJob: Job? = null
+    private var remoteTrackerItemsJob: Job? = null
+    private var remoteTrackerFetchConfig = RemoteTrackerFetchConfig()
     // SY <--
 
     init {
         mutableState.update { state ->
-            state.copy(activeCategoryIndex = libraryPreferences.lastUsedCategory().get())
+            state.copy(
+                activeCategoryIndex = libraryPreferences.lastUsedCategory().get(),
+                notInLibraryCategoryName = preferences.context.stringResource(TrackStatus.NOT_IN_LIBRARY.res),
+            )
         }
         screenModelScope.launchIO {
             combine(
@@ -385,6 +395,59 @@ class LibraryScreenModel(
             .distinctUntilChanged()
             .onEach { syncService ->
                 mutableState.update { it.copy(isSyncEnabled = syncService != 0) }
+            }
+            .launchIn(screenModelScope)
+
+        combine(
+            libraryPreferences.groupLibraryBy().changes(),
+            trackPreferences.showNotInLibraryTrackerEntries().changes(),
+            trackerManager.loggedInTrackersFlow(),
+        ) { groupType, enabled, loggedInTrackers ->
+            RemoteTrackerFetchConfig(
+                enabled = groupType == LibraryGroup.BY_TRACK_STATUS && enabled,
+                trackers = loggedInTrackers.filterIsInstance<TrackerWithNotInLibrary>(),
+            )
+        }
+            .distinctUntilChanged { old, new ->
+                old.enabled == new.enabled &&
+                    old.trackers.map { it.id } == new.trackers.map { it.id }
+            }
+            .onEach { config ->
+                remoteTrackerFetchConfig = config
+                if (!config.enabled || config.trackers.isEmpty()) {
+                    remoteTrackerItemsJob?.cancel()
+                    mutableState.update {
+                        it.copy(
+                            rawRemoteTrackerItems = emptyList(),
+                            remoteTrackerItems = emptyList(),
+                        )
+                    }
+                } else {
+                    refreshRemoteTrackerItems()
+                }
+            }
+            .launchIn(screenModelScope)
+
+        combine(
+            state.map { Triple(it.rawRemoteTrackerItems, it.searchQuery, it.libraryData) }.distinctUntilChanged(),
+            libraryPreferences.groupLibraryBy().changes(),
+            trackPreferences.showNotInLibraryTrackerEntries().changes(),
+        ) { (rawRemoteItems, searchQuery, libraryData), groupType, enabled ->
+            if (!enabled || groupType != LibraryGroup.BY_TRACK_STATUS) {
+                emptyList()
+            } else {
+                buildRemoteTrackerLibraryItems(
+                    remoteTracks = rawRemoteItems,
+                    trackedKeys = buildTrackedRemoteKeys(libraryData.favorites, libraryData.tracksMap),
+                    trackerManager = trackerManager,
+                    context = preferences.context,
+                    searchQuery = searchQuery,
+                )
+            }
+        }
+            .distinctUntilChanged()
+            .onEach { remoteTrackerItems ->
+                mutableState.update { it.copy(remoteTrackerItems = remoteTrackerItems) }
             }
             .launchIn(screenModelScope)
         // SY <--
@@ -1140,6 +1203,29 @@ class LibraryScreenModel(
         return state.getItemsForCategoryId(state.activeCategory?.id).randomOrNull()
     }
 
+    fun refreshRemoteTrackerItems(): Boolean {
+        val config = remoteTrackerFetchConfig.takeIf { it.enabled && it.trackers.isNotEmpty() } ?: return false
+
+        remoteTrackerItemsJob?.cancel()
+        remoteTrackerItemsJob = screenModelScope.launchIO {
+            val items = config.trackers.map { tracker ->
+                async {
+                    runCatching { tracker.getNotInLibraryEntries() }
+                        .getOrElse {
+                            xLogE("Failed to fetch remote tracker entries for ${tracker.name}", it)
+                            emptyList()
+                        }
+                        .map { it.toRemoteTrackerTrack() }
+                }
+            }
+                .awaitAll()
+                .flatten()
+
+            mutableState.update { it.copy(rawRemoteTrackerItems = items) }
+        }
+        return true
+    }
+
     fun showSettingsDialog() {
         mutableState.update { it.copy(dialog = Dialog.SettingsSheet) }
     }
@@ -1674,6 +1760,8 @@ class LibraryScreenModel(
         private val activeCategoryId: Long? = null,
         // KMK <--
         private val groupedFavorites: Map<Category, List</* LibraryItem */ Long>> = emptyMap(),
+        val rawRemoteTrackerItems: List<RemoteTrackerTrack> = emptyList(),
+        val remoteTrackerItems: List<RemoteTrackerLibraryItem> = emptyList(),
         // SY -->
         val showSyncExh: Boolean = false,
         val isSyncEnabled: Boolean = false,
@@ -1683,13 +1771,20 @@ class LibraryScreenModel(
         val filterCategory: Boolean = false,
         val includedCategories: ImmutableSet<Long> = persistentSetOf(),
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
+        val notInLibraryCategoryName: String = "",
         // KMK <--
     ) {
         /**
          * The grouped tabs which is displayed above the library screen.
          * They can be actual [Category] or [Source], [Track]...
          */
-        val displayedCategories: List<Category> = groupedFavorites.keys.toList()
+        val displayedCategories: List<Category>
+            get() = buildDisplayedCategories(
+                groupedFavorites = groupedFavorites,
+                remoteTrackerItems = remoteTrackerItems,
+                groupType = groupType,
+                notInLibraryCategoryName = notInLibraryCategoryName,
+            )
 
         val coercedActiveCategoryIndex = /* KMK --> */ displayedCategories.indexOfFirst { it.id == activeCategoryId }
             .takeIf { it != -1 } ?: activeCategoryIndex
@@ -1702,6 +1797,7 @@ class LibraryScreenModel(
         val activeCategory: Category? = displayedCategories.getOrNull(coercedActiveCategoryIndex)
 
         val isLibraryEmpty = libraryData.favorites.isEmpty()
+        val hasRemoteTrackerItems = remoteTrackerItems.isNotEmpty()
 
         val selectionMode = selection.isNotEmpty()
 
@@ -1742,8 +1838,24 @@ class LibraryScreenModel(
             return groupedFavorites[category].orEmpty().fastMapNotNull { libraryData.favoritesById[it] }
         }
 
+        fun getDisplayItemsForCategory(category: Category): List<LibraryDisplayItem> {
+            return if (category.id == TrackStatus.NOT_IN_LIBRARY.int.toLong()) {
+                remoteTrackerItems.map(LibraryDisplayItem::RemoteTrack)
+            } else {
+                getItemsForCategory(category).map(LibraryDisplayItem::Local)
+            }
+        }
+
         fun getItemCountForCategory(category: Category): Int? {
-            return if (showMangaCount || !searchQuery.isNullOrEmpty()) groupedFavorites[category]?.size else null
+            return if (showMangaCount || !searchQuery.isNullOrEmpty()) {
+                if (category.id == TrackStatus.NOT_IN_LIBRARY.int.toLong()) {
+                    remoteTrackerItems.size
+                } else {
+                    groupedFavorites[category]?.size
+                }
+            } else {
+                null
+            }
         }
 
         fun getToolbarTitle(
@@ -1765,6 +1877,11 @@ class LibraryScreenModel(
             return LibraryToolbarTitle(title, count)
         }
     }
+
+    private data class RemoteTrackerFetchConfig(
+        val enabled: Boolean = false,
+        val trackers: List<TrackerWithNotInLibrary> = emptyList(),
+    )
 
     // KMK -->
     companion object {
@@ -1794,4 +1911,117 @@ class LibraryScreenModel(
         }
     }
     // KMK <--
+}
+
+internal fun buildDisplayedCategories(
+    groupedFavorites: Map<Category, List<Long>>,
+    remoteTrackerItems: List<RemoteTrackerLibraryItem>,
+    groupType: Int,
+    notInLibraryCategoryName: String,
+): List<Category> {
+    return buildList {
+        val localCategories = groupedFavorites.keys.toList()
+        val localCategoriesToDisplay = if (
+            groupType == LibraryGroup.BY_TRACK_STATUS &&
+            remoteTrackerItems.isNotEmpty() &&
+            localCategories.size == 1 &&
+            localCategories.first().id == 0L &&
+            groupedFavorites.values.firstOrNull().isNullOrEmpty()
+        ) {
+            emptyList()
+        } else {
+            localCategories
+        }
+        addAll(localCategoriesToDisplay)
+        if (remoteTrackerItems.isNotEmpty()) {
+            add(
+                Category(
+                    id = TrackStatus.NOT_IN_LIBRARY.int.toLong(),
+                    name = notInLibraryCategoryName,
+                    order = TrackStatus.NOT_IN_LIBRARY.ordinal.toLong(),
+                    flags = 0,
+                    hidden = false,
+                ),
+            )
+        }
+    }
+}
+
+internal data class RemoteTrackKey(
+    val trackerId: Long,
+    val remoteId: Long,
+)
+
+internal fun buildTrackedRemoteKeys(
+    favorites: List<LibraryItem>,
+    tracksMap: Map<Long, List<Track>>,
+): Set<RemoteTrackKey> {
+    return favorites
+        .flatMap { libraryItem ->
+            tracksMap[libraryItem.id].orEmpty().map { track ->
+                RemoteTrackKey(track.trackerId, track.remoteId)
+            }
+        }
+        .toSet()
+}
+
+internal fun buildRemoteTrackerLibraryItems(
+    remoteTracks: List<RemoteTrackerTrack>,
+    trackedKeys: Set<RemoteTrackKey>,
+    trackerManager: TrackerManager,
+    context: Context,
+    searchQuery: String?,
+): List<RemoteTrackerLibraryItem> {
+    return remoteTracks
+        .filterNot { track -> RemoteTrackKey(track.trackerId, track.remoteId) in trackedKeys }
+        .mapNotNull { track ->
+            val tracker = trackerManager.get(track.trackerId) ?: return@mapNotNull null
+            val statusText = tracker.getStatus(track.status)?.let(context::stringResource)
+            RemoteTrackerLibraryItem(
+                track = track,
+                trackerName = tracker.name,
+                trackerShortName = trackerBadgeLabel(track.trackerId, tracker.name),
+                statusText = statusText,
+                progressText = remoteTrackerProgressText(track),
+            )
+        }
+        .filter { remoteItem ->
+            searchQuery.isNullOrBlank() || remoteItem.matchesQuery(searchQuery)
+        }
+        .sortedWith(
+            compareBy<RemoteTrackerLibraryItem> { it.track.title.lowercase() }
+                .thenBy { it.trackerName.lowercase() },
+        )
+}
+
+internal fun RemoteTrackerLibraryItem.matchesQuery(query: String): Boolean {
+    val normalizedQuery = query.trim()
+    if (normalizedQuery.isEmpty()) return true
+
+    return track.title.contains(normalizedQuery, ignoreCase = true) ||
+        trackerName.contains(normalizedQuery, ignoreCase = true) ||
+        statusText?.contains(normalizedQuery, ignoreCase = true) == true ||
+        progressText?.contains(normalizedQuery, ignoreCase = true) == true
+}
+
+internal fun remoteTrackerProgressText(track: RemoteTrackerTrack): String? {
+    val progress = track.lastChapterRead.toInt().takeIf { it > 0 }
+    val total = track.totalChapters.takeIf { it > 0 }
+
+    return when {
+        progress != null && total != null -> "$progress/$total"
+        progress != null -> progress.toString()
+        else -> null
+    }
+}
+
+internal fun trackerBadgeLabel(
+    trackerId: Long,
+    fallbackName: String,
+): String {
+    return when (trackerId) {
+        1L -> "MAL"
+        TrackerManager.ANILIST -> "AL"
+        else -> fallbackName
+    }
 }
