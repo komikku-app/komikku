@@ -196,7 +196,7 @@ data class MigrateMangaScreen(
         ) {
             items(items = state.titles) { manga ->
                 // KMK -->
-                val isSelected = remember(state) { manga.id in state.selection }
+                val isSelected = manga.id in state.selection
                 // KMK <--
                 MigrateMangaItem(
                     manga = manga,
