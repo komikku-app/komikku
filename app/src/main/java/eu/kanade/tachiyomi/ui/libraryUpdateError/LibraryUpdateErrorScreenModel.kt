@@ -64,7 +64,6 @@ class LibraryUpdateErrorScreenModel(
         selected: Boolean,
         fromLongPress: Boolean = false,
     ) {
-        if (item.selected == selected) return
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.error.errorId == item.error.errorId }

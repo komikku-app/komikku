@@ -377,7 +377,6 @@ class UpdatesScreenModel(
     ) {
         // KMK -->
         val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
-        if (item.selected == selected) return
         // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
