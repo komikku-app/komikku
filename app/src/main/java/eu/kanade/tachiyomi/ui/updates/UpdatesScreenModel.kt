@@ -381,10 +381,10 @@ class UpdatesScreenModel(
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
-                if (selectedIndex < 0) return@apply
+                if (selectedIndex < 0) return@update state
 
                 val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
+                if (selectedItem.selected == selected) return@update state
 
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
@@ -428,10 +428,10 @@ class UpdatesScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.update.chapterId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.update.chapterId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }

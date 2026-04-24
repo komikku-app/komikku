@@ -555,8 +555,8 @@ class MangaScreenModel(
                         }
                         val vibrantColor = it.getBestColor() ?: return@launchIO
                         mangaCover.vibrantCoverColor = vibrantColor
-                        updateSuccessState {
-                            it.copy(seedColor = Color(vibrantColor))
+                        updateSuccessState { state ->
+                            state.copy(seedColor = Color(vibrantColor))
                         }
                     }
                 }
@@ -1731,10 +1731,10 @@ class MangaScreenModel(
         updateSuccessState { successState ->
             val newChapters = successState.processedChapters.toMutableList().apply {
                 val selectedIndex = successState.processedChapters.indexOfFirst { it.id == item.chapter.id }
-                if (selectedIndex < 0) return@apply
+                if (selectedIndex < 0) return@updateSuccessState successState
 
                 val selectedItem = get(selectedIndex)
-                if ((selectedItem.selected && selected) || (!selectedItem.selected && !selected)) return@apply
+                if (selectedItem.selected == selected) return@updateSuccessState successState
 
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
@@ -1759,10 +1759,10 @@ class MangaScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.id)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.id)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }
