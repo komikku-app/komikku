@@ -1728,13 +1728,16 @@ class MangaScreenModel(
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
+        // KMK -->
+        if (item.selected == selected) return
+        // KMK <--
         updateSuccessState { successState ->
             val newChapters = successState.processedChapters.toMutableList().apply {
                 val selectedIndex = successState.processedChapters.indexOfFirst { it.id == item.chapter.id }
-                if (selectedIndex < 0) return@apply
+                if (selectedIndex < 0) return@updateSuccessState successState
 
                 val selectedItem = get(selectedIndex)
-                if ((selectedItem.selected && selected) || (!selectedItem.selected && !selected)) return@apply
+                if (selectedItem.selected == selected) return@updateSuccessState successState
 
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))

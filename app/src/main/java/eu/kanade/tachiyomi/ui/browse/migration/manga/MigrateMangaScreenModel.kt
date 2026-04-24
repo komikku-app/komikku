@@ -74,7 +74,7 @@ class MigrateMangaScreenModel(
             val selection = state.selection.mutate { list ->
                 state.titles.run {
                     val selectedIndex = indexOfFirst { it.id == item.id }
-                    if (selectedIndex < 0) return@run
+                    if (selectedIndex < 0) return@mutate
 
                     val firstSelection = list.isEmpty()
                     if (selected) list.add(item.id) else list.remove(item.id)
