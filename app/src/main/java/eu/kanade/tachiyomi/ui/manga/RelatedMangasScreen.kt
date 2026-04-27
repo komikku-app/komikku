@@ -53,6 +53,7 @@ fun RelatedMangasScreen(
                     isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
                     onSelectAll = {
                         successState.relatedMangasSorted?.let { result ->
                             result.map { it as RelatedManga.Success }

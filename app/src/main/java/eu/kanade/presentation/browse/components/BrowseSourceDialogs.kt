@@ -1,7 +1,16 @@
 package eu.kanade.presentation.browse.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -13,13 +22,80 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.DialogProperties
+import eu.kanade.presentation.components.AdaptiveSheet
+import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+
+@Composable
+fun MangaActionsDialog(
+    manga: Manga,
+    onDismissRequest: () -> Unit,
+    onClickFavorite: () -> Unit,
+    onClickBlacklist: () -> Unit,
+) {
+    val minHeight = LocalPreferenceMinHeight.current
+
+    AdaptiveSheet(onDismissRequest = onDismissRequest) {
+        Column(
+            modifier = Modifier
+                .padding(
+                    vertical = TabbedDialogPaddings.Vertical,
+                    horizontal = TabbedDialogPaddings.Horizontal,
+                )
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+        ) {
+            Text(
+                text = manga.title,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = MaterialTheme.padding.small),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            TextPreferenceWidget(
+                title = stringResource(if (manga.favorite) MR.strings.action_remove else MR.strings.add_to_library),
+                icon = if (manga.favorite) Icons.Outlined.Delete else Icons.Outlined.FavoriteBorder,
+                onPreferenceClick = {
+                    onDismissRequest()
+                    onClickFavorite()
+                },
+            )
+            TextPreferenceWidget(
+                title = stringResource(KMR.strings.action_add_to_blacklist),
+                icon = Icons.Outlined.Block,
+                onPreferenceClick = {
+                    onDismissRequest()
+                    onClickBlacklist()
+                },
+            )
+
+            TextButton(
+                onClick = onDismissRequest,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .sizeIn(minHeight = minHeight),
+            ) {
+                Text(
+                    text = stringResource(MR.strings.action_cancel),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun RemoveMangaDialog(

@@ -1,11 +1,17 @@
 package eu.kanade.domain.source.service
 
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
+import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
+import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.core.common.preference.getLongArray
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -13,6 +19,8 @@ import tachiyomi.domain.library.model.LibraryDisplayMode
 class SourcePreferences(
     private val preferenceStore: PreferenceStore,
 ) {
+
+    private val blacklistSerializer = ListSerializer(BlacklistedSeriesEntry.serializer())
 
     fun sourceDisplayMode() = preferenceStore.getObjectFromString(
         "pref_display_mode_catalogue",
@@ -49,6 +57,46 @@ class SourcePreferences(
     )
 
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
+
+    fun blacklistedSeries() = preferenceStore.getObjectFromString(
+        "series_blacklist",
+        emptyList(),
+        serializer = { entries ->
+            Json.encodeToString(blacklistSerializer, sanitizeBlacklistedSeries(entries))
+        },
+        deserializer = { value ->
+            sanitizeBlacklistedSeries(
+                runCatching { Json.decodeFromString(blacklistSerializer, value) }.getOrDefault(emptyList()),
+            )
+        },
+    )
+
+    fun addBlacklistedSeries(title: String): Boolean {
+        val originalTitle = title.trim()
+        val normalizedTitle = originalTitle.toBlacklistNormalizedTitle()
+        if (originalTitle.isBlank() || normalizedTitle.isBlank()) return false
+
+        var added = false
+        blacklistedSeries().getAndSet { entries ->
+            if (entries.any { it.normalizedTitle == normalizedTitle }) {
+                added = false
+                entries
+            } else {
+                added = true
+                entries + BlacklistedSeriesEntry(
+                    originalTitle = originalTitle,
+                    normalizedTitle = normalizedTitle,
+                )
+            }
+        }
+        return added
+    }
+
+    fun removeBlacklistedSeries(normalizedTitle: String) {
+        blacklistedSeries().getAndSet { entries ->
+            entries.filterNot { it.normalizedTitle == normalizedTitle }
+        }
+    }
 
     // KMK -->
     fun hideInLibraryFeedItems() = preferenceStore.getBoolean("feed_hide_in_library_items", false)
@@ -100,6 +148,8 @@ class SourcePreferences(
     // SY -->
     fun enableSourceBlacklist() = preferenceStore.getBoolean("eh_enable_source_blacklist", true)
 
+    fun enableSeriesBlacklist() = preferenceStore.getBoolean("enable_series_blacklist", true)
+
     fun sourcesTabCategories() = preferenceStore.getStringSet("sources_tab_categories", mutableSetOf())
 
     fun sourcesTabCategoriesFilter() = preferenceStore.getBoolean("sources_tab_categories_filter", false)
@@ -149,4 +199,24 @@ class SourcePreferences(
         const val PINNED_SOURCES_PREF_KEY = "pinned_catalogues"
     }
     // KMK <--
+
+    private fun sanitizeBlacklistedSeries(entries: List<BlacklistedSeriesEntry>): List<BlacklistedSeriesEntry> {
+        return entries
+            .mapNotNull { entry ->
+                val originalTitle = entry.originalTitle.trim()
+                val normalizedTitle = originalTitle.toBlacklistNormalizedTitle()
+                if (originalTitle.isBlank() || normalizedTitle.isBlank()) {
+                    null
+                } else {
+                    BlacklistedSeriesEntry(
+                        originalTitle = originalTitle,
+                        normalizedTitle = normalizedTitle,
+                    )
+                }
+            }
+            .distinctBy(BlacklistedSeriesEntry::normalizedTitle)
+            .sortedWith { left, right ->
+                left.originalTitle.compareToCaseInsensitiveNaturalOrder(right.originalTitle)
+            }
+    }
 }
