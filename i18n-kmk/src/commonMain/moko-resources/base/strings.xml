@@ -172,6 +172,7 @@
     <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
     <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>
     <string name="pref_blacklist_series">Series blacklist</string>
+    <string name="enable_series_blacklist">Enable series blacklist</string>
     <string name="blacklist_empty">No blacklisted series yet.</string>
     <string name="blacklist_add_title">Add blacklisted title</string>
     <string name="blacklist_add_hint">Original series title</string>

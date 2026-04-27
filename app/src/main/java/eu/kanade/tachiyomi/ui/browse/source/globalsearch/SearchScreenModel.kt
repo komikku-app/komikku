@@ -20,6 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
@@ -81,12 +82,29 @@ abstract class SearchScreenModel(
             }
         }
 
+        mutableState.update {
+            it.copy(
+                blacklistedTitles = if (preferences.enableSeriesBlacklist().get()) {
+                    preferences.blacklistedSeries().get()
+                        .mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                },
+            )
+        }
+
         screenModelScope.launch {
-            preferences.blacklistedSeries().changes().collectLatest { blacklist ->
-                mutableState.update {
-                    it.copy(blacklistedTitles = blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle))
+            preferences.enableSeriesBlacklist().changes()
+                .combine(preferences.blacklistedSeries().changes()) { enabled, blacklist ->
+                    if (enabled) {
+                        blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                    } else {
+                        emptySet()
+                    }
                 }
-            }
+                .collectLatest { blacklistedTitles ->
+                    mutableState.update { it.copy(blacklistedTitles = blacklistedTitles) }
+                }
         }
         // KMK <--
     }

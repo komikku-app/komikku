@@ -4,8 +4,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +54,7 @@ import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -116,62 +121,79 @@ class BlacklistScreen : Screen() {
                 )
             },
         ) { paddingValues ->
-            if (entries.isEmpty()) {
-                EmptyScreen(
-                    message = stringResource(KMR.strings.blacklist_empty),
-                    modifier = Modifier.padding(paddingValues),
+            val layoutDirection = LocalLayoutDirection.current
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = paddingValues.calculateTopPadding(),
+                        start = paddingValues.calculateStartPadding(layoutDirection),
+                        end = paddingValues.calculateEndPadding(layoutDirection),
+                    ),
+            ) {
+                CheckboxItem(
+                    label = stringResource(KMR.strings.enable_series_blacklist),
+                    pref = sourcePreferences.enableSeriesBlacklist(),
                 )
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    val density = LocalDensity.current
-                    var searchBoxHeight by remember { mutableStateOf(SOURCE_SEARCH_BOX_HEIGHT) }
 
-                    if (filteredEntries.isEmpty()) {
-                        EmptyScreen(
-                            message = stringResource(MR.strings.no_results_found),
-                            modifier = Modifier.padding(paddingValues + PaddingValues(top = searchBoxHeight)),
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            state = lazyListState,
-                            contentPadding = paddingValues + topSmallPaddingValues +
-                                PaddingValues(
-                                    top = searchBoxHeight,
-                                    start = MaterialTheme.padding.medium,
-                                    end = MaterialTheme.padding.medium,
-                                    bottom = MaterialTheme.padding.medium,
-                                ),
-                            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                        ) {
-                            items(filteredEntries, key = { it.normalizedTitle }) { entry ->
-                                BlacklistItem(
-                                    entry = entry,
-                                    onDelete = { promptDeleteEntry(entry) },
-                                )
+                if (entries.isEmpty()) {
+                    EmptyScreen(
+                        message = stringResource(KMR.strings.blacklist_empty),
+                        modifier = Modifier.weight(1f),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                    ) {
+                        val density = LocalDensity.current
+                        var searchBoxHeight by remember { mutableStateOf(SOURCE_SEARCH_BOX_HEIGHT) }
+
+                        if (filteredEntries.isEmpty()) {
+                            EmptyScreen(
+                                message = stringResource(MR.strings.no_results_found),
+                                modifier = Modifier.padding(PaddingValues(top = searchBoxHeight)),
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                state = lazyListState,
+                                contentPadding = topSmallPaddingValues +
+                                    PaddingValues(
+                                        top = searchBoxHeight,
+                                        start = MaterialTheme.padding.medium,
+                                        end = MaterialTheme.padding.medium,
+                                        bottom = paddingValues.calculateBottomPadding() + MaterialTheme.padding.medium,
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                            ) {
+                                items(filteredEntries, key = { it.normalizedTitle }) { entry ->
+                                    BlacklistItem(
+                                        entry = entry,
+                                        onDelete = { promptDeleteEntry(entry) },
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    AnimatedFloatingSearchBox(
-                        listState = lazyListState,
-                        searchQuery = searchQuery,
-                        onChangeSearchQuery = { searchQuery = it },
-                        placeholderText = stringResource(MR.strings.action_search_hint),
-                        modifier = Modifier
-                            .padding(top = paddingValues.calculateTopPadding())
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(
-                                horizontal = MaterialTheme.padding.medium,
-                                vertical = MaterialTheme.padding.small,
-                            )
-                            .align(Alignment.TopCenter),
-                        onGloballyPositioned = { layoutCoordinates ->
-                            searchBoxHeight = with(density) { layoutCoordinates.size.height.toDp() + (2 * MaterialTheme.padding.small) }
-                        },
-                    )
+                        AnimatedFloatingSearchBox(
+                            listState = lazyListState,
+                            searchQuery = searchQuery,
+                            onChangeSearchQuery = { searchQuery = it },
+                            placeholderText = stringResource(MR.strings.action_search_hint),
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(
+                                    horizontal = MaterialTheme.padding.medium,
+                                    vertical = MaterialTheme.padding.small,
+                                )
+                                .align(Alignment.TopCenter),
+                            onGloballyPositioned = { layoutCoordinates ->
+                                searchBoxHeight = with(density) { layoutCoordinates.size.height.toDp() + (2 * MaterialTheme.padding.small) }
+                            },
+                        )
+                    }
                 }
             }
         }

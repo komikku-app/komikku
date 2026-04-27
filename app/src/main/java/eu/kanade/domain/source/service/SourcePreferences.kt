@@ -148,6 +148,8 @@ class SourcePreferences(
     // SY -->
     fun enableSourceBlacklist() = preferenceStore.getBoolean("eh_enable_source_blacklist", true)
 
+    fun enableSeriesBlacklist() = preferenceStore.getBoolean("enable_series_blacklist", true)
+
     fun sourcesTabCategories() = preferenceStore.getStringSet("sources_tab_categories", mutableSetOf())
 
     fun sourcesTabCategoriesFilter() = preferenceStore.getBoolean("sources_tab_categories_filter", false)

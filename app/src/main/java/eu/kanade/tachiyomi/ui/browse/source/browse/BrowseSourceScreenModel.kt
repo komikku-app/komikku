@@ -47,6 +47,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -218,10 +219,28 @@ open class BrowseSourceScreenModel(
                 }
                 .launchIn(screenModelScope)
 
-            sourcePreferences.blacklistedSeries().changes()
-                .onEach { blacklist ->
+            mutableState.update {
+                it.copy(
+                    blacklistedTitles = if (sourcePreferences.enableSeriesBlacklist().get()) {
+                        sourcePreferences.blacklistedSeries().get()
+                            .mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                    } else {
+                        emptySet()
+                    },
+                )
+            }
+
+            sourcePreferences.enableSeriesBlacklist().changes()
+                .combine(sourcePreferences.blacklistedSeries().changes()) { enabled, blacklist ->
+                    if (enabled) {
+                        blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                    } else {
+                        emptySet()
+                    }
+                }
+                .onEach { blacklistedTitles ->
                     mutableState.update {
-                        it.copy(blacklistedTitles = blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle))
+                        it.copy(blacklistedTitles = blacklistedTitles)
                     }
                 }
                 .launchIn(screenModelScope)

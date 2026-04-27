@@ -10,6 +10,13 @@ import tachiyomi.core.common.preference.InMemoryPreferenceStore
 class SourcePreferencesTest {
 
     @Test
+    fun `series blacklist is enabled by default on clean install`() {
+        val preferences = SourcePreferences(InMemoryPreferenceStore())
+
+        assertTrue(preferences.enableSeriesBlacklist().get())
+    }
+
+    @Test
     fun `blacklist normalization removes punctuation and accents`() {
         assertEquals("frierenbeyondjourneysend", "Frieren: Beyond Journey’s End".toBlacklistNormalizedTitle())
         assertEquals("oshinoko", "Oshi no Ko".toBlacklistNormalizedTitle())
