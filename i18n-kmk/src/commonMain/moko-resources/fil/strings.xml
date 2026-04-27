@@ -182,4 +182,26 @@
     <string name="pref_fetch_manga_metadata_on_add_description">Awtomatikong kunin at i-update ang metadata ng manga kapag idinagdag mo ito sa iyong aklatan</string>
     <string name="pref_fetch_manga_chapters_on_add">Kunin ang mga kabanata kapag idinadagdag ang manga sa aklatan</string>
     <string name="pref_fetch_manga_chapters_on_add_description">Awtomatikong i-scan ang source para sa mga kabanata kapag idinagdag ang manga sa iyong aklatan</string>
+    <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
+    <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
+    <string name="pref_panorama_cover">Panorama Cover</string>
+    <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
+    <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
+    <string name="theme_doom">Doom</string>
+    <string name="theme_mocha">Mocha</string>
+    <string name="custom_theme_palette_outrun">Outrun</string>
+    <string name="custom_theme_palette_raspberry">Raspberry</string>
+    <string name="custom_theme_palette_pop">Pop</string>
+    <string name="custom_theme_palette_cathode">Cathode</string>
+    <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+    <string name="custom_theme_palette_spectral">Spectral</string>
+    <string name="custom_theme_palette_patagonia">Patagonia</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="connections_discord">Discord</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="pref_webdav_username">Username (pangalan)</string>
+    <string name="pref_webdav_password">Password</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Gamitin ang matalinong paghahanap</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">Kapag napagana, awtomatikong pipiliin ang pinaka-akmang resulta. Kung hindi, ipakikita ang lahat ng resulta para manual na makapili.</string>
+    <string name="pref_webdav_folder">Folder ng WebDAV data</string>
 </resources>

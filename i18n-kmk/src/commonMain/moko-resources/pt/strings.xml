@@ -192,4 +192,6 @@
     <string name="pref_discord_show_download_button_summary">Exibe um botão para baixar o aplicativo</string>
     <string name="pref_discord_show_discord_button">Mostrar botão do Discord</string>
     <string name="pref_discord_show_discord_button_summary">Exibe um botão para entrar no servidor do Discord</string>
+    <string name="pref_webdav_username">Nome de Utilizador</string>
+    <string name="pref_webdav_password">Palavra passe</string>
 </resources>
