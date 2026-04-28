@@ -130,13 +130,17 @@ class MangaRestorer(
         return this.copy(
             favorite = this.favorite || newer.favorite,
             // SY -->
-            ogAuthor = newer.author,
-            ogArtist = newer.artist,
-            ogDescription = newer.description,
-            ogGenre = newer.genre,
-            ogThumbnailUrl = newer.thumbnailUrl,
-            ogStatus = newer.status,
+            ogTitle = newer.ogTitle,
+            ogAuthor = newer.ogAuthor,
+            ogArtist = newer.ogArtist,
+            ogDescription = newer.ogDescription,
+            ogGenre = newer.ogGenre,
+            ogThumbnailUrl = newer.ogThumbnailUrl,
+            ogStatus = newer.ogStatus,
             // SY <--
+            chapterFlags = newer.chapterFlags,
+            viewerFlags = newer.viewerFlags,
+            updateStrategy = newer.updateStrategy,
             initialized = this.initialized || newer.initialized,
             version = newer.version,
         )
@@ -194,7 +198,13 @@ class MangaRestorer(
 
                 when {
                     dbChapter == null -> chapter // New chapter
-                    chapter.forComparison() == dbChapter.forComparison() -> null // Same state; skip
+                    chapter.forComparison() == dbChapter.forComparison() -> {
+                        if (isSync && chapter.version != dbChapter.version) {
+                            chapter.copy(id = dbChapter.id)
+                        } else {
+                            null // Same state; skip
+                        }
+                    }
                     else -> updateChapterBasedOnSyncState(chapter, dbChapter) // Update existed chapter
                 }
             }
