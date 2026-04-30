@@ -1,0 +1,9 @@
+-- Migration to add performance indexes
+
+CREATE INDEX IF NOT EXISTS idx_mangas_source ON mangas(source);
+CREATE INDEX IF NOT EXISTS idx_chapters_url ON chapters(url);
+CREATE INDEX IF NOT EXISTS idx_mangas_categories_manga_id ON mangas_categories(manga_id);
+CREATE INDEX IF NOT EXISTS idx_mangas_categories_category_id ON mangas_categories(category_id);
+DROP INDEX IF EXISTS excluded_scanlators_manga_id_index;
+CREATE INDEX IF NOT EXISTS idx_excluded_scanlators_manga_id_scanlator ON excluded_scanlators(manga_id, scanlator);
+CREATE INDEX IF NOT EXISTS idx_history_last_read ON history(last_read) WHERE last_read > 0;
