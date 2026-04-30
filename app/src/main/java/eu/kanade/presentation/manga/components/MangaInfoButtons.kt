@@ -59,10 +59,7 @@ fun MangaInfoButtons(
                     // Create a Map<SourceId, ChapterPriority> from the references
                     val priorities = mergedMangaData?.references?.associate { it.mangaSourceId to it.chapterPriority }
                     // Then sorts the sources by the chapter priority
-                    mergedMangaData?.sources?.sortedWith(
-                        compareBy<Source> { it.name != "MergedSource" } // We want this to be first in the list
-                            .thenBy { priorities?.get(it.id) ?: Int.MAX_VALUE },
-                    )
+                    mergedMangaData?.sources?.sortedBy{ priorities?.get(it.id) ?: Int.MAX_VALUE }
                 } ?: emptyList()
 
                 val selectedIndex = if (selectedSource == null) 0 else sources.indexOfFirst { it.id == selectedSource.id }

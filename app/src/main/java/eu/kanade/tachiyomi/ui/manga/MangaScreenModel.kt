@@ -461,6 +461,14 @@ class MangaScreenModel(
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
 
+            val prioritySource = {
+                // Create a Map<SourceId, ChapterPriority> from the references
+                val priorities = mergedData?.references?.associate { it.mangaSourceId to it.chapterPriority }
+                // Then sorts the sources by the chapter priority
+                mergedData?.sources?.sortedBy{ priorities?.get(it.id) ?: Int.MAX_VALUE }
+            }
+
+
             // Show what we have earlier
             mutableState.update {
                 // SY -->
@@ -500,7 +508,7 @@ class MangaScreenModel(
                     // SY <--
 
                     // Temporary solution for default selection
-                    selectedSource = mergedData?.sources?.find { it.name == "MergedSource" }
+                    selectedSource = prioritySource()?.firstOrNull()
                 )
             }
 
