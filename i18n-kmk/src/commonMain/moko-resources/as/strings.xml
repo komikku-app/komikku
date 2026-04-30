@@ -167,7 +167,7 @@
     <string name="pref_discord_incognito">ডিস্ক’ৰ্ড ইনকগনিটো মোড</string>
     <string name="discord_status_messing">খেলা-ধূলা কৰি আছে</string>
     <string name="pref_discord_show_discord_button_summary">ডিস্ক’ৰ্ড চাৰ্ভাৰত যোগদানৰ বাবে এটা বাটন দেখুৱায়</string>
-    <string name="show_chapters_titles_subtitle">আপুনি চাই থকা এপিচোডৰ শিৰোনাম দেখুৱাওক</string>
+    <string name="show_chapters_titles_subtitle">আপুনি পঢ়ি থকা অধ্যায়ৰ শিৰোনাম দেখুৱাওক</string>
     <string name="pref_enable_discord_rpc">ডিস্ক’ৰ্ড ৰিচ প্ৰেজেন্স সক্ৰিয় কৰক</string>
     <string name="pref_discord_status">ডিস্ক’ৰ্ডৰ স্থিতি</string>
     <string name="pref_discord_dnd">⛔ বিৰক্ত নকৰিব</string>
