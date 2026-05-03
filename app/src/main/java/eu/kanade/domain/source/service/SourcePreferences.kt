@@ -3,7 +3,6 @@ package eu.kanade.domain.source.service
 import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
-import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.serialization.builtins.ListSerializer
@@ -15,6 +14,7 @@ import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.core.common.preference.getLongArray
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import kotlin.math.max
 
 class SourcePreferences(
     private val preferenceStore: PreferenceStore,
@@ -86,6 +86,7 @@ class SourcePreferences(
                 entries + BlacklistedSeriesEntry(
                     originalTitle = originalTitle,
                     normalizedTitle = normalizedTitle,
+                    addedAt = System.currentTimeMillis(),
                 )
             }
         }
@@ -150,6 +151,8 @@ class SourcePreferences(
 
     fun enableSeriesBlacklist() = preferenceStore.getBoolean("enable_series_blacklist", true)
 
+    fun blacklistSortMode() = preferenceStore.getEnum("blacklist_sort_mode", BlacklistSortMode.ALPHABETICAL)
+
     fun sourcesTabCategories() = preferenceStore.getStringSet("sources_tab_categories", mutableSetOf())
 
     fun sourcesTabCategoriesFilter() = preferenceStore.getBoolean("sources_tab_categories_filter", false)
@@ -195,14 +198,22 @@ class SourcePreferences(
     // KMK -->
     fun relatedMangas() = preferenceStore.getBoolean("related_mangas", true)
 
+    enum class BlacklistSortMode {
+        ALPHABETICAL,
+        ADDED_AT_DESC,
+        ADDED_AT_ASC,
+    }
+
     companion object {
         const val PINNED_SOURCES_PREF_KEY = "pinned_catalogues"
     }
     // KMK <--
 
     private fun sanitizeBlacklistedSeries(entries: List<BlacklistedSeriesEntry>): List<BlacklistedSeriesEntry> {
+        val now = System.currentTimeMillis()
+        val backfillBase = max(1L, now - entries.size)
         return entries
-            .mapNotNull { entry ->
+            .mapIndexedNotNull { index, entry ->
                 val originalTitle = entry.originalTitle.trim()
                 val normalizedTitle = originalTitle.toBlacklistNormalizedTitle()
                 if (originalTitle.isBlank() || normalizedTitle.isBlank()) {
@@ -211,12 +222,11 @@ class SourcePreferences(
                     BlacklistedSeriesEntry(
                         originalTitle = originalTitle,
                         normalizedTitle = normalizedTitle,
+                        // Backfill missing timestamps from legacy records.
+                        addedAt = if (entry.addedAt > 0L) entry.addedAt else backfillBase + index,
                     )
                 }
             }
             .distinctBy(BlacklistedSeriesEntry::normalizedTitle)
-            .sortedWith { left, right ->
-                left.originalTitle.compareToCaseInsensitiveNaturalOrder(right.originalTitle)
-            }
     }
 }

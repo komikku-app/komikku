@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class BlacklistedSeriesEntry(
     val originalTitle: String,
     val normalizedTitle: String,
+    val addedAt: Long = 0L,
 )

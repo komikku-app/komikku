@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.settings.screen.browse
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +19,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,10 +40,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.model.BlacklistedSeriesEntry
@@ -48,18 +56,23 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.category.components.CategoryFloatingActionButton
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
-import tachiyomi.presentation.core.components.CheckboxItem
+import tachiyomi.core.common.preference.toggle
+import tachiyomi.presentation.core.components.SettingsItemsPaddings
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.plus
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -71,16 +84,28 @@ class BlacklistScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
+        val enableSeriesBlacklistPref = remember(sourcePreferences) { sourcePreferences.enableSeriesBlacklist() }
         val entries by sourcePreferences.blacklistedSeries().changes().collectAsState(sourcePreferences.blacklistedSeries().get())
+        val enableSeriesBlacklist by enableSeriesBlacklistPref.collectAsState()
+        val sortMode by sourcePreferences.blacklistSortMode().collectAsState()
         val lazyListState = rememberLazyListState()
 
         var searchQuery by rememberSaveable { mutableStateOf<String?>(null) }
-        val filteredEntries = remember(entries, searchQuery) {
+        val filteredEntries = remember(entries, searchQuery, sortMode) {
             val query = searchQuery
-            if (query.isNullOrBlank()) {
+            val filtered = if (query.isNullOrBlank()) {
                 entries
             } else {
                 entries.filter { it.originalTitle.contains(query, ignoreCase = true) }
+            }
+            when (sortMode) {
+                SourcePreferences.BlacklistSortMode.ALPHABETICAL -> {
+                    filtered.sortedWith { left, right ->
+                        left.originalTitle.compareToCaseInsensitiveNaturalOrder(right.originalTitle)
+                    }
+                }
+                SourcePreferences.BlacklistSortMode.ADDED_AT_DESC -> filtered.sortedByDescending { it.addedAt }
+                SourcePreferences.BlacklistSortMode.ADDED_AT_ASC -> filtered.sortedBy { it.addedAt }
             }
         }
 
@@ -131,9 +156,11 @@ class BlacklistScreen : Screen() {
                         end = paddingValues.calculateEndPadding(layoutDirection),
                     ),
             ) {
-                CheckboxItem(
-                    label = stringResource(KMR.strings.enable_series_blacklist),
-                    pref = sourcePreferences.enableSeriesBlacklist(),
+                BlacklistControlsRow(
+                    enabled = enableSeriesBlacklist,
+                    onToggleEnabled = { enableSeriesBlacklistPref.toggle() },
+                    sortMode = sortMode,
+                    onSortModeSelected = { sourcePreferences.blacklistSortMode().set(it) },
                 )
 
                 if (entries.isEmpty()) {
@@ -226,6 +253,94 @@ class BlacklistScreen : Screen() {
                     clearDeleteEntry()
                 },
             )
+        }
+    }
+}
+
+@Composable
+private fun BlacklistControlsRow(
+    enabled: Boolean,
+    onToggleEnabled: () -> Unit,
+    sortMode: SourcePreferences.BlacklistSortMode,
+    onSortModeSelected: (SourcePreferences.BlacklistSortMode) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val dismissInputs = {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = SettingsItemsPaddings.Horizontal,
+                vertical = SettingsItemsPaddings.Vertical,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = enabled,
+            onCheckedChange = { onToggleEnabled() },
+        )
+        Text(
+            text = stringResource(KMR.strings.enable_series_blacklist),
+            modifier = Modifier
+                .clickable(onClick = onToggleEnabled)
+                .padding(start = MaterialTheme.padding.medium)
+                .weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Box {
+            IconButton(
+                onClick = {
+                    dismissInputs()
+                    expanded = true
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterList,
+                    contentDescription = stringResource(KMR.strings.blacklist_sort_by),
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    dismissInputs()
+                    expanded = false
+                },
+                offset = DpOffset((-8).dp, 0.dp),
+                properties = PopupProperties(focusable = false),
+            ) {
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.blacklist_sort_alphabetical)) },
+                    isChecked = sortMode == SourcePreferences.BlacklistSortMode.ALPHABETICAL,
+                    onClick = {
+                        onSortModeSelected(SourcePreferences.BlacklistSortMode.ALPHABETICAL)
+                        dismissInputs()
+                        expanded = false
+                    },
+                )
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.blacklist_sort_recently_added)) },
+                    isChecked = sortMode == SourcePreferences.BlacklistSortMode.ADDED_AT_DESC,
+                    onClick = {
+                        onSortModeSelected(SourcePreferences.BlacklistSortMode.ADDED_AT_DESC)
+                        dismissInputs()
+                        expanded = false
+                    },
+                )
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.blacklist_sort_oldest_added)) },
+                    isChecked = sortMode == SourcePreferences.BlacklistSortMode.ADDED_AT_ASC,
+                    onClick = {
+                        onSortModeSelected(SourcePreferences.BlacklistSortMode.ADDED_AT_ASC)
+                        dismissInputs()
+                        expanded = false
+                    },
+                )
+            }
         }
     }
 }

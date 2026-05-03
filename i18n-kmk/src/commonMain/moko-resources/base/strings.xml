@@ -179,6 +179,10 @@
     <string name="blacklist_delete_confirmation">Hide \"%s\" no longer?</string>
     <string name="blacklist_invalid_title">Enter a series title.</string>
     <string name="blacklist_title_exists">That title is already blacklisted.</string>
+    <string name="blacklist_sort_by">Sort by</string>
+    <string name="blacklist_sort_alphabetical">Alphabetical</string>
+    <string name="blacklist_sort_recently_added">Recently added</string>
+    <string name="blacklist_sort_oldest_added">Oldest added</string>
     <string name="action_add_to_blacklist">Add to blacklist</string>
     <string name="manga_actions">Manga actions</string>
     <!-- Error Screen -->
