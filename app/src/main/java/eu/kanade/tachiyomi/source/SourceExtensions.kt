@@ -20,6 +20,10 @@ fun Source.getNameForMangaInfo(
     mergeSources: List<Source>? = null,
     // SY <--
 ): String {
+    // KMK --> Resolve the merged label once at the top level and pass it down
+    // instead of looking it up inside the helper.
+    val mergedLabel = Injekt.get<Application>().stringResource(MR.strings.label_merged_entry)
+    // KMK <--
     val preferences = Injekt.get<SourcePreferences>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
@@ -31,6 +35,7 @@ fun Source.getNameForMangaInfo(
             mergeSources,
             enabledLanguages,
             hasOneActiveLanguages,
+            mergedLabel,
         )
         // SY <--
         // KMK -->
@@ -55,6 +60,7 @@ private fun getMergedSourcesString(
     mergeSources: List<Source>,
     enabledLangs: List<String>,
     onlyName: Boolean,
+    mergedLabel: String,
 ): String {
     // KMK --> Filter out MergedSource itself so it's not displayed in the list
     val realSources = mergeSources.filterNot { it.id == MERGED_SOURCE_ID }
@@ -84,10 +90,6 @@ private fun getMergedSourcesString(
             // KMK <--
         }
     }
-
-    // KMK --> Always show "Merged Entry" prefix for merged entries.
-    // The onlyName parameter only controls whether language flags are shown or not.
-    val mergedLabel = Injekt.get<Application>().stringResource(MR.strings.label_merged_entry)
 
     return if (sourceNames.isBlank()) {
         mergedLabel
