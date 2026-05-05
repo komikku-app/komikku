@@ -1,12 +1,15 @@
 package eu.kanade.tachiyomi.source
 
+import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.source.EH_PACKAGE
 import exh.source.LOCAL_SOURCE_PACKAGE
+import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedSource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -53,11 +56,11 @@ private fun getMergedSourcesString(
     enabledLangs: List<String>,
     onlyName: Boolean,
 ): String {
-    // KMK --> Filter out MergedSource itself
-    val filteredSources = mergeSources.filterNot { it is MergedSource }
+    // KMK --> Filter out MergedSource itself so it's not displayed in the list
+    val realSources = mergeSources.filterNot { it.id == MERGED_SOURCE_ID }
     // KMK <--
     val sourceNames = if (onlyName) {
-        filteredSources.joinToString { source ->
+        realSources.joinToString { source ->
             when {
                 // KMK -->
                 source.isLocalOrStub() -> source.toString()
@@ -71,7 +74,7 @@ private fun getMergedSourcesString(
             }
         }
     } else {
-        filteredSources.joinToString { source ->
+        realSources.joinToString { source ->
             // KMK -->
             if (source.isLocalOrStub()) {
                 source.toString()
@@ -81,7 +84,17 @@ private fun getMergedSourcesString(
             // KMK <--
         }
     }
-    return "Merged Entry ($sourceNames)"
+
+    // KMK --> Always show "Merged Entry" prefix for merged entries.
+    // The onlyName parameter only controls whether language flags are shown or not.
+    val mergedLabel = Injekt.get<Application>().stringResource(MR.strings.label_merged_entry)
+
+    return if (sourceNames.isBlank()) {
+        mergedLabel
+    } else {
+        "$mergedLabel ($sourceNames)"
+    }
+    // KMK <--
 }
 // SY <--
 

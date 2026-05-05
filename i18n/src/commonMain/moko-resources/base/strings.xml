@@ -44,6 +44,7 @@
     <string name="label_started">Started</string>
     <string name="label_local">Local</string>
     <string name="label_downloaded">Downloaded</string>
+    <string name="label_merged_entry">Merged Entry</string>
 
     <string name="unlock_app_title">Unlock %s</string>
     <string name="confirm_lock_change">Authenticate to confirm change</string>
