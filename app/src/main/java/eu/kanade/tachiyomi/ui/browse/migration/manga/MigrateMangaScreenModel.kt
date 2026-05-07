@@ -49,7 +49,12 @@ class MigrateMangaScreenModel(
                     logcat(LogPriority.ERROR, it)
                     _events.send(MigrationMangaEvent.FailedFetchingFavorites)
                     mutableState.update { state ->
-                        state.copy(titleList = persistentListOf())
+                        state.copy(
+                            titleList = persistentListOf(),
+                            // KMK -->
+                            selection = emptySet(),
+                            // KMK <--
+                        )
                     }
                 }
                 .map { manga ->
@@ -58,7 +63,17 @@ class MigrateMangaScreenModel(
                         .toImmutableList()
                 }
                 .collectLatest { list ->
-                    mutableState.update { it.copy(titleList = list) }
+                    // KMK -->
+                    mutableState.update { state ->
+                        val titleIds = list.map { it.id }.toSet()
+                        val selection = state.selection.intersect(titleIds).toMutableSet()
+                        updateSelectedPositions(list, selection)
+                        state.copy(
+                            titleList = list,
+                            selection = selection,
+                        )
+                    }
+                    // KMK <--
                 }
         }
     }
@@ -127,6 +142,17 @@ class MigrateMangaScreenModel(
     }
 
     // KMK -->
+    private fun updateSelectedPositions(titles: List<Manga>, selection: Set<Long>) {
+        if (selection.isEmpty()) {
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            return
+        }
+
+        selectedPositions[0] = titles.indexOfFirst { it.id in selection }
+        selectedPositions[1] = titles.indexOfLast { it.id in selection }
+    }
+
     fun toggleAllSelection(selected: Boolean = true) {
         mutableState.update { state ->
             val selection = if (selected) {
