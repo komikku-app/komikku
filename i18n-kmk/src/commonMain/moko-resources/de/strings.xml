@@ -192,4 +192,7 @@
     <string name="pref_discord_online">🟢 Online</string>
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Benutzername</string>
+    <string name="pref_webdav_password">Passwort</string>
 </resources>
