@@ -1,11 +1,15 @@
 package eu.kanade.tachiyomi.source
 
+import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import exh.source.EH_PACKAGE
 import exh.source.LOCAL_SOURCE_PACKAGE
+import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedSource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -16,6 +20,10 @@ fun Source.getNameForMangaInfo(
     mergeSources: List<Source>? = null,
     // SY <--
 ): String {
+    // KMK --> Resolve the merged label once at the top level and pass it down
+    // instead of looking it up inside the helper.
+    val mergedLabel = Injekt.get<Application>().stringResource(MR.strings.label_merged_entry)
+    // KMK <--
     val preferences = Injekt.get<SourcePreferences>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
@@ -27,6 +35,7 @@ fun Source.getNameForMangaInfo(
             mergeSources,
             enabledLanguages,
             hasOneActiveLanguages,
+            mergedLabel,
         )
         // SY <--
         // KMK -->
@@ -51,9 +60,13 @@ private fun getMergedSourcesString(
     mergeSources: List<Source>,
     enabledLangs: List<String>,
     onlyName: Boolean,
+    mergedLabel: String,
 ): String {
-    return if (onlyName) {
-        mergeSources.joinToString { source ->
+    // KMK --> Filter out MergedSource itself so it's not displayed in the list
+    val realSources = mergeSources.filterNot { it.id == MERGED_SOURCE_ID }
+    // KMK <--
+    val sourceNames = if (onlyName) {
+        realSources.joinToString { source ->
             when {
                 // KMK -->
                 source.isLocalOrStub() -> source.toString()
@@ -67,7 +80,7 @@ private fun getMergedSourcesString(
             }
         }
     } else {
-        mergeSources.joinToString { source ->
+        realSources.joinToString { source ->
             // KMK -->
             if (source.isLocalOrStub()) {
                 source.toString()
@@ -77,6 +90,13 @@ private fun getMergedSourcesString(
             // KMK <--
         }
     }
+
+    return if (sourceNames.isBlank()) {
+        mergedLabel
+    } else {
+        "$mergedLabel ($sourceNames)"
+    }
+    // KMK <--
 }
 // SY <--
 
