@@ -25,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -38,10 +40,12 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
+import eu.kanade.presentation.browse.components.MangaActionsDialog
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
@@ -75,6 +79,7 @@ import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -131,6 +136,7 @@ data class BrowseSourceScreen(
 
         // SY -->
         val context = LocalContext.current
+        val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
         // SY <--
 
         // KMK -->
@@ -149,6 +155,11 @@ data class BrowseSourceScreen(
         val haptic = LocalHapticFeedback.current
         val uriHandler = LocalUriHandler.current
         val snackbarHostState = remember { SnackbarHostState() }
+        var actionManga by remember { mutableStateOf<Manga?>(null) }
+
+        fun dismissMangaActions() {
+            actionManga = null
+        }
 
         val onHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) }
         val onWebViewClick = f@{
@@ -197,6 +208,7 @@ data class BrowseSourceScreen(
                             isRunning = bulkFavoriteState.isRunning,
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                             onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                            onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
                             onSelectAll = {
                                 mangaList.itemSnapshotList.items
                                     .map { it.value.first }
@@ -378,18 +390,8 @@ data class BrowseSourceScreen(
                     if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
-                        // KMK <--
-                        scope.launchIO {
-                            val duplicates = screenModel.getDuplicateLibraryManga(manga)
-                            when {
-                                manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
-                                duplicates.isNotEmpty() -> screenModel.setDialog(
-                                    BrowseSourceScreenModel.Dialog.AddDuplicateManga(manga, duplicates),
-                                )
-                                else -> screenModel.addFavorite(manga)
-                            }
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+                        actionManga = manga
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 },
                 // KMK -->
@@ -502,6 +504,30 @@ data class BrowseSourceScreen(
                 },
             )
             else -> {}
+        }
+
+        actionManga?.let { manga ->
+            MangaActionsDialog(
+                manga = manga,
+                onDismissRequest = ::dismissMangaActions,
+                onClickFavorite = {
+                    scope.launchIO {
+                        val duplicates = screenModel.getDuplicateLibraryManga(manga)
+                        when {
+                            manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                            duplicates.isNotEmpty() -> screenModel.setDialog(
+                                BrowseSourceScreenModel.Dialog.AddDuplicateManga(manga, duplicates),
+                            )
+                            else -> screenModel.addFavorite(manga)
+                        }
+                    }
+                },
+                onClickBlacklist = {
+                    if (!sourcePreferences.addBlacklistedSeries(manga.title)) {
+                        context.toast(KMR.strings.blacklist_title_exists)
+                    }
+                },
+            )
         }
 
         // KMK -->
