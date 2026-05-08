@@ -63,6 +63,9 @@
     <string name="watched_list_state_summary">Al navegar en ExHentai/E-Hentai, ¿debería estar habilitado el filtro de la lista de seguimiento de forma predeterminada?</string>
     <string name="pref_enhanced_e_hentai_view_summary">Habilitar/Deshabilitar el menú de navegación mejorado hecho para E/ExHentai</string>
     <string name="favorites_sync">Sincronización de Favoritos de E-Hentai</string>
+    <string name="favorites_sync_sort">Orden de sincronización de favoritos</string>
+    <string name="favorites_sync_sort_published">Fecha de publicación</string>
+    <string name="favorites_sync_sort_favorited">Fecha de favorito</string>
     <string name="tag_filtering_threshhold_summary">Puedes filtrar suavemente las etiquetas añadiéndolas a la página Mis Etiquetas de E/ExHentai con un peso negativo. Si una galería tiene etiquetas que suman un peso inferior a este valor, se filtra de la vista. Este umbral se puede establecer entre -9999 y 0. Actualmente: %1$d</string>
     <string name="disable_favorites_uploading_summary">Los favoritos solo se descargan desde ExHentai. Cualquier cambio en los favoritos en la aplicación no se cargará. Previene la pérdida accidental de favoritos en ExHentai. Ten en cuenta que las eliminaciones aún se descargarán (si eliminas un favorito en ExHentai, también se eliminará en la aplicación).</string>
     <string name="show_favorite_sync_notes">Mostrar notas sincronizadas de favoritos</string>

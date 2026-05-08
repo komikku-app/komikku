@@ -872,39 +872,54 @@ class EHentai(
         throw UnsupportedOperationException("Unused method was called somehow!")
     }
 
-    suspend fun fetchFavorites(): Pair<List<ParsedManga>, List<String>> {
-        val favoriteUrl = "$baseUrl/favorites.php"
-        val result = mutableListOf<ParsedManga>()
-        var page = 1
+    /**
+     * Favorites list order is fixed (newest→oldest per page). Start at the last page (`prev=1-0`)
+     * and follow `uprev` so sync walks oldest→newest overall. Cursors use `gid-unixts` like `next`.
+     */
+    private fun favoritesPrevCursor(doc: Document): String? {
+        val anchor = doc.selectFirst("a#uprev[href]") ?: return null
+        val href = anchor.attr("href")
+        val url = baseUrl.toHttpUrl().resolve(href) ?: return null
+        return url.queryParameter("prev")?.takeIf { it.isNotBlank() }
+    }
 
-        var favNames: List<String>? = null
+    private fun favoritesListRequest(prevCursor: String?, inlineSet: String): Request {
+        val url = "$baseUrl/favorites.php".toHttpUrl().newBuilder().apply {
+            if (!prevCursor.isNullOrBlank()) {
+                setQueryParameter("prev", prevCursor)
+            }
+            addQueryParameter("inline_set", inlineSet)
+        }.build().toString()
+        return GET(url, headers).newBuilder()
+            .cacheControl(CacheControl.FORCE_NETWORK)
+            .build()
+    }
+
+    suspend fun fetchFavorites(): Pair<List<ParsedManga>, List<String>> {
+        val syncSort = exhPreferences.exhFavoritesSyncSort().get()
+        val result = mutableListOf<ParsedManga>()
+        var prevCursor: String? = "1-0"
+
+        var favNames = emptyList<String>()
 
         do {
             val response2 = withIOContext {
-                client.newCall(
-                    exGet(
-                        favoriteUrl,
-                        next = page,
-                        cacheControl = CacheControl.FORCE_NETWORK,
-                    ),
-                ).await()
+                client.newCall(favoritesListRequest(prevCursor, syncSort)).await()
             }
             val doc = response2.asJsoup()
 
-            // Parse favorites
             val parsed = extendedGenericMangaParse(doc)
-            result += parsed.first
+            // Each page is still ordered newest→oldest; reverse so batches concatenate oldest→newest.
+            result += parsed.first.asReversed()
 
-            // Parse fav names
-            if (favNames == null) {
+            if (favNames.isEmpty()) {
                 favNames = doc.select(".fp:not(.fps)").mapNotNull {
-                    it.child(2).text()
+                    it.children().getOrNull(2)?.text()
                 }
             }
-            // Next page
 
-            page = parsed.first.lastOrNull()?.manga?.url?.let { EHentaiSearchMetadata.galleryId(it) }?.toInt() ?: 0
-        } while (parsed.second != null)
+            prevCursor = favoritesPrevCursor(doc)
+        } while (prevCursor != null)
 
         return Pair(result.toList(), favNames)
     }

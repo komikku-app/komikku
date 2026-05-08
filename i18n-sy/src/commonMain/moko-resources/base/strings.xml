@@ -69,6 +69,9 @@
     <string name="pref_enhanced_e_hentai_view">Enhanced E/ExHentai browse</string>
     <string name="pref_enhanced_e_hentai_view_summary">Enable/Disable the enhanced browse menu made for E/ExHentai</string>
     <string name="favorites_sync">E-Hentai Favorites sync</string>
+    <string name="favorites_sync_sort">Favorites sync sort</string>
+    <string name="favorites_sync_sort_published">Published time</string>
+    <string name="favorites_sync_sort_favorited">Favorited time</string>
     <string name="disable_favorites_uploading">Disable favorites uploading</string>
     <string name="disable_favorites_uploading_summary">Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well).</string>
     <string name="show_favorite_sync_notes">Show favorites sync notes</string>
