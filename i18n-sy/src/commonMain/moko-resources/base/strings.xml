@@ -222,6 +222,8 @@
     <string name="pref_sync_host_summ">Enter the host address for synchronizing your library</string>
     <string name="pref_sync_api_key">API key</string>
     <string name="pref_sync_api_key_summ">Enter the API key to synchronize your library</string>
+    <string name="pref_sync_custom_headers">Custom Headers</string>
+    <string name="pref_sync_custom_headers_summ">Add up to 10 custom headers (format: Key: Value). One per line.</string>
     <string name="pref_sync_now_group_title">Sync Actions</string>
     <string name="pref_sync_now">Sync now</string>
     <string name="pref_sync_now_subtitle">Initiate immediate synchronization of your data</string>

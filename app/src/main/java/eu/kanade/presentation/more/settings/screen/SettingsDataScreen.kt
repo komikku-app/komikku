@@ -780,6 +780,12 @@ object SettingsDataScreen : SearchableSettings {
                     },
                 )
             },
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.clientCustomHeaders(),
+                title = stringResource(SYMR.strings.pref_sync_custom_headers),
+                subtitle = stringResource(SYMR.strings.pref_sync_custom_headers_summ),
+                singleLine = false,
+            ),
         )
     }
 
