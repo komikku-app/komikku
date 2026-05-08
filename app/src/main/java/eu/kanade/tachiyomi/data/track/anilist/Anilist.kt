@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
+import eu.kanade.tachiyomi.data.track.TrackerWithNotInLibrary
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -18,7 +19,7 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
 
-class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
+class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker, TrackerWithNotInLibrary {
 
     companion object {
         const val READING = 1L
@@ -210,6 +211,10 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         track.title = remoteTrack.title
         track.total_chapters = remoteTrack.total_chapters
         return track
+    }
+
+    override suspend fun getNotInLibraryEntries(): List<TrackSearch> {
+        return api.getNotInLibraryEntries(getUsername().toInt())
     }
 
     override suspend fun login(username: String, password: String) = login(password)
