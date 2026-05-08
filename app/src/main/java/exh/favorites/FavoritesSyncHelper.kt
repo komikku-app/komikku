@@ -254,9 +254,11 @@ class FavoritesSyncHelper(val context: Context) {
             try {
                 val resp = withIOContext { exh.client.newCall(request).await() }
 
-                if (resp.isSuccessful) {
-                    success = true
-                    break
+                resp.use {
+                    if (it.isSuccessful) {
+                        success = true
+                        break
+                    }
                 }
             } catch (e: Exception) {
                 logger.w(context.stringResource(SYMR.strings.favorites_sync_network_error), e)

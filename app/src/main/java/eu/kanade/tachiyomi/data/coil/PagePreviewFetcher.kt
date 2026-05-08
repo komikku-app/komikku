@@ -88,9 +88,8 @@ class PagePreviewFetcher(
             }
 
             // Fetch from network
-            val response = executeNetworkRequest()
-            val responseBody = checkNotNull(response.body) { "Null response source" }
-            try {
+            executeNetworkRequest().use { response ->
+                val responseBody = checkNotNull(response.body) { "Null response source" }
                 // Read from page preview cache after page preview updated
                 val responsePagePreviewCache = writeResponseToPagePreviewCache(response)
                 if (responsePagePreviewCache != null) {
@@ -113,9 +112,6 @@ class PagePreviewFetcher(
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
-            } catch (e: Exception) {
-                responseBody.close()
-                throw e
             }
         } catch (e: Exception) {
             snapshot?.close()
@@ -220,7 +216,7 @@ class PagePreviewFetcher(
         } catch (e: Exception) {
             try {
                 editor.abort()
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
             throw e
         }

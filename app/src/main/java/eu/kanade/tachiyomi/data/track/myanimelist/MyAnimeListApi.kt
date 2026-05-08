@@ -137,6 +137,7 @@ class MyAnimeListApi(
             authClient
                 .newCall(DELETE(mangaUrl(track.remoteId).toString()))
                 .awaitSuccess()
+                .close()
         }
     }
 
