@@ -44,7 +44,7 @@ import tachiyomi.presentation.core.util.selectedBackground
 internal fun LazyListScope.libraryUpdateErrorUiItems(
     uiModels: List<LibraryUpdateErrorUiModel>,
     selectionMode: Boolean,
-    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
+    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean) -> Unit,
     onClick: (LibraryUpdateErrorItem) -> Unit,
     onClickCover: (LibraryUpdateErrorItem) -> Unit,
     onDelete: (Long) -> Unit,
@@ -81,7 +81,6 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                                 selectionMode -> onErrorSelected(
                                     libraryUpdateErrorItem,
                                     !libraryUpdateErrorItem.selected,
-                                    true,
                                     false,
                                 )
 
@@ -92,7 +91,6 @@ internal fun LazyListScope.libraryUpdateErrorUiItems(
                             onErrorSelected(
                                 libraryUpdateErrorItem,
                                 !libraryUpdateErrorItem.selected,
-                                true,
                                 true,
                             )
                         },
