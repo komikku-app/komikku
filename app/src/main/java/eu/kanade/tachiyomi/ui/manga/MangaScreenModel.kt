@@ -2134,6 +2134,12 @@ sealed class ChapterList {
         val id: String,
         val count: Int,
     ) : ChapterList()
+    
+    @Immutable
+    data class ExcludedScanlatorWarning(
+        val scanlator: String,
+        val id: String = "excluded-scanlator-warning-${scanlator.hashCode()}",
+    ) : ChapterList()
 
     @Immutable
     data class Item(
