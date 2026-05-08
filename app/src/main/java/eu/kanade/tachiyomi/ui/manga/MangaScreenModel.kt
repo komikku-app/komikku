@@ -29,6 +29,7 @@ import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.chapter.interactor.GetAvailableScanlators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.model.applyFilters
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.SetExcludedScanlators
@@ -460,6 +461,14 @@ class MangaScreenModel(
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
 
+            val prioritySource = {
+                // Create a Map<SourceId, ChapterPriority> from the references
+                val priorities = mergedData?.references?.associate { it.mangaSourceId to it.chapterPriority }
+                // Then sorts the sources by the chapter priority
+                mergedData?.sources?.sortedBy{ priorities?.get(it.id) ?: Int.MAX_VALUE }
+            }
+
+
             // Show what we have earlier
             mutableState.update {
                 // SY -->
@@ -497,6 +506,9 @@ class MangaScreenModel(
                     readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                     previewsRowCount = uiPreferences.previewsRowCount().get(),
                     // SY <--
+
+                    // Temporary solution for default selection
+                    selectedSource = prioritySource()?.firstOrNull()
                 )
             }
 
@@ -758,7 +770,6 @@ class MangaScreenModel(
         return smartSearchMerge.smartSearchMerge(manga, originalMangaId)
     }
     // KMK <--
-
     fun updateMergeSettings(mergedMangaReferences: List<MergedMangaReference>) {
         screenModelScope.launchNonCancellable {
             if (mergedMangaReferences.isNotEmpty()) {
@@ -1679,6 +1690,16 @@ class MangaScreenModel(
             setMangaChapterFlags.awaitSetBookmarkFilter(manga, flag)
         }
     }
+    fun getChaptersBySource(source: Source) {
+        val manga = successState?.manga ?: return
+
+        // Change which selected filter we are on, default null
+        updateSuccessState { it.copy(selectedSource = source) }
+
+        successState?.chapters?.applyFilters(manga)
+
+    }
+
 
     /**
      * Sets the active display mode.
@@ -2037,6 +2058,9 @@ class MangaScreenModel(
             val relatedMangaCollection: List<RelatedManga>? = null,
             val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) },
             // KMK <--
+
+            // For merged entries only
+            val selectedSource: Source? = null,
         ) : State {
             // KMK -->
             /**
@@ -2113,6 +2137,11 @@ class MangaScreenModel(
                     .filter { (chapter) -> applyFilter(unreadFilter) { !chapter.read } }
                     .filter { (chapter) -> applyFilter(bookmarkedFilter) { chapter.bookmark } }
                     .filter { applyFilter(downloadedFilter) { it.isDownloaded || isLocalManga } }
+                    // Filter by selected source for merged entries
+                    .filter { item ->
+                        if (selectedSource == null || mergedData == null || selectedSource.name == "MergedSource") return@filter true
+                        item.sourceName == selectedSource.name
+                    }
                     .sortedWith { (chapter1), (chapter2) -> getChapterSort(manga).invoke(chapter1, chapter2) }
             }
         }
