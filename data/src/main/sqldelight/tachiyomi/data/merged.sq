@@ -19,6 +19,8 @@ CREATE TABLE merged(
 );
 
 CREATE INDEX merged_merge_id_index ON merged(merge_id);
+CREATE INDEX idx_merged_manga_id ON merged(manga_id);
+CREATE UNIQUE INDEX idx_merged_merge_id_manga_id ON merged(merge_id, manga_id) WHERE manga_id IS NOT NULL;
 
 selectByMergeId:
 SELECT * FROM merged WHERE merge_id = ?;

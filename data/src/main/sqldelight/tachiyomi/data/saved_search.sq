@@ -6,6 +6,8 @@ CREATE TABLE saved_search(
     filters_json TEXT
 );
 
+CREATE INDEX idx_saved_search_source ON saved_search(source);
+
 selectBySource:
 SELECT * FROM saved_search WHERE source = :sourceId;
 

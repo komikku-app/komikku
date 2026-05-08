@@ -30,4 +30,4 @@ INSERT INTO search_tags (_id, manga_id, namespace, name, type)
 VALUES ?;
 
 deleteAll:
-DELETE FROM search_titles;
+DELETE FROM search_tags;

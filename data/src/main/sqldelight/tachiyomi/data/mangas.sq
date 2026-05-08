@@ -33,7 +33,7 @@ CREATE TABLE mangas(
 );
 
 CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
-CREATE INDEX mangas_url_index ON mangas(url);
+CREATE UNIQUE INDEX mangas_url_source_index ON mangas(url, source);
 CREATE INDEX idx_mangas_source ON mangas(source);
 
 CREATE TRIGGER update_last_favorited_at_mangas

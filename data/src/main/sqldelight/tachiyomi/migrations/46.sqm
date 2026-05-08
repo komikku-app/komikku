@@ -1,0 +1,53 @@
+-- Optimize database: add composite/unique indexes, remove redundant indexes, fix search_tags.deleteAll bug
+
+-- mangas: replace single-column url index with composite unique index on (url, source)
+-- Remove duplicate (url, source) pairs first, keeping the row with the highest _id
+DELETE FROM mangas
+WHERE _id NOT IN (
+    SELECT MAX(_id) FROM mangas GROUP BY url, source
+);
+DROP INDEX IF EXISTS mangas_url_index;
+CREATE UNIQUE INDEX IF NOT EXISTS mangas_url_source_index ON mangas(url, source);
+
+-- history: remove redundant index superseded by the UNIQUE constraint on chapter_id
+DROP INDEX IF EXISTS history_history_chapter_id_index;
+
+-- chapters: add composite unique index on (manga_id, url) for getChapterByUrlAndMangaId
+-- Remove duplicate (manga_id, url) pairs first, keeping the row with the highest _id
+DELETE FROM chapters
+WHERE _id NOT IN (
+    SELECT MAX(_id) FROM chapters GROUP BY manga_id, url
+);
+CREATE UNIQUE INDEX IF NOT EXISTS chapters_manga_id_url_index ON chapters(manga_id, url);
+
+-- mangas_categories: add unique index on (manga_id, category_id) to prevent duplicate entries
+-- Remove duplicates first, keeping the row with the lowest _id
+DELETE FROM mangas_categories
+WHERE _id NOT IN (
+    SELECT MIN(_id) FROM mangas_categories GROUP BY manga_id, category_id
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mangas_categories_unique ON mangas_categories(manga_id, category_id);
+
+-- excluded_scanlators: upgrade composite index to a unique index
+-- Remove duplicates first (using rowid as tie-breaker)
+DELETE FROM excluded_scanlators
+WHERE rowid NOT IN (
+    SELECT MIN(rowid) FROM excluded_scanlators GROUP BY manga_id, scanlator
+);
+DROP INDEX IF EXISTS idx_excluded_scanlators_manga_id_scanlator;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_excluded_scanlators_manga_id_scanlator ON excluded_scanlators(manga_id, scanlator);
+
+-- saved_search: add index on source for selectBySource / deleteBySource
+CREATE INDEX IF NOT EXISTS idx_saved_search_source ON saved_search(source);
+
+-- feed_saved_search: add composite index on (source, global) for selectBySource / selectAllGlobal
+CREATE INDEX IF NOT EXISTS idx_feed_saved_search_source_global ON feed_saved_search(source, global);
+
+-- merged: add index on manga_id; add unique index on (merge_id, manga_id)
+CREATE INDEX IF NOT EXISTS idx_merged_manga_id ON merged(manga_id);
+-- Remove duplicate (merge_id, manga_id) pairs first, keeping the row with the lowest _id
+DELETE FROM merged
+WHERE _id NOT IN (
+    SELECT MIN(_id) FROM merged GROUP BY merge_id, manga_id
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_merged_merge_id_manga_id ON merged(merge_id, manga_id) WHERE manga_id IS NOT NULL;
