@@ -288,8 +288,18 @@
     <string name="pref_smooth_scroll">Desplazamiento automático suave</string>
     <string name="eh_retry_all">Reintentar todo</string>
     <string name="eh_autoscroll_help">Ayuda de desplazamiento automático</string>
-    <string name="eh_autoscroll_help_message">Desplazarse automáticamente a la siguiente página en el intervalo especificado. El intervalo se especifica en segundos.</string>
+    <string name="eh_autoscroll_help_message">Desplazarse autom&#x00E1;ticamente a la siguiente p&#x00E1;gina en el intervalo especificado. El intervalo se especifica en segundos.\n\nMientras el desplazamiento autom&#x00E1;tico est&#x00E1; activo en modo webtoon y los gestos est&#x00E1;n habilitados:\n- Toca una vez para pausar o reanudar\n- Desliza un dedo hacia arriba o hacia abajo para ajustar la velocidad\n- Arrastra con dos dedos para moverte sin desactivar el desplazamiento autom&#x00E1;tico\n- Desliza lateralmente para detenerlo\n\nMientras el desplazamiento autom&#x00E1;tico est&#x00E1; inactivo en modo webtoon y los gestos est&#x00E1;n habilitados:\n- Desliza lateralmente para iniciarlo\n\nPuedes desactivar los gestos de desplazamiento autom&#x00E1;tico y sus toasts informativos desde el men&#x00FA; de herramientas del lector.</string>
     <string name="eh_autoscroll_freq_invalid">Frecuencia inválida</string>
+    <string name="eh_autoscroll_gestures">Gestos de desplazamiento automático</string>
+    <string name="eh_autoscroll_gestures_summary">Activa los toques, arrastres y deslizamientos para el desplazamiento automático en modos de desplazamiento vertical</string>
+    <string name="eh_autoscroll_gesture_toasts">Toasts de gestos</string>
+    <string name="eh_autoscroll_gesture_toasts_summary">Muestra mensajes toast cuando un gesto del desplazamiento automático ejecuta una acción</string>
+    <string name="eh_autoscroll_gestures_help">Ayuda de gestos de desplazamiento autom&#x00E1;tico</string>
+    <string name="eh_autoscroll_gestures_help_message">Estos gestos est&#x00E1;n disponibles en los modos de lectura con desplazamiento vertical.\n\nCon el desplazamiento autom&#x00E1;tico activado:\n- Toca una vez para pausar o reanudar\n- Desliza un dedo hacia arriba o hacia abajo para ajustar la velocidad\n- Arrastra con dos dedos para moverte por el cap&#x00ED;tulo sin desactivar el desplazamiento autom&#x00E1;tico\n- Desliza lateralmente con un dedo para detener el desplazamiento autom&#x00E1;tico\n\nCon el desplazamiento autom&#x00E1;tico desactivado:\n- Desliza lateralmente con un dedo para iniciarlo\n\nLos gestos solo funcionan sobre el &#x00E1;rea de lectura mientras el men&#x00FA; del lector est&#x00E1; cerrado.</string>
+    <string name="eh_autoscroll_gesture_toasts_help">Ayuda de toasts de gestos</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Cuando esta opci&#x00F3;n est&#x00E1; activada, el lector muestra mensajes toast despu&#x00E9;s de que los gestos del desplazamiento autom&#x00E1;tico realizan acciones como iniciar, pausar, reanudar, detener, cambiar la velocidad o moverse por el cap&#x00ED;tulo.
+
+Cuando esta opci&#x00F3;n est&#x00E1; desactivada, los gestos siguen funcionando igual, pero esos mensajes informativos ya no se muestran.</string>
     <string name="eh_retry_all_help">Ayuda de reintentar todo</string>
     <string name="pref_force_horz_seekbar">Forzar barra de desplazamiento horizontal</string>
     <string name="eh_autoscroll">Desplazamiento automático</string>
