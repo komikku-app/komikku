@@ -69,6 +69,9 @@ class UiPreferences(
 
     fun topAlignCover() = preferenceStore.getBoolean("top_align_cover", false)
     // KMK <--
+    // KMK -->
+    fun appIcon() = preferenceStore.getString("pref_app_icon", "default")
+    // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)
 
