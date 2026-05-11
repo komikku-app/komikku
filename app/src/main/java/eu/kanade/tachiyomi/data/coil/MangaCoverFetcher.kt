@@ -190,15 +190,13 @@ class MangaCoverFetcher(
                 // KMK -->
                 setRatioAndColorsInScope(
                     mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
+                    bufferedSource = response.peekBody(Long.MAX_VALUE).source(),
                 )
                 // KMK <--
                 // Read from response if cache is unused or unusable
+                val responseSource = responseBody.source()
                 return SourceFetchResult(
-                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
+                    source = ImageSource(source = responseSource, fileSystem = FileSystem.SYSTEM),
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
