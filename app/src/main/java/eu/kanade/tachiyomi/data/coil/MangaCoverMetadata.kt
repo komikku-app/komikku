@@ -131,6 +131,7 @@ object MangaCoverMetadata {
                     options,
                 )
             }
+            // if the file exists and the there was still an error then the file is corrupted
             else -> BitmapFactory.decodeFile(file!!.path, options)
         }
 
