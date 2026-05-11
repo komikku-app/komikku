@@ -100,7 +100,7 @@
     <string name="release_page">Release page</string>
     <string name="auto_update_app_disable_auto_download">Otomatik indirmeyi devre dışı bırak</string>
     <string name="action_remove_merged">Remove original entries from library?</string>
-    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="auto_update_app">Uygulamayı otomatik güncelle</string>
     <string name="label_library_update_errors">Kütüphane güncelleme hataları (%d)</string>
     <string name="option_label_library_update_errors">Kütüphane güncelleme hataları</string>

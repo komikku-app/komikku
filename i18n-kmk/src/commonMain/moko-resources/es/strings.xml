@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copiar página combinada al portapapeles</string>
     <string name="auto_update_app_disable_auto_download">No descargar actualización automática</string>
     <string name="action_remove_merged">¿Eliminar entradas originales de la biblioteca?</string>
-    <string name="batch_add_description">Soporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Soporte: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_open_folder">Abrir carpeta</string>
     <string name="action_update">Actualizar</string>
     <string name="error_opening_folder">Fallo al abrir la carpeta</string>

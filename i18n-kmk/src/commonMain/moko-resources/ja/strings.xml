@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">結合ページをクリップボードにコピー</string>
     <string name="auto_update_app_disable_auto_download">更新プログラムを自動的にダウンロードしない</string>
     <string name="action_remove_merged">ライブラリから元の作品を削除しますか？</string>
-    <string name="batch_add_description">サポート: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">サポート: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_open_folder">フォルダーを開く</string>
     <string name="error_opening_folder">フォルダーを開けませんでした</string>
     <string name="scale_type_16_9">16:9</string>

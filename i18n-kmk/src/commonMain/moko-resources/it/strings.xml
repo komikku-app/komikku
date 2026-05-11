@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copia la pagina combinata negli appunti</string>
     <string name="auto_update_app_disable_auto_download">Non scaricare automaticamente l\'aggiornamento</string>
     <string name="action_remove_merged">Rimuovere le voci originali dalla libreria?</string>
-    <string name="batch_add_description">Supporto: MangaDex, E-H, ExH, nH, 8Muse, Tsumino</string>
+    <string name="batch_add_description">Supporto: MangaDex, E-H, ExH, nH, 8Muse</string>
     <string name="custom_theme_palette_patagonia">Patagonia</string>
     <string name="custom_theme_palette_pop">Pop</string>
     <string name="custom_theme_palette_outrun">Superare</string>

@@ -115,5 +115,5 @@
     <string name="action_copy_to_clipboard_combined_page">Kopírovat kombinovanou stránku do schránky</string>
     <string name="auto_update_app_disable_auto_download">Automaticky nestahovat aktualizaci</string>
     <string name="action_remove_merged">Odstranit původní položky z knihovny?</string>
-    <string name="batch_add_description">Podpora: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Podpora: MangaDex, E-H, ExH, nH, 8Muses</string>
 </resources>

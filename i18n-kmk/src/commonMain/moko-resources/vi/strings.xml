@@ -122,7 +122,7 @@
     <string name="action_copy_to_clipboard_combined_page">Sao chép trang đã kết hợp vào clipboard</string>
     <string name="auto_update_app_disable_auto_download">Không tự động tải xuống bản cập nhật</string>
     <string name="action_remove_merged">Xóa các truyện gốc ra khỏi thư viện?</string>
-    <string name="batch_add_description">Hỗ trợ: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Hỗ trợ: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_manual_install">Cài đặt thủ công</string>
     <string name="action_open_folder">Mở thư mục</string>
     <string name="action_clear_manga">Xóa manga</string>

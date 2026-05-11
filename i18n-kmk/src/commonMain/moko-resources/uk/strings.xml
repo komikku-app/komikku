@@ -118,7 +118,7 @@
     <string name="action_copy_to_clipboard_combined_page">Скопіювати комбіновану сторінку в буфер обміну</string>
     <string name="auto_update_app_disable_auto_download">Не завантажувати автоматично оновлення</string>
     <string name="action_remove_merged">Видалити оригінальні записи з бібліотеки?</string>
-    <string name="batch_add_description">Підтримка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Підтримка: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_open_folder">Відкрити папку</string>
     <string name="action_clear_manga">Очистити мангу</string>
     <string name="action_update">Оновити</string>

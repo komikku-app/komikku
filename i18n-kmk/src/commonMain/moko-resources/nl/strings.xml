@@ -115,5 +115,5 @@
     <string name="action_copy_to_clipboard_combined_page">Kopieer gecombineerde pagina naar klembord</string>
     <string name="auto_update_app_disable_auto_download">Update niet automatisch downloaden</string>
     <string name="action_remove_merged">Originele invoergegevens uit bibliotheek verwijderen?</string>
-    <string name="batch_add_description">Ondersteuning: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Ondersteuning: MangaDex, E-H, ExH, nH, 8Muses</string>
 </resources>

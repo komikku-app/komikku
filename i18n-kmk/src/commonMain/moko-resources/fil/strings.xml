@@ -97,7 +97,7 @@
     <string name="action_copy_to_clipboard_combined_page">Kopyahin ang pinagsamang pahina sa clipboard</string>
     <string name="auto_update_app_disable_auto_download">Huwag awtomatikong i-download ang update</string>
     <string name="action_remove_merged">Tanggalin ang orihinal na mga tala galing sa aklatan?</string>
-    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="pref_theme_cover_based_style_fruitsalad">Fruit Salad</string>
     <string name="pref_theme_cover_based_style_vibrant">Makulay</string>
     <string name="pref_theme_cover_based_style_expressive">Masining</string>

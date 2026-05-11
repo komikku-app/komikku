@@ -10,7 +10,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.graphics.toColorInt
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.PURURIN_SOURCE_ID
-import exh.source.TSUMINO_SOURCE_ID
 import exh.source.eHentaiSourceIds
 import exh.source.lanraragiSourceIds
 import exh.source.mangaDexSourceIds
@@ -30,7 +29,6 @@ object SourceTagsUtil {
             sourceId in nHentaiSourceIds ||
             sourceId in mangaDexSourceIds ||
             sourceId == PURURIN_SOURCE_ID ||
-            sourceId == TSUMINO_SOURCE_ID ||
             sourceId in lanraragiSourceIds
         ) {
             val parsed = when {
@@ -43,7 +41,6 @@ object SourceTagsUtil {
                     in nHentaiSourceIds -> wrapTagNHentai(parsed.namespace!!, parsed.name.substringBefore('|').trim())
                     in mangaDexSourceIds -> parsed.name
                     PURURIN_SOURCE_ID -> parsed.name.substringBefore('|').trim()
-                    TSUMINO_SOURCE_ID -> wrapTagTsumino(parsed.namespace!!, parsed.name.substringBefore('|').trim())
                     else -> wrapTag(parsed.namespace!!, parsed.name.substringBefore('|').trim())
                 }
             } else {
@@ -68,20 +65,6 @@ object SourceTagsUtil {
         }
     } else {
         "$namespace:$tag"
-    }
-
-    private fun wrapTagTsumino(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
-        if (namespace == "tags") {
-            "\"${tag.replace(spaceRegex, "_")}\""
-        } else {
-            "\"$namespace: ${tag.replace(spaceRegex, "_")}\""
-        }
-    } else {
-        if (namespace == "tags") {
-            tag
-        } else {
-            "$namespace:$tag"
-        }
     }
 
     fun parseTag(tag: String) = RaisedTag(
