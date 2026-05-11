@@ -194,9 +194,8 @@ class MangaCoverFetcher(
                 )
                 // KMK <--
                 // Read from response if cache is unused or unusable
-                val responseSource = responseBody.source()
                 return SourceFetchResult(
-                    source = ImageSource(source = responseSource, fileSystem = FileSystem.SYSTEM),
+                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
