@@ -104,7 +104,7 @@ class MangaCoverFetcher(
 
     private fun fileLoader(file: File): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover, ogFile = file)
+        setRatioAndColorsInScope(mangaCover = mangaCover, ogFile = file)
         // KMK <--
         return SourceFetchResult(
             source = ImageSource(
@@ -119,7 +119,7 @@ class MangaCoverFetcher(
 
     private fun fileUriLoader(uri: String): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover)
+        setRatioAndColorsInScope(mangaCover = mangaCover)
         // KMK <--
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
@@ -189,7 +189,7 @@ class MangaCoverFetcher(
 
                 // KMK -->
                 setRatioAndColorsInScope(
-                    mangaCover,
+                    mangaCover = mangaCover,
                     bufferedSource = response.peekBody(Long.MAX_VALUE).source(),
                 )
                 // KMK <--
@@ -306,7 +306,7 @@ class MangaCoverFetcher(
         } catch (e: Exception) {
             try {
                 editor.abort()
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
             throw e
         }
@@ -349,7 +349,13 @@ class MangaCoverFetcher(
     ) {
         if (!preloadLibraryColor) return
         scope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
+            MangaCoverMetadata.setRatioAndColors(
+                mangaCover = mangaCover,
+                bufferedSource = bufferedSource,
+                ogFile = ogFile,
+                onlyDominantColor = onlyFavorite,
+                force = force,
+            )
         }
     }
     // KMK <--
