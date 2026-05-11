@@ -124,9 +124,9 @@ object MangaCoverMetadata {
 
         if (bufferedSource == null && (file == null || !file.exists())) return
         val bitmap = when {
-            bufferedSource != null -> with(bufferedSource) {
+            bufferedSource != null -> bufferedSource.inputStream().use { inputStream ->
                 BitmapFactory.decodeStream(
-                    inputStream(),
+                    inputStream,
                     null,
                     options,
                 )
