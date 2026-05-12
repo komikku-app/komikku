@@ -25,6 +25,7 @@ import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
+import okio.Buffer
 import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
@@ -188,17 +189,20 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
+                // OkHttp bodies are one-shot: never call source() twice or read concurrently with Coil — that breaks
+                // Okio timeouts (AsyncTimeout unbalanced enter/exit) and DRM hooks that wrap the stream.
+                val bodyBytes = responseBody.bytes()
                 setRatioAndColorsInScope(
                     mangaCover = mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
+                    imageBytes = bodyBytes,
                 )
                 // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
-                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
+                    source = ImageSource(
+                        source = Buffer().write(bodyBytes).buffer(),
+                        fileSystem = FileSystem.SYSTEM,
+                    ),
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
@@ -346,6 +350,7 @@ class MangaCoverFetcher(
     private fun setRatioAndColorsInScope(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
+        imageBytes: ByteArray? = null,
         ogFile: File? = null,
         onlyFavorite: Boolean = !themeCoverBased,
         force: Boolean = false,
@@ -355,6 +360,7 @@ class MangaCoverFetcher(
             MangaCoverMetadata.setRatioAndColors(
                 mangaCover = mangaCover,
                 bufferedSource = bufferedSource,
+                imageBytes = imageBytes,
                 ogFile = ogFile,
                 onlyDominantColor = onlyFavorite,
                 force = force,

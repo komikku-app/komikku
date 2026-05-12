@@ -65,6 +65,7 @@ object MangaCoverMetadata {
      * Set [MangaCover.vibrantCoverColor] for all mangas.
      *
      * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
+     * @param imageBytes if not null then decode from these bytes (takes precedence over [bufferedSource]; avoids sharing a one-shot OkHttp body).
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
      * @param force if true then it will always re-calculate ratio & color for favorite mangas.
@@ -77,6 +78,7 @@ object MangaCoverMetadata {
     fun setRatioAndColors(
         mangaCover: MangaCover,
         bufferedSource: BufferedSource? = null,
+        imageBytes: ByteArray? = null,
         ogFile: File? = null,
         onlyDominantColor: Boolean = true,
         force: Boolean = false,
@@ -122,8 +124,9 @@ object MangaCoverMetadata {
             ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
             ?: coverCache.getCoverFile(mangaCover.url)
 
-        if (bufferedSource == null && (file == null || !file.exists())) return
+        if (imageBytes == null && bufferedSource == null && (file == null || !file.exists())) return
         val bitmap = when {
+            imageBytes != null -> BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
             bufferedSource != null -> with(bufferedSource) {
                 BitmapFactory.decodeStream(
                     inputStream(),
