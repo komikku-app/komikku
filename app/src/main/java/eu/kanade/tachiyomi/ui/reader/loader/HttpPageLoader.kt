@@ -41,7 +41,7 @@ internal class HttpPageLoader(
     private val chapterCache: ChapterCache = Injekt.get(),
     // SY -->
     private val readerPreferences: ReaderPreferences = Injekt.get(),
-    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
     // SY <--
 ) : PageLoader() {
 
@@ -219,8 +219,9 @@ internal class HttpPageLoader(
 
             if (!chapterCache.isImageInCache(imageUrl)) {
                 page.status = Page.State.DownloadImage
-                val imageResponse = source.getImage(page, dataSaver)
-                chapterCache.putImageToCache(imageUrl, imageResponse)
+                source.getImage(page, dataSaver).use { imageResponse ->
+                    chapterCache.putImageToCache(imageUrl, imageResponse)
+                }
             }
 
             page.stream = { chapterCache.getImageFile(imageUrl).inputStream() }

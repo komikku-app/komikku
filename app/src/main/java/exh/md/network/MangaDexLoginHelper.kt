@@ -77,6 +77,7 @@ class MangaDexLoginHelper(
                     body = formBody,
                 ),
             ).awaitSuccess()
+                .close()
             mdList.logout()
         }.exceptionOrNull()
 

@@ -24,7 +24,7 @@ class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
     suspend fun fetchPageList(externalUrl: String): List<Page> {
         val chapterId = externalUrl.substringAfterLast("/").substringBefore("?")
         val request = pageListRequest(chapterId)
-        return pageListParse(client.newCall(request).awaitSuccess())
+        return client.newCall(request).awaitSuccess().use { pageListParse(it) }
     }
 
     private fun pageListRequest(chapterId: String): Request {

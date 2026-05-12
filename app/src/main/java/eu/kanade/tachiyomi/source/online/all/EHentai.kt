@@ -361,7 +361,7 @@ class EHentai(
             )
             if (cachedParent == null) {
                 throttleFunc()
-                doc = client.newCall(exGet(baseUrl + url)).awaitSuccess().asJsoup()
+                doc = client.newCall(exGet(baseUrl + url)).awaitSuccess().use { it.asJsoup() }
 
                 val parentLink = doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "parent:"
@@ -449,8 +449,8 @@ class EHentai(
         pastUrls: List<String> = emptyList(),
     ): Observable<List<String>> {
         val urls = ArrayList(pastUrls)
-        return chapterPageCall(np).flatMap {
-            val jsoup = it.asJsoup()
+        return chapterPageCall(np).flatMap { resp ->
+            val jsoup = resp.use { it.asJsoup() }
             urls += parseChapterPage(jsoup)
             val nextUrl = nextPageUrl(jsoup)
             if (nextUrl != null) {
@@ -647,28 +647,30 @@ class EHentai(
             .asObservableWithAsyncStacktrace()
             .flatMap { (stacktrace, response) ->
                 if (response.isSuccessful) {
-                    // Pull to most recent
-                    val doc = response.asJsoup()
-                    val newerGallery = doc.select("#gnd a").lastOrNull()
-                    val pre = if (
-                        newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
-                    ) {
-                        manga.url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
-                        client.newCall(mangaDetailsRequest(manga))
-                            .asObservableSuccess().map { it.asJsoup() }
-                    } else {
-                        Observable.just(doc)
-                    }
+                    response.use { resp ->
+                        // Pull to most recent
+                        val doc = resp.asJsoup()
+                        val newerGallery = doc.select("#gnd a").lastOrNull()
+                        val pre = if (
+                            newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
+                        ) {
+                            manga.url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
+                            client.newCall(mangaDetailsRequest(manga))
+                                .asObservableSuccess().map { resp -> resp.use { it.asJsoup() } }
+                        } else {
+                            Observable.just(doc)
+                        }
 
-                    pre.flatMap {
-                        @Suppress("DEPRECATION")
-                        parseToMangaCompletable(manga, it).andThen(
-                            Observable.just(
-                                manga.apply {
-                                    initialized = true
-                                },
-                            ),
-                        )
+                        pre.flatMap {
+                            @Suppress("DEPRECATION")
+                            parseToMangaCompletable(manga, it).andThen(
+                                Observable.just(
+                                    manga.apply {
+                                        initialized = true
+                                    },
+                                ),
+                            )
+                        }
                     }
                 } else {
                     response.close()
@@ -686,20 +688,22 @@ class EHentai(
         val exception = Exception("Async stacktrace")
         val response = client.newCall(mangaDetailsRequest(manga)).await()
         if (response.isSuccessful) {
-            // Pull to most recent
-            val doc = response.asJsoup()
-            val newerGallery = doc.select("#gnd a").lastOrNull()
-            val pre = if (
-                newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
-            ) {
-                val sManga = manga.copy(
-                    url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href")),
-                )
-                client.newCall(mangaDetailsRequest(sManga)).awaitSuccess().asJsoup()
-            } else {
-                doc
+            response.use { resp ->
+                // Pull to most recent
+                val doc = resp.asJsoup()
+                val newerGallery = doc.select("#gnd a").lastOrNull()
+                val pre = if (
+                    newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled
+                ) {
+                    val sManga = manga.copy(
+                        url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href")),
+                    )
+                    client.newCall(mangaDetailsRequest(sManga)).awaitSuccess().use { it.asJsoup() }
+                } else {
+                    doc
+                }
+                return parseToManga(manga, pre)
             }
-            return parseToManga(manga, pre)
         } else {
             response.close()
 
@@ -844,14 +848,14 @@ class EHentai(
 
     override suspend fun getImageUrl(page: Page): String {
         val imageUrlResponse = client.newCall(imageUrlRequest(page)).awaitSuccess()
-        return realImageUrlParse(imageUrlResponse, page)
+        return imageUrlResponse.use { realImageUrlParse(it, page) }
     }
 
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
             .asObservableSuccess()
-            .map { realImageUrlParse(it, page) }
+            .map { resp -> resp.use { realImageUrlParse(it, page) } }
     }
 
     private fun realImageUrlParse(response: Response, page: Page): String {
@@ -889,7 +893,7 @@ class EHentai(
                     ),
                 ).await()
             }
-            val doc = response2.asJsoup()
+            val doc = response2.use { it.asJsoup() }
 
             // Parse favorites
             val parsed = extendedGenericMangaParse(doc)
@@ -1247,7 +1251,7 @@ class EHentai(
                     .url(EH_API_BASE)
                     .post(json.toString().toRequestBody(JSON))
                     .build(),
-            ).execute().body.string(),
+            ).execute().use { it.body.string() },
         )
 
         val obj = outJson["tokenlist"]!!.jsonArray.first().jsonObject
@@ -1271,7 +1275,7 @@ class EHentai(
                     .build()
                     .toString(),
             ),
-        ).awaitSuccess().asJsoup()
+        ).awaitSuccess().use { it.asJsoup() }
 
         val body = doc.body()
         val previews = body

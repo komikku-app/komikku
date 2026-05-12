@@ -69,7 +69,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
 
     override suspend fun getMangaDetails(manga: SManga): SManga {
         val response = client.newCall(mangaDetailsRequest(manga)).awaitSuccess()
-        return parseToManga(manga, response.asJsoup())
+        return response.use { parseToManga(manga, it.asJsoup()) }
     }
 
     override suspend fun parseIntoMetadata(metadata: PururinSearchMetadata, input: Document) {

@@ -75,6 +75,7 @@ class ShikimoriApi(
             authClient
                 .newCall(DELETE("$API_URL/v2/user_rates/${track.libraryId}"))
                 .awaitSuccess()
+                .close()
         }
     }
 

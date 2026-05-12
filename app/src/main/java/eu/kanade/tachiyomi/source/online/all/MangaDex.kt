@@ -180,7 +180,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return client.newCall(request.newBuilder().url(url).build())
             .asObservableSuccess()
             .map { response ->
-                delegate.latestUpdatesParse(response)
+                response.use { delegate.latestUpdatesParse(it) }
             }
     }
 
@@ -191,7 +191,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             .build()
 
         val response = client.newCall(request.newBuilder().url(url).build()).awaitSuccess()
-        return delegate.latestUpdatesParse(response)
+        return response.use { delegate.latestUpdatesParse(it) }
     }
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))

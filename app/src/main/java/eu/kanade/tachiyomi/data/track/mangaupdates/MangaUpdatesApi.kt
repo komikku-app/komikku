@@ -72,7 +72,7 @@ class MangaUpdatesApi(
             ),
         )
             .awaitSuccess()
-            .let {
+            .use {
                 if (it.code == 200) {
                     track.status = status
                     track.last_chapter_read = 1.0
@@ -99,6 +99,7 @@ class MangaUpdatesApi(
             ),
         )
             .awaitSuccess()
+            .close()
 
         updateSeriesRating(track)
     }
@@ -114,6 +115,7 @@ class MangaUpdatesApi(
             ),
         )
             .awaitSuccess()
+            .close()
     }
 
     private suspend fun getSeriesRating(track: Track): MURating? {
@@ -123,7 +125,7 @@ class MangaUpdatesApi(
                     .awaitSuccess()
                     .parseAs<MURating>()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -141,11 +143,13 @@ class MangaUpdatesApi(
                 ),
             )
                 .awaitSuccess()
+                .close()
         } else {
             authClient.newCall(
                 DELETE(url = "$BASE_URL/v1/series/${track.remote_id}/rating"),
             )
                 .awaitSuccess()
+                .close()
         }
     }
 

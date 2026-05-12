@@ -83,7 +83,7 @@ private suspend fun Call.await(callStack: Array<StackTraceElement>): Response {
                 }
 
                 override fun onFailure(call: Call, e: IOException) {
-                    // Don't bother with resuming the continuation if it is already cancelled.
+                    // Don't bother with resuming the continuation if it is already canceled.
                     if (continuation.isCancelled) return
                     val exception = IOException(e.message, e).apply { stackTrace = callStack }
                     continuation.resumeWithException(exception)
@@ -95,7 +95,7 @@ private suspend fun Call.await(callStack: Array<StackTraceElement>): Response {
         continuation.invokeOnCancellation {
             try {
                 cancel()
-            } catch (ex: Throwable) {
+            } catch (_: Throwable) {
                 // Ignore cancel exception
             }
         }
@@ -135,7 +135,7 @@ fun OkHttpClient.newCachelessCallWithProgress(request: Request, listener: Progre
 }
 
 context(_: Json)
-inline fun <reified T> Response.parseAs(): T {
+inline fun <reified T> Response.parseAs(): T = use {
     return decodeFromJsonResponse(serializer(), this)
 }
 
