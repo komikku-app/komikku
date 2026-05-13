@@ -26,7 +26,7 @@
     <string name="pref_webdav_username">নাম</string>
     <string name="pref_webdav_password">পাসওয়ার্ড</string>
     <string name="release_page">রিলিজ পাতা</string>
-    <string name="action_scroll_to_top">"উপরে  স্ক্রল  করুন"</string>
+    <string name="action_scroll_to_top">উপরে  স্ক্রল  করুন</string>
     <string name="pref_discord_dnd">বিঘ্নমুক্ত পরিবেশ</string>
     <string name="pref_discord_idle">নিষ্ক্রিয়</string>
     <string name="pref_discord_online">সক্রিয়</string>
