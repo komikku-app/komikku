@@ -137,7 +137,7 @@
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
     <string name="web_dav">WebDAV</string>
-    <string name="discord_status_description">%1$s%2$s</string>
+    <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_download_button">在 %s 查看</string>
     <string name="discord_status_using">正在使用：</string>
     <string name="chapters_from_database">数据库中的剧集与观看记录</string>
