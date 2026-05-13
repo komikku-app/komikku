@@ -105,7 +105,7 @@
     <string name="label_library_update_errors">Kütüphane güncelleme hataları (%d)</string>
     <string name="option_label_library_update_errors">Kütüphane güncelleme hataları</string>
     <string name="action_manual_install">Manuel kurulum</string>
-    <string name="pref_auto_sync_progress_from_trackers">Auto sync progress from Trackers</string>
+    <string name="pref_auto_sync_progress_from_trackers">İlerlemeyi takip servisleriyle otomatik eşitle</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
     <string name="update_completed">Update completed</string>
     <string name="info_empty_library_update_errors">You have no library update errors.</string>
