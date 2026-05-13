@@ -30,6 +30,9 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 ### Changed
 - Update tracker icons ([@AntsyLich](https://github.com/AntsyLich)) ([#2773](https://github.com/mihonapp/mihon/pull/2773))
 - Add a small increment to chapter number before comparison to fix progress sync issues for Suwayomi ([@cpiber](https://github.com/cpiber)) ([#2657](https://github.com/mihonapp/mihon/pull/2675))
+- Add all pages of adjacent chapters in the UI instead of only the first or last three ([@AntsyLich](https://github.com/AntsyLich)) ([#2995](https://github.com/mihonapp/mihon/pull/2995))
+- Going back now first clears search query on browse extension tab ([@cuong-tran](https://github.com/cuong-tran)) ([#2906](https://github.com/mihonapp/mihon/pull/2906))
+- Automatic library updates now run even when connected to a VPN ([@AntsyLich](https://github.com/AntsyLich)) ([#2773](https://github.com/mihonapp/mihon/pull/2773))
 
 ### Fixed
 - Fix reader tap zones triggering after scrolling is stopped by tapping ([@NGB-Was-Taken](https://github.com/NGB-Was-Taken)) ([#2680](https://github.com/mihonapp/mihon/pull/2680))
@@ -39,6 +42,9 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Fix pre-1970 upload date display in chapter list ([@MajorTanya](https://github.com/MajorTanya)) ([#2779](https://github.com/mihonapp/mihon/pull/2779))
 - Fix crash when trying to install/update extensions while shizuku is not running ([@NGB-Was-Taken](https://github.com/NGB-Was-Taken)) ([#2837](https://github.com/mihonapp/mihon/pull/2837))
 - Fix Add Repo input not taking up the full dialog width ([@cuong-tran](https://github.com/cuong-tran)) ([#2816](https://github.com/mihonapp/mihon/pull/2816))
+- Fix migration's selected sources order not preserved ([@AntsyLich](https://github.com/AntsyLich)) ([#2773](https://github.com/mihonapp/mihon/pull/2993))
+- Fix migration dialog not showing for consecutive prompts from the same screen ([@AntsyLich](https://github.com/AntsyLich)) ([#2773](https://github.com/mihonapp/mihon/pull/2994))
+- Fix extension install/update stuck at pending ([@AntsyLich](https://github.com/AntsyLich)) ([#3000](https://github.com/mihonapp/mihon/pull/3000))
 
 ### Other
 - Enable logcat logging on stable and debug builds without enabling verbose logging ([@NGB-Was-Taken](https://github.com/NGB-Was-Taken)) ([#2836](https://github.com/mihonapp/mihon/pull/2836))

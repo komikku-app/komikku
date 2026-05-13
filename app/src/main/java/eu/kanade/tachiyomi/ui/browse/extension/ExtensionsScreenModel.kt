@@ -53,7 +53,7 @@ class ExtensionsScreenModel(
                     map[
                         it.pkgName +
                             // KMK -->
-                            ":${it.signatureHash}",
+                            "_${it.signatureHash}",
                         // KMK <--
                     ] ?: InstallStep.Idle,
                 )
@@ -207,7 +207,7 @@ class ExtensionsScreenModel(
             it + Pair(
                 extension.pkgName +
                     // KMK -->
-                    ":${extension.signatureHash}",
+                    "_${extension.signatureHash}",
                 // KMK <--
                 installStep,
             )
@@ -219,7 +219,7 @@ class ExtensionsScreenModel(
             it - (
                 extension.pkgName +
                     // KMK -->
-                    ":${extension.signatureHash}"
+                    "_${extension.signatureHash}"
                 // KMK <--
                 )
         }

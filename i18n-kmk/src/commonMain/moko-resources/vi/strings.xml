@@ -137,4 +137,25 @@
     <string name="downloaded_data">Dữ liệu đã tải xuống</string>
     <string name="chapters_from_database">Chương &amp; Lịch sử từ cơ sở dữ liệu</string>
     <string name="sponsor_me">Tài trợ cho tôi</string>
+    <string name="pref_pinch_to_zoom">Kéo để phóng to</string>
+    <string name="pref_category_connections">Kết nối</string>
+    <string name="connections_discord">Discord</string>
+    <string name="pref_discord_rpc">Tích hợp trạng thái Discord</string>
+    <string name="pref_enable_discord_rpc">Kích hoạt tính năng Discord Rich Presence</string>
+    <string name="pref_discord_dnd">Chế độ không làm phiền</string>
+    <string name="pref_discord_idle">Đang chờ</string>
+    <string name="pref_discord_online">Trực tuyến</string>
+    <string name="no_accounts_found">Không có tài khoản nào</string>
+    <string name="discord_status_description">%1$s %2$s</string>
+    <string name="discord_status_using">Dùng:</string>
+    <string name="discord_status_browsing">Đang duyệt</string>
+    <string name="discord_download_button">Đọc trên %s</string>
+    <string name="pref_discord_show_timestamp">Hiển thị thời gian</string>
+    <string name="pref_discord_show_download_button">Hiện nút tải xuống</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Tên người dùng</string>
+    <string name="pref_webdav_password">Mật khẩu</string>
 </resources>
