@@ -151,7 +151,7 @@
     <string name="pref_category_discord_incognito">RPC Incognito</string>
     <string name="special_services">特别服务</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">这个Discord服务通过令牌记录来运行。请自行承担风险。您的令牌是本地存储的，Anikku 不在任何其他地方共享。</string>
+    <string name="connections_discord_info">这个Discord服务通过令牌记录来运行。请自行承担风险。您的令牌是本地存储的，%s 不在任何其他地方共享。</string>
     <string name="pref_discord_rpc">Discord 丰富存在</string>
     <string name="show_chapters_titles_subtitle">显示您观看的剧集的标题</string>
     <string name="pref_enable_discord_rpc">启用 Discord Rich Presence</string>
