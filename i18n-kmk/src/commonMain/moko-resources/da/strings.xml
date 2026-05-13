@@ -157,7 +157,7 @@
     <string name="pref_category_discord_incognito">RPC Incognito</string>
     <string name="pref_discord_incognito">Discord Inkognito tilstand</string>
     <string name="pref_discord_show_progress">Vis Fremskridt</string>
-    <string name="connections_discord">Uenighed</string>
+    <string name="connections_discord">Discord</string>
     <string name="web_dav">WebDAV</string>
     <string name="pref_webdav_username">Brugernavn</string>
     <string name="pref_webdav_password">Adgangskode</string>
