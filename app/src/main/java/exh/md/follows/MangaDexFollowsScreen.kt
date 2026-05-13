@@ -127,10 +127,10 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         // KMK <--
                         scope.launchIO {
                             val duplicates = screenModel.getDuplicateLibraryManga(manga)

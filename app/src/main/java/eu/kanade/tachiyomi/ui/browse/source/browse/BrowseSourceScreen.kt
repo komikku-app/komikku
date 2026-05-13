@@ -375,10 +375,10 @@ data class BrowseSourceScreen(
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         // KMK <--
                         scope.launchIO {
                             val duplicates = screenModel.getDuplicateLibraryManga(manga)
