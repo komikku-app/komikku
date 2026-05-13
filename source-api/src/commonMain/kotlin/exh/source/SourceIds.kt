@@ -12,7 +12,9 @@ const val LOCAL_SOURCE_PACKAGE = "tachiyomi.source.local"
 
 const val NHENTAI_SOURCE_ID = 7309872737163460316L
 const val PURURIN_SOURCE_ID = 2221515250486218861L
+const val TSUMINO_SOURCE_ID = 6707338697138388238L
 const val EIGHTMUSES_SOURCE_ID = 1802675169972965535L
+const val HBROWSE_SOURCE_ID = 1401584337232758222L
 
 // If MERGED_SOURCE_ID is to update, remember to update updatesView.sq and libraryView.sq too
 const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
@@ -23,6 +25,8 @@ const val EXH_OLD_ID = 6902L
 // KMK <--
 
 const val NHENTAI_OLD_ID = 6907L
+const val TSUMINO_OLD_ID = 6909L
+const val HBROWSE_OLD_ID = 6912L
 
 // KMK -->
 val EHENTAI_EXT_SOURCES = mapOf(
