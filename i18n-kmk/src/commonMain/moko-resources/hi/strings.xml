@@ -12,7 +12,7 @@
     <string name="pref_discord_show_progress">प्रगति दिखाएं</string>
     <string name="pref_theme_cover_based_style_rainbow">मेघधनुष</string>
     <string name="pref_theme_cover_based_style_monochrome">एक रंग का</string>
-    <string name="pref_discord_idle">दूर उपयोगकर्ताओं</string>
+    <string name="pref_discord_idle">निष्क्रिय</string>
     <string name="action_move_up">ऊपर ले जाएँ</string>
     <string name="pref_theme_cover_based_style_vibrant">चमकीला</string>
     <string name="theme_doom">कयामत</string>
