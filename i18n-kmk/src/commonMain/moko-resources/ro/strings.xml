@@ -153,7 +153,7 @@
     <string name="discord_accounts">Conturi Discord</string>
     <string name="pref_category_discord_incognito">RPC Incognito</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">Acest serviciu Discord funcționează prin conectarea simbolurilor. Folosiți pe propriul risc. Token-ul dvs. este stocat local și Anikku nu îl partajează nicăieri altundeva</string>
+    <string name="connections_discord_info">Acest serviciu Discord funcționează prin conectarea simbolurilor. Folosiți pe propriul risc. Token-ul dvs. este stocat local și %s nu îl partajează nicăieri altundeva</string>
     <string name="pref_discord_show_progress">Arată progresul</string>
     <string name="pref_discord_status">Stare Discord</string>
     <string name="pref_discord_show_discord_button">Arată butonul Discord</string>
