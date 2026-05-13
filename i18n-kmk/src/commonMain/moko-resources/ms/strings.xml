@@ -3,7 +3,7 @@
     <string name="action_search_for_source">Cari sumber</string>
     <string name="download_cache_renew_interval_1hour">1 jam</string>
     <string name="download_cache_renew_interval_2hour">2 Jam</string>
-    <string name="download_cache_renew_interval_12hour">12 jam (AM/PM)</string>
+    <string name="download_cache_renew_interval_12hour">12 jam</string>
     <string name="download_cache_renew_interval_24hour">1 Hari</string>
     <string name="pref_webdav_password">Kata Laluan</string>
     <string name="auto_update_app">Auto-kemas kini apl</string>
