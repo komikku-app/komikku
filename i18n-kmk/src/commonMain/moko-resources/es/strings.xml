@@ -154,7 +154,7 @@
     <string name="connections_discord_info">Este Servicio de Discord funciona a través del registro de token. Úsalo bajo tu propio riesgo. Tu token se almacena localmente y Anikku no lo comparte en ningún otro lugar</string>
     <string name="chapters_from_database">Episodios e historial de la base de datos</string>
     <string name="pref_category_connections">Conexiones</string>
-    <string name="connections_discord">Discordia</string>
+    <string name="connections_discord">Discord</string>
     <string name="pref_discord_rpc">Presencia de Discord Rich</string>
     <string name="pref_enable_discord_rpc">Habilitar la presencia de Discord Rich</string>
     <string name="pref_discord_dnd">⛔ No molestar</string>
