@@ -105,7 +105,7 @@ fun MangaCompactGridItem(
                     MangaCoverHide.Book(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                        bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                         tint = onBgColor,
                     )
                 } else {
@@ -119,7 +119,7 @@ fun MangaCompactGridItem(
                         data = coverData,
                         // KMK -->
                         alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                        bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                         tint = onBgColor,
                         // KMK <--
                     )
@@ -241,7 +241,7 @@ fun MangaComfortableGridItem(
                         MangaCoverHide.Book(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                            bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                             tint = onBgColor,
                         )
                     } else {
@@ -255,7 +255,7 @@ fun MangaComfortableGridItem(
                                 data = coverData,
                                 // KMK -->
                                 alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                                 tint = onBgColor,
                                 onCoverLoaded = { _, result ->
                                     val image = result.result.image
@@ -274,7 +274,7 @@ fun MangaComfortableGridItem(
                                 data = coverData,
                                 // KMK -->
                                 alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                                 tint = onBgColor,
                                 onCoverLoaded = { _, result ->
                                     val image = result.result.image
@@ -461,7 +461,7 @@ fun MangaListItem(
             MangaCoverHide.Square(
                 modifier = Modifier
                     .fillMaxHeight(),
-                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                 tint = onBgColor,
             )
         } else {
@@ -475,7 +475,7 @@ fun MangaListItem(
                 data = coverData,
                 // KMK -->
                 alpha = coverAlpha,
-                bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                 tint = onBgColor,
                 size = MangaCover.Size.Big,
                 // KMK <--
