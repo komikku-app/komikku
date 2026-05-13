@@ -339,11 +339,11 @@ fun SourceFeedToolbar(
                 actions = persistentListOf<AppBar.AppBarAction>().builder().apply {
                     add(bulkSelectionButton(isRunning, toggleSelectionMode))
 
-                    onWebViewClick?.let {
+                    onWebViewClick?.let { func ->
                         add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.action_web_view),
-                                onClick = { onWebViewClick() },
+                                onClick = { func() },
                                 icon = Icons.Outlined.Public,
                             ),
                         )
@@ -358,20 +358,20 @@ fun SourceFeedToolbar(
                     )
                     // KMK <--
 
-                    onSortFeedClick?.let {
+                    onSortFeedClick?.let { func ->
                         add(
                             AppBar.OverflowAction(
                                 title = stringResource(KMR.strings.action_sort_feed),
-                                onClick = { onSortFeedClick() },
+                                onClick = { func() },
                             ),
                         )
                     }
 
-                    onSourceSettingClick?.let {
+                    onSourceSettingClick?.let { func ->
                         add(
                             AppBar.OverflowAction(
                                 title = stringResource(MR.strings.label_settings),
-                                onClick = { onSourceSettingClick() },
+                                onClick = { func() },
                             ),
                         )
                     }

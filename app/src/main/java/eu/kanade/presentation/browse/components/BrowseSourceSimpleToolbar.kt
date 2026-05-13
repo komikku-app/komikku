@@ -40,11 +40,11 @@ fun BrowseSourceSimpleToolbar(
             // KMK -->
             AppBarActions(
                 actions = persistentListOf<AppBar.AppBarAction>().builder().apply {
-                    displayMode?.let {
+                    displayMode?.let { mode ->
                         add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.action_display_mode),
-                                icon = if (displayMode == LibraryDisplayMode.List) {
+                                icon = if (mode == LibraryDisplayMode.List) {
                                     Icons.AutoMirrored.Filled.ViewList
                                 } else {
                                     Icons.Filled.ViewModule
@@ -53,9 +53,9 @@ fun BrowseSourceSimpleToolbar(
                             ),
                         )
                     }
-                    toggleSelectionMode?.let {
+                    toggleSelectionMode?.let { mode ->
                         add(
-                            bulkSelectionButton(isRunning, toggleSelectionMode),
+                            bulkSelectionButton(isRunning, mode),
                         )
                     }
                 }
