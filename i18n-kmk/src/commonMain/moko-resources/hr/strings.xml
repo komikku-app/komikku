@@ -20,7 +20,7 @@
     <string name="action_move_up">Pomakni gore</string>
     <string name="action_hide">Sakrij</string>
     <string name="action_allow_all_duplicate_manga">Dopusti sve</string>
-    <string name="action_open_folder">Otvorena datoteka</string>
+    <string name="action_open_folder">Otvori mapu</string>
     <string name="updating">Nadopunjivanje</string>
     <string name="pref_track_on_add_library">Otvori izbornik zapisa prilikom dodavanja u biblioteku</string>
     <string name="pref_category_connections">Veze</string>
