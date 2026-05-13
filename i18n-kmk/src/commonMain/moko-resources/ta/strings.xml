@@ -40,8 +40,8 @@
     <string name="pref_discord_show_buttons">பொத்தான்களைக் காட்டு</string>
     <string name="error_opening_folder">கோப்புறையைத் திறக்கத் தவறிவிட்டது.</string>
     <string name="pref_pinch_to_zoom">பெரிதாக்க கிள்ளுதல்</string>
-    <string name="scale_type_16_9">16: 9</string>
-    <string name="scale_type_3_2">3: 2</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_3_2">3:2</string>
     <string name="pref_manga_info">மங்கா செய்தி</string>
     <string name="pref_theme_cover_based_style_tonalspot">டோனல் ச்பாட்</string>
     <string name="pref_theme_cover_based_style_neutral">நடுநிலை</string>
