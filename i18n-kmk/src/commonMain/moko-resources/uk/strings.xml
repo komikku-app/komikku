@@ -153,7 +153,7 @@
     <string name="pref_discord_incognito_summary">Перезаписувати, коли ввімкнено режим інкогніто</string>
     <string name="pref_discord_idle">🌙 Очікування</string>
     <string name="login_failed">Не вдалося увійти</string>
-    <string name="pref_discord_custom_message">Повідомлення при вимкненому сайті</string>
+    <string name="pref_discord_custom_message">Користувацьке повідомлення</string>
     <string name="pref_connections_summary">Discord, ще більше...</string>
     <string name="special_services">Спеціальні послуги</string>
     <string name="show_chapters_titles_subtitle">Показати назву епізоду, що ви дивитеся</string>
