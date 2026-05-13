@@ -153,7 +153,7 @@
     <string name="scale_type_16_9">16:9</string>
     <string name="active_account">Compte actiu</string>
     <string name="discord_status_description">%1$s %2$s</string>
-    <string name="pref_discord_show_download_button">Show download button</string>
+    <string name="pref_discord_show_download_button">Mostra el botó de descàrrega</string>
     <string name="pref_track_on_add_library">Obrir el menú de rastreig al afegir a la biblioteca</string>
     <string name="pref_enable_discord_rpc">Activa la Discord Rich Presence</string>
     <string name="pref_category_connections">Connexions</string>
