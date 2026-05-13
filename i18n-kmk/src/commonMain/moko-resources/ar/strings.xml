@@ -170,7 +170,7 @@
     <string name="discord_status_scrolling">التمرير عبر</string>
     <string name="pref_discord_incognito_summary">تم تجاوزها عند تمكين وضع التخفي</string>
     <string name="pref_category_connections">اتصالات</string>
-    <string name="pref_discord_idle">:crescent_القمر: الخمول</string>
+    <string name="pref_discord_idle">🌙 الخمول</string>
     <string name="pref_discord_show_progress">إظهار التقدم</string>
     <string name="pref_discord_show_timestamp">إظهار الوقت</string>
     <string name="no_accounts_found">لم يتم العثور على حسابات</string>
