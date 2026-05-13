@@ -127,7 +127,7 @@
     <string name="pref_discord_show_progress">Näytä Edistyminen</string>
     <string name="pref_discord_show_buttons_summary">Näytä painikkeet, joilla voit ladata sovelluksen tai liittyä Discord-palvelimeen</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">Tämä Discord-palvelu toimii tunnuksen lokilla. Käytä omalla vastuullasi. Tunnuksesi tallennetaan paikallisesti ja Anikku ei jaa sitä mistään muualta.</string>
+    <string name="connections_discord_info">Tämä Discord-palvelu toimii tunnuksen lokilla. Käytä omalla vastuullasi. Tunnuksesi tallennetaan paikallisesti ja %s ei jaa sitä mistään muualta.</string>
     <string name="pref_discord_status">Discordin Tila</string>
     <string name="pref_discord_dnd">⛔ Älä Häiritse</string>
     <string name="pref_discord_incognito">Discord Incognito -tila</string>
