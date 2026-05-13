@@ -162,7 +162,7 @@
     <string name="downloaded_data">البيانات التي تم تنزيلها</string>
     <string name="chapters_from_database">الفصول والسجل من قاعدة البيانات</string>
     <string name="action_manual_install">تثبيت يدوي</string>
-    <string name="connections_discord_info">خدمة ديسكورد هذه تعمل من خلال تسجيل الرموز. استخدمها على مسؤوليتك الخاصة. يتم تخزين الرمز المميز الخاص بك محليا ولا يقوم أنيكو بمشاركته في أي مكان آخر</string>
+    <string name="connections_discord_info">خدمة ديسكورد هذه تعمل من خلال تسجيل الرموز. استخدمها على مسؤوليتك الخاصة. يتم تخزين الرمز المميز الخاص بك محليا ولا يقوم %s بمشاركته في أي مكان آخر</string>
     <string name="pref_discord_rpc">وجود ديسكورد الغني</string>
     <string name="show_chapters_titles_subtitle">إظهار عنوان الحلقة التي تشاهدها</string>
     <string name="discord_accounts">حسابات ديسكورد</string>
