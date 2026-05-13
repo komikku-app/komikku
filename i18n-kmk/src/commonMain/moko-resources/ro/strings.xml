@@ -148,7 +148,7 @@
     <string name="custom_theme_palette_springfield">Springfield</string>
     <string name="discord_status_browsing">Navigare</string>
     <string name="pref_enable_discord_rpc">Activează Discord Rich Presence</string>
-    <string name="pref_discord_idle">:crescent_lună: Idle</string>
+    <string name="pref_discord_idle">🌙 Idle</string>
     <string name="pref_discord_incognito_categories_details">Intrările în categoriile incluse nu vor fi afișate în Discord</string>
     <string name="discord_accounts">Conturi Discord</string>
     <string name="pref_category_discord_incognito">RPC Incognito</string>
