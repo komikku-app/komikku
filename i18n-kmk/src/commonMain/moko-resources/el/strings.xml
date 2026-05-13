@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Αντιγραφή συνδυασμένης σελίδας στο πρόχειρο</string>
     <string name="auto_update_app_disable_auto_download">Να μην γίνεται αυτόματη λήψη ενημέρωσης</string>
     <string name="action_remove_merged">Αφαιρέστε τις αρχικές καταχωρήσεις από τη βιβλιοθήκη?</string>
-    <string name="batch_add_description">Υποστήριξη: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Υποστήριξη: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="theme_sapphire">Sapphire</string>
     <string name="special_services">Ειδικές Υπηρεσίες</string>
     <string name="connections_discord">Discord</string>

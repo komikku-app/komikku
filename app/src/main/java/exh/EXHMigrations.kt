@@ -177,7 +177,7 @@ object EXHMigrations {
                 out += "#" + uri.fragment
             }
             out
-        } catch (e: URISyntaxException) {
+        } catch (_: URISyntaxException) {
             orig
         }
     }

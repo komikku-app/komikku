@@ -121,7 +121,6 @@ Custom sources:
 
 Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
 * 8Muses (EroMuse)
-* HBrowse
 * Mangadex
 * NHentai
 * Puruin

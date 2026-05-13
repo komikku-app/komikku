@@ -114,7 +114,7 @@
     <string name="action_copy_to_clipboard_combined_page">Kopioi yhdistetty sivu leikepöydälle</string>
     <string name="auto_update_app_disable_auto_download">Älä lataa automaattisesti päivitystä</string>
     <string name="action_remove_merged">Poistetaanko alkuperäiset merkinnät kirjastosta?</string>
-    <string name="batch_add_description">Tuki: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Tuki: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
     <string name="login_failed">Kirjautuminen epäonnistui</string>
     <string name="theme_sapphire">Sapphire</string>

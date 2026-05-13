@@ -68,7 +68,7 @@
     <string name="release_page">Release page</string>
     <string name="auto_update_app_disable_auto_download">Don\'t auto download update</string>
     <string name="action_remove_merged">Hapus entri asli dari perpustakaan?</string>
-    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_hide">Sembunyikan</string>
     <string name="action_show_hidden_categories">Tampilkan kategori tersembunyi</string>
     <string name="action_panorama_cover">Penutup panorama</string>

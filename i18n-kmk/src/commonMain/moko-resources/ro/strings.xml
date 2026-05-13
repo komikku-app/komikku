@@ -115,7 +115,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copiază pagina combinată în clipboard</string>
     <string name="auto_update_app_disable_auto_download">Nu descărca automat</string>
     <string name="action_remove_merged">Eliminaţi intrările originale din bibliotecă?</string>
-    <string name="batch_add_description">Suport: MangaDex, E-H, ExH, nH, 8Muse, Tsumino</string>
+    <string name="batch_add_description">Suport: MangaDex, E-H, ExH, nH, 8Muse</string>
     <string name="special_services">Servicii speciale</string>
     <string name="pref_category_connections">Conexiuni</string>
     <string name="active_account">Cont activ</string>

@@ -115,7 +115,7 @@
     <string name="action_copy_to_clipboard_combined_page">Kopier kombineret side til udklipsholder</string>
     <string name="auto_update_app_disable_auto_download">Download ikke automatisk opdatering</string>
     <string name="action_remove_merged">Fjern originale indgange fra biblioteket?</string>
-    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="theme_sapphire">Sapphire</string>
     <string name="special_services">Særlige Tjenester</string>
     <string name="pref_discord_incognito_categories_details">Indgange i inkluderede kategorier vil ikke blive vist i Discord</string>

@@ -8,7 +8,6 @@ val migrations: List<Migration>
         SetupLibraryUpdateMigration(),
         SetupEHentaiUpdateMigration(),
         SetupSyncDataMigration(),
-        // DelegateHBrowseMigration(),
         // DelegateNHentaiMigration(),
         // MergedMangaRewriteMigration(),
         // LogoutFromMALMigration(),

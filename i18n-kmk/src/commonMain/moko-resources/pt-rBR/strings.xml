@@ -118,7 +118,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copiar combinação de páginas para a área de transferência</string>
     <string name="auto_update_app_disable_auto_download">Não baixar a atualização automaticamente</string>
     <string name="action_remove_merged">Remover entradas originais da biblioteca?</string>
-    <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_update">Atualizar</string>
     <string name="scale_type_16_9">16:9</string>
     <string name="scale_type_20_9">20:9</string>

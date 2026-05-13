@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Kopiera kombinerad sida till urklipp</string>
     <string name="auto_update_app_disable_auto_download">Uppdatera inte automatisk nedladdning</string>
     <string name="action_remove_merged">Ta bort ursprungliga poster från biblioteket?</string>
-    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Support: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_manual_install">Manuell installation</string>
     <string name="discord_status_scrolling">Rullar igenom</string>
     <string name="discord_status_messing">Ringer runt med</string>
