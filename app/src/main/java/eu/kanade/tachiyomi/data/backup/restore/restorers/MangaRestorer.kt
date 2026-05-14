@@ -143,6 +143,7 @@ class MangaRestorer(
             updateStrategy = newer.updateStrategy,
             initialized = this.initialized || newer.initialized,
             version = newer.version,
+            notes = newer.notes,
         )
     }
 
