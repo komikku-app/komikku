@@ -219,11 +219,12 @@ class SyncManager(
                 backupUri,
                 sync = true,
                 options = RestoreOptions(
-                    appSettings = true,
-                    sourceSettings = true,
-                    libraryEntries = true,
-                    extensionRepoSettings = true,
+                    appSettings = syncOptions.appSettings,
+                    categories = syncOptions.categories,
+                    extensionRepoSettings = syncOptions.extensionRepoSettings,
+                    libraryEntries = syncOptions.libraryEntries,
                     savedSearchesFeeds = syncOptions.savedSearchesFeeds,
+                    sourceSettings = syncOptions.sourceSettings,
                 ),
             )
 
