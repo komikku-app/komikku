@@ -58,8 +58,8 @@ internal class ExtensionInstaller(
         val pkgName = extension.pkgName +
             // KMK -->
             "_${extension.signatureHash}"
+        val downloadId = pkgName.toDownloadId()
         // KMK <--
-        val downloadId = pkgName.hashCode().toLong()
         cancelInstall(pkgName)
 
         val step = MutableStateFlow(InstallStep.Pending)
@@ -158,7 +158,7 @@ internal class ExtensionInstaller(
      */
     fun cancelInstall(pkgName: String) {
         activeJobs.remove(pkgName)?.cancel()
-        Installer.cancelInstallQueue(context, pkgName.hashCode().toLong())
+        Installer.cancelInstallQueue(context, /* KMK --> */ pkgName.toDownloadId() /* KMK <-- */)
     }
 
     /**
@@ -191,5 +191,10 @@ internal class ExtensionInstaller(
     companion object {
         const val APK_MIME = "application/vnd.android.package-archive"
         const val EXTRA_DOWNLOAD_ID = "ExtensionInstaller.extra.DOWNLOAD_ID"
+
+        // KMK -->
+        /** Convert packageName to download ID avoiding negative number */
+        private fun String.toDownloadId(): Long = hashCode().toLong() and 0xFFFFFFFFL
+        // KMK <--
     }
 }
