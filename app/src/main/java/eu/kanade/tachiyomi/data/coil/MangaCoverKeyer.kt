@@ -36,14 +36,3 @@ class MangaCoverKeyer(
         }
     }
 }
-
-private fun SourcePreferences.getCoverDataSaverKey(sourceId: Long): String {
-    val useDataSaver = dataSaverCovers().get() &&
-        dataSaver().get() != SourcePreferences.DataSaver.NONE &&
-        sourceId.toString() !in dataSaverExcludedSources().get()
-    return if (useDataSaver) {
-        "${dataSaver().get()};${dataSaverServer().get()};${dataSaverImageQuality().get()};${dataSaverImageFormatJpeg().get()};${dataSaverColorBW().get()};${dataSaverIgnoreJpeg().get()};${dataSaverIgnoreGif().get()}"
-    } else {
-        "no-data-saver"
-    }
-}
