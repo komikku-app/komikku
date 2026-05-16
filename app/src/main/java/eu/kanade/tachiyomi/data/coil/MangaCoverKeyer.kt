@@ -14,13 +14,7 @@ class MangaKeyer(
     private val sourcePreferences: SourcePreferences = Injekt.get(),
 ) : Keyer<DomainManga> {
     override fun key(data: DomainManga, options: Options): String {
-        val useDataSaver = sourcePreferences.dataSaverCovers().get() &&
-            sourcePreferences.dataSaver().get() != SourcePreferences.DataSaver.NONE
-        val dataSaverKey = if (useDataSaver) {
-            "${sourcePreferences.dataSaver().get()};${sourcePreferences.dataSaverImageQuality().get()};${sourcePreferences.dataSaverImageFormatJpeg().get()}"
-        } else {
-            "no-data-saver"
-        }
+        val dataSaverKey = sourcePreferences.getCoverDataSaverKey(data.source)
         return if (data.hasCustomCover()) {
             "${data.id};${data.coverLastModified}"
         } else {
@@ -34,17 +28,22 @@ class MangaCoverKeyer(
     private val sourcePreferences: SourcePreferences = Injekt.get(),
 ) : Keyer<MangaCover> {
     override fun key(data: MangaCover, options: Options): String {
-        val useDataSaver = sourcePreferences.dataSaverCovers().get() &&
-            sourcePreferences.dataSaver().get() != SourcePreferences.DataSaver.NONE
-        val dataSaverKey = if (useDataSaver) {
-            "${sourcePreferences.dataSaver().get()};${sourcePreferences.dataSaverImageQuality().get()};${sourcePreferences.dataSaverImageFormatJpeg().get()}"
-        } else {
-            "no-data-saver"
-        }
+        val dataSaverKey = sourcePreferences.getCoverDataSaverKey(data.sourceId)
         return if (coverCache.getCustomCoverFile(data.mangaId).exists()) {
             "${data.mangaId};${data.lastModified}"
         } else {
             "${data.url};${data.lastModified};$dataSaverKey"
         }
+    }
+}
+
+private fun SourcePreferences.getCoverDataSaverKey(sourceId: Long): String {
+    val useDataSaver = dataSaverCovers().get() &&
+        dataSaver().get() != SourcePreferences.DataSaver.NONE &&
+        sourceId.toString() !in dataSaverExcludedSources().get()
+    return if (useDataSaver) {
+        "${dataSaver().get()};${dataSaverServer().get()};${dataSaverImageQuality().get()};${dataSaverImageFormatJpeg().get()};${dataSaverColorBW().get()};${dataSaverIgnoreJpeg().get()};${dataSaverIgnoreGif().get()}"
+    } else {
+        "no-data-saver"
     }
 }
