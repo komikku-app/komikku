@@ -97,6 +97,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.findChildOfType
+import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.manga.interactor.FetchInterval
@@ -247,6 +248,7 @@ fun MangaActionRow(
     // KMK -->
     status: Long,
     interval: Int,
+    categories: List<Category>,
     // KMK <--
     modifier: Modifier = Modifier,
 ) {
@@ -277,12 +279,22 @@ fun MangaActionRow(
     }
 
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
-        MangaActionButton(
-            title = if (favorite) {
-                stringResource(MR.strings.in_library)
+        val favoriteTitle = if (favorite) {
+            if (categories.isNotEmpty()) {
+                val categoryNames = categories.take(3).joinToString { it.name }
+                if (categories.size > 3) {
+                    "$categoryNames (+${categories.size - 3})"
+                } else {
+                    categoryNames
+                }
             } else {
-                stringResource(MR.strings.add_to_library)
-            },
+                stringResource(MR.strings.in_library)
+            }
+        } else {
+            stringResource(MR.strings.add_to_library)
+        }
+        MangaActionButton(
+            title = favoriteTitle,
             icon = if (favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
             color = if (favorite) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
             onClick = onAddToLibraryClicked,

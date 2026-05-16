@@ -430,6 +430,17 @@ class MangaScreenModel(
                 }
         }
 
+        screenModelScope.launchIO {
+            getCategories.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
+                .distinctUntilChanged()
+                .collectLatest { categories ->
+                    updateSuccessState {
+                        it.copy(categories = categories.toImmutableList())
+                    }
+                }
+        }
+
         observeDownloads()
 
         screenModelScope.launchIO {
@@ -478,6 +489,7 @@ class MangaScreenModel(
                     }.toImmutableSet(),
                     // SY <--
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
+                    categories = getCategories.await(mangaId).toImmutableList(),
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     hideMissingChapters = libraryPreferences.hideMissingChapters().get(),
@@ -2013,6 +2025,7 @@ class MangaScreenModel(
             val chapters: List<ChapterList.Item>,
             val availableScanlators: ImmutableSet<String>,
             val excludedScanlators: ImmutableSet<String>,
+            val categories: ImmutableList<Category> = emptyList<Category>().toImmutableList(),
             val trackingCount: Int = 0,
             val hasLoggedInTrackers: Boolean = false,
             val isRefreshingData: Boolean = false,
