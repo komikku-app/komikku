@@ -140,6 +140,7 @@
     <string name="data_saver">Data Saver</string>
     <string name="data_saver_summary">Compress images before downloading or loading in reader</string>
     <string name="data_saver_downloader">Use data saver in the downloader</string>
+    <string name="data_saver_covers">Use data saver for manga covers</string>
     <string name="data_saver_ignore_jpeg">Ignore Jpeg Images</string>
     <string name="data_saver_ignore_gif">Ignore Gif Animations</string>
     <string name="data_saver_image_quality">Image Quality</string>

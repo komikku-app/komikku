@@ -125,6 +125,7 @@
     <string name="data_saver">Penghemat Data</string>
     <string name="data_saver_summary">Kompres gambar sebelum mengunduh atau memuat di pembaca, membutuhkan server Bandwidth Hero Proxy</string>
     <string name="data_saver_downloader">Gunakan penghemat data saat mengunduh</string>
+    <string name="data_saver_covers">Gunakan penghemat data untuk sampul manga</string>
     <string name="data_saver_ignore_jpeg">Abaikan Gambar Jpeg</string>
     <string name="data_saver_ignore_gif">Abaikan Animasi Gif</string>
     <string name="data_saver_image_quality">Kualitas Gambar</string>

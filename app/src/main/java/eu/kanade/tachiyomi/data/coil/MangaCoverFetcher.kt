@@ -12,11 +12,13 @@ import coil3.fetch.SourceFetchResult
 import coil3.getOrDefault
 import coil3.request.Options
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import exh.util.DataSaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,6 +74,7 @@ class MangaCoverFetcher(
     // KMK -->
     private val scope by lazy { CoroutineScope(Dispatchers.IO) }
     private val uiPreferences = Injekt.get<UiPreferences>()
+    private val sourcePreferences = Injekt.get<SourcePreferences>()
     private val themeCoverBased = uiPreferences.themeCoverBased().get()
     private val preloadLibraryColor = uiPreferences.preloadLibraryColor().get()
     // KMK <--
@@ -224,7 +227,12 @@ class MangaCoverFetcher(
 
     private fun newRequest(): Request {
         val request = Request.Builder().apply {
-            url(url!!)
+            val dataSaver = if (sourcePreferences.dataSaverCovers().get()) {
+                sourceLazy.value?.let { DataSaver(it, sourcePreferences) } ?: DataSaver.NoOp
+            } else {
+                DataSaver.NoOp
+            }
+            url(dataSaver.compress(url!!))
 
             val sourceHeaders = sourceLazy.value?.headers
             if (sourceHeaders != null) {

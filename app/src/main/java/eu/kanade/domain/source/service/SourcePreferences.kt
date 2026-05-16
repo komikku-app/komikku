@@ -124,6 +124,8 @@ class SourcePreferences(
 
     fun dataSaverDownloader() = preferenceStore.getBoolean("data_saver_downloader", true)
 
+    fun dataSaverCovers() = preferenceStore.getBoolean("data_saver_covers", false)
+
     enum class DataSaver {
         NONE,
         BANDWIDTH_HERO,

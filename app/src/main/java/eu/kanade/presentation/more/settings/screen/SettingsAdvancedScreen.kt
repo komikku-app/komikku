@@ -713,6 +713,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                     enabled = dataSaver != DataSaver.NONE,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
+                    preference = sourcePreferences.dataSaverCovers(),
+                    title = stringResource(SYMR.strings.data_saver_covers),
+                    enabled = dataSaver != DataSaver.NONE,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
                     preference = sourcePreferences.dataSaverIgnoreJpeg(),
                     title = stringResource(SYMR.strings.data_saver_ignore_jpeg),
                     enabled = dataSaver != DataSaver.NONE,
