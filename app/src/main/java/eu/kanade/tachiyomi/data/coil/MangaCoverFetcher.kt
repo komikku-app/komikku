@@ -227,10 +227,7 @@ class MangaCoverFetcher(
 
     private fun newRequest(): Request {
         val request = Request.Builder().apply {
-            val dataSaver = if (sourcePreferences.dataSaverCovers().get() &&
-                sourcePreferences.dataSaver().get() != SourcePreferences.DataSaver.NONE &&
-                sourceLazy.value?.id?.toString() !in sourcePreferences.dataSaverExcludedSources().get()
-            ) {
+            val dataSaver = if (sourcePreferences.dataSaverCovers().get()) {
                 sourceLazy.value?.let { DataSaver(it, sourcePreferences) } ?: DataSaver.NoOp
             } else {
                 DataSaver.NoOp
