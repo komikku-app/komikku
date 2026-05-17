@@ -379,7 +379,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     preference = uiPreferences.autoHideHiddenCategories(),
                     title = stringResource(KMR.strings.pref_autohide_hidden_categories_title),
-                    subtitle = stringResource(KMR.strings.pref_autohide_hidden_categories_subtitle)
+                    subtitle = stringResource(KMR.strings.pref_autohide_hidden_categories_subtitle),
                 ),
                 // KMK <--
                 Preference.PreferenceItem.TextPreference(

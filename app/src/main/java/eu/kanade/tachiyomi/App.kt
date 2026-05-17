@@ -225,8 +225,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         // KMK -->
         MangaCoverMetadata.load()
 
-        if (uiPreferences.autoHideHiddenCategories().get() == true)
-        {
+        if (uiPreferences.autoHideHiddenCategories().get()) {
             libraryPreferences.showHiddenCategories().set(false)
         }
         // KMK <--
