@@ -87,11 +87,13 @@ import exh.util.nullIfEmpty
 import exh.util.trimOrNull
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -99,10 +101,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -239,6 +243,10 @@ class MangaScreenModel(
 
     private val successState: State.Success?
         get() = state.value as? State.Success
+
+    private val mangaCategoriesFlow = getCategories.subscribe(mangaId)
+        .distinctUntilChanged()
+        .shareIn(screenModelScope, SharingStarted.Lazily, 1)
 
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
@@ -431,9 +439,8 @@ class MangaScreenModel(
         }
 
         screenModelScope.launchIO {
-            getCategories.subscribe(mangaId)
+            mangaCategoriesFlow
                 .flowWithLifecycle(lifecycle)
-                .distinctUntilChanged()
                 .collectLatest { categories ->
                     updateSuccessState {
                         it.copy(categories = categories.toImmutableList())
@@ -489,7 +496,7 @@ class MangaScreenModel(
                     }.toImmutableSet(),
                     // SY <--
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
-                    categories = getCategories.await(mangaId).toImmutableList(),
+                    categories = mangaCategoriesFlow.first().toImmutableList(),
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     hideMissingChapters = libraryPreferences.hideMissingChapters().get(),
@@ -978,7 +985,7 @@ class MangaScreenModel(
      * @return Array of category ids the manga is in, if none returns default id
      */
     private suspend fun getMangaCategoryIds(manga: Manga): List<Long> {
-        return getCategories.await(manga.id)
+        return mangaCategoriesFlow.first()
             .map { it.id }
     }
 
@@ -2025,7 +2032,7 @@ class MangaScreenModel(
             val chapters: List<ChapterList.Item>,
             val availableScanlators: ImmutableSet<String>,
             val excludedScanlators: ImmutableSet<String>,
-            val categories: ImmutableList<Category> = emptyList<Category>().toImmutableList(),
+            val categories: ImmutableList<Category> = persistentListOf(),
             val trackingCount: Int = 0,
             val hasLoggedInTrackers: Boolean = false,
             val isRefreshingData: Boolean = false,
