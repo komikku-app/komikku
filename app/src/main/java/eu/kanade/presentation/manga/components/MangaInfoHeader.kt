@@ -1048,6 +1048,8 @@ private fun RowScope.MangaActionButton(
                 color = color,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
             )
         }
     }
