@@ -279,22 +279,8 @@ fun MangaActionRow(
     }
 
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
-        val favoriteTitle = if (favorite) {
-            if (categories.isNotEmpty()) {
-                val categoryNames = categories.take(3).joinToString { it.name }
-                if (categories.size > 3) {
-                    "$categoryNames (+${categories.size - 3})"
-                } else {
-                    categoryNames
-                }
-            } else {
-                stringResource(MR.strings.in_library)
-            }
-        } else {
-            stringResource(MR.strings.add_to_library)
-        }
         MangaActionButton(
-            title = favoriteTitle,
+            title = getFavoriteTitle(favorite, categories),
             icon = if (favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
             color = if (favorite) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
             onClick = onAddToLibraryClicked,
@@ -1021,6 +1007,24 @@ private fun MangaSummary(
 }
 
 private val DefaultTagChipModifier = Modifier.padding(vertical = 4.dp)
+
+@Composable
+private fun getFavoriteTitle(favorite: Boolean, categories: List<Category>): String {
+    return if (favorite) {
+        if (categories.isNotEmpty()) {
+            val categoryNames = categories.take(3).joinToString { it.name }
+            if (categories.size > 3) {
+                "$categoryNames (+${categories.size - 3})"
+            } else {
+                categoryNames
+            }
+        } else {
+            stringResource(MR.strings.in_library)
+        }
+    } else {
+        stringResource(MR.strings.add_to_library)
+    }
+}
 
 @Composable
 private fun RowScope.MangaActionButton(
