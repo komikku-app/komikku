@@ -92,6 +92,7 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
@@ -108,6 +109,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     private val basePreferences: BasePreferences by injectLazy()
     private val privacyPreferences: PrivacyPreferences by injectLazy()
     private val networkPreferences: NetworkPreferences by injectLazy()
+
+    private val uiPreferences: UiPreferences by injectLazy()
+    private val libraryPreferences: LibraryPreferences by injectLazy()
 
     private val disableIncognitoReceiver = DisableIncognitoReceiver()
 
@@ -220,6 +224,11 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         // KMK -->
         MangaCoverMetadata.load()
+
+        if (uiPreferences.autoHideHiddenCategories().get() == true)
+        {
+            libraryPreferences.showHiddenCategories().set(false)
+        }
         // KMK <--
 
         // Updates widget update
