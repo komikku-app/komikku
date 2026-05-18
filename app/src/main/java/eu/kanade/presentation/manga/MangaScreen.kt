@@ -781,7 +781,7 @@ private fun MangaScreenSmallImpl(
                             if (state.hideMissingChapters) {
                                 0
                             } else {
-                                chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                                chapters.fastMap { it.chapter.chapterNumber }.missingChaptersCount()
                             }
                         }
                         // KMK <--
@@ -1226,7 +1226,7 @@ private fun MangaScreenLargeImpl(
                                     if (state.hideMissingChapters) {
                                         0
                                     } else {
-                                        chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                                        chapters.fastMap { it.chapter.chapterNumber }.missingChaptersCount()
                                     }
                                 }
                                 // KMK <--
