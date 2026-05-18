@@ -776,9 +776,15 @@ private fun MangaScreenSmallImpl(
                         key = MangaScreenItem.CHAPTER_HEADER,
                         contentType = MangaScreenItem.CHAPTER_HEADER,
                     ) {
-                        val missingChapterCount = remember(chapters) {
-                            chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                        // KMK -->
+                        val missingChapterCount = remember(chapters, state.hideMissingChapters) {
+                            if (state.hideMissingChapters) {
+                                0
+                            } else {
+                                chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                            }
                         }
+                        // KMK <--
                         ChapterHeader(
                             enabled = !isAnySelected,
                             chapterCount = chapters.size,
@@ -1215,9 +1221,15 @@ private fun MangaScreenLargeImpl(
                                 key = MangaScreenItem.CHAPTER_HEADER,
                                 contentType = MangaScreenItem.CHAPTER_HEADER,
                             ) {
-                                val missingChapterCount = remember(chapters) {
-                                    chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                                // KMK -->
+                                val missingChapterCount = remember(chapters, state.hideMissingChapters) {
+                                    if (state.hideMissingChapters) {
+                                        0
+                                    } else {
+                                        chapters.map { it.chapter.chapterNumber }.missingChaptersCount()
+                                    }
                                 }
+                                // KMK <--
                                 ChapterHeader(
                                     enabled = !isAnySelected,
                                     chapterCount = chapters.size,
