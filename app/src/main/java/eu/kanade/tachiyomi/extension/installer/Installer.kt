@@ -133,8 +133,8 @@ abstract class Installer(private val service: Service) {
      */
     private fun cancelQueue(downloadId: Long) {
         val waitingInstall = this.waitingInstall.load()
-        val toCancel = queue.find { it.downloadId == downloadId }
-            // KMK -->
+        // KMK -->
+        val toCancel = synchronized(queue) { queue.find { it.downloadId == downloadId } }
             ?: waitingInstall?.takeIf { it.downloadId == downloadId }
             // KMK <--
             ?: return
