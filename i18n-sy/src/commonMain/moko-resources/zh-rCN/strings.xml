@@ -682,4 +682,6 @@
     <string name="file_extension">文件拓展名</string>
     <string name="final_chapter">终章</string>
     <string name="base_url">基础url</string>
+    <string name="pref_include_chapter_url_hash">包含章节URL哈希值</string>
+    <string name="pref_include_chapter_url_hash_desc">将章节URL的MD5哈希值的前六个字符添加到章节文件或文件夹名中。</string>
 </resources>

@@ -387,12 +387,13 @@ data class BrowseSourceScreen(
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
                         actionManga = manga
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
+                    // KMK <--
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,

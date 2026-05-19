@@ -67,7 +67,7 @@ fun LibraryUpdateErrorScreen(
     onInvertSelection: () -> Unit,
     onErrorsDelete: () -> Unit,
     onErrorDelete: (Long) -> Unit,
-    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean, Boolean) -> Unit,
+    onErrorSelected: (LibraryUpdateErrorItem, Boolean, Boolean) -> Unit,
     navigateUp: () -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })

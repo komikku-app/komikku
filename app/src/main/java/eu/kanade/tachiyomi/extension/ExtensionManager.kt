@@ -200,7 +200,7 @@ class ExtensionManager(
         availableExtensionMapFlow.value = extensions.associateBy {
             it.pkgName +
                 // KMK -->
-                ":${it.signatureHash}"
+                "_${it.signatureHash}"
             // KMK <--
         }
         updatedInstalledExtensionsStatuses(extensions)
@@ -312,7 +312,7 @@ class ExtensionManager(
         val availableExt = availableExtensionMapFlow.value[
             extension.pkgName +
                 // KMK -->
-                ":${extension.signatureHash}",
+                "_${extension.signatureHash}",
             // KMK <--
         ] ?: return emptyFlow()
         return installExtension(availableExt)
@@ -322,7 +322,7 @@ class ExtensionManager(
         installer.cancelInstall(
             extension.pkgName +
                 // KMK -->
-                ":${extension.signatureHash}",
+                "_${extension.signatureHash}",
             // KMK <--
         )
     }

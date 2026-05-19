@@ -336,4 +336,8 @@
     <string name="google_drive_login_failed">Impossibile accedere a Google Drive: %s</string>
     <string name="google_drive_not_signed_in">Non hai effettuato l\'accesso a Google Drive</string>
     <string name="error_deleting_google_drive_lock_file">Errore durante l\'eliminazione del file di blocco di Google Drive</string>
+    <string name="biometric_lock_start_time">Inserisci l\'orario di inizio</string>
+    <string name="delete_time_range">Elimina intervallo di tempo</string>
+    <string name="encrypt_database_subtitle">È necessario riavviare l\'applicazione affinché abbia effetto</string>
+    <string name="password_protect_downloads">Proteggi i download con password</string>
 </resources>

@@ -128,6 +128,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 },
                 onMangaLongClick = { manga ->
                     // KMK -->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (bulkFavoriteState.selectionMode) {
                         navigator.push(MangaScreen(manga.id, true))
                     } else {
@@ -141,7 +142,6 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                                 )
                                 else -> screenModel.addFavorite(manga)
                             }
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                     }
                 },

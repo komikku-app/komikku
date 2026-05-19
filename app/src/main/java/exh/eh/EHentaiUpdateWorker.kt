@@ -40,6 +40,7 @@ import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
@@ -289,17 +290,27 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val interval = prefInterval ?: exhPreferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
                 val restrictions = prefRestrictions ?: exhPreferences.exhAutoUpdateRequirements().get()
-                val acRestriction = DEVICE_CHARGING in restrictions
-
-                val networkRequestBuilder = NetworkRequest.Builder()
-                if (DEVICE_ONLY_ON_WIFI in restrictions) {
-                    networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                val networkType = if (DEVICE_NETWORK_NOT_METERED in restrictions) {
+                    NetworkType.UNMETERED
+                } else {
+                    NetworkType.CONNECTED
                 }
+                val networkRequest = NetworkRequest.Builder().apply {
+                    removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+                    if (DEVICE_ONLY_ON_WIFI in restrictions) {
+                        addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    }
+                    if (DEVICE_NETWORK_NOT_METERED in restrictions) {
+                        addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                    }
+                }
+                    .build()
 
                 val constraints = Constraints.Builder()
                     // 'networkRequest' only applies to Android 9+, otherwise 'networkType' is used
-                    .setRequiredNetworkRequest(networkRequestBuilder.build(), NetworkType.CONNECTED)
-                    .setRequiresCharging(acRestriction)
+                    .setRequiredNetworkRequest(networkRequest, networkType)
+                    .setRequiresCharging(DEVICE_CHARGING in restrictions)
+                    .setRequiresBatteryNotLow(true)
                     .build()
 
                 val request = PeriodicWorkRequestBuilder<EHentaiUpdateWorker>(
