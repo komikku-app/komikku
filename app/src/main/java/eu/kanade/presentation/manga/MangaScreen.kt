@@ -777,7 +777,7 @@ private fun MangaScreenSmallImpl(
                         contentType = MangaScreenItem.CHAPTER_HEADER,
                     ) {
                         // KMK -->
-                        val missingChapterCount = remember(chapters, state.hideMissingChapters) {
+                        val missingChapterCount = remember(chapters) {
                             if (state.hideMissingChapters) {
                                 0
                             } else {
@@ -1222,7 +1222,7 @@ private fun MangaScreenLargeImpl(
                                 contentType = MangaScreenItem.CHAPTER_HEADER,
                             ) {
                                 // KMK -->
-                                val missingChapterCount = remember(chapters, state.hideMissingChapters) {
+                                val missingChapterCount = remember(chapters) {
                                     if (state.hideMissingChapters) {
                                         0
                                     } else {

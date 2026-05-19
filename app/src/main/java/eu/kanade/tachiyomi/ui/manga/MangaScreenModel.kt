@@ -394,19 +394,6 @@ class MangaScreenModel(
                 }
         }
 
-        // KMK -->
-        screenModelScope.launchIO {
-            libraryPreferences.hideMissingChapters().changes()
-                .flowWithLifecycle(lifecycle)
-                .distinctUntilChanged()
-                .collectLatest { hideMissingChapters ->
-                    updateSuccessState {
-                        it.copy(hideMissingChapters = hideMissingChapters)
-                    }
-                }
-        }
-        // KMK <--
-
         screenModelScope.launchIO {
             getExcludedScanlators.subscribe(mangaId)
                 .flowWithLifecycle(lifecycle)
