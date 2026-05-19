@@ -177,4 +177,9 @@
     <string name="discord_status_scrolling">滚动通过</string>
     <string name="discord_accounts">Discord 账户</string>
     <string name="active_account">活动账户</string>
+    <string name="action_clear_manga">清理漫画</string>
+    <string name="action_filter_unfinished_manga">未读完漫画</string>
+    <string name="action_filter_unfinished_chapter">未读完章节</string>
+    <string name="action_filter_non_library_entries">不在书架的作品</string>
+    <string name="pref_paged_disable_zoom_in">禁用缩放</string>
 </resources>
