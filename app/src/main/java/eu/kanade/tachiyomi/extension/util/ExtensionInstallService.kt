@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.extension.util
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.IBinder
 import androidx.core.content.ContextCompat
 import eu.kanade.domain.base.BasePreferences
@@ -20,6 +22,11 @@ import exh.log.xLogE
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 
+/**
+ * Foreground service that stages and installs extension APKs via [PackageInstallerInstaller] or
+ * [ShizukuInstaller]. Uses [ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC] because installs can
+ * wait on multiple system confirmation dialogs; `shortService` times out after ~3 minutes.
+ */
 class ExtensionInstallService : Service() {
 
     private var installer: Installer? = null
@@ -35,7 +42,17 @@ class ExtensionInstallService : Service() {
             setContentTitle(stringResource(MR.strings.ext_install_service_notif))
             setProgress(100, 100, true)
         }.build()
-        startForeground(Notifications.ID_EXTENSION_INSTALLER, notification)
+        // KMK -->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                Notifications.ID_EXTENSION_INSTALLER,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            )
+        } else {
+            // KMK <--
+            startForeground(Notifications.ID_EXTENSION_INSTALLER, notification)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
