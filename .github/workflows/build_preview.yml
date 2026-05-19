@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   prepare-build:
-    runs-on: 'ubuntu-24.04'
+    runs-on: "ubuntu-24.04"
     outputs:
       VERSION_TAG: ${{ steps.get_tag.outputs.VERSION_TAG }}
       CURRENT_SHA: ${{ steps.current_commit.outputs.CURRENT_SHA }}
@@ -114,7 +114,7 @@ jobs:
           {delimiter}" >> $GITHUB_OUTPUT
 
   build-app:
-    runs-on: 'ubuntu-24.04'
+    runs-on: "ubuntu-24.04"
     needs: prepare-build
     if: github.ref == 'refs/heads/master'
     steps:
@@ -143,6 +143,11 @@ jobs:
           contents: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
           write-mode: overwrite
 
+      - name: Write release keystore
+        run: |
+          set -e
+          printf '%s' '${{ secrets.SIGNING_KEY }}' | base64 --decode > app/release-keystore.jks
+
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5
 
@@ -151,6 +156,11 @@ jobs:
 
       - name: Build app
         run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
+        env:
+          RELEASE_KEYSTORE_FILE: ${{ github.workspace }}/app/release-keystore.jks
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest
@@ -162,7 +172,7 @@ jobs:
           retention-days: 1
 
   release-app:
-    runs-on: 'ubuntu-24.04'
+    runs-on: "ubuntu-24.04"
     needs:
       - prepare-build
       - build-app
@@ -172,27 +182,25 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
-        with:
-          releaseDirectory: app/build/outputs/apk/preview
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: '35.0.1'
-
       - name: Get SHA & clean up build artifacts
         id: get_sha
         run: |
           set -e
 
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-universal-preview-signed.apk Komikku-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-arm64-v8a-preview-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-armeabi-v7a-preview-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86-preview-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
-          mv app/build/outputs/apk/${{ needs.prepare-build.outputs.ARTIFACTS_PREFIX }}-x86_64-preview-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.TAG_NAME }}.apk
+          shopt -s nullglob
+
+          for apk in app/build/outputs/apk/preview/*.apk; do
+            case "$apk" in
+              *universal*) target="Komikku-${{ needs.prepare-build.outputs.TAG_NAME }}.apk" ;;
+              *arm64-v8a*) target="Komikku-arm64-v8a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk" ;;
+              *armeabi-v7a*) target="Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.TAG_NAME }}.apk" ;;
+              *x86_64*) target="Komikku-x86_64-${{ needs.prepare-build.outputs.TAG_NAME }}.apk" ;;
+              *x86*) target="Komikku-x86-${{ needs.prepare-build.outputs.TAG_NAME }}.apk" ;;
+              *) continue ;;
+            esac
+
+            mv "$apk" "$target"
+          done
 
       - name: Create release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
