@@ -49,7 +49,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         val bodyString = peekBody(1024 * 1024).string()
         val errorObj = try {
             json.decodeFromString<ALError>(bodyString)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
 
@@ -132,7 +132,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
-                .also { it.parseALError() }
+                .use { it.parseALError() }
             track
         }
     }
@@ -155,7 +155,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
-                .also { it.parseALError() }
+                .use { it.parseALError() }
         }
     }
 
