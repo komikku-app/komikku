@@ -45,6 +45,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         .rateLimit(permits = 85, period = 1.minutes)
         .build()
 
+    // KMK -->
     private fun Response.parseALError() {
         val bodyString = peekBody(1024 * 1024).string()
         val errorObj = try {
@@ -61,6 +62,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             throw Exception(msg)
         }
     }
+    // KMK <--
 
     suspend fun addLibManga(track: Track): Track {
         return withIOContext {
@@ -90,7 +92,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALAddMangaResult>()
                     .let {
                         track.library_id = it.data.entry.id
@@ -132,7 +136,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
+                // KMK -->
                 .use { it.parseALError() }
+            // KMK <--
             track
         }
     }
@@ -155,7 +161,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 .awaitSuccess()
+                // KMK -->
                 .use { it.parseALError() }
+            // KMK <--
         }
     }
 
@@ -214,7 +222,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALSearchResult>()
                     .data.page.media
                     .map { it.toALManga().toTrack() }
@@ -294,7 +304,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALUserListMangaQueryResult>()
                     .data.page.mediaList
                     .map { it.toALUserManga() }
@@ -336,7 +348,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALCurrentUserResult>()
                     .let {
                         val viewer = it.data.viewer
@@ -348,9 +362,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
-            val query = """
-            |query (${'$'}mangaId: Int!) {
-                |Media (id: ${'$'}mangaId) {
+            val query = $$"""
+            |query ($mangaId: Int!) {
+                |Media (id: $mangaId) {
                     |id
                     |title {
                         |userPreferred
@@ -390,10 +404,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALMangaMetadata>()
-                    .let {
-                        val media = it.data.media
+                    .let { metadata ->
+                        val media = metadata.data.media
                         TrackMangaMetadata(
                             remoteId = media.id,
                             title = media.title.userPreferred,
@@ -418,9 +434,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
     // SY -->
     suspend fun searchById(id: String): TrackSearch {
         return withIOContext {
-            val query = """
-            |query (${'$'}mangaId: Int!) {
-                |Media (id: ${'$'}mangaId) {
+            val query = $$"""
+            |query ($mangaId: Int!) {
+                |Media (id: $mangaId) {
                     |id
                     |title {
                         |userPreferred
@@ -456,7 +472,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     ),
                 )
                     .awaitSuccess()
+                    // KMK -->
                     .also { it.parseALError() }
+                    // KMK <--
                     .parseAs<ALIdSearchResult>()
                     .data.media
                     .toALManga()
