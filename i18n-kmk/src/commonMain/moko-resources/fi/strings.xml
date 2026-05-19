@@ -101,7 +101,6 @@
     <string name="action_scroll_to_bottom">Siirry alareunaan</string>
     <string name="action_scroll_to_previous">Vieritä edelliseen</string>
     <string name="action_scroll_to_next">Vieritä seuraavaan</string>
-    <string name="migrating_all_entries">Siirretään kaikki merkinnät lähteestä</string>
     <string name="label_to_be_updated">Päivittääksesi</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Manuaalinen lataus</string>

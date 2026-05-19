@@ -36,10 +36,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.ExhPreferences
 import exh.source.anyIs
 import exh.source.isEhBasedSource
 import exh.util.nullIfBlank
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.model.SavedSearch
@@ -84,10 +84,9 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
         val showingFeedOrderScreen = rememberSaveable { mutableStateOf(false) }
 
-        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get()
         val isConfigurableSource = screenModel.source.anyIs<ConfigurableSource>() ||
-            screenModel.source.isEhBasedSource() &&
-            isHentaiEnabled
+            (screenModel.source.isEhBasedSource() && isHentaiEnabled)
 
         val haptic = LocalHapticFeedback.current
 

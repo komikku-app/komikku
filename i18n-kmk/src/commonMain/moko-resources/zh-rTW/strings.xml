@@ -109,7 +109,6 @@
     <string name="action_scroll_to_bottom">移至底部</string>
     <string name="action_scroll_to_previous">移至上一類</string>
     <string name="action_scroll_to_next">移至下一類</string>
-    <string name="migrating_all_entries">正在從來源遷移所有項目</string>
     <string name="label_to_be_updated">待更新</string>
     <string name="pref_manga_info">漫畫資訊</string>
     <string name="manual_download">手動下載</string>
@@ -193,4 +192,9 @@
     <string name="pref_show_empty_categories_search">在搜尋/篩選時顯示空類別</string>
     <string name="job_failed_schedule_update_check">無法排程自動書櫃更新：%s</string>
     <string name="job_failed_schedule_backup_check">無法排程自動備份：%s</string>
+    <string name="action_filter_unfinished_manga">尚未讀完</string>
+    <string name="action_filter_unfinished_chapter">未讀完章節</string>
+    <string name="action_filter_non_library_entries">未收藏項目</string>
+    <string name="pref_sync_manga_on_add">新增至書庫時自動同步</string>
+    <string name="pref_sync_manga_on_add_description">將新漫畫加入書庫時，自動取得其元資料及章節列表</string>
 </resources>

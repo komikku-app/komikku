@@ -43,8 +43,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import exh.pref.DelegateSourcePreferences
+import exh.source.ExhPreferences
 import tachiyomi.core.common.Constants
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -83,7 +83,7 @@ fun MoreScreen(
 ) {
     val uriHandler = LocalUriHandler.current
     // SY -->
-    val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
+    val exhPreferences = remember { Injekt.get<ExhPreferences>() }
     val delegateSourcePreferences = remember { Injekt.get<DelegateSourcePreferences>() }
     // SY <--
 
@@ -202,7 +202,7 @@ fun MoreScreen(
                 )
             }
             // SY -->
-            if (unsortedPreferences.isHentaiEnabled().get() || delegateSourcePreferences.delegateSources().get()) {
+            if (exhPreferences.isHentaiEnabled().get() || delegateSourcePreferences.delegateSources().get()) {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(SYMR.strings.eh_batch_add),

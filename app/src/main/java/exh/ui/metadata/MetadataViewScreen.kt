@@ -60,8 +60,7 @@ class MetadataViewScreen(
                 )
             },
         ) { paddingValues ->
-            when
-                (
+            when (
                 @Suppress("NAME_SHADOWING")
                 val state = state
             ) {

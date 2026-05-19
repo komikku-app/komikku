@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -69,9 +68,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -89,6 +85,7 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import exh.pagepreview.PagePreviewScreen
 import exh.recs.RecommendsScreen
+import exh.source.ExhPreferences
 import exh.source.MERGED_SOURCE_ID
 import exh.source.anyIs
 import exh.source.getMainSource
@@ -103,13 +100,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.feature.migration.config.MigrationConfigScreen
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -264,10 +262,9 @@ class MangaScreen(
         val hazeState = remember { HazeState() }
         val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
 
-        val isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get()
+        val isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get()
         val isConfigurableSource = successState.source.anyIs<ConfigurableSource>() ||
-            successState.source.isEhBasedSource() &&
-            isHentaiEnabled
+            (successState.source.isEhBasedSource() && isHentaiEnabled)
         // KMK <--
 
         MangaScreen(
@@ -367,13 +364,7 @@ class MangaScreen(
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                // SY -->
-                PreMigrationScreen.navigateToMigration(
-                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
-                    navigator,
-                    listOfNotNull(successState.manga.id),
-                )
-                // SY <--
+                navigator.push(MigrationConfigScreen(successState.manga.id))
             }.takeIf { successState.manga.favorite },
             // SY -->
             previewsRowCount = successState.previewsRowCount,
@@ -520,13 +511,12 @@ class MangaScreen(
             }
 
             is MangaScreenModel.Dialog.Migrate -> {
-                MigrateDialog(
-                    oldManga = dialog.oldManga,
-                    newManga = dialog.newManga,
-                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    // Initiated from the context of [dialog.target] so we show [dialog.current].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
                     onDismissRequest = onDismissRequest,
-                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
-                    onPopScreen = onDismissRequest,
                 )
             }
             MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
@@ -702,12 +692,7 @@ class MangaScreen(
         try {
             getMangaUrl(manga_, source_)?.let { url ->
                 val intent = url.toUri().toShareIntent(context, type = "text/plain")
-                context.startActivity(
-                    Intent.createChooser(
-                        intent,
-                        context.stringResource(MR.strings.action_share),
-                    ),
-                )
+                context.startActivity(intent)
             }
         } catch (e: Exception) {
             context.toast(e.message)
@@ -739,8 +724,7 @@ class MangaScreen(
         // KMK -->
         navigator.popUntil { screen ->
             screen is HomeScreen ||
-                !library &&
-                (screen is BrowseSourceScreen || screen is SourceFeedScreen)
+                (!library && (screen is BrowseSourceScreen || screen is SourceFeedScreen))
         }
         // KMK <--
 

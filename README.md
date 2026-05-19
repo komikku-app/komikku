@@ -2,8 +2,8 @@
 
 <a href="https://komikku-app.github.io">
   <img width=200px height=200px src="./.github/readme-images/app-icon.png"/>
-</a>
-
+</a><br/>
+<a href="https://trendshift.io/repositories/13696" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13696" alt="komikku-app%2Fkomikku | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
  <h1 align="center"> Komikku </h1>
 
 | Releases | Preview |
@@ -125,7 +125,7 @@ Additional features for some extensions, features include custom description, op
 * Mangadex
 * NHentai
 * Puruin
-* Tsumino
+* LANraragi
 
 </details>
 

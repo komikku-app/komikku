@@ -103,7 +103,6 @@
     <string name="action_scroll_to_bottom">Κύλιση προς τα κάτω</string>
     <string name="action_scroll_to_previous">Κύλιση στο προηγούμενο</string>
     <string name="action_scroll_to_next">Κύλιση στο επόμενο</string>
-    <string name="migrating_all_entries">Μεταφορά όλων των καταχωρήσεων από την πηγή</string>
     <string name="label_to_be_updated">Να ενημερωθεί</string>
     <string name="pref_manga_info">Manga Info</string>
     <string name="manual_download">Χειροκίνητη λήψη</string>

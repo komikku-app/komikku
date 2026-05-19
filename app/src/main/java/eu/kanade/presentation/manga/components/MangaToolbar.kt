@@ -100,9 +100,8 @@ fun MangaToolbar(
             isHomeEnabled &&
                 navigator != null &&
                 (
-                    navigator.size >= 2 &&
-                        navigator.items[navigator.size - 2] is MangaScreen ||
-                        navigator.size >= 5
+                    navigator.size >= 5 ||
+                        (navigator.size >= 2 && navigator.items[navigator.size - 2] is MangaScreen)
                     )
         },
         // KMK <--

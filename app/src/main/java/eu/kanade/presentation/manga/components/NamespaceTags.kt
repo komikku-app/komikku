@@ -18,7 +18,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -26,13 +25,11 @@ import eu.kanade.presentation.components.ChipBorder
 import eu.kanade.presentation.components.SuggestionChip
 import eu.kanade.presentation.components.SuggestionChipDefaults
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EXH_SOURCE_ID
-import exh.source.isEhBasedSource
+import exh.source.eHentaiSourceIds
 import exh.util.SourceTagsUtil
 import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
@@ -50,7 +47,7 @@ value class SearchMetadataChips(
     val tags: Map<String, List<DisplayTag>>,
 ) {
     companion object {
-        operator fun invoke(meta: RaisedSearchMetadata?, source: Source, tags: List<String>?): SearchMetadataChips? {
+        operator fun invoke(meta: RaisedSearchMetadata?, sourceId: Long, tags: List<String>?): SearchMetadataChips? {
             return if (meta != null) {
                 SearchMetadataChips(
                     meta.tags
@@ -60,11 +57,11 @@ value class SearchMetadataChips(
                                 namespace = it.namespace,
                                 text = it.name,
                                 search = if (!it.namespace.isNullOrEmpty()) {
-                                    SourceTagsUtil.getWrappedTag(source.id, namespace = it.namespace, tag = it.name)
+                                    SourceTagsUtil.getWrappedTag(sourceId, namespace = it.namespace, tag = it.name)
                                 } else {
-                                    SourceTagsUtil.getWrappedTag(source.id, fullTag = it.name)
+                                    SourceTagsUtil.getWrappedTag(sourceId, fullTag = it.name)
                                 } ?: it.name,
-                                border = if (source.isEhBasedSource()) {
+                                border = if (sourceId in eHentaiSourceIds) {
                                     when (it.type) {
                                         EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 2
                                         EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1
@@ -235,7 +232,6 @@ fun TagsChip(
 fun NamespaceTagsPreview() {
     TachiyomiPreviewTheme {
         Surface {
-            val context = LocalContext.current
             NamespaceTags(
                 tags = remember {
                     EHentaiSearchMetadata().apply {
@@ -273,7 +269,7 @@ fun NamespaceTagsPreview() {
                                 ),
                             ),
                         )
-                    }.let { SearchMetadataChips(it, EHentai(EXH_SOURCE_ID, true, context), emptyList()) }!!
+                    }.let { SearchMetadataChips(it, EXH_SOURCE_ID, emptyList()) }!!
                 },
                 onClick = {},
             )

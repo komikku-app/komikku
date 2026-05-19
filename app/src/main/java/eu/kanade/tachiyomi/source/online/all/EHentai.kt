@@ -32,6 +32,7 @@ import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
 import exh.log.xLogD
+import exh.log.xLogI
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
@@ -44,6 +45,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
+import exh.source.ExhPreferences
 import exh.ui.login.EhLoginActivity
 import exh.util.UriFilter
 import exh.util.UriGroup
@@ -66,7 +68,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import okhttp3.CacheControl
-import okhttp3.CookieJar
 import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -84,7 +85,6 @@ import org.jsoup.nodes.TextNode
 import rx.Observable
 import tachiyomi.core.common.util.lang.runAsObservable
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -133,7 +133,7 @@ class EHentai(
     }
     // KMK <--
 
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
     /**
@@ -500,7 +500,7 @@ class EHentai(
     }
 
     private fun <T : MangasPage> T.checkValid(): MangasPage =
-        if (exh && mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
+        if (exh && mangas.isEmpty() && exhPreferences.igneousVal().get().equals("mystery", true)) {
             throw Exception(
                 "Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu",
             )
@@ -906,34 +906,34 @@ class EHentai(
             page = parsed.first.lastOrNull()?.manga?.url?.let { EHentaiSearchMetadata.galleryId(it) }?.toInt() ?: 0
         } while (parsed.second != null)
 
-        return Pair(result.toList(), favNames.orEmpty())
+        return Pair(result.toList(), favNames)
     }
 
     fun spPref() = if (exh) {
-        preferences.exhSettingsProfile()
+        exhPreferences.exhSettingsProfile()
     } else {
-        preferences.ehSettingsProfile()
+        exhPreferences.ehSettingsProfile()
     }
 
     private fun rawCookies(sp: Int): Map<String, String> {
         val cookies: MutableMap<String, String> = mutableMapOf()
-        if (preferences.enableExhentai().get()) {
-            cookies[EhLoginActivity.MEMBER_ID_COOKIE] = preferences.memberIdVal().get()
-            cookies[EhLoginActivity.PASS_HASH_COOKIE] = preferences.passHashVal().get()
-            cookies[EhLoginActivity.IGNEOUS_COOKIE] = preferences.igneousVal().get()
+        if (exhPreferences.enableExhentai().get()) {
+            cookies[EhLoginActivity.MEMBER_ID_COOKIE] = exhPreferences.memberIdVal().get()
+            cookies[EhLoginActivity.PASS_HASH_COOKIE] = exhPreferences.passHashVal().get()
+            cookies[EhLoginActivity.IGNEOUS_COOKIE] = exhPreferences.igneousVal().get()
             cookies["sp"] = sp.toString()
 
-            val sessionKey = preferences.exhSettingsKey().get()
+            val sessionKey = exhPreferences.exhSettingsKey().get()
             if (sessionKey.isNotBlank()) {
                 cookies["sk"] = sessionKey
             }
 
-            val sessionCookie = preferences.exhSessionCookie().get()
+            val sessionCookie = exhPreferences.exhSessionCookie().get()
             if (sessionCookie.isNotBlank()) {
                 cookies["s"] = sessionCookie
             }
 
-            val hathPerksCookie = preferences.exhHathPerksCookies().get()
+            val hathPerksCookie = exhPreferences.exhHathPerksCookies().get()
             if (hathPerksCookie.isNotBlank()) {
                 cookies["hath_perks"] = hathPerksCookie
             }
@@ -948,7 +948,7 @@ class EHentai(
         return cookies
     }
 
-    fun cookiesHeader(sp: Int = spPref().get()) = buildCookies(rawCookies(sp))
+    fun cookiesHeader(cfCookies: Map<String, String> = emptyMap(), sp: Int = spPref().get()) = buildCookies(rawCookies(sp) + cfCookies)
 
     // Headers
     override fun headersBuilder() = super.headersBuilder().add("Cookie", cookiesHeader())
@@ -958,20 +958,44 @@ class EHentai(
         .appendQueryParameter(param, value)
         .toString()
 
-    override val client = network.client.newBuilder()
-        .cookieJar(CookieJar.NO_COOKIES)
-        .addInterceptor { chain ->
-            val newReq = chain
-                .request()
-                .newBuilder()
-                .removeHeader("Cookie")
-                .addHeader("Cookie", cookiesHeader())
-                .build()
+    override val client =
+        network.client.newBuilder()
+            // .cookieJar(CookieJar.NO_COOKIES)
+            // KMK -->
+            .addNetworkInterceptor { chain ->
+                // Keep only Cloudflare cookies from incoming cookies
+                val cfCookies = chain.request().header("Cookie")?.split("; ")
+                    ?.filter {
+                        // Only accept cookie in form of name=value
+                        if (!it.contains("=")) return@filter false
+                        val name = it.substringBefore("=").trim().lowercase()
+                        // KMK <--
+                        name.startsWith("cf") || name.startsWith("_cf") || name.startsWith("__cf")
+                    }
+                    // KMK -->
+                    ?.associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+                val newCookies = cookiesHeader(cfCookies ?: emptyMap())
+                xLogI("Overwritten Cookie: $newCookies")
+                // KMK <--
 
-            chain.proceed(newReq)
-        }
-        .addInterceptor(ThumbnailPreviewInterceptor())
-        .build()
+                val newReq =
+                    chain
+                        .request()
+                        .newBuilder()
+                        .removeHeader("Cookie")
+                        // KMK -->
+                        .apply {
+                            if (newCookies.isNotBlank()) {
+                                addHeader("Cookie", newCookies)
+                            }
+                        }
+                        // KMK <--
+                        .build()
+
+                chain.proceed(newReq)
+            }
+            .addInterceptor(ThumbnailPreviewInterceptor())
+            .build()
 
     // Filters
     override fun getFilterList(): FilterList {
@@ -980,7 +1004,7 @@ class EHentai(
             ToplistOptions(),
             Filter.Separator(),
             AutoCompleteTags(),
-            Watched(isEnabled = preferences.exhWatchedListDefaultState().get()),
+            Watched(isEnabled = exhPreferences.exhWatchedListDefaultState().get()),
             GenreGroup(),
             AdvancedGroup(),
             ReverseFilter(),
@@ -1392,9 +1416,9 @@ class EHentai(
         private const val BLANK_THUMB = "blank.gif"
         private const val BLANK_PREVIEW_THUMB = "https://$THUMB_DOMAIN/g/$BLANK_THUMB"
 
-        private val MATCH_YEAR_REGEX = "^\\d{4}\$".toRegex()
-        private val MATCH_SEEK_REGEX = "^\\d{2,4}-\\d{1,2}(-\\d{1,2})?\$".toRegex()
-        private val MATCH_JUMP_REGEX = "^\\d+(\$|d\$|w\$|m\$|y\$|-\$)".toRegex()
+        private val MATCH_YEAR_REGEX = "^\\d{4}$".toRegex()
+        private val MATCH_SEEK_REGEX = "^\\d{2,4}-\\d{1,2}(-\\d{1,2})?$".toRegex()
+        private val MATCH_JUMP_REGEX = "^\\d+($|d$|w$|m$|y$|-$)".toRegex()
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!

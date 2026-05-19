@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -9,7 +10,9 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -24,10 +27,13 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -53,6 +59,8 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -243,7 +251,23 @@ class BulkFavoriteScreenModel(
         if (manga.favorite) return
 
         screenModelScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
+            try {
+                val source = sourceManager.getOrStub(manga.source)
+                setMangaDefaultChapterFlags.await(manga)
+                addTracks.bindEnhancedTrackers(manga, source)
+                updateManga.awaitUpdateFavorite(manga.id, true)
+                if (libraryPreferences.syncOnAdd().get()) {
+                    val sManga = manga.toSManga()
+                    val remoteManga = source.getMangaDetails(sManga)
+                    val chapters = source.getChapterList(sManga)
+                    // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                    updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
+                    syncChaptersWithSource.await(chapters, manga, source, false)
+                }
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
+            }
         }
     }
 
@@ -327,6 +351,21 @@ class BulkFavoriteScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
+            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
+                withIOContext {
+                    try {
+                        val sManga = manga.toSManga()
+                        val remoteManga = source.getMangaDetails(sManga)
+                        val chapters = source.getChapterList(sManga)
+                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
+                        syncChaptersWithSource.await(chapters, manga, source, false)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                        snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
+                    }
+                }
+            }
         }
     }
 
@@ -378,7 +417,7 @@ class BulkFavoriteScreenModel(
     }
 
     internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
-        setDialog(Dialog.Migrate(newManga = manga, oldManga = duplicate))
+        setDialog(Dialog.Migrate(target = manga, current = duplicate))
     }
 
     private fun setDialog(dialog: Dialog?) {
@@ -406,7 +445,7 @@ class BulkFavoriteScreenModel(
     }
 
     sealed interface Dialog {
-        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<MangaWithChapterCount>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog

@@ -248,7 +248,7 @@ private fun WebtoonViewerSettings(
         value = webtoonSidePadding,
         valueRange = ReaderPreferences.let { it.WEBTOON_PADDING_MIN..it.WEBTOON_PADDING_MAX },
         label = stringResource(MR.strings.pref_webtoon_side_padding),
-        valueText = numberFormat.format(webtoonSidePadding / 100f),
+        valueString = numberFormat.format(webtoonSidePadding / 100f),
         onChange = {
             screenModel.preferences.webtoonSidePadding().set(it)
         },

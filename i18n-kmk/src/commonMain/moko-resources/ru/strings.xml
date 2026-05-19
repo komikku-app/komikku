@@ -106,7 +106,6 @@
     <string name="action_scroll_to_bottom">Прокрутка вниз</string>
     <string name="action_scroll_to_previous">Прокрутка до предыдущей</string>
     <string name="action_scroll_to_next">Прокрутка до следующего</string>
-    <string name="migrating_all_entries">Миграция всех записей из источника</string>
     <string name="label_to_be_updated">Будет обновлено</string>
     <string name="pref_manga_info">Информация о манге</string>
     <string name="manual_download">Ручная загрузка</string>
@@ -193,4 +192,18 @@
     <string name="pref_discord_show_discord_button_summary">Показывает кнопку для присоединения к серверу Discord</string>
     <string name="job_failed_schedule_update_check">Не удалось запланировать автоматическое обновление библиотеки: %s</string>
     <string name="job_failed_schedule_backup_check">Не удалось запланировать автоматический бэкап: %s</string>
+    <string name="pref_webdav_folder_summ">Приложение будет хранить данные в этой папке</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_url">URL WebDAV сервера</string>
+    <string name="pref_webdav_url_summ">Введите адрес WebDAV сервера</string>
+    <string name="pref_webdav_username">Имя пользователя</string>
+    <string name="pref_webdav_username_summ">Введите имя вашего аккаунта WebDAV</string>
+    <string name="pref_webdav_password">Пароль</string>
+    <string name="pref_webdav_password_summ">Введите пароль вашего аккаунта WebDAV</string>
+    <string name="pref_webdav_folder">Папка данных WebDAV</string>
+    <string name="action_filter_unfinished_manga">Незаконченные тайтлы</string>
+    <string name="action_filter_unfinished_chapter">Незаконченные главы</string>
+    <string name="action_filter_non_library_entries">Тайтлы не в библиотеке</string>
+    <string name="pref_sync_manga_on_add">Синхронизировать тайтлы при добавлении в библиотеку</string>
+    <string name="pref_sync_manga_on_add_description">Автоматически загружает метаданные и список глав при добавлении в библиотеку</string>
 </resources>

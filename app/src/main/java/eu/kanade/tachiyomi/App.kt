@@ -20,6 +20,9 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.allowRgb565
 import coil3.request.crossfade
@@ -77,6 +80,7 @@ import exh.log.xLogD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
 import mihon.core.migration.Migrator
@@ -137,16 +141,25 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         Injekt.importModule(PreferenceModule(this))
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
+        // KMK -->
+        Injekt.importModule(KMKDomainModule())
+        // KMK <--
         // SY -->
         Injekt.importModule(SYPreferenceModule(this))
         Injekt.importModule(SYDomainModule())
         // SY <--
-        // KMK -->
-        Injekt.importModule(KMKDomainModule())
-        // KMK <--
 
         setupExhLogging() // EXH logging
-        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
+        if (!LogcatLogger.isInstalled) {
+            val minLogPriority = when {
+                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
+                BuildConfig.DEBUG -> LogPriority.DEBUG
+                else -> LogPriority.INFO
+            }
+            LogcatLogger.install()
+            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
+            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
+        }
 
         setupNotificationChannels()
 
@@ -212,10 +225,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         // Updates widget update
         WidgetManager(Injekt.get(), Injekt.get()).apply { init(scope) }
 
-        /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
-            LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
-        }*/
-
         if (!WorkManager.isInitialized()) {
             WorkManager.initialize(this, Configuration.Builder().build())
         }
@@ -265,6 +274,19 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 add(PagePreviewFetcher.Factory(callFactoryLazy))
                 // SY <--
             }
+
+            diskCache(
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache"))
+                    .maxSizePercent(0.02)
+                    .build(),
+            )
+
+            memoryCache(
+                MemoryCache.Builder()
+                    .maxSizePercent(context)
+                    .build(),
+            )
 
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(DeviceUtil.isLowRamDevice(this@App))

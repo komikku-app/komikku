@@ -333,6 +333,7 @@ abstract class HttpSource : CatalogueSource {
     protected abstract fun mangaDetailsParse(response: Response): SManga
 
     // KMK -->
+
     /**
      * Whether parsing related mangas in manga page or extension provide custom related mangas request.
      *

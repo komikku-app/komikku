@@ -27,19 +27,23 @@ class FeedRestorer(
                 // KMK <--
             }.filter { backupFeed ->
                 // Filter out source's global Popular/Latest feed already existed
-                backupFeed.savedSearch == null &&
-                    currentFeeds.none { currentFeed ->
-                        currentFeed.source == backupFeed.source && backupFeed.global
-                    } ||
+                (
+                    backupFeed.savedSearch == null &&
+                        currentFeeds.none { currentFeed ->
+                            currentFeed.source == backupFeed.source && backupFeed.global
+                        }
+                    ) ||
                     // Filter out feed with saveSearch already existed (both global/non-global)
-                    backupFeed.savedSearch != null &&
-                    currentFeeds.none { currentFeed ->
-                        currentFeed.source == backupFeed.source &&
-                            currentFeed.global == backupFeed.global &&
-                            currentFeed.name == backupFeed.savedSearch.name &&
-                            currentFeed.query.orEmpty() == backupFeed.savedSearch.query &&
-                            (currentFeed.filters_json ?: "[]") == backupFeed.savedSearch.filterList
-                    }
+                    (
+                        backupFeed.savedSearch != null &&
+                            currentFeeds.none { currentFeed ->
+                                currentFeed.source == backupFeed.source &&
+                                    currentFeed.global == backupFeed.global &&
+                                    currentFeed.name == backupFeed.savedSearch.name &&
+                                    currentFeed.query.orEmpty() == backupFeed.savedSearch.query &&
+                                    (currentFeed.filters_json ?: "[]") == backupFeed.savedSearch.filterList
+                            }
+                        )
             }.forEach { backupFeed ->
                 val savedSearchId = backupFeed.savedSearch?.let {
                     val existedSavedSearchId = currentSavedSearches.find { currentSavedSearch ->

@@ -52,10 +52,12 @@ class ExtensionReposScreen(
             // KMK -->
             onClickEnable = {
                 screenModel.enableRepo(it)
+                screenModel.refreshExtensionList()
                 context.toast(KMR.strings.extensions_page_need_refresh)
             },
             onClickDisable = {
                 screenModel.disableRepo(it)
+                screenModel.refreshExtensionList()
                 context.toast(KMR.strings.extensions_page_need_refresh)
             },
             // KMK <--

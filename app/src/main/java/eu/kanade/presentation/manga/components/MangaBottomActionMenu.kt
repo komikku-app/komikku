@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -29,8 +30,8 @@ import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material3.DropdownMenuItem
@@ -96,10 +97,10 @@ fun MangaBottomActionMenu(
         ) {
             val haptic = LocalHapticFeedback.current
             val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
-            var resetJob: Job? = remember { null }
+            var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<7).forEach { i -> confirm[i] = i == toConfirmIndex }
+                confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
@@ -211,7 +212,7 @@ internal fun RowScope.Button(
         label = "color",
     )
     // KMK <--
-    Column(
+    Box(
         modifier = Modifier
             .size(48.dp)
             .weight(animatedWeight)
@@ -221,30 +222,34 @@ internal fun RowScope.Button(
                 onLongClick = onLongClick,
                 onClick = onClick,
             ),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            // KMK -->
-            tint = animatedColor,
-            // KMK <--
-        )
-        AnimatedVisibility(
-            visible = toConfirm,
-            enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = title,
-                overflow = TextOverflow.Visible,
-                maxLines = 1,
-                style = MaterialTheme.typography.labelSmall,
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
                 // KMK -->
-                color = animatedColor,
+                tint = animatedColor,
                 // KMK <--
             )
+            AnimatedVisibility(
+                visible = toConfirm,
+                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+            ) {
+                Text(
+                    text = title,
+                    overflow = TextOverflow.Visible,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.labelSmall,
+                    // KMK -->
+                    color = animatedColor,
+                    // KMK <--
+                )
+            }
         }
         content?.invoke()
     }
@@ -258,17 +263,17 @@ fun LibraryBottomActionMenu(
     onMarkAsUnreadClicked: () -> Unit,
     onDownloadClicked: ((DownloadAction) -> Unit)?,
     onDeleteClicked: () -> Unit,
+    onMigrateClicked: () -> Unit,
+    // KMK -->
+    onMergeClicked: () -> Unit,
+    onSelectionUpdateClicked: () -> Unit,
+    // KMK <--
     // SY -->
     onClickCleanTitles: (() -> Unit)?,
-    onClickMigrate: (() -> Unit)?,
     onClickCollectRecommendations: (() -> Unit)?,
     onClickAddToMangaDex: (() -> Unit)?,
     onClickResetInfo: (() -> Unit)?,
     // SY <--
-    // KMK -->
-    onClickMerge: (() -> Unit)?,
-    onClickRefreshSelected: (() -> Unit)?,
-    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -283,34 +288,17 @@ fun LibraryBottomActionMenu(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             val haptic = LocalHapticFeedback.current
-            val confirm =
-                remember {
-                    mutableStateListOf(false, false, false, false, false /* SY --> */, false, false, false /* SY <-- */)
-                }
-            var resetJob: Job? = remember { null }
+            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+            var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                (0..<8).forEach { i -> confirm[i] = i == toConfirmIndex }
+                confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
                 resetJob?.cancel()
                 resetJob = scope.launch {
                     delay(1.seconds)
                     if (isActive) confirm[toConfirmIndex] = false
                 }
             }
-            // SY -->
-            val showOverflow = onClickCleanTitles != null ||
-                onClickAddToMangaDex != null ||
-                onClickResetInfo != null ||
-                // KMK -->
-                onClickMigrate != null ||
-                onClickMerge != null ||
-                onClickRefreshSelected != null ||
-                // KMK <--
-                onClickCollectRecommendations != null
-            val configuration = LocalConfiguration.current
-            val isTabletUi = remember { configuration.isTabletUi() }
-            var overFlowOpen by remember { mutableStateOf(false) }
-            // SY <--
             Row(
                 modifier = Modifier
                     .windowInsetsPadding(
@@ -326,30 +314,6 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(0) },
                     onClick = onChangeCategoryClicked,
                 )
-                if (onDownloadClicked != null) {
-                    var downloadExpanded by remember { mutableStateOf(false) }
-                    Button(
-                        title = stringResource(MR.strings.action_download),
-                        icon = Icons.Outlined.Download,
-                        toConfirm = confirm[3],
-                        onLongClick = { onLongClickItem(3) },
-                        onClick = { downloadExpanded = !downloadExpanded },
-                    ) {
-                        val onDismissRequest = { downloadExpanded = false }
-                        DownloadDropdownMenu(
-                            expanded = downloadExpanded,
-                            onDismissRequest = onDismissRequest,
-                            onDownloadClicked = onDownloadClicked,
-                        )
-                    }
-                }
-                Button(
-                    title = stringResource(MR.strings.action_delete),
-                    icon = Icons.Outlined.Delete,
-                    toConfirm = confirm[4],
-                    onLongClick = { onLongClickItem(4) },
-                    onClick = onDeleteClicked,
-                )
                 Button(
                     title = stringResource(MR.strings.action_mark_as_read),
                     icon = Icons.Outlined.DoneAll,
@@ -364,71 +328,83 @@ fun LibraryBottomActionMenu(
                     onLongClick = { onLongClickItem(2) },
                     onClick = onMarkAsUnreadClicked,
                 )
-                // SY -->
-                if (showOverflow) {
-                    if (isTabletUi) {
-                        if (onClickMigrate != null) {
-                            Button(
-                                title = stringResource(MR.strings.migrate),
-                                icon = Icons.Outlined.SwapCalls,
-                                toConfirm = confirm[6],
-                                onLongClick = { onLongClickItem(6) },
-                                onClick = onClickMigrate,
-                            )
-                        }
-                        // KMK -->
-                        if (onClickMerge != null) {
-                            Button(
-                                title = stringResource(SYMR.strings.merge),
-                                icon = Icons.Outlined.Merge,
-                                toConfirm = confirm[7],
-                                onLongClick = { onLongClickItem(7) },
-                                onClick = onClickMerge,
-                            )
-                        }
-                        // KMK <--
-                    }
+                if (onDownloadClicked != null) {
+                    var downloadExpanded by remember { mutableStateOf(false) }
                     Button(
-                        title = stringResource(MR.strings.label_more),
-                        icon = Icons.Outlined.MoreVert,
+                        title = stringResource(MR.strings.action_download),
+                        icon = Icons.Outlined.Download,
+                        toConfirm = confirm[3],
+                        onLongClick = { onLongClickItem(3) },
+                        onClick = { downloadExpanded = !downloadExpanded },
+                    ) {
+                        DownloadDropdownMenu(
+                            expanded = downloadExpanded,
+                            onDismissRequest = { downloadExpanded = false },
+                            onDownloadClicked = onDownloadClicked,
+                            offset = BottomBarMenuDpOffset,
+                        )
+                    }
+                }
+                // SY -->
+                val configuration = LocalConfiguration.current
+                val isTabletUi = remember { configuration.isTabletUi() }
+                // SY <--
+                // KMK -->
+                if (onDownloadClicked == null || isTabletUi) {
+                    Button(
+                        title = stringResource(KMR.strings.action_update),
+                        icon = Icons.Outlined.Refresh,
+                        toConfirm = confirm[4],
+                        onLongClick = { onLongClickItem(4) },
+                        onClick = onSelectionUpdateClicked,
+                    )
+                }
+                if (isTabletUi) {
+                    // KMK <--
+                    Button(
+                        title = stringResource(MR.strings.migrate),
+                        icon = Icons.Outlined.SwapCalls,
                         toConfirm = confirm[5],
                         onLongClick = { onLongClickItem(5) },
-                        onClick = { overFlowOpen = true },
+                        onClick = onMigrateClicked,
                     )
+                }
+                var overflowMenuOpen by remember { mutableStateOf(false) }
+                Button(
+                    title = stringResource(MR.strings.label_more),
+                    icon = Icons.Outlined.MoreVert,
+                    toConfirm = confirm[6],
+                    onLongClick = { onLongClickItem(6) },
+                    onClick = { overflowMenuOpen = true },
+                ) {
                     DropdownMenu(
-                        expanded = overFlowOpen,
-                        onDismissRequest = { overFlowOpen = false },
-                        // KMK -->
-                        offset = DpOffset((-10).dp, 0.dp),
-                        // KMK <--
+                        expanded = overflowMenuOpen,
+                        onDismissRequest = { overflowMenuOpen = false },
+                        offset = BottomBarMenuDpOffset,
                     ) {
                         // KMK -->
-                        if (onClickRefreshSelected != null) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(KMR.strings.action_update)) },
-                                onClick = {
-                                    overFlowOpen = false
-                                    onClickRefreshSelected()
-                                },
-                            )
-                        }
-                        // KMK <--
                         if (!isTabletUi) {
-                            if (onClickMigrate != null) {
+                            if (onDownloadClicked != null) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(MR.strings.migrate)) },
-                                    onClick = onClickMigrate,
-                                )
-                            }
-                            // KMK -->
-                            if (onClickMerge != null) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(SYMR.strings.merge)) },
-                                    onClick = onClickMerge,
+                                    text = { Text(stringResource(KMR.strings.action_update)) },
+                                    onClick = onSelectionUpdateClicked,
                                 )
                             }
                             // KMK <--
+                            DropdownMenuItem(
+                                text = { Text(stringResource(MR.strings.migrate)) },
+                                onClick = onMigrateClicked,
+                            )
                         }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(MR.strings.action_delete)) },
+                            onClick = onDeleteClicked,
+                        )
+                        // KMK -->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(SYMR.strings.merge)) },
+                            onClick = onMergeClicked,
+                        )
                         if (onClickCleanTitles != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(SYMR.strings.action_clean_titles)) },
@@ -453,31 +429,12 @@ fun LibraryBottomActionMenu(
                                 onClick = onClickResetInfo,
                             )
                         }
+                        // KMK <--
                     }
-                    /* KMK -->
-                } else {
-                    if (onClickMigrate != null) {
-                        Button(
-                            title = stringResource(MR.strings.migrate),
-                            icon = Icons.Outlined.SwapCalls,
-                            toConfirm = confirm[6],
-                            onLongClick = { onLongClickItem(6) },
-                            onClick = onClickMigrate,
-                        )
-                    }
-                    if (onClickMerge != null) {
-                        Button(
-                            title = stringResource(SYMR.strings.merge),
-                            icon = Icons.Outlined.Merge,
-                            toConfirm = confirm[7],
-                            onLongClick = { onLongClickItem(7) },
-                            onClick = onClickMerge,
-                        )
-                    }
-                    // KMK <-- */
                 }
-                // SY <--
             }
         }
     }
 }
+
+private val BottomBarMenuDpOffset = DpOffset(0.dp, 0.dp)

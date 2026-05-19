@@ -104,6 +104,7 @@ import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorker
 import exh.log.DebugModeOverlay
+import exh.source.ExhPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -123,7 +124,6 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
@@ -142,7 +142,7 @@ class MainActivity : BaseActivity() {
     private val preferences: BasePreferences by injectLazy()
 
     // SY -->
-    private val unsortedPreferences: UnsortedPreferences by injectLazy()
+    private val exhPreferences: ExhPreferences by injectLazy()
     // SY <--
 
     // KMK -->
@@ -277,8 +277,8 @@ class MainActivity : BaseActivity() {
                         // SY -->
                         initWhenIdle {
                             // Upload settings
-                            if (unsortedPreferences.enableExhentai().get() &&
-                                unsortedPreferences.exhShowSettingsUploadWarning().get()
+                            if (exhPreferences.enableExhentai().get() &&
+                                exhPreferences.exhShowSettingsUploadWarning().get()
                             ) {
                                 runExhConfigureDialog = true
                             }
@@ -414,10 +414,8 @@ class MainActivity : BaseActivity() {
             var showChangelog by remember {
                 mutableStateOf(
                     // KMK -->
-                    isReleaseBuildType &&
-                        didMigration ||
-                        isPreviewBuildType &&
-                        previewCurrentVersion > previewLastVersion.get(),
+                    (isReleaseBuildType && didMigration) ||
+                        (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
                     // KMK <--
                 )
             }

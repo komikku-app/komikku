@@ -24,10 +24,7 @@
     <string name="enable_exhentai">Activer ExHentai</string>
     <string name="requires_login">Nécessite une connexion</string>
     <string name="use_hentai_at_home">Utiliser le Réseau Hentai@Home</string>
-    <string name="use_hentai_at_home_summary">Souhaitez-vous charger des images via le réseau Hentai@Home, si disponible ? La désactivation de cette option réduira le nombre de pages que vous pouvez afficher
-\nOptions :
-\n- Tout client (Recommandé)
-\n- Port clients par défaut uniquement (Peut être plus lent. Activer si derrière un pare-feu/proxy qui bloque les ports sortants non standard.)</string>
+    <string name="use_hentai_at_home_summary">Souhaitez-vous charger des images via le réseau Hentai@Home, si disponible ? La désactivation de cette option réduira le nombre de pages que vous pouvez afficher \nOptions : \n- Tout client (Recommandé) \n- Port clients par défaut uniquement (Peut être plus lent. Activer si derrière un pare-feu/proxy qui bloque les ports sortants non standard.)</string>
     <string name="use_hentai_at_home_option_1">Tout client (Recommandé)</string>
     <string name="use_hentai_at_home_option_2">Port clients par défaut uniquement</string>
     <string name="show_japanese_titles">Afficher les titres japonais dans les résultats de recherche</string>
@@ -119,7 +116,7 @@
     <!--    <string name="clean_orphaned_downloads">Clean orphaned</string>-->
 
     <string name="clean_read_downloads">Lecture propre</string>
-    <string name="clean_read_entries_not_in_library">Nettoyer les mangas pas dans la bibliothèque</string>
+    <string name="clean_read_entries_not_in_library">Supprimer les séries qui ne sont pas dans la bibliothèque</string>
     <string name="data_saver">Économiseur de données</string>
     <string name="data_saver_summary">Compresser les images avant le téléchargement ou le chargement dans le lecteur, nécessite un serveur Proxy Bandwidth Hero</string>
     <string name="data_saver_ignore_jpeg">Ignorer les images Jpeg</string>
@@ -141,7 +138,7 @@
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Développez tous les filtres de recherche par défaut</string>
     <string name="put_recommends_in_overflow">Afficher les Recommandations</string>
-    <string name="put_recommends_in_overflow_summary">Met le bouton de recommandations dans le menu à déroulant de la page du manga</string>
+    <string name="put_recommends_in_overflow_summary">Placer le bouton de recommandations dans le menu de débordement plutôt que sur la page des séries</string>
     <!-- Library settings -->
     <string name="pref_sorting_settings">Paramètres de tri</string>
     <string name="pref_skip_pre_migration_summary">Utilisez les dernières préférences et sources de pré-migration enregistrées pour migrer en masse</string>
@@ -180,9 +177,9 @@
     <string name="reader_preload_amount_summary">Le nombre de pages à précharger lors de la lecture. Des valeurs plus élevées se traduiront par une expérience de lecture plus fluide, au prix d\'une utilisation plus élevée du cache, il est recommandé d\'augmenter la quantité de cache que vous allouez lorsque vous utilisez des valeurs plus grandes</string>
     <string name="reader_cache_size">Taille du cache du lecteur</string>
     <string name="reader_cache_size_summary">La quantité d\'images à enregistrer sur l\'appareil lors de la lecture. Des valeurs plus élevées se traduiront par une expérience de lecture plus fluide, au prix d\'une utilisation plus élevée de l\'espace disque</string>
-    <string name="preserve_reading_position">Conserver la position de lecture sur le manga lu</string>
+    <string name="preserve_reading_position">Conserver la position de lecture sur la série lue</string>
     <string name="auto_webtoon_mode">Mode Webtoon automatique</string>
-    <string name="auto_webtoon_mode_summary">Utilisez le mode Webtoon automatique pour les mangas détectés comme susceptibles d\'utiliser le format de bande longue</string>
+    <string name="auto_webtoon_mode_summary">Utilisez le mode Webtoon automatique pour les séries détectés comme susceptibles d\'utiliser le format de bande longue</string>
     <string name="enable_zoom_out">Activer le zoom arrière</string>
     <string name="tap_scroll_page">Appuyez sur faire défiler par page</string>
     <!--    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>-->
@@ -247,7 +244,7 @@
     <string name="migrating_to">Migrer vers</string>
     <string name="match_pinned_sources">Faire correspondre les sources épinglées</string>
     <string name="match_enabled_sources">Faire correspondre les sources activées</string>
-    <string name="no_chapters_found_for_migration">Aucun chapitre trouvé, ce manga ne peut pas être utilisé pour la migration</string>
+    <string name="no_chapters_found_for_migration">Aucun chapitre trouvé, cette série ne peut pas être utilisée pour la migration</string>
     <string name="no_alternatives_found">Aucune alternative trouvée</string>
     <string name="stop_migrating">Arrêter la migration ?</string>
     <!-- Library -->
@@ -313,7 +310,7 @@
     <string name="batch_add_error">[ERREUR]</string>
     <string name="batch_add_summary">\nSommaire :\nAjouté : %1$d galerie(s)\nÉchec : %2$d galerie(s)</string>
     <string name="batch_add_success_log_message">Ajout de la galerie : %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Type d\'entrée inconnu pour la galerie : %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Type de série inconnu pour la galerie : %1$s</string>
     <string name="batch_add_not_exist_log_message">La galerie n\'existe pas : %1$s</string>
     <string name="gallery_adder_importing_gallery">Importation de la galerie (url : %1$s, fav : %2$s, forceSource : %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Erreur de vérification de correspondance d\'URI source !</string>
@@ -324,8 +321,8 @@
     <!-- Intercept Activity -->
     <string name="launching_app">Lancement de l\'application…</string>
     <string name="error_with_reason">Erreur : %1$s</string>
-    <string name="could_not_open_entry">Impossible d\'ouvrir ce manga:\n\n%1$s</string>
-    <string name="loading_entry">Chargement du manga…</string>
+    <string name="could_not_open_entry">Impossible d\'ouvrir cette série :\n\n%1$s</string>
+    <string name="loading_entry">Chargement de la série…</string>
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Chef-d\'oeuvre</string>
     <string name="rating9">Incroyable</string>
@@ -392,27 +389,27 @@
     <string name="anilist_id">ID Anilist</string>
     <string name="kitsu_id">ID Kitsu</string>
     <string name="mal_id">ID MyAnimeList</string>
-    <string name="manga_updates_id">Identifiant des mises à jour du manga</string>
+    <string name="manga_updates_id">ID de mise à jour de la série</string>
     <string name="anime_planet_id">Anime planet ID</string>
     <!-- Merged manga -->
     <string name="merge_settings">Paramètres de fusion</string>
     <string name="fetch_chapter_updates">Récupérer les mises à jour des chapitres</string>
     <string name="delete_merged_entry">Êtes-vous sûr ?</string>
-    <string name="delete_merged_entry_desc">Cette opération supprimera l\'entrée de la fusion, mais elle entraîne également la perte de toutes les modifications non sauvegardées appliquées à l\'entrée fusionnée</string>
-    <string name="chapter_updates_merged_entry">Basculer les mises à jour des chapitres</string>
-    <string name="chapter_updates_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les mises à jour des chapitres pour ce manga</string>
-    <string name="download_merged_entry">Basculer les téléchargements de nouveaux chapitres</string>
-    <string name="download_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour ce manga</string>
+    <string name="delete_merged_entry_desc">Cette opération supprimera la série à l\'origine de la fusion, mais elle entraînera également la perte de toutes les modifications non sauvegardées appliquées à la série fusionnée</string>
+    <string name="chapter_updates_merged_entry">Activer les mises à jour des chapitres</string>
+    <string name="chapter_updates_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les mises à jour des chapitres pour cette série</string>
+    <string name="download_merged_entry">Activer le téléchargement de nouveaux chapitres</string>
+    <string name="download_merged_entry_desc">Activer ou désactiver cette option désactivera ou activera les téléchargements des chapitres pour cette série</string>
     <string name="merged_references_invalid">Références de fusion non valides</string>
     <string name="merged_chapter_updates_error">Erreur de basculement des mises à jour de chapitre</string>
     <string name="merged_toggle_download_chapters_error">Erreur de basculement des chapitres de téléchargement</string>
     <string name="allow_deduplication">Autoriser la déduplication :</string>
     <string name="deduplication_mode">Mode de déduplication :</string>
-    <string name="deduplication_entry_info">Info entrée :</string>
+    <string name="deduplication_entry_info">Info de la série :</string>
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Désabonné</string>
-    <string name="mangadex_sync_follows_to_library">Sync MangaDex manga dans Neko</string>
-    <string name="mangadex_sync_follows_to_library_summary">Importe les entrées de MangaDex dans votre bibliothèque si elles n\'ont pas déjà été ajoutées.</string>
+    <string name="mangadex_sync_follows_to_library">Synchronise les séries MangaDex dans votre bibliothèque</string>
+    <string name="mangadex_sync_follows_to_library_summary">Importe les séries de MangaDex dans votre bibliothèque si elles n\'ont pas déjà été ajoutées.</string>
     <string name="mangadex_preffered_source">Source MangaDex préférée</string>
     <string name="mangadex_preffered_source_summary">Définissez votre source MangaDex choisie, cela sera utilisé pour les suivis et un tas d\'autres fonctionnalités autour de l\'application</string>
     <string name="mangadex_add_to_follows">Ajouter au suivie MangaDex</string>
@@ -423,7 +420,7 @@
     <!--<string name="no_scanlators">No scanlators available</string>-->
 
     <!-- Similar -->
-    <string name="similar">Manga similaire %1$s</string>
+    <string name="similar">Similaire à %1$s</string>
     <!-- Humanize time -->
     <string name="humanize_fallback">un moment auparavant</string>
     <string name="pref_ehentai_summary">Connexion E/ExHentai, synchronisation de la galerie</string>
@@ -449,7 +446,7 @@
     <string name="sync_in_progress">Synchronisation déjà en cours</string>
     <string name="update_30min">Toutes les 30 minutes</string>
     <string name="update_1hour">Toutes les heures</string>
-    <string name="custom_entry_info">Informations des entrées personnalisées</string>
+    <string name="custom_entry_info">Informations des séries personnalisées</string>
     <string name="label_sync">Synchroniser</string>
     <string name="sync_error">Synchronisation des bibliothèques échoué</string>
     <string name="sync_complete">Synchronisation des bibliothèques complétée</string>
@@ -469,7 +466,6 @@
     <string name="pref_mark_read_dupe_chapters">Marquer les chapitres en double comme lus</string>
     <string name="pref_archive_reader_mode_summary">La manière dont les images contenues dans les archives, telles que CBZ ou CBR, sont chargées</string>
     <string name="reset_info">Réinitialiser les informations</string>
-    <string name="too_many_in_feed">Trop de sources dans votre flux, vous ne pouvez pas en ajouter plus de 10</string>
     <string name="reader_bottom_buttons_summary">Personnaliser les boutons apparaissant au bas du lecteur</string>
     <string name="action_share_combined_page">Partager la page combinée</string>
     <string name="data_saver_stop_exclude">Arrêter d\'exclure de l\'économiseur de données</string>
@@ -477,7 +473,7 @@
     <string name="action_save_combined_page">Enregistrer la page combinée</string>
     <string name="select_tracker">Sélectionner un tracker</string>
     <string name="fill_from_tracker">Remplir à partir du tracker</string>
-    <string name="entry_not_tracked">L\'entrée n\'est pas suivie.</string>
+    <string name="entry_not_tracked">La série n\'est pas suivie.</string>
     <string name="searching_source">Recherche de sources…</string>
     <string name="add_tags">Ajouter des Tags</string>
     <string name="eh_boost_page_downloaded">Cette page a déjà été téléchargée !</string>
@@ -536,20 +532,20 @@
     <string name="eh_boost_page_invalid">Cette page ne peut pas être boostée (page invalide) !</string>
     <string name="shift_double_pages">Décaler d\'une page</string>
     <string name="title_hint">Titre : %1$s</string>
-    <string name="could_not_find_entry">Impossible de trouver l\'entrée dans la source !</string>
+    <string name="could_not_find_entry">Impossible de trouver la série dans la source !</string>
     <string name="save_search_invalid">Recherche sauvegardée invalide, les filtres ont changé</string>
     <string name="biometric_lock_days_summary">Jours de verrouillage de l\'application</string>
     <string name="pref_purge_confirmation_message">La suppression des données de synchronisation effacera toutes vos données de synchronisation de Google Drive. Êtes-vous sûr de vouloir continuer ?</string>
     <string name="tap_scroll_page_summary">Lorsque cette option est activée, le défilement se fait par page et non par taille d\'écran</string>
-    <string name="merge_unknown_entry">ID d\'entrée inconnu : %1$d</string>
+    <string name="merge_unknown_entry">ID de la série inconnu : %1$d</string>
     <string name="pref_category_navbar">Barre de navigation</string>
     <string name="custom_igneous_cookie_message">Certains utilisateurs ne peuvent pas accéder à ExHentai par la voie normale et doivent passer une valeur de cookie igné spécifique, cette option est destinée à ces utilisateurs.</string>
-    <string name="failed_merge">Échec de la fusion de l\'entrée : %1$s</string>
+    <string name="failed_merge">Échec de la fusion de la série : %1$s</string>
     <string name="biometric_lock_days">Jours de verrouillage biométrique</string>
     <string name="pref_left_handed_vertical_seekbar_summary">Change le côté de la barre de recherche</string>
     <string name="bandwidth_data_saver_server">Serveur Proxy Bandwidth Hero</string>
     <string name="error_deleting_google_drive_lock_file">Erreur lors de la suppression du fichier verrouillé de Google Drive</string>
-    <string name="all_read_entries">Toutes les entrées lues</string>
+    <string name="all_read_entries">Toutes les séries lues</string>
     <string name="invert_double_pages">Inverser les doubles pages</string>
     <string name="set_cbz_zip_password">Définir le mot de passe de l\'archive CBZ</string>
     <string name="eh_boost_invalid_loader">Cette page ne peut pas être boostée (chargeur de page invalide) !</string>
@@ -559,7 +555,7 @@
     <string name="google_drive_sync_data_purged">Données de synchronisation supprimées de Google Drive</string>
     <string name="delete_time_range">Supprimer un intervalle de temps</string>
     <string name="delete_cbz_archive_password">Supprimer le mot de passe de l\'archive CBZ</string>
-    <string name="clear_db_exclude_read">Conserver les entrées avec les chapitres lus</string>
+    <string name="clear_db_exclude_read">Conserver les séries avec des chapitres lus</string>
     <string name="sunday">Dimanche</string>
     <string name="eh_boost_boosted">Page actuelle boostée !</string>
     <string name="pref_show_bottom_bar_labels">Toujours afficher les étiquettes de navigation</string>
@@ -573,7 +569,7 @@
     <string name="tuesday">Mardi</string>
     <string name="friday">Vendredi</string>
     <string name="put_merge_in_overflow">Fusionner les débordements</string>
-    <string name="put_merge_in_overflow_summary">Placer le bouton de fusion dans le menu de débordement plutôt que sur la page d\'entrée</string>
+    <string name="put_merge_in_overflow_summary">Placer le bouton de fusion dans le menu de débordement plutôt que sur la page des séries</string>
     <string name="pref_hide_history_button">Afficher l\'historique dans la navigation</string>
     <string name="pref_hide_updates_button">Afficher les mises à jour dans la navigation</string>
     <string name="pref_feed_position">Position de l\'onglet Flux</string>
@@ -594,12 +590,12 @@
     <string name="pref_center_margin_summary">Insérer une entretoise pour tenir compte de l\'espace mort sur les appareils pliables.</string>
     <string name="archive_mode_cache_to_disk">Copier sur le disque</string>
     <string name="pref_archive_reader_mode">Mode lecteur d\'archives</string>
-    <string name="entry_merged">Entrée fusionnée !</string>
+    <string name="entry_merged">Série fusionnée !</string>
     <string name="description_hint">Description : %1$s</string>
-    <string name="merged_already">Cette entrée est déjà fusionnée avec l\'entrée actuelle !</string>
+    <string name="merged_already">Cette série est déjà fusionnée avec la série actuelle !</string>
     <string name="author_hint">Auteur : %1$s</string>
     <string name="artist_hint">Artiste : %1$s</string>
-    <string name="merge_duplicate">Cette entrée fusionnée est un doublon !</string>
+    <string name="merge_duplicate">Cette série fusionnée est un doublon !</string>
     <string name="thumbnail_url_hint">Url de la vignette : %1$s</string>
     <string name="action_copy_first_page">Copier la première page</string>
     <string name="automatic_search_error">Erreur lors de la recherche automatique !</string>
@@ -607,8 +603,8 @@
     <string name="eh_boost_page_errored">La page n\'a pas pu être chargée, appuyez plutôt sur le bouton Réessayer !</string>
     <string name="data_saver_exclude">Exclure de l\'économiseur de données</string>
     <string name="password_protect_downloads_summary">Chiffre les téléchargements d\'archives CBZ avec le mot de passe donné.\nAVERTISSEMENT : LES DONNÉES CONTENUES DANS LES ARCHIVES SERONT PERDUES À JAMAIS SI VOUS OUBLIEZ LE MOT DE PASSE</string>
-    <string name="hide_not_found_entries">Masquer les entrées non trouvées</string>
-    <string name="only_show_updated_entries">Afficher uniquement les entrées avec de nouveaux chapitres</string>
+    <string name="hide_not_found_entries">Masquer les séries non trouvées</string>
+    <string name="only_show_updated_entries">Afficher uniquement les séries avec de nouveaux chapitres</string>
     <string name="favorites_sync_conformation_message">Êtes-vous sûr de vouloir synchroniser vos favoris avec E-Hentai ?</string>
     <string name="is_visible">Visible : %1$s</string>
     <string name="language_translated">%1$s TR</string>
@@ -629,7 +625,7 @@
     <string name="relation_monochrome">Monochrome</string>
     <string name="no_dedupe">Pas de déduplication</string>
     <string name="relation_spin_off">Spin-off</string>
-    <string name="no_valid_entry">Aucune entrée valide n\'a été sélectionnée</string>
+    <string name="no_valid_entry">Aucune série valide n\'a été sélectionnée</string>
     <string name="action_stop">Stop</string>
     <string name="skipping_">(saut de %1$d)</string>
     <string name="gallery_adder_could_not_identify_chapter">Impossible d\'identifier le chapitre (url : %1$s) !</string>
@@ -644,12 +640,33 @@
     <string name="relation_same_franchise">Même franchise</string>
     <string name="relation_alternate_story">Histoire alternative</string>
     <string name="relation_preserialization">Pré-sérialisation</string>
-    <string name="include_all_read_entries">Inclure toutes les entrées lues</string>
+    <string name="include_all_read_entries">Inclure toutes les séries lues</string>
     <string name="relation_colored">Coloré</string>
     <string name="relation_serialization">Sérialisation</string>
     <string name="delete_tag_confirmation">Souhaitez-vous supprimer le tag %s ?</string>
     <string name="batch_add_unknown_source_log_message">Source inconnue pour la galerie : %1$s</string>
-    <string name="mangadex_push_favorites_to_mangadex">Synchroniser les entrées de la bibliothèque avec MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex">Synchroniser les séries de la bibliothèque avec MangaDex</string>
     <string name="alt_titles">Titres alternatifs</string>
-    <string name="ignore_non_library_entries">Ignorer les entrées ne provenant pas de la bibliothèque</string>
+    <string name="ignore_non_library_entries">Ignorer les séries ne provenant pas de la bibliothèque</string>
+    <string name="pref_tracker_resolve_using_source_metadata">Sélectionner la série en utilisant les données de la source</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">Sélectionne automatiquement le bon titre si la source fournit des liens vers le service de suivi (Actuellement pris en charge par MangaDex)</string>
+    <string name="scan_qr_code">Scannez un QR code</string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'> L'ACTIVER CRÉERA UNE NOUVELLE BASE DE DONNÉES. SUIVEZ CES ÉTAPES POUR CONSERVER VOS DONNÉES<br>1. PARAMÈTRES -> DONNÉES ET STOCKAGE -> CRÉER UNE SAUVEGARDE<br>2. PARAMÈTRES DE L'APPAREIL -> APPLICATION -> MIHON -> EFFACER LES DONNÉES<br>3. OUVRIR L'APPLICATION ET ACTIVER CETTE OPTION<br>4. PARAMÈTRES DE L'APPAREIL -> APPLICATION -> MIHON -> FORCER L'ARRÊT<br>5. PARAMÈTRES -> DONNÉES ET STOCKAGE -> RESTAURER UNE SAUVEGARDE</font>]]></string>
+    <string name="pref_crop_borders_pager">Rogner les bordures Pagé</string>
+    <string name="rec_search">Rechercher des recommandations similaire</string>
+    <string name="rec_hide_library_entries">Masquer les séries déjà présentes dans votre bibliothèque</string>
+    <string name="rec_services_to_search">Services de recommandation pour la recherche</string>
+    <string name="rec_group_source">Recommandations de sources</string>
+    <string name="rec_group_tracker">Recommandations du service de suivi</string>
+    <string name="rec_common_recommendations">Recommandations communes</string>
+    <string name="rec_search_short">Trouver des recommandations</string>
+    <string name="rec_no_results">Aucune recommandation trouvée</string>
+    <string name="rec_error_title">La recherche a échoué</string>
+    <string name="rec_error_string">Une erreur s\'est produite pendant la recherche : %1$s</string>
+    <string name="rec_processing_state">Traitement des séries %1$d sur %2$d</string>
+    <string name="rec_collecting">Obtenir des recommandations</string>
+    <string name="rec_initializing">Initialisation</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Synchronise toutes les séries non suivies par MdList vers MangaDex en tant que lecture en cours.</string>
+    <string name="similar_titles">Titres similaires</string>
+    <string name="select_scanlators">Groupes de scantrad à afficher</string>
 </resources>

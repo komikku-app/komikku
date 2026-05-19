@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.content.res.Configuration
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,7 +17,9 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
@@ -33,6 +36,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.EH_PACKAGE
+import exh.source.ExhPreferences
 import exh.source.LOCAL_SOURCE_PACKAGE
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
@@ -56,12 +60,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
-import tachiyomi.domain.UnsortedPreferences
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -113,10 +119,12 @@ open class BrowseSourceScreenModel(
     // KMK -->
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // KMK <--
 
     // SY -->
-    unsortedPreferences: UnsortedPreferences = Injekt.get(),
+    exhPreferences: ExhPreferences = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
@@ -130,7 +138,7 @@ open class BrowseSourceScreenModel(
     var source = sourceManager.getOrStub(sourceId)
 
     // SY -->
-    val ehentaiBrowseDisplayMode by unsortedPreferences.enhancedEHentaiView().asState(screenModelScope)
+    val ehentaiBrowseDisplayMode by exhPreferences.enhancedEHentaiView().asState(screenModelScope)
 
     val startExpanded by uiPreferences.expandFilters().asState(screenModelScope)
 
@@ -415,6 +423,25 @@ open class BrowseSourceScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
+            // KMK -->
+            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
+                withIOContext {
+                    try {
+                        val sManga = manga.toSManga()
+                        val remoteManga = source.getMangaDetails(sManga)
+                        val chapters = source.getChapterList(sManga)
+                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
+                        syncChaptersWithSource.await(chapters, manga, source, false)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                        screenModelScope.launch {
+                            snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
+                        }
+                    }
+                }
+            }
+            // KMK <--
         }
     }
 
@@ -530,7 +557,7 @@ open class BrowseSourceScreenModel(
             val manga: Manga,
             val initialSelection: ImmutableList<CheckboxState.State<Category>>,
         ) : Dialog
-        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
 
         // SY -->
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog

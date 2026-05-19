@@ -143,7 +143,7 @@ class MigrateMangaScreenModel(
         }
     }
 
-    fun toggleAllSelection(selected: Boolean) {
+    fun toggleAllSelection(selected: Boolean = true) {
         mutableState.update { state ->
             val newItems = state.titles.map {
                 selectedMangaIds.addOrRemove(it.manga.id, selected)
@@ -169,14 +169,19 @@ class MigrateMangaScreenModel(
     }
     // KMK <--
 
+    fun clearSelection() {
+        // KMK -->
+        toggleAllSelection(false)
+        // KMK <--
+    }
+
     @Immutable
     data class State(
         val source: Source? = null,
         private val titleList: ImmutableList<MigrateMangaItem>? = null,
     ) {
         // KMK -->
-        val selected = titles.filter { it.selected }
-        val selectionMode = selected.isNotEmpty()
+        val selection = titles.filter { it.selected }
         // KMK <--
 
         val titles: ImmutableList<MigrateMangaItem>
@@ -187,6 +192,8 @@ class MigrateMangaScreenModel(
 
         val isEmpty: Boolean
             get() = titles.isEmpty()
+
+        val selectionMode = selection.isNotEmpty()
     }
 }
 

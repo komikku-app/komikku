@@ -1,5 +1,6 @@
 package exh.smartsearch
 
+import mihon.feature.migration.list.search.BaseSmartSearchEngine
 import tachiyomi.domain.library.model.LibraryManga
 
 class SmartLibrarySearchEngine(
@@ -9,7 +10,7 @@ class SmartLibrarySearchEngine(
     override fun getTitle(result: LibraryManga) = result.manga.ogTitle
 
     suspend fun smartSearch(library: List<LibraryManga>, title: String): LibraryManga? =
-        smartSearch(
+        deepSearch(
             { query ->
                 library.filter { it.manga.ogTitle.contains(query, true) }
             },

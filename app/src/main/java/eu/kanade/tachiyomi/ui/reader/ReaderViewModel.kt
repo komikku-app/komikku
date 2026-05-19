@@ -34,7 +34,6 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
-import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -49,7 +48,6 @@ import eu.kanade.tachiyomi.util.chapter.filterDownloaded
 import eu.kanade.tachiyomi.util.chapter.removeDuplicates
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.lang.byteSize
-import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.MAX_FILE_NAME_BYTES
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
@@ -283,6 +281,7 @@ class ReaderViewModel @JvmOverloads constructor(
             return downloadManager.isChapterDownloaded(
                 chapterName = chapter.name,
                 chapterScanlator = chapter.scanlator,
+                chapterUrl = chapter.url,
                 mangaTitle = chapterManga.ogTitle,
                 sourceId = chapterManga.source,
             )
@@ -571,7 +570,7 @@ class ReaderViewModel @JvmOverloads constructor(
         viewModelScope.launchIO {
             logcat { "Loading ${chapter.chapter.url}" }
 
-            flushReadTimer()
+            updateHistory()
             restartReadTimer()
 
             try {
@@ -624,7 +623,7 @@ class ReaderViewModel @JvmOverloads constructor(
             return
         }
 
-        /**
+        /*
          * This code is likely deprecated since once `chapter.pageLoader` is initialized with [HttpPageLoader],
          * it would set `chapter.state` to `Loading` or `Loaded` and return early already.
          */
@@ -634,6 +633,7 @@ class ReaderViewModel @JvmOverloads constructor(
             val isDownloaded = downloadManager.isChapterDownloaded(
                 dbChapter.name,
                 dbChapter.scanlator,
+                dbChapter.url,
                 // SY -->
                 manga.ogTitle,
                 // SY <--
@@ -721,6 +721,7 @@ class ReaderViewModel @JvmOverloads constructor(
             val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
                 nextChapter.name,
                 nextChapter.scanlator,
+                nextChapter.url,
                 // KMK -->
                 nextChapterManga.ogTitle,
                 nextChapterManga.source,
@@ -760,7 +761,10 @@ class ReaderViewModel @JvmOverloads constructor(
 
     /**
      * Determines if deleting option is enabled and nth to last chapter actually exists.
-     * If both conditions are satisfied enqueues chapter for delete
+     * If both conditions are satisfied enqueues chapter for delete.
+     *
+     * This deletes chapters from reading list (filtered, unduplicated if any set).
+     *
      * @param currentChapter current chapter, which is going to be marked as read.
      */
     private fun deleteChapterIfNeeded(currentChapter: ReaderChapter) {
@@ -778,6 +782,23 @@ class ReaderViewModel @JvmOverloads constructor(
             enqueueDeleteReadChapters(chapterToDelete)
         }
     }
+
+    // KMK -->
+    /**
+     * Deletes duplicate chapters when `removeAfterReadSlots` = "Last read chapter" (0).
+     *
+     * Ignore the case where `removeAfterReadSlots` > 0 while `skipDupe` = true as we don't know
+     * where the chapters to be deleted are in the filtered [chapterList].
+     *
+     * For the case where `skipDupe` = false, chapters at should be deleted normally by [deleteChapterIfNeeded]
+     * based on the `removeAfterReadSlots` offset while the user is reading sequentially.
+     */
+    private fun deleteDupChapterIfNeeded(chapterToDelete: ReaderChapter) {
+        val removeAfterReadSlots = downloadPreferences.removeAfterReadSlots().get()
+        if (removeAfterReadSlots != 0) return
+        enqueueDeleteReadChapters(chapterToDelete)
+    }
+    // KMK <--
 
     /**
      * Saves the chapter progress (last read page and whether it's read)
@@ -865,9 +886,9 @@ class ReaderViewModel @JvmOverloads constructor(
                     chapter.chapterNumber.toFloat() == readerChapter.chapter.chapter_number
                 ) {
                     ChapterUpdate(id = chapter.id, read = true)
-                        // SY -->
-                        .also { deleteChapterIfNeeded(ReaderChapter(chapter)) }
-                    // SY <--
+                        // KMK -->
+                        .also { deleteDupChapterIfNeeded(ReaderChapter(chapter.copy(read = true))) }
+                    // KMK <--
                 } else {
                     null
                 }
@@ -879,26 +900,20 @@ class ReaderViewModel @JvmOverloads constructor(
         chapterReadStartTime = Instant.now().toEpochMilli()
     }
 
-    fun flushReadTimer() {
-        getCurrentChapter()?.let {
-            viewModelScope.launchNonCancellable {
-                updateHistory(it)
-            }
-        }
-    }
-
     /**
      * Saves the chapter last read history if incognito mode isn't on.
      */
-    private suspend fun updateHistory(readerChapter: ReaderChapter) {
-        if (incognitoMode) return
+    suspend fun updateHistory() {
+        getCurrentChapter()?.let { readerChapter ->
+            if (incognitoMode) return@let
 
-        val chapterId = readerChapter.chapter.id!!
-        val endTime = Date()
-        val sessionReadDuration = chapterReadStartTime?.let { endTime.time - it } ?: 0
+            val chapterId = readerChapter.chapter.id!!
+            val endTime = Date()
+            val sessionReadDuration = chapterReadStartTime?.let { endTime.time - it } ?: 0
 
-        upsertHistory.await(HistoryUpdate(chapterId, endTime, sessionReadDuration))
-        chapterReadStartTime = null
+            upsertHistory.await(HistoryUpdate(chapterId, endTime, sessionReadDuration))
+            chapterReadStartTime = null
+        }
     }
 
     /**
@@ -1088,7 +1103,8 @@ class ReaderViewModel @JvmOverloads constructor(
         val chapter = page.chapter.chapter
         val filenameSuffix = " - ${page.number}"
         return DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
+            "${manga.title} - ${chapter.name}",
+            MAX_FILE_NAME_BYTES - filenameSuffix.byteSize(),
         ) + filenameSuffix
     }
 
@@ -1270,7 +1286,8 @@ class ReaderViewModel @JvmOverloads constructor(
         // Build destination file.
         val filenameSuffix = " - ${page1.number}-${page2.number}.jpg"
         val filename = DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
+            "${manga.title} - ${chapter.name}",
+            MAX_FILE_NAME_BYTES - filenameSuffix.byteSize(),
         ) + filenameSuffix
 
         return imageSaver.save(

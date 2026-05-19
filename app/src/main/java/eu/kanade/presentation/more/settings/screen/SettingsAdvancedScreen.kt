@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -71,6 +72,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
+import exh.source.ExhPreferences
 import exh.util.toAnnotatedString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -85,8 +87,8 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
@@ -103,6 +105,7 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsAdvancedScreen
 
     @ReadOnlyComposable
@@ -118,7 +121,10 @@ object SettingsAdvancedScreen : SearchableSettings {
         val basePreferences = remember { Injekt.get<BasePreferences>() }
         val networkPreferences = remember { Injekt.get<NetworkPreferences>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
-        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
+        // SY -->
+        val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
+        val exhPreferences = remember { Injekt.get<ExhPreferences>() }
+        // SY <--
 
         return listOf(
             Preference.PreferenceItem.TextPreference(
@@ -158,7 +164,7 @@ object SettingsAdvancedScreen : SearchableSettings {
             ),
             // KMK -->
             Preference.PreferenceItem.MultiSelectListPreference(
-                preference = unsortedPreferences.appShouldAutoUpdate(),
+                preference = exhPreferences.appShouldAutoUpdate(),
                 entries = persistentMapOf(
                     AppUpdatePolicy.DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
                     AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED to stringResource(MR.strings.network_not_metered),
@@ -178,6 +184,9 @@ object SettingsAdvancedScreen : SearchableSettings {
             getDataGroup(),
             getNetworkGroup(networkPreferences = networkPreferences),
             getLibraryGroup(libraryPreferences = libraryPreferences),
+            // SY -->
+            getDownloadsGroup(downloadPreferences = downloadPreferences),
+            // SY <--
             getReaderGroup(basePreferences = basePreferences),
             getExtensionsGroup(basePreferences = basePreferences),
             // SY -->
@@ -210,7 +219,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 context.startActivity(intent)
-                            } catch (e: ActivityNotFoundException) {
+                            } catch (_: ActivityNotFoundException) {
                                 context.toast(MR.strings.battery_optimization_setting_activity_not_found)
                             }
                         } else {
@@ -389,9 +398,32 @@ object SettingsAdvancedScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_update_library_manga_titles),
                     subtitle = stringResource(MR.strings.pref_update_library_manga_titles_summary),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.disallowNonAsciiFilenames(),
+                    title = stringResource(MR.strings.pref_disallow_non_ascii_filenames),
+                    subtitle = stringResource(MR.strings.pref_disallow_non_ascii_filenames_details),
+                ),
             ),
         )
     }
+
+    // SY ->
+    @Composable
+    private fun getDownloadsGroup(
+        downloadPreferences: DownloadPreferences,
+    ): Preference.PreferenceGroup {
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.pref_category_downloads),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = downloadPreferences.includeChapterUrlHash(),
+                    title = stringResource(SYMR.strings.pref_include_chapter_url_hash),
+                    subtitle = stringResource(SYMR.strings.pref_include_chapter_url_hash_desc),
+                ),
+            ),
+        )
+    }
+    // <- SY
 
     @Composable
     private fun getReaderGroup(
@@ -527,8 +559,8 @@ object SettingsAdvancedScreen : SearchableSettings {
         onDismissRequest: () -> Unit,
         onCleanupDownloads: (removeRead: Boolean, removeNonFavorite: Boolean) -> Unit,
     ) {
-        val context = LocalContext.current
-        val options = remember { context.resources.getStringArray(R.array.clean_up_downloads).toList() }
+        val resources = LocalResources.current
+        val options = remember(resources) { resources.getStringArray(R.array.clean_up_downloads).toList() }
         val selection = remember {
             options.toMutableStateList()
         }
@@ -734,14 +766,14 @@ object SettingsAdvancedScreen : SearchableSettings {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
-        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
+        val exhPreferences = remember { Injekt.get<ExhPreferences>() }
         val delegateSourcePreferences = remember { Injekt.get<DelegateSourcePreferences>() }
         val securityPreferences = remember { Injekt.get<SecurityPreferences>() }
         return Preference.PreferenceGroup(
             title = stringResource(SYMR.strings.developer_tools),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = unsortedPreferences.isHentaiEnabled(),
+                    preference = exhPreferences.isHentaiEnabled(),
                     title = stringResource(SYMR.strings.toggle_hentai_features),
                     subtitle = stringResource(SYMR.strings.toggle_hentai_features_summary),
                     onValueChanged = {
@@ -767,7 +799,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     ),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    preference = unsortedPreferences.logLevel(),
+                    preference = exhPreferences.logLevel(),
                     entries = EHLogLevel.entries.mapIndexed { index, ehLogLevel ->
                         index to "${context.stringResource(ehLogLevel.nameRes)} (${
                             context.stringResource(ehLogLevel.description)

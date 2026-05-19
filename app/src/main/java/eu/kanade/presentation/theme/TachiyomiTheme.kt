@@ -1,18 +1,16 @@
 package eu.kanade.presentation.theme
 
-import android.app.UiModeManager
-import android.os.Build
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.getSystemService
-import com.materialkolor.Contrast
-import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.DynamicMaterialExpressiveTheme
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
@@ -54,6 +52,8 @@ fun TachiyomiTheme(
     )
 }
 
+// KMK -->
+/** Theme based on Cover */
 @Composable
 fun TachiyomiTheme(
     seedColor: Color?,
@@ -62,31 +62,22 @@ fun TachiyomiTheme(
     typography: Typography = MaterialTheme.typography,
     content: @Composable () -> Unit,
 ) {
-    val uiPreferences = Injekt.get<UiPreferences>()
-    val context = LocalContext.current
-    val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
-    if (seedColor != null) {
-        DynamicMaterialTheme(
+    if (seedColor == null) {
+        TachiyomiTheme(appTheme, amoled, content)
+    } else {
+        val uiPreferences = Injekt.get<UiPreferences>()
+        val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
+        DynamicMaterialExpressiveTheme(
             seedColor = seedColor,
             isAmoled = isAmoled,
             style = uiPreferences.themeCoverBasedStyle().get(),
             typography = typography,
             animate = true,
             content = content,
-            contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                context.getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
-            } else {
-                Contrast.Default.value
-            },
-        )
-    } else {
-        BaseTachiyomiTheme(
-            appTheme = appTheme ?: uiPreferences.appTheme().get(),
-            isAmoled = isAmoled,
-            content = content,
         )
     }
 }
+// KMK <--
 
 @Composable
 fun TachiyomiPreviewTheme(
@@ -101,28 +92,36 @@ private fun BaseTachiyomiTheme(
     isAmoled: Boolean,
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = getThemeColorScheme(appTheme, isAmoled),
+    val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
+    MaterialExpressiveTheme(
+        colorScheme = remember(appTheme, isDark, isAmoled) {
+            getThemeColorScheme(
+                context = context,
+                appTheme = appTheme,
+                isDark = isDark,
+                isAmoled = isAmoled,
+            )
+        },
         content = content,
     )
 }
 
-@Composable
-@ReadOnlyComposable
 private fun getThemeColorScheme(
+    context: Context,
     appTheme: AppTheme,
+    isDark: Boolean,
     isAmoled: Boolean,
 ): ColorScheme {
     val colorScheme = when (appTheme) {
         AppTheme.MONET -> {
-            MonetColorScheme(LocalContext.current)
+            MonetColorScheme(context)
         }
         // KMK -->
         AppTheme.CUSTOM -> {
             val uiPreferences = Injekt.get<UiPreferences>()
             CustomColorScheme(
-                context = LocalContext.current,
-                seed = uiPreferences.colorTheme().get(),
+                seed = Color(uiPreferences.colorTheme().get()),
                 style = uiPreferences.customThemeStyle().get(),
             )
         }
@@ -132,8 +131,9 @@ private fun getThemeColorScheme(
         }
     }
     return colorScheme.getColorScheme(
-        isSystemInDarkTheme(),
-        isAmoled,
+        isDark = isDark,
+        isAmoled = isAmoled,
+        overrideDarkSurfaceContainers = appTheme != AppTheme.MONET,
     )
 }
 

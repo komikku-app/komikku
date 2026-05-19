@@ -84,7 +84,7 @@ private fun WhatsNewScreenPreview() {
                 **Full Changelog**: [komikku-app/komikku@v1.13.0...v1.13.1](https://github.com/komikku-app/komikku/compare/v1.13.0...v1.13.1)
 
 
-                ---
+                -----
                 ## v1.12.6
 
 
@@ -96,7 +96,7 @@ private fun WhatsNewScreenPreview() {
                 **Full Changelog**: [komikku-app/komikku@v1.12.5...v1.12.6](https://github.com/komikku-app/komikku/compare/v1.12.5...v1.12.6)
 
 
-                ---
+                -----
                 ## v1.12.5
 
 

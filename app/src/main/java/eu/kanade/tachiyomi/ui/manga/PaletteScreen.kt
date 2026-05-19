@@ -28,7 +28,7 @@ import uy.kohesive.injekt.api.get
  * A screen that displays a colors palette of current theme.
  */
 class PaletteScreen(
-    @ColorInt private val seedColor: Int?,
+    @param:ColorInt private val seedColor: Int?,
 ) : Screen() {
 
     @Composable
@@ -59,8 +59,7 @@ class PaletteScreen(
             },
         ) { contentPadding ->
             ScrollbarLazyColumn(
-                // Using modifier instead of contentPadding so we can use stickyHeader
-                modifier = Modifier.padding(contentPadding),
+                contentPadding = contentPadding,
             ) {
                 item {
                     ButtonsColor(

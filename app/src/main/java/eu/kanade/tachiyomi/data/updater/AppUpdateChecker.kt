@@ -5,8 +5,8 @@ import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isFossBuildType
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
+import exh.source.ExhPreferences
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.domain.release.service.AppUpdatePolicy
 import uy.kohesive.injekt.Injekt
@@ -22,14 +22,14 @@ class AppUpdateChecker(
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
     // KMK -->
-    private val preferences by lazy { Injekt.get<UnsortedPreferences>() }
+    private val exhPreferences by lazy { Injekt.get<ExhPreferences>() }
     // KMK <--
 
     suspend fun checkForUpdate(
         context: Context,
         forceCheck: Boolean = false,
         // KMK -->
-        autoUpdate: Boolean = AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD !in preferences.appShouldAutoUpdate().get(),
+        autoUpdate: Boolean = AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD !in exhPreferences.appShouldAutoUpdate().get(),
         // KMK <--
     ): GetApplicationRelease.Result {
         return withIOContext {

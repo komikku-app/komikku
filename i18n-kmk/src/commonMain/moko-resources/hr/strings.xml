@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="theme_cloudflare">Cloudflare</string>
+    <string name="too_many_in_feed">Previše izvora u tvom feedu, ne možeš dodati više od 20</string>
 </resources>

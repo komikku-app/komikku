@@ -10,7 +10,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Rect
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -19,6 +18,7 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.applyCanvas
 import androidx.core.graphics.blue
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.get
 import androidx.core.graphics.green
 import androidx.core.graphics.red
@@ -66,7 +66,7 @@ object ImageUtil {
                 Format.Webp -> ImageType.WEBP
                 else -> null
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -88,7 +88,7 @@ object ImageUtil {
                 Format.Heif -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 else -> false
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -205,6 +205,7 @@ object ImageUtil {
         RIGHT,
         LEFT,
     }
+
     // SY -->
     /**
      * Split the image into left and right parts, then merge them into a
@@ -386,9 +387,9 @@ object ImageUtil {
         decoder?.recycle()
 
         val whiteColor = Color.WHITE
-        if (image == null) return ColorDrawable(whiteColor)
+        if (image == null) return whiteColor.toDrawable()
         if (image.width < 50 || image.height < 50) {
-            return ColorDrawable(whiteColor)
+            return whiteColor.toDrawable()
         }
 
         val top = 5
@@ -429,7 +430,7 @@ object ImageUtil {
             !color.isWhite() && color.isCloseTo(other)
         }
         if (isNotWhiteAndCloseTo.all { it }) {
-            return ColorDrawable(topLeftPixel)
+            return topLeftPixel.toDrawable()
         }
 
         val cornerPixels = listOf(topLeftPixel, topRightPixel, botLeftPixel, botRightPixel)
@@ -544,8 +545,8 @@ object ImageUtil {
         val isLandscape = context.resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isLandscape) {
             return when {
-                darkBG -> ColorDrawable(blackColor)
-                else -> ColorDrawable(whiteColor)
+                darkBG -> blackColor.toDrawable()
+                else -> whiteColor.toDrawable()
             }
         }
 
@@ -566,7 +567,7 @@ object ImageUtil {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
             darkBG -> {
-                return ColorDrawable(blackColor)
+                return blackColor.toDrawable()
             }
             topIsBlackStreak ||
                 (
@@ -585,7 +586,7 @@ object ImageUtil {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
             else -> {
-                return ColorDrawable(whiteColor)
+                return whiteColor.toDrawable()
             }
         }
 
@@ -772,7 +773,7 @@ object ImageUtil {
 
         val maxHeight = max(height, height2)
 
-        val result = Bitmap.createBitmap(width + width2 + centerMargin, max(height, height2), Bitmap.Config.ARGB_8888)
+        val result = createBitmap(width + width2 + centerMargin, max(height, height2))
         val canvas = Canvas(result)
         canvas.drawColor(background)
         val upperPart = Rect(

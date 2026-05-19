@@ -47,6 +47,7 @@ import exh.search.QueryComponent
 import exh.search.SearchEngine
 import exh.search.Text
 import exh.source.EH_SOURCE_ID
+import exh.source.ExhPreferences
 import exh.source.MANGADEX_IDS
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -89,7 +90,6 @@ import tachiyomi.core.common.util.lang.compareToWithCollator
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -145,7 +145,7 @@ class LibraryScreenModel(
     private val downloadCache: DownloadCache = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
     // SY -->
-    private val unsortedPreferences: UnsortedPreferences = Injekt.get(),
+    private val exhPreferences: ExhPreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
@@ -359,9 +359,9 @@ class LibraryScreenModel(
 
         // SY -->
         combine(
-            unsortedPreferences.isHentaiEnabled().changes(),
+            exhPreferences.isHentaiEnabled().changes(),
             sourcePreferences.disabledSources().changes(),
-            unsortedPreferences.enableExhentai().changes(),
+            exhPreferences.enableExhentai().changes(),
         ) { isHentaiEnabled, disabledSources, enableExhentai ->
             isHentaiEnabled && (EH_SOURCE_ID.toString() !in disabledSources || enableExhentai)
         }
@@ -553,7 +553,7 @@ class LibraryScreenModel(
                 // SY <--
                 // KMK -->
                 filterFnCategories(it)
-            // KMK <---
+            // KMK <--
         }
     }
 
@@ -928,6 +928,7 @@ class LibraryScreenModel(
                                     downloadManager.isChapterDownloaded(
                                         chapter.name,
                                         chapter.scanlator,
+                                        chapter.url,
                                         mergedManga.ogTitle,
                                         mergedManga.source,
                                     )
@@ -946,6 +947,7 @@ class LibraryScreenModel(
                             downloadManager.isChapterDownloaded(
                                 chapter.name,
                                 chapter.scanlator,
+                                chapter.url,
                                 // SY -->
                                 manga.ogTitle,
                                 // SY <--
@@ -1000,7 +1002,7 @@ class LibraryScreenModel(
     @OptIn(DelicateCoroutinesApi::class)
     fun syncMangaToDex() {
         launchIO {
-            MdUtil.getEnabledMangaDex(unsortedPreferences, sourcePreferences, sourceManager)?.let { mdex ->
+            MdUtil.getEnabledMangaDex(sourcePreferences, sourceManager)?.let { mdex ->
                 state.value.selectedManga.fastFilter { it.source in mangaDexSourceIds }.fastForEach { manga ->
                     mdex.updateFollowStatus(MdUtil.getMangaId(manga.url), FollowStatus.READING)
                 }
@@ -1010,9 +1012,9 @@ class LibraryScreenModel(
     }
 
     fun resetInfo() {
-        state.value.selectedManga.fastForEach { manga ->
+        state.value.selection.forEach { id ->
             val mangaInfo = CustomMangaInfo(
-                id = manga.id,
+                id = id,
                 title = null,
                 author = null,
                 artist = null,
@@ -1032,7 +1034,7 @@ class LibraryScreenModel(
     /**
      * Update Selected Mangas
      */
-    fun refreshSelectedManga(): Boolean {
+    fun updateSelectedManga(): Boolean {
         val mangaIds = state.value.selection.toList()
         return LibraryUpdateJob.startNow(
             context = preferences.context,
@@ -1174,10 +1176,17 @@ class LibraryScreenModel(
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
                 if (query.startsWith("id:", true)) {
-                    val id = query.substringAfter("id:").toLongOrNull()
-                    return@filter mangaId == id
+                    return@filter mangaId == query.substringAfter("id:").toLongOrNull()
                 }
                 val sourceId = item.libraryManga.manga.source
+                if (query.startsWith("src:", true)) {
+                    val querySource = query.substringAfter("src:")
+                    return@filter if (querySource.equals(LOCAL_SOURCE_ID_ALIAS, ignoreCase = true)) {
+                        sourceId == LocalSource.ID
+                    } else {
+                        sourceId == querySource.toLongOrNull()
+                    }
+                }
                 if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
                     val tags = getSearchTags.await(mangaId)
                     val titles = getSearchTitles.await(mangaId)
@@ -1574,13 +1583,13 @@ class LibraryScreenModel(
     }
 
     fun onAcceptSyncWarning() {
-        unsortedPreferences.exhShowSyncIntro().set(false)
+        exhPreferences.exhShowSyncIntro().set(false)
     }
 
     fun openFavoritesSyncDialog() {
         mutableState.update {
             it.copy(
-                dialog = if (unsortedPreferences.exhShowSyncIntro().get()) {
+                dialog = if (exhPreferences.exhShowSyncIntro().get()) {
                     Dialog.SyncFavoritesWarning
                 } else {
                     Dialog.SyncFavoritesConfirm

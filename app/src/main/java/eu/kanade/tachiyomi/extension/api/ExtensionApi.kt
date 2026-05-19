@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import exh.source.BlacklistedSources
+import exh.source.ExhPreferences
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
@@ -23,7 +24,6 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -183,7 +183,7 @@ internal class ExtensionApi {
     private fun Extension.isBlacklisted(
         blacklistEnabled: Boolean = sourcePreferences.enableSourceBlacklist().get(),
         // KMK -->
-        isHentaiEnabled: Boolean = Injekt.get<UnsortedPreferences>().isHentaiEnabled().get(),
+        isHentaiEnabled: Boolean = Injekt.get<ExhPreferences>().isHentaiEnabled().get(),
         // KMK <--
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&

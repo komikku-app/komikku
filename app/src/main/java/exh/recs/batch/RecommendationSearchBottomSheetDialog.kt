@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.tachiyomi.databinding.RecommendationSearchBottomSheetBinding
-import tachiyomi.domain.UnsortedPreferences
 import uy.kohesive.injekt.injectLazy
 
 @Composable
@@ -30,7 +30,7 @@ fun RecommendationSearchBottomSheetDialog(
 }
 
 class RecommendationSearchBottomSheetDialogState(private val onSearchRequest: () -> Unit) {
-    private val preferences: UnsortedPreferences by injectLazy()
+    private val preferences: SourcePreferences by injectLazy()
 
     fun initPreferences(binding: RecommendationSearchBottomSheetBinding) {
         val flags = preferences.recommendationSearchFlags().get()

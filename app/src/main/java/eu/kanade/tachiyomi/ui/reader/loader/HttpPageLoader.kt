@@ -153,10 +153,9 @@ internal class HttpPageLoader(
             page.imageUrl = null
         }
 
-        if (readerPreferences.readerInstantRetry().get()) // EXH <--
-            {
-                boostPage(page)
-            } else {
+        if (readerPreferences.readerInstantRetry().get()) { // EXH <--
+            boostPage(page)
+        } else {
             // EXH <--
             queue.offer(PriorityPage(page, 2))
         }
