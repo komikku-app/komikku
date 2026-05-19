@@ -16,9 +16,8 @@ import eu.kanade.tachiyomi.extension.installer.ShizukuInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller.Companion.EXTRA_DOWNLOAD_ID
 import eu.kanade.tachiyomi.util.system.getSerializableExtraCompat
 import eu.kanade.tachiyomi.util.system.notificationBuilder
-import logcat.LogPriority
+import exh.log.xLogE
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
 
 class ExtensionInstallService : Service() {
@@ -53,7 +52,7 @@ class ExtensionInstallService : Service() {
                 BasePreferences.ExtensionInstaller.PACKAGEINSTALLER -> PackageInstallerInstaller(this)
                 BasePreferences.ExtensionInstaller.SHIZUKU -> ShizukuInstaller(this)
                 else -> {
-                    logcat(LogPriority.ERROR) { "Not implemented for installer $installerUsed" }
+                    xLogE("Not implemented for installer $installerUsed")
                     stopSelf()
                     return START_NOT_STICKY
                 }
