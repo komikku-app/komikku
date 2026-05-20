@@ -1,164 +1,131 @@
 # Komikku – AI Agent Guide
 
-Komikku is an Android manga reader (min SDK 26, target SDK 36, Java 17 / Kotlin) forked from **Mihon** + **TachiyomiSY**. It uses Jetpack Compose + Material3, Voyager navigation, SQLDelight, and Injekt for DI.
+Komikku is an Android manga reader (min SDK 26, target SDK 36, JVM 17 / Kotlin) forked from **Mihon** + **TachiyomiSY**. Stack: Jetpack Compose + Material3, Voyager navigation, SQLDelight, Injekt DI. `applicationId`: `app.komikku`.
 
 ---
 
-## Module Layout
+## Module layout
 
 | Module | Purpose |
 |--------|---------|
-| `app/` | Main app: UI screens (`eu.kanade.*`), DI wiring, build variants |
-| `domain/` | Use-cases (`*Interactor`), models and repository interfaces (`tachiyomi.domain.*`) |
-| `data` | SQLDelight DB, repository implementations `*RepositoryImpl` (`tachiyomi.data.*`) |
-| `core:common/` | Network (OkHttp), security, storage utilities |
+| `app/` | UI (`eu.kanade.*`, `exh/`, `mihon/`), DI, workers, build variants |
+| `domain/` | Use cases in `…/interactor/` (e.g. `GetManga`), models, repo interfaces |
+| `data/` | SQLDelight DB, `*RepositoryImpl` (`tachiyomi.data.*`) |
+| `core:common/` | Network (OkHttp), security, storage, shared utils |
 | `core:archive/` | CBZ/archive reading with optional encryption |
 | `core-metadata/` | Comic-info metadata parsing |
-| `source-api` / `source-local` | Extension `Source` API + local source |
-| `presentation-core` | Shared Compose components and theming |
+| `source-api/` / `source-local/` | Extension `Source` API + local source |
+| `presentation-core/` | Shared Compose components |
 | `presentation-widget/` | Home-screen Glance widget |
-| `i18n/` | Base Mihon `MR` strings (moko-resources) |
-| `i18n-kmk/` | Komikku-specific `KMR` strings |
-| `i18n-sy/` | TachiyomiSY `SYMR` strings |
+| `i18n/` | Mihon strings → `MR` (moko-resources) |
+| `i18n-kmk/` | Komikku strings → `KMR` |
+| `i18n-sy/` | TachiyomiSY strings → `SYMR` |
 | `flagkit/` | Country-flag drawables |
-| `telemetry/` | Firebase/crashlytics wrapper (optional variant) |
+| `telemetry/` | Firebase/Crashlytics (noop unless `-Pinclude-telemetry`) |
 | `macrobenchmark/` | Macrobenchmark tests |
 
 Dependency flow: `app` → `domain` → `source-api`; `data` implements `domain` repos.
 
-Version catalogs live in `gradle/`: `libs.versions.toml`, `kotlinx.versions.toml`, `androidx.versions.toml`, `compose.versions.toml`, `sy.versions.toml`.
+Version catalogs: `gradle/libs.versions.toml`, `kotlinx.versions.toml`, `androidx.versions.toml`, `compose.versions.toml`, `sy.versions.toml`.
 
 ---
 
-## Architecture Patterns
+## Architecture
 
-**DI** – Uses `uy.kohesive.injekt` (not Hilt/Dagger). Singletons are registered in `AppModule.kt` via `addSingleton`/`addSingletonFactory`; consumed via `injectLazy<T>()` or `Injekt.get<T>()`.
+**DI** – `uy.kohesive.injekt` (not Hilt). Register in `AppModule.kt`, `DomainModule.kt`, `KMKDomainModule.kt`, `SYDomainModule.kt` via `addSingleton` / `addSingletonFactory`. Resolve with `Injekt.get<T>()` or `injectLazy<T>()`.
 
-**Navigation** – Voyager (`cafe.adriel.voyager`). Each screen has a companion `ScreenModel` extending `StateScreenModel<State>`. Use `screenModelScope` for coroutines; never create standalone `CoroutineScope` instances.
+**UI & navigation** – [Voyager](https://voyager.adriel.cafe/): `Screen` in `eu.kanade.tachiyomi.ui.*`, composables in `eu.kanade.presentation.*`. Base type: `eu.kanade.presentation.util.Screen`. State via `rememberScreenModel { … }`; most models extend `StateScreenModel<State>` or bases like `SearchScreenModel`; some use plain `ScreenModel`. Prefer `screenModelScope` and `ioCoroutineScope`; use `launchIO` / `withIOContext` from `tachiyomi.core.common.util.lang`. `rememberCoroutineScope()` is fine in Compose; long-lived services may use their own `CoroutineScope`.
 
-**Domain layer** – Follow *interactor* pattern: one class per operation in `domain/…/interactor/`. Repository interfaces live in `domain/`, implementations in `data/`.
-
-**Database** – SQLDelight. Schema and queries are in `data/src/main/sqldelight/tachiyomi/`. Add `.sq` files there; generated Kotlin is in `build/`. Run `./gradlew generateSqlDelightInterface` after schema changes.
-
-**Image loading** – Coil 3 (`coil3.*`). Use `imageLoader` extension and build `ImageRequest` objects; do **not** use Glide or Picasso.
-
-**Reader** – The one screen still backed by a traditional `Activity` (`ReaderActivity` + `ReaderViewModel`). All other screens are Compose + Voyager.
-
-## UI pattern
-
-- **Navigation**: [Voyager](https://voyager.adriel.cafe/) — `Screen` subclasses in `eu.kanade.tachiyomi.ui.*`, composables in `eu.kanade.presentation.*`.
-- **State**: `*ScreenModel` (`StateScreenModel` / `ScreenModel`) via `rememberScreenModel { … }`; inject deps with `Injekt.get()` or constructor defaults.
-- **Reader**: `ReaderActivity` (not Voyager) — `ReaderActivity.newIntent(context, mangaId, chapterId)`.
-- Base types: `eu.kanade.presentation.util.Screen`, `ioCoroutineScope` on `ScreenModel`.
+**Activities (not Voyager)** – `MainActivity` (shell), `ReaderActivity` + `ReaderViewModel`, `WebViewActivity`, `UnlockActivity`, OAuth login activities, `DeepLinkActivity`. Reader: `ReaderActivity.newIntent(context, mangaId, chapterId)`. Web: both `WebViewScreen` (Voyager) and `WebViewActivity.newIntent(...)`.
 
 Example: `DeepLinkScreen` + `DeepLinkScreenModel` in `app/src/main/java/eu/kanade/tachiyomi/ui/deeplink/`.
 
-## Domain / data
+**Domain / data** – One class per operation under `domain/…/interactor/` (verb names, not `*Interactor` suffix). Also `app/src/main/java/eu/kanade/domain/…/interactor/` for app-specific cases. Wire repos in `eu.kanade.domain.DomainModule.kt` (+ `KMKDomainModule`, `SYDomainModule`).
 
-- Business logic: small classes in `domain/.../interactor/` (e.g. `GetManga`, `SetMangaCategories`).
-- Wire in `app/.../DomainModule.kt`, `KMKDomainModule.kt`, `SYDomainModule.kt` (Injekt `addFactory` / `addSingletonFactory`).
-- DB: SQLDelight under `data/src/main/sqldelight/tachiyomi/` (`.sq` queries, numbered `migrations/*.sqm`). Schema changes need a new `.sqm` and often `// KMK` blocks in `.sq` / mappers.
-- App prefs migrations: `app/src/main/java/mihon/core/migration/migrations/` (implements `mihon.core.migration.Migration`).
+**Database** – SQLDelight in `data/src/main/sqldelight/tachiyomi/` (`.sq` queries, `migrations/*.sqm`). After schema changes add a new `.sqm` and often `// KMK` blocks in `.sq` / mappers. Regenerate: `./gradlew :data:generateSqlDelightInterface` (or any compile that touches `:data`).
+
+**App preference migrations** – `app/src/main/java/mihon/core/migration/migrations/` (`mihon.core.migration.Migration`).
+
+**Images** – Coil 3 (`coil3.*`, `context.imageLoader`). No Glide/Picasso.
+
+---
 
 ## Komikku-specific work
 
-- Prefer **`KMR`** for new user-facing strings (`i18n-kmk/src/commonMain/moko-resources/base/`). Use **`MR`** for shared / upstream strings (`i18n`).
-- Komikku DI: `KMKDomainModule`, `HideCategory`, library-update error repos — search `// KMK`.
-- Feature flags / prefs: `eu.kanade.domain.*.service.*Preferences` (e.g. `SourcePreferences.relatedMangas()`).
+- New user-facing strings: **`KMR`** in `i18n-kmk/src/commonMain/moko-resources/base/`. Shared/upstream: **`MR`** (`i18n`). SY-only: **`SYMR`** (`i18n-sy`).
+- Do not edit locale `strings.xml` in `i18n/` or `i18n-sy/` except when syncing upstream; translations via [Weblate](https://hosted.weblate.org/engage/komikku-app/).
+- Komikku code/DI: search `// KMK` (e.g. `KMKDomainModule`, `HideCategory`, library-update errors).
+- Prefs: `eu.kanade.domain.*.service.*Preferences` (e.g. `SourcePreferences.relatedMangas()`).
+
+---
 
 ## Extensions & sources
 
-- Catalog sources: installable APK extensions (not in this repo). In-repo: **delegated** sources and metadata in `exh/` (E-Hentai, NHentai, MangaDex helpers, recommendations in `exh/recs/`).
-- `source-api`: `eu.kanade.tachiyomi.source.*` — do not break extension ABI without strong reason.
+- Catalog sources: installable APK extensions (not in this repo).
+- In-repo: delegated sources and metadata in `exh/` (E-Hentai, NHentai, MangaDex, `exh/recs/`).
+- `source-api`: `eu.kanade.tachiyomi.source.*` — avoid breaking extension ABI.
 
 ---
 
-## Build Variants, Flags & CI
+## Build & CI
 
-Build types: `debug` (`.dev` suffix), `release`, `releaseTest`, `foss` (`.foss`), `preview` (`.beta`), `benchmark`.
+Build types: `debug` (`.dev`), `release`, `releaseTest` (`.rt`), `foss` (`.foss`), `preview` (`.beta`, CI default), `benchmark`.
 
-Gradle property flags passed with `-P`:
+Gradle `-P` flags (`buildSrc/.../BuildConfig.kt`):
 
-JDK **17**. From repo root:
+| Flag | Effect |
+|------|--------|
+| `include-telemetry` | Firebase Analytics + Crashlytics |
+| `enable-updater` | In-app update checker |
+| `disable-code-shrink` | Skip R8 minification |
+| `include-dependency-info` | Dependency metadata in APK |
 
 ```bash
-./gradlew assembleDebug                        # standard debug build
-./gradlew assembleRelease -Penable-updater     # enable in-app updater
-./gradlew assembleRelease -Pinclude-telemetry  # enable Firebase / Crashlytics
-./gradlew assembleRelease -Pdisable-code-shrink  # skip R8 minification
-./gradlew spotlessApply    # format (CI: spotlessCheck)
-./gradlew assemblePreview   # main dev/CI APK (app id suffix `.beta`)
-./gradlew testReleaseUnitTest
+./gradlew spotlessApply              # format (CI: spotlessCheck)
+./gradlew assemblePreview            # main CI/dev APK
+./gradlew assemblePreview -Pinclude-telemetry -Penable-updater  # full upstream CI build
+./gradlew testReleaseUnitTest        # CI unit tests (or ./gradlew test for all modules)
+./gradlew installDebug               # device install
+./gradlew :data:generateSqlDelightInterface  # after .sq / .sqm changes
 ```
+
+JDK **17**.
 
 ---
 
-## Key Developer Commands
+## Fork-origin markers
 
-```bash
-# Format code (must be clean before commit)
-./gradlew spotlessApply
-
-# Check lint / formatting
-./gradlew spotlessCheck
-
-# Run unit tests
-./gradlew test
-
-# Install debug build on connected device
-./gradlew installDebug
-```
-
-Optional Gradle props (see `buildSrc/.../BuildConfig.kt`): `-Pinclude-telemetry`, `-Penable-updater`, `-Pdisable-code-shrink`.
-
----
-
-## Fork-Origin Code Markers
-
-Inline comment blocks tag code by origin – preserve them when editing:
+Preserve inline blocks when editing:
 
 ```kotlin
-// KMK -->  (Komikku-specific addition)
-...
-// KMK <--
-
-// SY -->   (from TachiyomiSY)
-...
-// SY <--
-
-// EH       (E-Hentai / extended features from exh/*)
+// KMK -->  … // KMK <--   Komikku
+// SY -->   … // SY <--    TachiyomiSY
+// EXH -->  … // EXH <--   E-Hentai / exh (existing); prefer KMK for new Komikku-only code
 ```
 
-Package roots reflect origin:
-- `eu.kanade.tachiyomi.*` – legacy Tachiyomi code
-- `tachiyomi.*` – newer domain/data layers
-- `mihon.*` – Mihon refactors
-- `exh.*` – enhanced/ SY / E-Hentai extensions
+Package roots: `eu.kanade.tachiyomi.*` (legacy UI), `tachiyomi.*` (domain/data), `mihon.*` (Mihon upstream), `exh.*` (enhanced sources).
 
 ---
 
-## Tests, Strings & i18n
+## Tests
 
-- Unit tests: mainly `domain/src/test/`; app: `MigratorTest.kt`. No broad UI test suite.
-- Translations: [Weblate](https://hosted.weblate.org/engage/komikku-app/) — do not hand-edit locale `strings.xml` except `i18n-kmk/.../base/` for new Komikku keys.
+- Unit tests: `domain/src/test/`; app: `app/src/test/.../MigratorTest.kt`. No broad UI test suite.
 
-Add Komikku-specific strings to `i18n-kmk/src/commonMain/moko-resources/base/`. Do **not** modify `i18n/` (upstream Mihon strings) or `i18n-sy/` unless syncing upstream. Translations are managed externally via Weblate.
+---
 
 ## Conventions
 
-- **Logging**: `xLogLogcatLogger` (`exh.log`),not logcat library or raw `Log`.
-- **Coroutines**: `launchIO` / `withIOContext` from `tachiyomi.core.common.util.lang`.
-- **Formatting**: Spotless + ktlint (`buildSrc/.../mihon.code.lint.gradle.kts`).
-- New Komikku features: follow existing `// KMK` islands; keep Mihon/SY blocks intact when merging upstream.
+- **Logging** – Prefer `xLogE()` / `xLog()` helpers from `exh.log` for Komikku code, Mihon uses `logcat { }` from `tachiyomi.core.common.util.system`. Avoid raw `android.util.Log`.
+- **Formatting** – Spotless + ktlint (`buildSrc/.../mihon.code.lint.gradle.kts`).
+- **Fork edits** – New Komikku features inside `// KMK` islands; keep `// SY` / `// EXH` blocks intact when merging upstream.
 
 ---
 
-## Key Files
+## Key files
 
-- `buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt` – feature flags
-- `buildSrc/src/main/kotlin/mihon/buildlogic/AndroidConfig.kt` – SDK/Java versions
-- `app/src/main/java/eu/kanade/tachiyomi/di/AppModule.kt` – DI wiring
-- `app/build.gradle.kts` – all build variants, splits, compiler opts
-- `settings.gradle.kts` – module graph
-
-Key entrypoints: `App.kt` (Injekt bootstrap), `MainActivity.kt`, `settings.gradle.kts` (modules).
+- `App.kt` – Injekt bootstrap, logging setup
+- `MainActivity.kt` – Voyager host
+- `app/src/main/java/eu/kanade/tachiyomi/di/AppModule.kt` – core DI
+- `app/src/main/java/eu/kanade/domain/DomainModule.kt` – domain interactors
+- `buildSrc/.../BuildConfig.kt`, `AndroidConfig.kt` – flags, SDK versions
+- `app/build.gradle.kts`, `settings.gradle.kts`
