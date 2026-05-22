@@ -62,22 +62,20 @@ class LibraryUpdateErrorScreenModel(
     fun toggleSelection(
         item: LibraryUpdateErrorItem,
         selected: Boolean,
-        userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
         mutableState.update { state ->
+            val selectedIndex = state.items.indexOfFirst { it.error.errorId == item.error.errorId }
+            if (selectedIndex < 0) return@update state
+            val selectedItem = state.items[selectedIndex]
+            if (selectedItem.selected == selected) return@update state
+
             val newItems = state.items.toMutableList().apply {
-                val selectedIndex = indexOfFirst { it.error.errorId == item.error.errorId }
-                if (selectedIndex < 0) return@apply
-
-                val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
-
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedErrorIds.addOrRemove(item.error.errorId, selected)
 
-                if (selected && userSelected && fromLongPress) {
+                if (selected && fromLongPress) {
                     if (firstSelection) {
                         selectedPositions[0] = selectedIndex
                         selectedPositions[1] = selectedIndex
@@ -96,14 +94,14 @@ class LibraryUpdateErrorScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedErrorIds.add(inbetweenItem.error.errorId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedErrorIds.add(inBetweenItem.error.errorId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }
-                } else if (userSelected && !fromLongPress) {
+                } else if (!fromLongPress) {
                     if (!selected) {
                         if (selectedIndex == selectedPositions[0]) {
                             selectedPositions[0] = indexOfFirst { it.selected }
@@ -129,11 +127,10 @@ class LibraryUpdateErrorScreenModel(
                 selectedErrorIds.addOrRemove(it.error.errorId, selected)
                 it.copy(selected = selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(items = newItems)
         }
-
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun invertSelection() {
@@ -142,10 +139,10 @@ class LibraryUpdateErrorScreenModel(
                 selectedErrorIds.addOrRemove(it.error.errorId, !it.selected)
                 it.copy(selected = !it.selected)
             }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
             state.copy(items = newItems)
         }
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -189,11 +186,6 @@ data class LibraryUpdateErrorScreenState(
         }
         return uiModels
     }
-
-    fun getHeaderIndexes(): List<Int> = getUiModel()
-        .withIndex()
-        .filter { it.value is LibraryUpdateErrorUiModel.Header }
-        .map { it.index }
 }
 
 @Immutable

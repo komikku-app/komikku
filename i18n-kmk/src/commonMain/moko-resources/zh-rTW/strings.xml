@@ -122,7 +122,7 @@
     <string name="action_copy_to_clipboard_combined_page">將雙頁複製到剪貼簿</string>
     <string name="auto_update_app_disable_auto_download">不自動下載更新</string>
     <string name="action_remove_merged">要從書櫃移除原始條目嗎？</string>
-    <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses、Tsumino</string>
+    <string name="batch_add_description">支援：MangaDex、E-H、ExH、nH、8Muses</string>
     <string name="action_manual_install">手動下載</string>
     <string name="pref_top_align_cover">將封面與頂部對齊</string>
     <string name="pref_top_align_cover_summary">將封面與頂部對齊並顯示漫畫資訊</string>

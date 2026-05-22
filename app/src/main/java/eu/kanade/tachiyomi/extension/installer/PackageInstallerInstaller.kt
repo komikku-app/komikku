@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.extension.installer
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -14,8 +15,7 @@ import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.lang.use
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.getUriSize
-import logcat.LogPriority
-import tachiyomi.core.common.util.system.logcat
+import exh.log.xLogE
 
 class PackageInstallerInstaller(private val service: Service) : Installer(service) {
 
@@ -41,7 +41,7 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                                 .sanitizeByFiltering(this)
                         }
                     if (userAction == null) {
-                        logcat(LogPriority.ERROR) { "Fatal error for $intent" }
+                        xLogE("Fatal error for $intent")
                         continueQueue(InstallStep.Error)
                         return
                     }
@@ -82,6 +82,7 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                     inputStream.copyTo(outputStream)
                     session.fsync(outputStream)
                 }
+                service.contentResolver.delete(entry.uri, null, null)
 
                 val intentSender = PendingIntent.getBroadcast(
                     service,
@@ -89,10 +90,11 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                     Intent(INSTALL_ACTION).setPackage(service.packageName),
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0,
                 ).intentSender
+                @SuppressLint("RequestInstallPackagesPolicy")
                 session.commit(intentSender)
             }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to install extension ${entry.downloadId} ${entry.uri}" }
+            xLogE("Failed to install extension ${entry.downloadId} ${entry.uri}", e)
             activeSession?.let { (_, sessionId) ->
                 packageInstaller.abandonSession(sessionId)
             }
@@ -103,8 +105,13 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
     override fun cancelEntry(entry: Entry): Boolean {
         activeSession?.let { (activeEntry, sessionId) ->
             if (activeEntry == entry) {
-                packageInstaller.abandonSession(sessionId)
-                return false
+                return try {
+                    packageInstaller.abandonSession(sessionId)
+                    false
+                } catch (_: SecurityException) {
+                    // Highly likely the session has succeeded
+                    true
+                }
             }
         }
         return true

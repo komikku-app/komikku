@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copia la pagina combinata negli appunti</string>
     <string name="auto_update_app_disable_auto_download">Non scaricare automaticamente l\'aggiornamento</string>
     <string name="action_remove_merged">Rimuovere le voci originali dalla libreria?</string>
-    <string name="batch_add_description">Supporto: MangaDex, E-H, ExH, nH, 8Muse, Tsumino</string>
+    <string name="batch_add_description">Supporto: MangaDex, E-H, ExH, nH, 8Muse</string>
     <string name="custom_theme_palette_patagonia">Patagonia</string>
     <string name="custom_theme_palette_pop">Pop</string>
     <string name="custom_theme_palette_outrun">Superare</string>
@@ -198,4 +198,11 @@
     <string name="pref_webtoon_scale_type">Regolazione automatica per la visualizzazione su schermo panoramico</string>
     <string name="pref_track_on_add_library">Apri il menu tracciamento quando aggiungi una voce alla libreria</string>
     <string name="discord_status_browsing">Naviga</string>
+    <string name="pref_pinch_to_zoom">Pizzica per ingrandire</string>
+    <string name="discord_status_using">Utilizzando:</string>
+    <string name="pref_category_discord_incognito">RPC Incognito</string>
+    <string name="discord_status_scrolling">Scorrimento attraverso</string>
+    <string name="discord_status_messing">Messaggiare con</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Recupera automaticamente i metadati di un nuovo manga quando lo aggiungi alla libreria</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Recupera automaticamente l'elenco dei capitoli di un nuovo manga quando lo aggiungi alla libreria</string>
 </resources>

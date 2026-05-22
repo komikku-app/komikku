@@ -67,7 +67,6 @@ fun Screen.BulkFavoriteDialogs(
             AddDuplicateMangaDialog(
                 dialog = dialog,
                 navigator = navigator,
-                state = bulkFavoriteState,
                 onDismiss = bulkFavoriteScreenModel::dismissDialog,
                 stopRunning = bulkFavoriteScreenModel::stopRunning,
                 toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
@@ -134,10 +133,9 @@ private fun Screen.ShowMigrateDialog(
 private fun AddDuplicateMangaDialog(
     dialog: Dialog.AddDuplicateManga,
     navigator: Navigator?,
-    state: BulkFavoriteScreenModel.State,
     onDismiss: () -> Unit,
     stopRunning: () -> Unit,
-    toggleSelectionMode: () -> Unit,
+    toggleSelectionMode: (Boolean) -> Unit,
     addFavorite: (Manga) -> Unit,
     showMigrateDialog: (manga: Manga, duplicate: Manga) -> Unit,
 ) {
@@ -147,9 +145,7 @@ private fun AddDuplicateMangaDialog(
         duplicates = dialog.duplicates,
         onDismissRequest = onDismiss,
         onConfirm = {
-            if (state.selectionMode) {
-                toggleSelectionMode()
-            }
+            toggleSelectionMode(false)
             addFavorite(dialog.manga)
         },
         onOpenManga = { navigator?.push(MangaScreen(it.id)) },

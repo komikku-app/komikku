@@ -241,7 +241,7 @@
         <service
             android:name=".extension.util.ExtensionInstallService"
             android:exported="false"
-            android:foregroundServiceType="shortService" />
+            android:foregroundServiceType="dataSync" />
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
@@ -333,22 +333,6 @@
 
                 <data android:pathPattern="/g/..*" />
             </intent-filter>
-            <!-- Tsumino -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https" />
-                <data android:scheme="http" />
-
-                <data android:host="tsumino.com" />
-                <data android:host="www.tsumino.com" />
-
-                <data android:pathPattern="/Read/View/..*" />
-                <data android:pathPattern="/Book/Info/..*" />
-            </intent-filter>
             <!-- Pururin -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -362,21 +346,6 @@
                 <data android:host="pururin.me" />
 
                 <data android:pathPattern="/gallery/..*" />
-            </intent-filter>
-            <!-- HBrowse -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https" />
-                <data android:scheme="http" />
-
-                <data android:host="hbrowse.com" />
-                <data android:host="www.hbrowse.com" />
-
-                <!--<data android:pathPattern="/gallery/..*" />-->
             </intent-filter>
             <!-- Mangadex -->
             <intent-filter android:autoVerify="true">

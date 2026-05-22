@@ -24,7 +24,9 @@ abstract class Installer(private val service: Service) {
     private val extensionManager: ExtensionManager by injectLazy()
 
     private var waitingInstall = AtomicReference<Entry?>(null)
-    private val queue = Collections.synchronizedList(mutableListOf<Entry>())
+    // KMK -->
+    private val queue = Collections.synchronizedSet(mutableSetOf<Entry>())
+    // KMK <--
 
     private val cancelReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -104,7 +106,9 @@ abstract class Installer(private val service: Service) {
         }
         val nextEntry = queue.first()
         if (waitingInstall.compareAndSet(null, nextEntry)) {
-            queue.removeAt(0)
+            // KMK -->
+            queue.remove(nextEntry)
+            // KMK <--
             processEntry(nextEntry)
         }
     }
@@ -129,7 +133,11 @@ abstract class Installer(private val service: Service) {
      */
     private fun cancelQueue(downloadId: Long) {
         val waitingInstall = this.waitingInstall.load()
-        val toCancel = queue.find { it.downloadId == downloadId } ?: waitingInstall ?: return
+        // KMK -->
+        val toCancel = synchronized(queue) { queue.find { it.downloadId == downloadId } }
+            ?: waitingInstall?.takeIf { it.downloadId == downloadId }
+            // KMK <--
+            ?: return
         if (cancelEntry(toCancel)) {
             queue.remove(toCancel)
             if (waitingInstall == toCancel) {

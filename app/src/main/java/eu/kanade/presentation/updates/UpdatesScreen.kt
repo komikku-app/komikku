@@ -112,6 +112,9 @@ fun UpdateScreen(
             else -> {
                 val scope = rememberCoroutineScope()
                 var isRefreshing by remember { mutableStateOf(false) }
+                // KMK -->
+                val uiModels = remember(state.items) { state.getUiModel() }
+                // KMK <--
 
                 PullRefresh(
                     refreshing = isRefreshing,
@@ -134,8 +137,8 @@ fun UpdateScreen(
                         updatesLastUpdatedItem(lastUpdated)
 
                         updatesUiItems(
-                            uiModels = state.getUiModel(),
                             // KMK -->
+                            uiModels = uiModels,
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
                             usePanoramaCover = usePanoramaCover,
