@@ -129,6 +129,10 @@
     <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
     <string name="pref_webdav_folder">WebDAV data folder</string>
     <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
+    <!-- E-Hentai settings -->
+    <string name="favorites_sync_sort">Favorites sync sort</string>
+    <string name="favorites_sync_sort_published">Published time</string>
+    <string name="favorites_sync_sort_favorited">Favorited time</string>
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>

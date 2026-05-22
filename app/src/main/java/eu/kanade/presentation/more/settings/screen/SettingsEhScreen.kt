@@ -73,6 +73,7 @@ import tachiyomi.domain.manga.interactor.DeleteFavoriteEntries
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -872,10 +873,10 @@ object SettingsEhScreen : SearchableSettings {
         return Preference.PreferenceItem.ListPreference(
             preference = exhPreferences.exhFavoritesSyncSort(),
             entries = persistentMapOf(
-                ExhFavoritesSyncSort.FAVORITED to stringResource(SYMR.strings.favorites_sync_sort_favorited),
-                ExhFavoritesSyncSort.PUBLISHED to stringResource(SYMR.strings.favorites_sync_sort_published),
+                ExhFavoritesSyncSort.FAVORITED to stringResource(KMR.strings.favorites_sync_sort_favorited),
+                ExhFavoritesSyncSort.PUBLISHED to stringResource(KMR.strings.favorites_sync_sort_published),
             ),
-            title = stringResource(SYMR.strings.favorites_sync_sort),
+            title = stringResource(KMR.strings.favorites_sync_sort),
         )
     }
 
