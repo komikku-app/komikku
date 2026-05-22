@@ -129,3 +129,38 @@ Package roots: `eu.kanade.tachiyomi.*` (legacy UI), `tachiyomi.*` (domain/data),
 - `app/src/main/java/eu/kanade/domain/DomainModule.kt` – domain interactors
 - `buildSrc/.../BuildConfig.kt`, `AndroidConfig.kt` – flags, SDK versions
 - `app/build.gradle.kts`, `settings.gradle.kts`
+
+---
+
+## Cursor Cloud specific instructions
+
+### Environment
+
+The VM update script installs the Android SDK (platform 36, build-tools 35.0.1, platform-tools, cmdline-tools) into `/opt/android-sdk` and writes `local.properties` with `sdk.dir`. JDK 21 is pre-installed and works fine for compiling to JVM target 17. `ANDROID_HOME`, `JAVA_HOME`, and `PATH` are set in `~/.bashrc`.
+
+### Running key commands
+
+All Gradle commands require the environment variables set above. Export them before invoking `./gradlew` if running in a fresh shell:
+
+```bash
+export ANDROID_HOME=/opt/android-sdk
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+```
+
+| Task | Command |
+|------|---------|
+| Format check (lint) | `./gradlew spotlessCheck` |
+| Auto-fix formatting | `./gradlew spotlessApply` |
+| Debug APK build | `./gradlew assembleDebug` |
+| Preview APK build (CI) | `./gradlew assemblePreview` |
+| Unit tests (CI) | `./gradlew testReleaseUnitTest` |
+| All module tests | `./gradlew test` |
+| SQLDelight codegen | `./gradlew :data:generateSqlDelightInterface` |
+
+### Gotchas
+
+- First Gradle build downloads ~1 GB of dependencies; subsequent builds use the Gradle cache and are much faster.
+- `local.properties` is `.gitignore`d — it must be recreated if missing (the update script handles this).
+- No Android emulator or device is available on the Cloud VM, so `installDebug` will fail. Build verification is done via `assembleDebug`.
+- `google-services.json` and `client_secrets.json` are not present (CI secrets); builds without `-Pinclude-telemetry` succeed without them.
+- Gradle daemon may use significant memory (`-Xmx4g` in `gradle.properties`). If OOM occurs, kill and restart the daemon with `./gradlew --stop`.
