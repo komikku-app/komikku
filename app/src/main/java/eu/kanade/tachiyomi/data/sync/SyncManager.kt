@@ -19,7 +19,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import logcat.logcat
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.i18n.MR
 import tachiyomi.data.Chapters
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.manga.MangaMapper.mapManga
@@ -72,7 +74,9 @@ class SyncManager(
      * This function retrieves local data (favorites, manga, extensions, and categories)
      * from the database using the BackupManager, then synchronizes the data with a sync service.
      */
-    suspend fun syncData() {
+    suspend fun syncData(): SyncDataResult {
+        SyncFailureState.consume()
+
         // Reset isSyncing in case it was left over or failed syncing during restore.
         handler.await(inTransaction = true) {
             mangasQueries.resetIsSyncing()
@@ -153,12 +157,22 @@ class SyncManager(
             }
         }
 
-        val remoteBackup = syncService?.doSync(syncData)
+        if (syncService == null) {
+            return SyncDataResult.Failure(
+                message = context.stringResource(MR.strings.sync_failed_generic),
+            )
+        }
+
+        val remoteBackup = syncService.doSync(syncData)
 
         if (remoteBackup == null) {
-            logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
-            // should we call showSyncError?
-            return
+            logcat(LogPriority.DEBUG) { "Skip restore due to sync failure" }
+            val (message, errorAlreadyNotified) = SyncFailureState.consume()
+                ?: (context.stringResource(MR.strings.sync_failed_generic) to false)
+            return SyncDataResult.Failure(
+                message = message,
+                errorAlreadyNotified = errorAlreadyNotified,
+            )
         }
 
         if (remoteBackup === syncData.backup) {
@@ -166,13 +180,14 @@ class SyncManager(
             logcat(LogPriority.DEBUG) { "Skip restore due to remote was overwrite from local" }
             syncPreferences.lastSyncTimestamp().set(Date().time)
             notifier.showSyncSuccess("Sync completed successfully")
-            return
+            return SyncDataResult.Success
         }
 
         // Stop the sync early if the remote backup is null or empty
         if (remoteBackup.backupManga.isEmpty()) {
-            notifier.showSyncError("No data found on remote server.")
-            return
+            val message = "No data found on remote server."
+            notifier.showSyncError(message)
+            return SyncDataResult.Failure(message = message, errorAlreadyNotified = true)
         }
 
         // Check if it's first sync based on lastSyncTimestamp
@@ -180,7 +195,7 @@ class SyncManager(
             // It's first sync no need to restore data. (just update remote data)
             syncPreferences.lastSyncTimestamp().set(Date().time)
             notifier.showSyncSuccess("Updated remote data successfully")
-            return
+            return SyncDataResult.Success
         }
 
         val (filteredFavorites, nonFavorites) = filterFavoritesAndNonFavorites(remoteBackup)
@@ -208,7 +223,7 @@ class SyncManager(
             // update the sync timestamp
             syncPreferences.lastSyncTimestamp().set(Date().time)
             notifier.showSyncSuccess("Sync completed successfully")
-            return
+            return SyncDataResult.Success
         }
 
         val backupUri = writeSyncDataToCache(context, newSyncData)
@@ -228,8 +243,12 @@ class SyncManager(
 
             // update the sync timestamp
             syncPreferences.lastSyncTimestamp().set(Date().time)
+            return SyncDataResult.Success
         } else {
             logcat(LogPriority.ERROR) { "Failed to write sync data to file" }
+            return SyncDataResult.Failure(
+                message = context.stringResource(MR.strings.sync_failed_generic),
+            )
         }
     }
 

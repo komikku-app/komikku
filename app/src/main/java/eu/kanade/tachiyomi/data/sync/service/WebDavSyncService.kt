@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.sync.service
 import android.content.Context
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.sync.SyncFailureState
 import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.PUT
@@ -117,7 +118,9 @@ class WebDavSyncService(
             return finalSyncData.backup
         } catch (e: Exception) {
             xLogE("WebDAV sync error:", e)
-            notifier.showSyncError(e.message)
+            val message = e.message ?: context.stringResource(MR.strings.unknown_error)
+            notifier.showSyncError(message)
+            SyncFailureState.report(message)
             return null
         }
     }
@@ -182,6 +185,7 @@ class WebDavSyncService(
                     "Please retry syncing or check your WebDAV folder."
                 xLogW(message)
                 notifier.showSyncError(message)
+                SyncFailureState.report(message)
             }
             else -> {
                 val bodyStr = response.body.string()
