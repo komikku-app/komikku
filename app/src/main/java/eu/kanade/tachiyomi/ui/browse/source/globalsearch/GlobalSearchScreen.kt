@@ -16,6 +16,7 @@ import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.GlobalSearchScreen
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -24,6 +25,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 class GlobalSearchScreen(
     val searchQuery: String = "",
     private val extensionFilter: String? = null,
+    private val initialTrackSearch: TrackSearch? = null,
 ) : Screen() {
 
     @Composable
@@ -66,7 +68,7 @@ class GlobalSearchScreen(
                     is SearchItemResult.Success -> {
                         val manga = result.result.singleOrNull()
                         if (manga != null) {
-                            navigator.replace(MangaScreen(manga.id, true))
+                            navigator.replace(MangaScreen(manga.id, true, initialTrackSearch = initialTrackSearch))
                         } else {
                             // Backoff to result screen
                             showSingleLoadingScreen = false
@@ -85,7 +87,7 @@ class GlobalSearchScreen(
                 onChangeSearchFilter = screenModel::setSourceFilter,
                 onToggleResults = screenModel::toggleFilterResults,
                 onClickSource = {
-                    navigator.push(BrowseSourceScreen(it.id, state.searchQuery))
+                    navigator.push(BrowseSourceScreen(it.id, state.searchQuery, initialTrackSearch = initialTrackSearch))
                 },
                 onClickItem = { manga ->
                     // KMK -->
@@ -93,7 +95,7 @@ class GlobalSearchScreen(
                         bulkFavoriteScreenModel.toggleSelection(manga)
                     } else {
                         // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
+                        navigator.push(MangaScreen(manga.id, true, initialTrackSearch = initialTrackSearch))
                     }
                 },
                 onLongClickItem = { manga ->
@@ -102,7 +104,7 @@ class GlobalSearchScreen(
                         bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
                     } else {
                         // KMK <--
-                        navigator.push(MangaScreen(manga.id, true))
+                        navigator.push(MangaScreen(manga.id, true, initialTrackSearch = initialTrackSearch))
                     }
                 },
                 // KMK -->

@@ -107,8 +107,13 @@ abstract class SearchScreenModel(
     fun hasPinnedSources(): Boolean = getEnabledSources().any { "${it.id}" in pinnedSources }
 
     fun shouldPinnedSourcesHidden() {
-        if (!hasPinnedSources()) {
-            preferences.globalSearchPinnedState().set(SourceFilter.All)
+        val normalizedFilter = normalizeSearchSourceFilter(
+            currentFilter = state.value.sourceFilter,
+            hasPinnedSources = hasPinnedSources(),
+        )
+        if (normalizedFilter != state.value.sourceFilter) {
+            mutableState.update { it.copy(sourceFilter = normalizedFilter) }
+            preferences.globalSearchPinnedState().set(normalizedFilter)
         }
     }
     // KMK <--
@@ -145,6 +150,8 @@ abstract class SearchScreenModel(
     }
 
     fun search() {
+        shouldPinnedSourcesHidden()
+
         val query = state.value.searchQuery
         val sourceFilter = state.value.sourceFilter
 
@@ -276,5 +283,16 @@ sealed interface SearchItemResult {
 
     fun isVisible(onlyShowHasResults: Boolean): Boolean {
         return !onlyShowHasResults || (this is Success && !this.isEmpty)
+    }
+}
+
+internal fun normalizeSearchSourceFilter(
+    currentFilter: SourceFilter,
+    hasPinnedSources: Boolean,
+): SourceFilter {
+    return if (currentFilter == SourceFilter.PinnedOnly && !hasPinnedSources) {
+        SourceFilter.All
+    } else {
+        currentFilter
     }
 }

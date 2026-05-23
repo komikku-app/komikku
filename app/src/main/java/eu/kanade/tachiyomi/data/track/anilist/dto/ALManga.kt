@@ -70,6 +70,20 @@ data class ALUserManga(
         private = this@ALUserManga.private
     }
 
+    fun toTrackSearch() = TrackSearch.create(TrackerManager.ANILIST).apply {
+        remote_id = manga.remoteId
+        title = manga.title
+        status = toTrackStatus()
+        score = scoreRaw.toDouble()
+        last_chapter_read = chaptersRead.toDouble()
+        library_id = libraryId
+        total_chapters = manga.totalChapters
+        private = this@ALUserManga.private
+        cover_url = manga.imageUrl
+        summary = manga.description?.htmlDecode() ?: ""
+        tracking_url = AnilistApi.mangaUrl(remote_id)
+    }
+
     private fun toTrackStatus() = when (listStatus) {
         "CURRENT" -> Anilist.READING
         "COMPLETED" -> Anilist.COMPLETED

@@ -20,6 +20,7 @@ enum class TrackStatus(val int: Int, val res: StringResource) {
     COMPLETED(5, MR.strings.completed),
     DROPPED(6, MR.strings.dropped),
     OTHER(7, SYMR.strings.not_tracked),
+    NOT_IN_LIBRARY(8, MR.strings.not_in_library),
     ;
 
     companion object {

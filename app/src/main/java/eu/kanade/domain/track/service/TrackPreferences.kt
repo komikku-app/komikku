@@ -45,6 +45,11 @@ class TrackPreferences(
         AutoTrackState.ALWAYS,
     )
 
+    fun showNotInLibraryTrackerEntries() = preferenceStore.getBoolean(
+        "pref_show_not_in_library_tracker_entries",
+        false,
+    )
+
     // SY -->
     fun resolveUsingSourceMetadata() = preferenceStore.getBoolean(
         "pref_resolve_using_source_metadata_key",

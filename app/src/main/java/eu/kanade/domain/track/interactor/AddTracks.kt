@@ -35,6 +35,7 @@ class AddTracks(
     // TODO: update all trackers based on common data
     suspend fun bind(tracker: Tracker, item: Track, mangaId: Long) = withNonCancellableContext {
         withIOContext {
+            item.manga_id = mangaId
             val allChapters = getChaptersByMangaId.await(mangaId)
             val hasReadChapters = allChapters.any { it.read }
             tracker.bind(item, hasReadChapters)

@@ -1,7 +1,9 @@
 package eu.kanade.presentation.more.settings.widget
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +29,7 @@ fun TrackingPreferenceWidget(
     modifier: Modifier = Modifier,
     tracker: Tracker,
     checked: Boolean,
+    supportLabel: String? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val highlighted = LocalPreferenceHighlighted.current
@@ -39,14 +42,12 @@ fun TrackingPreferenceWidget(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TrackLogoIcon(tracker)
-            Text(
-                text = tracker.name,
+            TrackerLabel(
+                name = tracker.name,
+                supportLabel = supportLabel,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp),
-                maxLines = 1,
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = TitleFontSize,
             )
             if (checked) {
                 Icon(
@@ -60,4 +61,39 @@ fun TrackingPreferenceWidget(
             }
         }
     }
+}
+
+@Composable
+private fun TrackerLabel(
+    name: String,
+    supportLabel: String?,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = name,
+            maxLines = 1,
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = TitleFontSize,
+        )
+        supportLabel?.let {
+            SupportLabel(text = it)
+        }
+    }
+}
+
+@Composable
+private fun SupportLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelSmall,
+    )
 }

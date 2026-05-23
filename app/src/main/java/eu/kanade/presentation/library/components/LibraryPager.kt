@@ -19,7 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
-import eu.kanade.tachiyomi.ui.library.LibraryItem
+import eu.kanade.tachiyomi.ui.library.LibraryDisplayItem
+import eu.kanade.tachiyomi.ui.library.RemoteTrackerLibraryItem
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
@@ -38,8 +39,9 @@ fun LibraryPager(
     getCategoryForPage: (Int) -> Category,
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
-    getItemsForCategory: (Category) -> List<LibraryItem>,
+    getDisplayItemsForCategory: (Category) -> List<LibraryDisplayItem>,
     onClickManga: (Category, LibraryManga) -> Unit,
+    onClickRemoteTrack: (RemoteTrackerLibraryItem) -> Unit,
     onLongClickManga: (Category, LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
 ) {
@@ -53,7 +55,7 @@ fun LibraryPager(
             return@HorizontalPager
         }
         val category = getCategoryForPage(page)
-        val items = getItemsForCategory(category)
+        val items = getDisplayItemsForCategory(category)
 
         if (items.isEmpty()) {
             LibraryPagerEmptyScreen(
@@ -85,6 +87,7 @@ fun LibraryPager(
                     contentPadding = contentPadding,
                     selection = selection,
                     onClick = onClickManga,
+                    onClickRemoteTrack = onClickRemoteTrack,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
@@ -99,6 +102,7 @@ fun LibraryPager(
                     contentPadding = contentPadding,
                     selection = selection,
                     onClick = onClickManga,
+                    onClickRemoteTrack = onClickRemoteTrack,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
@@ -112,6 +116,7 @@ fun LibraryPager(
                     contentPadding = contentPadding,
                     selection = selection,
                     onClick = onClickManga,
+                    onClickRemoteTrack = onClickRemoteTrack,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
@@ -126,6 +131,7 @@ fun LibraryPager(
                     contentPadding = contentPadding,
                     selection = selection,
                     onClick = onClickManga,
+                    onClickRemoteTrack = onClickRemoteTrack,
                     onLongClick = onLongClickManga,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,

@@ -29,6 +29,8 @@ class MigrateSearchScreenModel(
     }
 
     init {
+        shouldPinnedSourcesHidden()
+
         screenModelScope.launch {
             val manga = getManga.await(mangaId)!!
             mutableState.update {
@@ -39,10 +41,6 @@ class MigrateSearchScreenModel(
             }
             search()
         }
-
-        // KMK -->
-        shouldPinnedSourcesHidden()
-        // KMK <--
     }
 
     override fun getEnabledSources(): List<CatalogueSource> {
