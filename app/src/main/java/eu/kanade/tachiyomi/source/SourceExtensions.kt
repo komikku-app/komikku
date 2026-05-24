@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.source
 
 import android.app.Application
+import android.content.Context
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import exh.source.EH_PACKAGE
@@ -20,10 +21,7 @@ fun Source.getNameForMangaInfo(
     mergeSources: List<Source>? = null,
     // SY <--
 ): String {
-    // KMK --> Resolve the merged label once at the top level and pass it down
-    // instead of looking it up inside the helper.
-    val mergedLabel = Injekt.get<Application>().stringResource(MR.strings.label_merged_entry)
-    // KMK <--
+    val application = Injekt.get<Application>()
     val preferences = Injekt.get<SourcePreferences>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
@@ -32,10 +30,10 @@ fun Source.getNameForMangaInfo(
     return when {
         // SY -->
         !mergeSources.isNullOrEmpty() -> getMergedSourcesString(
+            application,
             mergeSources,
             enabledLanguages,
             hasOneActiveLanguages,
-            mergedLabel,
         )
         // SY <--
         // KMK -->
@@ -57,10 +55,10 @@ fun Source.getNameForMangaInfo(
 
 // SY -->
 private fun getMergedSourcesString(
+    context: Context,
     mergeSources: List<Source>,
     enabledLangs: List<String>,
     onlyName: Boolean,
-    mergedLabel: String,
 ): String {
     // KMK --> Filter out MergedSource itself so it's not displayed in the list
     val realSources = mergeSources.filterNot { it.id == MERGED_SOURCE_ID }
@@ -91,10 +89,13 @@ private fun getMergedSourcesString(
         }
     }
 
+    // KMK --> Use the empty-state label when filtering removes every real source,
+    // otherwise use the localized format string so RTL languages can reorder the
+    // label and the sources as needed.
     return if (sourceNames.isBlank()) {
-        mergedLabel
+        context.stringResource(MR.strings.label_merged_entry)
     } else {
-        "$mergedLabel ($sourceNames)"
+        context.stringResource(MR.strings.label_merged_entry_with_sources, sourceNames)
     }
     // KMK <--
 }
