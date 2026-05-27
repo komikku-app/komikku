@@ -18,8 +18,6 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.sync.SyncFailureState
-import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -65,8 +63,6 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
 
     private val googleDriveService = GoogleDriveService(context)
 
-    private val notifier = SyncNotifier(context)
-
     private val protoBuf: ProtoBuf = Injekt.get()
 
     override suspend fun doSync(syncData: SyncData): Backup? {
@@ -100,10 +96,7 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
             pushSyncData(syncData)
             return syncData.backup
         } catch (e: Exception) {
-            val message = e.message ?: context.stringResource(MR.strings.unknown_error)
-            logcat(LogPriority.ERROR, "SyncService") { "Error syncing: $message" }
-            notifier.showSyncError(message)
-            SyncFailureState.report(message)
+            logcat(LogPriority.ERROR, "SyncService") { "Error syncing: ${e.message}" }
             return null
         }
     }

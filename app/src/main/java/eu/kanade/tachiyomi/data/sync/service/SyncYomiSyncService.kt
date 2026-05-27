@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.data.sync.service
 import android.content.Context
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.sync.SyncFailureState
 import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
@@ -88,11 +87,10 @@ class SyncYomiSyncService(
             if (success) {
                 reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
             } else {
-                val message = "Failed to push sync data"
-                reportSyncEvent(SyncEventStatus.SYNC_FAILED, message)
-                notifier.showSyncError(message)
-                SyncFailureState.report(message)
+                reportSyncEvent(SyncEventStatus.SYNC_FAILED, "Failed to push sync data")
+                // KMK -->
                 return null
+                // KMK <--
             }
 
             return finalSyncData.backup
@@ -101,11 +99,9 @@ class SyncYomiSyncService(
                 reportSyncEvent(SyncEventStatus.SYNC_CANCELLED, e.message)
                 throw e
             }
-            val message = e.message ?: context.stringResource(MR.strings.unknown_error)
-            logcat(LogPriority.ERROR) { "Error syncing: $message" }
-            notifier.showSyncError(message)
-            SyncFailureState.report(message)
-            reportSyncEvent(SyncEventStatus.SYNC_ERROR, message)
+            logcat(LogPriority.ERROR) { "Error syncing: ${e.message}" }
+            notifier.showSyncError(e.message)
+            reportSyncEvent(SyncEventStatus.SYNC_ERROR, e.message)
             return null
         }
     }

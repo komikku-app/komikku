@@ -182,17 +182,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         return withIOContext {
             try {
-                LibraryUpdateSyncResult.consumeFailure()?.let { syncError ->
-                    notifier.showUpdateErrorNotification(
-                        failed = 1,
-                        errorMessage = context.stringResource(
-                            MR.strings.library_update_skipped_sync_error,
-                            syncError,
-                        ),
-                    )
-                    return@withIOContext Result.success()
-                }
-
                 when (target) {
                     Target.CHAPTERS -> updateChapterList()
                     // SY -->
@@ -855,7 +844,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // Define the SyncDataJob
                 val syncDataJob = OneTimeWorkRequestBuilder<SyncDataJob>()
                     .addTag(SyncDataJob.TAG_MANUAL)
-                    .addTag(SyncDataJob.TAG_BEFORE_LIBRARY_UPDATE)
                     .build()
 
                 // Chain SyncDataJob to run before LibraryUpdateJob

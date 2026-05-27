@@ -153,7 +153,7 @@ class LibraryUpdateNotifier(
      *
      * @param failed Number of entries that failed to update.
      */
-    fun showUpdateErrorNotification(failed: Int, errorMessage: String? = null) {
+    fun showUpdateErrorNotification(failed: Int) {
         if (failed == 0) {
             return
         }
@@ -163,7 +163,7 @@ class LibraryUpdateNotifier(
             Notifications.CHANNEL_LIBRARY_ERROR,
         ) {
             setContentTitle(context.stringResource(MR.strings.notification_update_error, failed))
-            setContentText(errorMessage ?: context.stringResource(MR.strings.action_show_errors))
+            setContentText(context.stringResource(MR.strings.action_show_errors))
             setSmallIcon(R.drawable.ic_komikku)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
 

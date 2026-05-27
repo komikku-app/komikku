@@ -14,18 +14,14 @@ import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.SyncStatus
-import eu.kanade.tachiyomi.data.library.LibraryUpdateSyncResult
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
-import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
@@ -57,22 +53,12 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         setForegroundSafely()
 
         return try {
-            when (val result = SyncManager(context).syncData()) {
-                SyncDataResult.Success -> Result.success()
-                is SyncDataResult.Failure -> {
-                    handleSyncFailure(result.message, result.errorAlreadyNotified)
-                    Result.success()
-                }
-            }
-        } catch (e: CancellationException) {
-            throw e
+            SyncManager(context).syncData()
+            Result.success()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
-            handleSyncFailure(
-                e.message ?: context.stringResource(MR.strings.unknown_error),
-                errorAlreadyNotified = false,
-            )
-            Result.success()
+            notifier.showSyncError(e.message)
+            Result.success() // try again next time
         } finally {
             // KMK -->
             syncStatus.stop()
@@ -92,19 +78,10 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         )
     }
 
-    private fun handleSyncFailure(message: String, errorAlreadyNotified: Boolean) {
-        if (tags.contains(TAG_BEFORE_LIBRARY_UPDATE)) {
-            LibraryUpdateSyncResult.setFailure(message)
-        } else if (!errorAlreadyNotified) {
-            notifier.showSyncError(message)
-        }
-    }
-
     companion object {
         private const val TAG_JOB = "SyncDataJob"
         private const val TAG_AUTO = "$TAG_JOB:auto"
         const val TAG_MANUAL = "$TAG_JOB:manual"
-        const val TAG_BEFORE_LIBRARY_UPDATE = "$TAG_JOB:before-library-update"
 
         fun isRunning(context: Context): Boolean {
             return context.workManager.isRunning(TAG_JOB)
