@@ -29,11 +29,11 @@ Before `git push`, confirm the current branch is not `master` or `main` (`git br
 **Hard rules:**
 
 - **Never** add Komikku-specific strings to `i18n/` or `i18n-sy/`.
-- **Never** edit non-`base` locale files in `i18n/` or `i18n-sy/` (Weblate owns translations).
+- **Never** edit non-`base` locale `strings.xml` or `plurals.xml` files in `i18n-kmk/`, `i18n/`, or `i18n-sy/` (Weblate owns translations).
 - Import: `import tachiyomi.i18n.kmk.KMR` for Komikku strings.
 - If a change is inside `// KMK -->` … `// KMK <--` or adds Komikku-only behavior, default to **`KMR` + `i18n-kmk`**.
 
-**Self-check before finishing:** `git diff` must not add new `<string name="…">` entries under `i18n/src/` or `i18n-sy/src/` for Komikku work.
+**Self-check before finishing:** `git diff` must not add new `<string name="…">` or `<plurals name="…">` entries under non-`base` locales in `i18n-kmk/src/`, `i18n/src/`, or `i18n-sy/src/`.
 
 ### Formatting & build verification
 
