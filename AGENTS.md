@@ -23,8 +23,8 @@ Before `git push`, confirm the current branch is not `master` or `main` (`git br
 | String kind | Module | Resource class | Base file only |
 |-------------|--------|----------------|----------------|
 | Komikku-only (new features, KMK UI, library-update errors, WebDAV, Discord, etc.) | `i18n-kmk/` | **`KMR`** | `i18n-kmk/src/commonMain/moko-resources/base/strings.xml` |
-| Shared Mihon / upstream behavior | `i18n/` | **`MR`** | `i18n/.../base/strings.xml` |
-| TachiyomiSY-only | `i18n-sy/` | **`SYMR`** | `i18n-sy/.../base/strings.xml` |
+| Shared Mihon / upstream behavior | `i18n/` | **`MR`** | `i18n/src/commonMain/moko-resources/base/strings.xml` |
+| TachiyomiSY-only | `i18n-sy/` | **`SYMR`** | `i18n-sy/src/commonMain/moko-resources/base/strings.xml` |
 
 **Hard rules:**
 
