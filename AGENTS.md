@@ -4,6 +4,53 @@ Komikku is an Android manga reader (min SDK 26, target SDK 36, JVM 17 / Kotlin) 
 
 ---
 
+## Mandatory rules for AI agents
+
+**Read this section before every change.** These rules override shortcuts (e.g. copying nearby `MR` imports or only running `compileDebugKotlin`).
+
+### Git
+
+| Rule | Required behavior |
+|------|-------------------|
+| Branch | Create a **feature branch** for the task (`git checkout -b <type>/<short-description>`). |
+| Commit | **OK** on a feature branch when work is ready. **Never** commit directly to `master` / `main` unless the user explicitly asks. |
+| Push | **OK** to push the **current feature branch** when work is ready. **Never** push to `master` / `main` unless the user explicitly asks. |
+
+Before `git push`, confirm the current branch is not `master` or `main` (`git branch --show-current`).
+
+### Internationalization (strings)
+
+| String kind | Module | Resource class | Base folder only |
+|-------------|--------|----------------|------------------|
+| Komikku-only (new features, KMK UI, library-update errors, WebDAV, Discord, etc.) | `i18n-kmk/` | **`KMR`** | `i18n-kmk/src/commonMain/moko-resources/base/` |
+| Shared Mihon / upstream behavior | `i18n/` | **`MR`** | `i18n/src/commonMain/moko-resources/base/` |
+| TachiyomiSY-only | `i18n-sy/` | **`SYMR`** | `i18n-sy/src/commonMain/moko-resources/base/` |
+
+**Hard rules:**
+
+- **Never** add Komikku-specific strings to `i18n/` or `i18n-sy/`.
+- **Never** edit non-`base` locale `strings.xml` or `plurals.xml` files in `i18n-kmk/`, `i18n/`, or `i18n-sy/` (Weblate owns translations).
+- Import: `import tachiyomi.i18n.kmk.KMR` for Komikku strings.
+- If a change is inside `// KMK -->` … `// KMK <--` or adds Komikku-only behavior, default to **`KMR` + `i18n-kmk`**.
+
+**Self-check before finishing:** `git diff` must not add new `<string name="…">` or `<plurals name="…">` entries under non-`base` locales in `i18n-kmk/src/`, `i18n/src/`, or `i18n-sy/src/`.
+
+### Formatting & build verification
+
+**“Build passes” is not enough.** After Kotlin/XML edits, run **in this order** before marking work complete:
+
+```bash
+./gradlew spotlessApply    # fix formatting
+./gradlew spotlessCheck    # must pass (same as CI)
+./gradlew assembleDebug    # or :app:compileDebugKotlin for a faster compile-only check
+```
+
+- **Do not** skip `spotlessCheck` when verifying changes.
+- If `spotlessCheck` fails, run `spotlessApply` and re-run `spotlessCheck`.
+- On Cloud VM, export `ANDROID_HOME` and `JAVA_HOME` first (see [Cursor Cloud](#cursor-cloud-specific-instructions)).
+
+---
+
 ## Module layout
 
 | Module | Purpose |
@@ -52,10 +99,12 @@ Example: `DeepLinkScreen` + `DeepLinkScreenModel` in `app/src/main/java/eu/kanad
 
 ## Komikku-specific work
 
-- New user-facing strings: **`KMR`** in `i18n-kmk/src/commonMain/moko-resources/base/`. Shared/upstream: **`MR`** (`i18n`). SY-only: **`SYMR`** (`i18n-sy`).
+- **Strings:** see [Mandatory rules – Internationalization](#mandatory-rules-for-ai-agents). Summary: Komikku → **`KMR`** / `i18n-kmk/…/base/` only.
 - Do not edit locale `strings.xml` in `i18n/` or `i18n-sy/` except when syncing upstream; translations via [Weblate](https://hosted.weblate.org/engage/komikku-app/).
 - Komikku code/DI: search `// KMK` (e.g. `KMKDomainModule`, `HideCategory`, library-update errors).
 - Prefs: `eu.kanade.domain.*.service.*Preferences` (e.g. `SourcePreferences.relatedMangas()`).
+
+**Examples (Komikku → `i18n-kmk`, not `i18n`):** library update error UI, sync-before-update messages, WebDAV/Discord settings, updater notifications, `mihon/feature/*` Komikku screens.
 
 ---
 
@@ -81,13 +130,16 @@ Gradle `-P` flags (`buildSrc/.../BuildConfig.kt`):
 | `include-dependency-info` | Dependency metadata in APK |
 
 ```bash
-./gradlew spotlessApply              # format (CI: spotlessCheck)
+./gradlew spotlessApply              # format (run before spotlessCheck)
+./gradlew spotlessCheck              # REQUIRED before considering work done (CI gate)
 ./gradlew assemblePreview            # main CI/dev APK
 ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater  # full upstream CI build
 ./gradlew testReleaseUnitTest        # CI unit tests (or ./gradlew test for all modules)
 ./gradlew installDebug               # device install
 ./gradlew :data:generateSqlDelightInterface  # after .sq / .sqm changes
 ```
+
+**Agent verification checklist (minimum):** `spotlessApply` → `spotlessCheck` → `assembleDebug` (or `compileDebugKotlin` only if the user asked for a quick compile check—but still run Spotless).
 
 JDK **17**.
 
@@ -116,7 +168,7 @@ Package roots: `eu.kanade.tachiyomi.*` (legacy UI), `tachiyomi.*` (domain/data),
 ## Conventions
 
 - **Logging** – Prefer `xLogE()` / `xLog()` helpers from `exh.log` for Komikku code, Mihon uses `logcat { }` from `tachiyomi.core.common.util.system`. Avoid raw `android.util.Log`.
-- **Formatting** – Spotless + ktlint (`buildSrc/.../mihon.code.lint.gradle.kts`).
+- **Formatting** – Spotless + ktlint (`buildSrc/.../mihon.code.lint.gradle.kts`). Agents **must** run `spotlessApply` and `spotlessCheck` (see [Mandatory rules](#mandatory-rules-for-ai-agents)).
 - **Fork edits** – New Komikku features inside `// KMK` islands; keep `// SY` / `// EXH` blocks intact when merging upstream.
 
 ---
@@ -149,8 +201,8 @@ export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 | Task | Command |
 |------|---------|
-| Format check (lint) | `./gradlew spotlessCheck` |
-| Auto-fix formatting | `./gradlew spotlessApply` |
+| **Required format fix** | `./gradlew spotlessApply` (run first after code edits) |
+| **Required format gate** | `./gradlew spotlessCheck` (must pass before task is done) |
 | Debug APK build | `./gradlew assembleDebug` |
 | Preview APK build (CI) | `./gradlew assemblePreview` |
 | Unit tests (CI) | `./gradlew testReleaseUnitTest` |
