@@ -49,8 +49,9 @@ val hostComposeDesktopTarget: String = run {
 dependencies {
     // Host-specific Compose Desktop UI stack (runtime/ui/foundation/material + Skiko native).
     implementation("org.jetbrains.compose.desktop:desktop-jvm-$hostComposeDesktopTarget:$composeMultiplatformVersion")
-    // Shared Kotlin Multiplatform module that also targets Android.
+    // Shared Kotlin Multiplatform modules that also target Android.
     implementation(projects.i18n)
+    implementation(projects.core.preference)
 }
 
 application {

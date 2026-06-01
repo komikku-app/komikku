@@ -24,6 +24,11 @@ dependencies {
     implementation(projects.i18nSy)
     // SY <--
 
+    // KMK --> Multiplatform preference abstraction (re-exported so existing
+    // tachiyomi.core.common.preference.* imports keep resolving)
+    api(projects.core.preference)
+    // KMK <--
+
     api(libs.logcat)
 
     api(libs.rxjava)
