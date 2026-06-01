@@ -1,3 +1,4 @@
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -26,9 +27,28 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+// Without the org.jetbrains.compose plugin we must select the host-specific Compose Desktop
+// artifact ourselves so the matching Skiko native library is on the runtime classpath.
+val composeMultiplatformVersion = the<VersionCatalogsExtension>()
+    .named("libs")
+    .findVersion("compose-multiplatform")
+    .get()
+    .requiredVersion
+
+val hostComposeDesktopTarget: String = run {
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = System.getProperty("os.arch").lowercase()
+    val isArm = osArch.contains("aarch64") || osArch.contains("arm")
+    when {
+        osName.contains("mac") || osName.contains("darwin") -> if (isArm) "macos-arm64" else "macos-x64"
+        osName.contains("win") -> if (isArm) "windows-arm64" else "windows-x64"
+        else -> if (isArm) "linux-arm64" else "linux-x64"
+    }
+}
+
 dependencies {
-    // Brings the host-specific Compose Desktop UI stack (runtime/ui/foundation/material + Skiko).
-    implementation(libs.composemp.desktop)
+    // Host-specific Compose Desktop UI stack (runtime/ui/foundation/material + Skiko native).
+    implementation("org.jetbrains.compose.desktop:desktop-jvm-$hostComposeDesktopTarget:$composeMultiplatformVersion")
     // Shared Kotlin Multiplatform module that also targets Android.
     implementation(projects.i18n)
 }
