@@ -51,6 +51,9 @@ include(":core:common")
 // KMK --> Multiplatform preference abstraction shared with desktop/iOS (Phase 1)
 include(":core:preference")
 // KMK <--
+// KMK --> Multiplatform networking foundation shared with desktop/iOS (Phase 2)
+include(":core:network")
+// KMK <--
 include(":data")
 include(":domain")
 include(":i18n")

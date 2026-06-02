@@ -52,6 +52,7 @@ dependencies {
     // Shared Kotlin Multiplatform modules that also target Android.
     implementation(projects.i18n)
     implementation(projects.core.preference)
+    implementation(projects.core.network)
 }
 
 application {
