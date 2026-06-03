@@ -48,7 +48,7 @@ import eu.kanade.presentation.browse.components.BaseBrowseItem
 import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.manga.components.DotSeparatorNoSpaceText
-import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
+import eu.kanade.presentation.more.settings.screen.browse.ExtensionStoresScreen
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -58,6 +58,8 @@ import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import kotlinx.collections.immutable.persistentListOf
+import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.KOMIKKU_SIGNATURE
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -110,9 +112,9 @@ fun ExtensionScreen(
                     modifier = Modifier.padding(contentPadding),
                     actions = persistentListOf(
                         EmptyScreenAction(
-                            stringRes = MR.strings.label_extension_repos,
+                            stringRes = MR.strings.extensionStores,
                             icon = Icons.Outlined.Settings,
-                            onClick = { navigator.push(ExtensionReposScreen()) },
+                            onClick = { navigator.push(ExtensionStoresScreen()) },
                         ),
                     ),
                 )
@@ -195,9 +197,9 @@ private fun ExtensionContent(
                                 // KMK -->
                                 KMR.strings.extensions_page_more -> {
                                     {
-                                        Button(onClick = { navigator?.push(ExtensionReposScreen()) }) {
+                                        Button(onClick = { navigator?.push(ExtensionStoresScreen()) }) {
                                             Text(
-                                                text = stringResource(MR.strings.action_add_repo),
+                                                text = stringResource(MR.strings.action_addExtensionStore),
                                                 style = LocalTextStyle.current.copy(
                                                     color = MaterialTheme.colorScheme.onPrimary,
                                                 ),
@@ -401,7 +403,7 @@ private fun ExtensionItemContent(
                 }
 
                 // KMK -->
-                Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
+                Text(text = extension.storeName?.let { "@$it" } ?: "(?)")
                 // KMK <--
 
                 val warning = when {
@@ -604,11 +606,11 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Repository",
         sources = emptyList(),
-        apkName = "Test",
+        apkUrl = "Test",
         iconUrl = "",
-        repoUrl = "",
+        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
     )
     val extInstalled = Extension.Installed(
         name = "Tachiyomi",
@@ -619,9 +621,9 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Repository",
         sources = emptyList(),
-        repoUrl = "",
+        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
         pkgFactory = null,
         icon = null,
         hasUpdate = false,
@@ -638,12 +640,12 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Repository",
     )
     Column {
         ExtensionItemContent(
             extension = extAvail.copy(
-                repoName = "Repository extensions minion multiple languages various sources",
+                storeName = "Repository extensions minion multiple languages various sources",
             ),
             installStep = InstallStep.Idle,
         )

@@ -52,4 +52,7 @@ val migrations: List<Migration>
         TrustExtensionRepositoryMigration(),
         CategoryPreferencesCleanupMigration(),
         RemoveDuplicateReaderPreferenceMigration(),
+        // KMK -->
+        DisabledRepoMigration(),
+        // KMK <--
     )
