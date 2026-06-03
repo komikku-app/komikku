@@ -241,7 +241,7 @@
         <service
             android:name=".extension.util.ExtensionInstallService"
             android:exported="false"
-            android:foregroundServiceType="shortService" />
+            android:foregroundServiceType="dataSync" />
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
