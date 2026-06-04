@@ -24,7 +24,9 @@ fun BulkSelectionToolbar(
     isRunning: Boolean,
     onClickClearSelection: () -> Unit,
     onChangeCategoryClick: () -> Unit,
+    // KMK -->
     onBlacklistClick: (() -> Unit)? = null,
+    // KMK <--
     onSelectAll: (() -> Unit)? = null,
     onReverseSelection: (() -> Unit)? = null,
 ) {
@@ -64,6 +66,7 @@ fun BulkSelectionToolbar(
                             },
                         )
                     } else {
+                        // KMK -->
                         if (onBlacklistClick != null) {
                             add(
                                 AppBar.Action(
@@ -77,6 +80,7 @@ fun BulkSelectionToolbar(
                                 ),
                             )
                         }
+                        // KMK <--
                         add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.add_to_library),

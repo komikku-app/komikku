@@ -18,11 +18,11 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
@@ -269,11 +269,14 @@ open class BrowseSourceScreenModel(
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
+            // KMK -->
             val blacklistedTitles = state.map { it.blacklistedTitles }.distinctUntilChanged()
             val pagingFlow = Pager(PagingConfig(pageSize = 25)) {
+                // KMK <--
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
+                // KMK -->
             }.flow
                 .map { pagingData ->
                     pagingData.map { (manga, metadata) ->
@@ -299,6 +302,7 @@ open class BrowseSourceScreenModel(
                     }
                 }
             }
+            // KMK <--
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
@@ -617,8 +621,10 @@ open class BrowseSourceScreenModel(
         // SY -->
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
-        val blacklistedTitles: Set<String> = emptySet(),
         // SY <--
+        // KMK -->
+        val blacklistedTitles: Set<String> = emptySet(),
+        // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }

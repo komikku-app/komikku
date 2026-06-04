@@ -112,6 +112,7 @@ object SettingsBrowseScreen : SearchableSettings {
                         title = stringResource(SYMR.strings.pref_local_source_hidden_folders),
                         subtitle = stringResource(SYMR.strings.pref_local_source_hidden_folders_summery),
                     ),
+                    // KMK -->
                     Preference.PreferenceItem.TextPreference(
                         title = stringResource(KMR.strings.pref_blacklist_series),
                         subtitle = pluralStringResource(
@@ -123,6 +124,7 @@ object SettingsBrowseScreen : SearchableSettings {
                             navigator.push(BlacklistScreen())
                         },
                     ),
+                    // KMK <--
                 ),
             ),
             Preference.PreferenceGroup(

@@ -1,7 +1,7 @@
 package eu.kanade.domain.source.service
 
-import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.interactor.SetMigrateSorting
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -20,7 +20,9 @@ class SourcePreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
+    // KMK -->
     private val blacklistSerializer = ListSerializer(BlacklistedSeriesEntry.serializer())
+    // KMK <--
 
     fun sourceDisplayMode() = preferenceStore.getObjectFromString(
         "pref_display_mode_catalogue",
@@ -58,6 +60,7 @@ class SourcePreferences(
 
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
 
+    // KMK -->
     fun blacklistedSeries() = preferenceStore.getObjectFromString(
         "series_blacklist",
         emptyList(),
@@ -98,6 +101,7 @@ class SourcePreferences(
             entries.filterNot { it.normalizedTitle == normalizedTitle }
         }
     }
+    // KMK <--
 
     // KMK -->
     fun hideInLibraryFeedItems() = preferenceStore.getBoolean("feed_hide_in_library_items", false)
@@ -149,14 +153,18 @@ class SourcePreferences(
     // SY -->
     fun enableSourceBlacklist() = preferenceStore.getBoolean("eh_enable_source_blacklist", true)
 
-    fun enableSeriesBlacklist() = preferenceStore.getBoolean("enable_series_blacklist", true)
-
-    fun blacklistSortMode() = preferenceStore.getEnum("blacklist_sort_mode", BlacklistSortMode.ALPHABETICAL)
-
     fun sourcesTabCategories() = preferenceStore.getStringSet("sources_tab_categories", mutableSetOf())
 
     fun sourcesTabCategoriesFilter() = preferenceStore.getBoolean("sources_tab_categories_filter", false)
+    // SY <--
 
+    // KMK -->
+    fun enableSeriesBlacklist() = preferenceStore.getBoolean("enable_series_blacklist", true)
+
+    fun blacklistSortMode() = preferenceStore.getEnum("blacklist_sort_mode", BlacklistSortMode.ALPHABETICAL)
+    // KMK <--
+
+    // SY -->
     fun sourcesTabSourcesInCategories() = preferenceStore.getStringSet("sources_tab_source_categories", mutableSetOf())
 
     fun dataSaver() = preferenceStore.getEnum("data_saver", DataSaver.NONE)
@@ -209,6 +217,7 @@ class SourcePreferences(
     }
     // KMK <--
 
+    // KMK -->
     private fun sanitizeBlacklistedSeries(entries: List<BlacklistedSeriesEntry>): List<BlacklistedSeriesEntry> {
         val now = System.currentTimeMillis()
         val backfillBase = max(1L, now - entries.size)
@@ -229,4 +238,5 @@ class SourcePreferences(
             }
             .distinctBy(BlacklistedSeriesEntry::normalizedTitle)
     }
+    // KMK <--
 }

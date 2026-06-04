@@ -8,13 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.core.util.ifSourcesLoaded
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.GlobalSearchScreen
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.MangaActionsDialog
@@ -42,7 +42,9 @@ class GlobalSearchScreen(
         }
 
         val navigator = LocalNavigator.currentOrThrow
+        // KMK -->
         val context = LocalContext.current
+        // KMK <--
 
         val screenModel = rememberScreenModel {
             GlobalSearchScreenModel(
@@ -51,9 +53,11 @@ class GlobalSearchScreen(
             )
         }
         val state by screenModel.state.collectAsState()
+        // KMK -->
         var showDirectResultLoading by remember {
             mutableStateOf(searchQuery.isNotEmpty() && !extensionFilter.isNullOrEmpty() && state.total == 1)
         }
+        // KMK <--
 
         // KMK -->
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
@@ -68,6 +72,7 @@ class GlobalSearchScreen(
         }
         // KMK <--
 
+        // KMK -->
         fun hideDirectResultLoading() {
             showDirectResultLoading = false
         }
@@ -82,6 +87,7 @@ class GlobalSearchScreen(
         }
 
         if (showDirectResultLoading) {
+            // KMK <--
             LoadingScreen()
 
             LaunchedEffect(state.items) {
@@ -93,10 +99,14 @@ class GlobalSearchScreen(
                             navigator.replace(MangaScreen(manga.id, true))
                         } else {
                             // Backoff to result screen
+                            // KMK -->
                             hideDirectResultLoading()
+                            // KMK <--
                         }
                     }
+                    // KMK -->
                     else -> hideDirectResultLoading()
+                    // KMK <--
                 }
             }
         } else {
@@ -136,6 +146,7 @@ class GlobalSearchScreen(
             )
         }
 
+        // KMK -->
         actionManga?.let { manga ->
             MangaActionsDialog(
                 manga = manga,
@@ -148,6 +159,7 @@ class GlobalSearchScreen(
                 },
             )
         }
+        // KMK <--
 
         // KMK -->
         BulkFavoriteDialogs(

@@ -55,7 +55,9 @@ fun GlobalSearchScreen(
                     isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    // KMK -->
                     onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
+                    // KMK <--
                     onSelectAll = {
                         state.filteredItems.values
                             .filterIsInstance<SearchItemResult.Success>()

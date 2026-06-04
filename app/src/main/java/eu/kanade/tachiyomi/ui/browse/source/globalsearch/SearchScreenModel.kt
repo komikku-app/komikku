@@ -20,8 +20,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -271,10 +271,13 @@ abstract class SearchScreenModel(
         val onlyShowHasResults: Boolean = false,
         val items: PersistentMap<CatalogueSource, SearchItemResult> = persistentMapOf(),
         val dialog: Dialog? = null,
+        // KMK -->
         val blacklistedTitles: Set<String> = emptySet(),
+        // KMK <--
     ) {
         val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
+        // KMK -->
         val filteredItems = items.mapValues { (_, result) ->
             if (result is SearchItemResult.Success && blacklistedTitles.isNotEmpty()) {
                 result.copy(
@@ -287,6 +290,7 @@ abstract class SearchScreenModel(
             }
         }.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
             .toImmutableMap()
+        // KMK <--
     }
 
     sealed interface Dialog {

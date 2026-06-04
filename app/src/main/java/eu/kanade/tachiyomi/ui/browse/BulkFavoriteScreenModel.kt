@@ -52,7 +52,9 @@ class BulkFavoriteScreenModel(
     initialState: State = State(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    // KMK -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
+    // KMK <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -425,6 +427,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
+    // KMK -->
     fun massBlacklist() {
         screenModelScope.launchNonCancellable {
             startRunning()
@@ -435,6 +438,7 @@ class BulkFavoriteScreenModel(
             toggleSelectionMode(false)
         }
     }
+    // KMK <--
 
     internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
         setDialog(Dialog.Migrate(target = manga, current = duplicate))
