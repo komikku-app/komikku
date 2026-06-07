@@ -151,7 +151,7 @@
     <string name="pref_category_discord_incognito">隐身模式（RPC）</string>
     <string name="special_services">特别服务</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">此 Discord 服务通过 Token 记录运行。请自担风险。你的 Token 存储在本地，%s 不会对外共享。</string>
+    <string name="connections_discord_info">此 Discord 服务通过 Token 记录运行。请自担风险。你的 Token 存储在本地，%s 不会对外共享</string>
     <string name="pref_discord_rpc">Discord 丰富存在</string>
     <string name="show_chapters_titles_subtitle">显示您观看的剧集的标题</string>
     <string name="pref_enable_discord_rpc">启用 Discord Rich Presence</string>
