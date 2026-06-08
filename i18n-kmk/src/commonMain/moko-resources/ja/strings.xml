@@ -4,7 +4,7 @@
     <string name="action_toggle_nsfw_only">NSFWのみを表示</string>
     <string name="action_bulk_select">一括選択モード</string>
     <string name="action_faq_and_guides">FAQとガイド</string>
-    <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
+    <string name="download_cache_renew_interval">ダウンロードキャッシュの更新間隔</string>
     <string name="download_cache_renew_interval_manual">手動</string>
     <string name="download_cache_renew_interval_1hour">1 時間</string>
     <string name="download_cache_renew_interval_2hour">2 時間</string>
