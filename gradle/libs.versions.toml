@@ -13,6 +13,9 @@ firebase-bom = "34.9.0"
 markdown = "0.39.2"
 junit = "6.0.3"
 materialKolor = "5.0.0-alpha06"
+# KMK --> Compose Multiplatform (desktop/iOS) - aligned with Kotlin 2.3.10
+compose-multiplatform = "1.10.3"
+# KMK <--
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
@@ -118,6 +121,9 @@ aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.re
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 moko = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
+# KMK --> Compose Multiplatform Gradle plugin (desktop packaging + multiplatform UI)
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+# KMK <--
 
 [bundles]
 okhttp = ["okhttp-core", "okhttp-logging", "okhttp-brotli", "okhttp-dnsoverhttps"]

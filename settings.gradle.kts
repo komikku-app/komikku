@@ -42,9 +42,18 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "Komikku"
 include(":app")
+// KMK --> Compose Multiplatform desktop application (Phase 0 KMP scaffolding)
+include(":desktopApp")
+// KMK <--
 include(":core-metadata")
 include(":core:archive")
 include(":core:common")
+// KMK --> Multiplatform preference abstraction shared with desktop/iOS (Phase 1)
+include(":core:preference")
+// KMK <--
+// KMK --> Multiplatform networking foundation shared with desktop/iOS (Phase 2)
+include(":core:network")
+// KMK <--
 include(":data")
 include(":domain")
 include(":i18n")
