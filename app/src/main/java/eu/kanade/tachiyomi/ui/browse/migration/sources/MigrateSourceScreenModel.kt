@@ -28,6 +28,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.Source
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.time.Duration.Companion.milliseconds
 
 class MigrateSourceScreenModel(
     preferences: SourcePreferences = Injekt.get(),
@@ -42,7 +43,7 @@ class MigrateSourceScreenModel(
         screenModelScope.launchIO {
             // KMK -->
             combine(
-                state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds),
                 // KMK <--
                 getSourcesWithFavoriteCount.subscribe(),
                 // KMK -->

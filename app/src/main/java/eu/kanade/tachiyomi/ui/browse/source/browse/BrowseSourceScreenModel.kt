@@ -92,6 +92,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.time.Instant
+import kotlin.time.Duration.Companion.milliseconds
 import eu.kanade.tachiyomi.source.model.Filter as SourceModelFilter
 
 open class BrowseSourceScreenModel(
@@ -153,7 +154,7 @@ open class BrowseSourceScreenModel(
             var retry = 10
             while (source !is CatalogueSource && retry-- > 0) {
                 // Sometime source is late to load, so we need to wait a bit
-                delay(100)
+                delay(100.milliseconds)
                 source = sourceManager.getOrStub(sourceId)
             }
             val source = source

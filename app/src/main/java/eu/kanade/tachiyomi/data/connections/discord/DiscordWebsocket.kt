@@ -30,6 +30,8 @@ import okhttp3.WebSocketListener
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 sealed interface DiscordWebSocket : CoroutineScope {
     suspend fun sendActivity(presence: Presence)
@@ -105,7 +107,7 @@ open class DiscordWebSocketImpl(
     override suspend fun sendActivity(presence: Presence) {
         try {
             // Wait for connection with a 30-second timeout
-            withTimeout(30_000) {
+            withTimeout(30.seconds) {
                 connectionState.filter { it }.first()
             }
             Timber.tag(TAG).i("Sending ${OpCode.PRESENCE_UPDATE}")
@@ -134,7 +136,7 @@ open class DiscordWebSocketImpl(
             scope.cancel()
             scope = CoroutineScope(coroutineContext)
             scope.launch {
-                delay(heartbeatInterval!!)
+                delay(heartbeatInterval!!.milliseconds)
                 webSocket?.send("{\"op\":1, \"d\":$seq}")
             }
             if (sendIdentify) sendIdentify()

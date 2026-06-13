@@ -33,6 +33,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import tachiyomi.i18n.MR
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * View of the ViewPager that contains a page of a chapter.
@@ -378,7 +379,7 @@ class PagerPageHolder(
 
     private fun splitDoublePages() {
         scope.launch {
-            delay(100)
+            delay(100.milliseconds)
             viewer.splitDoublePages(page)
             if (extraPage?.fullPage == true || page.fullPage) {
                 extraPage = null

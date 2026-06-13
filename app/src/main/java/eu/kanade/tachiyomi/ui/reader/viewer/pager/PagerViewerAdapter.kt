@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.delay
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.system.logcat
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Pager adapter used by this [viewer] to where [ViewerChapters] updates are posted.
@@ -390,7 +391,7 @@ class PagerViewerAdapter(
         // The listener may be removed when we split a page, so the ui may not have updated properly
         // This case usually happens when we load a new chapter and the first 2 pages need to split og
         viewer.scope.launchUI {
-            delay(100)
+            delay(100.milliseconds)
             viewer.onPageChange(viewer.pager.currentItem)
         }
     }
