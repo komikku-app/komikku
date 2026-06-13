@@ -40,7 +40,14 @@ class ExtensionStoreRepositoryImpl(
                 extension_storeQueries.getAll()
             }.forEach { store ->
                 service.fetch(store.index_url)
-                    .mapCatching { upsert(it) }
+                    .mapCatching {
+                        handler.await {
+                            upsert(it)
+                            if (store.index_url != it.indexUrl) {
+                                extension_storeQueries.delete(store.index_url)
+                            }
+                        }
+                    }
                     .onFailure {
                         logcat(LogPriority.ERROR, it) {
                             "Failed to refresh extension store '${store.name} (${store.index_url})'"
