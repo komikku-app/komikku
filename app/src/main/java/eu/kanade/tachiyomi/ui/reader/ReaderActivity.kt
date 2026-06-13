@@ -802,7 +802,7 @@ class ReaderActivity : BaseActivity() {
                                 }
                                 delay(interval)
                             } else {
-                                delay(0.1.seconds)
+                                delay(100.milliseconds)
                             }
                         }
                     }
