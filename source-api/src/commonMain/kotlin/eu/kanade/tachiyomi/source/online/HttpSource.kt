@@ -158,6 +158,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page number to retrieve.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga(page)"))
     open fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))
@@ -203,6 +204,7 @@ abstract class HttpSource : CatalogueSource {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga(page, query, filters)"))
     open fun fetchSearchManga(
         page: Int,
@@ -261,6 +263,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page number to retrieve.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates(page)"))
     open fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         return client.newCall(latestUpdatesRequest(page))
@@ -305,6 +308,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param manga the manga to be updated.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getMangaDetails(manga)"))
     open fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
@@ -400,6 +404,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param manga the manga to look for chapters.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getChapterList(manga)"))
     open fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return client.newCall(chapterListRequest(manga))
@@ -453,6 +458,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPageList(chapter)"))
     open fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return client.newCall(pageListRequest(chapter))
@@ -499,6 +505,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page whose source image has to be fetched.
      */
+    @Suppress("DEPRECATION")
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl(page)"))
     open fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
