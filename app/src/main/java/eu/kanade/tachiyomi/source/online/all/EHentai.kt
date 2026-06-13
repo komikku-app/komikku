@@ -20,6 +20,7 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.model.copy
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -57,6 +58,8 @@ import exh.util.trimAll
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import exh.util.urlImportFetchSearchMangaSuspend
+import kotlinx.coroutines.async
+import kotlinx.coroutines.supervisorScope
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -345,7 +348,27 @@ class EHentai(
         )
     }
 
-    override suspend fun getChapterList(manga: SManga): List<SChapter> = getChapterList(manga) {}
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate = getMangaUpdate(manga, chapters, fetchDetails, fetchChapters) {}
+
+    suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+        throttleFunc: suspend () -> Unit,
+    ): SMangaUpdate = supervisorScope {
+        val mangaDetails = if (fetchDetails) async { getMangaDetails(manga) } else null
+        val chapterDetails = if (fetchChapters) async { getChapterList(manga, throttleFunc) } else null
+
+        SMangaUpdate(mangaDetails?.await() ?: manga, chapterDetails?.await() ?: chapters)
+    }
+
+    suspend fun getChapterList(manga: SManga): List<SChapter> = getChapterList(manga) {}
 
     suspend fun getChapterList(manga: SManga, throttleFunc: suspend () -> Unit): List<SChapter> {
         // Pull all the way to the root gallery
@@ -424,16 +447,16 @@ class EHentai(
         }
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     @Suppress("DEPRECATION")
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable {
         getChapterList(manga, throttleFunc)
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(
         chapter: SChapter,
     ): Observable<List<Page>> = fetchChapterPage(chapter, baseUrl + chapter.url)
@@ -508,37 +531,37 @@ class EHentai(
             this
         }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         @Suppress("DEPRECATION")
-        return super<HttpSource>.fetchLatestUpdates(page).checkValid()
+        return super.fetchLatestUpdates(page).checkValid()
     }
 
     override suspend fun getLatestUpdates(page: Int): MangasPage {
-        return super<HttpSource>.getLatestUpdates(page).checkValid()
+        return super.getLatestUpdates(page).checkValid()
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         @Suppress("DEPRECATION")
-        return super<HttpSource>.fetchPopularManga(page).checkValid()
+        return super.fetchPopularManga(page).checkValid()
     }
 
     override suspend fun getPopularManga(page: Int): MangasPage {
-        return super<HttpSource>.getPopularManga(page).checkValid()
+        return super.getPopularManga(page).checkValid()
     }
 
     // Support direct URL importing
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             @Suppress("DEPRECATION")
-            super<HttpSource>.fetchSearchManga(page, query, filters).checkValid()
+            super.fetchSearchManga(page, query, filters).checkValid()
         }
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         return urlImportFetchSearchMangaSuspend(context, query) {
-            super<HttpSource>.getSearchManga(page, query, filters).checkValid()
+            super.getSearchManga(page, query, filters).checkValid()
         }
     }
 
@@ -641,7 +664,7 @@ class EHentai(
      *
      * @param manga the manga to be updated.
      */
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
             .asObservableWithAsyncStacktrace()
@@ -682,7 +705,7 @@ class EHentai(
             }
     }
 
-    override suspend fun getMangaDetails(manga: SManga): SManga {
+    suspend fun getMangaDetails(manga: SManga): SManga {
         val exception = Exception("Async stacktrace")
         val response = client.newCall(mangaDetailsRequest(manga)).await()
         if (response.isSuccessful) {
@@ -699,7 +722,9 @@ class EHentai(
             } else {
                 doc
             }
-            return parseToManga(manga, pre)
+            return parseToManga(manga, pre).apply {
+                initialized = true
+            }
         } else {
             response.close()
 
@@ -835,9 +860,6 @@ class EHentai(
 
     override fun chapterListParse(response: Response) =
         throw UnsupportedOperationException("Unused method was called somehow!")
-    override fun chapterPageParse(
-        response: Response,
-    ) = throw UnsupportedOperationException("Unused method was called somehow!")
 
     override fun pageListParse(response: Response) =
         throw UnsupportedOperationException("Unused method was called somehow!")
@@ -847,7 +869,7 @@ class EHentai(
         return realImageUrlParse(imageUrlResponse, page)
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
             .asObservableSuccess()
