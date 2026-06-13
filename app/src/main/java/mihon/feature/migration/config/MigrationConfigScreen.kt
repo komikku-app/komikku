@@ -446,7 +446,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
             // KMK <--
             val sources = sourceManager
                 // KMK -->
-                .getVisibleCatalogueSources()
+                .getVisibleSources()
                 // KMK <--
                 .asSequence()
                 .filterIsInstance<HttpSource>()

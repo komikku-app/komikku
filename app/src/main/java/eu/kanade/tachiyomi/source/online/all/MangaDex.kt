@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
@@ -171,7 +172,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
@@ -194,7 +195,20 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return delegate.latestUpdatesParse(response)
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
+    // KMK -->
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate {
+        val asyncManga = if (fetchDetails) getMangaDetails(manga) else null
+        val asyncChapters = if (fetchChapters) getChapterList(manga) else null
+        return SMangaUpdate(asyncManga ?: manga, asyncChapters ?: chapters)
+    }
+    // KMK <--
+
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(
             manga,
@@ -207,7 +221,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
     }
 
-    override suspend fun getMangaDetails(manga: SManga): SManga {
+    internal suspend fun getMangaDetails(manga: SManga): SManga {
         return mangaHandler.getMangaDetails(
             manga,
             id,
@@ -219,16 +233,16 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return mangaHandler.fetchChapterListObservable(manga, blockedGroups(), blockedUploaders())
     }
 
-    override suspend fun getChapterList(manga: SManga): List<SChapter> {
+    private suspend fun getChapterList(manga: SManga): List<SChapter> {
         return mangaHandler.getChapterList(manga, blockedGroups(), blockedUploaders())
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
     }
@@ -242,7 +256,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return call?.awaitSuccess() ?: super.getImage(page)
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return pageHandler.fetchImageUrl(page) {
             @Suppress("DEPRECATION")
