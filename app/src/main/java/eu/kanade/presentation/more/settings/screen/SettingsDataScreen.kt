@@ -782,6 +782,15 @@ object SettingsDataScreen : SearchableSettings {
                 title = stringResource(SYMR.strings.pref_sync_custom_headers),
                 subtitle = stringResource(SYMR.strings.pref_sync_custom_headers_summ),
                 singleLine = false,
+                onValueChanged = { newValue ->
+                    val parsedHeaders = eu.kanade.tachiyomi.data.sync.service.CustomHeaderHelper.parse(newValue)
+                    if (parsedHeaders.size > 10) {
+                        context.toast(SYMR.strings.error_custom_headers_limit)
+                        false
+                    } else {
+                        true
+                    }
+                },
             ),
         )
     }

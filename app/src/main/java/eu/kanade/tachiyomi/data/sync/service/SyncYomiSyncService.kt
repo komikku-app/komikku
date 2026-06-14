@@ -179,20 +179,13 @@ class SyncYomiSyncService(
         val customHeaders = syncPreferences.clientCustomHeaders().get()
         if (customHeaders.isBlank()) return
 
-        customHeaders.lines()
+        CustomHeaderHelper.parse(customHeaders)
             .take(10)
-            .forEach { line ->
-                val parts = line.split(":", limit = 2)
-                if (parts.size == 2) {
-                    val key = parts[0].trim()
-                    val value = parts[1].trim()
-                    if (key.isNotEmpty() && value.isNotEmpty()) {
-                        try {
-                            this.add(key, value)
-                        } catch (e: Exception) {
-                            logcat(LogPriority.ERROR) { "Invalid custom header: $line" }
-                        }
-                    }
+            .forEach { (key, value) ->
+                try {
+                    this.add(key, value)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR) { "Invalid custom header: $key: $value" }
                 }
             }
     }
