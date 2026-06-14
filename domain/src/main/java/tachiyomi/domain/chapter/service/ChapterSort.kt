@@ -17,8 +17,16 @@ fun getChapterSort(
             false -> { c1, c2 -> c2.sourceOrder.compareTo(c1.sourceOrder) }
         }
         Manga.CHAPTER_SORTING_NUMBER -> when (sortDescending) {
-            true -> { c1, c2 -> c2.chapterNumber.compareTo(c1.chapterNumber) }
-            false -> { c1, c2 -> c1.chapterNumber.compareTo(c2.chapterNumber) }
+            true -> { c1, c2 ->
+                c2.chapterNumber.compareTo(c1.chapterNumber)
+                    .takeIf { it != 0 }
+                    ?: c1.sourceOrder.compareTo(c2.sourceOrder)
+            }
+            false -> { c1, c2 ->
+                c1.chapterNumber.compareTo(c2.chapterNumber)
+                    .takeIf { it != 0 }
+                    ?: c1.sourceOrder.compareTo(c2.sourceOrder)
+            }
         }
         Manga.CHAPTER_SORTING_UPLOAD_DATE -> when (sortDescending) {
             true -> { c1, c2 -> c2.dateUpload.compareTo(c1.dateUpload) }
