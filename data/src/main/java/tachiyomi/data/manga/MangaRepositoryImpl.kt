@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.MemoColumnAdapter
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.library.model.LibraryManga
@@ -118,7 +119,12 @@ class MangaRepositoryImpl(
         }
     }
 
-    override suspend fun insertNetworkManga(manga: List<Manga>, updateInfo: Boolean): List<Manga> {
+    override suspend fun insertNetworkManga(
+        manga: List<Manga>,
+        // KMK -->
+        updateInfo: Boolean,
+        // KMK <--
+    ): List<Manga> {
         return handler.await(inTransaction = true) {
             manga.map {
                 mangasQueries.insertNetworkManga(
@@ -144,6 +150,7 @@ class MangaRepositoryImpl(
                     dateAdded = it.dateAdded,
                     updateStrategy = it.updateStrategy,
                     version = it.version,
+                    memo = it.memo,
                     // SY -->
                     updateTitle = it.ogTitle.isNotBlank(),
                     updateCover = !it.ogThumbnailUrl.isNullOrBlank(),
@@ -186,6 +193,7 @@ class MangaRepositoryImpl(
                     version = value.version,
                     isSyncing = 0,
                     notes = value.notes,
+                    memo = value.memo?.let(MemoColumnAdapter::encode),
                 )
             }
         }
