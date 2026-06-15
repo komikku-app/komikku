@@ -186,6 +186,7 @@ class UpdateMangaFromRemote(
                 status = remoteManga.status.toLong(),
                 updateStrategy = remoteManga.update_strategy,
                 initialized = true,
+                memo = remoteManga.memo,
             ),
         )
         if (success && title != null) {

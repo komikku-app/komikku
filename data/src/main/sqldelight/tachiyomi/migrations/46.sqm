@@ -14,3 +14,6 @@ INSERT INTO extension_store(index_url, name, badge_label, signing_key, contact_w
 SELECT base_url || '/repo.json', name, coalesce(short_name, name), signing_key_fingerprint, website, NULL, 1 FROM extension_repos;
 
 DROP TABLE extension_repos;
+
+ALTER TABLE mangas ADD COLUMN memo BLOB NOT NULL DEFAULT '{}';
+ALTER TABLE chapters ADD COLUMN memo BLOB NOT NULL DEFAULT '{}';

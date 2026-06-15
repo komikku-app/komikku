@@ -1174,7 +1174,7 @@ class MangaScreenModel(
                         mangaList
                             .map { it.toDomainManga(state.source.id) }
                             .distinctBy { it.url }
-                            .let { networkToLocalManga(it, false) }
+                            .let { networkToLocalManga(manga = it, updateInfo = false) }
                     }
 
                     updateSuccessState { successState ->
