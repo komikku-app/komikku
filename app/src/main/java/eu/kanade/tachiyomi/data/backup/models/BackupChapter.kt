@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.backup.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.protobuf.ProtoNumber
+import mihon.core.common.extensions.JsonObjectEmptyBytes
 import tachiyomi.data.MemoColumnAdapter
 import tachiyomi.domain.chapter.model.Chapter
 
@@ -24,7 +25,7 @@ class BackupChapter(
     @ProtoNumber(10) var sourceOrder: Long = 0,
     @ProtoNumber(11) var lastModifiedAt: Long = 0,
     @ProtoNumber(12) var version: Long = 0,
-    @ProtoNumber(13) var memo: ByteArray = byteArrayOf(),
+    @ProtoNumber(13) var memo: ByteArray = JsonObjectEmptyBytes,
 ) {
     fun toChapterImpl(): Chapter {
         return Chapter.create().copy(
