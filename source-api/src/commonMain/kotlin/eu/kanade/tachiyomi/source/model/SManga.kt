@@ -68,6 +68,7 @@ interface SManga : Serializable {
         // SY <--
         it.update_strategy = update_strategy
         it.initialized = initialized
+        it.memo = memo
     }
 
     companion object {
@@ -122,6 +123,9 @@ fun SManga.copy(
     status: Int = this.status,
     thumbnail_url: String? = this.originalThumbnailUrl,
     initialized: Boolean = this.initialized,
+    // KMK -->
+    memo: JsonObject = this.memo,
+    // KMK <--
 ) = SManga.create().also {
     it.url = url
     it.title = title
@@ -132,5 +136,8 @@ fun SManga.copy(
     it.status = status
     it.thumbnail_url = thumbnail_url
     it.initialized = initialized
+    // KMK -->
+    it.memo = memo
+    // KMK <--
 }
 // SY <--
