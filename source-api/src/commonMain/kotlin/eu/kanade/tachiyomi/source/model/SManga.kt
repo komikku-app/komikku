@@ -68,6 +68,7 @@ interface SManga : Serializable {
         // SY <--
         it.update_strategy = update_strategy
         it.initialized = initialized
+        it.memo = memo
     }
 
     companion object {

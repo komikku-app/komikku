@@ -3,6 +3,7 @@
 package eu.kanade.tachiyomi.source.model
 
 import kotlinx.serialization.json.JsonObject
+import mihon.core.common.extensions.EMPTY
 
 class SMangaImpl : SManga {
 
@@ -28,7 +29,7 @@ class SMangaImpl : SManga {
 
     override var initialized: Boolean = false
 
-    override var memo: JsonObject = JsonObject(emptyMap())
+    override var memo: JsonObject = JsonObject.EMPTY
 
     // SY -->
     override val originalTitle: String
