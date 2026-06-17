@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.withPermit
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import okhttp3.Response
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
@@ -33,6 +34,7 @@ import uy.kohesive.injekt.injectLazy
 class MergedSource : HttpSource() {
     private val getManga: GetManga by injectLazy()
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId by injectLazy()
     private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
     private val networkToLocalManga: NetworkToLocalManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
@@ -116,6 +118,18 @@ class MergedSource : HttpSource() {
             "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
+        // KMK -->
+        // Read chapter numbers across all sources of this merge, so a chapter newly fetched
+        // on one source can be marked read when the same number was already read on another
+        // (the "mark duplicate read" / "new" pref is enforced inside SyncChaptersWithSource).
+        val siblingReadChapterNumbers = getMergedChaptersByMangaId
+            .await(manga.id, dedupe = false, applyFilter = false)
+            .asSequence()
+            .filter { it.read && it.isRecognizedNumber }
+            .map { it.chapterNumber }
+            .toSet()
+        // KMK <--
+
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {
@@ -131,7 +145,14 @@ class MergedSource : HttpSource() {
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toSManga())
                                         val results =
-                                            syncChaptersWithSource.await(chapterList, loadedManga, source)
+                                            syncChaptersWithSource.await(
+                                                chapterList,
+                                                loadedManga,
+                                                source,
+                                                // KMK -->
+                                                siblingReadChapterNumbers = siblingReadChapterNumbers,
+                                                // KMK <--
+                                            )
 
                                         if (downloadChapters && reference.downloadChapters) {
                                             val chaptersToDownload = filterChaptersForDownload.await(manga, results)
