@@ -197,9 +197,9 @@ fun repoResId(signKey: String) = when (signKey) {
 @Composable
 fun ExtensionReposContentPreview() {
     val repos = persistentListOf(
-        ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
-        ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false),
-        ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true),
+        ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
+        ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
+        ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true, ""),
     )
     ExtensionStoresContent(
         repos = repos,

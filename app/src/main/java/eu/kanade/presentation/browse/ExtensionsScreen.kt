@@ -610,7 +610,7 @@ private fun ExtensionItemContentPreview() {
         sources = emptyList(),
         apkUrl = "Test",
         iconUrl = "",
-        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
+        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
     )
     val extInstalled = Extension.Installed(
         name = "Tachiyomi",
@@ -623,7 +623,7 @@ private fun ExtensionItemContentPreview() {
         signatureHash = "900000",
         storeName = "Repository",
         sources = emptyList(),
-        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
+        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
         pkgFactory = null,
         icon = null,
         hasUpdate = false,

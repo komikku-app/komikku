@@ -118,9 +118,9 @@ fun ExtensionStoresScreen(
 private fun ExtensionStoresScreenPreview() {
     val state = ExtensionStoreScreenState.Success(
         stores = persistentListOf(
-            ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
-            ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false),
-            ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true),
+            ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
+            ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false, ""),
+            ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true, ""),
         ),
         disabledRepos = setOf("https://repo"),
     )
