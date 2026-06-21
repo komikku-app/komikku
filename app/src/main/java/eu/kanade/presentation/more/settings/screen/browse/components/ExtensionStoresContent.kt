@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,8 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.tachiyomi.R
 import kotlinx.collections.immutable.persistentListOf
 import mihon.domain.extension.model.ExtensionStore
@@ -193,25 +195,29 @@ fun repoResId(signKey: String) = when (signKey) {
     else -> R.mipmap.extension
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 fun ExtensionReposContentPreview() {
     val repos = persistentListOf(
-        ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
-        ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false),
-        ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true),
+        ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
+        ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
+        ExtensionStore("https://other", "Other", "", "key2", ExtensionStore.Contact("", ""), true, null),
     )
-    ExtensionStoresContent(
-        repos = repos,
-        lazyListState = LazyListState(),
-        paddingValues = PaddingValues(),
-        onCopy = {},
-        onOpenWebsite = {},
-        onOpenDiscord = {},
-        onClickDelete = {},
-        onClickEnable = {},
-        onClickDisable = {},
-        disabledRepos = setOf("https://repo"),
-    )
+    TachiyomiPreviewTheme {
+        Surface {
+            ExtensionStoresContent(
+                repos = repos,
+                lazyListState = LazyListState(),
+                paddingValues = PaddingValues(),
+                onCopy = {},
+                onOpenWebsite = {},
+                onOpenDiscord = {},
+                onClickDelete = {},
+                onClickEnable = {},
+                onClickDisable = {},
+                disabledRepos = setOf("https://repo"),
+            )
+        }
+    }
 }
 // KMK <--

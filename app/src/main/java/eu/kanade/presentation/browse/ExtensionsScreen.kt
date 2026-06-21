@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,7 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -49,6 +50,7 @@ import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.manga.components.DotSeparatorNoSpaceText
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionStoresScreen
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -594,7 +596,7 @@ private fun ExtensionTrustDialog(
 }
 
 // KMK -->
-@Preview
+@PreviewLightDark
 @Composable
 private fun ExtensionItemContentPreview() {
     val extAvail = Extension.Available(
@@ -606,11 +608,11 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        storeName = "Repository",
+        storeName = "Komikku",
         sources = emptyList(),
         apkUrl = "Test",
         iconUrl = "",
-        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
+        store = ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
     )
     val extInstalled = Extension.Installed(
         name = "Tachiyomi",
@@ -621,9 +623,9 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        storeName = "Repository",
+        storeName = "Komikku",
         sources = emptyList(),
-        store = ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
+        store = ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
         pkgFactory = null,
         icon = null,
         hasUpdate = false,
@@ -642,28 +644,33 @@ private fun ExtensionItemContentPreview() {
         signatureHash = "900000",
         storeName = "Repository",
     )
-    Column {
-        ExtensionItemContent(
-            extension = extAvail.copy(
-                storeName = "Repository extensions minion multiple languages various sources",
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
-        ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
-        ExtensionItemContent(
-            extension = extInstalled.copy(
-                isObsolete = true,
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(
-            extension = extInstalled.copy(
-                isRedundant = true,
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(extension = extUntrusted, installStep = InstallStep.Idle)
+
+    TachiyomiPreviewTheme {
+        Surface {
+            Column {
+                ExtensionItemContent(
+                    extension = extAvail.copy(
+                        storeName = "Repository extensions minion multiple languages various sources",
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
+                ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
+                ExtensionItemContent(
+                    extension = extInstalled.copy(
+                        isObsolete = true,
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(
+                    extension = extInstalled.copy(
+                        isRedundant = true,
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(extension = extUntrusted, installStep = InstallStep.Idle)
+            }
+        }
     }
 }
 // KMK <--

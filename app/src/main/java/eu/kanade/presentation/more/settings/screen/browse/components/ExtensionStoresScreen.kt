@@ -11,15 +11,17 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import eu.kanade.presentation.category.components.CategoryFloatingActionButton
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionStoreScreenState
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.collections.immutable.persistentListOf
 import mihon.domain.extension.model.ExtensionStore
@@ -113,46 +115,54 @@ fun ExtensionStoresScreen(
 }
 
 // KMK -->
-@Preview
+@PreviewLightDark
 @Composable
 private fun ExtensionStoresScreenPreview() {
     val state = ExtensionStoreScreenState.Success(
         stores = persistentListOf(
-            ExtensionStore("https://repo", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false),
-            ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false),
-            ExtensionStore("https://repo", "Other", "", "key2", ExtensionStore.Contact("", ""), true),
+            ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
+            ExtensionStore("https://repo", "Repo", "", REPO_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
+            ExtensionStore("https://other", "Other", "", "key2", ExtensionStore.Contact("", ""), true, null),
         ),
         disabledRepos = setOf("https://repo"),
     )
-    ExtensionStoresScreen(
-        state = state,
-        onClickCreate = { },
-        onCopy = { },
-        onOpenWebsite = { },
-        onOpenDiscord = { },
-        onClickDelete = { },
-        onClickEnable = { },
-        onClickDisable = { },
-        onClickRefresh = { },
-        navigateUp = { },
-    )
+    TachiyomiPreviewTheme {
+        Surface {
+            ExtensionStoresScreen(
+                state = state,
+                onClickCreate = { },
+                onCopy = { },
+                onOpenWebsite = { },
+                onOpenDiscord = { },
+                onClickDelete = { },
+                onClickEnable = { },
+                onClickDisable = { },
+                onClickRefresh = { },
+                navigateUp = { },
+            )
+        }
+    }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ExtensionStoresScreenEmptyPreview() {
     val state = ExtensionStoreScreenState.Success(stores = persistentListOf())
-    ExtensionStoresScreen(
-        state = state,
-        onClickCreate = { },
-        onCopy = { },
-        onOpenWebsite = { },
-        onOpenDiscord = { },
-        onClickDelete = { },
-        onClickEnable = { },
-        onClickDisable = { },
-        onClickRefresh = { },
-        navigateUp = { },
-    )
+    TachiyomiPreviewTheme {
+        Surface {
+            ExtensionStoresScreen(
+                state = state,
+                onClickCreate = { },
+                onCopy = { },
+                onOpenWebsite = { },
+                onOpenDiscord = { },
+                onClickDelete = { },
+                onClickEnable = { },
+                onClickDisable = { },
+                onClickRefresh = { },
+                navigateUp = { },
+            )
+        }
+    }
 }
 // KMK <--
