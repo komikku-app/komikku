@@ -177,8 +177,8 @@
     <string name="bandwidth_hero">ব্যাণ্ডউইডথ হিৰো (এক ব্যাণ্ডউইডথ হিৰো প্ৰক্সি ছাৰ্ভাৰ প্রয়োজন)</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">ব্যাণ্ডউইডথ হিৰো প্ৰক্সি ছাৰ্ভাৰ</string>
-    <string name="data_saver_server_summary">ব্যাণ্ডউইডথ হিৰো প্ৰক্সি ছাৰ্ভাৰৰ URL ইয়াত ৰাখক</string>
-    <string name="clear_db_exclude_read">পঢ়া অধ্যায়সহ এন্ট্ৰিসমূহ ৰক্ষা কৰক</string>
+    <string name="data_saver_server_summary">ব্যাণ্ডউইডথ হিৰো প্ৰক্সি ছাৰ্ভাৰৰ url ইয়াত ৰাখক</string>
+    <string name="clear_db_exclude_read">পঢ়া অধ্যায় থকা প্ৰৱিষ্টি ৰাখক</string>
     <string name="log_minimal">অতিৰিক্ত কম</string>
     <string name="log_extra">অতিৰিক্ত</string>
     <string name="log_extreme">অতিৰিক্ত অতি</string>
@@ -365,7 +365,7 @@
     <string name="description_hint">বিৱৰণ: %1$s</string>
     <string name="author_hint">লেখক: %1$s</string>
     <string name="artist_hint">শিল্পী: %1$s</string>
-    <string name="thumbnail_url_hint">থাম্বনেইল URL: %1$s</string>
+    <string name="thumbnail_url_hint">থাম্বনেইল Url: %1$s</string>
     <string name="find_in_another_source">অন্য উৎসত অনুসন্ধান কৰক</string>
     <string name="data_saver_exclude">ডাটা সেভাৰৰ পৰা বাদ দিয়ক</string>
     <string name="data_saver_stop_exclude">ডাটা সেভাৰৰ পৰা বাদ দিয়াৰ পৰা ৰোধ কৰক</string>
@@ -536,7 +536,7 @@
     <string name="id">আইডি</string>
     <string name="token">টোকেন</string>
     <string name="is_exhentai_gallery">ExHentai গেছবুক</string>
-    <string name="thumbnail_url">ছোট চিত্ৰ URL</string>
+    <string name="thumbnail_url">ছোট চিত্ৰ url</string>
     <string name="genre">ধৰণ</string>
     <string name="page_count">পৃষ্ঠা সংখ্যা</string>
     <string name="visible">দৃশ্যমান</string>
@@ -548,7 +548,7 @@
     <string name="aged">বয়স</string>
     <string name="last_update_check">শেষ আপডেট পৰীক্ষা</string>
     <string name="path">পথ</string>
-    <string name="artist">কলা</string>
+    <string name="artist">শিল্পী</string>
     <string name="group">গোট</string>
     <string name="media_id">মিডিয়া আইডি</string>
     <string name="japanese_title">জাপানী শিৰোনাম</string>
@@ -645,4 +645,12 @@
     <string name="rec_error_title">সন্ধান বিফল হ\'ল</string>
     <string name="rec_error_string">সন্ধান প্ৰক্ৰিয়াৰ সময়ত এটা ভুল হৈছে: %1$s</string>
     <string name="rec_processing_state">%2$d ৰ %1$d প্ৰৱেশ প্ৰক্ৰিয়া কৰা হৈছে</string>
+    <string name="pref_include_chapter_url_hash">অধ্যায়ৰ URL হেছ অন্তৰ্ভুক্ত কৰক</string>
+    <string name="pref_include_chapter_url_hash_desc">অধ্যায়ৰ URLৰ MD5 হেছৰ প্ৰথম ছয়টা আখৰ অধ্যায়ৰ ফাইল বা ফোল্ডাৰৰ নামত সংলগ্ন কৰক।</string>
+    <string name="scan_qr_code">এটা QR কোড স্কেন কৰক</string>
+    <string name="rec_initializing">আৰম্ভ কৰি আছে</string>
+    <string name="filename">ফাইলৰ নাম</string>
+    <string name="file_extension">ফাইল এক্সটেনশন</string>
+    <string name="base_url">মূল url</string>
+    <string name="final_chapter">শেষ অধ্যায়</string>
 </resources>

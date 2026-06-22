@@ -673,4 +673,6 @@
     <string name="file_extension">Ekstensi file</string>
     <string name="final_chapter">Bab terakhir</string>
     <string name="base_url">URL dasar</string>
+    <string name="pref_include_chapter_url_hash">Sertakan hash URL bab</string>
+    <string name="pref_include_chapter_url_hash_desc">Tambahkan enam karakter pertama dari hash MD5 URL bab ke nama file atau folder bab.</string>
 </resources>
