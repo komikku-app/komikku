@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -23,6 +24,9 @@ fun BulkSelectionToolbar(
     isRunning: Boolean,
     onClickClearSelection: () -> Unit,
     onChangeCategoryClick: () -> Unit,
+    // KMK -->
+    onBlacklistClick: (() -> Unit)? = null,
+    // KMK <--
     onSelectAll: (() -> Unit)? = null,
     onReverseSelection: (() -> Unit)? = null,
 ) {
@@ -62,6 +66,21 @@ fun BulkSelectionToolbar(
                             },
                         )
                     } else {
+                        // KMK -->
+                        if (onBlacklistClick != null) {
+                            add(
+                                AppBar.Action(
+                                    title = stringResource(KMR.strings.action_add_to_blacklist),
+                                    icon = Icons.Outlined.Block,
+                                    onClick = {
+                                        if (selectedCount > 0) {
+                                            onBlacklistClick()
+                                        }
+                                    },
+                                ),
+                            )
+                        }
+                        // KMK <--
                         add(
                             AppBar.Action(
                                 title = stringResource(MR.strings.add_to_library),

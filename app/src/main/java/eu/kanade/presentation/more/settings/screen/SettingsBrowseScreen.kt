@@ -14,6 +14,7 @@ import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.screen.browse.BlacklistScreen
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
@@ -54,6 +55,7 @@ object SettingsBrowseScreen : SearchableSettings {
         // SY <--
         // KMK -->
         val relatedMangasInOverflow by uiPreferences.expandRelatedMangas().collectAsState()
+        val blacklistedSeries by sourcePreferences.blacklistedSeries().changes().collectAsState(sourcePreferences.blacklistedSeries().get())
         // KMK <--
         return listOf(
             // SY -->
@@ -110,6 +112,19 @@ object SettingsBrowseScreen : SearchableSettings {
                         title = stringResource(SYMR.strings.pref_local_source_hidden_folders),
                         subtitle = stringResource(SYMR.strings.pref_local_source_hidden_folders_summery),
                     ),
+                    // KMK -->
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(KMR.strings.pref_blacklist_series),
+                        subtitle = pluralStringResource(
+                            KMR.plurals.num_blacklisted_series,
+                            blacklistedSeries.size,
+                            blacklistedSeries.size,
+                        ),
+                        onClick = {
+                            navigator.push(BlacklistScreen())
+                        },
+                    ),
+                    // KMK <--
                 ),
             ),
             Preference.PreferenceGroup(
