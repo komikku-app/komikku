@@ -23,6 +23,16 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     defStyle: Int = 0,
 ) : RecyclerView(context, attrs, defStyle) {
 
+    init {
+        try {
+            val maxFlingField = RecyclerView::class.java.getDeclaredField("mMaxFlingVelocity")
+            maxFlingField.isAccessible = true
+            maxFlingField.set(this, 900000)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private var isZooming = false
     private var atLastPosition = false
     private var atFirstPosition = false
@@ -43,19 +53,12 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         }
     private val minRate
         get() = if (zoomOutDisabled) DEFAULT_RATE else MIN_RATE
-
     private val listener = GestureListener()
     private val detector = Detector()
-
     var doubleTapZoom = true
-
-    // KMK -->
     var pinchToZoom = true
-    // KMK <--
-
     var tapListener: ((MotionEvent) -> Unit)? = null
     var longTapListener: ((MotionEvent) -> Boolean)? = null
-
     private var isManuallyScrolling = false
     private var tapDuringManualScroll = false
 
@@ -73,7 +76,6 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         if (e.actionMasked == MotionEvent.ACTION_DOWN) {
             tapDuringManualScroll = isManuallyScrolling
         }
-
         detector.onTouchEvent(e)
         return super.onTouchEvent(e)
     }
@@ -93,10 +95,28 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         val totalItemCount = layoutManager?.itemCount ?: 0
         atLastPosition = visibleItemCount > 0 && lastVisibleItemPosition == totalItemCount - 1
         atFirstPosition = firstVisibleItemPosition == 0
-
         if (state == SCROLL_STATE_IDLE) {
             isManuallyScrolling = false
         }
+    }
+
+    override fun fling(velocityX: Int, velocityY: Int): Boolean {
+        if (currentScale > 1f) return zoomFling(velocityX, velocityY)
+
+        val currentSpeed = abs(velocityY).toFloat()
+        var adjustedVelocity = velocityY
+
+        if (currentSpeed < 6500) {
+            return super.fling(velocityX, velocityY)
+        } else if (currentSpeed < 10000) {
+            adjustedVelocity = (velocityY * 1.1f).toInt()
+        } else if (currentSpeed < 16000) {
+            adjustedVelocity = (velocityY * 1.5f).toInt()
+        } else {
+            adjustedVelocity = (velocityY * 3.2f).toInt()
+        }
+
+        return super.fling(velocityX, adjustedVelocity)
     }
 
     private fun getPositionX(positionX: Float): Float {
@@ -127,10 +147,8 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         val animatorSet = AnimatorSet()
         val translationXAnimator = ValueAnimator.ofFloat(fromX, toX)
         translationXAnimator.addUpdateListener { animation -> x = animation.animatedValue as Float }
-
         val translationYAnimator = ValueAnimator.ofFloat(fromY, toY)
         translationYAnimator.addUpdateListener { animation -> y = animation.animatedValue as Float }
-
         val scaleAnimator = ValueAnimator.ofFloat(fromRate, toRate)
         scaleAnimator.addUpdateListener { animation ->
             currentScale = animation.animatedValue as Float
@@ -148,10 +166,8 @@ class WebtoonRecyclerView @JvmOverloads constructor(
 
     fun zoomFling(velocityX: Int, velocityY: Int): Boolean {
         if (currentScale <= 1f) return false
-
         val distanceTimeFactor = 0.4f
         val animatorSet = AnimatorSet()
-
         if (velocityX != 0) {
             val dx = (distanceTimeFactor * velocityX / 2)
             val newX = getPositionX(x + dx)
@@ -166,11 +182,9 @@ class WebtoonRecyclerView @JvmOverloads constructor(
             translationYAnimator.addUpdateListener { animation -> y = getPositionY(animation.animatedValue as Float) }
             animatorSet.play(translationYAnimator)
         }
-
         animatorSet.duration = 400
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.start()
-
         return true
     }
 
@@ -189,29 +203,20 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     fun onScale(scaleFactor: Float) {
-        // KMK ->
         if (!detector.isQuickScaling && !pinchToZoom) return
-
         scaleTo(currentScale * scaleFactor)
     }
 
     fun scaleTo(scale: Float) {
-        // KMK <--
         currentScale = scale
-        currentScale = currentScale.coerceIn(
-            minRate,
-            MAX_SCALE_RATE,
-        )
-
+        currentScale = currentScale.coerceIn(minRate, MAX_SCALE_RATE)
         setScaleRate(currentScale)
-
         layoutParams.height = if (currentScale < 1) {
             (originalHeight / currentScale).toInt()
         } else {
             originalHeight
         }
         halfHeight = layoutParams.height / 2
-
         if (currentScale != DEFAULT_RATE) {
             x = getPositionX(x)
             y = getPositionY(y)
@@ -219,7 +224,6 @@ class WebtoonRecyclerView @JvmOverloads constructor(
             x = 0f
             y = 0f
         }
-
         requestLayout()
     }
 
@@ -240,7 +244,6 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     inner class GestureListener : GestureDetectorWithLongTap.Listener() {
-
         override fun onSingleTapConfirmed(ev: MotionEvent): Boolean {
             if (!tapDuringManualScroll) {
                 tapListener?.invoke(ev)
@@ -277,7 +280,6 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     inner class Detector : GestureDetectorWithLongTap(context, listener) {
-
         private var scrollPointerId = 0
         private var downX = 0
         private var downY = 0
@@ -289,7 +291,6 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         override fun onTouchEvent(ev: MotionEvent): Boolean {
             val action = ev.actionMasked
             val actionIndex = ev.actionIndex
-
             when (action) {
                 MotionEvent.ACTION_DOWN -> {
                     scrollPointerId = ev.getPointerId(0)
@@ -305,20 +306,16 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                     if (isDoubleTapping && isQuickScaling) {
                         return true
                     }
-
                     val index = ev.findPointerIndex(scrollPointerId)
                     if (index < 0) {
                         return false
                     }
-
                     val x = (ev.getX(index) + 0.5f).toInt()
                     val y = (ev.getY(index) + 0.5f).toInt()
                     var dx = x - downX
                     var dy = if (atFirstPosition || atLastPosition) y - downY else 0
-
                     if (!isZoomDragging && currentScale > 1f) {
                         var startScroll = false
-
                         if (abs(dx) > touchSlop) {
                             if (dx < 0) {
                                 dx += touchSlop
@@ -335,12 +332,10 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                             }
                             startScroll = true
                         }
-
                         if (startScroll) {
                             isZoomDragging = true
                         }
                     }
-
                     if (isZoomDragging) {
                         zoomScrollBy(dx, dy)
                     }
