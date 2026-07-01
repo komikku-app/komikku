@@ -54,5 +54,6 @@ val migrations: List<Migration>
         RemoveDuplicateReaderPreferenceMigration(),
         // KMK -->
         DisabledRepoMigration(),
+        SyncPrefKeyMigration(),
         // KMK <--
     )
