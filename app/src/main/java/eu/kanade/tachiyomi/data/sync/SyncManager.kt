@@ -219,10 +219,12 @@ class SyncManager(
                 backupUri,
                 sync = true,
                 options = RestoreOptions(
-                    appSettings = true,
-                    sourceSettings = true,
-                    libraryEntries = true,
-                    extensionRepoSettings = true,
+                    appSettings = syncOptions.appSettings,
+                    categories = syncOptions.categories,
+                    extensionRepoSettings = syncOptions.extensionRepoSettings,
+                    libraryEntries = syncOptions.libraryEntries,
+                    savedSearchesFeeds = syncOptions.savedSearchesFeeds,
+                    sourceSettings = syncOptions.sourceSettings,
                 ),
             )
 
@@ -322,13 +324,13 @@ class SyncManager(
         val elapsedTimeMillis = measureTimeMillis {
             val databaseManga = getAllMangaFromDB()
             val localMangaMap = databaseManga.associateBy {
-                Triple(it.source, it.url, it.title)
+                Pair(it.source, it.url)
             }
 
             logcat(LogPriority.DEBUG, logTag) { "Starting to filter favorites and non-favorites from backup data." }
 
             backup.backupManga.forEach { remoteManga ->
-                val compositeKey = Triple(remoteManga.source, remoteManga.url, remoteManga.title)
+                val compositeKey = Pair(remoteManga.source, remoteManga.url)
                 val localManga = localMangaMap[compositeKey]
                 when {
                     // Checks if the manga is in favorites and needs updating or adding
@@ -366,10 +368,10 @@ class SyncManager(
     private suspend fun updateNonFavorites(nonFavorites: List<BackupManga>) {
         val localMangaList = getAllMangaFromDB()
 
-        val localMangaMap = localMangaList.associateBy { Triple(it.source, it.url, it.title) }
+        val localMangaMap = localMangaList.associateBy { Pair(it.source, it.url) }
 
         nonFavorites.forEach { nonFavorite ->
-            val key = Triple(nonFavorite.source, nonFavorite.url, nonFavorite.title)
+            val key = Pair(nonFavorite.source, nonFavorite.url)
             localMangaMap[key]?.let { localManga ->
                 if (localManga.favorite != nonFavorite.favorite) {
                     val updatedManga = localManga.copy(favorite = nonFavorite.favorite)
