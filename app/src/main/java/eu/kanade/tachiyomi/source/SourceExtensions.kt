@@ -1,11 +1,16 @@
 package eu.kanade.tachiyomi.source
 
+import android.app.Application
+import android.content.Context
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import exh.source.EH_PACKAGE
 import exh.source.LOCAL_SOURCE_PACKAGE
+import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedSource
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -16,6 +21,7 @@ fun Source.getNameForMangaInfo(
     mergeSources: List<Source>? = null,
     // SY <--
 ): String {
+    val application = Injekt.get<Application>()
     val preferences = Injekt.get<SourcePreferences>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
@@ -24,6 +30,7 @@ fun Source.getNameForMangaInfo(
     return when {
         // SY -->
         !mergeSources.isNullOrEmpty() -> getMergedSourcesString(
+            application,
             mergeSources,
             enabledLanguages,
             hasOneActiveLanguages,
@@ -48,12 +55,16 @@ fun Source.getNameForMangaInfo(
 
 // SY -->
 private fun getMergedSourcesString(
+    context: Context,
     mergeSources: List<Source>,
     enabledLangs: List<String>,
     onlyName: Boolean,
 ): String {
-    return if (onlyName) {
-        mergeSources.joinToString { source ->
+    // KMK --> Filter out MergedSource itself so it's not displayed in the list
+    val realSources = mergeSources.filterNot { it.id == MERGED_SOURCE_ID }
+    // KMK <--
+    val sourceNames = if (onlyName) {
+        realSources.joinToString { source ->
             when {
                 // KMK -->
                 source.isLocalOrStub() -> source.toString()
@@ -67,7 +78,7 @@ private fun getMergedSourcesString(
             }
         }
     } else {
-        mergeSources.joinToString { source ->
+        realSources.joinToString { source ->
             // KMK -->
             if (source.isLocalOrStub()) {
                 source.toString()
@@ -77,6 +88,16 @@ private fun getMergedSourcesString(
             // KMK <--
         }
     }
+
+    // KMK --> Use the empty-state label when filtering removes every real source,
+    // otherwise use the localized format string so RTL languages can reorder the
+    // label and the sources as needed.
+    return if (sourceNames.isBlank()) {
+        context.stringResource(MR.strings.label_merged_entry)
+    } else {
+        context.stringResource(MR.strings.label_merged_entry_with_sources, sourceNames)
+    }
+    // KMK <--
 }
 // SY <--
 
