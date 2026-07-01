@@ -1,0 +1,5 @@
+-- Migration to add composite index on mangas(source, url) for faster source search lookups
+-- and drop the now-redundant single-column idx_mangas_source (covered by leftmost prefix).
+
+CREATE INDEX IF NOT EXISTS idx_mangas_source_url ON mangas(source, url);
+DROP INDEX IF EXISTS idx_mangas_source;
