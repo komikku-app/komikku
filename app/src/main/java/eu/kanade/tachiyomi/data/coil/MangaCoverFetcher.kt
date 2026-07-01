@@ -104,7 +104,7 @@ class MangaCoverFetcher(
 
     private fun fileLoader(file: File): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover, ogFile = file)
+        setRatioAndColorsInScope(mangaCover = mangaCover, ogFile = file)
         // KMK <--
         return SourceFetchResult(
             source = ImageSource(
@@ -119,7 +119,7 @@ class MangaCoverFetcher(
 
     private fun fileUriLoader(uri: String): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover)
+        setRatioAndColorsInScope(mangaCover = mangaCover)
         // KMK <--
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
@@ -188,13 +188,16 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
-                setRatioAndColorsInScope(
-                    mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
-                )
+                // Peek up to MAX_COVER_PEEK_BYTES into an independent copy so metadata extraction
+                // never shares the live response stream with Coil.  Skip if Content-Length is
+                // known to exceed the cap to avoid needlessly buffering a large image in memory.
+                val bodyLength = responseBody.contentLength()
+                if (bodyLength < 0 || bodyLength <= MAX_COVER_PEEK_BYTES) {
+                    setRatioAndColorsInScope(
+                        mangaCover = mangaCover,
+                        bufferedSource = response.peekBody(MAX_COVER_PEEK_BYTES).source(),
+                    )
+                }
                 // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
@@ -309,7 +312,7 @@ class MangaCoverFetcher(
         } catch (e: Exception) {
             try {
                 editor.abort()
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
             throw e
         }
@@ -352,7 +355,13 @@ class MangaCoverFetcher(
     ) {
         if (!preloadLibraryColor) return
         scope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
+            MangaCoverMetadata.setRatioAndColors(
+                mangaCover = mangaCover,
+                bufferedSource = bufferedSource,
+                ogFile = ogFile,
+                onlyDominantColor = onlyFavorite,
+                force = force,
+            )
         }
     }
     // KMK <--
@@ -420,5 +429,10 @@ class MangaCoverFetcher(
         private val CACHE_CONTROL_NO_NETWORK_NO_CACHE = CacheControl.Builder().noCache().onlyIfCached().build()
 
         private const val HTTP_NOT_MODIFIED = 304
+
+        // KMK -->
+        /** Maximum bytes to peek from the network response for cover metadata extraction. */
+        private const val MAX_COVER_PEEK_BYTES = 5L * 1024 * 1024 // 5 MiB
+        // KMK <--
     }
 }
