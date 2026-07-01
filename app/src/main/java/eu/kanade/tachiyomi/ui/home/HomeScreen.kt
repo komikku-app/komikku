@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,10 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +68,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.abs
 
 object HomeScreen : Screen() {
     private fun readResolve(): Any = HomeScreen
@@ -124,11 +129,44 @@ object HomeScreen : Screen() {
                                 enter = expandVertically(),
                                 exit = shrinkVertically(),
                             ) {
-                                NavigationBar {
-                                    TABS
-                                        // SY -->
-                                        .fastFilter { it.isEnabled() }
-                                        // SY <--
+                                // KMK -->
+                                var dragOffsetX by remember { mutableFloatStateOf(0f) }
+                                val filteredTabs = TABS
+                                    // SY -->
+                                    .fastFilter { it.isEnabled() }
+                                // SY <--
+
+                                NavigationBar(
+                                    // KMK -->
+                                    modifier = Modifier.pointerInput(Unit) {
+                                        detectDragGestures(
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                dragOffsetX += dragAmount.x
+                                                if (abs(dragOffsetX) > 50F) {
+                                                    val currentIndex = filteredTabs.indexOf(tabNavigator.current)
+                                                    val newIndex = (
+                                                        currentIndex + when {
+                                                            (dragOffsetX < 0F) -> -1
+                                                            (dragOffsetX > 0F) -> 1
+                                                            else -> 0
+                                                        }
+                                                        ).coerceIn(0, filteredTabs.size - 1)
+
+                                                    dragOffsetX = 0F
+
+                                                    tabNavigator.current = filteredTabs[newIndex]
+                                                }
+                                            },
+                                            onDragEnd = {
+                                                dragOffsetX = 0F
+                                            },
+                                        )
+                                    },
+                                    // KMK <--
+                                ) {
+                                    filteredTabs
+                                        // KMK <--
                                         .fastForEach {
                                             NavigationBarItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
                                         }
