@@ -116,6 +116,7 @@ class SyncYomiSyncService(
         if (lastETag != "") {
             headersBuilder.add("If-None-Match", lastETag)
         }
+        headersBuilder.addCustomHeaders()
         val headers = headersBuilder.build()
 
         val downloadRequest = GET(
@@ -178,6 +179,7 @@ class SyncYomiSyncService(
         if (eTag.isNotEmpty()) {
             headersBuilder.add("If-Match", eTag)
         }
+        headersBuilder.addCustomHeaders()
         val headers = headersBuilder.build()
 
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
@@ -245,5 +247,20 @@ class SyncYomiSyncService(
                 logcat(LogPriority.ERROR) { "Failed to report sync event: ${e.message}" }
             }
         }
+    }
+
+    private fun Headers.Builder.addCustomHeaders() {
+        val customHeaders = syncPreferences.clientCustomHeaders().get()
+        if (customHeaders.isBlank()) return
+
+        CustomHeaderHelper.parse(customHeaders)
+            .take(10)
+            .forEach { (key, value) ->
+                try {
+                    this.add(key, value)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR) { "Invalid custom header: $key: $value" }
+                }
+            }
     }
 }
