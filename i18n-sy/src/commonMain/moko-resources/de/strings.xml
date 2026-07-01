@@ -195,8 +195,6 @@
     <string name="reader_cache_size">Lese-Cache Größe</string>
     <string name="auto_webtoon_mode">Auto Webtoon Modus</string>
     <string name="enable_zoom_out">Zoom-Out aktivieren</string>
-    <string name="pref_left_handed_vertical_seekbar">Vertikale Suchleiste für Linkshänder</string>
-    <string name="pref_force_horz_seekbar">Horizontale Suchleiste erzwingen</string>
     <string name="pref_smooth_scroll">Glatter Auto-Scroll</string>
     <string name="eh_retry_all_help">Wiederhole alle Hilfe</string>
     <string name="eh_boost_page_help">Boost-Seite Hilfe</string>
@@ -372,7 +370,6 @@
     <string name="set_cbz_zip_password">CBZ Archivpasswort setzen</string>
     <string name="skip_queue_on_retry">Überspringe Warteschlange beim Wiederholungsversuch</string>
     <string name="tap_scroll_page">Tippen, um Seite zu scrollen</string>
-    <string name="pref_show_vert_seekbar_landscape">Zeige vertikale Suchleiste im Querformat</string>
     <string name="pref_crop_borders_continuous_vertical">Ränder zuschneiden Kontinuierlich Vertikal</string>
     <string name="eh_boost_page_downloading">Diese Seite wird schon herunterladen!</string>
     <string name="share_pages_info">%1$s: %2$s, Seiten %3$s</string>
@@ -520,9 +517,6 @@
     <string name="eh_boost_page_help_message">Normalerweise kann der Downloader nur eine bestimmte Anzahl von Seiten gleichzeitig herunterladen. Das bedeutet, dass Sie auf das Herunterladen einer Seite warten können, der Downloader aber erst dann mit dem Herunterladen der Seite beginnt, wenn er einen freien Platz zum Herunterladen hat. Wenn Sie auf „Seite boosten“ drücken, wird der Downloader gezwungen, mit dem Herunterladen der aktuellen Seite zu beginnen, unabhängig davon, ob ein Platz frei ist oder nicht.</string>
     <string name="preserve_reading_position">Leseposition bei gelesenen Einträgen beibehalten</string>
     <string name="eh_autoscroll_help_message">Im angegebenen Intervall automatisch auf die nächste Seite scrollen. Das Intervall ist in Sekunden angegeben.</string>
-    <string name="pref_force_horz_seekbar_summary">Entfernt die vertikale Suchleiste zugunsten der horizontalen</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Bestimmt, auf welcher Seite sich die Suchleiste befindet</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Aktiviert die vertikale Suchleiste im Querformat</string>
     <string name="google_drive_sync_data_not_found">Keine Synchronisierungsdaten in Google Drive gefunden</string>
     <string name="data_saver_downloader">Daten-Sparen beim Herunterladen verwenden</string>
     <string name="open_debug_menu_summary"><![CDATA[BERÜHREN SIE DIESES MENÜ NICHT, WENN SIE NICHT WISSEN, WAS SIE TUN! <font color=\'red\'>ES KANN IHRE BIBLIOTHEK BESCHÄDIGEN!</font>]]></string>

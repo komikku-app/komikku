@@ -29,9 +29,6 @@
     <string name="set_cbz_zip_password">CBZ আর্কাইভ পাসৱৰ্ড সেট কৰক</string>
     <string name="aes_256">AES 256</string>
     <string name="reader_preload_amount_4_pages">4 পাতাসমূহ</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">লেণ্ডস্কেপত উলম্ব চাৰ্ট সক্ষম কৰে</string>
-    <string name="pref_left_handed_vertical_seekbar">বামহাতৰ উলম্ব চাৰ্ট</string>
-    <string name="pref_force_horz_seekbar">অনুৰোধিত অনুভূমিক চাৰ্ট</string>
     <string name="eh_boost_invalid_loader">এই পৃষ্ঠা উন্নীত কৰিব নোৱাৰি (অবৈধ পৃষ্ঠা লোডাৰ)!</string>
     <string name="entry_merged">প্ৰৱিষ্টি মিলিত হৈছে!</string>
     <string name="information_empty_tags">আপোনাৰ কোনো টেগ নাই। টেগৰ দ্বাৰা আপোনাৰ লাইব্ৰেৰী শ্ৰেণীবিভাজন কৰিবলৈ প্লাছ বুটাম টিপক</string>
@@ -297,9 +294,6 @@
     <string name="tap_scroll_page_summary">এই বিকল্প সক্ষম কৰিলে টেপ কৰাটোৱে স্ক্ৰিনৰ আকাৰৰ সলনি পৃষ্ঠা দ্বাৰা স্ক্ৰল কৰিব।</string>
     <string name="reader_bottom_buttons">পঢ়ুৱৈৰ তলৰ বুটামসমূহ</string>
     <string name="reader_bottom_buttons_summary">পঢ়ুৱৈৰ তলত কি বুটামসমূহ প্ৰদৰ্শন হ’ব তলৰ কাস্টমাইজ কৰক</string>
-    <string name="pref_show_vert_seekbar_landscape">লেণ্ডস্কেপত উলম্ব চাৰ্ট দেখুৱাওক</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">চাৰ্ট কিমান পাৰ্শ্বত আছে সলনি কৰে</string>
-    <string name="pref_force_horz_seekbar_summary">লম্ব চাৰ্ট সম্পূৰ্ণকৈ আঁতৰাই অনুভূমিক চাৰ্টৰ বাবে</string>
     <string name="pref_smooth_scroll">সুৰুকীয়া অটো স্ক্ৰল</string>
     <string name="eh_autoscroll">অটোস্ক্ৰল</string>
     <string name="eh_retry_all">সকলো পুনৰ চেষ্টা কৰক</string>

@@ -172,9 +172,6 @@
     <string name="reader_preload_amount_8_pages">8 na Pahina</string>
     <string name="reader_preload_amount_14_pages">14 na Pahina</string>
     <string name="reader_cache_size">Laki ng cache sa Reader</string>
-    <string name="pref_show_vert_seekbar_landscape">Ipakita ang patayong seekbar sa landscape</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Magpapalit kung saang bahagi naka-on ang seekbar</string>
-    <string name="pref_force_horz_seekbar">Pilitin ang pahalang na seekbar</string>
     <string name="eh_retry_all">Subukan muli ang lahat</string>
     <string name="eh_autoscroll_freq_invalid">Di-balidong frequency</string>
     <string name="eh_retry_all_help">Tulong sa subukan muli lahat</string>
@@ -201,9 +198,6 @@
     <string name="auto_webtoon_mode_summary">Gamitin ang auto webtoon mode para sa mga entry na natukoy na malamang na gumamit ng mahabang strip na pormat</string>
     <string name="tap_scroll_page_summary">Ang pag-tap ay mag-i-scroll ayon sa pahina sa halip na laki ng screen kapag pinagana ang opsyong ito</string>
     <string name="reader_bottom_buttons">Mga Button sa Ibaba ng Reader</string>
-    <string name="pref_force_horz_seekbar_summary">Alisin ang patayong seekbar nang tuluyan sa pabor na pahalang</string>
-    <string name="pref_left_handed_vertical_seekbar">Pang-kaliwang kamay na patayong seekbar</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Pinapagana ang patayong seekbar kapag nasa landscape</string>
     <string name="eh_boost_page">I-boost ang pahina</string>
     <string name="eh_boost_page_help_message">Karaniwan, ang downloader ay maaari lamang mag-download ng isang tiyak na bilang ng mga pahina nang sabay-sabay. Ibig sabihin, maaari kang maghintay para sa isang pahina na mag-download ngunit hindi magsisimula ang downloader na i-download ang pahina hanggang sa magkaroon ito ng libreng download slot. Ang pagpindot sa \'I-boost ang pahina\' ay pipilitin ang downloader na simulan ang pag-download ng kasalukuyang pahina, kahit na walang available na slot.</string>
     <string name="eh_autoscroll_help">Tulong sa autoscroll</string>

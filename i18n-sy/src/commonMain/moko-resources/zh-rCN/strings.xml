@@ -237,12 +237,6 @@
     <string name="tap_scroll_page_summary">启用此选项后，点击将按页面而不是屏幕大小滚动</string>
     <string name="reader_bottom_buttons">阅读器底部按钮</string>
     <string name="reader_bottom_buttons_summary">自定义显示在阅读器底部的按钮</string>
-    <string name="pref_show_vert_seekbar_landscape">横屏时显示垂直进度条</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">在横屏时启用垂直进度条</string>
-    <string name="pref_left_handed_vertical_seekbar">将垂直进度条放在左侧</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">更改进度条的方位</string>
-    <string name="pref_force_horz_seekbar">强制使用水平进度条</string>
-    <string name="pref_force_horz_seekbar_summary">完全移除垂直进度条，使用水平进度条</string>
     <string name="pref_smooth_scroll">平滑自动翻页</string>
     <!-- Reader -->
     <!-- Reader Actions -->

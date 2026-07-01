@@ -284,12 +284,6 @@
     <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, вместо размера экрана устройства</string>
     <string name="reader_bottom_buttons">Кнопки в нижней части читалки</string>
     <string name="reader_bottom_buttons_summary">Настройка отображения кнопок в нижней части читалки</string>
-    <string name="pref_show_vert_seekbar_landscape">Показывать вертикальную полосу прокрутки</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Включает вертикальную полосу прокрутки в альбомной ориентации</string>
-    <string name="pref_left_handed_vertical_seekbar">Вертикальная полоса прокрутки по левую сторону</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Переключает положение полосы прокрутки</string>
-    <string name="pref_force_horz_seekbar">Принудительная горизонтальная полоса прокрутки</string>
-    <string name="pref_force_horz_seekbar_summary">Полностью убирает вертикальную полосу прокрутки в пользу горизонтальной</string>
     <string name="pref_smooth_scroll">Плавная автопрокрутка</string>
     <!-- Reader -->
     <!-- Reader Actions -->

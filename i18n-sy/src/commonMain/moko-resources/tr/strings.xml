@@ -270,12 +270,6 @@
     <string name="tap_scroll_page_summary">Bu ayar açıkken dokunmak ekran boyutu kadar kaydırmak yerine bir sayfa kaydıracaktır</string>
     <string name="reader_bottom_buttons">Alt Okuyucu Butonları</string>
     <string name="reader_bottom_buttons_summary">Okuyucunun altında görünecek butonları özelleştirin</string>
-    <string name="pref_show_vert_seekbar_landscape">Manzara modunda dikey kaydırma çubuğu göster</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Manzara modundayken dikey kaydırma çubuğunu etkinleştirir</string>
-    <string name="pref_left_handed_vertical_seekbar">Sol-el için dikey kaydırma çubuğu</string>
-    <string name="pref_force_horz_seekbar_summary">Yatay kaydırma çubuğunu kullanmak için dikey kaydırma çubuğunu kaldırır</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Kaydırma çubuğunun bulunduğu tarafı değiştirir</string>
-    <string name="pref_force_horz_seekbar">Yatay kaydırma çubuğunu zorla</string>
     <string name="pref_smooth_scroll">Yumuşak Otomatik Kaydırma</string>
     <string name="eh_autoscroll">Otomatik Kaydırma</string>
     <string name="eh_retry_all">Tümünü tekrar dene</string>

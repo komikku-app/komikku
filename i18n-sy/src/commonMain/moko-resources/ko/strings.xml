@@ -271,12 +271,6 @@
     <string name="tap_scroll_page_summary">활성화하면 탭 액션이 화면 크기 대신 페이지로 스크롤합니다</string>
     <string name="reader_bottom_buttons">리더 하단 버튼</string>
     <string name="reader_bottom_buttons_summary">리더 하단에 표시되는 버튼 커스텀</string>
-    <string name="pref_show_vert_seekbar_landscape">가로 화면일 때 수직 탐색 바 표시</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">카로 화면일 때 수직 탐색 바를 활성화합니다</string>
-    <string name="pref_left_handed_vertical_seekbar">왼손잡이용 수직 탐색 바</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">탐색 바의 좌우 위치를 바꿉니다</string>
-    <string name="pref_force_horz_seekbar">수평 탐색 바 강제</string>
-    <string name="pref_force_horz_seekbar_summary">수직 탐색 바를 완전히 제거하고 수평 방향으로 변경합니다</string>
     <string name="pref_smooth_scroll">부드러운 자동 스크롤</string>
     <string name="eh_autoscroll">자동 스크롤</string>
     <string name="eh_retry_all">모두 재시도</string>

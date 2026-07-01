@@ -209,12 +209,6 @@
     <string name="tap_scroll_page_summary">A rolagem será feita por página em vez de por escala de tela ao ativar esta opção</string>
     <string name="reader_bottom_buttons">Botões no Inferior do Leitor</string>
     <string name="reader_bottom_buttons_summary">Muda que botões aparecem na parte inferior do leitor</string>
-    <string name="pref_show_vert_seekbar_landscape">Mostrar barra vertical em paisagem</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Ativa a barra de progresso vertical quando em paisagem</string>
-    <string name="pref_left_handed_vertical_seekbar">Barra vertical canhota</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Muda o lado que a barra está</string>
-    <string name="pref_force_horz_seekbar">Forçar barra horizontal</string>
-    <string name="pref_force_horz_seekbar_summary">Remove a barra de progresso vertical totalmente em favor da horizontal</string>
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Rolagem automática</string>
