@@ -99,7 +99,7 @@ class DownloadCache(
 
     private val _isInitializing = MutableStateFlow(false)
     val isInitializing = _isInitializing
-        .debounce(1000L) // Don't notify if it finishes quickly enough
+        .debounce(1.seconds) // Don't notify if it finishes quickly enough
         .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     private val diskCacheFile: File
@@ -498,7 +498,7 @@ class DownloadCache(
     private fun updateDiskCache() {
         updateDiskCacheJob?.cancel()
         updateDiskCacheJob = scope.launchIO {
-            delay(1000)
+            delay(1.seconds)
             ensureActive()
             val bytes = ProtoBuf.encodeToByteArray(rootDownloadsDir)
             ensureActive()
