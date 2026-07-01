@@ -181,6 +181,11 @@ object SettingsTrackingScreen : SearchableSettings {
                         logout = { dialog = LogoutDialog(trackerManager.mangaUpdates) },
                     ),
                     Preference.PreferenceItem.TrackerPreference(
+                        tracker = trackerManager.doujinTracker,
+                        login = { dialog = LoginDialog(trackerManager.doujinTracker, MR.strings.username) },
+                        logout = { dialog = LogoutDialog(trackerManager.doujinTracker) },
+                    ),
+                    Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.shikimori,
                         login = { context.openInBrowser(ShikimoriApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.shikimori) },

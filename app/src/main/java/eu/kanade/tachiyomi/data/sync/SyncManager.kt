@@ -157,7 +157,7 @@ class SyncManager(
 
         if (remoteBackup == null) {
             logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
-            // should we call showSyncError?
+            notifier.showSyncError("Sync failed. Check sign-in and network")
             return
         }
 
