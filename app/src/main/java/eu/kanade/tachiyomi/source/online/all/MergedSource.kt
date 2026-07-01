@@ -21,7 +21,9 @@ import kotlinx.coroutines.sync.withPermit
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import okhttp3.Response
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
@@ -39,6 +41,10 @@ class MergedSource : HttpSource() {
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
     private val filterChaptersForDownload: FilterChaptersForDownload by injectLazy()
+    // KMK -->
+    private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId by injectLazy()
+    private val libraryPreferences: LibraryPreferences by injectLazy()
+    // KMK <--
 
     override val id: Long = MERGED_SOURCE_ID
 
@@ -116,6 +122,24 @@ class MergedSource : HttpSource() {
             "Manga references are empty, chapters unavailable, merge is likely corrupted"
         }
 
+        // KMK -->
+        // Read chapter numbers across all sources of this merge, so a chapter newly fetched
+        // on one source can be marked read when the same number was already read on another.
+        // This only feeds the "mark duplicate read" / "new" pref (also enforced inside
+        // SyncChaptersWithSource), so skip the extra query entirely when that pref is off.
+        val siblingReadChapterNumbers = if (
+            libraryPreferences.markDuplicateReadChapterAsRead().get()
+                .contains(LibraryPreferences.MARK_DUPLICATE_CHAPTER_READ_NEW)
+        ) {
+            getMergedChaptersByMangaId.await(manga.id, dedupe = false, applyFilter = false)
+                .mapNotNullTo(mutableSetOf()) { chapter ->
+                    if (chapter.read && chapter.isRecognizedNumber) chapter.chapterNumber else null
+                }
+        } else {
+            emptySet()
+        }
+        // KMK <--
+
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {
@@ -131,7 +155,14 @@ class MergedSource : HttpSource() {
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toSManga())
                                         val results =
-                                            syncChaptersWithSource.await(chapterList, loadedManga, source)
+                                            syncChaptersWithSource.await(
+                                                chapterList,
+                                                loadedManga,
+                                                source,
+                                                // KMK -->
+                                                siblingReadChapterNumbers = siblingReadChapterNumbers,
+                                                // KMK <--
+                                            )
 
                                         if (downloadChapters && reference.downloadChapters) {
                                             val chaptersToDownload = filterChaptersForDownload.await(manga, results)

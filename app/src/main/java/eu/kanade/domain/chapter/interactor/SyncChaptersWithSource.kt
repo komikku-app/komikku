@@ -53,6 +53,12 @@ class SyncChaptersWithSource(
         source: Source,
         manualFetch: Boolean = false,
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
+        // KMK -->
+        // Read chapter numbers from the sibling sources of a merged entry, so a chapter
+        // freshly fetched on one source can be marked read when the same number was
+        // already read on another source (honors the "mark duplicate read" / "new" pref).
+        siblingReadChapterNumbers: Set<Double> = emptySet(),
+        // KMK <--
     ): List<Chapter> {
         if (rawSourceChapters.isEmpty() && !source.isLocal()) {
             throw NoChaptersException()
@@ -169,6 +175,9 @@ class SyncChaptersWithSource(
             .filter { it.read && it.isRecognizedNumber }
             .map { it.chapterNumber }
             .toSet()
+            // KMK -->
+            .plus(siblingReadChapterNumbers)
+        // KMK <--
 
         removedChapters.forEach { chapter ->
             if (chapter.read) deletedReadChapterNumbers.add(chapter.chapterNumber)
