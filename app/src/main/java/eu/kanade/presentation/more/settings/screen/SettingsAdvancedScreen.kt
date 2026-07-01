@@ -375,6 +375,12 @@ object SettingsAdvancedScreen : SearchableSettings {
                     preference = uiPreferences.preloadLibraryColor(),
                     title = stringResource(KMR.strings.preload_library_cover_color),
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = uiPreferences.autoHideHiddenCategories(),
+                    title = stringResource(KMR.strings.pref_autohide_hidden_categories_title),
+                    subtitle = stringResource(KMR.strings.pref_autohide_hidden_categories_subtitle),
+                ),
                 // KMK <--
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_reset_viewer_flags),
