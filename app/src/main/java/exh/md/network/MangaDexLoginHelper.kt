@@ -32,6 +32,11 @@ class MangaDexLoginHelper(
             .add("code", authorizationCode)
             .add("code_verifier", MdUtil.getPkceChallengeCode())
             .add("redirect_uri", MdConstants.Login.redirectUri)
+            // KMK -->
+            // Match the scope requested in the authorization URL so the exchanged token
+            // pair includes an offline refresh token.
+            .add("scope", MdConstants.Login.scope)
+            // KMK <--
             .build()
 
         val error = kotlin.runCatching {
