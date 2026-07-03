@@ -48,6 +48,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     // KMK -->
     private suspend fun Call.awaitALSuccess(): Response {
+        val callStack = Exception().stackTrace.run { copyOfRange(1, size) }
         val response = await()
         try {
             response.parseALError()
@@ -58,13 +59,17 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         if (!response.isSuccessful) {
             val code = response.code
             response.close()
-            throw eu.kanade.tachiyomi.network.HttpException(code)
+            throw eu.kanade.tachiyomi.network.HttpException(code).apply { stackTrace = callStack }
         }
         return response
     }
 
     private fun Response.parseALError() {
-        val bodyString = peekBody(1024 * 1024).string()
+        val bodyString = try {
+            peekBody(1024 * 1024).string()
+        } catch (_: Exception) {
+            return
+        }
         val errorObj = try {
             json.decodeFromString<ALError>(bodyString)
         } catch (_: Exception) {
