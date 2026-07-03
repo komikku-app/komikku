@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
-import okhttp3.Call
 import eu.kanade.tachiyomi.util.lang.htmlDecode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
@@ -26,6 +25,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -54,6 +54,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             response.parseALError()
         } catch (t: Throwable) {
             response.close()
+            t.stackTrace = callStack
             throw t
         }
         if (!response.isSuccessful) {
