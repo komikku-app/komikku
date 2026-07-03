@@ -49,7 +49,12 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
     // KMK -->
     private suspend fun Call.awaitALSuccess(): Response {
         val callStack = Exception().stackTrace.run { copyOfRange(1, size) }
-        val response = await()
+        val response = try {
+            await()
+        } catch (e: java.io.IOException) {
+            e.stackTrace = callStack
+            throw e
+        }
         try {
             response.parseALError()
         } catch (t: Throwable) {
@@ -159,7 +164,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 // KMK -->
                 .awaitALSuccess()
-                .use {}
+                .close()
             // KMK <--
             track
         }
@@ -184,7 +189,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
                 // KMK -->
                 .awaitALSuccess()
-                .use {}
+                .close()
             // KMK <--
         }
     }
