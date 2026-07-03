@@ -65,11 +65,11 @@
     <string name="extensions_page_need_refresh">Listeyi güncellemek için eklenti sayfasını yenileyin.</string>
     <string name="extensions_page_more">Daha çok eklenti...</string>
     <string name="pref_expand_related_mangas">Önerileri Genişlet</string>
-    <string name="pref_expand_related_mangas_summary">Kapatılırsa, Öneriler otomatik olarak yüklenmez &amp; genişletilmiş göster</string>
-    <string name="put_related_mangas_in_overflow">Taşma içindeki öneriler</string>
-    <string name="put_related_mangas_in_overflow_summary">Öneriler düğmesini giriş sayfası yerine taşma menüsüne koyun</string>
-    <string name="pref_show_home_on_related_mangas">Önerilerden Eve Dönüş</string>
-    <string name="pref_show_home_on_related_mangas_summary">Doğrudan Ana Sayfa\'ya geri dönmek için Önerilere göz atarken bir simge göster</string>
+    <string name="pref_expand_related_mangas_summary">Kapatılırsa, Öneriler otomatik olarak yüklenmez ve genişletilmiş olarak gösterilmez</string>
+    <string name="put_related_mangas_in_overflow">Taşma menüsünde Öneriler</string>
+    <string name="put_related_mangas_in_overflow_summary">Öneriler butonunu girdi sayfası yerine taşma menüsüne koy</string>
+    <string name="pref_show_home_on_related_mangas">Önerilerden Ana Sayfaya Dön</string>
+    <string name="pref_show_home_on_related_mangas_summary">Önerilere göz atarken doğrudan Ana Sayfa\'ya geri dönmek için bir simge göster</string>
     <string name="pref_source_related_mangas">Öneriler</string>
     <string name="pref_source_related_mangas_summary">Girdiyi görüntülerken kaynak web sitesinin Önerilerini göster</string>
     <string name="related_mangas_website_suggestions">Website Önerileri</string>
