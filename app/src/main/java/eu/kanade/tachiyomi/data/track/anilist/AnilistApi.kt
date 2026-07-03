@@ -14,10 +14,11 @@ import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserListMangaQueryResult
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
+import okhttp3.Call
 import eu.kanade.tachiyomi.util.lang.htmlDecode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
@@ -46,6 +47,22 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         .build()
 
     // KMK -->
+    private suspend fun Call.awaitALSuccess(): Response {
+        val response = await()
+        try {
+            response.parseALError()
+        } catch (t: Throwable) {
+            response.close()
+            throw t
+        }
+        if (!response.isSuccessful) {
+            val code = response.code
+            response.close()
+            throw eu.kanade.tachiyomi.network.HttpException(code)
+        }
+        return response
+    }
+
     private fun Response.parseALError() {
         val bodyString = peekBody(1024 * 1024).string()
         val errorObj = try {
@@ -91,9 +108,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALAddMangaResult>()
                     .let {
@@ -135,9 +151,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 }
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
-                .awaitSuccess()
                 // KMK -->
-                .use { it.parseALError() }
+                .awaitALSuccess()
+                .use {}
             // KMK <--
             track
         }
@@ -160,9 +176,9 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 }
             }
             authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
-                .awaitSuccess()
                 // KMK -->
-                .use { it.parseALError() }
+                .awaitALSuccess()
+                .use {}
             // KMK <--
         }
     }
@@ -221,9 +237,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALSearchResult>()
                     .data.page.media
@@ -303,9 +318,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALUserListMangaQueryResult>()
                     .data.page.mediaList
@@ -347,9 +361,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALCurrentUserResult>()
                     .let {
@@ -403,9 +416,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALMangaMetadata>()
                     .let { metadata ->
@@ -471,9 +483,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 )
-                    .awaitSuccess()
                     // KMK -->
-                    .also { it.parseALError() }
+                    .awaitALSuccess()
                     // KMK <--
                     .parseAs<ALIdSearchResult>()
                     .data.media
