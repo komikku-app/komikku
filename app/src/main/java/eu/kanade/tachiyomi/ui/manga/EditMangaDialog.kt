@@ -134,7 +134,7 @@ fun EditMangaDialog(
                                 else -> null
                             }
                         }?.toLong(),
-                        binding.bannerUrl.text.toString(),
+                        binding.bannerUrl.text?.toString()?.trim()?.takeUnless { it.isBlank() },
                     )
                     onDismissRequest()
                 },
