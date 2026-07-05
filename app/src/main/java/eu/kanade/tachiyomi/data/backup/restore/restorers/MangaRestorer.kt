@@ -581,7 +581,7 @@ class MangaRestorer(
             customDescription != null ||
             customGenre != null ||
             customStatus != 0 ||
-            customBannerUrl != null
+            customBannerUrl?.isNotBlank() == true
         ) {
             return CustomMangaInfo(
                 id = 0L,
@@ -592,7 +592,7 @@ class MangaRestorer(
                 description = customDescription,
                 genre = customGenre,
                 status = customStatus.takeUnless { it == 0 }?.toLong(),
-                bannerUrl = customBannerUrl,
+                bannerUrl = customBannerUrl?.takeUnless { it.isBlank() },
             )
         }
         return null
