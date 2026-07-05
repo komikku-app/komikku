@@ -1,7 +1,9 @@
 package tachiyomi.data.manga
 
+import androidx.compose.ui.util.fastMap
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
+import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.StringListColumnAdapter
@@ -11,8 +13,6 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.repository.MangaRepository
-import java.time.LocalDate
-import java.time.ZoneId
 
 class MangaRepositoryImpl(
     private val handler: DatabaseHandler,
@@ -22,11 +22,11 @@ class MangaRepositoryImpl(
         return handler.awaitOne { mangasQueries.getMangaById(id, MangaMapper::mapManga) }
     }
 
-    override suspend fun getMangaByIdAsFlow(id: Long): Flow<Manga> {
+    override fun getMangaByIdAsFlow(id: Long): Flow<Manga> {
         return handler.subscribeToOne { mangasQueries.getMangaById(id, MangaMapper::mapManga) }
     }
 
-    override suspend fun getMangaByUrlAndSourceId(url: String, sourceId: Long): Manga? {
+    override suspend fun getMangaByUrlAndSource(url: String, sourceId: Long): Manga? {
         return handler.awaitOneOrNull {
             mangasQueries.getMangaByUrlAndSource(
                 url,
@@ -36,7 +36,7 @@ class MangaRepositoryImpl(
         }
     }
 
-    override fun getMangaByUrlAndSourceIdAsFlow(url: String, sourceId: Long): Flow<Manga?> {
+    override fun getMangaByUrlAndSourceAsFlow(url: String, sourceId: Long): Flow<Manga?> {
         return handler.subscribeToOneOrNull {
             mangasQueries.getMangaByUrlAndSource(
                 url,
@@ -62,7 +62,7 @@ class MangaRepositoryImpl(
         return handler.subscribeToList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
     }
 
-    override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {
+    override fun getFavoriteBySourceIdAsFlow(sourceId: Long): Flow<List<Manga>> {
         return handler.subscribeToList { mangasQueries.getFavoriteBySourceId(sourceId, MangaMapper::mapManga) }
     }
 
@@ -73,7 +73,7 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getUpcomingManga(statuses: Set<Long>): Flow<List<Manga>> {
-        val epochMillis = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+        val epochMillis = System.currentTimeMillis()
         return handler.subscribeToList {
             mangasQueries.getUpcomingManga(epochMillis, statuses, MangaMapper::mapManga)
         }
@@ -86,15 +86,6 @@ class MangaRepositoryImpl(
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             false
-        }
-    }
-
-    override suspend fun setMangaCategories(mangaId: Long, categoryIds: List<Long>) {
-        handler.await(inTransaction = true) {
-            mangas_categoriesQueries.deleteMangaCategoryByMangaId(mangaId)
-            categoryIds.map { categoryId ->
-                mangas_categoriesQueries.insert(mangaId, categoryId)
-            }
         }
     }
 
@@ -152,6 +143,7 @@ class MangaRepositoryImpl(
                     // KMK -->
                     updateInfo = updateInfo,
                     // KMK <--
+                    bannerUrl = it.ogBannerUrl,
                     mapper = MangaMapper::mapManga,
                 )
                     .executeAsOne()
@@ -186,6 +178,9 @@ class MangaRepositoryImpl(
                     version = value.version,
                     isSyncing = 0,
                     notes = value.notes,
+                    // KMK -->
+                    bannerUrl = value.bannerUrl,
+                    // KMK <--
                 )
             }
         }
