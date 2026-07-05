@@ -30,6 +30,9 @@ data class Manga(
     val ogGenre: List<String>?,
     val ogStatus: Long,
     // SY <--
+    // KMK -->
+    val ogBannerUrl: String?,
+    // KMK <--
     val updateStrategy: UpdateStrategy,
     val initialized: Boolean,
     val lastModifiedAt: Long,
@@ -66,6 +69,10 @@ data class Manga(
     val status: Long
         get() = customMangaInfo?.status ?: ogStatus
     // SY <--
+    // KMK -->
+    val bannerUrl: String?
+        get() = customMangaInfo?.bannerUrl ?: ogBannerUrl
+    // KMK <--
 
     val expectedNextUpdate: Instant?
         get() = nextUpdate
@@ -161,6 +168,9 @@ data class Manga(
             ogGenre = null,
             ogStatus = 0L,
             // SY <--
+            // KMK -->
+            ogBannerUrl = null,
+            // KMK <--
             updateStrategy = UpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
             lastModifiedAt = 0L,
