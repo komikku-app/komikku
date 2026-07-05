@@ -149,7 +149,8 @@ fun MangaInfoBox(
             Color.Transparent,
             MaterialTheme.colorScheme.background,
         )
-        val hasBanner = !manga.bannerUrl.isNullOrBlank()
+        var bannerLoadFailed by remember(manga.bannerUrl) { mutableStateOf(false) }
+        val hasBanner = !manga.bannerUrl.isNullOrBlank() && !bannerLoadFailed
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(if (hasBanner) manga.bannerUrl else manga)
@@ -162,6 +163,11 @@ fun MangaInfoBox(
                 if (!hasBanner) {
                     val image = result.result.image
                     coverRatio.floatValue = image.height.toFloat() / image.width
+                }
+            },
+            onError = {
+                if (hasBanner) {
+                    bannerLoadFailed = true
                 }
             },
             // KMK <--
