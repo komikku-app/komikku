@@ -180,13 +180,13 @@ fun MangaInfoBox(
                 }
                 // KMK -->
                 .background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.4f))
-                .let {
+                .then(
                     if (hasBanner) {
-                        it.blur(4.dp).alpha(0.4f)
+                        Modifier.blur(4.dp).alpha(0.4f)
                     } else {
-                        it.blur(7.dp).alpha(0.2f)
+                        Modifier.blur(7.dp).alpha(0.2f)
                     }
-                },
+                ),
                 // KMK <--
         )
 
