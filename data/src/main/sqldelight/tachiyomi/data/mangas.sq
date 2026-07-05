@@ -29,7 +29,10 @@ CREATE TABLE mangas(
     favorite_modified_at INTEGER,
     version INTEGER NOT NULL DEFAULT 0,
     is_syncing INTEGER NOT NULL DEFAULT 0,
-    notes TEXT NOT NULL DEFAULT ""
+    notes TEXT NOT NULL DEFAULT "",
+    -- KMK -->
+    banner_url TEXT
+    -- KMK <--
 );
 
 CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
@@ -58,6 +61,9 @@ BEGIN
     UPDATE mangas SET version = version + 1
     WHERE _id = new._id AND new.is_syncing = 0 AND (
         new.url != old.url OR
+        new.title != old.title OR
+        new.author != old.author OR
+        new.artist != old.artist OR
         new.description != old.description OR
         new.favorite != old.favorite
     );
@@ -118,87 +124,173 @@ WHERE favorite = 1
 AND source = :sourceId;
 
 getDuplicateLibraryManga:
-WITH
-track_dupes AS (
-    SELECT DISTINCT S2.manga_id
-    FROM manga_sync S1
-    INNER JOIN manga_sync S2
-    ON S1.sync_id = S2.sync_id
-    AND S1.remote_id = S2.remote_id
-    AND S1.manga_id != S2.manga_id
-    WHERE S1.manga_id = :id
-),
-duplicates AS (
-    SELECT M.*
-    FROM mangas M
-    LEFT JOIN track_dupes D
-    ON D.manga_id = _id
-    WHERE favorite = 1
-    AND _id != :id
-    AND (lower(title) LIKE '%' || lower(:title) || '%' OR D.manga_id IS NOT NULL)
-),
-chapter_counts AS (
-    SELECT
-        M._id AS manga_id,
-        count(*) AS chapter_count
-    FROM duplicates M
-    JOIN chapters C
-    ON M._id = C.manga_id
-    LEFT JOIN excluded_scanlators ES
-    ON C.manga_id = ES.manga_id
-    AND C.scanlator = ES.scanlator
-    WHERE ES.scanlator IS NULL
-    GROUP BY M._id
-)
-SELECT
-    M.*,
-    coalesce(CC.chapter_count, 0) AS chapter_count
-FROM duplicates M
-LEFT JOIN chapter_counts CC
-ON M._id = CC.manga_id;
+SELECT mangas.*, coalesce(C.total, 0) AS totalCount
+FROM mangas
+LEFT JOIN (
+    SELECT chapters.manga_id, count(*) AS total
+    FROM chapters
+    GROUP BY chapters.manga_id
+) AS C
+ON mangas._id = C.manga_id
+WHERE mangas.favorite = 1
+AND mangas._id != :id
+AND mangas.title = :title;
 
 getUpcomingManga:
-SELECT *
+SELECT mangas.*
 FROM mangas
-WHERE next_update >= :startOfDay
-AND favorite = 1
+WHERE favorite = 1
 AND status IN :statuses
 ORDER BY next_update ASC;
+
+getMangaWithNextUpdate:
+SELECT *
+FROM mangas
+WHERE favorite = 1
+AND next_update > :epochMillis;
+
+getMangaWithExpectedNextUpdate:
+SELECT *
+FROM mangas
+WHERE favorite = 1
+AND next_update > 0;
 
 resetViewerFlags:
 UPDATE mangas
 SET viewer = 0;
 
-resetIsSyncing:
-UPDATE mangas
-SET is_syncing = 0
-WHERE is_syncing = 1;
+-- SY -->
+getMangaBySource:
+SELECT * FROM mangas WHERE source = :sourceId;
 
-getSourceIdsWithNonLibraryManga:
-SELECT source, COUNT(*) AS manga_count
-FROM mangas
-WHERE favorite = 0
-GROUP BY source;
+getFavoriteMangaWithMetadata:
+SELECT mangas.* FROM mangas
+INNER JOIN search_metadata
+    ON mangas._id = search_metadata.manga_id
+WHERE mangas.favorite = 1;
 
-deleteNonLibraryManga:
-DELETE FROM mangas
-WHERE favorite = 0
-AND source IN :sourceIds
-AND (
-    :keepReadManga = 0
-    OR _id NOT IN (
-        SELECT DISTINCT manga_id
-        FROM chapters
-        WHERE read = 1
-        OR last_page_read != 0
-    )
-) AND _id NOT IN (
+getFavoriteMangaWithMetadataBySource:
+SELECT mangas.* FROM mangas
+INNER JOIN search_metadata
+    ON mangas._id = search_metadata.manga_id
+WHERE mangas.favorite = 1 AND mangas.source = :sourceId;
+
+getFavoriteMangaWithMetadataBySourceAndCategory:
+SELECT mangas.* FROM mangas
+INNER JOIN search_metadata
+    ON mangas._id = search_metadata.manga_id
+INNER JOIN mangas_categories
+    ON mangas._id = mangas_categories.manga_id
+WHERE mangas.favorite = 1
+AND mangas.source = :sourceId
+AND mangas_categories.category_id = :categoryId;
+
+getSearchMangaWithMetadata:
+SELECT mangas.* FROM mangas
+INNER JOIN search_metadata
+    ON mangas._id = search_metadata.manga_id;
+
+getMangaNotInListByIds:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND _id NOT IN :ids;
+
+getMangaNotInListByIdsAndSource:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND source = :sourceId
+AND _id NOT IN :ids;
+
+getMangaNotInListByIdsAndSourceAndCategory:
+SELECT mangas.* FROM mangas
+INNER JOIN mangas_categories
+    ON mangas._id = mangas_categories.manga_id
+WHERE mangas.favorite = 1
+AND mangas.source = :sourceId
+AND mangas_categories.category_id = :categoryId
+AND mangas._id NOT IN :ids;
+
+getMangaInListByIds:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND _id IN :ids;
+
+getMangaInListByIdsAndSource:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND source = :sourceId
+AND _id IN :ids;
+
+getMangaInListByIdsAndSourceAndCategory:
+SELECT mangas.* FROM mangas
+INNER JOIN mangas_categories
+    ON mangas._id = mangas_categories.manga_id
+WHERE mangas.favorite = 1
+    AND mangas.source = :sourceId
+    AND mangas_categories.category_id = :categoryId
+    AND mangas._id IN :ids;
+
+getMangaNotInListByIdsFiltered:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND _id NOT IN :ids
+AND _id NOT IN (
+     SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+getMangaNotInListByIdsAndSourceFiltered:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND source = :sourceId
+AND _id NOT IN :ids
+AND _id NOT IN (
+     SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+getMangaNotInListByIdsAndSourceAndCategoryFiltered:
+SELECT mangas.* FROM mangas
+INNER JOIN mangas_categories
+    ON mangas._id = mangas_categories.manga_id
+WHERE mangas.favorite = 1
+AND mangas.source = :sourceId
+AND mangas_categories.category_id = :categoryId
+AND mangas._id NOT IN :ids
+AND mangas._id NOT IN (
+     SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+getMangaInListByIdsFiltered:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND _id IN :ids
+AND _id NOT IN (
+     SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+getMangaInListByIdsAndSourceFiltered:
+SELECT * FROM mangas
+WHERE favorite = 1
+AND source = :sourceId
+AND _id IN :ids
+AND _id NOT IN (
+     SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+getMangaInListByIdsAndSourceAndCategoryFiltered:
+SELECT mangas.* FROM mangas
+INNER JOIN mangas_categories
+    ON mangas._id = mangas_categories.manga_id
+WHERE mangas.favorite = 1
+AND mangas.source = :sourceId
+AND mangas_categories.category_id = :categoryId
+AND mangas._id IN :ids
+AND mangas._id NOT IN (
      SELECT DISTINCT manga_id FROM merged WHERE manga_id != merge_id
 );
 
 insert:
-INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, notes)
-VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :notes);
+INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, notes, banner_url)
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :notes, :bannerUrl);
 
 update:
 UPDATE mangas SET
@@ -223,7 +315,10 @@ UPDATE mangas SET
     calculate_interval = coalesce(:calculateInterval, calculate_interval),
     version = coalesce(:version, version),
     is_syncing = coalesce(:isSyncing, is_syncing),
-    notes = coalesce(:notes, notes)
+    notes = coalesce(:notes, notes),
+    -- KMK -->
+    banner_url = coalesce(:bannerUrl, banner_url)
+    -- KMK <--
 WHERE _id = :mangaId;
 
 selectLastInsertedRowId:
@@ -234,12 +329,18 @@ insertNetworkManga {
     INSERT INTO mangas(
         source, url, artist, author, description, genre, title, status, thumbnail_url, favorite,
         last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added,
-        update_strategy, calculate_interval, last_modified_at, version
+        update_strategy, calculate_interval, last_modified_at, version,
+        -- KMK -->
+        banner_url
+        -- KMK <--
     )
     SELECT
         :source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite,
         :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded,
-        :updateStrategy, :calculateInterval, 0, :version
+        :updateStrategy, :calculateInterval, 0, :version,
+        -- KMK -->
+        :bannerUrl
+        -- KMK <--
     WHERE NOT EXISTS(SELECT 0 FROM mangas WHERE source = :source AND url = :url);
 
     -- Update the relevant details if applicable and not favorite
@@ -253,7 +354,10 @@ insertNetworkManga {
         genre = CASE WHEN :updateDetails THEN :genre ELSE genre END,
         status = CASE WHEN :updateDetails THEN :status ELSE status END,
         update_strategy = CASE WHEN :updateDetails THEN :updateStrategy ELSE update_strategy END,
-        initialized = :updateDetails
+        initialized = :updateDetails,
+        -- KMK -->
+        banner_url = CASE WHEN :updateDetails THEN :bannerUrl ELSE banner_url END
+        -- KMK <--
     WHERE source = :source AND :updateInfo
     AND url = :url
     AND favorite = 0;
