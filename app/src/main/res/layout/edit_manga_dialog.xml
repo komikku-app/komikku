@@ -125,12 +125,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp">
+        android:layout_marginEnd="16dp"
+        android:hint="@string/banner_url">
         <eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText
             android:id="@+id/banner_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text|textMultiLine"
+            android:inputType="textUri"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
     </com.google.android.material.textfield.TextInputLayout>
     <!-- KMK -->
