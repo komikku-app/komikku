@@ -45,7 +45,8 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             mangaInfo.thumbnailUrl == null &&
             mangaInfo.description == null &&
             mangaInfo.genre == null &&
-            mangaInfo.status == null
+            mangaInfo.status == null &&
+            mangaInfo.bannerUrl == null
         ) {
             customMangaMap.remove(mangaInfo.id)
         } else {
@@ -77,6 +78,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
         val description: String? = null,
         val genre: List<String>? = null,
         val status: Long? = null,
+        val bannerUrl: String? = null,
     ) {
 
         fun toManga() = CustomMangaInfo(
@@ -88,6 +90,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             description = this@MangaJson.description,
             genre = this@MangaJson.genre,
             status = this@MangaJson.status?.takeUnless { it == 0L },
+            bannerUrl = this@MangaJson.bannerUrl,
         )
     }
 
@@ -101,6 +104,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             description,
             genre,
             status,
+            bannerUrl,
         )
     }
 }
