@@ -373,6 +373,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         |large
                     |}
                     |description
+                    |bannerImage
                     |staff {
                         |edges {
                             |role
@@ -415,6 +416,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             title = media.title.userPreferred,
                             thumbnailUrl = media.coverImage.large,
                             description = media.description?.htmlDecode()?.ifEmpty { null },
+                            bannerUrl = media.bannerImage,
                             authors = media.staff.edges
                                 .filter { "Story" in it.role }
                                 .mapNotNull { it.node.name() }
