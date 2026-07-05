@@ -90,7 +90,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             description = this@MangaJson.description,
             genre = this@MangaJson.genre,
             status = this@MangaJson.status?.takeUnless { it == 0L },
-            bannerUrl = this@MangaJson.bannerUrl,
+            bannerUrl = this@MangaJson.bannerUrl?.takeUnless { it.isBlank() },
         )
     }
 
