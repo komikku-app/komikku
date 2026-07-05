@@ -149,17 +149,20 @@ fun MangaInfoBox(
             Color.Transparent,
             MaterialTheme.colorScheme.background,
         )
+        val hasBanner = !manga.bannerUrl.isNullOrBlank()
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(manga)
+                .data(if (hasBanner) manga.bannerUrl else manga)
                 .crossfade(true)
                 .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             // KMK -->
             onSuccess = { result ->
-                val image = result.result.image
-                coverRatio.floatValue = image.height.toFloat() / image.width
+                if (!hasBanner) {
+                    val image = result.result.image
+                    coverRatio.floatValue = image.height.toFloat() / image.width
+                }
             },
             // KMK <--
             modifier = Modifier
@@ -170,17 +173,21 @@ fun MangaInfoBox(
                         brush = Brush.verticalGradient(
                             colors = backdropGradientColors,
                             // KMK -->
-                            startY = size.height / 2,
+                            startY = if (hasBanner) size.height / 3 else size.height / 2,
                             // KMK <--
                         ),
                     )
                 }
                 // KMK -->
                 .background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.4f))
-                .blur(7.dp)
-                // .blur(4.dp)
+                .let {
+                    if (hasBanner) {
+                        it.blur(4.dp).alpha(0.4f)
+                    } else {
+                        it.blur(7.dp).alpha(0.2f)
+                    }
+                },
                 // KMK <--
-                .alpha(0.2f),
         )
 
         // Manga & source info
