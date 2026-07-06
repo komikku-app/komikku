@@ -16,8 +16,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.maybeInjectEHLogger
 import exh.pref.DelegateSourcePreferences
 import exh.source.DelegatedHttpSource
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -322,14 +320,29 @@ abstract class HttpSource : CatalogueSource {
      * @return the related mangas for the current manga.
      * @throws UnsupportedOperationException if a source doesn't support related mangas.
      */
-    override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> = coroutineScope {
-        async {
-            client.newCall(relatedMangaListRequest(manga))
-                .execute()
-                .let { response ->
-                    relatedMangaListParse(response)
+    override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> {
+        val isOverridden = try {
+            var clazz: Class<*>? = javaClass
+            var found = false
+            while (clazz != null && clazz != HttpSource::class.java) {
+                if (clazz.declaredMethods.any { it.name == "relatedMangaListParse" || it.name == "popularMangaParse" }) {
+                    found = true
+                    break
                 }
-        }.await()
+                clazz = clazz.superclass
+            }
+            found
+        } catch (_: Exception) {
+            false
+        }
+
+        if (!isOverridden) return emptyList()
+
+        return client.newCall(relatedMangaListRequest(manga))
+            .awaitSuccess()
+            .use { response ->
+                relatedMangaListParse(response)
+            }
     }
 
     /**
