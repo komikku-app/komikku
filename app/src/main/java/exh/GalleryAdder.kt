@@ -12,7 +12,6 @@ import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -21,7 +20,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class GalleryAdder(
-    private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -147,7 +145,6 @@ class GalleryAdder(
                     manga = manga,
                     fetchDetails = true,
                     fetchChapters = true,
-                    manualFetch = false,
                     throttleFunc = throttleFunc,
                 ).getOrThrow().manga
             }

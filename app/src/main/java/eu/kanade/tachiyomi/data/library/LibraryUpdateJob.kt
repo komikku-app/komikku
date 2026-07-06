@@ -589,8 +589,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 updateMangaFromRemote(
                     manga = dbManga,
-                    fetchDetails = false,
-                    fetchChapters = false,
                 )
 
                 metadata.mangaId = dbManga.id

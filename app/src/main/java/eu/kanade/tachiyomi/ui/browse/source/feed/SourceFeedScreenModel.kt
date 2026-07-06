@@ -71,10 +71,10 @@ import tachiyomi.domain.manga.model.Manga as DomainManga
 open class SourceFeedScreenModel(
     val sourceId: Long,
     uiPreferences: UiPreferences = Injekt.get(),
-    private val sourceManager: SourceManager = Injekt.get(),
+    sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
+    getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
     private val getSavedSearchBySourceIdFeed: GetSavedSearchBySourceIdFeed = Injekt.get(),
     private val countFeedSavedSearchBySourceId: CountFeedSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
@@ -82,7 +82,7 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
-    private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    getIncognitoState: GetIncognitoState = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),

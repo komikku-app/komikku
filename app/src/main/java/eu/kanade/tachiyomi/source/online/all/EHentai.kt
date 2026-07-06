@@ -348,13 +348,6 @@ class EHentai(
         )
     }
 
-    override suspend fun getMangaUpdate(
-        manga: SManga,
-        chapters: List<SChapter>,
-        fetchDetails: Boolean,
-        fetchChapters: Boolean,
-    ): SMangaUpdate = getMangaUpdate(manga, chapters, fetchDetails, fetchChapters) {}
-
     suspend fun getMangaUpdate(
         manga: SManga,
         chapters: List<SChapter>,
@@ -367,8 +360,6 @@ class EHentai(
 
         SMangaUpdate(mangaDetails?.await() ?: manga, chapterDetails?.await() ?: chapters)
     }
-
-    suspend fun getChapterList(manga: SManga): List<SChapter> = getChapterList(manga) {}
 
     suspend fun getChapterList(manga: SManga, throttleFunc: suspend () -> Unit): List<SChapter> {
         // Pull all the way to the root gallery
@@ -736,11 +727,6 @@ class EHentai(
         }
     }
 
-    /**
-     * Parse gallery page to metadata model
-     */
-    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
-
     override fun newMetaInstance() = EHentaiSearchMetadata()
 
     override suspend fun parseIntoMetadata(metadata: EHentaiSearchMetadata, input: Document) {
@@ -858,12 +844,6 @@ class EHentai(
         }
     }
 
-    override fun chapterListParse(response: Response) =
-        throw UnsupportedOperationException("Unused method was called somehow!")
-
-    override fun pageListParse(response: Response) =
-        throw UnsupportedOperationException("Unused method was called somehow!")
-
     override suspend fun getImageUrl(page: Page): String {
         val imageUrlResponse = client.newCall(imageUrlRequest(page)).awaitSuccess()
         return realImageUrlParse(imageUrlResponse, page)
@@ -888,10 +868,6 @@ class EHentai(
             }
             return currentImage
         }
-    }
-
-    override fun imageUrlParse(response: Response): String {
-        throw UnsupportedOperationException("Unused method was called somehow!")
     }
 
     suspend fun fetchFavorites(): Pair<List<ParsedManga>, List<String>> {
