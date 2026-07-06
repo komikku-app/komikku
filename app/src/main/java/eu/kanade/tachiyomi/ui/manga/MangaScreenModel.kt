@@ -88,8 +88,6 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -187,7 +185,6 @@ class MangaScreenModel(
     private val uiPreferences: UiPreferences = Injekt.get(),
     // KMK -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
-    private val refreshTracks: RefreshTracks = Injekt.get(),
     private val downloadProvider: DownloadProvider = Injekt.get(),
     // KMK <--
     private val trackerManager: TrackerManager = Injekt.get(),
@@ -505,20 +502,13 @@ class MangaScreenModel(
 
             // Fetch info-chapters when needed
             if (screenModelScope.isActive) {
-                // KMK -->
-                val fetchFromSourceTasks = listOf(
-                    async { syncTrackers() },
-                    async {
-                        // KMK <--
-                        fetchAllFromSource(
-                            manualFetch = false,
-                            fetchDetails = needRefreshInfo,
-                            fetchChapters = needRefreshChapter,
-                        )
-                        // KMK -->
-                    },
+                fetchAllFromSource(
+                    manualFetch = false,
+                    fetchDetails = needRefreshInfo,
+                    fetchChapters = needRefreshChapter,
                 )
-                fetchFromSourceTasks.awaitAll()
+                // KMK -->
+                launch { syncTrackers() }
                 launch { fetchRelatedMangasFromSource() }
                 // KMK <--
             }
@@ -587,43 +577,20 @@ class MangaScreenModel(
 
     private suspend fun syncTrackers() {
         if (!trackPreferences.autoSyncProgressFromTrackers().get()) return
-
-        refreshTracks.await(mangaId, enhancedTrackersOnly = false)
-            .filter { it.first != null }
-            .forEach { (track, e) ->
-                logcat(LogPriority.ERROR, e) {
-                    "Failed to refresh track data mangaId=$mangaId for service ${track!!.id}"
-                }
-                withUIContext {
-                    context.toast(
-                        context.stringResource(
-                            MR.strings.track_error,
-                            track!!.name,
-                            e.message ?: "",
-                        ),
-                    )
-                }
-            }
+        refreshTrackers(enhancedTrackersOnly = false)
     }
     // KMK <--
 
     fun fetchAllFromSource(manualFetch: Boolean = true) {
         screenModelScope.launch {
             updateSuccessState { it.copy(isRefreshingData = true) }
-            // KMK -->
-            val fetchFromSourceTasks = listOf(
-                async { syncTrackers() },
-                async {
-                    // KMK <--
-                    fetchAllFromSource(
-                        manualFetch = manualFetch,
-                        fetchDetails = true,
-                        fetchChapters = true,
-                    )
-                },
+            fetchAllFromSource(
+                manualFetch = manualFetch,
+                fetchDetails = true,
+                fetchChapters = true,
             )
             // KMK -->
-            fetchFromSourceTasks.awaitAll()
+            launch { syncTrackers() }
             // KMK <--
             updateSuccessState { it.copy(isRefreshingData = false) }
         }
@@ -1438,9 +1405,14 @@ class MangaScreenModel(
     }
 
     private suspend fun refreshTrackers(
+        // KMK -->
+        enhancedTrackersOnly: Boolean = true,
+        // KMK <--
         refreshTracks: RefreshTracks = Injekt.get(),
     ) {
-        refreshTracks.await(mangaId)
+        // KMK -->
+        refreshTracks.await(mangaId, enhancedTrackersOnly = enhancedTrackersOnly)
+            // KMK <--
             .filter { it.first != null }
             .forEach { (track, e) ->
                 logcat(LogPriority.ERROR, e) {
