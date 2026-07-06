@@ -118,6 +118,10 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
                                             source = source,
                                             manga = manga,
                                             fetchDetails = true,
+                                            // KMK -->
+                                            // Refresh same Url
+                                            manualFetch = true,
+                                            // KMK <--
                                         ).getOrThrow()
                                     } catch (e: Throwable) {
                                         // Ignore errors and continue

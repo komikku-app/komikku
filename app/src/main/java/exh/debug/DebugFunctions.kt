@@ -100,6 +100,9 @@ object DebugFunctions {
                     },
                     manga = manga,
                     fetchDetails = true,
+                    // KMK -->
+                    manualFetch = true,
+                    // KMK <--
                 )
             }
         }
