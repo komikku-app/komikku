@@ -1,14 +1,12 @@
 package exh.source
 
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.pref.DelegateSourcePreferences
-import okhttp3.Response
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -17,98 +15,6 @@ class EnhancedHttpSource(
     val originalSource: HttpSource,
     val enhancedSource: HttpSource,
 ) : HttpSource() {
-
-    /**
-     * Returns the request for the popular manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Returns the request for the search manga given the page.
-     *
-     * @param page the page number to retrieve.
-     * @param query the search query.
-     * @param filters the list of filters to apply.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Returns the request for latest manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns the details of a manga.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a list of chapters.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun chapterListParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a list of pages.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun pageListParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns the absolute url to the source image.
-     *
-     * @param response the response from the site.
-     */
-    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
 
     /**
      * Base url of the website without the trailing slash, like: http://mysite.com

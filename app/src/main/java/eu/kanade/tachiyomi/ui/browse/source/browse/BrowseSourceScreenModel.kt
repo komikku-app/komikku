@@ -95,10 +95,10 @@ open class BrowseSourceScreenModel(
     protected /* KMK <-- */ val sourceId: Long,
     listingQuery: String?,
     // SY -->
-    private val filtersJson: String? = null,
-    private val savedSearch: Long? = null,
+    filtersJson: String? = null,
+    savedSearch: Long? = null,
     // SY <--
-    private val sourceManager: SourceManager = Injekt.get(),
+    sourceManager: SourceManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
@@ -110,7 +110,7 @@ open class BrowseSourceScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
-    private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    getIncognitoState: GetIncognitoState = Injekt.get(),
     // KMK -->
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),

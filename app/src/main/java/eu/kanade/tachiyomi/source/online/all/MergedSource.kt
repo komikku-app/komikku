@@ -1,10 +1,8 @@
 package eu.kanade.tachiyomi.source.online.all
 
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -34,7 +32,6 @@ import uy.kohesive.injekt.injectLazy
 class MergedSource : HttpSource() {
     private val getManga: GetManga by injectLazy()
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
-    private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
     private val networkToLocalManga: NetworkToLocalManga by injectLazy()
     private val updateMangaFromRemote: UpdateMangaFromRemote by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
@@ -44,21 +41,6 @@ class MergedSource : HttpSource() {
     override val id: Long = MERGED_SOURCE_ID
 
     override val baseUrl = ""
-
-    override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
-    override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
-    override fun searchMangaRequest(
-        page: Int,
-        query: String,
-        filters: FilterList,
-    ) = throw UnsupportedOperationException()
-    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
-    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
-    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
-    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
-    override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
-    override fun pageListParse(response: Response) = throw UnsupportedOperationException()
-    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchChapterList(manga: SManga) = throw UnsupportedOperationException()
@@ -92,7 +74,7 @@ class MergedSource : HttpSource() {
         // KMK <--
     }
 
-    suspend fun getMangaDetails(manga: SManga): SManga {
+    private suspend fun getMangaDetails(manga: SManga): SManga {
         return withIOContext {
             val mergedManga = requireNotNull(getManga.await(manga.url, id)) { "merged manga not in db" }
             val mangaReferences = getMergedReferencesById.await(mergedManga.id)
@@ -136,7 +118,6 @@ class MergedSource : HttpSource() {
                                         val results = updateMangaFromRemote(
                                             source = source,
                                             manga = loadedManga,
-                                            fetchDetails = false,
                                             fetchChapters = true,
                                         ).getOrThrow().newChapters
 
@@ -183,7 +164,6 @@ class MergedSource : HttpSource() {
                 source = source,
                 manga = newManga,
                 fetchDetails = true,
-                fetchChapters = false,
             ).getOrThrow().manga
         }
         return LoadedMangaSource(source, manga, this)
