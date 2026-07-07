@@ -1,4 +1,5 @@
 import kotlin.Boolean;
+import kotlinx.serialization.json.JsonObject;
 
 CREATE TABLE extension_store(
     index_url TEXT NOT NULL PRIMARY KEY,
@@ -15,5 +16,5 @@ SELECT base_url || '/repo.json', name, coalesce(short_name, name), signing_key_f
 
 DROP TABLE extension_repos;
 
-ALTER TABLE mangas ADD COLUMN memo BLOB NOT NULL DEFAULT '{}';
-ALTER TABLE chapters ADD COLUMN memo BLOB NOT NULL DEFAULT '{}';
+ALTER TABLE mangas ADD COLUMN memo BLOB AS JsonObject NOT NULL DEFAULT (CAST('{}' AS BLOB));
+ALTER TABLE chapters ADD COLUMN memo BLOB AS JsonObject NOT NULL DEFAULT (CAST('{}' AS BLOB));
