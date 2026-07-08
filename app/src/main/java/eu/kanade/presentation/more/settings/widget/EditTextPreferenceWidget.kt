@@ -32,6 +32,7 @@ fun EditTextPreferenceWidget(
     icon: ImageVector?,
     value: String,
     widget: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = true,
     onConfirm: suspend (String) -> Boolean,
 ) {
     var isDialogShown by remember { mutableStateOf(false) }
@@ -67,7 +68,7 @@ fun EditTextPreferenceWidget(
                         }
                     },
                     isError = textFieldValue.text.isBlank(),
-                    singleLine = true,
+                    singleLine = singleLine,
                     modifier = Modifier.fillMaxWidth(),
                 )
             },

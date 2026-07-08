@@ -136,6 +136,7 @@ sealed class Preference {
             override val title: String,
             override val subtitle: String? = "%s",
             override val enabled: Boolean = true,
+            val singleLine: Boolean = true,
             override val onValueChanged: suspend (value: String) -> Boolean = { true },
         ) : PreferenceItem<String, Boolean>() {
             override val icon: ImageVector? = null
