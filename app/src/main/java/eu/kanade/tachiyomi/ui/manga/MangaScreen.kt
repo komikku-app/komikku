@@ -462,6 +462,10 @@ class MangaScreen(
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             hazeState = hazeState,
             // KMK <--
+
+            // filter merged entries by source
+            onClickFilterMergedMangaBySource = { source ->
+                filterMergedMangaBySource(source, screenModel) }
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
@@ -934,4 +938,10 @@ class MangaScreen(
             .let(navigator::push)
     }
     // AZ <--
+
+
+    private fun filterMergedMangaBySource(source: Source, screenModel: MangaScreenModel){
+        screenModel.getChaptersBySource(source)
+
+    }
 }

@@ -209,6 +209,10 @@ fun MangaScreen(
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
+
+    // filter merged entries by source
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
+    // <--: Long) -> Unit,
 ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
@@ -278,6 +282,8 @@ fun MangaScreen(
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
+
+            onClickFilterMergedMangaBySource = onClickFilterMergedMangaBySource
         )
     } else {
         MangaScreenLargeImpl(
@@ -340,6 +346,8 @@ fun MangaScreen(
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
+
+            onClickFilterMergedMangaBySource = onClickFilterMergedMangaBySource
         )
     }
 }
@@ -418,6 +426,7 @@ private fun MangaScreenSmallImpl(
     coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -746,7 +755,7 @@ private fun MangaScreenSmallImpl(
                     // KMK <--
 
                     // SY -->
-                    if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
+                    if (!state.showRecommendationsInOverflow || state.showMergeWithAnother || state.mergedData != null) {
                         item(
                             key = MangaScreenItem.INFO_BUTTONS,
                             contentType = MangaScreenItem.INFO_BUTTONS,
@@ -756,6 +765,11 @@ private fun MangaScreenSmallImpl(
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+                                //For merged entries only
+                                showMergedSources = state.mergedData != null,
+                                mergedMangaData = state.mergedData,
+                                filterMergedMangaBySource = onClickFilterMergedMangaBySource,
+                                selectedSource = state.selectedSource
                             )
                         }
                     }
@@ -883,6 +897,9 @@ private fun MangaScreenLargeImpl(
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
+
+    // Filter Merged Entries by Source
+    onClickFilterMergedMangaBySource: (source: Source) -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -1134,12 +1151,18 @@ private fun MangaScreenLargeImpl(
                             // SY <--
                         )
                         // SY -->
-                        if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
+                        if (!state.showRecommendationsInOverflow || state.showMergeWithAnother || state.mergedData != null) {
                             MangaInfoButtons(
                                 showRecommendsButton = !state.showRecommendationsInOverflow,
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
                                 onRecommendClicked = onRecommendClicked,
                                 onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+                                //for merged entries
+                                showMergedSources = state.mergedData != null,
+                                mergedMangaData = state.mergedData,
+                                filterMergedMangaBySource = onClickFilterMergedMangaBySource,
+                                selectedSource = state.selectedSource
+
                             )
                         }
                         if (state.pagePreviewsState !is PagePreviewState.Unused && previewsRowCount > 0) {

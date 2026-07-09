@@ -158,6 +158,8 @@ class EditMergedSettingsHeaderAdapter(
                 }
             }
 
+            binding.dedupeSwitch.setOnCheckedChangeListener(null)
+
             binding.dedupeSwitch.isChecked = state.mergeReference?.let {
                 it.chapterSortMode != MergedMangaReference.CHAPTER_SORT_NONE
             } ?: false
@@ -174,7 +176,18 @@ class EditMergedSettingsHeaderAdapter(
                     },
                 )
 
-                if (isChecked) binding.dedupeModeSpinner.setSelection(0)
+                if (isChecked) {
+                    binding.dedupeModeSpinner.setSelection(0)
+                    state.mergeReference?.copy(chapterSortMode = MergedMangaReference.CHAPTER_SORT_PRIORITY)?.let {
+                        // CALL THE DIALOG STATE UPDATE
+                        state.updateMergeReference(it)
+                    }
+                }else{
+                    state.mergeReference?.copy(chapterSortMode = MergedMangaReference.CHAPTER_SORT_NONE)?.let {
+                        // CALL THE DIALOG STATE UPDATE
+                        state.updateMergeReference(it)
+                    }
+                }
             }
 
             binding.dedupeModeSpinner.isEnabled = binding.dedupeSwitch.isChecked

@@ -11,6 +11,7 @@ import tachiyomi.domain.manga.model.MergedMangaReference
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import exh.source.MERGED_SOURCE_ID
 
 class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : FlexibleViewHolder(view, adapter) {
 
@@ -58,6 +59,15 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
         binding.holder.setCardBackgroundColor(adapter.colorScheme.surfaceElevation)
         binding.remove.imageTintList = adapter.colorScheme.imageButtonTintList
         // KMK <--
+
+        val isMergedSource = item.mergedMangaReference.mangaSourceId == MERGED_SOURCE_ID
+
+        if (isMergedSource) {
+            binding.title.text = "MergedSource"
+            binding.subtitle.text = "Only affects display order"
+
+
+        }
     }
 
     fun setHandelAlpha(isPriorityOrder: Boolean) {

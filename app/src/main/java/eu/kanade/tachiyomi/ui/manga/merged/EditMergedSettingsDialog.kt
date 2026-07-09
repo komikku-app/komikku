@@ -62,9 +62,10 @@ class EditMergedSettingsState(
             context.toast(SYMR.strings.merged_references_invalid)
             onDismissRequest()
         }
-        mergedMangas += mergedReferences.filter {
-            it.mangaSourceId != MERGED_SOURCE_ID
-        }.map { reference -> mergedManga.firstOrNull { it.id == reference.mangaId } to reference }
+        mergedMangas = mergedReferences.map { reference ->
+            mergedManga.firstOrNull { it.id == reference.mangaId } to reference
+        }
+
         mergeReference = mergedReferences.firstOrNull { it.mangaSourceId == MERGED_SOURCE_ID }
 
         val isPriorityOrder =
@@ -95,6 +96,21 @@ class EditMergedSettingsState(
                 it.toModel()
             }.sortedBy { it.mergedMangaReference.chapterPriority },
         )
+    }
+
+    // This is so the dedeuplication in mergedSources actually updates when including the mergedSource itself
+    fun updateMergeReference(newReference: MergedMangaReference) {
+        // 1. Update the standalone variable
+        mergeReference = newReference
+
+        // 2. Update the copy inside the list so it doesn't stay stale
+        mergedMangas = mergedMangas.map { (manga, ref) ->
+            if (ref.mangaSourceId == MERGED_SOURCE_ID) {
+                manga to newReference
+            } else {
+                manga to ref
+            }
+        }
     }
 
     override fun onItemReleased(position: Int) {
@@ -192,7 +208,8 @@ class EditMergedSettingsState(
     }
 
     fun onPositiveButtonClick() {
-        onPositiveClick(listOfNotNull(mergeReference) + mergedMangas.map { it.second })
+        val result = mergedMangas.map { it.second }
+        onPositiveClick(result)
         onDismissRequest()
     }
 }
