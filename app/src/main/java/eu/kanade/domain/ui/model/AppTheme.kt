@@ -42,4 +42,8 @@ enum class AppTheme(val titleRes: StringResource?) {
     // SY -->
     PURE_RED(null),
     // SY <--
+
+    // KMK -->
+    DRACULA(KMR.strings.theme_dracula),
+    // KMK <--
 }

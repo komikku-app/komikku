@@ -19,6 +19,7 @@ import eu.kanade.presentation.theme.colorscheme.CloudflareColorScheme
 import eu.kanade.presentation.theme.colorscheme.CottoncandyColorScheme
 import eu.kanade.presentation.theme.colorscheme.CustomColorScheme
 import eu.kanade.presentation.theme.colorscheme.DoomColorScheme
+import eu.kanade.presentation.theme.colorscheme.DraculaColorScheme
 import eu.kanade.presentation.theme.colorscheme.GreenAppleColorScheme
 import eu.kanade.presentation.theme.colorscheme.LavenderColorScheme
 import eu.kanade.presentation.theme.colorscheme.MatrixColorScheme
@@ -154,6 +155,7 @@ private val colorSchemes: Map<AppTheme, BaseColorScheme> = mapOf(
     AppTheme.CLOUDFLARE to CloudflareColorScheme,
     AppTheme.COTTONCANDY to CottoncandyColorScheme,
     AppTheme.DOOM to DoomColorScheme,
+    AppTheme.DRACULA to DraculaColorScheme,
     AppTheme.MATRIX to MatrixColorScheme,
     AppTheme.MOCHA to MochaColorScheme,
     AppTheme.SAPPHIRE to SapphireColorScheme,

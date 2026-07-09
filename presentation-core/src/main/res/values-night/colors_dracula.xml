@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Colors for Dracula theme
+  ~
+  ~ Key colors:
+  ~ Primary #BD93F9
+  ~ Secondary #FF79C6
+  ~ Tertiary #50FA7B
+  ~ Neutral #282A36
+-->
+<resources>
+    <color name="dracula_primary">#BD93F9</color>
+    <color name="dracula_onPrimary">#282A36</color>
+    <color name="dracula_primaryContainer">#BD93F9</color>
+    <color name="dracula_onPrimaryContainer">#282A36</color>
+    <color name="dracula_secondary">#FF79C6</color>
+    <color name="dracula_onSecondary">#282A36</color>
+    <color name="dracula_secondaryContainer">#44475A</color>
+    <color name="dracula_onSecondaryContainer">#FF79C6</color>
+    <color name="dracula_tertiary">#50FA7B</color>
+    <color name="dracula_onTertiary">#282A36</color>
+    <color name="dracula_tertiaryContainer">#44475A</color>
+    <color name="dracula_onTertiaryContainer">#50FA7B</color>
+    <color name="dracula_error">#FF5555</color>
+    <color name="dracula_onError">#282A36</color>
+    <color name="dracula_errorContainer">#FF5555</color>
+    <color name="dracula_onErrorContainer">#282A36</color>
+    <color name="dracula_background">#282A36</color>
+    <color name="dracula_onBackground">#F8F8F2</color>
+    <color name="dracula_surface">#282A36</color>
+    <color name="dracula_onSurface">#F8F8F2</color>
+    <color name="dracula_surfaceVariant">#343746</color>
+    <color name="dracula_onSurfaceVariant">#F8F8F2</color>
+    <color name="dracula_outline">#BD93F9</color>
+    <color name="dracula_outlineVariant">#6272A4</color>
+    <color name="dracula_scrim">#191A21</color>
+    <color name="dracula_inverseOnSurface">#282A36</color>
+    <color name="dracula_inverseSurface">#F8F8F2</color>
+    <color name="dracula_primaryInverse">#BD93F9</color>
+    <color name="dracula_surfaceDim">#21222C</color>
+    <color name="dracula_surfaceBright">#44475A</color>
+    <color name="dracula_surfaceContainerLowest">#191A21</color>
+    <color name="dracula_surfaceContainerLow">#21222C</color>
+    <color name="dracula_surfaceContainer">#282A36</color>
+    <color name="dracula_surfaceContainerHigh">#343746</color>
+    <color name="dracula_surfaceContainerHighest">#44475A</color>
+    <color name="dracula_elevationOverlay">@color/dracula_primary</color>
+</resources>
