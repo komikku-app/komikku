@@ -317,32 +317,31 @@ abstract class HttpSource : CatalogueSource {
      *
      * @since komikku/extensions-lib 1.6
      * @param manga the current manga to get related mangas.
-     * @return the related mangas for the current manga.
-     * @throws UnsupportedOperationException if a source doesn't support related mangas.
+     * @return the related mangas for the current manga, or empty if a source doesn't support related mangas.
      */
     override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> {
-        val isOverridden = try {
-            var clazz: Class<*>? = javaClass
-            var found = false
-            while (clazz != null && clazz != HttpSource::class.java) {
-                if (clazz.declaredMethods.any { it.name == "relatedMangaListParse" || it.name == "popularMangaParse" }) {
-                    found = true
-                    break
-                }
-                clazz = clazz.superclass
-            }
-            found
-        } catch (_: Exception) {
-            false
-        }
-
-        if (!isOverridden) return emptyList()
+        if (!isRelatedMangaListParseAvailable) return emptyList()
 
         return client.newCall(relatedMangaListRequest(manga))
             .awaitSuccess()
             .use { response ->
                 relatedMangaListParse(response)
             }
+    }
+
+    private val isRelatedMangaListParseAvailable by lazy(LazyThreadSafetyMode.NONE) {
+        try {
+            var clazz: Class<*>? = javaClass
+            while (clazz != null && clazz != HttpSource::class.java) {
+                if (clazz.declaredMethods.any { it.name == "relatedMangaListParse" || it.name == "popularMangaParse" }) {
+                    return@lazy true
+                }
+                clazz = clazz.superclass
+            }
+            false
+        } catch (_: Exception) {
+            false
+        }
     }
 
     /**
