@@ -57,10 +57,10 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         }
         try {
             response.parseALError()
-        } catch (t: Throwable) {
+        } catch (e: Exception) {
             response.close()
-            t.stackTrace = callStack
-            throw t
+            e.stackTrace = callStack
+            throw e
         }
         if (!response.isSuccessful) {
             val code = response.code
