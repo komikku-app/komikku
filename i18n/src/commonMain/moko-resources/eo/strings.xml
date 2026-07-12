@@ -900,13 +900,13 @@
     <string name="supportUsScreen.perks">Donacantoj ricevas aliron al ekskluzivaj kanaloj, kaj pli da avantaĝoj poste.</string>
     <string name="supportUsScreen.donationPlatform.patreon">Patreon (preferata)</string>
     <string name="supportUsScreen.donationPlatform.opencollective">OpenCollective</string>
-    <string name="supportUsScreen.currentlySupportedBy">Mihon estas nun finance subtenata de %d+ patronoj. Ni volas danki ĉiun el vi. Ni plibonigu Mihon eĉ pli kune.</string>
+    <string name="supportUsScreen.currentlySupportedBy">Komikku estas nun finance subtenata de %d+ patronoj. Ni volas danki ĉiun el vi. Ni plibonigu Komikku eĉ pli kune.</string>
     <string name="supportUsScreen.contactForDetailsMessage">Por alternativaj opcioj aŭ iaj ajn rilataj demandoj, aniĝu al nia Discord-servilo.</string>
     <string name="supportUsScreen.contactPlatform">Discord</string>
     <string name="donationCampaign.title">Ĉu vi ŝatas la apon?</string>
-    <string name="donationCampaign.paragraph1">Sal! Mi estas ĉefa programisto de Mihon kaj mi ŝatus peti vin konsideri finance subteni ĝian evoluigon. Kun sufiĉa subteno mi povos labori pri Mihon plentempe kaj koncentriĝi pri delonge ekzistantaj problemoj kaj ankaŭ pri tre petitaj funkcioj.</string>
-    <string name="donationCampaign.paragraph2">Vi povas donaci per Patreon (preferata) aŭ OpenCollective. Se vi havas demandojn aŭ vi volus subteni per alternativaj metodoj, ne hezitu kontakti min ĉe la Discord-servilo de Mihon.</string>
-    <string name="donationCampaign.paragraph3">Sendepende de tio, Mihon daŭre estos prizorgata de mi kaj la volontuloj, kaj ĝi restos malfermitkoda.</string>
+    <string name="donationCampaign.paragraph1">Sal! Mi estas ĉefa programisto de Komikku kaj mi ŝatus peti vin konsideri finance subteni ĝian evoluigon. Kun sufiĉa subteno mi povos labori pri Komikku plentempe kaj koncentriĝi pri delonge ekzistantaj problemoj kaj ankaŭ pri tre petitaj funkcioj.</string>
+    <string name="donationCampaign.paragraph2">Vi povas donaci per Patreon (preferata) aŭ OpenCollective. Se vi havas demandojn aŭ vi volus subteni per alternativaj metodoj, ne hezitu kontakti min ĉe la Discord-servilo de Komikku.</string>
+    <string name="donationCampaign.paragraph3">Sendepende de tio, Komikku daŭre estos prizorgata de mi kaj la volontuloj, kaj ĝi restos malfermitkoda.</string>
     <string name="donationCampaign.contactPlatform">Discord</string>
     <string name="donationCampaign.dismiss">Kaŝi</string>
 </resources>
