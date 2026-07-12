@@ -122,7 +122,10 @@ AND (
         AND ((MA.chapter_flags & :bookmarkMask) = 0 OR C.bookmark = 1)
     )
     -- KMK <--
-);
+)
+-- KMK -->
+ORDER BY C.manga_id, C.source_order;
+-- KMK <--
 
 getScanlatorsByMergeId:
 SELECT scanlator
