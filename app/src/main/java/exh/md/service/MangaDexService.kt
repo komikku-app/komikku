@@ -212,6 +212,7 @@ class MangaDexService(
                             addPathSegment("relation")
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()

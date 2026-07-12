@@ -53,6 +53,8 @@ internal class MangaDexSimilarPagingSource(
         Headers.Builder().apply {
             set("Referer", "$baseUrl/")
             set("Origin", baseUrl)
+            set("sec-fetch-dest", "document")
+            set("sec-fetch-mode", "navigate")
         }.build()
     }
 
