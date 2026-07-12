@@ -109,7 +109,6 @@
     <string name="toggle_hentai_features">Aktiviraj/Deaktiviraj integrirane hentai funkcije</string>
     <string name="enable_source_blacklist">Aktiviraj popis blokiranih izvora</string>
     <string name="enable_zoom_out">Aktiviraj smanjivanje prikaza</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Aktivira okomitu kliznu traku u polegnutom formatu</string>
     <string name="chapter_updates_merged_entry_desc">Uključivanje/Isključivanje ove opcije će aktivirati ili deaktivirati aktualiziranja poglavlja za ovaj sjedinjeni unos</string>
     <string name="download_merged_entry_desc">Uključivanje/Isključivanje ove opcije će aktivirati ili deaktivirati preuzimanja poglavlja za ovaj sjedinjeni unos</string>
     <string name="disable_favorites_uploading">Deaktiviraj prijenos favorita</string>
@@ -541,11 +540,6 @@
     <string name="include_all_read_entries">Uključi sve pročitane unose</string>
     <string name="ignore_non_library_entries">Zanemari unose koji nisu u biblioteci</string>
     <string name="humanize_fallback">prije par trenutaka</string>
-    <string name="pref_show_vert_seekbar_landscape">Prikaži okomitu kliznu traku u polegnutom formatu</string>
-    <string name="pref_left_handed_vertical_seekbar">Okomita klizna traka za ljevake</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Prebacuje stranu na kojoj se nalazi klizna traka</string>
-    <string name="pref_force_horz_seekbar">Prisili vodoravnu kliznu traku</string>
-    <string name="pref_force_horz_seekbar_summary">U potpunosti uklanja okomitu kliznu traku u korist vodoravne</string>
     <string name="delete_merged_entry_desc">Ovo će ukloniti unos iz sjedinjavanja. Korištenjem ove opcije također će se izgubiti sve nespremljene promjene primijenjene na sjedinjeni unos</string>
     <string name="chapter_updates_merged_entry">Uključi/Isključi aktualiziranje poglavlja</string>
     <string name="download_merged_entry">Uključi/Isključi preuzimanja novih poglavlja</string>

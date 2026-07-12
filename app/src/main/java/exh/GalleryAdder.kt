@@ -2,18 +2,16 @@ package exh
 
 import android.content.Context
 import androidx.core.net.toUri
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.log.xLogStack
 import exh.source.getMainSource
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -22,11 +20,10 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class GalleryAdder(
-    private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     private val getChapter: GetChapter = Injekt.get(),
-    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) {
 
@@ -43,14 +40,14 @@ class GalleryAdder(
 
     fun pickSource(url: String): List<UrlImportableSource> {
         val uri = url.toUri()
-        return sourceManager.getVisibleCatalogueSources()
+        return sourceManager.getVisibleSources()
             .mapNotNull { it.getMainSource<UrlImportableSource>() }
             .filter {
                 it.lang in filters.enabledLangs &&
                     it.id !in filters.disabledSources &&
                     try {
                         it.matchesUri(uri)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         false
                     }
             }
@@ -81,14 +78,14 @@ class GalleryAdder(
                     return GalleryAddEvent.Fail.UnknownType(url, context)
                 }
             } else {
-                sourceManager.getVisibleCatalogueSources()
+                sourceManager.getVisibleSources()
                     .mapNotNull { it.getMainSource<UrlImportableSource>() }
                     .find {
                         it.lang in filters.enabledLangs &&
                             it.id !in filters.disabledSources &&
                             try {
                                 it.matchesUri(uri)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 false
                             }
                     } ?: return GalleryAddEvent.Fail.UnknownSource(url, context)
@@ -143,31 +140,18 @@ class GalleryAdder(
             )
 
             // Fetch and copy details
-            val newManga = retry(retry) { source.getMangaDetails(manga.toSManga()) }
-            updateManga.awaitUpdateFromSource(manga, newManga, false)
-            manga = getManga.await(manga.id)!!
+            manga = retry(retry) {
+                updateMangaFromRemote(
+                    manga = manga,
+                    fetchDetails = true,
+                    fetchChapters = true,
+                    throttleFunc = throttleFunc,
+                ).getOrThrow().manga
+            }
 
             if (fav) {
                 updateManga.awaitUpdateFavorite(manga.id, true)
                 manga = manga.copy(favorite = true)
-            }
-
-            // Fetch and copy chapters
-            try {
-                val chapterList = retry(retry) {
-                    if (source is EHentai) {
-                        source.getChapterList(manga.toSManga(), throttleFunc)
-                    } else {
-                        source.getChapterList(manga.toSManga())
-                    }
-                }
-
-                if (chapterList.isNotEmpty()) {
-                    syncChaptersWithSource.await(chapterList, manga, source)
-                }
-            } catch (e: Exception) {
-                logger.w(context.stringResource(SYMR.strings.gallery_adder_chapter_fetch_error, manga.title), e)
-                return GalleryAddEvent.Fail.Error(url, context.stringResource(SYMR.strings.gallery_adder_chapter_fetch_error, url))
             }
 
             return if (cleanedChapterUrl != null) {

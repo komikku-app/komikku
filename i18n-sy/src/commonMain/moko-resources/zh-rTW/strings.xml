@@ -280,12 +280,6 @@
     <string name="tap_scroll_page_summary">啟用此選項後，點擊將按頁面而不是螢幕大小滾動</string>
     <string name="reader_bottom_buttons">閱讀器底部按鈕</string>
     <string name="reader_bottom_buttons_summary">自訂顯示在閱讀器底部的按鈕</string>
-    <string name="pref_show_vert_seekbar_landscape">橫向畫面時顯示垂直進度條</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">在橫向畫面時啟用垂直進度條</string>
-    <string name="pref_left_handed_vertical_seekbar">將垂直進度條放在左側</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">變更進度條的方位</string>
-    <string name="pref_force_horz_seekbar">強制使用水平進度條</string>
-    <string name="pref_force_horz_seekbar_summary">完全移除垂直捲動條，改為使用水平捲動條</string>
     <string name="pref_smooth_scroll">平滑自動翻頁</string>
     <!-- Reader -->
     <!-- Reader Actions -->

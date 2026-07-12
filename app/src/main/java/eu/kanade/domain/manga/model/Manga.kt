@@ -48,6 +48,7 @@ fun Manga.toSManga(): SManga = SManga.create().also {
     // SY <--
     it.thumbnail_url = thumbnailUrl
     it.initialized = initialized
+    it.memo = memo
 }
 
 fun Manga.copyFrom(other: SManga): Manga {
@@ -75,6 +76,7 @@ fun Manga.copyFrom(other: SManga): Manga {
         // SY <--
         updateStrategy = other.update_strategy,
         initialized = other.initialized && initialized,
+        memo = other.memo,
     )
 }
 

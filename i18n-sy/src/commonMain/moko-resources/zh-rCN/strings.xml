@@ -123,13 +123,13 @@
     <string name="data_saver">流量节省程序</string>
     <string name="data_saver_summary">在阅读器下载图像前压缩</string>
     <string name="data_saver_downloader">在下载器中使用流量节省程序</string>
-    <string name="data_saver_ignore_jpeg">忽略 JPEG 图像</string>
+    <string name="data_saver_ignore_jpeg">忽略 Jpeg 图像</string>
     <string name="data_saver_ignore_gif">忽略 Gif 动画</string>
     <string name="data_saver_image_quality">图像质量</string>
     <string name="data_saver_image_quality_summary">更高值意味着更高的保存的图像质量，但这意味着更大的文件大小，80%可以很好地平衡图片质量和文件大小</string>
-    <string name="data_saver_image_format">压缩为 JPEG</string>
-    <string name="data_saver_image_format_summary_on">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 JPEG</string>
-    <string name="data_saver_image_format_summary_off">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 Webp</string>
+    <string name="data_saver_image_format">压缩为 Jpeg</string>
+    <string name="data_saver_image_format_summary_on">Jpeg 文件体积要比 Webp 小得多（意味着能节省更多流量），但也会降低图像质量。\n目前压缩为 Jpeg</string>
+    <string name="data_saver_image_format_summary_off">Jpeg 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 Webp</string>
     <string name="data_saver_color_bw">转换为黑白</string>
     <string name="bandwidth_hero">Bandwidth Hero（需要一个 Bandwidth Hero 代理服务器）</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero 代理服务器</string>
@@ -237,12 +237,6 @@
     <string name="tap_scroll_page_summary">启用此选项后，点击将按页面而不是屏幕大小滚动</string>
     <string name="reader_bottom_buttons">阅读器底部按钮</string>
     <string name="reader_bottom_buttons_summary">自定义显示在阅读器底部的按钮</string>
-    <string name="pref_show_vert_seekbar_landscape">横屏时显示垂直进度条</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">在横屏时启用垂直进度条</string>
-    <string name="pref_left_handed_vertical_seekbar">将垂直进度条放在左侧</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">更改进度条的方位</string>
-    <string name="pref_force_horz_seekbar">强制使用水平进度条</string>
-    <string name="pref_force_horz_seekbar_summary">完全移除垂直进度条，使用水平进度条</string>
     <string name="pref_smooth_scroll">平滑自动翻页</string>
     <!-- Reader -->
     <!-- Reader Actions -->

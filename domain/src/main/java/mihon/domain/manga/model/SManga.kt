@@ -17,6 +17,7 @@ fun SManga.toDomainManga(sourceId: Long): Manga {
         // SY <--
         updateStrategy = update_strategy,
         initialized = initialized,
+        memo = memo,
         source = sourceId,
     )
 }

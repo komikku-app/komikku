@@ -81,20 +81,20 @@
         <item quantity="other">منذُ %1$d دقيقة</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">العلامات في هذه القائمة . تعطيك خيار الترتيب حسب الأولوية في هذه القائمة، مما يعني أن المدخلات سيتم توزيعها حسب اختيارك.</item>
-        <item quantity="one">هذا الخيار يعطيك إمكانية فرز المدخلات في هذه القائمة حسب اختيارك.</item>
-        <item quantity="two">علامتان في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
-        <item quantity="few">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
-        <item quantity="many">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
-        <item quantity="other">%1$d علامة في قائمة الفرز. يُضيف هذا خيارًا في المكتبة للفرز حسب قائمة العلامات حسب الأولوية، مما يعني أن الإدخالات ستُفرز بطريقة تُعطي الأولوية للعلامات التي تريدها.</item>
+        <item quantity="zero">لا توجد علامات في قائمة الفرز. يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
+        <item quantity="one">علامة واحدة في قائمة الفرز. يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
+        <item quantity="two">علامتان في قائمة الفرز. يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
+        <item quantity="few">%1$d علامات في قائمة الفرز. يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
+        <item quantity="many">%1$d علامة في قائمة الفرز. يُ يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
+        <item quantity="other">%1$d علامة في قائمة الفرز. يضيف هذا خيارًا في المكتبة للفرز بحسب قائمة علامات ذات أولوية، مما يعني أنه سيتم فرز الإدخالات بطريقة تعطي الأولوية لتلك التي تحتوي على العلامات التي تريدها</item>
     </plurals>
     <plurals name="num_lock_times">
-        <item quantity="zero">وقت الإنغلاق</item>
-        <item quantity="one">‬وقت الإغلاق</item>
-        <item quantity="two">وقتان للإغلاق</item>
-        <item quantity="few">%1$d أوقات للإغلاق</item>
-        <item quantity="many">%1$d وقتًا للإغلاق</item>
-        <item quantity="other">%1$d وقت للإغلاق</item>
+        <item quantity="zero">لا يوجد أوقات إغلاق</item>
+        <item quantity="one">‬وقت إغلاق %d</item>
+        <item quantity="two">وقتي إغلاق %d</item>
+        <item quantity="few">%d ‬أوقات إغلاق</item>
+        <item quantity="many">%d ‬وقت إغلاق</item>
+        <item quantity="other">%d ‬وقت إغلاق</item>
     </plurals>
     <plurals name="migrate_entry">
         <item quantity="zero">ترحيل ‫ المدخل؟</item>
@@ -113,12 +113,12 @@
         <item quantity="other">منذ %1$dشهر</item>
     </plurals>
     <plurals name="browse_language_and_pages">
-        <item quantity="zero">%d صفحة</item>
-        <item quantity="one">صفحة واحدة</item>
-        <item quantity="two">صفحتان</item>
-        <item quantity="few">%2$s %1$d صفحات</item>
-        <item quantity="many">%2$s %1$d صفحات</item>
-        <item quantity="other">%2$s %1$d صفحات</item>
+        <item quantity="zero">%2$s، لا يوجد صفحات</item>
+        <item quantity="one">%2$s، صفحة واحدة</item>
+        <item quantity="two">%2$s، صفحتان</item>
+        <item quantity="few">%2$s، %1$d صفحات</item>
+        <item quantity="many">%2$s، %1$d صفحة</item>
+        <item quantity="other">%2$s، %1$dصفحة</item>
     </plurals>
     <plurals name="humanize_year">
         <item quantity="zero">منذ %1$d عام</item>
@@ -129,11 +129,11 @@
         <item quantity="other">منذ %1$d عام</item>
     </plurals>
     <plurals name="humanize_week">
-        <item quantity="zero">%1$d اسبوع الفائت</item>
-        <item quantity="one">%1$d اسابيع الماضية</item>
-        <item quantity="two"/>
-        <item quantity="few"/>
-        <item quantity="many"/>
-        <item quantity="other"/>
+        <item quantity="zero">%1$d أسابيع فائتة</item>
+        <item quantity="one">قبل أسبوع</item>
+        <item quantity="two">قبل أسبوعان</item>
+        <item quantity="few">قبل %1$d أسابيع</item>
+        <item quantity="many">قبل %1$d أسبوع</item>
+        <item quantity="other">قبل %1$d أسبوع</item>
     </plurals>
 </resources>

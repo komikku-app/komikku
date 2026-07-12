@@ -86,12 +86,12 @@ fun ExtensionDetailsScreen(
     val uriHandler = LocalUriHandler.current
     val url = remember(state.extension) {
         val regex = """https://raw.githubusercontent.com/(.+?)/(.+?)/.+""".toRegex()
-        regex.find(state.extension?.repoUrl.orEmpty())
+        regex.find(state.extension?.store?.indexUrl.orEmpty())
             ?.let {
                 val (user, repo) = it.destructured
                 "https://github.com/$user/$repo"
             }
-            ?: state.extension?.repoUrl
+            ?: state.extension?.store?.indexUrl
     }
 
     Scaffold(
@@ -270,14 +270,17 @@ private fun DetailsHeader(
 
                         if (extension is Extension.Installed) {
                             append("\n\n")
-                            append(
+                            appendLine(
                                 """
                                 Update available: ${extension.hasUpdate}
-                                Obsolete: ${extension.isObsolete}
+                                Orphaned: ${extension.isObsolete}
                                 Shared: ${extension.isShared}
-                                Repository: ${extension.repoUrl}
                                 """.trimIndent(),
                             )
+                            val store = extension.store
+                            if (store != null) {
+                                append("Repository: ${store.indexUrl}")
+                            }
                         }
                     }
                     context.copyToClipboard("Extension Debug information", extDebugInfo)
