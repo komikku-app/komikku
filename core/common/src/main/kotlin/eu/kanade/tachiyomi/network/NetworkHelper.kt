@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
+import exh.log.EHLogLevel
 import logcat.LogPriority
 import okhttp3.Cache
 import okhttp3.Headers
@@ -21,9 +22,6 @@ import kotlin.random.Random
 /* SY --> */ open /* SY <-- */ class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
-    // SY -->
-    val isDebugBuild: Boolean,
-    // SY <--
 ) {
 
     /* SY --> */ open /* SY <-- */val cookieJar = AndroidCookieJar()
@@ -54,7 +52,9 @@ import kotlin.random.Random
             .addInterceptor(UncaughtExceptionInterceptor())
             .addInterceptor(UserAgentInterceptor(::defaultUserAgentProvider))
 
-        if (isDebugBuild) {
+        // KMK -->
+        if (EHLogLevel.isExtraLogging()) {
+            // KMK <--
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.HEADERS
             }

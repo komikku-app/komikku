@@ -136,7 +136,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     }
                 },
             ),
-            Preference.PreferenceItem.SwitchPreference(
+            /* SY --> Preference.PreferenceItem.SwitchPreference(
                 preference = networkPreferences.verboseLogging(),
                 title = stringResource(MR.strings.pref_verbose_logging),
                 subtitle = stringResource(MR.strings.pref_verbose_logging_summary),
@@ -144,7 +144,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     context.toast(MR.strings.requires_app_restart)
                     true
                 },
-            ),
+            ), SY <-- */
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(MR.strings.pref_debug_info),
                 onClick = { navigator.push(DebugInfoScreen()) },
