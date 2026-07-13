@@ -7,10 +7,13 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.coroutines.async
+import kotlinx.coroutines.supervisorScope
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.core.common.util.lang.awaitSingle
 
 @Suppress("OverridingDeprecatedMember", "DEPRECATION")
 abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
@@ -150,7 +153,13 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
         fetchChapters: Boolean,
     ): SMangaUpdate {
         ensureDelegateCompatible()
-        return delegate.getMangaUpdate(manga, chapters, fetchDetails, fetchChapters)
+        // KMK -->
+        return supervisorScope {
+            val asyncManga = if (fetchDetails) async { fetchMangaDetails(manga).awaitSingle() } else null
+            val asyncChapters = if (fetchChapters) async { fetchChapterList(manga).awaitSingle() } else null
+            SMangaUpdate(asyncManga?.await() ?: manga, asyncChapters?.await() ?: chapters)
+        }
+        // KMK <--
     }
 
     /**
