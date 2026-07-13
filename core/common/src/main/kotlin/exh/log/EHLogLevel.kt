@@ -12,23 +12,21 @@ enum class EHLogLevel(val nameRes: StringResource, val description: StringResour
     ;
 
     companion object {
-        // KMK -->
         private var _curLogLevel: Int = MINIMAL.ordinal
         val curLogLevel: Int get() = _curLogLevel
 
         const val EH_LOG_LEVEL_PREF = "eh_log_level"
-        // KMK <--
 
-        val currentLogLevel get() = entries[curLogLevel]
+        fun defaultLogLevel(isDebugBuildType: Boolean) = if (isDebugBuildType) EXTRA.ordinal else MINIMAL.ordinal
+
+        val currentLogLevel get() = entries.getOrNull(curLogLevel) ?: MINIMAL
 
         fun init(
             context: Context,
-            // KMK -->
             isDebugBuildType: Boolean = false,
         ) {
-            val defaultLogLevel = if (isDebugBuildType) EXTRA.ordinal else MINIMAL.ordinal
             _curLogLevel = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(EH_LOG_LEVEL_PREF, defaultLogLevel)
+                .getInt(EH_LOG_LEVEL_PREF, defaultLogLevel(isDebugBuildType))
         }
 
         /**
@@ -42,7 +40,6 @@ enum class EHLogLevel(val nameRes: StringResource, val description: StringResour
          * Enable extremely detail `||EH-NETWORK-JSON` log by [maybeInjectEHLogger]
          */
         fun isExtremeLogging() = shouldLog(EXTREME)
-        // KMK <--
 
         private fun shouldLog(requiredLogLevel: EHLogLevel): Boolean {
             return curLogLevel >= requiredLogLevel.ordinal

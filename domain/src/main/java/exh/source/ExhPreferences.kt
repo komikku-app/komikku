@@ -59,7 +59,7 @@ class ExhPreferences(
     fun exhShowSettingsUploadWarning() = preferenceStore.getBoolean("eh_showSettingsUploadWarning2", true)
 
     // KMK -->
-    fun logLevel() = preferenceStore.getInt(EH_LOG_LEVEL_PREF, EHLogLevel.curLogLevel)
+    fun logLevel(isDebugBuildType: Boolean) = preferenceStore.getInt(EH_LOG_LEVEL_PREF, EHLogLevel.defaultLogLevel(isDebugBuildType))
     // KMK <--
 
     fun exhAutoUpdateFrequency() = preferenceStore.getInt("eh_auto_update_frequency", 1)
