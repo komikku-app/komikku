@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import exh.log.EHLogLevel
+import exh.pref.DelegateSourcePreferences
 import logcat.LogPriority
 import okhttp3.Cache
 import okhttp3.Headers
@@ -22,9 +23,16 @@ import kotlin.random.Random
 /* SY --> */ open /* SY <-- */ class NetworkHelper(
     private val context: Context,
     private val preferences: NetworkPreferences,
+    // KMK -->
+    val delegateSourcePreferences: DelegateSourcePreferences,
+    // KMK <--
 ) {
 
     /* SY --> */ open /* SY <-- */val cookieJar = AndroidCookieJar()
+
+    // KMK -->
+    private val delegatedSourcesEnabled = delegateSourcePreferences.delegateSources().get()
+    // KMK <--
 
     /**
      * Timeout in unit of seconds.
@@ -88,18 +96,23 @@ import kotlin.random.Random
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val url = originalRequest.url
-                if (url.host == "uploads.mangadex.org" && url.encodedPath.startsWith("/covers/")) {
-                    val newRequest = originalRequest
-                        .newBuilder()
-                        .header("Referer", "https://mangadex.org/")
-                        .header("Origin", "https://mangadex.org")
-                        .header("sec-fetch-dest", "image")
-                        .header("sec-fetch-mode", "no-cors")
-                        .build()
-                    chain.proceed(newRequest)
-                } else {
-                    chain.proceed(originalRequest)
+
+                if (!delegatedSourcesEnabled ||
+                    url.host != "uploads.mangadex.org" ||
+                    !url.encodedPath.startsWith("/covers/")
+                ) {
+                    return@addInterceptor chain.proceed(originalRequest)
                 }
+
+                val newRequest = originalRequest
+                    .newBuilder()
+                    .header("Referer", "https://mangadex.org/")
+                    .header("Origin", "https://mangadex.org")
+                    .header("sec-fetch-dest", "image")
+                    .header("sec-fetch-mode", "no-cors")
+                    .build()
+
+                chain.proceed(newRequest)
             }
             // KMK <--
             .build()
