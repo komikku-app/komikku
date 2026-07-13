@@ -69,16 +69,27 @@ fun Any.xLogD(vararg logs: Any) = xLog().d(logs)
 fun Any.xLogI(vararg logs: Any) = xLog().i(logs)
 fun Any.xLog(logLevel: LogLevel, vararg logs: Any) = xLog().log(logLevel.int, logs)*/
 
-fun Any.xLogE(format: String, vararg args: Any?) =
-    safeXLog(Log.ERROR, formatSafely(format, args)) { xLog().e(format, *args) }
-fun Any.xLogW(format: String, vararg args: Any?) =
-    safeXLog(Log.WARN, formatSafely(format, args)) { xLog().w(format, *args) }
-fun Any.xLogD(format: String, vararg args: Any?) =
-    safeXLog(Log.DEBUG, formatSafely(format, args)) { xLog().d(format, *args) }
-fun Any.xLogI(format: String, vararg args: Any?) =
-    safeXLog(Log.INFO, formatSafely(format, args)) { xLog().i(format, *args) }
-fun Any.xLog(logLevel: LogLevel, format: String, vararg args: Any) =
-    safeXLog(logLevel.androidLevel, formatSafely(format, args)) { xLog().log(logLevel.int, format, *args) }
+fun Any.xLogE(format: String, vararg args: Any?) {
+    val msg = formatSafely(format, args)
+    safeXLog(Log.ERROR, msg) { xLog().e(msg) }
+}
+fun Any.xLogW(format: String, vararg args: Any?) {
+    val msg = formatSafely(format, args)
+    safeXLog(Log.WARN, msg) { xLog().w(msg) }
+}
+fun Any.xLogD(format: String, vararg args: Any?) {
+    val msg = formatSafely(format, args)
+    safeXLog(Log.DEBUG, msg) { xLog().d(msg) }
+}
+fun Any.xLogI(format: String, vararg args: Any?) {
+    val msg = formatSafely(format, args)
+    safeXLog(Log.INFO, msg) { xLog().i(msg) }
+}
+fun Any.xLog(logLevel: LogLevel, format: String, vararg args: Any) {
+    if (logLevel is LogLevel.None) return
+    val msg = formatSafely(format, args)
+    safeXLog(logLevel.androidLevel, msg) { xLog().log(logLevel.int, msg) }
+}
 
 sealed class LogLevel(val int: Int, val androidLevel: Int) {
     object None : LogLevel(XLogLevel.NONE, Log.ASSERT)
