@@ -5,9 +5,7 @@ import eu.kanade.tachiyomi.source.online.all.Lanraragi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.english.EightMuses
-import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
-import eu.kanade.tachiyomi.source.online.english.Tsumino
 
 /**
  * Source helpers
@@ -16,8 +14,6 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 private val DELEGATED_METADATA_SOURCES by lazy {
     listOf(
         Pururin::class,
-        Tsumino::class,
-        HBrowse::class,
         EightMuses::class,
         NHentai::class,
         Lanraragi::class,

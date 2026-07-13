@@ -6,6 +6,7 @@ import mihon.buildlogic.getGitSha
 plugins {
     id("mihon.android.application")
     id("mihon.android.application.compose")
+    id("com.github.zellius.shortcut-helper")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     alias(libs.plugins.aboutLibraries)
@@ -19,14 +20,16 @@ if (Config.includeTelemetry) {
     }
 }
 
+shortcutHelper.setFilePath("./shortcuts.xml")
+
 android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
         applicationId = "app.komikku"
 
-        versionCode = 78
-        versionName = "1.13.6"
+        versionCode = 80
+        versionName = "1.14.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")

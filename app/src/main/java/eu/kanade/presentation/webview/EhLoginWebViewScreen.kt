@@ -80,7 +80,7 @@ fun EhLoginWebViewScreen(
                     )
                     is LoadingState.Loading -> {
                         val animatedProgress by animateFloatAsState(
-                            (loadingState as? LoadingState.Loading)?.progress ?: 1f,
+                            loadingState.progress,
                             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
                             label = "webview_loading",
                         )

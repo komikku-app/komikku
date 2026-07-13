@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse
 
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -10,9 +9,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -28,11 +25,11 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
-import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
@@ -59,23 +56,21 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
-    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
-    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
-        toggleSelectionMode()
+        toggleSelectionMode(false)
     }
 
     fun toggleSelectionMode(newMode: Boolean? = null) {
-        if (state.value.selectionMode) {
-            clearSelection()
+        mutableState.update { state ->
+            val mode = newMode ?: !state.selectionMode
+            state.copy(
+                selectionMode = mode,
+                selection = if (mode) state.selection else persistentListOf(),
+            )
         }
-        mutableState.update { it.copy(selectionMode = newMode ?: !it.selectionMode) }
-    }
-
-    private fun clearSelection() {
-        mutableState.update { it.copy(selection = persistentListOf()) }
     }
 
     fun select(manga: Manga) {
@@ -83,7 +78,7 @@ class BulkFavoriteScreenModel(
     }
 
     /**
-     * @param toSelectedState set to true to only Select, set to false to only Unselect
+     * @param toSelectedState set to `true` to only Select, set to `false` to only Unselect
      */
     fun toggleSelection(manga: Manga, toSelectedState: Boolean? = null) {
         mutableState.update { state ->
@@ -131,7 +126,7 @@ class BulkFavoriteScreenModel(
             if (entryWithDuplicates != null) {
                 val (index, manga, duplicates) = entryWithDuplicates
                 if (state.value.selection.size == 1) {
-                    // If only one manga is selected, show the multiple duplicates dialog.
+                    // If only one manga is selected, show the multiple-duplicates dialog.
                     setDialog(Dialog.AddDuplicateManga(manga, duplicates))
                 } else {
                     setDialog(Dialog.BulkAllowDuplicate(manga, duplicates, index))
@@ -154,7 +149,7 @@ class BulkFavoriteScreenModel(
             val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             if (mangaList.isEmpty()) {
                 stopRunning()
-                toggleSelectionMode()
+                toggleSelectionMode(false)
                 return@launch
             }
             val categories = getCategories()
@@ -243,7 +238,7 @@ class BulkFavoriteScreenModel(
             }
             stopRunning()
         }
-        toggleSelectionMode(newMode = false)
+        toggleSelectionMode(false)
     }
 
     private fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
@@ -256,17 +251,23 @@ class BulkFavoriteScreenModel(
                 setMangaDefaultChapterFlags.await(manga)
                 addTracks.bindEnhancedTrackers(manga, source)
                 updateManga.awaitUpdateFavorite(manga.id, true)
-                if (libraryPreferences.syncOnAdd().get()) {
-                    val sManga = manga.toSManga()
-                    val remoteManga = source.getMangaDetails(sManga)
-                    val chapters = source.getChapterList(sManga)
-                    // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                    updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                    syncChaptersWithSource.await(chapters, manga, source, false)
+                val fetchMetadataOnAdd = libraryPreferences.fetchMetadataOnAdd().get()
+                val fetchChaptersOnAdd = libraryPreferences.fetchChaptersOnAdd().get()
+                if (fetchMetadataOnAdd || fetchChaptersOnAdd) {
+                    try {
+                        updateMangaFromRemote(
+                            source = source,
+                            manga = manga,
+                            fetchDetails = fetchMetadataOnAdd,
+                            fetchChapters = fetchChaptersOnAdd,
+                            // FIXME (KMK): Should have throttle here
+                        )
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e)
+                    }
                 }
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
-                snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
             }
         }
     }
@@ -351,19 +352,20 @@ class BulkFavoriteScreenModel(
             }
 
             updateManga.await(new.toMangaUpdate())
-            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
-                withIOContext {
-                    try {
-                        val sManga = manga.toSManga()
-                        val remoteManga = source.getMangaDetails(sManga)
-                        val chapters = source.getChapterList(sManga)
-                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                        syncChaptersWithSource.await(chapters, manga, source, false)
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
-                    }
+            val fetchMetadataOnAdd = libraryPreferences.fetchMetadataOnAdd().get()
+            val fetchChaptersOnAdd = libraryPreferences.fetchChaptersOnAdd().get()
+            if (new.favorite && (fetchMetadataOnAdd || fetchChaptersOnAdd)) {
+                try {
+                    // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
+                    updateMangaFromRemote(
+                        source = source,
+                        manga = manga,
+                        fetchDetails = fetchMetadataOnAdd,
+                        fetchChapters = fetchChaptersOnAdd,
+                        // FIXME (KMK): Should have throttle here
+                    )
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
                 }
             }
         }

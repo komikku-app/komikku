@@ -16,9 +16,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
 import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
-import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -35,11 +32,13 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.json.Json
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
@@ -59,8 +58,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger: Logger by lazy { xLog() }
-    private val updateManga: UpdateManga by injectLazy()
-    private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
+    private val updateMangaFromRemote: UpdateMangaFromRemote by injectLazy()
     private val getChaptersByMangaId: GetChaptersByMangaId by injectLazy()
     private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
     private val insertFlatMetadata: InsertFlatMetadata by injectLazy()
@@ -244,13 +242,13 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))
 
         try {
-            val updatedManga = source.getMangaDetails(manga.toSManga())
-            updateManga.awaitUpdateFromSource(manga, updatedManga, false)
-
-            val newChapters = source.getChapterList(manga.toSManga())
-
-            val new = syncChaptersWithSource.await(newChapters, manga, source)
-            return new to getChaptersByMangaId.await(manga.id)
+            val result = updateMangaFromRemote(
+                source = source,
+                manga = manga,
+                fetchDetails = true,
+                fetchChapters = true,
+            ).getOrThrow()
+            return result.newChapters to getChaptersByMangaId.await(manga.id)
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
                 val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>()
@@ -289,17 +287,27 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val interval = prefInterval ?: exhPreferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
                 val restrictions = prefRestrictions ?: exhPreferences.exhAutoUpdateRequirements().get()
-                val acRestriction = DEVICE_CHARGING in restrictions
-
-                val networkRequestBuilder = NetworkRequest.Builder()
-                if (DEVICE_ONLY_ON_WIFI in restrictions) {
-                    networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                val networkType = if (DEVICE_NETWORK_NOT_METERED in restrictions) {
+                    NetworkType.UNMETERED
+                } else {
+                    NetworkType.CONNECTED
                 }
+                val networkRequest = NetworkRequest.Builder().apply {
+                    removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+                    if (DEVICE_ONLY_ON_WIFI in restrictions) {
+                        addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    }
+                    if (DEVICE_NETWORK_NOT_METERED in restrictions) {
+                        addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                    }
+                }
+                    .build()
 
                 val constraints = Constraints.Builder()
                     // 'networkRequest' only applies to Android 9+, otherwise 'networkType' is used
-                    .setRequiredNetworkRequest(networkRequestBuilder.build(), NetworkType.CONNECTED)
-                    .setRequiresCharging(acRestriction)
+                    .setRequiredNetworkRequest(networkRequest, networkType)
+                    .setRequiresCharging(DEVICE_CHARGING in restrictions)
+                    .setRequiresBatteryNotLow(true)
                     .build()
 
                 val request = PeriodicWorkRequestBuilder<EHentaiUpdateWorker>(

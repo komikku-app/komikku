@@ -10,7 +10,6 @@ import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.util.lang.Hash
@@ -20,8 +19,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
-import mihon.domain.extensionrepo.interactor.GetExtensionRepo
-import mihon.domain.extensionrepo.model.ExtensionRepo
+import mihon.domain.extension.interactor.GetExtensionStores
+import mihon.domain.extension.model.ExtensionStore
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -46,7 +45,7 @@ internal object ExtensionLoader {
     private val trustExtension: TrustExtension by injectLazy()
 
     // KMK -->
-    private val getExtensionRepo: GetExtensionRepo by injectLazy()
+    private val getExtensionStores: GetExtensionStores by injectLazy()
     // KMK <--
 
     private val loadNsfwSource by lazy {
@@ -57,8 +56,12 @@ internal object ExtensionLoader {
     private const val METADATA_SOURCE_CLASS = "tachiyomi.extension.class"
     private const val METADATA_SOURCE_FACTORY = "tachiyomi.extension.factory"
     private const val METADATA_NSFW = "tachiyomi.extension.nsfw"
-    const val LIB_VERSION_MIN = 1.4
-    const val LIB_VERSION_MAX = 1.5
+
+    private const val METADATA_NAME = "tachiyomix.name"
+    private const val METADATA_EXTENSION_LIB = "tachiyomix.extensionLib"
+    private const val METADATA_CONTENT_WARNING = "tachiyomix.contentWarning"
+
+    private val SUPPORTED_LIB_VERSIONS = listOf(1.4, 1.6)
 
     @Suppress("DEPRECATION")
     private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
@@ -169,7 +172,7 @@ internal object ExtensionLoader {
         // Load each extension concurrently and wait for completion
         return runBlocking {
             // KMK -->
-            val extRepos = getExtensionRepo.getAll()
+            val extStores = getExtensionStores.get()
             // KMK <--
             val deferred = extPkgs.map {
                 async {
@@ -177,7 +180,7 @@ internal object ExtensionLoader {
                         context,
                         it,
                         // KMK -->
-                        extRepos,
+                        extStores,
                         // KMK <--
                     )
                 }
@@ -228,7 +231,7 @@ internal object ExtensionLoader {
                         isShared = true,
                     )
                 }
-        } catch (error: PackageManager.NameNotFoundException) {
+        } catch (_: PackageManager.NameNotFoundException) {
             null
         }
 
@@ -245,18 +248,19 @@ internal object ExtensionLoader {
         context: Context,
         extensionInfo: ExtensionInfo,
         // KMK -->
-        extRepos: List<ExtensionRepo>? = null,
+        extStores: List<ExtensionStore>? = null,
         // KMK <--
     ): LoadResult {
         // KMK -->
-        val repos = extRepos ?: getExtensionRepo.getAll()
+        val stores = extStores ?: getExtensionStores.get()
         // KMK <--
         val pkgManager = context.packageManager
         val pkgInfo = extensionInfo.packageInfo
         val appInfo = pkgInfo.applicationInfo!!
         val pkgName = pkgInfo.packageName
 
-        val extName = pkgManager.getApplicationLabel(appInfo).toString().substringAfter("Tachiyomi: ")
+        val extName = appInfo.metaData.getString(METADATA_NAME)
+            ?: pkgManager.getApplicationLabel(appInfo).toString().substringAfter("Tachiyomi: ")
         val versionName = pkgInfo.versionName
         val versionCode = PackageInfoCompat.getLongVersionCode(pkgInfo)
 
@@ -266,11 +270,14 @@ internal object ExtensionLoader {
         }
 
         // Validate lib version
-        val libVersion = versionName.substringBeforeLast('.').toDoubleOrNull()
-        if (libVersion == null || libVersion < LIB_VERSION_MIN || libVersion > LIB_VERSION_MAX) {
+        val libVersion = appInfo.metaData.getFloat(METADATA_EXTENSION_LIB)
+            .takeUnless { it == 0.0f }
+            ?.toString()
+            ?.toDouble()
+            ?: versionName.substringBeforeLast('.').toDoubleOrNull()
+        if (libVersion == null || libVersion !in SUPPORTED_LIB_VERSIONS) {
             logcat(LogPriority.WARN) {
-                "Lib version is $libVersion, while only versions " +
-                    "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed"
+                "Lib version is $libVersion, while only version(s) ${SUPPORTED_LIB_VERSIONS.joinToString()} are supported"
             }
             return LoadResult.Error
         }
@@ -288,10 +295,10 @@ internal object ExtensionLoader {
                 libVersion,
                 signatures.last(),
                 // KMK -->
-                repoName = repos.firstOrNull { repo ->
-                    signatures.all { it == repo.signingKeyFingerprint }
-                }?.let { repo ->
-                    repo.shortName.takeIf { !it.isNullOrBlank() } ?: repo.name
+                storeName = stores.firstOrNull { store ->
+                    signatures.all { it == store.signingKey }
+                }?.let { store ->
+                    store.badgeLabel.takeIf(String::isNotBlank) ?: store.name
                 },
                 // KMK <--
             )
@@ -299,7 +306,8 @@ internal object ExtensionLoader {
             return LoadResult.Untrusted(extension)
         }
 
-        val isNsfw = appInfo.metaData.getInt(METADATA_NSFW) == 1
+        val isNsfw = appInfo.metaData.getInt(METADATA_CONTENT_WARNING) > 0 ||
+            appInfo.metaData.getInt(METADATA_NSFW) == 1
         if (!loadNsfwSource && isNsfw) {
             logcat(LogPriority.WARN) { "NSFW extension $pkgName not allowed" }
             return LoadResult.Error
@@ -335,9 +343,7 @@ internal object ExtensionLoader {
                 }
             }
 
-        val langs = sources.filterIsInstance<CatalogueSource>()
-            .map { it.lang }
-            .toSet()
+        val langs = sources.map { it.lang }.toSet()
         val lang = when (langs.size) {
             0 -> ""
             1 -> langs.first()
@@ -358,10 +364,10 @@ internal object ExtensionLoader {
             isShared = extensionInfo.isShared,
             // KMK -->
             signatureHash = signatures.last(),
-            repoName = repos.firstOrNull { repo ->
-                signatures.all { it == repo.signingKeyFingerprint }
-            }?.let { repo ->
-                repo.shortName.takeIf { !it.isNullOrBlank() } ?: repo.name
+            storeName = stores.firstOrNull { store ->
+                signatures.all { it == store.signingKey }
+            }?.let { store ->
+                store.badgeLabel.takeIf(String::isNotBlank) ?: store.name
             },
             // KMK <--
         )

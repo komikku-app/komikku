@@ -329,8 +329,8 @@ data object LibraryTab : Tab {
                         }.takeIf { state.showMangaContinueButton },
                         onToggleSelection = screenModel::toggleSelection,
                         onToggleRangeSelection = { category, manga ->
-                            screenModel.toggleRangeSelection(category, manga)
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            screenModel.toggleRangeSelection(category, manga)
                         },
                         onRefresh = { onClickRefresh(state.activeCategory) },
                         onGlobalSearchClicked = {

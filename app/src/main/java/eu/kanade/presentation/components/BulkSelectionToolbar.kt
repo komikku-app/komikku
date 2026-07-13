@@ -30,53 +30,51 @@ fun BulkSelectionToolbar(
         titleContent = { Text(text = "$selectedCount") },
         actions = {
             AppBarActions(
-                actions = persistentListOf<AppBar.AppBarAction>()
-                    .builder()
-                    .apply {
-                        if (onSelectAll != null) {
-                            add(
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_select_all),
-                                    icon = Icons.Filled.SelectAll,
-                                    onClick = onSelectAll,
-                                ),
-                            )
-                        }
-                        if (onReverseSelection != null) {
-                            add(
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_select_inverse),
-                                    icon = Icons.Outlined.FlipToBack,
-                                    onClick = onReverseSelection,
-                                ),
-                            )
-                        }
-                        if (isRunning) {
-                            add(
-                                AppBar.ActionCompose(
-                                    title = stringResource(KMR.strings.action_bulk_select),
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier
-                                            .size(24.dp),
-                                        strokeWidth = 2.dp,
-                                    )
+                actions = persistentListOf<AppBar.AppBarAction>().builder().apply {
+                    if (onSelectAll != null) {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_select_all),
+                                icon = Icons.Filled.SelectAll,
+                                onClick = onSelectAll,
+                            ),
+                        )
+                    }
+                    if (onReverseSelection != null) {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.action_select_inverse),
+                                icon = Icons.Outlined.FlipToBack,
+                                onClick = onReverseSelection,
+                            ),
+                        )
+                    }
+                    if (isRunning) {
+                        add(
+                            AppBar.ActionCompose(
+                                title = stringResource(KMR.strings.action_bulk_select),
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            },
+                        )
+                    } else {
+                        add(
+                            AppBar.Action(
+                                title = stringResource(MR.strings.add_to_library),
+                                icon = Icons.Filled.Favorite,
+                                onClick = {
+                                    if (selectedCount > 0) {
+                                        onChangeCategoryClick()
+                                    }
                                 },
-                            )
-                        } else {
-                            add(
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.add_to_library),
-                                    icon = Icons.Filled.Favorite,
-                                    onClick = {
-                                        if (selectedCount > 0) {
-                                            onChangeCategoryClick()
-                                        }
-                                    },
-                                ),
-                            )
-                        }
-                    }.build(),
+                            ),
+                        )
+                    }
+                }.build(),
             )
         },
         isActionMode = true,

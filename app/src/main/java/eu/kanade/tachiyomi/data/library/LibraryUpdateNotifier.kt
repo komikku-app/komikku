@@ -162,7 +162,7 @@ class LibraryUpdateNotifier(
             Notifications.ID_LIBRARY_ERROR,
             Notifications.CHANNEL_LIBRARY_ERROR,
         ) {
-            setContentTitle(context.stringResource(MR.strings.notification_update_error, failed))
+            setContentTitle(context.pluralStringResource(MR.plurals.notification_update_error, failed, failed))
             setContentText(context.stringResource(MR.strings.action_show_errors))
             setSmallIcon(R.drawable.ic_komikku)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))

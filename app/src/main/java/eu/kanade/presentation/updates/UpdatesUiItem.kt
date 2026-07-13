@@ -171,7 +171,6 @@ internal fun LazyListScope.updatesUiItems(
                                 // KMK -->
                                 UpdateSelectionOptions(
                                     selected = !updatesItem.selected,
-                                    userSelected = true,
                                     fromLongPress = true,
                                     isGroup = isLeader && item.isExpandable,
                                     isExpanded = isExpanded,
@@ -186,7 +185,6 @@ internal fun LazyListScope.updatesUiItems(
                                     // KMK -->
                                     UpdateSelectionOptions(
                                         selected = !updatesItem.selected,
-                                        userSelected = true,
                                         fromLongPress = false,
                                         isGroup = isLeader && item.isExpandable,
                                         isExpanded = isExpanded,
@@ -288,8 +286,8 @@ private fun UpdatesUiItem(
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = {
-                        onLongClick()
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongClick()
                     },
                 )
                 .padding(top = if (isLeader) MaterialTheme.padding.small else 0.dp)
@@ -311,7 +309,7 @@ private fun UpdatesUiItem(
                     MangaCoverHide.Book(
                         modifier = Modifier
                             .width(UpdateItemWidth),
-                        bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { selected }),
+                        bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { selected },
                         tint = onBgColor,
                         size = MangaCover.Size.Medium,
                     )

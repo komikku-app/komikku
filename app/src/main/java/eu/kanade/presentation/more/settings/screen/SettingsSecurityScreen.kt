@@ -155,7 +155,7 @@ object SettingsSecurityScreen : SearchableSettings {
                     enabled = passwordProtectDownloads,
 
                 ),
-                kotlin.run {
+                run {
                     var dialogOpen by remember { mutableStateOf(false) }
                     if (dialogOpen) {
                         PasswordDialog(
@@ -183,7 +183,7 @@ object SettingsSecurityScreen : SearchableSettings {
                         securityPreferences.cbzPassword().set("")
                     },
                 ),
-                kotlin.run {
+                run {
                     val navigator = LocalNavigator.currentOrThrow
                     val count by securityPreferences.authenticatorTimeRanges().collectAsState()
                     Preference.PreferenceItem.TextPreference(
@@ -199,7 +199,7 @@ object SettingsSecurityScreen : SearchableSettings {
                         },
                     )
                 },
-                kotlin.run {
+                run {
                     val selection by securityPreferences.authenticatorDays().collectAsState()
                     var dialogOpen by remember { mutableStateOf(false) }
                     if (dialogOpen) {
@@ -332,13 +332,16 @@ object SettingsSecurityScreen : SearchableSettings {
     fun PasswordDialog(
         onDismissRequest: () -> Unit,
         onReturnPassword: (String) -> Unit,
+        // KMK -->
+        title: StringResource = SYMR.strings.cbz_archive_password,
+        // KMK <--
     ) {
         var password by rememberSaveable { mutableStateOf("") }
         var passwordVisibility by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = onDismissRequest,
 
-            title = { Text(text = stringResource(SYMR.strings.cbz_archive_password)) },
+            title = { Text(text = stringResource(title)) },
             text = {
                 TextField(
                     value = password,

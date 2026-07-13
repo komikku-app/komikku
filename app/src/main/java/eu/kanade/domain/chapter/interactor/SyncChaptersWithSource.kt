@@ -90,6 +90,7 @@ class SyncChaptersWithSource(
             // Update metadata from source if necessary.
             if (source is HttpSource) {
                 val sChapter = chapter.toSChapter()
+                @Suppress("DEPRECATION")
                 source.prepareNewChapter(sChapter, manga.toSManga())
                 chapter = chapter.copyFromSChapter(sChapter)
             }
@@ -136,6 +137,7 @@ class SyncChaptersWithSource(
                         chapterNumber = chapter.chapterNumber,
                         scanlator = chapter.scanlator,
                         sourceOrder = chapter.sourceOrder,
+                        memo = chapter.memo,
                     )
 
                     if (chapter.dateUpload != 0L) {
@@ -200,7 +202,7 @@ class SyncChaptersWithSource(
                 bookmark = chapter.chapterNumber in deletedBookmarkedChapterNumbers,
             )
 
-            // Try to to use the fetch date of the original entry to not pollute 'Updates' tab
+            // Try to use the fetch date of the original entry to not pollute 'Updates' tab
             deletedChapterNumberDateFetchMap[chapter.chapterNumber]?.let {
                 chapter = chapter.copy(dateFetch = it)
             }

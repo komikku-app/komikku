@@ -20,6 +20,9 @@ CREATE TABLE manga_sync(
     ON DELETE CASCADE
 );
 
+-- KMK: index for mangas.sq: getDuplicateLibraryManga's track_dupes
+CREATE INDEX idx_manga_sync_sync_id_remote_id ON manga_sync(sync_id, remote_id, manga_id);
+
 delete:
 DELETE FROM manga_sync
 WHERE manga_id = :mangaId AND sync_id = :syncId;

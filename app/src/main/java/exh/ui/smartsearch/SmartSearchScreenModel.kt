@@ -2,7 +2,6 @@ package exh.ui.smartsearch
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import kotlinx.coroutines.CancellationException
 import mihon.feature.migration.list.search.SmartSourceSearchEngine
@@ -21,7 +20,7 @@ class SmartSearchScreenModel(
 ) : StateScreenModel<SmartSearchScreenModel.SearchResults?>(null) {
     private val smartSearchEngine = SmartSourceSearchEngine(null)
 
-    val source = sourceManager.get(sourceId) as CatalogueSource
+    val source = sourceManager.getOrStub(sourceId)
 
     init {
         screenModelScope.launchIO {

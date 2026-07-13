@@ -82,13 +82,30 @@ import kotlin.random.Random
         }
     }
 
-    val nonCloudflareClient /* KMK --> */ by lazy /* KMK <-- */ { clientBuilder().build() }
-
     /* SY --> */ open /* SY <-- */ val client /* KMK --> */ by lazy /* KMK <-- */ {
         clientBuilder()
             .addInterceptor(
                 CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
             )
+            // KMK -->
+            // FIXME (KMK): Dirty hack to fetch MangaDex covers
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+                val url = originalRequest.url
+                if (url.host == "uploads.mangadex.org" && url.encodedPath.startsWith("/covers/")) {
+                    val newRequest = originalRequest
+                        .newBuilder()
+                        .header("Referer", "https://mangadex.org/")
+                        .header("Origin", "https://mangadex.org")
+                        .header("sec-fetch-dest", "image")
+                        .header("sec-fetch-mode", "no-cors")
+                        .build()
+                    chain.proceed(newRequest)
+                } else {
+                    chain.proceed(originalRequest)
+                }
+            }
+            // KMK <--
             .build()
     }
 

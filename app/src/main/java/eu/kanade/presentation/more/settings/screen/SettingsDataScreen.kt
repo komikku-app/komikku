@@ -48,6 +48,7 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.screen.SettingsSecurityScreen.PasswordDialog
 import eu.kanade.presentation.more.settings.screen.data.CreateBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.StorageInfo
@@ -562,7 +563,7 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                             // KMK -->
-                            SyncManager.SyncService.WebDAV.value to stringResource(KMR.strings.web_dav),
+                            SyncManager.SyncService.WEB_DAV.value to stringResource(KMR.strings.web_dav),
                             // KMK <--
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
@@ -606,7 +607,7 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
             // KMK -->
-            SyncManager.SyncService.WebDAV -> getWebDavPreferences(syncPreferences)
+            SyncManager.SyncService.WEB_DAV -> getWebDavPreferences(syncPreferences)
             // KMK <--
         }
 
@@ -759,7 +760,9 @@ object SettingsDataScreen : SearchableSettings {
                     title = stringResource(SYMR.strings.pref_sync_api_key),
                     subtitle = stringResource(SYMR.strings.pref_sync_api_key_summ),
                     onConfirm = {
-                        syncPreferences.clientAPIKey().set(it)
+                        scope.launch {
+                            syncPreferences.clientAPIKey().set(it)
+                        }
                         true
                     },
                     icon = null,
@@ -808,17 +811,28 @@ object SettingsDataScreen : SearchableSettings {
                     true
                 },
             ),
-            Preference.PreferenceItem.EditTextPreference(
-                preference = syncPreferences.webDavPassword(),
-                title = stringResource(KMR.strings.pref_webdav_password),
-                subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        syncPreferences.webDavPassword().set(newValue)
-                    }
-                    true
-                },
-            ),
+            run {
+                var dialogOpen by remember { mutableStateOf(false) }
+                if (dialogOpen) {
+                    PasswordDialog(
+                        onDismissRequest = { dialogOpen = false },
+                        onReturnPassword = { password ->
+                            dialogOpen = false
+                            scope.launch {
+                                syncPreferences.webDavPassword().set(password.replace("\n", ""))
+                            }
+                        },
+                        title = KMR.strings.pref_webdav_password,
+                    )
+                }
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_webdav_password),
+                    subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
+                    onClick = {
+                        dialogOpen = true
+                    },
+                )
+            },
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavFolder(),
                 title = stringResource(KMR.strings.pref_webdav_folder),
@@ -832,7 +846,7 @@ object SettingsDataScreen : SearchableSettings {
             ),
         )
     }
-    // MK <--
+    // KMK <--
 
     @Composable
     private fun getSyncNowPref(): Preference.PreferenceGroup {

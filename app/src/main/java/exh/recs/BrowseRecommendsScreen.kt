@@ -124,7 +124,7 @@ class BrowseRecommendsScreen(
                         scrollBehavior = scrollBehavior,
                         // KMK -->
                         toggleSelectionMode = {
-                            bulkFavoriteScreenModel.toggleSelectionMode()
+                            bulkFavoriteScreenModel.toggleSelectionMode(true)
                         }.takeIf { !isExternalSource },
                         isRunning = bulkFavoriteState.isRunning,
                         // KMK <--

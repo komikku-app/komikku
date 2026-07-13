@@ -118,7 +118,7 @@
     <string name="action_copy_to_clipboard_combined_page">Copiar página combinada para área de transferência</string>
     <string name="auto_update_app_disable_auto_download">Não baixar a atualização automaticamente</string>
     <string name="action_remove_merged">Remover entradas originais da biblioteca?</string>
-    <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Suporte: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="action_manual_install">Instalação manual</string>
     <string name="action_open_folder">Abrir pasta</string>
     <string name="action_clear_manga">Limpar mangá</string>
@@ -192,4 +192,6 @@
     <string name="pref_discord_show_download_button_summary">Exibe um botão para baixar o aplicativo</string>
     <string name="pref_discord_show_discord_button">Mostrar botão do Discord</string>
     <string name="pref_discord_show_discord_button_summary">Exibe um botão para entrar no servidor do Discord</string>
+    <string name="pref_webdav_username">Nome de Utilizador</string>
+    <string name="pref_webdav_password">Palavra passe</string>
 </resources>

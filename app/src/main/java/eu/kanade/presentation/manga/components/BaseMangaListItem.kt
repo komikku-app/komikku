@@ -43,8 +43,8 @@ fun BaseMangaListItem(
                 onClick = onClickItem,
                 // KMK -->
                 onLongClick = {
-                    onLongClick()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
                 },
                 // KMK <--
             )

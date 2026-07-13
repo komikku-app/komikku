@@ -362,7 +362,6 @@ class UpdatesScreenModel(
     /** Bundles all of the boolean flags for update‐selection into one type */
     data class UpdateSelectionOptions(
         val selected: Boolean,
-        val userSelected: Boolean = false,
         val fromLongPress: Boolean = false,
         val isGroup: Boolean = false,
         val isExpanded: Boolean = false,
@@ -376,16 +375,17 @@ class UpdatesScreenModel(
         // KMK <--
     ) {
         // KMK -->
-        val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        val (selected, fromLongPress, isGroup, isExpanded) = selectionOptions
         // KMK <--
         mutableState.update { state ->
+            // KMK -->
+            val selectedIndex = state.items.indexOfFirst { it.update.chapterId == item.update.chapterId }
+            if (selectedIndex < 0) return@update state
+            val selectedItem = state.items[selectedIndex]
+            if (selectedItem.selected == selected) return@update state
+            // KMK <--
+
             val newItems = state.items.toMutableList().apply {
-                val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
-                if (selectedIndex < 0) return@apply
-
-                val selectedItem = get(selectedIndex)
-                if (selectedItem.selected == selected) return@apply
-
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.update.chapterId, selected)
@@ -409,7 +409,7 @@ class UpdatesScreenModel(
                 }
                 // KMK <--
 
-                if (selected && userSelected && fromLongPress) {
+                if (selected && fromLongPress) {
                     if (firstSelection) {
                         selectedPositions[0] = selectedIndex
                         selectedPositions[1] = selectedIndex
@@ -428,14 +428,14 @@ class UpdatesScreenModel(
                         }
 
                         range.forEach {
-                            val inbetweenItem = get(it)
-                            if (!inbetweenItem.selected) {
-                                selectedChapterIds.add(inbetweenItem.update.chapterId)
-                                set(it, inbetweenItem.copy(selected = true))
+                            val inBetweenItem = get(it)
+                            if (!inBetweenItem.selected) {
+                                selectedChapterIds.add(inBetweenItem.update.chapterId)
+                                set(it, inBetweenItem.copy(selected = true))
                             }
                         }
                     }
-                } else if (userSelected && !fromLongPress) {
+                } else if (!fromLongPress) {
                     if (!selected) {
                         if (selectedIndex == selectedPositions[0]) {
                             selectedPositions[0] = indexOfFirst { it.selected }
@@ -461,11 +461,12 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, selected)
                 it.copy(selected = selected)
             }
+            // KMK -->
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            // KMK <--
             state.copy(items = newItems.toPersistentList())
         }
-
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun invertSelection() {
@@ -474,10 +475,12 @@ class UpdatesScreenModel(
                 selectedChapterIds.addOrRemove(it.update.chapterId, !it.selected)
                 it.copy(selected = !it.selected)
             }
+            // KMK -->
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            // KMK <--
             state.copy(items = newItems.toPersistentList())
         }
-        selectedPositions[0] = -1
-        selectedPositions[1] = -1
     }
 
     fun setDialog(dialog: Dialog?) {

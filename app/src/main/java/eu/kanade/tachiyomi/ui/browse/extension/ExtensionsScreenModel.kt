@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.util.lang.launchIO
@@ -53,7 +54,7 @@ class ExtensionsScreenModel(
                     map[
                         it.pkgName +
                             // KMK -->
-                            ":${it.signatureHash}",
+                            "_${it.signatureHash}",
                         // KMK <--
                     ] ?: InstallStep.Idle,
                 )
@@ -153,7 +154,7 @@ class ExtensionsScreenModel(
                 when (extension) {
                     is Extension.Installed -> extension.sources.any { source ->
                         source.name.contains(subquery, ignoreCase = true) ||
-                            (source as? HttpSource)?.baseUrl?.contains(subquery, ignoreCase = true) == true ||
+                            (source as? HttpSource)?.getHomeUrl()?.contains(subquery, ignoreCase = true) == true ||
                             source.id == subquery.toLongOrNull()
                     }
 
@@ -207,7 +208,7 @@ class ExtensionsScreenModel(
             it + Pair(
                 extension.pkgName +
                     // KMK -->
-                    ":${extension.signatureHash}",
+                    "_${extension.signatureHash}",
                 // KMK <--
                 installStep,
             )
@@ -219,7 +220,7 @@ class ExtensionsScreenModel(
             it - (
                 extension.pkgName +
                     // KMK -->
-                    ":${extension.signatureHash}"
+                    "_${extension.signatureHash}"
                 // KMK <--
                 )
         }
@@ -228,6 +229,7 @@ class ExtensionsScreenModel(
     private suspend fun Flow<InstallStep>.collectToInstallUpdate(extension: Extension) =
         this
             .onEach { installStep -> addDownloadState(extension, installStep) }
+            .takeWhile { installStep -> installStep != InstallStep.Installed }
             .onCompletion { removeDownloadState(extension) }
             .collect()
 
