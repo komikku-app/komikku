@@ -87,6 +87,25 @@ import kotlin.random.Random
             .addInterceptor(
                 CloudflareInterceptor(context, cookieJar, ::defaultUserAgentProvider),
             )
+            // KMK -->
+            // FIXME (KMK): Dirty hack to fetch MangaDex covers
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+                val url = originalRequest.url
+                if (url.host == "uploads.mangadex.org") {
+                    val newRequest = originalRequest
+                        .newBuilder()
+                        .header("Referer", "https://mangadex.org/")
+                        .header("Origin", "https://mangadex.org")
+                        .header("sec-fetch-dest", "document")
+                        .header("sec-fetch-mode", "navigate")
+                        .build()
+                    chain.proceed(newRequest)
+                } else {
+                    chain.proceed(originalRequest)
+                }
+            }
+            // KMK <--
             .build()
     }
 
