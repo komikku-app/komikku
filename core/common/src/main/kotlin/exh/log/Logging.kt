@@ -41,7 +41,10 @@ fun Any.xLogE(log: String) = safeXLog(Log.ERROR, log) { xLog().e(log) }
 fun Any.xLogW(log: String) = safeXLog(Log.WARN, log) { xLog().w(log) }
 fun Any.xLogD(log: String) = safeXLog(Log.DEBUG, log) { xLog().d(log) }
 fun Any.xLogI(log: String) = safeXLog(Log.INFO, log) { xLog().i(log) }
-fun Any.xLog(logLevel: LogLevel, log: String) = safeXLog(logLevel.androidLevel, log) { xLog().log(logLevel.int, log) }
+fun Any.xLog(logLevel: LogLevel, log: String) {
+    if (logLevel is LogLevel.None) return
+    safeXLog(logLevel.androidLevel, log) { xLog().log(logLevel.int, log) }
+}
 fun Any.xLogJson(log: String) = safeXLog(Log.DEBUG, log) { xLog().json(log) }
 fun Any.xLogXML(log: String) = safeXLog(Log.DEBUG, log) { xLog().xml(log) }
 
@@ -132,5 +135,7 @@ fun Any.xLogD(log: Throwable) = safeXLog(Log.DEBUG, log.toString(), log) { xLogS
 fun Any.xLogI(log: Throwable) = safeXLog(Log.INFO, log.toString(), log) { xLogStack().i(log) }
 
 @Deprecated("Use proper throwable function", ReplaceWith("""xLog(logLevel, "", log)"""))
-fun Any.xLog(logLevel: LogLevel, log: Throwable) =
+fun Any.xLog(logLevel: LogLevel, log: Throwable) {
+    if (logLevel is LogLevel.None) return
     safeXLog(logLevel.androidLevel, log.toString(), log) { xLogStack().log(logLevel.int, log) }
+}
