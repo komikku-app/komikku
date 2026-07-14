@@ -62,8 +62,11 @@ fun Any.xLogI(log: Any?) = safeXLog(Log.INFO, log) { xLog().let { if (log == nul
 fun Any.xLog(
     logLevel: LogLevel,
     log: Any?,
-) = safeXLog(logLevel.androidLevel, log) {
-    xLog().let { if (log == null) it.log(logLevel.int, "null") else it.log(logLevel.int, log) }
+) {
+    if (logLevel is LogLevel.None) return
+    safeXLog(logLevel.androidLevel, log) {
+        xLog().let { if (log == null) it.log(logLevel.int, "null") else it.log(logLevel.int, log) }
+    }
 }
 
 /*fun Any.xLogE(vararg logs: Any) = xLog().e(logs)
