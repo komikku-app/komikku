@@ -6,6 +6,8 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.json.JsonObject
+import mihon.core.common.extensions.EMPTY
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.chapter.interactor.GetChapterByUrl
@@ -255,6 +257,7 @@ class EHentaiUpdateHelper(context: Context) {
                         sourceOrder = -1,
                         lastModifiedAt = 0,
                         version = 0,
+                        memo = JsonObject.EMPTY,
                     )
                 }
             }

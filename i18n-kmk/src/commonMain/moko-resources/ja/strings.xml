@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">ソースで検索</string>
+    <string name="action_source_search">ソース内検索</string>
     <string name="action_toggle_nsfw_only">NSFWのみを表示</string>
     <string name="action_bulk_select">一括選択モード</string>
     <string name="action_faq_and_guides">FAQとガイド</string>
-    <string name="download_cache_renew_interval">キャッシュの更新間隔をダウンロード</string>
-    <string name="download_cache_renew_interval_manual">マニュアル</string>
+    <string name="download_cache_renew_interval">ダウンロードキャッシュの更新間隔</string>
+    <string name="download_cache_renew_interval_manual">手動</string>
     <string name="download_cache_renew_interval_1hour">1 時間</string>
-    <string name="download_cache_renew_interval_2hour">2時間</string>
+    <string name="download_cache_renew_interval_2hour">2 時間</string>
     <string name="download_cache_renew_interval_6hour">6 時間</string>
-    <string name="download_cache_renew_interval_12hour">12時間</string>
-    <string name="download_cache_renew_interval_24hour">1日</string>
-    <string name="download_cache_renew_interval_info">「マニュアル」に設定されている場合は、各マンガを更新するか、「詳細」の「ダウンロードインデックスの無効化」アクションを使用してください</string>
+    <string name="download_cache_renew_interval_12hour">12 時間</string>
+    <string name="download_cache_renew_interval_24hour">1 日</string>
+    <string name="download_cache_renew_interval_info">「手動」に設定した場合は、各漫画を個別に更新するか、詳細設定の「ダウンロードの再インデックス」アクションを使用してください</string>
     <string name="pref_clean_invalid_downloads">無効なダウンロードを削除</string>
     <string name="pref_clean_invalid_downloads_summary">ライブラリに保存されていないすべてのダウンロード、ファイル、フォルダを見つけて削除します</string>
     <string name="invalid_downloads_cleaned">無効なダウンロードがクリーンアップされました</string>
@@ -25,7 +25,7 @@
     <string name="update_check_notification_preview_available">近日公開！</string>
     <string name="changelogs">変更ログ</string>
     <string name="related_mangas_more">これらのような...</string>
-    <string name="too_many_in_feed">フィードにソースが多すぎます。20 以上を追加できません。</string>
+    <string name="too_many_in_feed">フィードにソースが多すぎます。上限は 20 件です</string>
     <string name="current_">現在: %1$s</string>
     <string name="pref_theme_cover_based">カバーに基づくテーマ</string>
     <string name="pref_theme_cover_based_style_tonalspot">トーナルスポット</string>
@@ -61,7 +61,7 @@
     <string name="pref_custom_color">パレットのカスタマイズ</string>
     <string name="theme_custom">カスタムテーマ</string>
     <string name="extensions_page_need_refresh">リストを更新するにはエクステンションページを更新してください。</string>
-    <string name="extensions_page_more">その他のエクステンション...</string>
+    <string name="extensions_page_more">その他の拡張機能...</string>
     <string name="pref_expand_related_mangas">提案を展開</string>
     <string name="pref_expand_related_mangas_summary">オフにすると、提案は自動的に読み込まれず、展開されて表示されません</string>
     <string name="put_related_mangas_in_overflow">オーバーフローの提案</string>
@@ -145,9 +145,9 @@
     <string name="job_failed_schedule_backup_check">自動バックアップのスケジュールに失敗しました: %s</string>
     <string name="special_services">特別機能</string>
     <string name="pref_category_connections">接続</string>
-    <string name="pref_connections_summary">Discord 今後も続々登場予定</string>
+    <string name="pref_connections_summary">Discord、近日公開予定..</string>
     <string name="connections_discord">Discord</string>
-    <string name="connections_discord_info">本Discordサービスは、トークンを記録することで動作します。利用は自己責任でお願いします。トークンは端末内に保存され、%s が外部と共有することはありません。</string>
+    <string name="connections_discord_info">この Discord サービスはトークンによるログイン方式を採用しています。ご利用は自己責任でお願いします。トークンはローカルに保存され、%s が外部に共有されることはございません</string>
     <string name="pref_discord_incognito_categories_details">含まれるカテゴリのエントリはDiscordに表示されません</string>
     <string name="discord_accounts">Discordアカウント</string>
     <string name="no_accounts_found">アカウントが見つかりません</string>
@@ -156,7 +156,7 @@
     <string name="pref_discord_show_progress">進行状況を表示</string>
     <string name="discord_status_scrolling">スクロール中</string>
     <string name="custom_theme_palette_outrun">Outrun</string>
-    <string name="show_chapters_titles_subtitle">あなたが見ているエピソードのタイトルを表示する</string>
+    <string name="show_chapters_titles_subtitle">読書中の章のタイトルを表示します</string>
     <string name="pref_discord_status">Discord ステータス</string>
     <string name="login_failed">ログインに失敗しました</string>
     <string name="pref_category_discord_customization">Discordのカスタマイズ</string>
@@ -172,7 +172,7 @@
     <string name="pref_discord_online">🟢 オンライン</string>
     <string name="pref_category_discord_incognito">RPC Incognito</string>
     <string name="pref_discord_incognito_summary">シークレットモードが有効になっているときにオーバーライドする</string>
-    <string name="pref_discord_show_buttons_summary">アプリをダウンロードしたりDiscordサーバーに参加するボタンを表示します</string>
+    <string name="pref_discord_show_buttons_summary">アプリをダウンロードしたり、Discord サーバーに参加したりするためのボタンを表示します</string>
     <string name="pref_discord_incognito">Discordシークレットモード</string>
     <string name="custom_theme_palette_spectral">Spectral</string>
     <string name="custom_theme_palette_springfield">Springfield</string>
@@ -186,4 +186,15 @@
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">使用:</string>
     <string name="discord_download_button">%s で読む</string>
+    <string name="discord_app_description">Komikku - 漫画リーダーアプリ</string>
+    <string name="pref_discord_show_progress_summary">現在読書中の章を表示します</string>
+    <string name="pref_discord_show_timestamp_summary">アクティビティ時間を表示します</string>
+    <string name="show_chapters_titles_title">章タイトルを表示</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">スマート検索を使用</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">有効にすると、最適な検索結果が自動的に選択されます。無効にすると、すべての検索結果が表示され、手動で選択できます。</string>
+    <string name="action_clear_manga">漫画を削除</string>
+    <string name="pref_fetch_manga_metadata_on_add">ライブラリに追加する際にメタデータを取得</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">ライブラリに新しい漫画を追加する際に、追加する漫画のメタデータを自動的に取得します</string>
+    <string name="pref_fetch_manga_chapters_on_add">ライブラリに追加する際に章を取得</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">ライブラリに新しい漫画を追加する際に、追加する漫画の章リストを自動的に取得します</string>
 </resources>

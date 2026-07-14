@@ -212,12 +212,6 @@
     <string name="tap_scroll_page_summary">Mengetuk akan menggulir berdasarkan halaman alih-alih ukuran layar saat opsi ini diaktifkan</string>
     <string name="reader_bottom_buttons">Tombol Bawah Pembaca</string>
     <string name="reader_bottom_buttons_summary">Sesuaikan tombol apa yang muncul di bagian bawah pembaca</string>
-    <string name="pref_show_vert_seekbar_landscape">Tampilkan seekbar vertikal dalam mode layar mendatar</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Mengaktifkan seekbar dalam mode layar mendatar</string>
-    <string name="pref_left_handed_vertical_seekbar">Seekbar Vertikal Kidal</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Membalikkan sisi seekbar vertikal</string>
-    <string name="pref_force_horz_seekbar">Paksa aktifkan seekbar horizontal</string>
-    <string name="pref_force_horz_seekbar_summary">Menghapus seekbar vertikal sepenuhnya dan menggantikanya dengan seekbar horizontal</string>
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Gulir Otomatis</string>
@@ -673,4 +667,6 @@
     <string name="file_extension">Ekstensi file</string>
     <string name="final_chapter">Bab terakhir</string>
     <string name="base_url">URL dasar</string>
+    <string name="pref_include_chapter_url_hash">Sertakan hash URL bab</string>
+    <string name="pref_include_chapter_url_hash_desc">Tambahkan enam karakter pertama dari hash MD5 URL bab ke nama file atau folder bab.</string>
 </resources>

@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 horas</string>
     <string name="download_cache_renew_interval_12hour">12 horas</string>
     <string name="download_cache_renew_interval_24hour">1 dia</string>
-    <string name="download_cache_renew_interval_info">Se definido como \"manual\", atualize cada manga ou use a ação \"Invalidar índice de downloads\" em \"Avançado\"</string>
+    <string name="download_cache_renew_interval_info">Se definido como \"manual\", atualize cada mangá ou use a ação \"Reindexar downloads\" em \"Avançado\"</string>
     <string name="pref_clean_invalid_downloads">Limpar downloads inválidos</string>
     <string name="pref_clean_invalid_downloads_summary">Encontre e remova todos os downloads, arquivos, pastas que não são salvas na sua biblioteca</string>
     <string name="invalid_downloads_cleaned">Downloads limpos inválidos</string>
@@ -188,4 +188,12 @@
     <string name="pref_webdav_password">Senha</string>
     <string name="discord_status_using">Uso</string>
     <string name="sponsor_me">Tornar-se patrocinador</string>
+    <string name="action_filter_unfinished_manga">Mangá não finalizado</string>
+    <string name="action_filter_unfinished_chapter">Capítulo não finalizado</string>
+    <string name="action_filter_non_library_entries">Entradas fora da biblioteca</string>
+    <string name="pref_fetch_manga_metadata_on_add">Buscar metadados ao adicionar à biblioteca</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Busca metadados de um novo mangá automaticamente ao adicionar à biblioteca</string>
+    <string name="pref_fetch_manga_chapters_on_add">Buscar capítulos ao adicionar à biblioteca</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Busca novos capítulos de um mangá automaticamente ao adicionar à biblioteca</string>
+    <string name="pref_webdav_url">URL do servidor WebDAV</string>
 </resources>

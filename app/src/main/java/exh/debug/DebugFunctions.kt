@@ -1,8 +1,6 @@
 package exh.debug
 
 import android.app.Application
-import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
@@ -24,6 +22,7 @@ import mihon.core.migration.MigrationJobFactory
 import mihon.core.migration.MigrationStrategyFactory
 import mihon.core.migration.Migrator
 import mihon.core.migration.migrations.migrations
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -42,7 +41,7 @@ object DebugFunctions {
     private val app: Application by injectLazy()
     private val handler: DatabaseHandler by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
-    private val updateManga: UpdateManga by injectLazy()
+    private val updateMangaFromRemote: UpdateMangaFromRemote by injectLazy()
     private val getFavorites: GetFavorites by injectLazy()
     private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
     private val insertFlatMetadata: InsertFlatMetadata by injectLazy()
@@ -87,19 +86,24 @@ object DebugFunctions {
         runBlocking {
             val allManga = getExhFavoriteMangaWithMetadata.await()
 
-            val eh = sourceManager.get(EH_SOURCE_ID)
-            val ex = sourceManager.get(EXH_SOURCE_ID)
+            val eh = sourceManager.getOrStub(EH_SOURCE_ID)
+            val ex = sourceManager.getOrStub(EXH_SOURCE_ID)
 
             allManga.forEach { manga ->
                 throttleManager.throttle()
 
-                val networkManga = when (manga.source) {
-                    EH_SOURCE_ID -> eh
-                    EXH_SOURCE_ID -> ex
-                    else -> return@forEach
-                }?.getMangaDetails(manga.toSManga()) ?: return@forEach
-
-                updateManga.awaitUpdateFromSource(manga, networkManga, true)
+                updateMangaFromRemote(
+                    source = when (manga.source) {
+                        EH_SOURCE_ID -> eh
+                        EXH_SOURCE_ID -> ex
+                        else -> return@forEach
+                    },
+                    manga = manga,
+                    fetchDetails = true,
+                    // KMK -->
+                    manualFetch = true,
+                    // KMK <--
+                )
             }
         }
     }
@@ -148,15 +152,15 @@ object DebugFunctions {
 
     fun clearSavedSearches() = runBlocking { handler.await { saved_searchQueries.deleteAll() } }
 
-    fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
+    fun listAllSources() = sourceManager.getAll().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
 
-    fun listAllSourcesClassName() = sourceManager.getCatalogueSources().joinToString("\n") {
+    fun listAllSourcesClassName() = sourceManager.getAll().joinToString("\n") {
         "${it::class.qualifiedName}: ${it.name} (${it.lang.uppercase()})"
     }
 
-    fun listVisibleSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
+    fun listVisibleSources() = sourceManager.getVisibleSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
 

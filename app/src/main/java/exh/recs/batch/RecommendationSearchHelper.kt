@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -37,7 +38,6 @@ import tachiyomi.domain.track.model.Track
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.util.Collections
-import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -94,7 +94,7 @@ class RecommendationSearchHelper(val context: Context) {
 
             mangaList.forEachIndexed { index, sourceManga ->
                 // Check if the job has been cancelled
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
 
                 status.value = SearchStatus.Processing(sourceManga.toSManga(), index + 1, mangaList.size)
 
@@ -114,7 +114,7 @@ class RecommendationSearchHelper(val context: Context) {
                     }
 
                     // Parallelize fetching recommendations from all sources in the current context
-                    CoroutineScope(coroutineContext).async(Dispatchers.IO) {
+                    CoroutineScope(currentCoroutineContext()).async(Dispatchers.IO) {
                         val recSourceId = source::class.qualifiedName!!
 
                         try {

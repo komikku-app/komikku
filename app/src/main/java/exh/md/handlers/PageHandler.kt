@@ -1,7 +1,5 @@
 package exh.md.handlers
 
-import eu.kanade.domain.track.service.TrackPreferences
-import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
 import eu.kanade.tachiyomi.source.Source
@@ -28,8 +26,6 @@ class PageHandler(
     private val azukiHandler: AzukiHandler,
     private val mangaHotHandler: MangaHotHandler,
     private val namicomiHandler: NamicomiHandler,
-    private val preferences: TrackPreferences,
-    private val mdList: MdList,
 ) {
 
     suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {

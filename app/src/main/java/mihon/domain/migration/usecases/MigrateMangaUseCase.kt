@@ -1,9 +1,7 @@
 package mihon.domain.migration.usecases
 
-import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
-import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -11,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import kotlinx.coroutines.CancellationException
 import mihon.domain.migration.models.MigrationFlag
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -33,13 +32,13 @@ class MigrateMangaUseCase(
     private val downloadManager: DownloadManager,
     private val updateManga: UpdateManga,
     private val getChaptersByMangaId: GetChaptersByMangaId,
-    private val syncChaptersWithSource: SyncChaptersWithSource,
     private val updateChapter: UpdateChapter,
     private val getCategories: GetCategories,
     private val setMangaCategories: SetMangaCategories,
     private val getTracks: GetTracks,
     private val insertTrack: InsertTrack,
     private val coverCache: CoverCache,
+    private val updateMangaFromRemote: UpdateMangaFromRemote,
     // KMK -->
     private val getHistory: GetHistory,
     private val upsertHistory: UpsertHistory,
@@ -54,19 +53,22 @@ class MigrateMangaUseCase(
         // KMK -->
         presetFlags: Set<MigrationFlag>? = null,
         // KMK <--
+        // SY -->
+        throttleFunc: suspend () -> Unit = {},
+        // SY <--
     ) {
         val targetSource = sourceManager.get(target.source) ?: return
         val currentSource = sourceManager.get(current.source)
         val flags = /* KMK --> */ presetFlags ?: /* KMK <-- */ sourcePreferences.migrationFlags().get()
 
         try {
-            val chapters = targetSource.getChapterList(target.toSManga())
-
-            try {
-                syncChaptersWithSource.await(chapters, target, targetSource)
-            } catch (_: Exception) {
-                // Worst case, chapters won't be synced
-            }
+            updateMangaFromRemote(
+                manga = target,
+                fetchChapters = true,
+                // SY -->
+                throttleFunc = throttleFunc,
+                // SY <--
+            ).getOrThrow()
 
             // Update chapters read, bookmark and dateFetch
             if (MigrationFlag.CHAPTER in flags) {
