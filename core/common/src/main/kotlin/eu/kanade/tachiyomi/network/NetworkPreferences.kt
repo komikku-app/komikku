@@ -5,12 +5,11 @@ import tachiyomi.core.common.preference.PreferenceStore
 
 class NetworkPreferences(
     private val preferenceStore: PreferenceStore,
-    private val verboseLogging: Boolean = false,
 ) {
 
-    fun verboseLogging(): Preference<Boolean> {
+    /* KMK --> fun verboseLogging(): Preference<Boolean> {
         return preferenceStore.getBoolean("verbose_logging", verboseLogging)
-    }
+    } KMK <-- */
 
     fun dohProvider(): Preference<Int> {
         return preferenceStore.getInt("doh_provider", -1)

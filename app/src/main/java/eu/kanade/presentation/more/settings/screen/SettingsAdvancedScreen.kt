@@ -64,6 +64,7 @@ import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
@@ -136,7 +137,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     }
                 },
             ),
-            Preference.PreferenceItem.SwitchPreference(
+            /* SY --> Preference.PreferenceItem.SwitchPreference(
                 preference = networkPreferences.verboseLogging(),
                 title = stringResource(MR.strings.pref_verbose_logging),
                 subtitle = stringResource(MR.strings.pref_verbose_logging_summary),
@@ -144,7 +145,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                     context.toast(MR.strings.requires_app_restart)
                     true
                 },
-            ),
+            ), SY <-- */
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(MR.strings.pref_debug_info),
                 onClick = { navigator.push(DebugInfoScreen()) },
@@ -799,7 +800,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                     ),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    preference = exhPreferences.logLevel(),
+                    // KMK -->
+                    preference = exhPreferences.logLevel(isDebugBuildType),
+                    // KMK <--
                     entries = EHLogLevel.entries.mapIndexed { index, ehLogLevel ->
                         index to "${context.stringResource(ehLogLevel.nameRes)} (${
                             context.stringResource(ehLogLevel.description)

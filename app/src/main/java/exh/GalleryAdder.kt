@@ -6,7 +6,8 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import exh.log.xLogStack
+import exh.log.ResettableLogger
+import exh.log.safeXLogStackTag
 import exh.source.getMainSource
 import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.i18n.stringResource
@@ -36,7 +37,9 @@ class GalleryAdder(
     private val Pair<Set<String>, Set<Long>>.disabledSources
         get() = second
 
-    private val logger = xLogStack()
+    // KMK -->
+    private val logger = ResettableLogger { safeXLogStackTag() }
+    // KMK <--
 
     fun pickSource(url: String): List<UrlImportableSource> {
         val uri = url.toUri()
@@ -61,7 +64,7 @@ class GalleryAdder(
         throttleFunc: suspend () -> Unit = {},
         retry: Int = 1,
     ): GalleryAddEvent {
-        logger.d(context.stringResource(SYMR.strings.gallery_adder_importing_gallery, url, fav.toString(), forceSource?.toString().orEmpty()))
+        logger()?.d(context.stringResource(SYMR.strings.gallery_adder_importing_gallery, url, fav.toString(), forceSource?.toString().orEmpty()))
         try {
             val uri = url.toUri()
 
@@ -74,7 +77,7 @@ class GalleryAdder(
                         return GalleryAddEvent.Fail.UnknownSource(url, context)
                     }
                 } catch (e: Exception) {
-                    logger.e(context.stringResource(SYMR.strings.gallery_adder_source_uri_must_match), e)
+                    logger()?.e(context.stringResource(SYMR.strings.gallery_adder_source_uri_must_match), e)
                     return GalleryAddEvent.Fail.UnknownType(url, context)
                 }
             } else {
@@ -94,7 +97,7 @@ class GalleryAdder(
             val realChapterUrl = try {
                 source.mapUrlToChapterUrl(uri)
             } catch (e: Exception) {
-                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_chapter_error), e)
+                logger()?.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_chapter_error), e)
                 null
             }
 
@@ -102,7 +105,7 @@ class GalleryAdder(
                 try {
                     source.cleanChapterUrl(realChapterUrl)
                 } catch (e: Exception) {
-                    logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
+                    logger()?.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
                     null
                 }
             } else {
@@ -119,7 +122,7 @@ class GalleryAdder(
             val realMangaUrl = try {
                 chapterMangaUrl ?: source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
-                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_gallery_error), e)
+                logger()?.e(context.stringResource(SYMR.strings.gallery_adder_uri_map_to_gallery_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -127,7 +130,7 @@ class GalleryAdder(
             val cleanedMangaUrl = try {
                 source.cleanMangaUrl(realMangaUrl)
             } catch (e: Exception) {
-                logger.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
+                logger()?.e(context.stringResource(SYMR.strings.gallery_adder_uri_clean_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -165,7 +168,7 @@ class GalleryAdder(
                 GalleryAddEvent.Success(url, manga, context)
             }
         } catch (e: Exception) {
-            logger.w(context.stringResource(SYMR.strings.gallery_adder_could_not_add_gallery, url), e)
+            logger()?.w(context.stringResource(SYMR.strings.gallery_adder_could_not_add_gallery, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
                 return GalleryAddEvent.Fail.NotFound(url, context)
