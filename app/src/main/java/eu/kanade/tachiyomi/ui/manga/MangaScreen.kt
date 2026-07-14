@@ -420,7 +420,7 @@ class MangaScreen(
                         context,
                         navigator,
                         successState.mergedData,
-                        action = { _, nav, manga, source -> screenModel.openMangaFolder(source, manga) },
+                        action = { _, _, manga, source -> screenModel.openMangaFolder(source, manga) },
                         titleRes = KMR.strings.action_open_folder,
                     )
                 }
