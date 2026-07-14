@@ -5,10 +5,10 @@ import android.net.wifi.WifiManager
 import android.os.PowerManager
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
-import com.elvishew.xlog.Logger
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.log.ResettableLogger
 import exh.log.safeXLogTag
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
@@ -54,13 +54,7 @@ class RecommendationSearchHelper(val context: Context) {
     private val smartSearchEngine by lazy { SmartLibrarySearchEngine() }
 
     // KMK -->
-    private var logger: Logger? = safeXLogTag()
-    private fun logger(): Logger? {
-        return logger ?: run {
-            logger = safeXLogTag()
-            logger
-        }
-    }
+    private val logger = ResettableLogger { safeXLogTag() }
     // KMK <--
 
     val status: MutableStateFlow<SearchStatus> = MutableStateFlow(SearchStatus.Idle)

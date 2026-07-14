@@ -14,7 +14,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
-import com.elvishew.xlog.Logger
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -23,6 +22,7 @@ import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
+import exh.log.ResettableLogger
 import exh.log.safeXLogTag
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.ExhPreferences
@@ -270,13 +270,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         private const val TAG = "EHBackgroundUpdater"
 
         // KMK -->
-        private var logger: Logger? = safeXLogTag()
-        private fun logger(): Logger? {
-            return logger ?: run {
-                logger = safeXLogTag()
-                logger
-            }
-        }
+        private val logger = ResettableLogger { safeXLogTag() }
         // KMK <--
 
         fun launchBackgroundTest(context: Context) {

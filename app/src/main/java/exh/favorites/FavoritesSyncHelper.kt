@@ -3,7 +3,6 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
-import com.elvishew.xlog.Logger
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
@@ -12,6 +11,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiUpdateWorker
+import exh.log.ResettableLogger
 import exh.log.safeXLogTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -75,13 +75,7 @@ class FavoritesSyncHelper(val context: Context) {
     private var wakeLock: PowerManager.WakeLock? = null
 
     // KMK -->
-    private var logger: Logger? = safeXLogTag()
-    private fun logger(): Logger? {
-        return logger ?: run {
-            logger = safeXLogTag()
-            logger
-        }
-    }
+    private val logger = ResettableLogger { safeXLogTag() }
     // KMK <--
 
     val status: MutableStateFlow<FavoritesSyncStatus> = MutableStateFlow(FavoritesSyncStatus.Idle)

@@ -2,11 +2,11 @@ package exh
 
 import android.content.Context
 import androidx.core.net.toUri
-import com.elvishew.xlog.Logger
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import exh.log.ResettableLogger
 import exh.log.safeXLogStackTag
 import exh.source.getMainSource
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -38,13 +38,7 @@ class GalleryAdder(
         get() = second
 
     // KMK -->
-    private var logger: Logger? = safeXLogStackTag()
-    private fun logger(): Logger? {
-        return logger ?: run {
-            logger = safeXLogStackTag()
-            logger
-        }
-    }
+    private val logger = ResettableLogger { safeXLogStackTag() }
     // KMK <--
 
     fun pickSource(url: String): List<UrlImportableSource> {
