@@ -42,13 +42,13 @@ private fun formatSafely(format: String, args: Array<out Any?>): String =
  * convenience functions above. Returns null instead of throwing if accessed before [XLog.init],
  * so callers should use `logger?.d(...)` rather than assuming a non-null [Logger].
  */
-fun Any.safeXLogTag(tag: String = this::class.java.simpleName): Logger? = try {
+fun Any.safeXLogTag(tag: String = (this::class.java.enclosingClass?.simpleName ?: this::class.java.simpleName)): Logger? = try {
     XLog.tag(tag).build()
 } catch (_: IllegalStateException) {
     null
 }
 
-fun Any.safeXLogStackTag(tag: String = this::class.java.simpleName): Logger? = try {
+fun Any.safeXLogStackTag(tag: String = (this::class.java.enclosingClass?.simpleName ?: this::class.java.simpleName)): Logger? = try {
     XLog.tag(tag).enableStackTrace(0).build()
 } catch (_: IllegalStateException) {
     null
@@ -70,8 +70,10 @@ fun Any.xLogE(log: String, e: Throwable) = safeXLog(Log.ERROR, log, e) { xLogSta
 fun Any.xLogW(log: String, e: Throwable) = safeXLog(Log.WARN, log, e) { xLogStack().w(log, e) }
 fun Any.xLogD(log: String, e: Throwable) = safeXLog(Log.DEBUG, log, e) { xLogStack().d(log, e) }
 fun Any.xLogI(log: String, e: Throwable) = safeXLog(Log.INFO, log, e) { xLogStack().i(log, e) }
-fun Any.xLog(logLevel: LogLevel, log: String, e: Throwable) =
+fun Any.xLog(logLevel: LogLevel, log: String, e: Throwable) {
+    if (logLevel is LogLevel.None) return
     safeXLog(logLevel.androidLevel, log, e) { xLogStack().log(logLevel.int, log, e) }
+}
 
 fun Any.xLogE(log: Any?) = safeXLog(Log.ERROR, log) { xLog().let { if (log == null) it.e("null") else it.e(log) } }
 fun Any.xLogW(log: Any?) = safeXLog(Log.WARN, log) { xLog().let { if (log == null) it.w("null") else it.w(log) } }
