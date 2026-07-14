@@ -5,9 +5,9 @@ import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
 import com.elvishew.xlog.LogLevel as XLogLevel
 
-fun Any.xLog(): Logger = XLog.tag(this::class.java.simpleName).build()
+private fun Any.xLog(): Logger = XLog.tag(this::class.java.simpleName).build()
 
-fun Any.xLogStack(): Logger = XLog.tag(this::class.java.simpleName).enableStackTrace(0).build()
+private fun Any.xLogStack(): Logger = XLog.tag(this::class.java.simpleName).enableStackTrace(0).build()
 
 // KMK -->
 /**
@@ -35,6 +35,24 @@ private inline fun Any.safeXLog(androidLevel: Int, log: Any?, e: Throwable, bloc
 
 private fun formatSafely(format: String, args: Array<out Any?>): String =
     runCatching { String.format(format, *args) }.getOrDefault(format)
+
+/**
+ * Safe variant of `XLog.tag(tag).build()`, for callers that need to cache a [Logger] instance
+ * (e.g. a lazy property on a singleton/worker) instead of using the [xLogE]/[xLogW]/[xLogD]/[xLogI]
+ * convenience functions above. Returns null instead of throwing if accessed before [XLog.init],
+ * so callers should use `logger?.d(...)` rather than assuming a non-null [Logger].
+ */
+fun Any.safeXLogTag(tag: String = this::class.java.simpleName): Logger? = try {
+    XLog.tag(tag).build()
+} catch (_: IllegalStateException) {
+    null
+}
+
+fun Any.safeXLogStackTag(tag: String = this::class.java.simpleName): Logger? = try {
+    XLog.tag(tag).enableStackTrace(0).build()
+} catch (_: IllegalStateException) {
+    null
+}
 // KMK <--
 
 fun Any.xLogE(log: String) = safeXLog(Log.ERROR, log) { xLog().e(log) }

@@ -3,6 +3,7 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
+import com.elvishew.xlog.Logger
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
@@ -11,7 +12,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiUpdateWorker
-import exh.log.xLog
+import exh.log.safeXLogTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.ExhPreferences
@@ -73,7 +74,15 @@ class FavoritesSyncHelper(val context: Context) {
     private var wifiLock: WifiManager.WifiLock? = null
     private var wakeLock: PowerManager.WakeLock? = null
 
-    private val logger by lazy { xLog() }
+    // KMK -->
+    private var logger: Logger? = safeXLogTag()
+    private fun logger(): Logger? {
+        return logger ?: run {
+            logger = safeXLogTag()
+            logger
+        }
+    }
+    // KMK <--
 
     val status: MutableStateFlow<FavoritesSyncStatus> = MutableStateFlow(FavoritesSyncStatus.Idle)
 
@@ -107,7 +116,7 @@ class FavoritesSyncHelper(val context: Context) {
                 status.value = FavoritesSyncStatus.BadLibraryState
                     .MangaInMultipleCategories(manga.id, manga.title, inCategories.map { it.name })
 
-                logger.w(context.stringResource(SYMR.strings.favorites_sync_gallery_multiple_categories_error, manga.id))
+                logger()?.w(context.stringResource(SYMR.strings.favorites_sync_gallery_multiple_categories_error, manga.id))
                 return
             } else {
                 seenManga += manga.id
@@ -120,7 +129,7 @@ class FavoritesSyncHelper(val context: Context) {
             exh.fetchFavorites()
         } catch (e: Exception) {
             status.value = FavoritesSyncStatus.SyncError.FailedToFetchFavorites
-            logger.e(context.stringResource(SYMR.strings.favorites_sync_could_not_fetch), e)
+            logger()?.e(context.stringResource(SYMR.strings.favorites_sync_could_not_fetch), e)
             return
         }
 
@@ -163,11 +172,11 @@ class FavoritesSyncHelper(val context: Context) {
             }
         } catch (e: IgnoredException) {
             // Do not display error as this error has already been reported
-            logger.w(context.stringResource(SYMR.strings.favorites_sync_ignoring_exception), e)
+            logger()?.w(context.stringResource(SYMR.strings.favorites_sync_ignoring_exception), e)
             return
         } catch (e: Exception) {
             status.value = FavoritesSyncStatus.SyncError.UnknownSyncError(e.message.orEmpty())
-            logger.e(context.stringResource(SYMR.strings.favorites_sync_sync_error), e)
+            logger()?.e(context.stringResource(SYMR.strings.favorites_sync_sync_error), e)
             return
         } finally {
             // Release wake + wifi locks
@@ -259,7 +268,7 @@ class FavoritesSyncHelper(val context: Context) {
                     break
                 }
             } catch (e: Exception) {
-                logger.w(context.stringResource(SYMR.strings.favorites_sync_network_error), e)
+                logger()?.w(context.stringResource(SYMR.strings.favorites_sync_network_error), e)
             }
         }
 
@@ -375,7 +384,7 @@ class FavoritesSyncHelper(val context: Context) {
 
             if (result is GalleryAddEvent.Fail) {
                 if (result is GalleryAddEvent.Fail.NotFound) {
-                    logger.e(context.stringResource(SYMR.strings.favorites_sync_remote_not_exist, it.getUrl()))
+                    logger()?.e(context.stringResource(SYMR.strings.favorites_sync_remote_not_exist, it.getUrl()))
                     // Skip this gallery, it no longer exists
                     return@forEachIndexed
                 }
