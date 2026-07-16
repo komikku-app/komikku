@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.source.online.english
+package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
@@ -29,10 +29,6 @@ class Pururin(delegate: HttpSource, val context: Context) :
     MetadataSource<PururinSearchMetadata, Document>,
     UrlImportableSource,
     NamespaceSource {
-    /**
-     * An ISO 639-1 compliant language code (two letters in lower case).
-     */
-    override val lang = "en"
 
     /**
      * The class of the metadata used by this source
