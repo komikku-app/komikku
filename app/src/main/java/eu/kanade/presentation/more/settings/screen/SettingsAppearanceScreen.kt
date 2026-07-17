@@ -24,6 +24,7 @@ import eu.kanade.presentation.more.settings.screen.appearance.AppCustomThemeColo
 import eu.kanade.presentation.more.settings.screen.appearance.AppLanguageScreen
 import eu.kanade.presentation.more.settings.widget.AppThemeModePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
+import eu.kanade.tachiyomi.AppIconManager
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -53,6 +54,7 @@ object SettingsAppearanceScreen : SearchableSettings {
             getThemeGroup(uiPreferences = uiPreferences),
             // KMK -->
             getMangaInfoThemeGroup(uiPreferences = uiPreferences),
+            getAppIconGroup(uiPreferences = uiPreferences),
             // KMK <--
             getDisplayGroup(uiPreferences = uiPreferences),
             // SY -->
@@ -347,6 +349,34 @@ object SettingsAppearanceScreen : SearchableSettings {
         )
     }
     // SY <--
+    // KMK -->
+    @Composable
+    private fun getAppIconGroup(
+        uiPreferences: UiPreferences,
+    ): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_app_icon),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.ListPreference(
+                    preference = uiPreferences.appIcon(),
+                    entries = mapOf(
+                        "default" to stringResource(KMR.strings.pref_app_icon_default),
+                        "alt1" to stringResource(KMR.strings.pref_app_icon_alt1),
+                    ).toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_app_icon),
+                    onValueChanged = { newIcon ->
+                        AppIconManager.switchIcon(
+                            context,
+                            AppIconManager.AppIcon.fromId(newIcon),
+                        )
+                        true
+                    },
+                ),
+            ),
+        )
+    }
+    // KMK <--
 }
 
 private val DateFormats = listOf(
