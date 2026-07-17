@@ -20,6 +20,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
@@ -29,6 +30,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.EH_PACKAGE
@@ -41,6 +43,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -198,6 +201,32 @@ open class BrowseSourceScreenModel(
                 incognitoMode.value = it
             }
             .launchIn(screenModelScope)
+
+        mutableState.update {
+            it.copy(
+                blacklistedTitles = if (sourcePreferences.enableSeriesBlacklist().get()) {
+                    sourcePreferences.blacklistedSeries().get()
+                        .mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                },
+            )
+        }
+
+        sourcePreferences.enableSeriesBlacklist().changes()
+            .combine(sourcePreferences.blacklistedSeries().changes()) { enabled, blacklist ->
+                if (enabled) {
+                    blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                }
+            }
+            .onEach { blacklistedTitles ->
+                mutableState.update {
+                    it.copy(blacklistedTitles = blacklistedTitles)
+                }
+            }
+            .launchIn(screenModelScope)
         // KMK <--
     }
 
@@ -222,22 +251,40 @@ open class BrowseSourceScreenModel(
     val mangaPagerFlowFlow = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
-            Pager(PagingConfig(pageSize = 25)) {
+            // KMK -->
+            val blacklistedTitles = state.map { it.blacklistedTitles }.distinctUntilChanged()
+            val pagingFlow = Pager(PagingConfig(pageSize = 25)) {
+                // KMK <--
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
                 // SY <--
-            }.flow.map { pagingData ->
-                pagingData.map { (manga, metadata) ->
-                    getManga.subscribe(manga.url, manga.source)
-                        .map { it ?: manga }
-                        // SY -->
-                        .combineMetadata(metadata)
-                        // SY <--
-                        .stateIn(ioCoroutineScope)
+                // KMK -->
+            }.flow
+                .map { pagingData ->
+                    pagingData.map { (manga, metadata) ->
+                        getManga.subscribe(manga.url, manga.source)
+                            .map { it ?: manga }
+                            // SY -->
+                            .combineMetadata(metadata)
+                            // SY <--
+                            .stateIn(ioCoroutineScope)
+                    }
+                        .filter { !hideInLibraryItems || !it.value.first.favorite }
                 }
-                    .filter { !hideInLibraryItems || !it.value.first.favorite }
-            }
                 .cachedIn(ioCoroutineScope)
+
+            blacklistedTitles.flatMapLatest { titles ->
+                pagingFlow.map { pagingData ->
+                    if (titles.isEmpty()) {
+                        pagingData
+                    } else {
+                        pagingData.filter { mangaFlow ->
+                            mangaFlow.value.first.title.toBlacklistNormalizedTitle() !in titles
+                        }
+                    }
+                }
+            }
+            // KMK <--
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
@@ -533,6 +580,9 @@ open class BrowseSourceScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
+        // KMK -->
+        val blacklistedTitles: Set<String> = emptySet(),
+        // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }
