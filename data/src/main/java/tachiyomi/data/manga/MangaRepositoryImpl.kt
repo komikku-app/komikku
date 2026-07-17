@@ -159,6 +159,7 @@ class MangaRepositoryImpl(
                     // KMK -->
                     updateInfo = updateInfo,
                     // KMK <--
+                    bannerUrl = it.ogBannerUrl,
                     mapper = MangaMapper::mapManga,
                 )
                     .executeAsOne()
@@ -193,6 +194,9 @@ class MangaRepositoryImpl(
                     version = value.version,
                     isSyncing = 0,
                     notes = value.notes,
+                    // KMK -->
+                    bannerUrl = value.bannerUrl,
+                    // KMK <--
                     memo = value.memo?.let(MemoColumnAdapter::encode),
                 )
             }

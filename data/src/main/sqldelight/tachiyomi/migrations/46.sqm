@@ -1,3 +1,4 @@
+ALTER TABLE mangas ADD COLUMN banner_url TEXT;
 import kotlin.Boolean;
 import kotlinx.serialization.json.JsonObject;
 

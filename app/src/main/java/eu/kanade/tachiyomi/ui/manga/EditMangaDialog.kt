@@ -71,6 +71,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
@@ -92,6 +93,7 @@ fun EditMangaDialog(
         description: String?,
         tags: List<String>?,
         status: Long?,
+        bannerUrl: String?,
     ) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -132,6 +134,7 @@ fun EditMangaDialog(
                                 else -> null
                             }
                         }?.toLong(),
+                        binding.bannerUrl.text?.toString()?.trim()?.takeUnless { it.isBlank() },
                     )
                     onDismissRequest()
                 },
@@ -311,6 +314,9 @@ private fun onViewCreated(
         binding.mangaAuthor.setText(manga.author.orEmpty())
         binding.mangaArtist.setText(manga.artist.orEmpty())
         binding.thumbnailUrl.setText(manga.thumbnailUrl.orEmpty())
+        // KMK -->
+        binding.bannerUrl.setText(manga.bannerUrl.orEmpty())
+        // KMK <--
         binding.mangaDescription.setText(manga.description.orEmpty())
         binding.mangaGenresTags.setChips(manga.genre.orEmpty().dropBlank(), scope, colorScheme)
     } else {
@@ -326,6 +332,11 @@ private fun onViewCreated(
         if (manga.thumbnailUrl != manga.ogThumbnailUrl) {
             binding.thumbnailUrl.append(manga.thumbnailUrl.orEmpty())
         }
+        // KMK -->
+        if (manga.bannerUrl != manga.ogBannerUrl) {
+            binding.bannerUrl.append(manga.bannerUrl.orEmpty())
+        }
+        // KMK <--
         if (manga.description != manga.ogDescription) {
             binding.mangaDescription.append(manga.description.orEmpty())
         }
@@ -355,6 +366,19 @@ private fun onViewCreated(
                 thumbnailUrlHints.joinToString("\nor\n"),
                 // KMK <--
             )
+        // KMK -->
+        val bannerUrlHints = listOfNotNull(
+            manga.ogBannerUrl?.let {
+                it.chop(40) + if (it.length > 46) "." + it.substringAfterLast(".").chop(6) else ""
+            },
+            "https://example.com/banner.png",
+        )
+        binding.bannerUrl.hint =
+            context.stringResource(
+                KMR.strings.banner_url_hint,
+                bannerUrlHints.joinToString("\nor\n"),
+            )
+        // KMK <--
     }
     binding.mangaGenresTags.clearFocus()
 
@@ -364,6 +388,7 @@ private fun onViewCreated(
         binding.mangaAuthor,
         binding.mangaArtist,
         binding.thumbnailUrl,
+        binding.bannerUrl,
         binding.mangaDescription,
     ).forEach {
         colorScheme.setEditTextColor(it)
@@ -373,6 +398,7 @@ private fun onViewCreated(
         binding.mangaAuthorOutline,
         binding.mangaArtistOutline,
         binding.thumbnailUrlOutline,
+        binding.bannerUrlOutline,
         binding.mangaDescriptionOutline,
     ).forEach {
         colorScheme.setTextInputLayoutColor(it)
@@ -427,6 +453,7 @@ private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: 
         setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata.artists)
         setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata.thumbnailUrl)
         setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata.description)
+        setTextIfNotBlank(binding.bannerUrl::setText, trackerMangaMetadata.bannerUrl)
     } catch (e: Throwable) {
         tracker.logcat(LogPriority.ERROR, e)
         binding.root.context.toast(
@@ -489,6 +516,7 @@ private fun resetInfo(
     binding.mangaArtist.text?.clear()
     binding.thumbnailUrl.text?.clear()
     binding.mangaDescription.text?.clear()
+    binding.bannerUrl.text?.clear()
     resetTags(manga, binding, scope, colorScheme)
 }
 
