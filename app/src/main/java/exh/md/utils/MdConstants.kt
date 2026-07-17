@@ -28,6 +28,12 @@ object MdConstants {
         const val authorizationCode = "authorization_code"
         const val refreshToken = "refresh_token"
 
+        // KMK -->
+        // Request an offline refresh token so the app can keep renewing the session on its
+        // own (offline tokens survive the browser SSO session) without forcing a re-login.
+        const val scope = "openid offline_access"
+        // KMK <--
+
         fun authUrl(codeVerifier: String): String {
             val bytes = codeVerifier.toByteArray()
             val messageDigest = MessageDigest.getInstance("SHA-256")
@@ -42,6 +48,9 @@ object MdConstants {
                 .appendQueryParameter("redirect_uri", redirectUri)
                 .appendQueryParameter("code_challenge", codeChallenge)
                 .appendQueryParameter("code_challenge_method", "S256")
+                // KMK -->
+                .appendQueryParameter("scope", scope)
+                // KMK <--
                 .build().toString()
         }
     }
