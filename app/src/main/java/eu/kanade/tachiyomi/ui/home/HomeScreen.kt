@@ -1,3 +1,4 @@
+
 package eu.kanade.tachiyomi.ui.home
 
 import androidx.activity.compose.BackHandler
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -103,22 +105,35 @@ object HomeScreen : Screen() {
                 Scaffold(
                     startBar = {
                         if (isTabletUi()) {
-                            NavigationRail {
-                                TABS
-                                    // SY -->
-                                    .fastFilter { it.isEnabled() }
-                                    // SY <--
-                                    .fastForEach {
-                                        NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
-                                    }
+                            val uiPreferences = remember { Injekt.get<UiPreferences>() }
+                            val scope = rememberCoroutineScope()
+                            val hideBottomBar by uiPreferences.hideBottomBar().asState(scope)
+                            val showBottomNav by produceState(initialValue = true) {
+                                showBottomNavEvent.receiveAsFlow().collect { value = it }
+                            }
+                            val railVisible = hideBottomBar == false && showBottomNav
+                            AnimatedVisibility(visible = railVisible) {
+                                NavigationRail {
+                                    TABS
+                                        // SY -->
+                                        .fastFilter { it.isEnabled() }
+                                        // SY <--
+                                        .fastForEach {
+                                            NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
+                                        }
+                                }
                             }
                         }
                     },
                     bottomBar = {
                         if (!isTabletUi()) {
-                            val bottomNavVisible by produceState(initialValue = true) {
-                                showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
+                            val uiPreferences = remember { Injekt.get<UiPreferences>() }
+                            val scope = rememberCoroutineScope()
+                            val hideBottomBar by uiPreferences.hideBottomBar().asState(scope)
+                            val showBottomNav by produceState(initialValue = true) {
+                                showBottomNavEvent.receiveAsFlow().collect { value = it }
                             }
+                            val bottomNavVisible = hideBottomBar == false && showBottomNav
                             AnimatedVisibility(
                                 visible = bottomNavVisible,
                                 enter = expandVertically(),
