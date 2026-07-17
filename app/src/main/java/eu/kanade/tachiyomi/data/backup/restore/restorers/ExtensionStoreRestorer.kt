@@ -14,7 +14,8 @@ class ExtensionStoreRestorer(
     ) {
         // KMK -->
         val indexUrl = if (backupStore.isLegacy == null) {
-            backupStore.indexUrl.removeSuffix("/index.min.json").removeSuffix("/index.json") + "/repo.json"
+            backupStore.indexUrl.removeSuffix("/index.min.json").removeSuffix("/index.json")
+                .removeSuffix("/repo.json") + "/repo.json"
         } else {
             backupStore.indexUrl
         }

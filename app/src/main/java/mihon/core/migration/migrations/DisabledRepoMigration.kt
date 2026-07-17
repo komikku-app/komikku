@@ -19,7 +19,8 @@ class DisabledRepoMigration : Migration {
             val disabledRepos = prefs.getStringSet(sourcePreferences.disabledRepos().key(), emptySet()) ?: return@edit
             disabledRepos
                 .map {
-                    it.removeSuffix("/index.min.json").removeSuffix("/index.json") + "/repo.json"
+                    it.removeSuffix("/index.min.json").removeSuffix("/index.json")
+                        .removeSuffix("/repo.json") + "/repo.json"
                 }.toSet()
                 .let {
                     putStringSet(sourcePreferences.disabledRepos().key(), it)
