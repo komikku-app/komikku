@@ -10,7 +10,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
-import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
@@ -88,7 +88,7 @@ open class FeedScreenModel(
                     createCatalogueSearchItem(
                         feed = feed,
                         savedSearch = savedSearch,
-                        source = sourceManager.get(feed.source) as? CatalogueSource,
+                        source = sourceManager.get(feed.source),
                         results = null,
                     )
                 }
@@ -136,7 +136,7 @@ open class FeedScreenModel(
         }
     }
 
-    fun openAddSearchDialog(source: CatalogueSource) {
+    fun openAddSearchDialog(source: Source) {
         screenModelScope.launchIO {
             mutableState.update { state ->
                 state.copy(
@@ -185,13 +185,13 @@ open class FeedScreenModel(
         return countFeedSavedSearchGlobal.await() > MaxFeedItems
     }
 
-    private fun getEnabledSources(): ImmutableList<CatalogueSource> {
+    private fun getEnabledSources(): ImmutableList<Source> {
         val languages = sourcePreferences.enabledLanguages().get()
         val pinnedSources = sourcePreferences.pinnedSources().get()
         val disabledSources = sourcePreferences.disabledSources().get()
             .mapNotNull { it.toLongOrNull() }
 
-        val list = sourceManager.getVisibleCatalogueSources()
+        val list = sourceManager.getVisibleSources()
             .filter { it.lang in languages }
             .filterNot { it.id in disabledSources }
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { "(${it.lang}) ${it.name}" })
@@ -203,7 +203,7 @@ open class FeedScreenModel(
         return getSavedSearchBySourceId.await(sourceId).toImmutableList()
     }
 
-    fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
+    fun createFeed(source: Source, savedSearch: SavedSearch?) {
         screenModelScope.launchNonCancellable {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
@@ -244,8 +244,8 @@ open class FeedScreenModel(
     private fun createCatalogueSearchItem(
         feed: FeedSavedSearch,
         savedSearch: SavedSearch?,
-        source: CatalogueSource?,
-        @Suppress("SameParameterValue") results: List<DomainManga>?,
+        source: Source?,
+        results: List<DomainManga>?,
     ): FeedItemUI {
         return FeedItemUI(
             feed,
@@ -296,7 +296,7 @@ open class FeedScreenModel(
                         } else {
                             emptyList()
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         emptyList()
                     }
 
@@ -327,7 +327,7 @@ open class FeedScreenModel(
 
     private val filterSerializer = FilterSerializer()
 
-    private fun getFilterList(savedSearch: SavedSearch, source: CatalogueSource): FilterList {
+    private fun getFilterList(savedSearch: SavedSearch, source: Source): FilterList {
         val filters = savedSearch.filtersJson ?: return FilterList()
         return runCatching {
             val originalFilters = source.getFilterList()
@@ -369,8 +369,8 @@ open class FeedScreenModel(
     }
 
     sealed class Dialog {
-        data class AddFeed(val options: ImmutableList<CatalogueSource>) : Dialog()
-        data class AddFeedSearch(val source: CatalogueSource, val options: ImmutableList<SavedSearch?>) : Dialog()
+        data class AddFeed(val options: ImmutableList<Source>) : Dialog()
+        data class AddFeedSearch(val source: Source, val options: ImmutableList<SavedSearch?>) : Dialog()
         data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
 
         // KMK -->

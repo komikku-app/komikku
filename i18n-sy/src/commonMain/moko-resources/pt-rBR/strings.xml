@@ -63,7 +63,7 @@
     <string name="disable_favorites_uploading_summary">Os favoritos serão só baixados do ExHentai. Qualquer mudança nos favoritos no app não será enviada. Evita a perda acidental de favoritos no ExHentai. Note que remoções ainda serão baixadas (ao remover um favorito no ExHentai, também será removido no app).</string>
     <string name="show_favorite_sync_notes">Mostrar notas sobre a sincronização de favoritos</string>
     <string name="show_favorite_sync_notes_summary">Mostra alguns avisos sobre a função de sincronizar favoritos</string>
-    <string name="please_login">Por favor faça login</string>
+    <string name="please_login">Por favor, faça login!</string>
     <string name="ignore_sync_errors">Ignorar erros de sincronização quando possível</string>
     <string name="ignore_sync_errors_summary">Não aborta de imediato ao encontrar erros durante a sincronização. Erros ainda exibirão ao concluir a sincronização. Pode gerar perda de favoritos nalguns casos. Útil ao sincronizar grandes bibliotecas.</string>
     <string name="force_sync_state_reset">Forçar reinício do estado de sincronização</string>
@@ -206,15 +206,9 @@
     <string name="auto_webtoon_mode_summary">Use o modo webtoon automático para mangás provavelmente detectados na forma de pergaminho</string>
     <string name="enable_zoom_out">permitir zoom para fora</string>
     <string name="tap_scroll_page">Rolar página ao tocar</string>
-    <string name="tap_scroll_page_summary">A rolagem será feita por página em vez de por escala de tela ao ativar esta opção.</string>
+    <string name="tap_scroll_page_summary">A rolagem será feita por página em vez de por escala de tela ao ativar esta opção</string>
     <string name="reader_bottom_buttons">Botões no Inferior do Leitor</string>
     <string name="reader_bottom_buttons_summary">Muda que botões aparecem na parte inferior do leitor</string>
-    <string name="pref_show_vert_seekbar_landscape">Mostrar barra vertical em paisagem</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Ativa a barra de progresso vertical quando em paisagem</string>
-    <string name="pref_left_handed_vertical_seekbar">Barra vertical canhota</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Muda o lado que a barra está</string>
-    <string name="pref_force_horz_seekbar">Forçar barra horizontal</string>
-    <string name="pref_force_horz_seekbar_summary">Remove a barra de progresso vertical totalmente em favor da horizontal</string>
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Rolagem automática</string>
@@ -325,19 +319,19 @@
     <string name="favorites_sync_verifying_library">Verificando biblioteca local</string>
     <string name="favorites_sync_gallery_multiple_categories_error">Mangá %1$d está em várias categorias!</string>
     <string name="favorites_sync_downloading">Baixando favoritos do servidor remoto</string>
-    <string name="favorites_sync_failed_to_featch">Falha ao buscar favoritos do servidor remoto</string>
-    <string name="favorites_sync_could_not_fetch">Não foi possível buscar favoritos</string>
+    <string name="favorites_sync_failed_to_featch">Falha ao buscar favoritos do servidor remoto!</string>
+    <string name="favorites_sync_could_not_fetch">Não foi possível buscar favoritos!</string>
     <string name="favorites_sync_calculating_remote_changes">Calculando mudanças remotas</string>
     <string name="favorites_sync_calculating_local_changes">Calculando mudanças locais</string>
     <string name="favorites_sync_syncing_category_names">Atualizando nomes de categorias</string>
     <string name="favorites_sync_cleaning_up">Limpando</string>
-    <string name="favorites_sync_complete">Sincronização concluída</string>
-    <string name="favorites_sync_ignoring_exception">Ignorando exceção</string>
-    <string name="favorites_sync_sync_error">Erro de sincronização</string>
+    <string name="favorites_sync_complete">Sincronização concluída!</string>
+    <string name="favorites_sync_ignoring_exception">Ignorando exceção!</string>
+    <string name="favorites_sync_sync_error">Erro de sincronização!</string>
     <string name="favorites_sync_unknown_error">Erro desconhecido: %1$s</string>
-    <string name="favorites_sync_network_error">Erro de sincronização de rede</string>
+    <string name="favorites_sync_network_error">Erro de sincronização de rede!</string>
     <string name="favorites_sync_removing_galleries">Removendo %1$d galerias do servidor remoto</string>
-    <string name="favorites_sync_unable_to_delete">Não foi possível excluir galerias dos servidores remotos</string>
+    <string name="favorites_sync_unable_to_delete">Não foi possível excluir galerias dos servidores remotos!</string>
     <string name="favorites_sync_adding_to_remote">Adicionando galeria %1$d de %2$d ao servidor remoto</string>
     <string name="favorites_sync_remove_from_local">Removendo galeria %1$d de %2$d da biblioteca local</string>
     <string name="favorites_sync_add_to_local">Adicionando galeria %1$d de %2$d à biblioteca local</string>
@@ -412,7 +406,7 @@
     <string name="video">Vídeo</string>
     <!-- More Info Menu -->
     <string name="more_info">Mais info</string>
-    <string name="alt_title">Título alt.</string>
+    <string name="alt_title">Título alternativo</string>
     <string name="id">Id</string>
     <string name="token">Token</string>
     <string name="is_exhentai_gallery">Galeria Exhentai</string>
@@ -428,7 +422,7 @@
     <string name="total_ratings">Total avaliações</string>
     <string name="average_rating">Avaliação média</string>
     <string name="aged">Idoso</string>
-    <string name="last_update_check">Última atualiz.</string>
+    <string name="last_update_check">Última vez atualizado</string>
     <string name="path">Caminho</string>
     <string name="artist">Artista</string>
     <string name="characters">Personagens</string>
@@ -446,7 +440,7 @@
     <string name="collection">Coleção</string>
     <string name="parodies">Paródias</string>
     <string name="author">Autor</string>
-    <string name="last_chapter_number">ùltimo núm. de cap.</string>
+    <string name="last_chapter_number">Número do último de capítulo</string>
     <string name="follow_status">Status de follow</string>
     <string name="anilist_id">Id do Anilist</string>
     <string name="kitsu_id">Id do Kitsu</string>
@@ -461,7 +455,7 @@
     <string name="merge_settings">Configurações da junção</string>
     <string name="fetch_chapter_updates">Buscar atualizações de capítulo</string>
     <string name="delete_merged_entry">Tem certeza?</string>
-    <string name="delete_merged_entry_desc">Isto removerá o mangá da junção e também perderá mudanças não salvas aplicadas ao mangá juntado.</string>
+    <string name="delete_merged_entry_desc">Isto removerá o mangá da junção e também perderá mudanças não salvas aplicadas ao mangá unido</string>
     <string name="chapter_updates_merged_entry">Alternar atualizações de capítulo</string>
     <string name="chapter_updates_merged_entry_desc">Mudar isto (des)ativará atualizações de capítulo a este mangá juntado</string>
     <string name="download_merged_entry">Alternar downloads de capítulo novos</string>
@@ -540,7 +534,7 @@
     <string name="pref_sync_now_subtitle">Iniciar sincronização imediata de seus dados</string>
     <string name="pref_sync_automatic_category">Sincronização Automática</string>
     <string name="pref_sync_interval">Frequência de sincronização</string>
-    <string name="error_deleting_google_drive_lock_file">Error ao Deletar Ficheiro de Bloqueio no Google Drive</string>
+    <string name="error_deleting_google_drive_lock_file">Erro ao deletar arquivo bloqueado no Google Drive</string>
     <string name="pref_sync_options_summ">Pode ser usado para criar gatilhos de sincronização</string>
     <string name="sync_on_chapter_read">Sincronizar com a leitura do capítulo</string>
     <string name="pref_purge_confirmation_title">Confirmação de Limpeza</string>
@@ -607,7 +601,7 @@
     <string name="eh_boost_boosted">Página atual impulsionada!</string>
     <string name="wrong_cbz_archive_password">Senha de arquivo CBZ errada</string>
     <string name="feed_tab_empty">Você não tem nenhuma fonte em seu feed, navegue até o canto superior direito para adicionar uma</string>
-    <string name="data_saver_exclude">Excluir da proteção de dados</string>
+    <string name="data_saver_exclude">Excluir da economia de dados</string>
     <string name="relation_spin_off">Spin off</string>
     <string name="relation_adapted_from">Adaptado de</string>
     <string name="automatic_search_error">Erro ao executar pesquisa automática!</string>
@@ -662,4 +656,16 @@
     <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>HABILITAR ESTA OPÇÃO CRIARÁ UM NOVO BANCO DE DADOS. SIGA ESTAS ETAPAS PARA MANTER SEUS DADOS SEGUROS<br>1. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> CRIAR BACKUP<br>2. CONFIGURAÇÕES DO SISTEMA -> LIMPAR DADOS DO APP<br>3. ABRA O APP E ATIVE ISSO<br>4. CONFIGURAÇÕES DO SISTEMA -> FORÇAR REINICIALIZAÇÃO<br>5. CONFIGURAÇÕES -> DADOS E ARMAZENAMENTO -> RESTAURAR BACKUP</font>]]></string>
     <string name="aes_256">AES 256</string>
     <string name="aes_128">AES 128</string>
+    <string name="eh_boost_invalid_loader">Esta página não pode ser impulsionada (carregador de página inválido)!</string>
+    <string name="pref_center_margin_summary">Insira um espaçador para preencher o espaço morto em dispositivos dobráveis.</string>
+    <string name="pref_archive_reader_mode_summary">A forma como as imagens dentro de arquivos, como CBZ ou CBR, são carregadas</string>
+    <string name="entry_not_tracked">A entrada não é rastreada.</string>
+    <string name="fill_from_tracker">Preencher a partir do rastreador</string>
+    <string name="favorites_sync_unable_to_add_to_remote">Não foi possível adicionar a galeria ao servidor remoto: \'%1$s\' (GID: %2$s)!</string>
+    <string name="filename">Nome do arquivo</string>
+    <string name="file_extension">Extensão de arquivo</string>
+    <string name="final_chapter">Capítulo final</string>
+    <string name="data_saver_stop_exclude">Parar de excluir da economia de dados</string>
+    <string name="rec_processing_state">Processando entrada %1$d de %2$d</string>
+    <string name="base_url">Url base</string>
 </resources>

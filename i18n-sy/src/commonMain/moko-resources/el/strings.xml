@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clear_db_exclude_read">Διατήρηση καταχωρίσεων με αναγνωσμένα κεφάλαια</string>
+    <string name="author">Συγγραφέας</string>
+    <string name="artist">Καλλιτέχνης</string>
+</resources>

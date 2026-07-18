@@ -158,11 +158,7 @@
     <string name="tap_scroll_page_summary">سيؤدي النقر إلى التمرير حسب الصفحة بدلاً من حجم الشاشة عند تمكين هذا الخيار</string>
     <string name="reader_bottom_buttons">أزرار القارئ السفلية</string>
     <string name="reader_bottom_buttons_summary">تخصيص الأزرار التي تظهر أسفل القارئ</string>
-    <string name="pref_show_vert_seekbar_landscape">إظهار شريط التمرير العمودي في الوضع الأفقي</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">تمكين شريط التمرير العمودي عندما يكون في الوضع الأفقي</string>
-    <string name="pref_left_handed_vertical_seekbar">شريط التمرير العمودي للأعسر</string>
     <string name="pref_smooth_scroll">التمرير التلقائي السلس</string>
-    <string name="pref_force_horz_seekbar">فرض شريط التمرير الأفقي</string>
     <string name="eh_autoscroll">التمرير التلقائي</string>
     <string name="eh_retry_all">أعد محاولة الكل</string>
     <string name="eh_boost_page">تسريع تحميل الصفحة</string>
@@ -245,7 +241,7 @@
     <string name="show_updater_statistics">عرض إحصائيات التحديث</string>
     <string name="gallery_updater_statistics_collection">جارٍ جمع الإحصائيات…</string>
     <string name="gallery_updater_statistics">إحصائيات تحديث المعرض</string>
-    <string name="gallery_updater_stats_time">\nالمعارض التي تم فحصها في الماضي\n\n- ساعة : %1$d\n\n-٦ ساعات : %2$d\n\n-١٢ ساعة : %3$d\n\n-يوم : %4$d\n\n-يومين: %5$d\n\n-أسبوع : %6$d\n\n-شهر : %7$d\n\n-سنة : %8$d</string>
+    <string name="gallery_updater_stats_time">\nالمعارض التي تم فحصها في الماضي\n- ساعة : %1$d\n-٦ ساعات : %2$d\n-١٢ ساعة : %3$d\n-يوم : %4$d\n-يومين: %5$d\n-أسبوع : %6$d\n-شهر : %7$d\n-سنة : %8$d</string>
     <string name="skip_page_restyling">تخطي إعادة تصميم الصفحة</string>
     <string name="eh_settings_uploading_to_server">تحميل الإعدادات إلى الخادم</string>
     <string name="eh_settings_configuration_failed_message">حدث خطأ أثناء عملية التكوين:%1$s</string>
@@ -254,7 +250,7 @@
     <string name="open_debug_menu_summary">تهكمية</string>
     <string name="data_saver_image_quality_summary">تعني القيم الأعلى أنه تم حفظ نسبة أعلى من جودة الصورة، ولكنها تعني أيضًا أن حجم الملف أكبر، ونسبة ٨٠ بالمائة هي متوسط جيد بين حجم الملف وجودة الصورة</string>
     <string name="pref_category_eh">E- Hentai</string>
-    <string name="clear_db_exclude_read">الاحتفاظ بالإدخالات مع الفصول المقروءة</string>
+    <string name="clear_db_exclude_read">أبقي الإدخالات ذات الفصول المقروءة</string>
     <string name="log_extra">إضافي</string>
     <string name="log_extreme_desc">وضع فحص الشبكة</string>
     <string name="data_saver_image_format_summary_off">حجم ملف Jpeg أصغر بكثير من حجم ملف Webp (مما يعني حفظ المزيد من البيانات)، ولكنه يجعل الصور تفقد المزيد من الجودة أيضًا.
@@ -293,7 +289,7 @@
     <string name="biometric_lock_times">أوقات الاقفال البيومترية</string>
     <string name="biometric_lock_times_empty">ليس لديك أوقات قفل بيومترية. اضغط على زر علامة الزائد لإنشاء واحدة.</string>
     <string name="delete_time_range_confirmation">هل ترغب في حذف النطاق الزمني %s ؟</string>
-    <string name="encrypt_database_message"><![CDATA[<font color='red'>سيؤدي التمكين إلى إنشاء قاعدة بيانات جديدة. اتبع هذه الخطوات للاحتفاظ ببياناتك<br>1. الإعدادات -> النسخ الاحتياطي -> إنشاء<br>2. إعدادات النظام -> مسح بيانات التطبيق<br>3. افتح التطبيق وقم بالتمكين<br>4. إعدادات النظام -> إعادة التشغيل الإجباري<br>5. الإعدادات -> النسخ الاحتياطي -> الاستعادة</font>]]></string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>سيؤدي تفعيل إلى إنشاء قاعدة بيانات جديدة. استخدم هذه الخطوات للاحتفاظ ببياناتك<br>1. الإعدادات -> النسخ الاحتياطي -> إنشاء<br>2. إعدادات النظام -> مسح بيانات التطبيق<br>3. افتح التطبيق وقم بتمكينه<br>4. إعدادات النظام -> فرض إعادة التشغيل<br>5. الإعدادات -> النسخ الاحتياطي -> الاستعادة</font>]]></string>
     <string name="aes_256">AES ٢٥٦</string>
     <string name="action_edit_biometric_lock_times">تعديل أوقات الاقفال</string>
     <string name="encrypt_database">تشفير قاعدة البيانات</string>
@@ -308,11 +304,8 @@
     <string name="skip_queue_on_retry_summary">عادةً، يؤدي الضغط على زر إعادة المحاولة في التنزيل الفاشل إلى الانتظار حتى ينتهي برنامج التنزيل من تنزيل الصفحة الأخيرة قبل البدء في إعادة تنزيل الصفحة الفاشلة. سيؤدي تمكين هذا إلى إجبار برنامج التنزيل على البدء في إعادة تنزيل الصفحة الفاشلة بمجرد الضغط على زر إعادة المحاولة.</string>
     <string name="reader_preload_amount_10_pages">١٠ صفحات</string>
     <string name="auto_webtoon_mode_summary">استخدم وضع ويب تون التلقائي للإدخالات التي من المحتمل أن تستخدم تنسيق الشريط الطويل</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">يقوم بالتبديل إلى الجانب الذي يعمل فيه شريط التمرير</string>
     <string name="tag_filtering_threshhold_summary">يمكنك تصفية العلامات عن طريق إضافتها إلى صفحة My Tag E/ExHentai ذات وزن سلبي. إذا كان المعرض يحتوي على علامات تضيف ما يصل إلى وزن أقل من هذه القيمة، فسيتم تصفيته من العرض. يمكن تعيين هذا الحد بين -٩٩٩٩ و ٠ . حاليًا: %1$d</string>
-    <string name="pref_force_horz_seekbar_summary">يزيل شريط التمرير العمودي بالكامل لصالح الأفقي</string>
-    <string name="settings_profile_note_message">سيضيف التطبيق الآن ملفًا شخصيًا جديدًا للإعدادات على E-Hentai وExHentai لتحسين أداء التطبيق. يرجى التأكد من أن لديك أقل من ثلاثة ملفات تعريف على كلا الموقعين.
-\nإذا لم تكن لديك أي فكرة عن ملفات تعريف الإعدادات، فربما لا يهم، فقط اضغط على \"موافق\".</string>
+    <string name="settings_profile_note_message">سيضيف التطبيق الآن ملفًا شخصيًا جديدًا للإعدادات على E-Hentai وExHentai لتحسين أداء التطبيق. يرجى التأكد من أن لديك أقل من ثلاثة ملفات تعريف على كلا الموقعين.\n\nإذا لم تكن لديك أي فكرة عن ملفات تعريف الإعدادات، فربما لا يهم، فقط اضغط على \"موافق\".</string>
     <string name="eh_boost_page_help_message">عادةً لا يستطيع برنامج التنزيل سوى تنزيل كمية محددة من الصفحات في نفس الوقت. هذا يعني أنه يمكنك انتظار تنزيل الصفحة ولكن لن يبدأ برنامج التنزيل في تنزيل الصفحة حتى تتوفر لها مساحة تنزيل مجانية. سيؤدي الضغط على \"تسريع تنزيل الصفحة\" إلى إجبار برنامج التنزيل على البدء في تنزيل الصفحة الحالية، بغض النظر عما إذا كانت هناك مساحة متاحة أم لا.</string>
     <string name="eh_boost_invalid_loader">–لا يمكن تعزيز هذه الصفحة (محمل الصفحة غير صالح)!</string>
     <string name="action_save_combined_page">حفظ الصفحة المدمجة</string>
@@ -415,15 +408,15 @@
     <string name="sync_favorites">مزامنة المفضلة</string>
     <string name="favorites_sync_error">خطأ في مزامنة المفضلة</string>
     <string name="show_gallery">أظهر المعرض</string>
-    <string name="favorites_sync_bad_library_state">%1$s لن تبدأ المزامنة إلا عندما يكون المعرض في فئة واحده فقط</string>
+    <string name="favorites_sync_bad_library_state">%1$s لن تبدأ المزامنة إلا عندما يكون المعرض في فئة واحدة فقط.</string>
     <string name="favorites_syncing">تتم مزامنه المفضله</string>
     <string name="favorites_sync_error_string">حدث خطا اثناء المزامنه: %1$s</string>
     <string name="favorites_sync_done_errors">تمت مزامنه المفضله مع وجود اخطاء</string>
-    <string name="favorites_sync_gallery_multiple_categories_error">المعرض في فئات مختلفه</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">المعرض %1$d في فئات مختلفه!</string>
     <string name="favorites_sync_downloading">تنزيل المفضلة من الخادم</string>
-    <string name="favorites_sync_failed_to_featch">فشل جلب المفضلة من الخادم</string>
+    <string name="favorites_sync_failed_to_featch">فشل جلب المفضلة من الخادم!</string>
     <string name="favorites_sync_calculating_remote_changes">حساب المتغيرات</string>
-    <string name="favorites_sync_could_not_fetch">لم نستطع جلب المفضل</string>
+    <string name="favorites_sync_could_not_fetch">لم نستطع جلب المفضلة!</string>
     <string name="favorites_sync_calculating_local_changes">حساب المتغيرات المحلية</string>
     <string name="favorites_sync_syncing_category_names">تحديث اسماء الفئات</string>
     <string name="favorites_sync_cleaning_up">يتم تنظيف</string>
@@ -431,7 +424,7 @@
     <string name="favorites_sync_ignoring_exception">تجاهل الاستثناء!</string>
     <string name="favorites_sync_sync_error">خطا في المزامنه!</string>
     <string name="favorites_sync_unknown_error">خطا غير معرف: %1$s</string>
-    <string name="favorites_sync_removing_galleries">جارِ إزالة المعارض من الخادم</string>
+    <string name="favorites_sync_removing_galleries">جارِ إزالة معارض %1$d من الخادم</string>
     <string name="favorites_sync_unable_to_delete">غير قادر على ازاله المعارض من الخادم!</string>
     <string name="favorites_sync_done_errors_message">حدث خطا اثناء المزامنه وتم تجاهلها:\n%1$s</string>
     <string name="favorites_sync_verifying_library">تاكيد المكتبه المحليه</string>
@@ -462,7 +455,7 @@
     <string name="media_id">معرف الوسائط</string>
     <string name="thumbnail_image_file_type">نوع ملف الصورة المصغرة</string>
     <string name="manga_updates_id">معرف Manga updates</string>
-    <string name="delete_merged_entry">هل أنت متأكد</string>
+    <string name="delete_merged_entry">هل أنت متأكد؟</string>
     <string name="translated">مُتَرْجَم</string>
     <string name="author">الكاتب</string>
     <string name="japanese_title">العنوان الياباني</string>
@@ -514,15 +507,15 @@
     <string name="favorites_sync_remote_not_exist">المعرض البعيد غير موجود ، تخطي: %1$s!</string>
     <string name="favorites_sync_failed_to_add_to_local">فشل إضافة معرض إلى قاعدة البيانات المحلية:</string>
     <string name="favorites_sync_conformation_message">هل أنت متأكد من أنك ترغب في مزامنة مفضلاتك مع E-Hentai؟</string>
-    <string name="favorites_sync_reset">هل أنت متأكد</string>
+    <string name="favorites_sync_reset">هل أنت متأكد؟</string>
     <string name="batch_add_no_valid_galleries_message">يجب عليك تحديد معرض واحد على الأقل لإضافته!</string>
     <string name="batch_add">إضافة دفعة</string>
-    <string name="favorites_sync_unable_to_add_to_remote">تعذر إضافة معرض إلى الخادم البعيد‏%1$s\' (GID: %2$s)\'</string>
+    <string name="favorites_sync_unable_to_add_to_remote">تعذر إضافة معرض إلى الخادم البعيد: \'%1$s\' (GID: %2$s)!</string>
     <string name="eh_batch_add_title">أدخل المعارض المراد إضافتها (مفصولة بسطر جديد):</string>
     <string name="eh_batch_add_button">أضف المعارض</string>
     <string name="eh_batch_add_adding_galleries">جارٍ إضافة المعارض…</string>
     <string name="batch_add_no_valid_galleries">لا توجد معارض لإضافتها!</string>
-    <string name="favorites_sync_failed_to_add_to_local_unknown_type">ليس معرضا صالحا!</string>
+    <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) ليس معرضا صالحا!</string>
     <string name="favorites_sync_waiting_for_start">في انتظار بدء المزامنة</string>
     <string name="favorites_sync_gallery_in_multiple_categories">المعرض: %1$s في أكثر من فئة (%2$s)!</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nيتم اختناق المزامنة حاليا (لتجنب حظرها من ExHentai) وقد يستغرق وقتا طويلا حتى يكتمل.</string>
@@ -627,7 +620,7 @@
     <string name="select_scanlators">مجموعات المسح للعرض</string>
     <string name="relation_spin_off">تدور خارج</string>
     <string name="doujinshi">دوجينشي</string>
-    <string name="non_h">غير إباحي</string>
+    <string name="non_h">Non-H</string>
     <string name="asian_porn">إباحيات آسياوية</string>
     <string name="id">المُعرّف</string>
     <string name="is_exhentai_gallery">is Exhentai gallery</string>
@@ -639,4 +632,5 @@
     <string name="final_chapter">الفصل الأخير</string>
     <string name="pref_include_chapter_url_hash">تضمين تجزئة عنوان URL للفصل</string>
     <string name="pref_include_chapter_url_hash_desc">أضف الأحرف الستة الأولى من تجزئة MD5 الخاصة بعنوان URL الخاص بالفصل إلى اسم ملف أو مجلد الفصل.</string>
+    <string name="pref_include_chapter_url_hash">تضمين هاش الرابط للفصل</string>
 </resources>

@@ -15,8 +15,7 @@ import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.lang.use
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.getUriSize
-import logcat.LogPriority
-import tachiyomi.core.common.util.system.logcat
+import exh.log.xLogE
 
 class PackageInstallerInstaller(private val service: Service) : Installer(service) {
 
@@ -42,7 +41,7 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                                 .sanitizeByFiltering(this)
                         }
                     if (userAction == null) {
-                        logcat(LogPriority.ERROR) { "Fatal error for $intent" }
+                        xLogE("Fatal error for $intent")
                         continueQueue(InstallStep.Error)
                         return
                     }
@@ -95,7 +94,7 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                 session.commit(intentSender)
             }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to install extension ${entry.downloadId} ${entry.uri}" }
+            xLogE("Failed to install extension ${entry.downloadId} ${entry.uri}", e)
             activeSession?.let { (_, sessionId) ->
                 packageInstaller.abandonSession(sessionId)
             }
@@ -106,8 +105,13 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
     override fun cancelEntry(entry: Entry): Boolean {
         activeSession?.let { (activeEntry, sessionId) ->
             if (activeEntry == entry) {
-                packageInstaller.abandonSession(sessionId)
-                return false
+                return try {
+                    packageInstaller.abandonSession(sessionId)
+                    false
+                } catch (_: SecurityException) {
+                    // Highly likely the session has succeeded
+                    true
+                }
             }
         }
         return true

@@ -17,6 +17,7 @@ import tachiyomi.core.common.util.system.logcat
 
 class MangaDexLoginHelper(
     private val client: OkHttpClient,
+    private val headers: Headers,
     private val preferences: TrackPreferences,
     private val mdList: MdList,
     private val mangaDexAuthInterceptor: MangaDexAuthInterceptor,
@@ -37,7 +38,7 @@ class MangaDexLoginHelper(
         val error = kotlin.runCatching {
             val data = with(MdUtil.jsonParser) {
                 client.newCall(
-                    POST(MdApi.baseAuthUrl + MdApi.token, body = loginFormBody),
+                    POST(MdApi.baseAuthUrl + MdApi.token, headers = headers, body = loginFormBody),
                 ).awaitSuccess().parseAs<MALOAuth>()
             }
             mangaDexAuthInterceptor.setAuth(data)
