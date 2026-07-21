@@ -29,8 +29,15 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -66,13 +73,17 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.reader.BatteryOverlay
 import eu.kanade.presentation.reader.ChapterListDialog
+import eu.kanade.presentation.reader.ChapterOverlay
 import eu.kanade.presentation.reader.DisplayRefreshHost
 import eu.kanade.presentation.reader.OrientationSelectDialog
+import eu.kanade.presentation.reader.ProgressOverlay
 import eu.kanade.presentation.reader.ReaderContentOverlay
 import eu.kanade.presentation.reader.ReaderPageActionsDialog
 import eu.kanade.presentation.reader.ReaderPageIndicator
 import eu.kanade.presentation.reader.ReadingModeSelectDialog
+import eu.kanade.presentation.reader.TimeOverlay
 import eu.kanade.presentation.reader.appbars.NavBarType
 import eu.kanade.presentation.reader.appbars.ReaderAppBars
 import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
@@ -102,6 +113,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
@@ -326,6 +338,9 @@ class ReaderActivity : BaseActivity() {
             // KMK <--
             val state by viewModel.state.collectAsState()
             val showPageNumber by readerPreferences.showPageNumber().collectAsState()
+            // KMK -->
+            val showPersistentInfoOverlay by readerPreferences.showPersistentInfoOverlay().collectAsState()
+            // KMK <--
             val settingsScreenModel = remember {
                 ReaderSettingsScreenModel(
                     readerState = viewModel.state,
@@ -346,6 +361,46 @@ class ReaderActivity : BaseActivity() {
                             .navigationBarsPadding(),
                     )
                 }
+
+                // KMK -->
+                if (showPersistentInfoOverlay) {
+                    val isRtl = state.viewer is R2LPagerViewer
+                    val chapterAlignment = if (isRtl) Alignment.BottomStart else Alignment.BottomEnd
+                    val progressAlignment = if (isRtl) Alignment.BottomEnd else Alignment.BottomStart
+
+                    TimeOverlay(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = 12.dp, top = 6.dp),
+                    )
+                    BatteryOverlay(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(end = 12.dp, top = 6.dp),
+                    )
+                    ChapterOverlay(
+                        chapterName = state.currentChapter?.chapter?.name,
+                        modifier = Modifier
+                            .align(chapterAlignment)
+                            .navigationBarsPadding()
+                            .padding(
+                                start = if (isRtl) 12.dp else 0.dp,
+                                end = if (!isRtl) 12.dp else 0.dp,
+                            ),
+                    )
+                    ProgressOverlay(
+                        currentPage = state.currentPage,
+                        totalPages = state.totalPages,
+                        modifier = Modifier
+                            .align(progressAlignment)
+                            .navigationBarsPadding()
+                            .padding(
+                                start = if (isRtl) 0.dp else 12.dp,
+                                end = if (!isRtl) 0.dp else 12.dp,
+                            ),
+                    )
+                }
+                // KMK <--
 
                 ContentOverlay(state = state)
 
@@ -930,8 +985,10 @@ class ReaderActivity : BaseActivity() {
         viewModel.showMenus(visible)
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-        } else if (readerPreferences.fullscreen().get()) {
+        } else if (readerPreferences.fullscreen().get() || readerPreferences.showPersistentInfoOverlay().get()) {
+            // KMK --> hide status bar when persistent overlay is on so info isn't duplicated
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+            // KMK <--
         }
     }
 
