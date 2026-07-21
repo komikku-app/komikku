@@ -1,0 +1,4 @@
+-- KMK -->
+-- Add sort column to sources for custom source ordering within groups
+ALTER TABLE sources ADD COLUMN sort INTEGER NOT NULL DEFAULT 0;
+-- KMK <--

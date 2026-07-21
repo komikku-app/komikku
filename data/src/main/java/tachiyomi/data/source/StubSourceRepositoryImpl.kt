@@ -25,5 +25,11 @@ class StubSourceRepositoryImpl(
         id: Long,
         lang: String,
         name: String,
+        // KMK -->
+        // sort is required by SQLDelight (findAll returns 4 columns) but unused here —
+        // StubSource is a source API impl, not the domain model. Sort is applied
+        // when converting to domain Source in SourceRepositoryImpl.getSources().
+        @Suppress("UNUSED_PARAMETER") sort: Long,
+        // KMK <--
     ): StubSource = StubSource(id = id, lang = lang, name = name)
 }

@@ -25,4 +25,8 @@ interface SourceRepository {
     fun getPopular(sourceId: Long): SourcePagingSource
 
     fun getLatest(sourceId: Long): SourcePagingSource
+
+    // KMK -->
+    suspend fun updateSort(sourceId: Long, sort: Long)
+    // KMK <--
 }

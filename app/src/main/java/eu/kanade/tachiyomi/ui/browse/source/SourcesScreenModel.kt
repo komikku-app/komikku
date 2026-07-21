@@ -35,9 +35,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import logcat.LogPriority
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
+import tachiyomi.domain.source.repository.SourceRepository
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.TreeMap
@@ -55,6 +57,9 @@ class SourcesScreenModel(
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     val smartSearchConfig: SourcesScreen.SmartSearchConfig?,
     // SY <--
+    // KMK -->
+    private val sourceRepository: SourceRepository = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<SourcesScreenModel.State>(State()) {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
@@ -122,15 +127,29 @@ class SourcesScreenModel(
         val sources = unfilteredSources
             .filter { !nsfwOnly || it.installedExtension?.isNsfw != false }
             .filter(queryFilter(searchQuery))
-        // KMK <--
+
+        // User-customized group order stored as comma-separated keys (e.g. "en,ja")
+        // Special groups (pinned, last_used) are excluded — they always stay at top
+        val customGroupOrderList = sourcePreferences.customGroupOrder().get()
+            .split(",")
+            .filter { it.isNotBlank() && it != PINNED_KEY && it != LAST_USED_KEY }
         mutableState.update { state ->
             val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
+                // Pinned and last_used always stay at top, regardless of custom order
+                when {
+                    d1 == PINNED_KEY && d2 != PINNED_KEY -> return@TreeMap -1
+                    d2 == PINNED_KEY && d1 != PINNED_KEY -> return@TreeMap 1
+                    d1 == LAST_USED_KEY && d2 != LAST_USED_KEY -> return@TreeMap -1
+                    d2 == LAST_USED_KEY && d1 != LAST_USED_KEY -> return@TreeMap 1
+                }
+                // Custom group order takes priority over default alphabetical sorting
+                val d1Custom = customGroupOrderList.indexOf(d1)
+                val d2Custom = customGroupOrderList.indexOf(d2)
+                if (d1Custom != -1 && d2Custom != -1) return@TreeMap d1Custom.compareTo(d2Custom)
+                if (d1Custom != -1) return@TreeMap -1
+                if (d2Custom != -1) return@TreeMap 1
                 // Sources without a lang defined will be placed at the end
                 when {
-                    d1 == LAST_USED_KEY && d2 != LAST_USED_KEY -> -1
-                    d2 == LAST_USED_KEY && d1 != LAST_USED_KEY -> 1
-                    d1 == PINNED_KEY && d2 != PINNED_KEY -> -1
-                    d2 == PINNED_KEY && d1 != PINNED_KEY -> 1
                     // SY -->
                     d1.startsWith(CATEGORY_KEY_PREFIX) && !d2.startsWith(CATEGORY_KEY_PREFIX) -> -1
                     d2.startsWith(CATEGORY_KEY_PREFIX) && !d1.startsWith(CATEGORY_KEY_PREFIX) -> 1
@@ -140,29 +159,22 @@ class SourcesScreenModel(
                     else -> d1.compareTo(d2)
                 }
             }
-            val byLang = sources.groupByTo(map) {
-                when {
-                    // SY -->
-                    it.category != null -> "$CATEGORY_KEY_PREFIX${it.category}"
-                    // SY <--
-                    it.isUsedLast -> LAST_USED_KEY
-                    Pin.Actual in it.pin -> PINNED_KEY
-                    else -> it.lang
-                }
-            }
+            val byLang = sources.groupByTo(map) { sourceGroupKey(it) }
 
             state.copy(
                 isLoading = false,
                 items = byLang
-                    .flatMap {
+                    .flatMap { (groupKey, groupSources) ->
                         listOf(
                             SourceUiModel.Header(
-                                it.key.removePrefix(CATEGORY_KEY_PREFIX),
-                                it.value.firstOrNull()?.category != null,
+                                groupKey.removePrefix(CATEGORY_KEY_PREFIX),
+                                groupSources.firstOrNull()?.category != null,
                             ),
-                            *it.value.map { source ->
-                                SourceUiModel.Item(source)
-                            }.toTypedArray(),
+                            // Sort sources within each group by DB position, then name as tiebreaker
+                            *groupSources
+                                .sortedWith(compareBy<Source> { it.sort }.thenBy { it.name.lowercase() })
+                                .map { SourceUiModel.Item(it) }
+                                .toTypedArray(),
                         )
                     }
                     .toImmutableList(),
@@ -207,19 +219,66 @@ class SourcesScreenModel(
         mutableState.update { it.copy(dialog = null) }
     }
 
-    // KMK -->
     fun search(query: String?) {
-        mutableState.update {
-            it.copy(searchQuery = query)
-        }
+        mutableState.update { it.copy(searchQuery = query) }
     }
 
     fun toggleNsfwOnly() {
-        mutableState.update {
-            it.copy(nsfwOnly = !it.nsfwOnly)
+        mutableState.update { it.copy(nsfwOnly = !it.nsfwOnly) }
+    }
+
+    fun toggleReorderMode() {
+        mutableState.update { it.copy(reorderMode = !it.reorderMode) }
+    }
+
+    // Reorder a group header to a new position among reorderable groups.
+    // Pinned and last_used are excluded — they always stay at top.
+    fun reorderGroup(groupKey: String, newIndex: Int) {
+        if (groupKey == PINNED_KEY || groupKey == LAST_USED_KEY) return
+
+        val allGroups = state.value.items
+            .filterIsInstance<SourceUiModel.Header>()
+            .map { groupKeyOf(it) }
+            .filter { it != PINNED_KEY && it != LAST_USED_KEY }
+
+        // Merge saved custom order with any new groups not yet in the preference
+        val ordered = sourcePreferences.customGroupOrder().get()
+            .split(",")
+            .filter { it.isNotBlank() && it in allGroups }
+            .let { custom -> custom + allGroups.filter { it !in custom } }
+            .toMutableList()
+
+        val currentIndex = ordered.indexOf(groupKey)
+        if (currentIndex == -1) return
+
+        ordered.removeAt(currentIndex)
+        ordered.add(newIndex.coerceIn(0, ordered.size), groupKey)
+        sourcePreferences.customGroupOrder().set(ordered.joinToString(","))
+    }
+
+    // Reorder a source within its group by writing new sort positions to the DB.
+    fun reorderSourceWithinGroup(groupKey: String, sourceId: Long, newIndex: Int) {
+        screenModelScope.launchIO {
+            val sourceIds = state.value.items
+                .filterIsInstance<SourceUiModel.Item>()
+                .map { it.source }
+                .filter { sourceGroupKey(it) == groupKey }
+                .sortedBy { it.sort }
+                .map { it.id }
+                .toMutableList()
+
+            val currentIndex = sourceIds.indexOf(sourceId)
+            if (currentIndex == -1) return@launchIO
+
+            sourceIds.removeAt(currentIndex)
+            sourceIds.add(newIndex.coerceIn(0, sourceIds.size), sourceId)
+
+            // Rewrite sort positions for all sources in the group
+            sourceIds.forEachIndexed { index, id ->
+                sourceRepository.updateSort(id, index.toLong())
+            }
         }
     }
-    // KMK <--
 
     sealed interface Event {
         data object FailedFetchingSources : Event
@@ -244,6 +303,7 @@ class SourcesScreenModel(
         // KMK -->
         val searchQuery: String? = null,
         val nsfwOnly: Boolean = false,
+        val reorderMode: Boolean = false,
         // KMK <--
     ) {
         val isEmpty = items.isEmpty()
@@ -256,5 +316,18 @@ class SourcesScreenModel(
         // SY -->
         const val CATEGORY_KEY_PREFIX = "category-"
         // SY <--
+
+        // Compute the group key for a source (e.g. "en", "pinned", "category-English")
+        fun sourceGroupKey(source: Source) = when {
+            // SY -->
+            source.category != null -> "$CATEGORY_KEY_PREFIX${source.category}"
+            // SY <--
+            source.isUsedLast -> LAST_USED_KEY
+            Pin.Actual in source.pin -> PINNED_KEY
+            else -> source.lang
+        }
+
+        fun groupKeyOf(header: SourceUiModel.Header) =
+            if (header.isCategory) "$CATEGORY_KEY_PREFIX${header.language}" else header.language
     }
 }

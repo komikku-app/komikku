@@ -6,13 +6,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -22,11 +25,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
+import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
 import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.animateItemFastScroll
@@ -44,6 +50,9 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
+import sh.calvin.reorderable.ReorderableCollectionItemScope
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
@@ -71,6 +80,8 @@ fun SourcesScreen(
     // KMK -->
     @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
     onChangeSearchQuery: (String?) -> Unit,
+    onReorderGroup: (String, Int) -> Unit,
+    onReorderSource: (String, Long, Int) -> Unit,
     // KMK <--
 ) {
     // KMK -->
@@ -97,46 +108,221 @@ fun SourcesScreen(
             val density = LocalDensity.current
             var searchBoxHeight by remember { mutableStateOf(SOURCE_SEARCH_BOX_HEIGHT) }
 
-            FastScrollLazyColumn(
-                state = lazyListState,
-                contentPadding = PaddingValues(top = searchBoxHeight),
-                // KMK <--
-            ) {
-                state.items.forEach { model ->
-                    when (model) {
-                        is SourceUiModel.Header -> {
-                            stickyHeader(
-                                key = "$STICKY_HEADER_KEY_PREFIX-header-${model.hashCode()}",
-                                contentType = "header",
-                            ) {
-                                SourceHeader(
-                                    modifier = Modifier
-                                        .animateItemFastScroll()
-                                        .background(MaterialTheme.colorScheme.background)
-                                        .fillMaxWidth(),
-                                    language = model.language,
-                                    // SY -->
-                                    isCategory = model.isCategory,
-                                    // SY <--
-                                )
+            if (state.reorderMode) {
+                // Reorder mode: flat list with drag handles on both group headers and source items.
+                // Headers move the entire group block; items only move within their own group.
+                val itemsState = remember { state.items.toMutableStateList() }
+                val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+                    val fromItem = itemsState.getOrNull(from.index)
+                    val toItem = itemsState.getOrNull(to.index)
+                    if (fromItem == null || toItem == null) return@rememberReorderableLazyListState
+
+                    val isMovingHeader = fromItem is SourceUiModel.Header
+                    val isTargetHeader = toItem is SourceUiModel.Header
+
+                    if (isMovingHeader) {
+                        val fromHeader = fromItem as SourceUiModel.Header
+                        val fromGroupKey = SourcesScreenModel.groupKeyOf(fromHeader)
+
+                        // Pinned and last_used groups are fixed — skip reordering
+                        if (fromGroupKey == SourcesScreenModel.PINNED_KEY ||
+                            fromGroupKey == SourcesScreenModel.LAST_USED_KEY
+                        ) {
+                            return@rememberReorderableLazyListState
+                        }
+
+                        // Find the range of the source group
+                        var groupEnd = from.index
+                        for (i in (from.index + 1) until itemsState.size) {
+                            if (itemsState[i] is SourceUiModel.Header) break
+                            groupEnd = i
+                        }
+                        val groupSize = groupEnd - from.index + 1
+
+                        // Find target group position (the header we're dropping onto)
+                        val targetHeaderIndex = if (isTargetHeader) {
+                            to.index
+                        } else {
+                            // Find the header above the target item
+                            var headerIdx = to.index
+                            while (headerIdx > 0 && itemsState[headerIdx] !is SourceUiModel.Header) {
+                                headerIdx--
+                            }
+                            headerIdx
+                        }
+
+                        val targetHeader = itemsState.getOrNull(targetHeaderIndex) as? SourceUiModel.Header
+                            ?: return@rememberReorderableLazyListState
+                        val targetGroupKey = SourcesScreenModel.groupKeyOf(targetHeader)
+
+                        if (fromGroupKey == targetGroupKey) return@rememberReorderableLazyListState
+
+                        // Remove the source group block
+                        val groupBlock = itemsState.subList(from.index, from.index + groupSize).toList()
+                        repeat(groupSize) { itemsState.removeAt(from.index) }
+
+                        // Find new insertion index (target header may have shifted)
+                        val newHeaderIndex = itemsState.indexOfFirst {
+                            it is SourceUiModel.Header && SourcesScreenModel.groupKeyOf(it) == targetGroupKey
+                        }
+                        if (newHeaderIndex == -1) return@rememberReorderableLazyListState
+
+                        // Insert before or after target based on drag direction
+                        val insertIndex = if (to.index > from.index) {
+                            // Dragging down: insert after target group
+                            var afterGroup = newHeaderIndex
+                            for (i in (newHeaderIndex + 1) until itemsState.size) {
+                                if (itemsState[i] is SourceUiModel.Header) break
+                                afterGroup = i
+                            }
+                            afterGroup + 1
+                        } else {
+                            // Dragging up: insert before target group
+                            newHeaderIndex
+                        }
+
+                        itemsState.addAll(insertIndex.coerceIn(0, itemsState.size), groupBlock)
+
+                        // Compute the new group index and save
+                        val newGroupIndex = itemsState.indexOfFirst {
+                            it is SourceUiModel.Header && SourcesScreenModel.groupKeyOf(it) == fromGroupKey
+                        }
+                        // Count how many headers are before this one
+                        val groupIndex = itemsState.take(newGroupIndex)
+                            .count { it is SourceUiModel.Header }
+                        onReorderGroup(fromGroupKey, groupIndex)
+                    } else {
+                        // Moving a source item within its group
+                        val sourceItem = fromItem as SourceUiModel.Item
+                        if (isTargetHeader) return@rememberReorderableLazyListState
+
+                        // Find the group (header) for both from and to
+                        var fromHeaderIdx = from.index
+                        while (fromHeaderIdx > 0 && itemsState[fromHeaderIdx] !is SourceUiModel.Header) {
+                            fromHeaderIdx--
+                        }
+                        val fromHeader = itemsState.getOrNull(fromHeaderIdx) as? SourceUiModel.Header
+                            ?: return@rememberReorderableLazyListState
+                        val groupKey = SourcesScreenModel.groupKeyOf(fromHeader)
+
+                        // Check that target is in the same group
+                        var toHeaderIdx = to.index
+                        while (toHeaderIdx > 0 && itemsState[toHeaderIdx] !is SourceUiModel.Header) {
+                            toHeaderIdx--
+                        }
+                        if (toHeaderIdx != fromHeaderIdx) return@rememberReorderableLazyListState
+
+                        // Move the item in the list (adjust index after removal)
+                        val targetIndex = if (from.index < to.index) to.index - 1 else to.index
+                        itemsState.removeAt(from.index)
+                        itemsState.add(targetIndex.coerceIn(0, itemsState.size), sourceItem)
+
+                        // Compute new index within the group
+                        val groupStart = fromHeaderIdx + 1
+                        val newIndex = targetIndex - groupStart
+                        onReorderSource(groupKey, sourceItem.source.id, newIndex)
+                    }
+                }
+
+                LaunchedEffect(state.items) {
+                    if (!reorderableState.isAnyItemDragging) {
+                        itemsState.clear()
+                        itemsState.addAll(state.items)
+                    }
+                }
+
+                LazyColumn(
+                    state = lazyListState,
+                    contentPadding = PaddingValues(top = searchBoxHeight),
+                ) {
+                    itemsState.forEachIndexed { index, model ->
+                        when (model) {
+                            is SourceUiModel.Header -> {
+                                val groupKey = SourcesScreenModel.groupKeyOf(model)
+                                val isFixed = groupKey == SourcesScreenModel.PINNED_KEY ||
+                                    groupKey == SourcesScreenModel.LAST_USED_KEY
+                                item(
+                                    key = "header-${model.hashCode()}",
+                                    contentType = "header",
+                                ) {
+                                    ReorderableItem(reorderableState, key = "header-${model.hashCode()}") {
+                                        SourceHeader(
+                                            modifier = Modifier
+                                                .animateItem()
+                                                .background(MaterialTheme.colorScheme.background)
+                                                .fillMaxWidth(),
+                                            language = model.language,
+                                            isCategory = model.isCategory,
+                                            showDragHandle = !isFixed,
+                                            dragModifier = if (isFixed) Modifier else Modifier.draggableHandle(),
+                                        )
+                                    }
+                                }
+                            }
+                            is SourceUiModel.Item -> {
+                                item(
+                                    key = "source-${model.source.key()}",
+                                    contentType = "item",
+                                ) {
+                                    ReorderableItem(reorderableState, key = "source-${model.source.key()}") {
+                                        SourceItem(
+                                            modifier = Modifier.animateItem(),
+                                            source = model.source,
+                                            showLatest = state.showLatest,
+                                            showPin = state.showPin,
+                                            onClickItem = onClickItem,
+                                            onLongClickItem = onLongClickItem,
+                                            onClickPin = onClickPin,
+                                            showDragHandle = true,
+                                            dragModifier = Modifier.draggableHandle(),
+                                        )
+                                    }
+                                }
                             }
                         }
-                        is SourceUiModel.Item -> {
-                            item(
-                                key = "source-${model.source.key()}",
-                                contentType = "item",
-                            ) {
-                                SourceItem(
-                                    modifier = Modifier.animateItemFastScroll(),
-                                    source = model.source,
-                                    // SY -->
-                                    showLatest = state.showLatest,
-                                    showPin = state.showPin,
-                                    // SY <--
-                                    onClickItem = onClickItem,
-                                    onLongClickItem = onLongClickItem,
-                                    onClickPin = onClickPin,
-                                )
+                    }
+                }
+            } else {
+                FastScrollLazyColumn(
+                    state = lazyListState,
+                    contentPadding = PaddingValues(top = searchBoxHeight),
+                ) {
+                    state.items.forEach { model ->
+                        when (model) {
+                            is SourceUiModel.Header -> {
+                                stickyHeader(
+                                    key = "$STICKY_HEADER_KEY_PREFIX-header-${model.hashCode()}",
+                                    contentType = "header",
+                                ) {
+                                    SourceHeader(
+                                        modifier = Modifier
+                                            .animateItemFastScroll()
+                                            .background(MaterialTheme.colorScheme.background)
+                                            .fillMaxWidth(),
+                                        language = model.language,
+                                        // SY -->
+                                        isCategory = model.isCategory,
+                                        // SY <--
+                                    )
+                                }
+                            }
+                            is SourceUiModel.Item -> {
+                                item(
+                                    key = "source-${model.source.key()}",
+                                    contentType = "item",
+                                ) {
+                                    SourceItem(
+                                        modifier = Modifier.animateItemFastScroll(),
+                                        source = model.source,
+                                        // SY -->
+                                        showLatest = state.showLatest,
+                                        showPin = state.showPin,
+                                        // SY <--
+                                        onClickItem = onClickItem,
+                                        onLongClickItem = onLongClickItem,
+                                        onClickPin = onClickPin,
+                                    )
+                                }
                             }
                         }
                     }
@@ -171,21 +357,41 @@ private fun SourceHeader(
     // SY -->
     isCategory: Boolean,
     // SY <--
+    // KMK -->
+    showDragHandle: Boolean = false,
+    dragModifier: Modifier = Modifier,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    Text(
-        // SY -->
-        text = if (!isCategory) {
-            LocaleHelper.getSourceDisplayName(language, context)
-        } else {
-            language
-        },
-        // SY <--
+    Row(
         modifier = modifier
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-        style = MaterialTheme.typography.header,
-    )
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // KMK -->
+        if (showDragHandle) {
+            Icon(
+                imageVector = Icons.Outlined.DragHandle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(end = MaterialTheme.padding.small)
+                    .then(dragModifier),
+            )
+        }
+        // KMK <--
+        Text(
+            // SY -->
+            text = if (!isCategory) {
+                LocaleHelper.getSourceDisplayName(language, context)
+            } else {
+                language
+            },
+            // SY <--
+            style = MaterialTheme.typography.header,
+        )
+    }
 }
 
 @Composable
@@ -198,6 +404,10 @@ private fun SourceItem(
     onClickItem: (Source, Listing) -> Unit,
     onLongClickItem: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
+    // KMK -->
+    showDragHandle: Boolean = false,
+    dragModifier: Modifier = Modifier,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     BaseSourceItem(
@@ -205,6 +415,21 @@ private fun SourceItem(
         source = source,
         onClickItem = { onClickItem(source, Listing.Popular) },
         onLongClickItem = { onLongClickItem(source) },
+        // KMK -->
+        icon = {
+            if (showDragHandle) {
+                Icon(
+                    imageVector = Icons.Outlined.DragHandle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(end = MaterialTheme.padding.small)
+                        .then(dragModifier),
+                )
+            }
+            SourceIcon(source = source)
+        },
+        // KMK <--
         action = {
             if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
                 TextButton(onClick = { onClickItem(source, Listing.Latest) }) {

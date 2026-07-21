@@ -1,7 +1,10 @@
 CREATE TABLE sources(
     _id INTEGER NOT NULL PRIMARY KEY,
     lang TEXT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    -- KMK -->
+    sort INTEGER NOT NULL DEFAULT 0
+    -- KMK <--
 );
 
 findAll:
@@ -22,3 +25,10 @@ SET
     lang = :lang,
     name = :name
 WHERE _id = :id;
+
+-- KMK -->
+updateSort:
+UPDATE sources
+SET sort = :sort
+WHERE _id = :id;
+-- KMK <--
