@@ -13,6 +13,9 @@ data class Source(
     val isExcludedFromDataSaver: Boolean = false,
     val categories: Set<String> = emptySet(),
     // SY <--
+    // KMK -->
+    val sort: Long = 0,
+    // KMK <--
 ) {
 
     val visualName: String
