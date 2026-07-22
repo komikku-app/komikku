@@ -84,6 +84,10 @@ class UiPreferences(
 
     fun showNavHistory() = preferenceStore.getBoolean("pref_show_history_button", true)
 
+    // KMK -->
+    fun autoHideBarsOnScroll() = preferenceStore.getBoolean("pref_auto_hide_bars_on_scroll", true)
+    // KMK <--
+
     // SY <--
 
     companion object {

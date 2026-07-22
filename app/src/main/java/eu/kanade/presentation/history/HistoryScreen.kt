@@ -1,6 +1,9 @@
 package eu.kanade.presentation.history
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
@@ -30,6 +33,7 @@ import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel.HistorySelectionOptions
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
@@ -68,43 +72,53 @@ fun HistoryScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            when {
-                state.selectionMode -> HistorySelectionToolbar(
-                    selectedCount = state.selection.size,
-                    onCancelActionMode = toggleSelectionMode,
-                    onClickSelectAll = { onSelectAll(true) },
-                    onClickInvertSelection = onInvertSelection,
-                    onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected)) },
-                )
+            // Auto-hide top bar on scroll for more viewing space
+            AnimatedVisibility(
+                visible = !HomeScreen.LocalBarsScrolledDown.current,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
                 // KMK <--
-                else -> SearchToolbar(
-                    titleContent = { AppBarTitle(stringResource(MR.strings.history)) },
-                    searchQuery = state.searchQuery,
-                    onChangeSearchQuery = onSearchQueryChange,
-                    actions = {
-                        AppBarActions(
-                            persistentListOf(
-                                // KMK -->
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_filter),
-                                    icon = Icons.Outlined.FilterList,
-                                    iconTint = if (hasActiveFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
-                                    onClick = onFilterClicked,
-                                ),
-                                // KMK <--
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.pref_clear_history),
+                when {
+                    state.selectionMode -> HistorySelectionToolbar(
+                        selectedCount = state.selection.size,
+                        onCancelActionMode = toggleSelectionMode,
+                        onClickSelectAll = { onSelectAll(true) },
+                        onClickInvertSelection = onInvertSelection,
+                        onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected)) },
+                    )
+                    // KMK <--
+                    else -> SearchToolbar(
+                        titleContent = { AppBarTitle(stringResource(MR.strings.history)) },
+                        searchQuery = state.searchQuery,
+                        onChangeSearchQuery = onSearchQueryChange,
+                        actions = {
+                            AppBarActions(
+                                persistentListOf(
                                     // KMK -->
-                                    icon = Icons.Outlined.Checklist,
-                                    onClick = toggleSelectionMode,
+                                    AppBar.Action(
+                                        title = stringResource(MR.strings.action_filter),
+                                        icon = Icons.Outlined.FilterList,
+                                        iconTint = if (hasActiveFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
+                                        onClick = onFilterClicked,
+                                    ),
                                     // KMK <--
+                                    AppBar.Action(
+                                        title = stringResource(MR.strings.pref_clear_history),
+                                        // KMK -->
+                                        icon = Icons.Outlined.Checklist,
+                                        onClick = toggleSelectionMode,
+                                        // KMK <--
+                                    ),
                                 ),
-                            ),
-                        )
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
+                            )
+                        },
+                        scrollBehavior = scrollBehavior,
+                    )
+                }
+                // KMK -->
             }
+            // KMK <--
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->

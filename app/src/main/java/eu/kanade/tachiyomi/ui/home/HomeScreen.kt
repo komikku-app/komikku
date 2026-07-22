@@ -3,7 +3,9 @@ package eu.kanade.tachiyomi.ui.home
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
@@ -22,14 +24,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -68,6 +78,15 @@ import uy.kohesive.injekt.api.get
 object HomeScreen : Screen() {
     private fun readResolve(): Any = HomeScreen
 
+    // KMK -->
+    /**
+     * CompositionLocal that exposes the current scroll-driven "bars hidden" state
+     * to descendant tab composables. Each tab's top bar can observe this to
+     * hide/show in sync with the bottom nav.
+     */
+    val LocalBarsScrolledDown = compositionLocalOf { false }
+    // KMK <--
+
     private val librarySearchEvent = Channel<String>()
     private val openTabEvent = Channel<Tab>()
     private val showBottomNavEvent = Channel<Boolean>()
@@ -93,24 +112,72 @@ object HomeScreen : Screen() {
             Injekt.get<UiPreferences>().bottomBarLabels().asState(scope)
         }
         // SY <--
+        // KMK -->
+        // Auto-hide bars on scroll: tracks whether the user has scrolled down
+        // in the current tab content. Combined with the selection-mode signal
+        // (showBottomNavEvent) to drive both the bottom nav (phone) and the
+        // navigation rail (tablet) visibility.
+        val autoHideBars by remember {
+            Injekt.get<UiPreferences>().autoHideBarsOnScroll().asState(scope)
+        }
+        var scrolledDown by remember { mutableStateOf(false) }
+        val scrollConnection = remember(autoHideBars) {
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    if (autoHideBars && source == NestedScrollSource.UserInput && available.y != 0f) {
+                        scrolledDown = true
+                    }
+                    return Offset.Zero
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    scrolledDown = false
+                    return Velocity.Zero
+                }
+            }
+        }
+        // KMK <--
 
         TabNavigator(
             tab = LibraryTab,
             key = TAB_NAVIGATOR_KEY,
         ) { tabNavigator ->
             // Provide usable navigator to content screen
-            CompositionLocalProvider(LocalNavigator provides navigator) {
+            CompositionLocalProvider(
+                LocalNavigator provides navigator,
+                // KMK -->
+                HomeScreen.LocalBarsScrolledDown provides scrolledDown,
+                // KMK <--
+            ) {
+                // KMK -->
+                // Reset scroll state when switching tabs so bars are visible
+                // at the top of each newly-selected tab.
+                LaunchedEffect(tabNavigator.current) {
+                    scrolledDown = false
+                }
+                // KMK <--
                 Scaffold(
                     startBar = {
                         if (isTabletUi()) {
-                            NavigationRail {
-                                TABS
-                                    // SY -->
-                                    .fastFilter { it.isEnabled() }
-                                    // SY <--
-                                    .fastForEach {
-                                        NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
-                                    }
+                            // KMK -->
+                            val sideNavVisible by produceState(initialValue = true) {
+                                showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
+                            }
+                            AnimatedVisibility(
+                                visible = sideNavVisible && !scrolledDown,
+                                enter = expandHorizontally(),
+                                exit = shrinkHorizontally(),
+                            ) {
+                                // KMK <--
+                                NavigationRail {
+                                    TABS
+                                        // SY -->
+                                        .fastFilter { it.isEnabled() }
+                                        // SY <--
+                                        .fastForEach {
+                                            NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
+                                        }
+                                }
                             }
                         }
                     },
@@ -120,7 +187,9 @@ object HomeScreen : Screen() {
                                 showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
                             }
                             AnimatedVisibility(
-                                visible = bottomNavVisible,
+                                // KMK -->
+                                visible = bottomNavVisible && !scrolledDown,
+                                // KMK <--
                                 enter = expandVertically(),
                                 exit = shrinkVertically(),
                             ) {
@@ -141,7 +210,10 @@ object HomeScreen : Screen() {
                     Box(
                         modifier = Modifier
                             .padding(contentPadding)
-                            .consumeWindowInsets(contentPadding),
+                            .consumeWindowInsets(contentPadding)
+                            // KMK -->
+                            .nestedScroll(scrollConnection),
+                        // KMK <--
                     ) {
                         AnimatedContent(
                             targetState = tabNavigator.current,
