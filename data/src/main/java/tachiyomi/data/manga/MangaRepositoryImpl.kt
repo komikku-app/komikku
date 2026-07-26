@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.MemoColumnAdapter
 import tachiyomi.data.StringListColumnAdapter
@@ -58,12 +59,17 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun getLibraryManga(): List<LibraryManga> {
+        // KMK -->
+        handler.await { refillChapterStats() }
+        // KMK <--
         return handler.awaitList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
     }
 
     override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
-        return handler.subscribeToList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
-            // KMK -->
+        // KMK -->
+        return handler.subscribeToList(
+            prepare = { refillChapterStats() },
+        ) { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
             // Throttles re-queries during write bursts: while this delay suspends the collector,
             // SQLDelight's conflated invalidation channel holds at most one pending re-query.
             .transform {
@@ -228,6 +234,20 @@ class MangaRepositoryImpl(
     // SY <--
 
     // KMK -->
+    /**
+     * Restores the cached chapter aggregates that writes dropped, returning true if it wrote.
+     * Failing only costs speed: the library query aggregates entries without a cached row live.
+     */
+    private fun Database.refillChapterStats(): Boolean {
+        return try {
+            manga_chapter_statsQueries.hasMissing().executeAsOne() &&
+                manga_chapter_statsQueries.refill().value > 0
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) { "Failed to refill manga_chapter_stats" }
+            false
+        }
+    }
+
     companion object {
         private const val LIBRARY_THROTTLE_MS = 250L
     }
