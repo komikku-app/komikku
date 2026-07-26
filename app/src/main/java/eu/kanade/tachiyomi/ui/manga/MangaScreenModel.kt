@@ -457,24 +457,36 @@ class MangaScreenModel(
             val needRefreshInfo = !manga.initialized
             val needRefreshChapter = chapters.isEmpty()
 
+            // KMK -->
+            // Resolve values outside the retrying state update.
+            // SY -->
+            val source = sourceManager.getOrStub(manga.source)
+            // SY <--
+            val availableScanlators = if (manga.source == MERGED_SOURCE_ID) {
+                getAvailableScanlators.awaitMerge(mangaId)
+            } else {
+                getAvailableScanlators.await(mangaId)
+            }.toImmutableSet()
+            val excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet()
+            val raisedMeta = raiseMetadata(meta, source)
+            val hasPagePreviews = source.getMainSource() is PagePreviewSource
+            // KMK <--
+
             // Show what we have earlier
             mutableState.update {
-                // SY -->
-                val source = sourceManager.getOrStub(manga.source)
-                // SY <--
                 State.Success(
                     manga = manga,
                     source = source,
                     isFromSource = isFromSource,
                     chapters = chapters,
                     // SY -->
-                    availableScanlators = if (manga.source == MERGED_SOURCE_ID) {
-                        getAvailableScanlators.awaitMerge(mangaId)
-                    } else {
-                        getAvailableScanlators.await(mangaId)
-                    }.toImmutableSet(),
+                    // KMK -->
+                    availableScanlators = availableScanlators,
+                    // KMK <--
                     // SY <--
-                    excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
+                    // KMK -->
+                    excludedScanlators = excludedScanlators,
+                    // KMK <--
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     hideMissingChapters = libraryPreferences.hideMissingChapters().get(),
@@ -483,9 +495,10 @@ class MangaScreenModel(
                     showMergeInOverflow = uiPreferences.mergeInOverflow().get(),
                     showMergeWithAnother = smartSearched,
                     mergedData = mergedData,
-                    meta = raiseMetadata(meta, source),
-                    pagePreviewsState = if (source.getMainSource() is PagePreviewSource) {
-                        getPagePreviews(manga, source)
+                    // KMK -->
+                    meta = raisedMeta,
+                    pagePreviewsState = if (hasPagePreviews) {
+                        // KMK <--
                         PagePreviewState.Loading
                     } else {
                         PagePreviewState.Unused
@@ -496,6 +509,13 @@ class MangaScreenModel(
                     // SY <--
                 )
             }
+
+            // KMK -->
+            // Fetch previews after the success state is available.
+            if (hasPagePreviews) {
+                getPagePreviews(manga, source)
+            }
+            // KMK <--
 
             // Start observe tracking since it only needs mangaId
             observeTrackers()
