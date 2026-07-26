@@ -139,6 +139,14 @@ removeChaptersWithIds:
 DELETE FROM chapters
 WHERE _id IN :chapterIds;
 
+-- KMK -->
+-- Entries whose cached aggregates a chapter deletion will invalidate.
+getMangaIdsByChapterIds:
+SELECT DISTINCT manga_id
+FROM chapters
+WHERE _id IN :chapterIds;
+-- KMK <--
+
 resetIsSyncing:
 UPDATE chapters
 SET is_syncing = 0

@@ -5,6 +5,7 @@ import logcat.LogPriority
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.rebuildingStats
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.history.model.HistoryWithRelations
@@ -59,7 +60,11 @@ class HistoryRepositoryImpl(
     // KMK -->
     override suspend fun resetHistory(historyIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryByIds(historyIds) }
+            handler.await(inTransaction = true) {
+                rebuildingStats({ historyQueries.getMangaIdsByHistoryIds(historyIds).executeAsList() }) {
+                    historyQueries.resetHistoryByIds(historyIds)
+                }
+            }
             // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
@@ -69,7 +74,9 @@ class HistoryRepositoryImpl(
     // KMK -->
     override suspend fun resetHistoryByMangaIds(mangaIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryByMangaIds(mangaIds) }
+            handler.await(inTransaction = true) {
+                rebuildingStats({ mangaIds }) { historyQueries.resetHistoryByMangaIds(mangaIds) }
+            }
             // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
@@ -78,13 +85,33 @@ class HistoryRepositoryImpl(
 
     override suspend fun deleteAllHistory(): Boolean {
         return try {
-            handler.await { historyQueries.removeAllHistory() }
+            handler.await(inTransaction = true) {
+                // KMK -->
+                rebuildingStats({ historyQueries.getMangaIdsWithHistory().executeAsList() }) {
+                    historyQueries.removeAllHistory()
+                }
+                // KMK <--
+            }
             true
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
             false
         }
     }
+
+    // KMK -->
+    override suspend fun removeResettedHistory() {
+        try {
+            handler.await(inTransaction = true) {
+                rebuildingStats({ historyQueries.getMangaIdsWithResettedHistory().executeAsList() }) {
+                    historyQueries.removeResettedHistory()
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, throwable = e)
+        }
+    }
+    // KMK <--
 
     override suspend fun upsertHistory(historyUpdate: HistoryUpdate) {
         try {

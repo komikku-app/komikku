@@ -26,6 +26,8 @@ interface HistoryRepository {
     suspend fun resetHistory(historyIds: List<Long>)
 
     suspend fun resetHistoryByMangaIds(mangaIds: List<Long>)
+
+    suspend fun removeResettedHistory()
     // KMK <--
 
     suspend fun deleteAllHistory(): Boolean

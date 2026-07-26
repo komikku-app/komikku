@@ -10,8 +10,12 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 class AndroidDatabaseHandler(
     val db: Database,
@@ -70,8 +74,26 @@ class AndroidDatabaseHandler(
         return dispatch(inTransaction) { block(db).executeAsOneOrNull() }
     }
 
-    override fun <T : Any> subscribeToList(block: Database.() -> Query<T>): Flow<List<T>> {
-        return block(db).asFlow().mapToList(queryDispatcher)
+    override fun <T : Any> subscribeToList(
+        // KMK -->
+        throttleMillis: Long,
+        // KMK <--
+        block: Database.() -> Query<T>,
+    ): Flow<List<T>> {
+        // KMK -->
+        val queries = block(db).asFlow()
+        if (throttleMillis <= 0) {
+            return queries.mapToList(queryDispatcher)
+        }
+        // Collapse invalidations from a write burst.
+        return queries
+            .conflate()
+            .transform { query ->
+                emit(query)
+                delay(throttleMillis.milliseconds)
+            }
+            .mapToList(queryDispatcher)
+        // KMK <--
     }
 
     override fun <T : Any> subscribeToOne(block: Database.() -> Query<T>): Flow<T> {
