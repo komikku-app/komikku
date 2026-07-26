@@ -6,6 +6,7 @@ import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.MemoColumnAdapter
+import tachiyomi.data.rebuildingStats
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
@@ -79,18 +80,10 @@ class ChapterRepositoryImpl(
     override suspend fun removeChaptersWithIds(chapterIds: List<Long>) {
         try {
             // KMK -->
-            // Dropping the cached rows first makes the delete trigger a no-op, so the maxima
-            // are recovered once per entry instead of once per chapter. Resolve the entries
-            // before the delete, while the chapters can still be joined back to them.
+            // Recovers the maxima once per entry instead of once per deleted chapter.
             handler.await(inTransaction = true) {
-                val affectedMangaIds = chaptersQueries.getMangaIdsByChapterIds(chapterIds)
-                    .executeAsList()
-                if (affectedMangaIds.isNotEmpty()) {
-                    manga_chapter_statsQueries.deleteForMangaIds(affectedMangaIds)
-                }
-                chaptersQueries.removeChaptersWithIds(chapterIds)
-                if (affectedMangaIds.isNotEmpty()) {
-                    manga_chapter_statsQueries.rebuildForMangaIds(affectedMangaIds)
+                rebuildingStats({ chaptersQueries.getMangaIdsByChapterIds(chapterIds).executeAsList() }) {
+                    chaptersQueries.removeChaptersWithIds(chapterIds)
                 }
             }
             // KMK <--
