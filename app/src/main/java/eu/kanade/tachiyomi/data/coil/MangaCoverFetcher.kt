@@ -165,12 +165,19 @@ class MangaCoverFetcher(
             }
 
             // Fetch from network
-            val response = executeNetworkRequest()
+            // KMK -->
+            val (response, permit) = executeNetworkRequest()
+            // KMK <--
             val responseBody = checkNotNull(response.body) { "Null response source" }
             try {
                 // Read from cover cache after library manga cover updated
                 val responseCoverCache = writeResponseToCoverCache(response, libraryCoverCacheFile)
                 if (responseCoverCache != null) {
+                    // KMK -->
+                    // The cache owns the copied body.
+                    response.close()
+                    permit.release()
+                    // KMK <--
                     return fileLoader(responseCoverCache)
                 }
 
@@ -178,6 +185,9 @@ class MangaCoverFetcher(
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
                     // KMK -->
+                    // The disk cache consumed the body.
+                    response.close()
+                    permit.release()
                     setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
                     // KMK <--
                     return SourceFetchResult(
@@ -188,22 +198,21 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
-                setRatioAndColorsInScope(
-                    mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
-                )
-                // KMK <--
-                // Read from response if cache is unused or unusable
+                // Coil alone consumes the uncached body; the permit follows it until drained or closed.
                 return SourceFetchResult(
-                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
+                    source = ImageSource(
+                        source = permit.releaseWhenConsumed(responseBody.source()),
+                        fileSystem = FileSystem.SYSTEM,
+                    ),
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
+                // KMK <--
             } catch (e: Exception) {
                 responseBody.close()
+                // KMK -->
+                permit.release()
+                // KMK <--
                 throw e
             }
         } catch (e: Exception) {
@@ -212,15 +221,25 @@ class MangaCoverFetcher(
         }
     }
 
-    private suspend fun executeNetworkRequest(): Response {
+    // KMK -->
+    /** The caller owns the returned permit and must release it once the body is done with. */
+    private suspend fun executeNetworkRequest(): Pair<Response, SourceImageCallLimiter.Permit> {
         val client = sourceLazy.value?.client ?: callFactoryLazy.value
-        val response = client.newCall(newRequest()).await()
-        if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
-            response.close()
-            throw IOException(response.message)
+        val permit = SourceImageCallLimiter.acquire(mangaCover.sourceId)
+        try {
+            val response = client.newCall(newRequest()).await()
+            if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
+                response.close()
+                throw IOException(response.message)
+            }
+            return response to permit
+        } catch (e: Throwable) {
+            // Covers cancellation as well, so a dropped request cannot leak its permit.
+            permit.release()
+            throw e
         }
-        return response
     }
+    // KMK <--
 
     private fun newRequest(): Request {
         val request = Request.Builder().apply {
