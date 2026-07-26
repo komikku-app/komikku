@@ -9,8 +9,9 @@ CREATE TABLE history(
     ON DELETE CASCADE
 );
 
-CREATE INDEX history_history_chapter_id_index ON history(chapter_id);
-CREATE INDEX idx_history_last_read ON history(last_read) WHERE last_read > 0;
+-- KMK -->
+-- Dropped: UNIQUE already indexes chapter_id, and no query matches last_read > 0.
+-- KMK <--
 
 getHistoryByMangaId:
 SELECT
