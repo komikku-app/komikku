@@ -1,6 +1,8 @@
 package tachiyomi.data.manga
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
@@ -61,6 +63,14 @@ class MangaRepositoryImpl(
 
     override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
         return handler.subscribeToList { libraryViewQueries.library(MangaMapper::mapLibraryManga) }
+            // KMK -->
+            // Throttles re-queries during write bursts: while this delay suspends the collector,
+            // SQLDelight's conflated invalidation channel holds at most one pending re-query.
+            .transform {
+                emit(it)
+                delay(LIBRARY_THROTTLE_MS)
+            }
+        // KMK <--
     }
 
     override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {
@@ -216,4 +226,10 @@ class MangaRepositoryImpl(
         return handler.awaitList { libraryViewQueries.readMangaNonLibrary(MangaMapper::mapLibraryManga) }
     }
     // SY <--
+
+    // KMK -->
+    companion object {
+        private const val LIBRARY_THROTTLE_MS = 250L
+    }
+    // KMK <--
 }
