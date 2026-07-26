@@ -66,6 +66,29 @@ removeResettedHistory:
 DELETE FROM history
 WHERE last_read = 0;
 
+-- KMK -->
+-- Entries whose cached aggregates a bulk history change will invalidate.
+getMangaIdsWithHistory:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id;
+
+getMangaIdsByHistoryIds:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id
+WHERE H._id IN :historyIds;
+
+getMangaIdsWithResettedHistory:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id
+WHERE H.last_read = 0;
+-- KMK <--
+
 upsert:
 INSERT INTO history(chapter_id, last_read, time_read)
 VALUES (:chapterId, :readAt, :time_read)

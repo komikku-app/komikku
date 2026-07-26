@@ -78,7 +78,22 @@ class ChapterRepositoryImpl(
 
     override suspend fun removeChaptersWithIds(chapterIds: List<Long>) {
         try {
-            handler.await { chaptersQueries.removeChaptersWithIds(chapterIds) }
+            // KMK -->
+            // Dropping the cached rows first makes the delete trigger a no-op, so the maxima
+            // are recovered once per entry instead of once per chapter. Resolve the entries
+            // before the delete, while the chapters can still be joined back to them.
+            handler.await(inTransaction = true) {
+                val affectedMangaIds = chaptersQueries.getMangaIdsByChapterIds(chapterIds)
+                    .executeAsList()
+                if (affectedMangaIds.isNotEmpty()) {
+                    manga_chapter_statsQueries.deleteForMangaIds(affectedMangaIds)
+                }
+                chaptersQueries.removeChaptersWithIds(chapterIds)
+                if (affectedMangaIds.isNotEmpty()) {
+                    manga_chapter_statsQueries.rebuildForMangaIds(affectedMangaIds)
+                }
+            }
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
         }

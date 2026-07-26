@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
@@ -59,7 +60,11 @@ class HistoryRepositoryImpl(
     // KMK -->
     override suspend fun resetHistory(historyIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryByIds(historyIds) }
+            handler.await(inTransaction = true) {
+                rebuildingStats({ historyQueries.getMangaIdsByHistoryIds(historyIds).executeAsList() }) {
+                    historyQueries.resetHistoryByIds(historyIds)
+                }
+            }
             // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
@@ -69,7 +74,9 @@ class HistoryRepositoryImpl(
     // KMK -->
     override suspend fun resetHistoryByMangaIds(mangaIds: List<Long>) {
         try {
-            handler.await { historyQueries.resetHistoryByMangaIds(mangaIds) }
+            handler.await(inTransaction = true) {
+                rebuildingStats({ mangaIds }) { historyQueries.resetHistoryByMangaIds(mangaIds) }
+            }
             // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
@@ -78,13 +85,49 @@ class HistoryRepositoryImpl(
 
     override suspend fun deleteAllHistory(): Boolean {
         return try {
-            handler.await { historyQueries.removeAllHistory() }
+            handler.await(inTransaction = true) {
+                // KMK -->
+                rebuildingStats({ historyQueries.getMangaIdsWithHistory().executeAsList() }) {
+                    historyQueries.removeAllHistory()
+                }
+                // KMK <--
+            }
             true
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
             false
         }
     }
+
+    // KMK -->
+    override suspend fun removeResettedHistory() {
+        try {
+            handler.await(inTransaction = true) {
+                rebuildingStats({ historyQueries.getMangaIdsWithResettedHistory().executeAsList() }) {
+                    historyQueries.removeResettedHistory()
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, throwable = e)
+        }
+    }
+
+    /**
+     * Drops the cached stats rows for the affected entries so the per-row history triggers
+     * become no-ops, then rebuilds them once. [resolveMangaIds] runs before [block], while
+     * the history rows can still be joined back to their manga.
+     */
+    private fun Database.rebuildingStats(resolveMangaIds: () -> List<Long>, block: Database.() -> Unit) {
+        val mangaIds = resolveMangaIds()
+        if (mangaIds.isEmpty()) {
+            block()
+            return
+        }
+        manga_chapter_statsQueries.deleteForMangaIds(mangaIds)
+        block()
+        manga_chapter_statsQueries.rebuildForMangaIds(mangaIds)
+    }
+    // KMK <--
 
     override suspend fun upsertHistory(historyUpdate: HistoryUpdate) {
         try {

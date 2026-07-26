@@ -1,0 +1,385 @@
+-- Create cached per-manga chapter aggregates.
+
+CREATE TABLE manga_chapter_stats(
+    manga_id INTEGER NOT NULL PRIMARY KEY,
+    total_count INTEGER NOT NULL DEFAULT 0,
+    read_count INTEGER NOT NULL DEFAULT 0,
+    bookmark_count INTEGER NOT NULL DEFAULT 0,
+    bookmark_read_count INTEGER NOT NULL DEFAULT 0,
+    latest_upload INTEGER NOT NULL DEFAULT 0,
+    chapter_fetched_at INTEGER NOT NULL DEFAULT 0,
+    last_read INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(manga_id) REFERENCES mangas (_id)
+    ON DELETE CASCADE
+);
+
+-- Backfill aggregates from existing chapters.
+INSERT INTO manga_chapter_stats(
+    manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+    latest_upload, chapter_fetched_at, last_read
+)
+SELECT
+    C.manga_id,
+    count(*),
+    coalesce(sum(C.read), 0),
+    coalesce(sum(C.bookmark), 0),
+    coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+    coalesce(max(C.date_upload), 0),
+    coalesce(max(C.date_fetch), 0),
+    coalesce(max(H.last_read), 0)
+FROM chapters C
+LEFT JOIN history H ON H.chapter_id = C._id
+WHERE EXISTS (SELECT 1 FROM mangas WHERE _id = C.manga_id)
+AND NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+)
+GROUP BY C.manga_id;
+
+CREATE TRIGGER manga_chapter_stats_insert_chapter
+AFTER INSERT ON chapters
+WHEN NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = new.manga_id AND ES.scanlator = new.scanlator
+)
+BEGIN
+    INSERT INTO manga_chapter_stats(
+        manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+        latest_upload, chapter_fetched_at, last_read
+    )
+    VALUES (
+        new.manga_id, 1, new.read, new.bookmark,
+        CASE WHEN new.bookmark = 1 AND new.read = 1 THEN 1 ELSE 0 END,
+        new.date_upload, new.date_fetch, 0
+    )
+    ON CONFLICT(manga_id) DO UPDATE SET
+        total_count = total_count + 1,
+        read_count = read_count + excluded.read_count,
+        bookmark_count = bookmark_count + excluded.bookmark_count,
+        bookmark_read_count = bookmark_read_count + excluded.bookmark_read_count,
+        latest_upload = max(latest_upload, excluded.latest_upload),
+        chapter_fetched_at = max(chapter_fetched_at, excluded.chapter_fetched_at);
+END;
+
+-- Update read and bookmark totals. Dates are handled separately.
+CREATE TRIGGER manga_chapter_stats_update_chapter
+AFTER UPDATE ON chapters
+WHEN old.manga_id = new.manga_id
+AND old.scanlator IS new.scanlator
+AND (old.read IS NOT new.read OR old.bookmark IS NOT new.bookmark)
+AND NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = new.manga_id AND ES.scanlator = new.scanlator
+)
+BEGIN
+    UPDATE manga_chapter_stats SET
+        read_count = read_count + new.read - old.read,
+        bookmark_count = bookmark_count + new.bookmark - old.bookmark,
+        bookmark_read_count = bookmark_read_count
+            + (CASE WHEN new.bookmark = 1 AND new.read = 1 THEN 1 ELSE 0 END)
+            - (CASE WHEN old.bookmark = 1 AND old.read = 1 THEN 1 ELSE 0 END)
+    WHERE manga_id = new.manga_id;
+END;
+
+-- Rebuild after changes that affect aggregate membership.
+CREATE TRIGGER manga_chapter_stats_move_chapter
+AFTER UPDATE ON chapters
+WHEN old.manga_id IS NOT new.manga_id
+OR old.scanlator IS NOT new.scanlator
+BEGIN
+    INSERT INTO manga_chapter_stats(
+        manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+        latest_upload, chapter_fetched_at, last_read
+    )
+    SELECT
+        new.manga_id,
+        count(*),
+        coalesce(sum(C.read), 0),
+        coalesce(sum(C.bookmark), 0),
+        coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+        coalesce(max(C.date_upload), 0),
+        coalesce(max(C.date_fetch), 0),
+        coalesce(max(H.last_read), 0)
+    FROM chapters C
+    LEFT JOIN history H ON H.chapter_id = C._id
+    WHERE C.manga_id = new.manga_id
+    AND NOT EXISTS (
+        SELECT 1 FROM excluded_scanlators ES
+        WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+    )
+    ON CONFLICT(manga_id) DO UPDATE SET
+        total_count = excluded.total_count,
+        read_count = excluded.read_count,
+        bookmark_count = excluded.bookmark_count,
+        bookmark_read_count = excluded.bookmark_read_count,
+        latest_upload = excluded.latest_upload,
+        chapter_fetched_at = excluded.chapter_fetched_at,
+        last_read = excluded.last_read;
+END;
+
+-- Rebuild the source manga after a chapter move.
+CREATE TRIGGER manga_chapter_stats_move_chapter_source
+AFTER UPDATE ON chapters
+WHEN old.manga_id IS NOT new.manga_id
+BEGIN
+    INSERT INTO manga_chapter_stats(
+        manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+        latest_upload, chapter_fetched_at, last_read
+    )
+    SELECT
+        old.manga_id,
+        count(*),
+        coalesce(sum(C.read), 0),
+        coalesce(sum(C.bookmark), 0),
+        coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+        coalesce(max(C.date_upload), 0),
+        coalesce(max(C.date_fetch), 0),
+        coalesce(max(H.last_read), 0)
+    FROM chapters C
+    LEFT JOIN history H ON H.chapter_id = C._id
+    WHERE C.manga_id = old.manga_id
+    AND NOT EXISTS (
+        SELECT 1 FROM excluded_scanlators ES
+        WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+    )
+    ON CONFLICT(manga_id) DO UPDATE SET
+        total_count = excluded.total_count,
+        read_count = excluded.read_count,
+        bookmark_count = excluded.bookmark_count,
+        bookmark_read_count = excluded.bookmark_read_count,
+        latest_upload = excluded.latest_upload,
+        chapter_fetched_at = excluded.chapter_fetched_at,
+        last_read = excluded.last_read;
+END;
+
+-- Adjust the maxima for a date change; only lowering the current maximum needs a scan.
+CREATE TRIGGER manga_chapter_stats_update_chapter_dates
+AFTER UPDATE ON chapters
+WHEN old.manga_id = new.manga_id
+AND old.scanlator IS new.scanlator
+AND (old.date_upload IS NOT new.date_upload OR old.date_fetch IS NOT new.date_fetch)
+AND NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = new.manga_id AND ES.scanlator = new.scanlator
+)
+BEGIN
+    UPDATE manga_chapter_stats SET
+        latest_upload = CASE
+            WHEN new.date_upload >= latest_upload THEN new.date_upload
+            WHEN old.date_upload < latest_upload THEN latest_upload
+            ELSE coalesce((
+                SELECT max(C.date_upload) FROM chapters C
+                WHERE C.manga_id = new.manga_id
+                AND NOT EXISTS (
+                    SELECT 1 FROM excluded_scanlators ES
+                    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+                )
+            ), 0)
+            END,
+        chapter_fetched_at = CASE
+            WHEN new.date_fetch >= chapter_fetched_at THEN new.date_fetch
+            WHEN old.date_fetch < chapter_fetched_at THEN chapter_fetched_at
+            ELSE coalesce((
+                SELECT max(C.date_fetch) FROM chapters C
+                WHERE C.manga_id = new.manga_id
+                AND NOT EXISTS (
+                    SELECT 1 FROM excluded_scanlators ES
+                    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+                )
+            ), 0)
+            END
+    WHERE manga_id = new.manga_id;
+END;
+
+-- Run before deletion so the chapter history is still available.
+CREATE TRIGGER manga_chapter_stats_delete_chapter
+BEFORE DELETE ON chapters
+WHEN EXISTS (SELECT 1 FROM mangas WHERE _id = old.manga_id)
+AND NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = old.manga_id AND ES.scanlator = old.scanlator
+)
+BEGIN
+    UPDATE manga_chapter_stats SET
+        total_count = total_count - 1,
+        read_count = read_count - old.read,
+        bookmark_count = bookmark_count - old.bookmark,
+        bookmark_read_count = bookmark_read_count
+            - (CASE WHEN old.bookmark = 1 AND old.read = 1 THEN 1 ELSE 0 END),
+        latest_upload = CASE
+            WHEN old.date_upload < latest_upload THEN latest_upload
+            ELSE coalesce((
+                SELECT max(C.date_upload) FROM chapters C
+                WHERE C.manga_id = old.manga_id AND C._id != old._id
+                AND NOT EXISTS (
+                    SELECT 1 FROM excluded_scanlators ES
+                    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+                )
+            ), 0)
+            END,
+        chapter_fetched_at = CASE
+            WHEN old.date_fetch < chapter_fetched_at THEN chapter_fetched_at
+            ELSE coalesce((
+                SELECT max(C.date_fetch) FROM chapters C
+                WHERE C.manga_id = old.manga_id AND C._id != old._id
+                AND NOT EXISTS (
+                    SELECT 1 FROM excluded_scanlators ES
+                    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+                )
+            ), 0)
+            END,
+        last_read = CASE
+            WHEN coalesce((
+                SELECT H.last_read FROM history H WHERE H.chapter_id = old._id
+            ), 0) < last_read THEN last_read
+            ELSE coalesce((
+                SELECT max(H.last_read) FROM history H
+                JOIN chapters C ON C._id = H.chapter_id
+                WHERE C.manga_id = old.manga_id AND C._id != old._id
+                AND NOT EXISTS (
+                    SELECT 1 FROM excluded_scanlators ES
+                    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+                )
+            ), 0)
+            END
+    WHERE manga_id = old.manga_id;
+END;
+
+-- Update the latest read time.
+CREATE TRIGGER manga_chapter_stats_insert_history
+AFTER INSERT ON history
+BEGIN
+    UPDATE manga_chapter_stats
+    SET last_read = max(last_read, coalesce(new.last_read, 0))
+    WHERE manga_id = (
+        SELECT C.manga_id FROM chapters C
+        WHERE C._id = new.chapter_id
+        AND NOT EXISTS (
+            SELECT 1 FROM excluded_scanlators ES
+            WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+        )
+    );
+END;
+
+-- Recompute the latest read time when needed.
+CREATE TRIGGER manga_chapter_stats_update_history
+AFTER UPDATE OF last_read ON history
+WHEN old.last_read IS NOT new.last_read
+BEGIN
+    UPDATE manga_chapter_stats
+    SET last_read = CASE
+        WHEN coalesce(new.last_read, 0) >= last_read THEN coalesce(new.last_read, 0)
+        WHEN coalesce(old.last_read, 0) < last_read THEN last_read
+        ELSE coalesce((
+            SELECT max(H.last_read) FROM history H
+            JOIN chapters C ON C._id = H.chapter_id
+            WHERE C.manga_id = manga_chapter_stats.manga_id
+            AND NOT EXISTS (
+                SELECT 1 FROM excluded_scanlators ES
+                WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+            )
+        ), 0)
+        END
+    WHERE manga_id = (
+        SELECT C.manga_id FROM chapters C
+        WHERE C._id = new.chapter_id
+        AND NOT EXISTS (
+            SELECT 1 FROM excluded_scanlators ES
+            WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+        )
+    );
+END;
+
+CREATE TRIGGER manga_chapter_stats_delete_history
+AFTER DELETE ON history
+BEGIN
+    UPDATE manga_chapter_stats
+    SET last_read = CASE
+        WHEN coalesce(old.last_read, 0) < last_read THEN last_read
+        ELSE coalesce((
+            SELECT max(H.last_read) FROM history H
+            JOIN chapters C ON C._id = H.chapter_id
+            WHERE C.manga_id = manga_chapter_stats.manga_id
+            AND NOT EXISTS (
+                SELECT 1 FROM excluded_scanlators ES
+                WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+            )
+        ), 0)
+        END
+    WHERE manga_id = (
+        SELECT C.manga_id FROM chapters C
+        WHERE C._id = old.chapter_id
+        AND NOT EXISTS (
+            SELECT 1 FROM excluded_scanlators ES
+            WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+        )
+    );
+END;
+
+-- Rebuild aggregates after scanlator exclusions change.
+CREATE TRIGGER manga_chapter_stats_insert_excluded_scanlator
+AFTER INSERT ON excluded_scanlators
+BEGIN
+    INSERT INTO manga_chapter_stats(
+        manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+        latest_upload, chapter_fetched_at, last_read
+    )
+    SELECT
+        new.manga_id,
+        count(*),
+        coalesce(sum(C.read), 0),
+        coalesce(sum(C.bookmark), 0),
+        coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+        coalesce(max(C.date_upload), 0),
+        coalesce(max(C.date_fetch), 0),
+        coalesce(max(H.last_read), 0)
+    FROM chapters C
+    LEFT JOIN history H ON H.chapter_id = C._id
+    WHERE C.manga_id = new.manga_id
+    AND NOT EXISTS (
+        SELECT 1 FROM excluded_scanlators ES
+        WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+    )
+    ON CONFLICT(manga_id) DO UPDATE SET
+        total_count = excluded.total_count,
+        read_count = excluded.read_count,
+        bookmark_count = excluded.bookmark_count,
+        bookmark_read_count = excluded.bookmark_read_count,
+        latest_upload = excluded.latest_upload,
+        chapter_fetched_at = excluded.chapter_fetched_at,
+        last_read = excluded.last_read;
+END;
+
+CREATE TRIGGER manga_chapter_stats_delete_excluded_scanlator
+AFTER DELETE ON excluded_scanlators
+WHEN EXISTS (SELECT 1 FROM mangas WHERE _id = old.manga_id)
+BEGIN
+    INSERT INTO manga_chapter_stats(
+        manga_id, total_count, read_count, bookmark_count, bookmark_read_count,
+        latest_upload, chapter_fetched_at, last_read
+    )
+    SELECT
+        old.manga_id,
+        count(*),
+        coalesce(sum(C.read), 0),
+        coalesce(sum(C.bookmark), 0),
+        coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+        coalesce(max(C.date_upload), 0),
+        coalesce(max(C.date_fetch), 0),
+        coalesce(max(H.last_read), 0)
+    FROM chapters C
+    LEFT JOIN history H ON H.chapter_id = C._id
+    WHERE C.manga_id = old.manga_id
+    AND NOT EXISTS (
+        SELECT 1 FROM excluded_scanlators ES
+        WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+    )
+    ON CONFLICT(manga_id) DO UPDATE SET
+        total_count = excluded.total_count,
+        read_count = excluded.read_count,
+        bookmark_count = excluded.bookmark_count,
+        bookmark_read_count = excluded.bookmark_read_count,
+        latest_upload = excluded.latest_upload,
+        chapter_fetched_at = excluded.chapter_fetched_at,
+        last_read = excluded.last_read;
+END;

@@ -152,6 +152,16 @@ object DebugFunctions {
 
     fun clearSavedSearches() = runBlocking { handler.await { saved_searchQueries.deleteAll() } }
 
+    // KMK -->
+    /** Rebuilds cached chapter aggregates for repair. */
+    fun rebuildLibraryChapterStats() = runBlocking {
+        handler.await(inTransaction = true) {
+            manga_chapter_statsQueries.deleteAll()
+            manga_chapter_statsQueries.rebuild()
+        }
+    }
+    // KMK <--
+
     fun listAllSources() = sourceManager.getAll().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
