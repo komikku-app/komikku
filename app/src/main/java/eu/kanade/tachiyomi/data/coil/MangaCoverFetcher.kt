@@ -214,7 +214,11 @@ class MangaCoverFetcher(
 
     private suspend fun executeNetworkRequest(): Response {
         val client = sourceLazy.value?.client ?: callFactoryLazy.value
-        val response = client.newCall(newRequest()).await()
+        // KMK -->
+        val response = SourceImageCallLimiter.execute(sourceLazy.value, url, options.networkCachePolicy.readEnabled) {
+            client.newCall(newRequest()).await()
+        }
+        // KMK <--
         if (!response.isSuccessful && response.code != HTTP_NOT_MODIFIED) {
             response.close()
             throw IOException(response.message)
