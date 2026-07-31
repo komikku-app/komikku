@@ -14,6 +14,12 @@ markdown = "0.39.2"
 junit = "6.0.3"
 materialKolor = "5.0.0-alpha07"
 
+#tensorflowLite = "2.14.0"
+#tensorflowLiteSupport = "0.4.4"
+
+litert = "1.4.2"
+material3Version = "1.4.0"
+
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
 android-shortcut-gradle = "com.github.komikku-app:android-shortcut-gradle-plugin:0.2.0"
@@ -112,6 +118,15 @@ markdown-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3",
 stringSimilarity = { module = "com.aallam.similarity:string-similarity-kotlin", version = "0.1.0" }
 
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+
+#tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
+#tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLite" }
+#tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
+
+litert = { module = "com.google.ai.edge.litert:litert", version.ref = "litert" }
+litert-gpu = { module = "com.google.ai.edge.litert:litert-gpu", version.ref = "litert" }
+litert-gpu-api = { module = "com.google.ai.edge.litert:litert-gpu-api", version.ref = "litert" }
+material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3Version" }
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version = "4.5.0" }

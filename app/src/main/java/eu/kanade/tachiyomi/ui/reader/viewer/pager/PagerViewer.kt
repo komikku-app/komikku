@@ -19,11 +19,15 @@ import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
+import eu.kanade.tachiyomi.util.upscale.AiUpscalePrefetcher
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.min
 
@@ -264,6 +268,17 @@ abstract class PagerViewer(
             logcat { "Request preload next chapter because we're at page ${page.number} of ${pages.size}" }
             adapter.nextTransition?.to?.let(activity::requestPreloadChapter)
         }
+
+        // Upscale prefetch: si estende automaticamente oltre il confine di capitolo
+        // se adapter.nextTransition?.to?.pages è già caricato in questo momento.
+        val prefetchAhead = Injekt.get<ReaderPreferences>().aiUpscalePrefetchAheadCount().get()
+        val targetWidth = activity.resources.displayMetrics.widthPixels
+        AiUpscalePrefetcher.updatePosition(
+            current = page,
+            aheadCount = prefetchAhead,
+            targetWidth = targetWidth,
+            nextChapterProvider = { adapter.nextTransition?.to?.pages },
+        )
     }
 
     /**

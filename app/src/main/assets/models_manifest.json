@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "variants": [
+    {
+      "modelId": "REALESRGAN_ANIMEVIDEOV3",
+      "batchSize": 1,
+      "assetFileName": "realesr_animevideov3_x4_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realesr_animevideov3_x4_384T_B1_float32.tflite",
+      "sha256": "642a3a90b9048aa2dcb93ea7df00b4a4253f210cb88b9265377ddcc04111a756",
+      "sizeBytes": 2499412
+    },
+    {
+      "modelId": "REALESRGAN_ANIMEVIDEOV3",
+      "batchSize": 3,
+      "assetFileName": "realesr_animevideov3_x4_384T_B3_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realesr_animevideov3_x4_384T_B3_float32.tflite",
+      "sha256": "293c9b0596cc1239674f791c7693baf6efbaf51da0aad1f6bd5572aaa16343ed",
+      "sizeBytes": 2499412
+    },
+    {
+      "modelId": "WAIFU2X_SCALE2X",
+      "batchSize": 1,
+      "assetFileName": "waifu2x_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/waifu2x_384T_B1_float32.tflite",
+      "sha256": "85862d8150830e0688a132aa5c066c7db6fadd4bea8c860168b5a549166f0eaf",
+      "sizeBytes": 2215168
+    },
+    {
+      "modelId": "WAIFU2X_SCALE2X",
+      "batchSize": 3,
+      "assetFileName": "waifu2x_384T_B3_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/waifu2x_384T_B3_float32.tflite",
+      "sha256": "28a5640f61353da78897851e0f150e3bce2f4ca34cc9f175e9041feaf629f4e4",
+      "sizeBytes": 2215168
+    },
+    {
+      "modelId": "CUNET_SCALE2X",
+      "batchSize": 1,
+      "assetFileName": "cunet2x_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/cunet2x_384T_B1_float32.tflite",
+      "sha256": "62acc8772ba8d9a8f2962f34160e2b20680485c13c32b291442e8015ab762316",
+      "sizeBytes": 154539320
+    },
+    {
+      "modelId": "REALCUGAN_SCALE2X",
+      "batchSize": 1,
+      "assetFileName": "realcugan2x_no_denoise_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan2x_no_denoise_384T_B1_float32.tflite",
+      "sha256": "d8bcc5a911c6f3f69fa6224465a60c6561e3e8146a3619e09fb4a101eabdf96f",
+      "sizeBytes": 5165720
+    },
+    {
+      "modelId": "REALCUGAN_SCALE2X",
+      "batchSize": 3,
+      "assetFileName": "realcugan2x_no_denoise_384T_B3_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan2x_no_denoise_384T_B3_float32.tflite",
+      "sha256": "1956ac3d27d143902a93301c3a462333fa74710a2c44fedbdf3b8afd0de34f73",
+      "sizeBytes": 5165720
+    },
+    {
+      "modelId": "REALCUGAN_SCALE3X",
+      "batchSize": 1,
+      "assetFileName": "realcugan3x_no_denoise_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan3x_no_denoise_384T_B1_float32.tflite",
+      "sha256": "6f0e513546267e6c2e3513e69008813893edbc64d0e9c7abffc8eca3c5841162",
+      "sizeBytes": 5172632
+    },
+    {
+      "modelId": "REALCUGAN_SCALE3X",
+      "batchSize": 3,
+      "assetFileName": "realcugan3x_no_denoise_384T_B3_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan3x_no_denoise_384T_B3_float32.tflite",
+      "sha256": "812220b8cc040700aa75ce9a662a72e0995b73973a2279a4b6188ef36a2bd7ff",
+      "sizeBytes": 5172632
+    },
+    {
+      "modelId": "REALCUGAN_SCALE4X",
+      "batchSize": 1,
+      "assetFileName": "realcugan4x_no_denoise_384T_B1_float32.tflite",
+      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan4x_no_denoise_384T_B1_float32.tflite",
+      "sha256": "c401f1c60917442b36a0416c7c24899dd0ce7f4b96d1d1756ec594ba1ce842dc",
+      "sizeBytes": 5661340
+    }
+  ]
+}

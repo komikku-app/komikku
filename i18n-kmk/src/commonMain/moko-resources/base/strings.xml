@@ -38,6 +38,27 @@
     <string name="scale_type_20_9">20:9</string>
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
+    <string name="pref_ai_upscale_model">Upscaling Model</string>
+    <string name="pref_ai_upscale_enabled">Ai upscaling (experimental)</string>
+    <string name="pref_ai_upscale_manage_in_settings">Manage models directly from reader settings</string>
+    <string name="action_delete_upscale_model">Delete downloaded model</string>
+    <string name="pref_ai_upscale_cannot_delete_active_model">You cannot delete the model currently in use. Select another one first</string>
+    <string name="desc_upscale_realesrgan_animevideov3">Quick generic model. Recommended as default: good compromise between quality and speed on medium hardware.</string>
+    <string name="desc_upscale_waifu2x">Placeholder.</string>
+    <string name="desc_upscale_cunet2x">Placeholder.</string>
+    <string name="desc_upscale_realcugan2x">Placeholder.</string>
+    <string name="desc_upscale_realcugan3x">Placeholder.</string>
+    <string name="desc_upscale_realcugan4x">Placeholder.</string>
+    <string name="action_model_info">Placeholder.</string>
+    <string name="upscale_badge_in_progress">Upscaling...</string>
+    <string name="upscale_badge_done">Upscaled</string>
+    <string name="pref_ai_upscale_prefetch_ahead">Prefetch amount</string>
+    <string name="pref_ai_upscale_wifi_only">Download models over Wi-Fi only</string>
+    <string name="pref_ai_upscale_wifi_only_summary">Avoid consuming mobile data by downloading upscaling models</string>
+    <string name="pref_ai_upscale_tile_overlap">Overlap between tiles</string>
+    <string name="pref_ai_upscale_tile_overlap_summary">Higher values reduce visible joints between tiles but increase required time and memory</string>
+    <string name="pref_ai_upscale_tile_overlap_off">Disabled</string>
+    <string name="upscale_badge_failed">Upscaling failed</string>
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>

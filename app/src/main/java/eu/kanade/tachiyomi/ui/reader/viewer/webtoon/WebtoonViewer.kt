@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
+import eu.kanade.tachiyomi.util.upscale.AiUpscalePrefetcher
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
@@ -264,17 +265,28 @@ class WebtoonViewer(
         logcat { "onPageSelected: ${page.number}/${pages.size}" }
         activity.onPageSelected(page)
 
+        val nextItem = adapter.items.getOrNull(adapter.items.size - 1)
+        val transitionChapter = (nextItem as? ChapterTransition.Next)?.to ?: (nextItem as? ReaderPage)?.chapter
+
         // Preload next chapter once we're within the last 5 pages of the current chapter
         val inPreloadRange = pages.size - page.number < 5
         if (inPreloadRange && allowPreload && page.chapter == adapter.currentChapter) {
             logcat { "Request preload next chapter because we're at page ${page.number} of ${pages.size}" }
-            val nextItem = adapter.items.getOrNull(adapter.items.size - 1)
-            val transitionChapter = (nextItem as? ChapterTransition.Next)?.to ?: (nextItem as?ReaderPage)?.chapter
             if (transitionChapter != null) {
                 logcat { "Requesting to preload chapter ${transitionChapter.chapter.chapter_number}" }
                 activity.requestPreloadChapter(transitionChapter)
             }
         }
+
+        val prefetchAhead = readerPreferences.aiUpscalePrefetchAheadCount().get()
+        val targetWidth = activity.resources.displayMetrics.widthPixels
+        AiUpscalePrefetcher.updatePosition(
+            current = page,
+            aheadCount = prefetchAhead,
+            targetWidth = targetWidth,
+            alreadyCoveredAhead = RECYCLER_VIEW_CACHE_SIZE,
+            nextChapterProvider = { transitionChapter?.pages },
+        )
     }
 
     /**
