@@ -37,6 +37,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 object ImageUtil {
 
@@ -153,6 +154,45 @@ object ImageUtil {
 
         return output
     }
+
+    // KMK -->
+    /**
+     * Creates a new image with canvas padding so the original occupies exactly one half
+     * of the result. Used for solo pages in double-paged mode so they appear on the
+     * correct side of the screen (matching the reading direction).
+     */
+    fun addSoloPagePadding(
+        imageSource: BufferedSource,
+        drawOnLeft: Boolean,
+        @ColorInt background: Int = Color.WHITE,
+    ): BufferedSource {
+        // Buffer the content first so we don't exhaust the source on a failed decode.
+        val buffer = Buffer()
+        buffer.readFrom(imageSource.inputStream())
+
+        val imageBitmap = BitmapFactory.decodeStream(buffer.inputStream())
+            ?: return Buffer().also { it.writeAll(buffer) }
+        val height = imageBitmap.height
+        val width = imageBitmap.width
+
+        val result = createBitmap(width * 2, height)
+        val canvas = Canvas(result)
+        canvas.drawColor(background)
+
+        val dest = if (drawOnLeft) {
+            Rect(0, 0, width, height)
+        } else {
+            Rect(width, 0, width * 2, height)
+        }
+        canvas.drawBitmap(imageBitmap, imageBitmap.rect, dest, null)
+        imageBitmap.recycle()
+
+        val output = Buffer()
+        result.compress(Bitmap.CompressFormat.JPEG, 100, output.outputStream())
+        result.recycle()
+        return output
+    }
+    // KMK <--
 
     fun rotateImage(imageSource: BufferedSource, degrees: Float): BufferedSource {
         val imageBitmap = BitmapFactory.decodeStream(imageSource.inputStream())
@@ -766,33 +806,23 @@ object ImageUtil {
         @ColorInt background: Int = Color.WHITE,
         progressCallback: ((Int) -> Unit)? = null,
     ): BufferedSource {
-        val height = imageBitmap.height
-        val width = imageBitmap.width
-        val height2 = imageBitmap2.height
-        val width2 = imageBitmap2.width
+        // KMK -->
+        val maxHeight = max(imageBitmap.height, imageBitmap2.height)
+        val scaledW1 = (imageBitmap.width * maxHeight.toFloat() / imageBitmap.height).roundToInt()
+        val scaledW2 = (imageBitmap2.width * maxHeight.toFloat() / imageBitmap2.height).roundToInt()
+        val halfWidth = max(scaledW1, scaledW2)
 
-        val maxHeight = max(height, height2)
-
-        val result = createBitmap(width + width2 + centerMargin, max(height, height2))
-        val canvas = Canvas(result)
-        canvas.drawColor(background)
-        val upperPart = Rect(
-            if (isLTR) 0 else width2 + centerMargin,
-            (maxHeight - height) / 2,
-            (if (isLTR) 0 else width2 + centerMargin) + width,
-            height + (maxHeight - height) / 2,
-        )
-
-        canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
-        progressCallback?.invoke(98)
-        val bottomPart = Rect(
-            if (!isLTR) 0 else width + centerMargin,
-            (maxHeight - height2) / 2,
-            (if (!isLTR) 0 else width + centerMargin) + width2,
-            height2 + (maxHeight - height2) / 2,
-        )
-
-        canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
+        val result = createBitmap(halfWidth * 2 + centerMargin, maxHeight)
+        result.applyCanvas {
+            drawColor(background)
+            val (leftPage, rightPage) = if (isLTR) imageBitmap to imageBitmap2 else imageBitmap2 to imageBitmap
+            val (leftW, rightW) = if (isLTR) scaledW1 to scaledW2 else scaledW2 to scaledW1
+            drawBitmap(leftPage, leftPage.rect, Rect(halfWidth - leftW, 0, halfWidth, maxHeight), null)
+            progressCallback?.invoke(97)
+            drawBitmap(rightPage, rightPage.rect, Rect(halfWidth + centerMargin, 0, halfWidth + centerMargin + rightW, maxHeight), null)
+            progressCallback?.invoke(98)
+        }
+        // KMK <--
         progressCallback?.invoke(99)
 
         val output = Buffer()

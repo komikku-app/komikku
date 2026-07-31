@@ -272,7 +272,20 @@ class PagerPageHolder(
     private fun mergePages(imageSource: BufferedSource, imageSource2: BufferedSource?): BufferedSource {
         // Handle adding a center margin to wide images if requested
         if (imageSource2 == null) {
-            return handleWideImage(imageSource)
+            // KMK -->
+            val wideImage = handleWideImage(imageSource)
+            // Solo portrait page in double-paged mode: position on half screen
+            if (viewer.config.doublePages && !ImageUtil.isAnimatedAndSupported(wideImage) &&
+                !ImageUtil.isWideImage(wideImage)
+            ) {
+                return ImageUtil.addSoloPagePadding(
+                    wideImage,
+                    drawOnLeft = shouldDrawSoloPageOnLeft(),
+                    viewer.config.pageCanvasColor,
+                )
+            }
+            // KMK <--
+            return wideImage
         }
 
         if (page.fullPage) return imageSource
@@ -333,6 +346,25 @@ class PagerPageHolder(
             updateProgress(it)
         }
     }
+
+    // KMK -->
+    private fun shouldDrawSoloPageOnLeft(): Boolean {
+        val isBaseLTR = viewer is R2LPagerViewer
+        val isViewerLTR = if (viewer.config.invertDoublePages) {
+            !isBaseLTR
+        } else {
+            isBaseLTR
+        }
+
+        val isPageFirstInSpread = page.index == 0
+
+        return if (isViewerLTR) {
+            isPageFirstInSpread
+        } else {
+            !isPageFirstInSpread
+        }
+    }
+    // KMK <--
 
     private fun handleWideImage(imageSource: BufferedSource): BufferedSource {
         return if (
