@@ -130,6 +130,21 @@ class LibraryPreferences(
     fun filterCategoriesInclude() = preferenceStore.getStringSet(FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY, emptySet())
 
     fun filterCategoriesExclude() = preferenceStore.getStringSet(FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
+
+    fun filterChapterTags() = preferenceStore.getBoolean(
+        "pref_filter_library_chapter_tags",
+        false,
+    )
+
+    fun filterChapterTagsInclude() = preferenceStore.getStringSet(
+        FILTER_LIBRARY_CHAPTER_TAGS_INCLUDE_PREF_KEY,
+        emptySet(),
+    )
+
+    fun filterChapterTagsExclude() = preferenceStore.getStringSet(
+        FILTER_LIBRARY_CHAPTER_TAGS_EXCLUDE_PREF_KEY,
+        emptySet(),
+    )
     // KMK <--
 
     fun filterTracking(id: Int) = preferenceStore.getEnum(
@@ -290,6 +305,8 @@ class LibraryPreferences(
         // KMK -->
         private const val FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY = "pref_filter_library_categories_include"
         private const val FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY = "pref_filter_library_categories_exclude"
+        private const val FILTER_LIBRARY_CHAPTER_TAGS_INCLUDE_PREF_KEY = "pref_filter_library_chapter_tags_include"
+        private const val FILTER_LIBRARY_CHAPTER_TAGS_EXCLUDE_PREF_KEY = "pref_filter_library_chapter_tags_exclude"
         // KMK <--
 
         val categoryPreferenceKeys = setOf(
