@@ -249,4 +249,5 @@
     <string name="information_empty_chapter_tags">You have no chapter tags. Tap the plus button to create one.</string>
     <string name="action_edit_chapter_tags">Edit tags</string>
     <string name="information_empty_chapter_tags_dialog">You have no chapter tags. Use the edit button to create one.</string>
+    <string name="action_filter_chapter_tags">Filter by tag</string>
 </resources>

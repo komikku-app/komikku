@@ -52,6 +52,7 @@ import eu.kanade.presentation.manga.ChapterSettingsDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
+import eu.kanade.presentation.manga.components.ChapterTagFilterDialog
 import eu.kanade.presentation.manga.components.ClearMangaDialog
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
@@ -471,6 +472,10 @@ class MangaScreen(
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
 
+        // KMK -->
+        var showChapterTagsFilterDialog by remember { mutableStateOf(false) }
+        // KMK <--
+
         val onDismissRequest = {
             screenModel.dismissDialog()
             // KMK -->
@@ -536,6 +541,10 @@ class MangaScreen(
                 onResetToDefault = screenModel::resetToDefaultSettings,
                 scanlatorFilterActive = successState.scanlatorFilterActive,
                 onScanlatorFilterClicked = { showScanlatorsDialog = true },
+                // KMK -->
+                chapterTagFilterActive = successState.chapterTagFilterActive,
+                onChapterTagFilterClicked = { showChapterTagsFilterDialog = true },
+                // KMK <--
             )
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
@@ -667,6 +676,17 @@ class MangaScreen(
                 onConfirm = screenModel::setExcludedScanlators,
             )
         }
+
+        // KMK -->
+        if (showChapterTagsFilterDialog) {
+            ChapterTagFilterDialog(
+                chapterTags = successState.chapterTags,
+                selectedTagIds = successState.chapterTagFilter,
+                onDismissRequest = { showChapterTagsFilterDialog = false },
+                onConfirm = screenModel::setChapterTagFilter,
+            )
+        }
+        // KMK <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {

@@ -86,6 +86,7 @@ import exh.util.trimOrNull
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CancellationException
@@ -129,7 +130,9 @@ import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.chapter.service.calculateChapterGap
 import tachiyomi.domain.chapter.service.getChapterSort
+import tachiyomi.domain.chapterTag.interactor.GetChapterTagFilter
 import tachiyomi.domain.chapterTag.interactor.GetChapterTags
+import tachiyomi.domain.chapterTag.interactor.SetChapterTagFilter
 import tachiyomi.domain.chapterTag.interactor.SetChapterTags
 import tachiyomi.domain.chapterTag.model.ChapterTag
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -237,6 +240,8 @@ class MangaScreenModel(
     private val deleteChaptersFromDb: DeleteChapters = Injekt.get(),
     private val getChapterTags: GetChapterTags = Injekt.get(),
     private val setChapterTags: SetChapterTags = Injekt.get(),
+    private val getChapterTagFilter: GetChapterTagFilter = Injekt.get(),
+    private val setChapterTagFilter: SetChapterTagFilter = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<MangaScreenModel.State>(State.Loading) {
 
@@ -426,6 +431,24 @@ class MangaScreenModel(
                             },
                         )
                     }
+                }
+        }
+
+        screenModelScope.launchIO {
+            getChapterTags.subscribe()
+                .flowWithLifecycle(lifecycle)
+                .distinctUntilChanged()
+                .collectLatest { tags ->
+                    updateSuccessState { it.copy(chapterTags = tags.toImmutableList()) }
+                }
+        }
+
+        screenModelScope.launchIO {
+            getChapterTagFilter.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
+                .distinctUntilChanged()
+                .collectLatest { tagIds ->
+                    updateSuccessState { it.copy(chapterTagFilter = tagIds.toImmutableSet()) }
                 }
         }
         // KMK <--
@@ -1729,6 +1752,9 @@ class MangaScreenModel(
         val manga = successState?.manga ?: return
         screenModelScope.launchNonCancellable {
             setMangaDefaultChapterFlags.await(manga)
+            // KMK -->
+            setChapterTagFilter.await(mangaId, emptySet())
+            // KMK <--
         }
     }
 
@@ -2012,6 +2038,12 @@ class MangaScreenModel(
         }
         toggleAllSelection(false)
     }
+
+    fun setChapterTagFilter(tagIds: Set<Long>) {
+        screenModelScope.launchIO {
+            setChapterTagFilter.await(mangaId, tagIds)
+        }
+    }
     // KMK <--
 
     // SY -->
@@ -2086,6 +2118,8 @@ class MangaScreenModel(
              * a list of <keyword, related mangas>
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
+            val chapterTags: ImmutableList<ChapterTag> = persistentListOf(),
+            val chapterTagFilter: ImmutableSet<Long> = persistentSetOf(),
             val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) },
             // KMK <--
         ) : State {
@@ -2148,8 +2182,13 @@ class MangaScreenModel(
             val scanlatorFilterActive: Boolean
                 get() = excludedScanlators.intersect(availableScanlators).isNotEmpty()
 
+            // KMK -->
+            val chapterTagFilterActive: Boolean
+                get() = chapterTagFilter.isNotEmpty()
+            // KMK <--
+
             val filterActive: Boolean
-                get() = scanlatorFilterActive || manga.chaptersFiltered()
+                get() = scanlatorFilterActive || manga.chaptersFiltered() /* KMK --> */ || chapterTagFilterActive /* KMK <-- */
 
             /**
              * Applies the view filters to the list of chapters obtained from the database.
