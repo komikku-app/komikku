@@ -238,4 +238,13 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <!-- Chapter tags -->
+    <string name="chapter_tags">Chapter tags</string>
+    <string name="pref_chapter_tags_summary">Create tags to organize individual chapters</string>
+    <string name="action_add_chapter_tag">Add tag</string>
+    <string name="action_rename_chapter_tag">Rename tag</string>
+    <string name="delete_chapter_tag">Delete tag</string>
+    <string name="delete_chapter_tag_confirmation">Do you wish to delete the tag %1$s?</string>
+    <string name="error_chapter_tag_exists">A tag with this name already exists!</string>
+    <string name="information_empty_chapter_tags">You have no chapter tags. Tap the plus button to create one.</string>
 </resources>
