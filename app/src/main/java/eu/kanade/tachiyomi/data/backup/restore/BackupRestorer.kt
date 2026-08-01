@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
 import eu.kanade.tachiyomi.data.backup.restore.restorers.CategoriesRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.ChapterTagsRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.ExtensionStoreRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.FeedRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
@@ -45,6 +46,7 @@ class BackupRestorer(
     // SY <--
     // KMK -->
     private val feedRestorer: FeedRestorer = FeedRestorer(),
+    private val chapterTagsRestorer: ChapterTagsRestorer = ChapterTagsRestorer(),
     // KMK <--
 ) {
 
@@ -124,6 +126,10 @@ class BackupRestorer(
                 restoreSourcePreferences(backup.backupSourcePreferences)
             }
             if (options.libraryEntries) {
+                // KMK -->
+                // Tag definitions must exist before chapters reattach to them by name.
+                chapterTagsRestorer(backup.backupChapterTags)
+                // KMK <--
                 restoreManga(backup.backupManga, if (options.categories) backup.backupCategories else emptyList())
             }
             if (options.extensionStores) {

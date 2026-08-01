@@ -26,6 +26,17 @@ WHERE C.manga_id = :mangaId
 OR C.manga_id IN (SELECT merged.manga_id FROM merged WHERE merged.merge_id = :mangaId)
 ORDER BY T.name COLLATE NOCASE;
 
+-- Backup only: chapter tags are carried by name, so a restore can match them against whatever
+-- tags already exist on the target device instead of relying on row ids lining up.
+getChapterTagNamesByMangaId:
+SELECT C.url AS chapterUrl, T.name AS tagName
+FROM chapters_chapter_tags CCT
+JOIN chapter_tags T
+ON T._id = CCT.tag_id
+JOIN chapters C
+ON C._id = CCT.chapter_id
+WHERE C.manga_id = :mangaId;
+
 insert:
 INSERT INTO chapter_tags(name)
 VALUES (:name);
