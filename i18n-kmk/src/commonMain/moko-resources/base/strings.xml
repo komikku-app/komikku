@@ -250,4 +250,5 @@
     <string name="action_edit_chapter_tags">Edit tags</string>
     <string name="information_empty_chapter_tags_dialog">You have no chapter tags. Use the edit button to create one.</string>
     <string name="action_filter_chapter_tags">Filter by tag</string>
+    <string name="pref_library_filter_chapter_tags_details">Entries with at least one chapter carrying the included tags will be shown</string>
 </resources>

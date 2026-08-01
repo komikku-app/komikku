@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.map
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.toggle
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.chapterTag.model.ChapterTag
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibrarySort
@@ -184,6 +185,12 @@ private fun ColumnScope.FilterPage(
     CategoriesFilter(
         libraryPreferences = screenModel.libraryPreferences,
         categories = categories,
+    )
+
+    val chapterTags by screenModel.chapterTagsFlow.collectAsState()
+    ChapterTagsFilter(
+        libraryPreferences = screenModel.libraryPreferences,
+        chapterTags = chapterTags,
     )
     // KMK <--
 
@@ -514,6 +521,59 @@ private fun CategoriesFilter(
         )
         Spacer(Modifier.weight(1f))
         TextButton(onClick = { showCategoriesDialog = true }) {
+            Text(stringResource(MR.strings.action_edit))
+        }
+    }
+}
+
+@Composable
+private fun ChapterTagsFilter(
+    libraryPreferences: LibraryPreferences,
+    chapterTags: List<ChapterTag>,
+) {
+    val filterChapterTags by libraryPreferences.filterChapterTags().collectAsState()
+
+    val filterChapterTagsInclude = libraryPreferences.filterChapterTagsInclude()
+    val filterChapterTagsExclude = libraryPreferences.filterChapterTagsExclude()
+    val included by filterChapterTagsInclude.collectAsState()
+    val excluded by filterChapterTagsExclude.collectAsState()
+
+    var showChapterTagsDialog by rememberSaveable { mutableStateOf(false) }
+    if (showChapterTagsDialog) {
+        TriStateListDialog(
+            title = stringResource(KMR.strings.chapter_tags),
+            message = stringResource(KMR.strings.pref_library_filter_chapter_tags_details),
+            items = chapterTags,
+            initialChecked = included.mapNotNull { id -> chapterTags.find { it.id.toString() == id } },
+            initialInversed = excluded.mapNotNull { id -> chapterTags.find { it.id.toString() == id } },
+            itemLabel = { it.name },
+            onDismissRequest = { showChapterTagsDialog = false },
+            onValueChanged = { newIncluded, newExcluded ->
+                filterChapterTagsInclude.set(newIncluded.map { it.id.toString() }.toSet())
+                filterChapterTagsExclude.set(newExcluded.map { it.id.toString() }.toSet())
+                showChapterTagsDialog = false
+            },
+        )
+    }
+
+    Row(
+        modifier = Modifier
+            .clickable(onClick = { libraryPreferences.filterChapterTags().toggle() })
+            .fillMaxWidth()
+            .padding(horizontal = SettingsItemsPaddings.Horizontal),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Checkbox(
+            checked = filterChapterTags,
+            onCheckedChange = null,
+        )
+        Text(
+            text = stringResource(KMR.strings.chapter_tags),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.weight(1f))
+        TextButton(onClick = { showChapterTagsDialog = true }) {
             Text(stringResource(MR.strings.action_edit))
         }
     }
