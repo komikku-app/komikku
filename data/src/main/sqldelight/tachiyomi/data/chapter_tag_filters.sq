@@ -24,3 +24,9 @@ VALUES (:mangaId, :tagId);
 deleteByMangaId:
 DELETE FROM chapter_tag_filters
 WHERE manga_id = :mangaId;
+
+-- Run before deleting the tag itself: the FK cascade would remove these rows too, but SQLDelight
+-- only notifies listeners of the tables named in the executed statement.
+deleteByTagId:
+DELETE FROM chapter_tag_filters
+WHERE tag_id = :tagId;

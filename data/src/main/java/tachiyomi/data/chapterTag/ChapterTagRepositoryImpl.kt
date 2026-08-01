@@ -28,7 +28,15 @@ class ChapterTagRepositoryImpl(
     }
 
     override suspend fun delete(tagId: Long) {
-        handler.await { chapter_tagsQueries.delete(tagId = tagId) }
+        // The FK cascade would clean both junction tables on its own, but SQLDelight only notifies
+        // listeners of the tables named in the executed statement — queries watching the junctions
+        // (chapter list filter, per-manga filter selection, library tags-per-manga) would keep
+        // serving stale rows. Deleting them explicitly in the same transaction fixes that.
+        handler.await(inTransaction = true) {
+            chapter_tag_filtersQueries.deleteByTagId(tagId = tagId)
+            chapters_chapter_tagsQueries.deleteByTagId(tagId = tagId)
+            chapter_tagsQueries.delete(tagId = tagId)
+        }
     }
 
     override suspend fun getTagIdsByChapterIds(chapterIds: List<Long>): Map<Long, List<Long>> {
@@ -38,6 +46,15 @@ class ChapterTagRepositoryImpl(
         }
             .groupBy({ it.first }, { it.second })
     }
+
+    override suspend fun getTagsByMangaId(mangaId: Long): Map<Long, List<ChapterTag>> = handler
+        .awaitList {
+            chapter_tagsQueries.getChapterTagsByMangaId(
+                mangaId,
+                ChapterTagMapper::mapChapterTagWithChapterId,
+            )
+        }
+        .groupBy({ it.first }, { it.second })
 
     override fun getTagsByMangaIdAsFlow(mangaId: Long): Flow<Map<Long, List<ChapterTag>>> = handler
         .subscribeToList {
@@ -60,6 +77,10 @@ class ChapterTagRepositoryImpl(
             chapters_chapter_tagsQueries.getTagIdsPerManga { mangaId, tagId -> mangaId to tagId }
         }
         .map { rows -> rows.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() } }
+
+    override suspend fun getFilterTagIds(mangaId: Long): Set<Long> = handler
+        .awaitList { chapter_tag_filtersQueries.getFilterTagIdsByMangaId(mangaId) }
+        .toSet()
 
     override fun getFilterTagIdsAsFlow(mangaId: Long): Flow<Set<Long>> = handler
         .subscribeToList { chapter_tag_filtersQueries.getFilterTagIdsByMangaId(mangaId) }

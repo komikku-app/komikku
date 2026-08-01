@@ -8,4 +8,6 @@ class GetChapterTagFilter(
 ) {
 
     fun subscribe(mangaId: Long): Flow<Set<Long>> = chapterTagRepository.getFilterTagIdsAsFlow(mangaId)
+
+    suspend fun await(mangaId: Long): Set<Long> = chapterTagRepository.getFilterTagIds(mangaId)
 }

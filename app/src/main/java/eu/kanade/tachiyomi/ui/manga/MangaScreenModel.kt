@@ -483,6 +483,13 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
+            // KMK -->
+            // Seed before the chapter list is mapped below: the tag subscriptions above can't reach
+            // the state while it is still Loading, and their tables never change on their own, so a
+            // dropped first emission would never be re-delivered.
+            chapterTagsByChapterId = getChapterTags.awaitByMangaId(mangaId)
+            // KMK <--
+
             // SY -->
             val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
                 MergedMangaData(
@@ -526,6 +533,10 @@ class MangaScreenModel(
                     }.toImmutableSet(),
                     // SY <--
                     excludedScanlators = getExcludedScanlators.await(mangaId).toImmutableSet(),
+                    // KMK -->
+                    chapterTags = getChapterTags.await().toImmutableList(),
+                    chapterTagFilter = getChapterTagFilter.await(mangaId).toImmutableSet(),
+                    // KMK <--
                     isRefreshingData = needRefreshInfo || needRefreshChapter,
                     dialog = null,
                     hideMissingChapters = libraryPreferences.hideMissingChapters().get(),

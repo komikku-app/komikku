@@ -19,6 +19,12 @@ deleteByChapterId:
 DELETE FROM chapters_chapter_tags
 WHERE chapter_id = :chapterId;
 
+-- Run before deleting the tag itself: the FK cascade would remove these rows too, but SQLDelight
+-- only notifies listeners of the tables named in the executed statement.
+deleteByTagId:
+DELETE FROM chapters_chapter_tags
+WHERE tag_id = :tagId;
+
 getTagIdsByChapterIds:
 SELECT chapter_id AS chapterId, tag_id AS tagId
 FROM chapters_chapter_tags

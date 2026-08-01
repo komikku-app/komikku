@@ -15,6 +15,9 @@ class GetChapterTags(
     fun subscribeByMangaId(mangaId: Long): Flow<Map<Long, List<ChapterTag>>> =
         chapterTagRepository.getTagsByMangaIdAsFlow(mangaId)
 
+    suspend fun awaitByMangaId(mangaId: Long): Map<Long, List<ChapterTag>> =
+        chapterTagRepository.getTagsByMangaId(mangaId)
+
     suspend fun awaitTagIdsByChapterIds(chapterIds: List<Long>): Map<Long, List<Long>> =
         chapterTagRepository.getTagIdsByChapterIds(chapterIds)
 }

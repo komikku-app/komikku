@@ -19,6 +19,8 @@ interface ChapterTagRepository {
     // Assignments
     suspend fun getTagIdsByChapterIds(chapterIds: List<Long>): Map<Long, List<Long>>
 
+    suspend fun getTagsByMangaId(mangaId: Long): Map<Long, List<ChapterTag>>
+
     fun getTagsByMangaIdAsFlow(mangaId: Long): Flow<Map<Long, List<ChapterTag>>>
 
     suspend fun setChapterTags(chapterId: Long, tagIds: List<Long>)
@@ -26,6 +28,8 @@ interface ChapterTagRepository {
     fun getTagIdsPerMangaAsFlow(): Flow<Map<Long, Set<Long>>>
 
     // Per-manga filter selection
+    suspend fun getFilterTagIds(mangaId: Long): Set<Long>
+
     fun getFilterTagIdsAsFlow(mangaId: Long): Flow<Set<Long>>
 
     suspend fun setFilterTagIds(mangaId: Long, tagIds: Set<Long>)

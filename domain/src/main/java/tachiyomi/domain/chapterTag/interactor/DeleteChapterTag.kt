@@ -19,8 +19,8 @@ class DeleteChapterTag(
             return@withNonCancellableContext Result.InternalError(e)
         }
 
-        // DB rows referencing the tag (assignments + per-manga filters) are removed by FK cascade;
-        // only the library-filter preferences need scrubbing.
+        // DB rows referencing the tag (assignments + per-manga filters) are removed by the repository
+        // in the same transaction; only the library-filter preferences need scrubbing.
         val tagPreferences = listOf(
             libraryPreferences.filterChapterTagsInclude(),
             libraryPreferences.filterChapterTagsExclude(),

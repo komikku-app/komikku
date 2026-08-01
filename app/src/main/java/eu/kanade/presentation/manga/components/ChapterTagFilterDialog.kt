@@ -44,13 +44,16 @@ fun ChapterTagFilterDialog(
     onDismissRequest: () -> Unit,
     onConfirm: (Set<Long>) -> Unit,
 ) {
-    val mutableSelected = remember(selectedTagIds) { selectedTagIds.toMutableStateList() }
+    // Drop ids whose tag no longer exists so a stale selection can't be re-submitted.
+    val mutableSelected = remember(selectedTagIds, chapterTags) {
+        selectedTagIds.filter { id -> chapterTags.any { it.id == id } }.toMutableStateList()
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(text = stringResource(KMR.strings.action_filter_chapter_tags)) },
         text = textFunc@{
             if (chapterTags.isEmpty()) {
-                Text(text = stringResource(KMR.strings.information_empty_chapter_tags_dialog))
+                Text(text = stringResource(KMR.strings.information_empty_chapter_tags_filter))
                 return@textFunc
             }
             Box {
