@@ -75,9 +75,9 @@ class PageHandler(
 
     @Suppress("UNCHECKED_CAST")
     private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
-        val mangadexSuperclass = mangadex::class.superclasses.first()
-
-        val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
+        val helperCallable = mangadex::class.members.find { it.name == "helper" }
+            ?: mangadex::class.superclasses.first().members.find { it.name == "helper" }
+            ?: return
         helperCallable.isAccessible = true
         val helper = helperCallable.call(mangadex) ?: return
 

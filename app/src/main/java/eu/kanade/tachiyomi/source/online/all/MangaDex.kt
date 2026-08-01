@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -52,6 +53,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.memberFunctions
 
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
@@ -161,8 +164,26 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getSearchManga"))
+    @Suppress("DEPRECATION")
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+        return delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }?.let {
+            runAsObservable { it.callSuspend(delegate, page) as MangasPage }
+        } ?: delegate.fetchSearchManga(page, query, filters)
+    }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        return delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }?.let {
+            it.callSuspend(delegate, page) as MangasPage
+        } ?: delegate.getSearchManga(page, query, filters)
+    }
+
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Suppress("DEPRECATION")
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }?.let {
+            return runAsObservable { it.callSuspend(delegate, page) as MangasPage }
+        }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
             .removeAllQueryParameters("includeFutureUpdates")
@@ -174,7 +195,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             }
     }
 
+    @Suppress("DEPRECATION")
     override suspend fun getLatestUpdates(page: Int): MangasPage {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }?.let {
+            return it.callSuspend(delegate, page) as MangasPage
+        }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
             .removeAllQueryParameters("includeFutureUpdates")
