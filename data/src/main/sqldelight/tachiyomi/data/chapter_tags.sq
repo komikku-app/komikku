@@ -1,0 +1,43 @@
+-- Komikku: user-created chapter tags (definitions).
+-- Assignments live in chapters_chapter_tags.sq, per-manga filter selection in chapter_tag_filters.sq.
+CREATE TABLE chapter_tags(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+getChapterTags:
+SELECT
+_id AS id,
+name
+FROM chapter_tags
+ORDER BY name COLLATE NOCASE;
+
+getChapterTagsByMangaId:
+SELECT
+CCT.chapter_id AS chapterId,
+T._id AS id,
+T.name
+FROM chapters_chapter_tags CCT
+JOIN chapter_tags T
+ON T._id = CCT.tag_id
+JOIN chapters C
+ON C._id = CCT.chapter_id
+WHERE C.manga_id = :mangaId
+OR C.manga_id IN (SELECT merged.manga_id FROM merged WHERE merged.merge_id = :mangaId)
+ORDER BY T.name COLLATE NOCASE;
+
+insert:
+INSERT INTO chapter_tags(name)
+VALUES (:name);
+
+rename:
+UPDATE chapter_tags
+SET name = :name
+WHERE _id = :tagId;
+
+delete:
+DELETE FROM chapter_tags
+WHERE _id = :tagId;
+
+selectLastInsertedRowId:
+SELECT last_insert_rowid();

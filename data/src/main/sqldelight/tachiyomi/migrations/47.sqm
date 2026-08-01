@@ -1,0 +1,29 @@
+-- Komikku: user-created chapter tags, chapter assignments and per-manga tag filter selection
+CREATE TABLE IF NOT EXISTS chapter_tags(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS chapters_chapter_tags(
+    chapter_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    PRIMARY KEY(chapter_id, tag_id),
+    FOREIGN KEY(chapter_id) REFERENCES chapters (_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(tag_id) REFERENCES chapter_tags (_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chapters_chapter_tags_tag_id ON chapters_chapter_tags(tag_id);
+
+CREATE TABLE IF NOT EXISTS chapter_tag_filters(
+    manga_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    PRIMARY KEY(manga_id, tag_id),
+    FOREIGN KEY(manga_id) REFERENCES mangas (_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(tag_id) REFERENCES chapter_tags (_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chapter_tag_filters_tag_id ON chapter_tag_filters(tag_id);

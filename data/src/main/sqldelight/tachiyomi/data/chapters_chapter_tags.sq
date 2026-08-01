@@ -1,0 +1,38 @@
+-- Komikku: chapter <-> chapter_tag assignments.
+CREATE TABLE chapters_chapter_tags(
+    chapter_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    PRIMARY KEY(chapter_id, tag_id),
+    FOREIGN KEY(chapter_id) REFERENCES chapters (_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(tag_id) REFERENCES chapter_tags (_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX idx_chapters_chapter_tags_tag_id ON chapters_chapter_tags(tag_id);
+
+insert:
+INSERT OR IGNORE INTO chapters_chapter_tags(chapter_id, tag_id)
+VALUES (:chapterId, :tagId);
+
+deleteByChapterId:
+DELETE FROM chapters_chapter_tags
+WHERE chapter_id = :chapterId;
+
+getTagIdsByChapterIds:
+SELECT chapter_id AS chapterId, tag_id AS tagId
+FROM chapters_chapter_tags
+WHERE chapter_id IN :chapterIds;
+
+getTagIdsPerManga:
+SELECT C.manga_id AS mangaId, CCT.tag_id AS tagId
+FROM chapters_chapter_tags CCT
+JOIN chapters C
+ON C._id = CCT.chapter_id
+UNION
+SELECT ME.merge_id AS mangaId, CCT.tag_id AS tagId
+FROM chapters_chapter_tags CCT
+JOIN chapters C
+ON C._id = CCT.chapter_id
+JOIN merged ME
+ON ME.manga_id = C.manga_id;

@@ -73,6 +73,15 @@ AND (
         ES.scanlator IS NULL
         AND ((M.chapter_flags & :bookmarkUnmask) = 0 OR C.bookmark = 0)
         AND ((M.chapter_flags & :bookmarkMask) = 0 OR C.bookmark = 1)
+        AND (
+            NOT EXISTS (SELECT 1 FROM chapter_tag_filters CTF WHERE CTF.manga_id = :mangaId)
+            OR EXISTS (
+                SELECT 1 FROM chapters_chapter_tags CCT
+                JOIN chapter_tag_filters CTF2
+                ON CTF2.tag_id = CCT.tag_id AND CTF2.manga_id = :mangaId
+                WHERE CCT.chapter_id = C._id
+            )
+        )
     )
     -- KMK <--
 );
@@ -120,6 +129,15 @@ AND (
         ES.scanlator IS NULL
         AND ((MA.chapter_flags & :bookmarkUnmask) = 0 OR C.bookmark = 0)
         AND ((MA.chapter_flags & :bookmarkMask) = 0 OR C.bookmark = 1)
+        AND (
+            NOT EXISTS (SELECT 1 FROM chapter_tag_filters CTF WHERE CTF.manga_id = :mangaId)
+            OR EXISTS (
+                SELECT 1 FROM chapters_chapter_tags CCT
+                JOIN chapter_tag_filters CTF2
+                ON CTF2.tag_id = CCT.tag_id AND CTF2.manga_id = :mangaId
+                WHERE CCT.chapter_id = C._id
+            )
+        )
     )
     -- KMK <--
 )
