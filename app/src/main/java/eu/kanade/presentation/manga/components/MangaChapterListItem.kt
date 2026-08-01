@@ -55,6 +55,9 @@ fun MangaChapterListItem(
     // SY -->
     sourceName: String?,
     // SY <--
+    // KMK -->
+    tags: String? = null,
+    // KMK <--
     read: Boolean,
     bookmark: Boolean,
     selected: Boolean,
@@ -195,6 +198,18 @@ fun MangaChapterListItem(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        // KMK -->
+                        if (tags != null) {
+                            if (date != null || readProgress != null || sourceName != null || scanlator != null) {
+                                DotSeparatorText()
+                            }
+                            Text(
+                                text = tags,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        // KMK <--
                     }
                 }
             }

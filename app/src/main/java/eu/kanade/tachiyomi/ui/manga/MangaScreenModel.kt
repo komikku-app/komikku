@@ -85,6 +85,7 @@ import exh.util.nullIfEmpty
 import exh.util.trimOrNull
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CancellationException
@@ -128,6 +129,9 @@ import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.chapter.service.calculateChapterGap
 import tachiyomi.domain.chapter.service.getChapterSort
+import tachiyomi.domain.chapterTag.interactor.GetChapterTags
+import tachiyomi.domain.chapterTag.interactor.SetChapterTags
+import tachiyomi.domain.chapterTag.model.ChapterTag
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
 import tachiyomi.domain.libraryUpdateError.interactor.InsertLibraryUpdateErrors
@@ -231,6 +235,8 @@ class MangaScreenModel(
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get(),
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get(),
     private val deleteChaptersFromDb: DeleteChapters = Injekt.get(),
+    private val getChapterTags: GetChapterTags = Injekt.get(),
+    private val setChapterTags: SetChapterTags = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<MangaScreenModel.State>(State.Loading) {
 
@@ -268,6 +274,10 @@ class MangaScreenModel(
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
+
+    // KMK -->
+    private var chapterTagsByChapterId: Map<Long, List<ChapterTag>> = emptyMap()
+    // KMK <--
 
     internal var showTrackDialogAfterCategorySelection: Boolean = false
 
@@ -401,6 +411,24 @@ class MangaScreenModel(
                     }
                 }
         }
+
+        // KMK -->
+        screenModelScope.launchIO {
+            getChapterTags.subscribeByMangaId(mangaId)
+                .flowWithLifecycle(lifecycle)
+                .distinctUntilChanged()
+                .collectLatest { tagsByChapterId ->
+                    chapterTagsByChapterId = tagsByChapterId
+                    updateSuccessState { successState ->
+                        successState.copy(
+                            chapters = successState.chapters.map { item ->
+                                item.copy(tags = tagsByChapterId[item.id].orEmpty().toImmutableList())
+                            },
+                        )
+                    }
+                }
+        }
+        // KMK <--
 
         screenModelScope.launchIO {
             getAvailableScanlators.subscribe(mangaId)
@@ -1116,6 +1144,9 @@ class MangaScreenModel(
                 sourceName = source?.getNameForMangaInfo(),
                 showScanlator = !isExhManga,
                 // SY <--
+                // KMK -->
+                tags = chapterTagsByChapterId[chapter.id].orEmpty().toImmutableList(),
+                // KMK <--
             )
         }
     }
@@ -1903,6 +1934,11 @@ class MangaScreenModel(
 
         // KMK -->
         data object ClearManga : Dialog
+
+        data class ChangeChapterTags(
+            val chapters: List<Chapter>,
+            val initialSelection: ImmutableList<CheckboxState<ChapterTag>>,
+        ) : Dialog
         // KMK <--
 
         data object SettingsSheet : Dialog
@@ -1940,6 +1976,43 @@ class MangaScreenModel(
             setExcludedScanlators.await(mangaId, excludedScanlators)
         }
     }
+
+    // KMK -->
+    fun showChangeChapterTagsDialog(chapters: List<Chapter>) {
+        if (chapters.isEmpty()) return
+        screenModelScope.launchIO {
+            val tags = getChapterTags.await()
+            val tagIdsByChapterId = getChapterTags.awaitTagIdsByChapterIds(chapters.map { it.id })
+            val tagIdsPerChapter = chapters.map { chapter -> tagIdsByChapterId[chapter.id].orEmpty().toSet() }
+            val common = tagIdsPerChapter.reduce { acc, ids -> acc intersect ids }
+            val mix = tagIdsPerChapter.flatten().toSet() - common
+            val preselected = tags.map { tag ->
+                when (tag.id) {
+                    in common -> CheckboxState.State.Checked(tag)
+                    in mix -> CheckboxState.TriState.Exclude(tag)
+                    else -> CheckboxState.State.None(tag)
+                }
+            }.toImmutableList()
+            updateSuccessState { successState ->
+                successState.copy(dialog = Dialog.ChangeChapterTags(chapters, preselected))
+            }
+        }
+    }
+
+    fun setChapterTags(chapters: List<Chapter>, addTagIds: List<Long>, removeTagIds: List<Long>) {
+        screenModelScope.launchNonCancellable {
+            val currentTagIds = getChapterTags.awaitTagIdsByChapterIds(chapters.map { it.id })
+            chapters.forEach { chapter ->
+                val tagIds = currentTagIds[chapter.id].orEmpty()
+                    .subtract(removeTagIds.toSet())
+                    .plus(addTagIds)
+                    .toList()
+                setChapterTags.await(chapter.id, tagIds)
+            }
+        }
+        toggleAllSelection(false)
+    }
+    // KMK <--
 
     // SY -->
     fun showEditMangaInfoDialog() {
@@ -2123,6 +2196,9 @@ sealed class ChapterList {
         val sourceName: String?,
         val showScanlator: Boolean,
         // SY <--
+        // KMK -->
+        val tags: ImmutableList<ChapterTag> = persistentListOf(),
+        // KMK <--
     ) : ChapterList() {
         val id = chapter.id
         val isDownloaded = downloadState == Download.State.DOWNLOADED
