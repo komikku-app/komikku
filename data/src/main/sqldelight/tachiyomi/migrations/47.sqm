@@ -19,6 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_chapters_chapter_tags_tag_id ON chapters_chapter_
 CREATE TABLE IF NOT EXISTS chapter_tag_filters(
     manga_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
+    exclude INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY(manga_id, tag_id),
     FOREIGN KEY(manga_id) REFERENCES mangas (_id)
     ON DELETE CASCADE,

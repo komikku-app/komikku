@@ -252,4 +252,5 @@
     <string name="information_empty_chapter_tags_filter">You don\'t have any chapter tags yet.</string>
     <string name="action_filter_chapter_tags">Filter by tag</string>
     <string name="pref_library_filter_chapter_tags_details">Entries whose chapters carry all of the included tags will be shown. Entries with an excluded tag will not be shown even if they also carry an included tag.</string>
+    <string name="pref_filter_chapter_tags_details">Chapters carrying all of the included tags will be shown. Chapters with an excluded tag will not be shown even if they also carry an included tag.</string>
 </resources>

@@ -1,8 +1,13 @@
--- Komikku: per-manga "show only chapters carrying one of these tags" selection.
+import kotlin.Boolean;
+
+-- Komikku: per-manga chapter tag filter selection.
 -- No rows for a manga == filter disabled for that manga.
+-- exclude = 0 -> show only chapters carrying one of these tags.
+-- exclude = 1 -> hide chapters carrying one of these tags.
 CREATE TABLE chapter_tag_filters(
     manga_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
+    exclude INTEGER AS Boolean NOT NULL DEFAULT 0,
     PRIMARY KEY(manga_id, tag_id),
     FOREIGN KEY(manga_id) REFERENCES mangas (_id)
     ON DELETE CASCADE,
@@ -12,14 +17,14 @@ CREATE TABLE chapter_tag_filters(
 
 CREATE INDEX idx_chapter_tag_filters_tag_id ON chapter_tag_filters(tag_id);
 
-getFilterTagIdsByMangaId:
-SELECT tag_id
+getFilterByMangaId:
+SELECT tag_id, exclude
 FROM chapter_tag_filters
 WHERE manga_id = :mangaId;
 
 insert:
-INSERT OR IGNORE INTO chapter_tag_filters(manga_id, tag_id)
-VALUES (:mangaId, :tagId);
+INSERT OR IGNORE INTO chapter_tag_filters(manga_id, tag_id, exclude)
+VALUES (:mangaId, :tagId, :exclude);
 
 deleteByMangaId:
 DELETE FROM chapter_tag_filters

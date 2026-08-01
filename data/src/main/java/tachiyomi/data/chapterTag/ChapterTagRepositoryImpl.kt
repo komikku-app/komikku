@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.chapterTag.model.ChapterTag
+import tachiyomi.domain.chapterTag.model.ChapterTagFilter
 import tachiyomi.domain.chapterTag.repository.ChapterTagRepository
 
 class ChapterTagRepositoryImpl(
@@ -72,24 +73,46 @@ class ChapterTagRepositoryImpl(
         }
     }
 
+    override suspend fun addChapterTags(chapterId: Long, tagIds: List<Long>) {
+        if (tagIds.isEmpty()) return
+        handler.await(inTransaction = true) {
+            tagIds.forEach { tagId -> chapters_chapter_tagsQueries.insert(chapterId, tagId) }
+        }
+    }
+
     override fun getTagIdsPerMangaAsFlow(): Flow<Map<Long, Set<Long>>> = handler
         .subscribeToList {
             chapters_chapter_tagsQueries.getTagIdsPerManga { mangaId, tagId -> mangaId to tagId }
         }
         .map { rows -> rows.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() } }
 
-    override suspend fun getFilterTagIds(mangaId: Long): Set<Long> = handler
-        .awaitList { chapter_tag_filtersQueries.getFilterTagIdsByMangaId(mangaId) }
-        .toSet()
+    override suspend fun getFilter(mangaId: Long): ChapterTagFilter = handler
+        .awaitList { chapter_tag_filtersQueries.getFilterByMangaId(mangaId, ::Pair) }
+        .toChapterTagFilter()
 
-    override fun getFilterTagIdsAsFlow(mangaId: Long): Flow<Set<Long>> = handler
-        .subscribeToList { chapter_tag_filtersQueries.getFilterTagIdsByMangaId(mangaId) }
-        .map { it.toSet() }
+    override fun getFilterAsFlow(mangaId: Long): Flow<ChapterTagFilter> = handler
+        .subscribeToList { chapter_tag_filtersQueries.getFilterByMangaId(mangaId, ::Pair) }
+        .map { it.toChapterTagFilter() }
 
-    override suspend fun setFilterTagIds(mangaId: Long, tagIds: Set<Long>) {
+    override suspend fun setFilter(mangaId: Long, filter: ChapterTagFilter) {
         handler.await(inTransaction = true) {
             chapter_tag_filtersQueries.deleteByMangaId(mangaId)
-            tagIds.forEach { tagId -> chapter_tag_filtersQueries.insert(mangaId, tagId) }
+            filter.included.forEach { tagId ->
+                chapter_tag_filtersQueries.insert(mangaId, tagId, exclude = false)
+            }
+            // A tag cannot be included and excluded at once, so excluded wins nothing here: the
+            // UI emits disjoint sets and the primary key would reject the second row anyway.
+            filter.excluded.forEach { tagId ->
+                chapter_tag_filtersQueries.insert(mangaId, tagId, exclude = true)
+            }
         }
+    }
+
+    private fun List<Pair<Long, Boolean>>.toChapterTagFilter(): ChapterTagFilter {
+        val (excluded, included) = partition { it.second }
+        return ChapterTagFilter(
+            included = included.mapTo(mutableSetOf()) { it.first },
+            excluded = excluded.mapTo(mutableSetOf()) { it.first },
+        )
     }
 }

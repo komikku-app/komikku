@@ -2,6 +2,7 @@ package tachiyomi.domain.chapterTag.repository
 
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.chapterTag.model.ChapterTag
+import tachiyomi.domain.chapterTag.model.ChapterTagFilter
 
 interface ChapterTagRepository {
 
@@ -25,12 +26,15 @@ interface ChapterTagRepository {
 
     suspend fun setChapterTags(chapterId: Long, tagIds: List<Long>)
 
+    /** Adds [tagIds] to a chapter without dropping tags it already carries. */
+    suspend fun addChapterTags(chapterId: Long, tagIds: List<Long>)
+
     fun getTagIdsPerMangaAsFlow(): Flow<Map<Long, Set<Long>>>
 
     // Per-manga filter selection
-    suspend fun getFilterTagIds(mangaId: Long): Set<Long>
+    suspend fun getFilter(mangaId: Long): ChapterTagFilter
 
-    fun getFilterTagIdsAsFlow(mangaId: Long): Flow<Set<Long>>
+    fun getFilterAsFlow(mangaId: Long): Flow<ChapterTagFilter>
 
-    suspend fun setFilterTagIds(mangaId: Long, tagIds: Set<Long>)
+    suspend fun setFilter(mangaId: Long, filter: ChapterTagFilter)
 }

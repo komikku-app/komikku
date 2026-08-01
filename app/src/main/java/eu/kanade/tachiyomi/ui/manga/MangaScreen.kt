@@ -681,7 +681,7 @@ class MangaScreen(
         if (showChapterTagsFilterDialog) {
             ChapterTagFilterDialog(
                 chapterTags = successState.chapterTags,
-                selectedTagIds = successState.chapterTagFilter,
+                filter = successState.chapterTagFilter,
                 onDismissRequest = { showChapterTagsFilterDialog = false },
                 onConfirm = screenModel::setChapterTagFilter,
             )
