@@ -52,9 +52,12 @@ import tachiyomi.core.common.util.lang.runAsObservable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import kotlin.collections.HashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.superclasses
+import kotlin.reflect.jvm.isAccessible
 
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
@@ -142,6 +145,27 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
     }
 
+    private val komikkuGetSearchManga by lazy {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }
+    }
+
+    private val komikkuGetLatestUpdates by lazy {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }
+    }
+
+    private val tokenTracker: HashMap<String, Long>? by lazy {
+        val helperCallable = delegate::class.members.find { it.name == "helper" }
+            ?: delegate::class.superclasses.first().members.find { it.name == "helper" }
+            ?: return@lazy null
+        helperCallable.isAccessible = true
+        val helper = helperCallable.call(delegate) ?: return@lazy null
+
+        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return@lazy null
+        tokenTrackerCallable.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        tokenTrackerCallable.call(helper) as? HashMap<String, Long>
+    }
+
     // UrlImportableSource methods
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.lowercase() ?: return null
@@ -167,22 +191,29 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getSearchManga"))
     @Suppress("DEPRECATION")
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }?.let {
-            runAsObservable { it.callSuspend(delegate, page) as MangasPage }
+        return komikkuGetSearchManga?.let {
+            runAsObservable {
+                it.callSuspend(delegate, page) as? MangasPage
+                    ?: throw Exception("komikkuGetSearchManga did not return a MangasPage instance")
+            }
         } ?: delegate.fetchSearchManga(page, query, filters)
     }
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
-        return delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }?.let {
-            it.callSuspend(delegate, page) as MangasPage
+        return komikkuGetSearchManga?.let {
+            it.callSuspend(delegate, page) as? MangasPage
+                ?: throw Exception("komikkuGetSearchManga did not return a MangasPage instance")
         } ?: delegate.getSearchManga(page, query, filters)
     }
 
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     @Suppress("DEPRECATION")
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }?.let {
-            return runAsObservable { it.callSuspend(delegate, page) as MangasPage }
+        komikkuGetLatestUpdates?.let {
+            return runAsObservable {
+                it.callSuspend(delegate, page) as? MangasPage
+                    ?: throw Exception("komikkuGetLatestUpdates did not return a MangasPage instance")
+            }
         }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
@@ -197,8 +228,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Suppress("DEPRECATION")
     override suspend fun getLatestUpdates(page: Int): MangasPage {
-        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }?.let {
-            return it.callSuspend(delegate, page) as MangasPage
+        komikkuGetLatestUpdates?.let {
+            return it.callSuspend(delegate, page) as? MangasPage
+                ?: throw Exception("komikkuGetLatestUpdates did not return a MangasPage instance")
         }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
@@ -258,11 +290,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
+        return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), tokenTracker) }
     }
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
-        return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate)
+        return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), tokenTracker)
     }
 
     override suspend fun getImage(page: Page): Response {
