@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -62,13 +63,71 @@ class StorageManager(
     }
 
     private fun getBaseDir(uri: String): UniFile? {
-        return UniFile.fromUri(context, uri.toUri())
+        val resolved = resolveToRawFileIfPossible(uri)
+        val dir = UniFile.fromUri(context, resolved.toUri())
             .takeIf {
                 // KMK -->
                 it?.isAccessibleDirectory == true
                 // KMK <--
             }
+        if (dir != null) return dir
+        // KMK --> Fallback: jika raw path hasil resolve tidak bisa diakses (folder dipindah,
+        // kasus tepi izin), gunakan URI asli agar perilaku sama seperti sebelum patch.
+        if (resolved != uri) {
+            return UniFile.fromUri(context, uri.toUri())
+                .takeIf { it?.isAccessibleDirectory == true }
+        }
+        // KMK <--
+        return null
     }
+
+    /**
+     * KMK -->
+     * Resolve SAF tree URIs (content://com.android.externalstorage.documents/tree/...)
+     * back to raw file paths (file:///storage/emulated/0/...) when raw access to
+     * external storage is guaranteed.
+     *
+     * Why: keeping a SAF *tree* as the storage base keeps the app attached to the
+     * ExternalStorageProvider process. When Android/ColorOS cache-kills that provider
+     * ("Killing ... externalstorage (adj 999): empty #9"), the app gets chain-killed
+     * ("depends on provider com.android.externalstorage/.ExternalStorageProvider in
+     * dying proc"), causing the splash-screen + reload on return.
+     *
+     * With raw access we use paths directly (which is also faster), dropping the
+     * dependency entirely. SD-card volumes (non-"primary") still require SAF, so those
+     * are left untouched.
+     */
+    private fun resolveToRawFileIfPossible(uri: String): String {
+        if (uri.isBlank() || !hasRawExternalStorageAccess()) return uri
+        val parsed = uri.toUri()
+        if (parsed.scheme != "content" || parsed.authority != "com.android.externalstorage.documents") {
+            return uri
+        }
+        val docId = try {
+            DocumentsContract.getTreeDocumentId(parsed)
+        } catch (_: Exception) {
+            null
+        } ?: return uri
+        val volume = docId.substringBefore(':', "")
+        val relPath = docId.substringAfter(':', "")
+        if (volume != "primary" || relPath.isEmpty()) return uri
+        return File(Environment.getExternalStorageDirectory(), relPath).toUri().toString()
+    }
+
+    /**
+     * Resolusi ke raw path hanya dilakukan bila raw access benar-benar dijamin:
+     * Android 11+ (R) dengan "All files access" (MANAGE_EXTERNAL_STORAGE) aktif.
+     *
+     * Catatan: pada Android 10 (Q), targetSdk repo ini 36, sehingga scoped storage
+     * tetap berlaku dan izin READ saja tidak menjamin akses raw ke shared storage.
+     * Men-resolve ke raw path di Q berisiko membuat direktori tidak bisa diakses,
+     * jadi biarkan SAF (perilaku lama) untuk menghindari regresi.
+     */
+    private fun hasRawExternalStorageAccess(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            Environment.isExternalStorageManager()
+    }
+    // KMK <--
 
     fun getAutomaticBackupsDirectory(): UniFile? {
         return baseDir?.createDirectory(AUTOMATIC_BACKUPS_PATH)
