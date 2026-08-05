@@ -142,6 +142,8 @@
     <string name="onboarding_permission_external_storage">Access media files permission</string>
     <string name="onboarding_permission_external_storage_description">Allow using custom covers in entry's Edit Info</string>
     <string name="onboarding_permission_writing_external_storage_description">Allow saving covers &amp; using custom covers in entry's Edit Info</string>
+    <string name="onboarding_permission_all_files_access">Access all files</string>
+    <string name="onboarding_permission_all_files_access_description">Allow access to all files to store manga downloads, backups &amp; local sources</string>
     <string name="permission_writing_external_storage_succeed">Permission granted. Try action again.</string>
     <!-- About section -->
     <string name="whats_coming">What\'s coming (soon)</string>

@@ -2,9 +2,11 @@ package eu.kanade.presentation.more.onboarding
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Environment
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,6 +57,7 @@ internal class PermissionStep : OnboardingStep {
 
     // KMK -->
     private var externalStoragePermissionGranted by mutableStateOf(false)
+    private var allFilesAccessGranted by mutableStateOf(false)
     // KMK <--
 
     override val isComplete: Boolean = true
@@ -88,6 +91,8 @@ internal class PermissionStep : OnboardingStep {
                         context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                             PackageManager.PERMISSION_GRANTED
                     }
+                    allFilesAccessGranted = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                        Environment.isExternalStorageManager()
                     // KMK <--
                 }
             }
@@ -136,6 +141,31 @@ internal class PermissionStep : OnboardingStep {
             )
 
             // KMK -->
+            // "All files access" (MANAGE_EXTERNAL_STORAGE) is available from Android 11 (API 30).
+            // It is the permission Komikku actually needs to read/write the manga folder
+            // (/storage/emulated/0/Komikku) on Android 11+ (targetSdk >= 30), so it must be
+            // offered here on Android 11+ too — not only on 12/13+.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                PermissionCheckbox(
+                    title = stringResource(KMR.strings.onboarding_permission_all_files_access),
+                    subtitle = stringResource(KMR.strings.onboarding_permission_all_files_access_description),
+                    granted = allFilesAccessGranted,
+                    onButtonClick = {
+                        try {
+                            context.startActivity(
+                                Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                    data = "package:${context.packageName}".toUri()
+                                },
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            context.startActivity(
+                                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
+                            )
+                        }
+                    },
+                )
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val permissionRequester = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission(),
