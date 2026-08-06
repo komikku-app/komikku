@@ -33,9 +33,9 @@ class ExtensionInstallService : Service() {
 
     override fun onCreate() {
         val notification = notificationBuilder(Notifications.CHANNEL_EXTENSIONS_UPDATE) {
-            setSmallIcon(R.drawable.ic_komikku)
+            setSmallIcon(R.drawable.ic_comick)
             setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
-            setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.komikku))
+            setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.comick))
             setAutoCancel(false)
             setOngoing(true)
             setShowWhen(false)

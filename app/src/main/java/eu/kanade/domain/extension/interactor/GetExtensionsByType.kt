@@ -35,18 +35,8 @@ class GetExtensionsByType(
 
             val available = _available
                 .filter { extension ->
-                    _installed.none {
-                        // KMK -->
-                        it.signatureHash == extension.signatureHash &&
-                            // KMK <--
-                            it.pkgName == extension.pkgName
-                    } &&
-                        _untrusted.none {
-                            // KMK -->
-                            it.signatureHash == extension.signatureHash &&
-                                // KMK <--
-                                it.pkgName == extension.pkgName
-                        } &&
+                    _installed.none { it.pkgName == extension.pkgName } &&
+                        _untrusted.none { it.pkgName == extension.pkgName } &&
                         (showNsfwSources || !extension.isNsfw)
                 }
                 .flatMap { ext ->

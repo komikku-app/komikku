@@ -75,7 +75,7 @@ jobs:
         run: |
           echo "COMMIT_LOGS<<{delimiter}
           $(curl -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/komikku-app/komikku/compare/${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}...${{ steps.current_commit.outputs.CURRENT_SHA }}" \
+            "https://api.github.com/repos/devil6venom/Comick/compare/${{ steps.previous_commit.outputs.PREV_RELEASE_SHA }}...${{ steps.current_commit.outputs.CURRENT_SHA }}" \
             | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
             | jq -r '.[]|"- \(.message | first) (@\(.username))"')
           {delimiter}" >> $GITHUB_OUTPUT
@@ -162,19 +162,19 @@ jobs:
         run: |
           set -e
 
-          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-          mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Comicks-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk Comicks-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk Comicks-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk Comicks-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+          mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk Comicks-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
 
       - name: Create release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           tag_name: ${{ needs.prepare-build.outputs.VERSION_TAG }}
-          name: Komikku ${{ needs.prepare-build.outputs.VERSION_TAG }}
+          name: Comicks ${{ needs.prepare-build.outputs.VERSION_TAG }}
           body: |
-            [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/komikku/${{ needs.prepare-build.outputs.VERSION_TAG }}/total?label=Downloaded&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/komikku/releases/${{ needs.prepare-build.outputs.VERSION_TAG }})
+            [![GitHub downloads](https://img.shields.io/github/downloads/devil6venom/Comick/${{ needs.prepare-build.outputs.VERSION_TAG }}/total?label=Downloaded&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/devil6venom/Comick/releases/${{ needs.prepare-build.outputs.VERSION_TAG }})
             #### What's Changed
             ##### New
 
@@ -186,18 +186,18 @@ jobs:
 
             ##### Based on
 
-            **Full Changelog**: [komikku-app/komikku@${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}](https://github.com/komikku-app/komikku/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }})
+            **Full Changelog**: [devil6venom/Comick@${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }}](https://github.com/devil6venom/Comick/compare/${{ needs.prepare-build.outputs.PREV_TAG_NAME }}...${{ needs.prepare-build.outputs.VERSION_TAG }})
 
             <!-->
             > [!TIP]
             >
-            > ### If you are unsure which version to download then go with `Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk`
+            > ### If you are unsure which version to download then go with `Comicks-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk`
           files: |
-            Komikku-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-            Komikku-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-            Komikku-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-            Komikku-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
-            Komikku-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Comicks-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Comicks-arm64-v8a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Comicks-armeabi-v7a-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Comicks-x86-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
+            Comicks-x86_64-${{ needs.prepare-build.outputs.VERSION_TAG }}.apk
           draft: true
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}

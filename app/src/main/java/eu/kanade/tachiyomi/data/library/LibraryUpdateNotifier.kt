@@ -69,7 +69,7 @@ class LibraryUpdateNotifier(
      * Bitmap of the app for notifications.
      */
     private val notificationBitmap by lazy {
-        BitmapFactory.decodeResource(context.resources, R.drawable.komikku)
+        BitmapFactory.decodeResource(context.resources, R.drawable.comick)
     }
 
     /**
@@ -164,7 +164,7 @@ class LibraryUpdateNotifier(
         ) {
             setContentTitle(context.pluralStringResource(MR.plurals.notification_update_error, failed, failed))
             setContentText(context.stringResource(MR.strings.action_show_errors))
-            setSmallIcon(R.drawable.ic_komikku)
+            setSmallIcon(R.drawable.ic_comick)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
 
             setContentIntent(NotificationReceiver.openErrorLogPendingActivity(context))
@@ -205,7 +205,7 @@ class LibraryUpdateNotifier(
                 }
             }
 
-            setSmallIcon(R.drawable.ic_komikku)
+            setSmallIcon(R.drawable.ic_comick)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setLargeIcon(notificationBitmap)
 
@@ -241,7 +241,7 @@ class LibraryUpdateNotifier(
             val description = getNewChaptersDescription(chapters)
             setContentText(description)
 
-            setSmallIcon(R.drawable.ic_komikku)
+            setSmallIcon(R.drawable.ic_comick)
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
 
             if (icon != null) {
@@ -402,7 +402,7 @@ class LibraryUpdateNotifier(
     }
 
     companion object {
-        const val HELP_WARNING_URL = "https://komikku-app.github.io/docs/faq/library#why-am-i-warned-about-large-bulk-updates-and-downloads"
+        const val HELP_WARNING_URL = "https://devil6venom.github.io/Comick/docs/faq/library#why-am-i-warned-about-large-bulk-updates-and-downloads"
     }
 }
 

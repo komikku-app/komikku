@@ -44,7 +44,7 @@ class DownloadJob(private val context: Context, workerParams: WorkerParameters) 
             setContentTitle(applicationContext.getString(R.string.download_notifier_downloader_title))
             setSmallIcon(android.R.drawable.stat_sys_download)
             setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
-            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
+            setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.comick))
         }.build()
         return ForegroundInfo(
             Notifications.ID_DOWNLOAD_CHAPTER_PROGRESS,

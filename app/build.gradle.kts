@@ -2,6 +2,7 @@ import mihon.buildlogic.Config
 import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
+import java.util.Properties
 
 plugins {
     id("mihon.android.application")
@@ -22,25 +23,43 @@ if (Config.includeTelemetry) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.komikku"
+        applicationId = "app.comick"
 
-        versionCode = 81
-        versionName = "1.14.1"
+        versionCode = 82
+        versionName = "1.14.2"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = false)}\"")
-        buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
-        buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
+        buildConfigField("boolean", "TELEMETRY_INCLUDED", Config.includeTelemetry.toString())
+        buildConfigField("boolean", "UPDATER_ENABLED", Config.enableUpdater.toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
+    }
+
     buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+        }
         val debug by getting {
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-${getCommitCount()}"
@@ -62,7 +81,7 @@ android {
 
             applicationIdSuffix = ".rt"
             isMinifyEnabled = false
-            isShrinkResources = false
+            isShrinkResources = isMinifyEnabled
 
             matchingFallbacks.addAll(commonMatchingFallbacks)
         }
@@ -115,15 +134,14 @@ android {
 
     packaging {
         jniLibs {
-            keepDebugSymbols += listOf(
-                "libandroidx.graphics.path",
-                "libarchive-jni",
-                "libconscrypt_jni",
-                "libimagedecoder",
-                "libquickjs",
-                "libsqlite3x",
+            keepDebugSymbols += setOf(
+                "**/libandroidx.graphics.path.so",
+                "**/libarchive-jni.so",
+                "**/libconscrypt_jni.so",
+                "**/libimagedecoder.so",
+                "**/libquickjs.so",
+                "**/libsqlite3x.so",
             )
-                .map { "**/$it.so" }
         }
         resources {
             excludes += setOf(

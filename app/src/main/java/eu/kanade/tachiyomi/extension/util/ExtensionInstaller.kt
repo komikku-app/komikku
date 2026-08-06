@@ -55,9 +55,7 @@ internal class ExtensionInstaller(
      * @param extension The extension to install.
      */
     fun downloadAndInstall(url: String, extension: Extension): Flow<InstallStep> {
-        val pkgName = extension.pkgName +
-            // KMK -->
-            "_${extension.signatureHash}"
+        val pkgName = extension.pkgName
         val downloadId = pkgName.toDownloadId()
         // KMK <--
         cancelInstall(pkgName)

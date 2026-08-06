@@ -29,7 +29,7 @@ class ExtensionStoreRepositoryImpl(
                 signingKey = "NO_SIGNING_KEY",
                 contactWebsite = indexUrl,
                 contactDiscord = null,
-                isLegacy = false,
+                isLegacy = indexUrl.endsWith(".json"),
                 extensionListUrl = null,
             )
         }

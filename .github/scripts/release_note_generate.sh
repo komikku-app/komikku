@@ -17,6 +17,6 @@ else
 fi
 
 curl -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/komikku-app/komikku/compare/$previous_release...$latest_commit" \
+            "https://api.github.com/repos/devil6venom/Comick/compare/$previous_release...$latest_commit" \
             | jq '[.commits[]|{message:(.commit.message | split("\n")), username:.author.login}]' \
             | jq -r '.[]|"- \(.message | first) (@\(.username))"'

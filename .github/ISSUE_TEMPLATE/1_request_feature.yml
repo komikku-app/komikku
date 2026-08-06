@@ -1,12 +1,12 @@
 name: ⭐ Feature request
-description: Suggest a feature to improve Komikku
+description: Suggest a feature to improve Comicks
 labels: [feature request]
 body:
   - type: textarea
     id: feature-description
     attributes:
       label: Describe your suggested feature
-      description: How can Komikku be improved?
+      description: How can Comicks be improved?
       placeholder: |
         Example:
           "It should work like this..."
@@ -30,7 +30,7 @@ body:
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: I have updated the app to version **[latest](https://github.com/komikku-app/komikku/releases/latest)**.
+        - label: I have updated the app to version **[latest](https://github.com/devil6venom/Comick/releases/latest)**.
           required: true
         - label: I will fill out all of the requested information in this form.
           required: true
@@ -48,4 +48,4 @@ body:
         Add a :+1: [reaction] to [issues you find important].
 
         [reaction]: https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/
-        [issues you find important]: https://github.com/komikku-app/komikku/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc
+        [issues you find important]: https://github.com/devil6venom/Comick/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc

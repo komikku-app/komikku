@@ -180,7 +180,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                         setContentText(stringResource(MR.strings.notification_incognito_text))
                         setSmallIcon(R.drawable.ic_glasses_with_hat_24dp)
                         setColor(ContextCompat.getColor(applicationContext, R.color.ic_launcher))
-                        setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.komikku))
+                        setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.comick))
                         setOngoing(true)
 
                         val pendingIntent = PendingIntent.getBroadcast(

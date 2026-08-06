@@ -32,6 +32,7 @@ import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.download.interactor.CleanInvalidDownloads
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
@@ -239,6 +240,7 @@ object SettingsAdvancedScreen : SearchableSettings {
 
     @Composable
     private fun getDataGroup(): Preference.PreferenceGroup {
+        val scope = rememberCoroutineScope()
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
 
@@ -253,6 +255,20 @@ object SettingsAdvancedScreen : SearchableSettings {
                         context.toast(MR.strings.download_cache_invalidated)
                     },
                 ),
+                // KMK -->
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_clean_invalid_downloads),
+                    subtitle = stringResource(KMR.strings.pref_clean_invalid_downloads_summary),
+                    onClick = {
+                        scope.launchNonCancellable {
+                            Injekt.get<CleanInvalidDownloads>().await()
+                            withUIContext {
+                                context.toast(KMR.strings.invalid_downloads_cleaned)
+                            }
+                        }
+                    },
+                ),
+                // KMK <--
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_database),
                     subtitle = stringResource(MR.strings.pref_clear_database_summary),

@@ -15,4 +15,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "komikku-buildSrc"
+rootProject.name = "comick-buildSrc"

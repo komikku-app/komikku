@@ -35,7 +35,7 @@ class BangumiInterceptor(private val bangumi: Bangumi) : Interceptor {
         return originalRequest.newBuilder()
             .header(
                 "User-Agent",
-                "Komikku v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})",
+                "comick v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})",
             )
             .apply {
                 addHeader("Authorization", "Bearer ${currAuth.accessToken}")

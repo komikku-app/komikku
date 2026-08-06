@@ -20,7 +20,7 @@ const val RICH_PRESENCE_TAG = "discord_rpc"
 internal const val RICH_PRESENCE_APPLICATION_ID = "1424627741256585271"
 
 val DOWNLOAD_BUTTON_LABEL_RES = R.string.discord_download_button
-const val DOWNLOAD_BUTTON_URL = "https://komikku-app.github.io/download/"
+const val DOWNLOAD_BUTTON_URL = "https://devil6venom.github.io/Comick/download/"
 const val DISCORD_BUTTON_LABEL = "Discord"
 const val DISCORD_BUTTON_URL = "https://discord.gg/85jB7V5AJR"
 
@@ -186,7 +186,7 @@ enum class DiscordScreen(
     @StringRes val details: Int,
     val imageUrl: String,
 ) {
-    APP(R.string.app_name, R.string.discord_status_using, KOMIKKU_IMAGE),
+    APP(R.string.app_name, R.string.discord_status_using, COMICK_IMAGE),
     LIBRARY(R.string.label_library, R.string.discord_status_browsing, LIBRARY_IMAGE_URL),
     UPDATES(R.string.label_recent_updates, R.string.discord_status_scrolling, UPDATES_IMAGE_URL),
     HISTORY(R.string.label_recent_manga, R.string.discord_status_scrolling, HISTORY_IMAGE_URL),
@@ -197,10 +197,10 @@ enum class DiscordScreen(
 }
 
 // Constants for standard Rich Presence image urls
-private const val KOMIKKU_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
-private const val KOMIKKU_PREVIEW_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
+private const val COMICK_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
+private const val COMICK_PREVIEW_IMAGE_URL = "emojis/1365538288894738532.webp?quality=lossless"
 
-private val KOMIKKU_IMAGE = if (isPreviewBuildType) KOMIKKU_PREVIEW_IMAGE_URL else KOMIKKU_IMAGE_URL
+private val COMICK_IMAGE = if (isPreviewBuildType) COMICK_PREVIEW_IMAGE_URL else COMICK_IMAGE_URL
 private const val LIBRARY_IMAGE_URL = "emojis/1365262809050644591.webp?quality=lossless"
 private const val UPDATES_IMAGE_URL = "emojis/1365261957883625492.webp?quality=lossless"
 private const val HISTORY_IMAGE_URL = "emojis/1365262076787949598.webp?quality=lossless"

@@ -219,7 +219,7 @@ class ShikimoriApi(
         private const val OAUTH_URL = "$BASE_URL/oauth/token"
         private const val LOGIN_URL = "$BASE_URL/oauth/authorize"
 
-        private const val REDIRECT_URL = "komikku://shikimori-auth"
+        private const val REDIRECT_URL = "comick://shikimori-auth"
 
         private const val CLIENT_ID = "hst3O_VlZ0HrrXcnZAd6m-SCIc1_mv5cQV-3nQCdJ0E"
         private const val CLIENT_SECRET = "n1Pn9AIKvUhDzjehfPt_5nk7xbr4wSnas6djggw_AjE"

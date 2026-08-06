@@ -6,7 +6,6 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
-import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
@@ -42,7 +41,6 @@ import java.io.File
 internal object ExtensionLoader {
 
     private val preferences: SourcePreferences by injectLazy()
-    private val trustExtension: TrustExtension by injectLazy()
 
     // KMK -->
     private val getExtensionStores: GetExtensionStores by injectLazy()
@@ -61,7 +59,7 @@ internal object ExtensionLoader {
     private const val METADATA_EXTENSION_LIB = "tachiyomix.extensionLib"
     private const val METADATA_CONTENT_WARNING = "tachiyomix.contentWarning"
 
-    private val SUPPORTED_LIB_VERSIONS = listOf(1.4, 1.6)
+    private val SUPPORTED_LIB_VERSIONS = listOf(1.2, 1.3, 1.4, 1.5, 1.6)
 
     @Suppress("DEPRECATION")
     private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
@@ -83,17 +81,6 @@ internal object ExtensionLoader {
                 PackageInfoCompat.getLongVersionCode(currentExtension)
             ) {
                 logcat(LogPriority.ERROR) { "Installed extension version is higher. Downgrading is not allowed." }
-                return false
-            }
-
-            val extensionSignatures = getSignatures(extension)
-            if (extensionSignatures.isNullOrEmpty()) {
-                logcat(LogPriority.ERROR) { "Extension to be installed is not signed." }
-                return false
-            }
-
-            if (!extensionSignatures.containsAll(getSignatures(currentExtension)!!)) {
-                logcat(LogPriority.ERROR) { "Installed extension signature is not matched." }
                 return false
             }
         }
@@ -282,29 +269,7 @@ internal object ExtensionLoader {
             return LoadResult.Error
         }
 
-        val signatures = getSignatures(pkgInfo)
-        if (signatures.isNullOrEmpty()) {
-            logcat(LogPriority.WARN) { "Package $pkgName isn't signed" }
-            return LoadResult.Error
-        } else if (!trustExtension.isTrusted(pkgInfo, signatures)) {
-            val extension = Extension.Untrusted(
-                extName,
-                pkgName,
-                versionName,
-                versionCode,
-                libVersion,
-                signatures.last(),
-                // KMK -->
-                storeName = stores.firstOrNull { store ->
-                    signatures.all { it == store.signingKey }
-                }?.let { store ->
-                    store.badgeLabel.takeIf(String::isNotBlank) ?: store.name
-                },
-                // KMK <--
-            )
-            logcat(LogPriority.WARN) { "Extension $pkgName isn't trusted" }
-            return LoadResult.Untrusted(extension)
-        }
+        val signatures = getSignatures(pkgInfo) ?: listOf("")
 
         val isNsfw = appInfo.metaData.getInt(METADATA_CONTENT_WARNING) > 0 ||
             appInfo.metaData.getInt(METADATA_NSFW) == 1

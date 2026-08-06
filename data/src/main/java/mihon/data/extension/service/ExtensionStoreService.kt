@@ -102,9 +102,17 @@ class ExtensionStoreService(
                         .toAvailableExtensions(store)
                 }
             } else {
-                val storeBaseUrl = store.indexUrl.removeSuffix("/repo.json")
+                val storeBaseUrl = store.indexUrl
+                    .removeSuffix("/repo.json")
+                    .removeSuffix("/index.min.json")
+                    .removeSuffix("/index.json")
+                val indexUrl = if (store.indexUrl.endsWith(".json")) {
+                    store.indexUrl
+                } else {
+                    "$storeBaseUrl/index.min.json"
+                }
                 // KMK -->
-                network.client.newCall(GET("$storeBaseUrl/index.min.json")).awaitSuccess().use { response ->
+                network.client.newCall(GET(indexUrl)).awaitSuccess().use { response ->
                     val source = response.body.source()
                     // KMK <--
                     json.decodeFromBufferedSource<List<NetworkLegacyExtension>>(source)

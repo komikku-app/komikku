@@ -27,7 +27,7 @@ class KomgaApi(
 
     private val headers: Headers by lazy {
         Headers.Builder()
-            .add("User-Agent", "Komikku v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})")
+            .add("User-Agent", "Comicks v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})")
             .build()
     }
 

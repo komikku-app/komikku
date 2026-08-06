@@ -204,7 +204,7 @@ class BangumiApi(
         private const val OAUTH_URL = "https://bgm.tv/oauth/access_token"
         private const val LOGIN_URL = "https://bgm.tv/oauth/authorize"
 
-        private const val REDIRECT_URL = "komikku://bangumi-auth"
+        private const val REDIRECT_URL = "comick://bangumi-auth"
 
         private const val APP_JSON = "application/json"
 

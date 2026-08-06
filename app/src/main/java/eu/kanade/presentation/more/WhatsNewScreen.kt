@@ -81,7 +81,7 @@ private fun WhatsNewScreenPreview() {
                 - Fix: NaN when dragging `Start/Resume` reading button in MangaScreen ([@cuong-tran](https://github.com/cuong-tran))
 
 
-                **Full Changelog**: [komikku-app/komikku@v1.13.0...v1.13.1](https://github.com/komikku-app/komikku/compare/v1.13.0...v1.13.1)
+                **Full Changelog**: [devil6venom/Comick@v1.13.0...v1.13.1](https://github.com/devil6venom/Comick/compare/v1.13.0...v1.13.1)
 
 
                 -----
@@ -93,7 +93,7 @@ private fun WhatsNewScreenPreview() {
                 - bump version ([@cuong-tran](https://github.com/cuong-tran))
                 - rename repo ([@cuong-tran](https://github.com/cuong-tran))
 
-                **Full Changelog**: [komikku-app/komikku@v1.12.5...v1.12.6](https://github.com/komikku-app/komikku/compare/v1.12.5...v1.12.6)
+                **Full Changelog**: [devil6venom/Comick@v1.12.5...v1.12.6](https://github.com/devil6venom/Comick/compare/v1.12.5...v1.12.6)
 
 
                 -----
@@ -106,7 +106,7 @@ private fun WhatsNewScreenPreview() {
 
                 - Fix (MangasPage): crash when extensions trying to destructuring MangasPage ([@cuong-tran](https://github.com/cuong-tran))
 
-                **Full Changelog**: [komikku-app/komikku@v1.12.4...v1.12.5](https://github.com/komikku-app/komikku/compare/v1.12.4...v1.12.5)
+                **Full Changelog**: [devil6venom/Comick@v1.12.4...v1.12.5](https://github.com/devil6venom/Comick/compare/v1.12.4...v1.12.5)
             """,
             onOpenInBrowser = {},
             onAcceptUpdate = {},

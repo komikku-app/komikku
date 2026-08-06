@@ -230,7 +230,7 @@ class AboutScreen : Screen() {
                         title = stringResource(MR.strings.help_translate),
                         onPreferenceClick = {
                             uriHandler.openUri(
-                                "https://hosted.weblate.org/engage/komikku-app/",
+                                "https://hosted.weblate.org/engage/devil6venom/",
                             )
                         },
                     )
@@ -246,7 +246,7 @@ class AboutScreen : Screen() {
                 item {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.privacy_policy),
-                        onPreferenceClick = { uriHandler.openUri("https://komikku-app.github.io/privacy/") },
+                        onPreferenceClick = { uriHandler.openUri("https://devil6venom.github.io/Comick/privacy/") },
                     )
                 }
 
@@ -260,7 +260,7 @@ class AboutScreen : Screen() {
                         LinkIcon(
                             label = stringResource(MR.strings.website),
                             icon = Icons.Outlined.Public,
-                            url = "https://komikku-app.github.io",
+                            url = "https://devil6venom.github.io/Comick",
                         )
                         LinkIcon(
                             label = "Discord",
@@ -285,7 +285,7 @@ class AboutScreen : Screen() {
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            url = "https://github.com/komikku-app",
+                            url = "https://github.com/devil6venom",
                         )
                     }
                 }

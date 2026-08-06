@@ -15,7 +15,7 @@ data class NetworkLegacyExtensionRepo(
     @Serializable
     data class Meta(
         val name: String,
-        val shortName: String?,
+        val shortName: String? = null,
         val website: String,
         val signingKeyFingerprint: String,
     )

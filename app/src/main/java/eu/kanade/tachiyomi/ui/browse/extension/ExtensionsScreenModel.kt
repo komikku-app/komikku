@@ -51,12 +51,7 @@ class ExtensionsScreenModel(
             {
                 ExtensionUiModel.Item(
                     it,
-                    map[
-                        it.pkgName +
-                            // KMK -->
-                            "_${it.signatureHash}",
-                        // KMK <--
-                    ] ?: InstallStep.Idle,
+                    map[it.pkgName] ?: InstallStep.Idle,
                 )
             }
         }
@@ -205,24 +200,13 @@ class ExtensionsScreenModel(
 
     private fun addDownloadState(extension: Extension, installStep: InstallStep) {
         currentDownloads.update {
-            it + Pair(
-                extension.pkgName +
-                    // KMK -->
-                    "_${extension.signatureHash}",
-                // KMK <--
-                installStep,
-            )
+            it + Pair(extension.pkgName, installStep)
         }
     }
 
     private fun removeDownloadState(extension: Extension) {
         currentDownloads.update {
-            it - (
-                extension.pkgName +
-                    // KMK -->
-                    "_${extension.signatureHash}"
-                // KMK <--
-                )
+            it - extension.pkgName
         }
     }
 

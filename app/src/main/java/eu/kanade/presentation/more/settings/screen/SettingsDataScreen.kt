@@ -102,7 +102,7 @@ object SettingsDataScreen : SearchableSettings {
     private fun readResolve(): Any = SettingsDataScreen
 
     val restorePreferenceKeyString = MR.strings.label_backup
-    const val HELP_URL = "https://komikku-app.github.io/docs/faq/storage"
+    const val HELP_URL = "https://devil6venom.github.io/Comick/docs/faq/storage"
 
     @ReadOnlyComposable
     @Composable
@@ -457,7 +457,7 @@ object SettingsDataScreen : SearchableSettings {
                 options = exportOptions,
                 onConfirm = { options ->
                     exportOptions = options
-                    saveFileLauncher.launch("komikku_library.csv")
+                    saveFileLauncher.launch("comick_library.csv")
                 },
                 onDismissRequest = { showDialog = false },
             )
