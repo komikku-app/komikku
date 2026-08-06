@@ -1,7 +1,7 @@
 package tachiyomi.core.common
 
 object Constants {
-    const val SPONSOR = "https://github.com/sponsors/cuong-tran"
+    const val SPONSOR = "https://github.com/devil6venom"
 
     const val URL_HELP = "https://devil6venom.github.io/Comick/docs/guides/troubleshooting/"
     const val URL_HELP_UPCOMING = "https://devil6venom.github.io/Comick/docs/faq/updates/upcoming"
