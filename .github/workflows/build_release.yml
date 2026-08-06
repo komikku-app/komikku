@@ -99,7 +99,9 @@ jobs:
           distribution: temurin
 
       - name: Write google-services.json
-        if: "${{ secrets.GOOGLE_SERVICES_JSON != '' }}"
+        if: ${{ env.GOOGLE_SERVICES_JSON != '' }}
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
@@ -113,7 +115,9 @@ jobs:
           fi
 
       - name: Write client_secrets.json
-        if: "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON != '' }}"
+        if: ${{ env.GOOGLE_CLIENT_SECRETS_JSON != '' }}
+        env:
+          GOOGLE_CLIENT_SECRETS_JSON: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
