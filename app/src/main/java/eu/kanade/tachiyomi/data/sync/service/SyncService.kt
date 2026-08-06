@@ -5,6 +5,8 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
+import eu.kanade.tachiyomi.data.backup.models.BackupExtensionStore
+import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
@@ -56,12 +58,24 @@ abstract class SyncService(
             remoteSyncData.backup?.backupSourcePreferences,
         )
 
+        val mergedExtensionStoresList = mergeExtensionStoresLists(
+            localSyncData.backup?.backupExtensionStores,
+            remoteSyncData.backup?.backupExtensionStores,
+        )
+
         // SY -->
         val mergedSavedSearchesList = mergeSavedSearchesLists(
             localSyncData.backup?.backupSavedSearches,
             remoteSyncData.backup?.backupSavedSearches,
         )
         // SY <--
+
+        // KMK -->
+        val mergedFeedsList = mergeFeedsLists(
+            localSyncData.backup?.backupFeeds,
+            remoteSyncData.backup?.backupFeeds,
+        )
+        // KMK <--
 
         // Create the merged Backup object
         val mergedBackup = Backup(
@@ -70,10 +84,15 @@ abstract class SyncService(
             backupSources = mergedSourcesList,
             backupPreferences = mergedPreferencesList,
             backupSourcePreferences = mergedSourcePreferencesList,
+            backupExtensionStores = mergedExtensionStoresList,
 
             // SY -->
             backupSavedSearches = mergedSavedSearchesList,
             // SY <--
+
+            // KMK -->
+            backupFeeds = mergedFeedsList,
+            // KMK <--
         )
 
         // Create the merged SData object
@@ -521,6 +540,32 @@ abstract class SyncService(
         }
 
         return mergedSearches
+    }
+
+    private fun mergeExtensionStoresLists(
+        localStores: List<BackupExtensionStore>?,
+        remoteStores: List<BackupExtensionStore>?,
+    ): List<BackupExtensionStore> {
+        val localMap = localStores?.associateBy { it.indexUrl } ?: emptyMap()
+        val remoteMap = remoteStores?.associateBy { it.indexUrl } ?: emptyMap()
+        return (localMap.keys + remoteMap.keys).distinct().mapNotNull { url ->
+            localMap[url] ?: remoteMap[url]
+        }
+    }
+
+    private fun mergeFeedsLists(
+        localFeeds: List<BackupFeed>?,
+        remoteFeeds: List<BackupFeed>?,
+    ): List<BackupFeed> {
+        // Simple merge by source and global status, or saved search if available
+        fun feedKey(feed: BackupFeed): String {
+            return "${feed.source}|${feed.global}|${feed.savedSearch?.name}|${feed.savedSearch?.source}"
+        }
+        val localMap = localFeeds?.associateBy { feedKey(it) } ?: emptyMap()
+        val remoteMap = remoteFeeds?.associateBy { feedKey(it) } ?: emptyMap()
+        return (localMap.keys + remoteMap.keys).distinct().mapNotNull { key ->
+            localMap[key] ?: remoteMap[key]
+        }
     }
     // SY <--
 }

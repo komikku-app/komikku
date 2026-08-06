@@ -569,6 +569,10 @@ object SettingsReaderScreen : SearchableSettings {
                         14 to stringResource(SYMR.strings.reader_preload_amount_14_pages),
                         16 to stringResource(SYMR.strings.reader_preload_amount_16_pages),
                         20 to stringResource(SYMR.strings.reader_preload_amount_20_pages),
+                        24 to stringResource(KMR.strings.reader_preload_amount_24_pages),
+                        28 to stringResource(KMR.strings.reader_preload_amount_28_pages),
+                        32 to stringResource(KMR.strings.reader_preload_amount_32_pages),
+                        40 to stringResource(KMR.strings.reader_preload_amount_40_pages),
                     ),
                     title = stringResource(SYMR.strings.reader_preload_amount),
                     subtitle = stringResource(SYMR.strings.reader_preload_amount_summary),
@@ -577,7 +581,7 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.readerThreads(),
                     title = stringResource(SYMR.strings.download_threads),
                     subtitle = stringResource(SYMR.strings.download_threads_summary),
-                    entries = List(5) { it }.associateWith { it.toString() }.toImmutableMap(),
+                    entries = List(11) { it }.associateWith { it.toString() }.toImmutableMap(),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     preference = readerPreferences.cacheSize(),
@@ -600,6 +604,8 @@ object SettingsReaderScreen : SearchableSettings {
                         "4000" to "4 GB",
                         "4500" to "4.5 GB",
                         "5000" to "5 GB",
+                        "7500" to "7.5 GB",
+                        "10000" to "10 GB",
                     ),
                 ),
                 Preference.PreferenceItem.SwitchPreference(

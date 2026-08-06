@@ -217,18 +217,17 @@ object SettingsDataScreen : SearchableSettings {
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(MR.strings.pref_storage_location),
             subtitle = storageLocationText(/* KMK --> */storagePref/* KMK <-- */),
-            onClick = {
-                try {
-                    // KMK -->
-                    allowAccessStorage(context, storagePref) {
-                        // KMK <--
-                        pickStorageLocation.launch(null)
-                    }
-                } catch (_: Exception) {
-                    context.toast(MR.strings.file_picker_error)
+        ) {
+            try {
+                // KMK -->
+                allowAccessStorage(context, storagePref) {
+                    // KMK <--
+                    pickStorageLocation.launch(null)
                 }
-            },
-        )
+            } catch (_: Exception) {
+                context.toast(MR.strings.file_picker_error)
+            }
+        }
     }
 
     @Composable
@@ -315,11 +314,10 @@ object SettingsDataScreen : SearchableSettings {
                         168 to stringResource(MR.strings.update_weekly),
                     ),
                     title = stringResource(MR.strings.pref_backup_interval),
-                    onValueChanged = {
-                        BackupCreateJob.setupTask(context, it)
-                        true
-                    },
-                ),
+                ) {
+                    BackupCreateJob.setupTask(context, it)
+                    true
+                },
                 Preference.PreferenceItem.InfoPreference(
                     stringResource(MR.strings.backup_info) + "\n\n" +
                         stringResource(MR.strings.last_auto_backup_info, relativeTimeSpanString(lastAutoBackup)),
@@ -368,40 +366,38 @@ object SettingsDataScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_chapter_cache),
                     subtitle = stringResource(MR.strings.used_cache, cacheReadableSize),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            try {
-                                val deletedFiles = chapterCache.clear()
-                                withUIContext {
-                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
-                                    cacheReadableSizeSema++
-                                }
-                            } catch (e: Throwable) {
-                                logcat(LogPriority.ERROR, e)
-                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                ) {
+                    scope.launchNonCancellable {
+                        try {
+                            val deletedFiles = chapterCache.clear()
+                            withUIContext {
+                                context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                cacheReadableSizeSema++
                             }
+                        } catch (e: Throwable) {
+                            logcat(LogPriority.ERROR, e)
+                            withUIContext { context.toast(MR.strings.cache_delete_error) }
                         }
-                    },
-                ),
+                    }
+                },
                 // SY -->
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.pref_clear_page_preview_cache),
                     subtitle = stringResource(MR.strings.used_cache, pagePreviewReadableSize),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            try {
-                                val deletedFiles = pagePreviewCache.clear()
-                                withUIContext {
-                                    context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
-                                    pagePreviewReadableSizeSema++
-                                }
-                            } catch (e: Throwable) {
-                                logcat(LogPriority.ERROR, e)
-                                withUIContext { context.toast(MR.strings.cache_delete_error) }
+                ) {
+                    scope.launchNonCancellable {
+                        try {
+                            val deletedFiles = pagePreviewCache.clear()
+                            withUIContext {
+                                context.toast(context.stringResource(MR.strings.cache_deleted, deletedFiles))
+                                pagePreviewReadableSizeSema++
                             }
+                        } catch (e: Throwable) {
+                            logcat(LogPriority.ERROR, e)
+                            withUIContext { context.toast(MR.strings.cache_delete_error) }
                         }
-                    },
-                ),
+                    }
+                },
                 // SY <--
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.autoClearChapterCache(),
@@ -413,7 +409,7 @@ object SettingsDataScreen : SearchableSettings {
 
     @Composable
     private fun getExportGroup(): Preference.PreferenceGroup {
-        var showDialog by remember { mutableStateOf(false) }
+        var showDialog by remember { mutableStateOf(value = false) }
         var exportOptions by remember {
             mutableStateOf(
                 ExportOptions(
@@ -442,12 +438,11 @@ object SettingsDataScreen : SearchableSettings {
                         uri = it,
                         favorites = favorites,
                         options = exportOptions,
-                        onExportComplete = {
-                            scope.launch(Dispatchers.Main) {
-                                context.toast(MR.strings.library_exported)
-                            }
-                        },
-                    )
+                    ) {
+                        scope.launch(Dispatchers.Main) {
+                            context.toast(MR.strings.library_exported)
+                        }
+                    }
                 }
             }
         }
@@ -459,8 +454,7 @@ object SettingsDataScreen : SearchableSettings {
                     exportOptions = options
                     saveFileLauncher.launch("comick_library.csv")
                 },
-                onDismissRequest = { showDialog = false },
-            )
+            ) { showDialog = false }
         }
 
         return Preference.PreferenceGroup(
@@ -468,8 +462,7 @@ object SettingsDataScreen : SearchableSettings {
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.library_list),
-                    onClick = { showDialog = true },
-                ),
+                ) { showDialog = true },
             ),
         )
     }
@@ -564,20 +557,20 @@ object SettingsDataScreen : SearchableSettings {
                             SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
                             // KMK -->
                             SyncManager.SyncService.WEB_DAV.value to stringResource(KMR.strings.web_dav),
+                            SyncManager.SyncService.TELEGRAM.value to stringResource(KMR.strings.telegram),
                             // KMK <--
                         ),
                         title = stringResource(SYMR.strings.pref_sync_service),
-                        onValueChanged = {
-                            // KMK -->
-                            if (it != SyncManager.SyncService.NONE.value) {
-                                SyncDataJob.setupTask(context)
-                            } else {
-                                SyncDataJob.setupTask(context, prefInterval = 0)
-                            }
-                            // KMK <--
-                            true
-                        },
-                    ),
+                    ) {
+                        // KMK -->
+                        if (it != SyncManager.SyncService.NONE.value) {
+                            SyncDataJob.setupTask(context)
+                        } else {
+                            SyncDataJob.setupTask(context, prefInterval = 0)
+                        }
+                        // KMK <--
+                        true
+                    },
                 ),
             ),
         ) + getSyncServicePreferences(syncPreferences, syncService)
@@ -608,16 +601,16 @@ object SettingsDataScreen : SearchableSettings {
             SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
             // KMK -->
             SyncManager.SyncService.WEB_DAV -> getWebDavPreferences(syncPreferences)
+            SyncManager.SyncService.TELEGRAM -> getTelegramPreferences(syncPreferences)
             // KMK <--
         }
 
         return if (syncServiceType != SyncManager.SyncService.NONE) {
             preferences + Preference.PreferenceItem.TextPreference(
                 title = stringResource(SYMR.strings.pref_choose_what_to_sync),
-                onClick = {
-                    navigator.push(SyncSettingsSelector())
-                },
-            )
+            ) {
+                navigator.push(SyncSettingsSelector())
+            }
         } else {
             preferences
         }
@@ -644,11 +637,10 @@ object SettingsDataScreen : SearchableSettings {
         return listOf(
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(SYMR.strings.pref_google_drive_sign_in),
-                onClick = {
-                    val intent = googleDriveSync.getSignInIntent()
-                    context.startActivity(intent)
-                },
-            ),
+            ) {
+                val intent = googleDriveSync.getSignInIntent()
+                context.startActivity(intent)
+            },
             getGoogleDrivePurge(),
         )
     }
@@ -658,15 +650,14 @@ object SettingsDataScreen : SearchableSettings {
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
         val googleDriveSync = remember { GoogleDriveSyncService(context) }
-        var showPurgeDialog by remember { mutableStateOf(false) }
+        var showPurgeDialog by remember { mutableStateOf(value = false) }
 
         if (showPurgeDialog) {
             PurgeConfirmationDialog(
                 onConfirm = {
                     showPurgeDialog = false
                     scope.launch {
-                        val result = googleDriveSync.deleteSyncDataFromGoogleDrive()
-                        when (result) {
+                        when (googleDriveSync.deleteSyncDataFromGoogleDrive()) {
                             GoogleDriveSyncService.DeleteSyncDataStatus.NOT_INITIALIZED -> context.toast(
                                 SYMR.strings.google_drive_not_signed_in,
                                 duration = 5000,
@@ -686,14 +677,12 @@ object SettingsDataScreen : SearchableSettings {
                         }
                     }
                 },
-                onDismissRequest = { showPurgeDialog = false },
-            )
+            ) { showPurgeDialog = false }
         }
 
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(SYMR.strings.pref_google_drive_purge_sync_data),
-            onClick = { showPurgeDialog = true },
-        )
+        ) { showPurgeDialog = true }
     }
 
     @Composable
@@ -723,7 +712,7 @@ object SettingsDataScreen : SearchableSettings {
         val scope = rememberCoroutineScope()
 
         val qrScanLauncher = rememberLauncherForActivityResult(ScanContract()) {
-            if (it.contents != null && it.contents.isNotEmpty()) {
+            if (!it.contents.isNullOrEmpty()) {
                 syncPreferences.clientAPIKey().set(it.contents)
             }
         }
@@ -742,16 +731,15 @@ object SettingsDataScreen : SearchableSettings {
                 preference = syncPreferences.clientHost(),
                 title = stringResource(SYMR.strings.pref_sync_host),
                 subtitle = stringResource(SYMR.strings.pref_sync_host_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        // Trim spaces at the beginning and end, then remove trailing slash if present
-                        val trimmedValue = newValue.trim()
-                        val modifiedValue = trimmedValue.trimEnd { it == '/' }
-                        syncPreferences.clientHost().set(modifiedValue)
-                    }
-                    true
-                },
-            ),
+            ) { newValue ->
+                scope.launch {
+                    // Trim spaces at the beginning and end, then remove trailing slash if present
+                    val trimmedValue = newValue.trim()
+                    val modifiedValue = trimmedValue.trimEnd { it == '/' }
+                    syncPreferences.clientHost().set(modifiedValue)
+                }
+                true
+            },
             Preference.PreferenceItem.CustomPreference(
                 title = stringResource(SYMR.strings.pref_sync_api_key),
             ) {
@@ -759,12 +747,6 @@ object SettingsDataScreen : SearchableSettings {
                 EditTextPreferenceWidget(
                     title = stringResource(SYMR.strings.pref_sync_api_key),
                     subtitle = stringResource(SYMR.strings.pref_sync_api_key_summ),
-                    onConfirm = {
-                        scope.launch {
-                            syncPreferences.clientAPIKey().set(it)
-                        }
-                        true
-                    },
                     icon = null,
                     value = values,
                     widget = {
@@ -778,7 +760,57 @@ object SettingsDataScreen : SearchableSettings {
                             )
                         }
                     },
-                )
+                ) {
+                    scope.launch {
+                        syncPreferences.clientAPIKey().set(it)
+                    }
+                    true
+                }
+            },
+        )
+    }
+
+    @Composable
+    private fun getTelegramPreferences(syncPreferences: SyncPreferences): List<Preference> {
+        val scope = rememberCoroutineScope()
+        val tokenPref = syncPreferences.telegramToken()
+
+        return listOf(
+            run {
+                var dialogOpen by remember { mutableStateOf(value = false) }
+                if (dialogOpen) {
+                    PasswordDialog(
+                        onDismissRequest = { dialogOpen = false },
+                        onReturnPassword = { password ->
+                            dialogOpen = false
+                            scope.launch {
+                                tokenPref.set(password.trim())
+                            }
+                        },
+                        title = KMR.strings.pref_telegram_token,
+                    )
+                }
+                val token by tokenPref.collectAsState()
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_telegram_token),
+                    subtitle = if (token.isBlank()) {
+                        stringResource(KMR.strings.pref_telegram_token_summ)
+                    } else {
+                        "********"
+                    },
+                ) {
+                    dialogOpen = true
+                }
+            },
+            Preference.PreferenceItem.EditTextPreference(
+                preference = syncPreferences.telegramChatId(),
+                title = stringResource(KMR.strings.pref_telegram_chat_id),
+                subtitle = stringResource(KMR.strings.pref_telegram_chat_id_summ),
+            ) { newValue ->
+                scope.launch {
+                    syncPreferences.telegramChatId().set(newValue.trim())
+                }
+                true
             },
         )
     }
@@ -793,26 +825,24 @@ object SettingsDataScreen : SearchableSettings {
                 preference = syncPreferences.webDavUrl(),
                 title = stringResource(KMR.strings.pref_webdav_url),
                 subtitle = stringResource(KMR.strings.pref_webdav_url_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        syncPreferences.webDavUrl().set(newValue.trim())
-                    }
-                    true
-                },
-            ),
+            ) { newValue ->
+                scope.launch {
+                    syncPreferences.webDavUrl().set(newValue.trim())
+                }
+                true
+            },
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavUsername(),
                 title = stringResource(KMR.strings.pref_webdav_username),
                 subtitle = stringResource(KMR.strings.pref_webdav_username_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        syncPreferences.webDavUsername().set(newValue.trim())
-                    }
-                    true
-                },
-            ),
+            ) { newValue ->
+                scope.launch {
+                    syncPreferences.webDavUsername().set(newValue.trim())
+                }
+                true
+            },
             run {
-                var dialogOpen by remember { mutableStateOf(false) }
+                var dialogOpen by remember { mutableStateOf(value = false) }
                 if (dialogOpen) {
                     PasswordDialog(
                         onDismissRequest = { dialogOpen = false },
@@ -828,22 +858,20 @@ object SettingsDataScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.pref_webdav_password),
                     subtitle = stringResource(KMR.strings.pref_webdav_password_summ),
-                    onClick = {
-                        dialogOpen = true
-                    },
-                )
+                ) {
+                    dialogOpen = true
+                }
             },
             Preference.PreferenceItem.EditTextPreference(
                 preference = syncPreferences.webDavFolder(),
                 title = stringResource(KMR.strings.pref_webdav_folder),
                 subtitle = stringResource(KMR.strings.pref_webdav_folder_summ),
-                onValueChanged = { newValue ->
-                    scope.launch {
-                        syncPreferences.webDavFolder().set(newValue.trim())
-                    }
-                    true
-                },
-            ),
+            ) { newValue ->
+                scope.launch {
+                    syncPreferences.webDavFolder().set(newValue.trim())
+                }
+                true
+            },
         )
     }
     // KMK <--
@@ -858,14 +886,13 @@ object SettingsDataScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(SYMR.strings.pref_sync_now),
                     subtitle = stringResource(SYMR.strings.pref_sync_now_subtitle),
-                    onClick = {
-                        if (!SyncDataJob.isRunning(context)) {
-                            SyncDataJob.startNow(context, manual = true)
-                        } else {
-                            context.toast(SYMR.strings.sync_in_progress)
-                        }
-                    },
-                ),
+                ) {
+                    if (!SyncDataJob.isRunning(context)) {
+                        SyncDataJob.startNow(context, manual = true)
+                    } else {
+                        context.toast(SYMR.strings.sync_in_progress)
+                    }
+                },
             ),
         )
     }
@@ -876,8 +903,7 @@ object SettingsDataScreen : SearchableSettings {
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(SYMR.strings.pref_sync_options),
             subtitle = stringResource(SYMR.strings.pref_sync_options_summ),
-            onClick = { navigator.push(SyncTriggerOptionsScreen()) },
-        )
+        ) { navigator.push(SyncTriggerOptionsScreen()) }
     }
 
     @Composable
@@ -903,11 +929,10 @@ object SettingsDataScreen : SearchableSettings {
                         10080 to stringResource(MR.strings.update_weekly),
                     ),
                     title = stringResource(SYMR.strings.pref_sync_interval),
-                    onValueChanged = {
-                        SyncDataJob.setupTask(context, prefInterval = it)
-                        true
-                    },
-                ),
+                ) {
+                    SyncDataJob.setupTask(context, prefInterval = it)
+                    true
+                },
                 Preference.PreferenceItem.InfoPreference(
                     stringResource(SYMR.strings.last_synchronization, relativeTimeSpanString(lastSync)),
                 ),

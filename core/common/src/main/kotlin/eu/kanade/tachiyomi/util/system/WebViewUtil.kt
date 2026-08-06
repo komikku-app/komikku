@@ -15,7 +15,7 @@ object WebViewUtil {
     private const val CHROME_PACKAGE = "com.android.chrome"
     private const val SYSTEM_SETTINGS_PACKAGE = "com.android.settings"
 
-    const val MINIMUM_WEBVIEW_VERSION = 118
+    const val MINIMUM_WEBVIEW_VERSION = 130
 
     /**
      * Uses the WebView's user agent string to create something similar to what Chrome on Android

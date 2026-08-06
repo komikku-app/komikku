@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="reader_preload_amount_24_pages">24 Pages</string>
+    <string name="reader_preload_amount_28_pages">28 Pages</string>
+    <string name="reader_preload_amount_32_pages">32 Pages</string>
+    <string name="reader_preload_amount_40_pages">40 Pages</string>
     <!-- Actions -->
     <string name="action_search_for_source">Search for sources</string>
     <string name="action_source_search">Search in source</string>
@@ -89,8 +93,13 @@
     <string name="custom_theme_palette_springfield">Springfield</string>
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
+    <string name="update_2hour">Every 2 hours</string>
+    <string name="update_4hour">Every 4 hours</string>
+    <string name="update_8hour">Every 8 hours</string>
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
+    <string name="pref_library_update_threads">Library update threads</string>
+    <string name="pref_library_update_threads_summary">Number of manga to update concurrently. Higher values can speed up the update process but may lead to sources blocking you.</string>
     <string name="action_display_source_badge">Source icon</string>
     <string name="action_display_language_icon">Use language icon</string>
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
@@ -129,6 +138,11 @@
     <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
     <string name="pref_webdav_folder">WebDAV data folder</string>
     <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
+    <string name="telegram">Telegram</string>
+    <string name="pref_telegram_token">Telegram token</string>
+    <string name="pref_telegram_token_summ">Telegram bot token used for sync and backup</string>
+    <string name="pref_telegram_chat_id">Telegram Chat ID</string>
+    <string name="pref_telegram_chat_id_summ">The chat ID to use for sync and backup</string>
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>

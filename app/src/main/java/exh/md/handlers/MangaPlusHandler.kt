@@ -107,7 +107,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     companion object {
         private const val WEB_URL = "https://mangaplus.shueisha.co.jp"
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
         private const val API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
     }
 }

@@ -24,6 +24,16 @@ class SyncPreferences(
     fun webDavUsername() = preferenceStore.getString("connection_webdav_username", "")
     fun webDavPassword() = preferenceStore.getString("connection_webdav_password", "")
     fun webDavFolder() = preferenceStore.getString("connection_webdav_folder", "comick")
+
+    fun telegramToken() = preferenceStore.getString(
+        Preference.appStateKey("connection_telegram_token"),
+        "",
+    )
+
+    fun telegramChatId() = preferenceStore.getString(
+        Preference.appStateKey("connection_telegram_chat_id"),
+        "",
+    )
     // KMK <--
 
     fun googleDriveAccessToken() = preferenceStore.getString(

@@ -57,13 +57,13 @@ object SettingsDownloadScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.SliderPreference(
                 value = parallelSourceLimit,
-                valueRange = 1..10,
+                valueRange = 1..20,
                 title = stringResource(MR.strings.pref_download_concurrent_sources),
                 onValueChanged = { downloadPreferences.parallelSourceLimit().set(it) },
             ),
             Preference.PreferenceItem.SliderPreference(
                 value = parallelPageLimit,
-                valueRange = 1..15,
+                valueRange = 1..30,
                 title = stringResource(MR.strings.pref_download_concurrent_pages),
                 subtitle = stringResource(MR.strings.pref_download_concurrent_pages_summary),
                 onValueChanged = { downloadPreferences.parallelPageLimit().set(it) },
@@ -200,7 +200,7 @@ object SettingsDownloadScreen : SearchableSettings {
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
                     preference = downloadPreferences.autoDownloadWhileReading(),
-                    entries = listOf(0, 2, 3, 5, 10)
+                    entries = listOf(0, 2, 3, 5, 10, 15, 20, 30, 50)
                         .associateWith {
                             if (it == 0) {
                                 stringResource(MR.strings.disabled)

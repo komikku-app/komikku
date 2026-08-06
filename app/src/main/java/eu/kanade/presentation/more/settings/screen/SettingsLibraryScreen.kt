@@ -160,6 +160,12 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = autoUpdateIntervalPref,
                     entries = persistentMapOf(
                         0 to stringResource(MR.strings.update_never),
+                        1 to stringResource(MR.strings.update_1hour),
+                        2 to stringResource(KMR.strings.update_2hour),
+                        3 to stringResource(MR.strings.update_3hour),
+                        4 to stringResource(KMR.strings.update_4hour),
+                        6 to stringResource(MR.strings.update_6hour),
+                        8 to stringResource(KMR.strings.update_8hour),
                         12 to stringResource(MR.strings.update_12hour),
                         24 to stringResource(MR.strings.update_24hour),
                         48 to stringResource(MR.strings.update_48hour),
@@ -171,6 +177,12 @@ object SettingsLibraryScreen : SearchableSettings {
                         LibraryUpdateJob.setupTask(context, it)
                         true
                     },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = libraryPreferences.libraryUpdateThreads(),
+                    entries = (1..20).associateWith { it.toString() }.toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_library_update_threads),
+                    subtitle = stringResource(KMR.strings.pref_library_update_threads_summary),
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = libraryPreferences.autoUpdateDeviceRestrictions(),
