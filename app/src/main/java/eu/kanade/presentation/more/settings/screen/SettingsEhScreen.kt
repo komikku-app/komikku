@@ -713,14 +713,14 @@ object SettingsEhScreen : SearchableSettings {
         val state = remember(initialValue) { FrontPageCategoriesDialogState(initialValue) }
         AlertDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(stringResource(SYMR.strings.frong_page_categories)) },
+            title = { Text(stringResource(SYMR.strings.front_page_categories)) },
             text = {
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    Text(stringResource(SYMR.strings.fromt_page_categories_summary))
+                    Text(stringResource(SYMR.strings.front_page_categories_summary))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -813,8 +813,8 @@ object SettingsEhScreen : SearchableSettings {
             )
         }
         return Preference.PreferenceItem.TextPreference(
-            title = stringResource(SYMR.strings.frong_page_categories),
-            subtitle = stringResource(SYMR.strings.fromt_page_categories_summary),
+            title = stringResource(SYMR.strings.front_page_categories),
+            subtitle = stringResource(SYMR.strings.front_page_categories_summary),
             enabled = exhentaiEnabled,
             onClick = {
                 dialogOpen = true

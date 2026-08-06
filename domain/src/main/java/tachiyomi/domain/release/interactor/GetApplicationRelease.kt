@@ -126,7 +126,7 @@ class GetApplicationRelease(
     }
 }
 
-// KMK --.
+// KMK -->
 internal fun List<Release>.getLatest(): Release? {
     return firstOrNull()
         ?.copy(

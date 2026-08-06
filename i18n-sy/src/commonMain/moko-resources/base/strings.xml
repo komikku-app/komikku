@@ -54,8 +54,8 @@
     <string name="tag_watching_threshhold_summary">Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: %1$d</string>
     <string name="language_filtering">Language Filtering</string>
     <string name="language_filtering_summary">If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude</string>
-    <string name="frong_page_categories">Front Page Categories</string>
-    <string name="fromt_page_categories_summary">What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters</string>
+    <string name="front_page_categories">Front Page Categories</string>
+    <string name="front_page_categories_summary">What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters</string>
     <string name="watched_list_default">Watched List Filter Default State</string>
     <string name="watched_list_state_summary">When browsing ExHentai/E-Hentai should the watched list filter be enabled by default</string>
     <string name="eh_image_quality_summary">The quality of the downloaded images</string>
