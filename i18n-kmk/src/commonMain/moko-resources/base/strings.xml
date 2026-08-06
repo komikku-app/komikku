@@ -223,7 +223,7 @@
     <string name="discord_status_scrolling">Scrolling through</string>
     <string name="discord_status_messing">Messing around with</string>
     <string name="discord_download_button">Read on %s</string>
-    <string name="discord_app_description">Comick - a manga reader app</string>
+    <string name="discord_app_description">Comicks - a manga reader app</string>
     <!-- Discord RPC Customization -->
     <string name="pref_category_discord_customization">Discord Customization</string>
     <string name="pref_discord_custom_message">Custom Message</string>
