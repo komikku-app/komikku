@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -68,6 +69,7 @@ import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.sorted
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
+import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
@@ -167,6 +169,7 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.File
 import kotlin.math.floor
 import androidx.compose.runtime.State as RuntimeState
 
@@ -940,7 +943,16 @@ class MangaScreenModel(
 
             val mangaDir = downloadProvider.findMangaDir(/* SY --> */ currentManga.ogTitle /* SY <-- */, currentSource) ?: return
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(mangaDir.uri, DocumentsContract.Document.MIME_TYPE_DIR)
+                // KMK --> Saat base storage di-resolve ke raw path (fix chain-kill), URI folder
+                // menjadi file://. Mengirim file:// ke app lain via Intent error di Android 7+
+                // (FileUriExposedException), jadi konversi ke FileProvider URI.
+                val uri: Uri = if (mangaDir.uri.scheme == "file") {
+                    File(mangaDir.uri.path!!).getUriCompat(context)
+                } else {
+                    mangaDir.uri
+                }
+                // KMK <--
+                setDataAndType(uri, DocumentsContract.Document.MIME_TYPE_DIR)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             context.startActivity(intent)
