@@ -99,13 +99,21 @@ jobs:
           distribution: temurin
 
       - name: Write google-services.json
+        if: "${{ secrets.GOOGLE_SERVICES_JSON != '' }}"
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
           contents: ${{ secrets.GOOGLE_SERVICES_JSON }}
           write-mode: overwrite
 
+      - name: Patch google-services.json package name
+        run: |
+          if [ -f app/google-services.json ]; then
+            sed -i 's/"package_name": "[^"]*"/"package_name": "app.comick"/g' app/google-services.json
+          fi
+
       - name: Write client_secrets.json
+        if: "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON != '' }}"
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
