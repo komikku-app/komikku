@@ -59,7 +59,7 @@ internal object ExtensionLoader {
     private const val METADATA_EXTENSION_LIB = "tachiyomix.extensionLib"
     private const val METADATA_CONTENT_WARNING = "tachiyomix.contentWarning"
 
-    private val SUPPORTED_LIB_VERSIONS = listOf(1.2, 1.3, 1.4, 1.5, 1.6)
+    private val SUPPORTED_LIB_VERSIONS = listOf(1.2, 1.3, 1.4, 1.5, 1.6, 1.7)
 
     @Suppress("DEPRECATION")
     private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
