@@ -14,6 +14,7 @@ import okhttp3.Call
 import okhttp3.Headers
 import rx.Observable
 import tachiyomi.core.common.util.lang.withIOContext
+import kotlin.collections.set
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 
@@ -37,6 +38,7 @@ class PageHandler(
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                         dataSaver = dataSaver,
+                        mangadex.lang,
                     )
                     /*chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
@@ -108,8 +110,11 @@ class PageHandler(
     fun getImageCall(page: Page): Call? {
         xLogD(page.imageUrl)
         return when {
-            page.imageUrl?.contains("mangaplus", true) == true -> {
-                mangaPlusHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, headers), page)
+            page.imageUrl?.contains("tokyo-cdn.com", true) == true -> {
+                mangaPlusHandler.client.newCachelessCallWithProgress(GET(
+                    page.imageUrl!!,
+                    mangaPlusHandler.headers.newBuilder().add("Plus-Vw-Token", page.url).build(),
+                ), page)
             }
             page.imageUrl?.contains("comikey", true) == true -> {
                 comikeyHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, comikeyHandler.headers), page)

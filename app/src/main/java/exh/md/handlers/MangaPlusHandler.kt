@@ -4,9 +4,19 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.Page
+import exh.md.dto.LANGUAGE_ENGLISH
+import exh.md.dto.LANGUAGE_FRENCH
+import exh.md.dto.LANGUAGE_GERMAN
+import exh.md.dto.LANGUAGE_INDONESIAN
+import exh.md.dto.LANGUAGE_PORTUGUESE_BR
+import exh.md.dto.LANGUAGE_RUSSIAN
+import exh.md.dto.LANGUAGE_SPANISH
+import exh.md.dto.LANGUAGE_THAI
+import exh.md.dto.LANGUAGE_VIETNAMESE
 import exh.md.dto.MangaPlusPage
 import exh.md.dto.MangaPlusResponse
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
@@ -15,12 +25,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import uy.kohesive.injekt.injectLazy
 import java.util.UUID
 
 class MangaPlusHandler(currentClient: OkHttpClient) {
-    val json: Json by injectLazy()
-
     val headers = Headers.Builder()
         .add("Origin", WEB_URL)
         .add("Referer", WEB_URL)
@@ -33,17 +40,17 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .rateLimitHost(WEB_URL.toHttpUrl(), 2)
         .build()
 
-    suspend fun fetchPageList(chapterId: String, dataSaver: Boolean): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"), dataSaver)).awaitSuccess()
-        return pageListParse(response)
+    suspend fun fetchPageList(chapterId: String, dataSaver: Boolean, lang: String): List<Page> {
+        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"), dataSaver, lang)).awaitSuccess()
+        return pageListParse(response, lang)
     }
 
-    private fun pageListRequest(chapterId: String, dataSaver: Boolean): Request {
+    private fun pageListRequest(chapterId: String, dataSaver: Boolean, lang: String): Request {
         val newHeaders = headers.newBuilder()
             .set("Referer", "$WEB_URL/viewer/$chapterId")
             .build()
 
-        val url = "$API_URL/manga_viewer".toHttpUrl().newBuilder()
+        val url = "$API_URL/manga_viewer_v3".toHttpUrl().newBuilder()
             .addQueryParameter("chapter_id", chapterId)
             .addQueryParameter("split", "yes")
             .addQueryParameter(
@@ -54,26 +61,48 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
                     "super_high"
                 },
             )
-            .addQueryParameter("format", "json")
+            .addQueryParameter("clang", when (lang) {
+                "en" -> "eng"
+                "es" -> "esp"
+                "fr" -> "fra"
+                "id" -> "ind"
+                "pt-BR" -> "ptb"
+                "ru" -> "rus"
+                "th" -> "tha"
+                "de" -> "deu"
+                "vi" -> "vie"
+                else -> throw IllegalStateException("Unsupported lang: $lang")
+            })
             .toString()
 
         return GET(url, newHeaders)
     }
 
-    private fun pageListParse(response: Response): List<Page> {
-        val result = json.decodeFromString<MangaPlusResponse>(response.body.string())
+    private fun pageListParse(response: Response, lang: String): List<Page> {
+        val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body.bytes())
 
         if (result.success == null) {
-            throw Exception("error getting images")
+            throw Exception(result.error?.langPopup(when (lang) {
+                "en" -> LANGUAGE_ENGLISH
+                "es" -> LANGUAGE_SPANISH
+                "fr" -> LANGUAGE_FRENCH
+                "id" -> LANGUAGE_INDONESIAN
+                "pt-BR" -> LANGUAGE_PORTUGUESE_BR
+                "ru" -> LANGUAGE_RUSSIAN
+                "th" -> LANGUAGE_THAI
+                "de" -> LANGUAGE_GERMAN
+                "vi" -> LANGUAGE_VIETNAMESE
+                else -> throw IllegalStateException("Unsupported lang: $lang")
+            })?.body ?: "error getting images")
         }
 
-        val referer = response.request.header("Referer")!!
+        val viewer = result.success.mangaViewer!!
 
-        return result.success.mangaViewer!!.pages
+        return viewer.pages
             .mapNotNull(MangaPlusPage::mangaPage)
             .mapIndexed { i, page ->
                 val encryptionKey = if (page.encryptionKey == null) "" else "#${page.encryptionKey}"
-                Page(i, referer, page.imageUrl + encryptionKey)
+                Page(i, viewer.viewToken.orEmpty(), page.imageUrl + encryptionKey)
             }
     }
 
