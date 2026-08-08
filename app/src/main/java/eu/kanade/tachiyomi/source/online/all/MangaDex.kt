@@ -55,6 +55,7 @@ import uy.kohesive.injekt.injectLazy
 import kotlin.collections.HashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
@@ -123,7 +124,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val bilibiliHandler by lazy {
         BilibiliHandler(network.client)
     }
-    private val azukHandler by lazy {
+    private val azukiHandler by lazy {
         AzukiHandler(network.client, network.defaultUserAgentProvider())
     }
     private val mangaHotHandler by lazy {
@@ -139,31 +140,53 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             mangaPlusHandler,
             comikeyHandler,
             bilibiliHandler,
-            azukHandler,
+            azukiHandler,
             mangaHotHandler,
             namicomiHandler,
         )
     }
 
+    /**
+     * Signature:
+     *
+     * ```kotlin
+     * @Suppress(names = ["unused"])
+     * public final suspend fun komikkuGetSearchManga(
+     *     page: Int,
+     *     query: String,
+     *     filters: FilterList
+     * ): MangasPage
+     * ```
+     */
     private val komikkuGetSearchManga by lazy {
         delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }
     }
 
+    /**
+     * Signature:
+     *
+     * ```kotlin
+     * @Suppress(names = ["unused"])
+     * public final suspend fun komikkuGetLatestUpdates(
+     *     page: Int
+     * ): MangasPage
+     * ```
+     */
     private val komikkuGetLatestUpdates by lazy {
         delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }
     }
 
     private val tokenTracker: HashMap<String, Long>? by lazy {
-        val helperCallable = delegate::class.members.find { it.name == "helper" }
-            ?: delegate::class.superclasses.first().members.find { it.name == "helper" }
+        val helperProperty = delegate::class.declaredMemberProperties.find { it.name == "helper" }
+            ?: delegate::class.superclasses.asSequence().flatMap { it.declaredMemberProperties }.find { it.name == "helper" }
             ?: return@lazy null
-        helperCallable.isAccessible = true
-        val helper = helperCallable.call(delegate) ?: return@lazy null
+        helperProperty.isAccessible = true
+        val helper = helperProperty.call(delegate) ?: return@lazy null
 
-        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return@lazy null
-        tokenTrackerCallable.isAccessible = true
+        val tokenTrackerProperty = helper::class.declaredMemberProperties.find { it.name == "tokenTracker" } ?: return@lazy null
+        tokenTrackerProperty.isAccessible = true
         @Suppress("UNCHECKED_CAST")
-        tokenTrackerCallable.call(helper) as? HashMap<String, Long>
+        tokenTrackerProperty.call(helper) as? HashMap<String, Long>
     }
 
     // UrlImportableSource methods
@@ -193,16 +216,18 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return komikkuGetSearchManga?.let {
             runAsObservable {
-                it.callSuspend(delegate, page) as? MangasPage
-                    ?: throw Exception("komikkuGetSearchManga did not return a MangasPage instance")
+                val result = it.callSuspend(delegate, page, query, filters)
+                result as? MangasPage
+                    ?: throw Exception("komikkuGetSearchManga returned $result instead of a MangasPage instance")
             }
         } ?: delegate.fetchSearchManga(page, query, filters)
     }
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         return komikkuGetSearchManga?.let {
-            it.callSuspend(delegate, page) as? MangasPage
-                ?: throw Exception("komikkuGetSearchManga did not return a MangasPage instance")
+            val result = it.callSuspend(delegate, page, query, filters)
+            result as? MangasPage
+                ?: throw Exception("komikkuGetSearchManga returned $result instead of a MangasPage instance")
         } ?: delegate.getSearchManga(page, query, filters)
     }
 
@@ -211,8 +236,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         komikkuGetLatestUpdates?.let {
             return runAsObservable {
-                it.callSuspend(delegate, page) as? MangasPage
-                    ?: throw Exception("komikkuGetLatestUpdates did not return a MangasPage instance")
+                val result = it.callSuspend(delegate, page)
+                result as? MangasPage
+                    ?: throw Exception("komikkuGetLatestUpdates returned $result instead of a MangasPage instance")
             }
         }
         val request = delegate.latestUpdatesRequest(page)
@@ -229,8 +255,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     @Suppress("DEPRECATION")
     override suspend fun getLatestUpdates(page: Int): MangasPage {
         komikkuGetLatestUpdates?.let {
-            return it.callSuspend(delegate, page) as? MangasPage
-                ?: throw Exception("komikkuGetLatestUpdates did not return a MangasPage instance")
+            val result = it.callSuspend(delegate, page)
+            return result as? MangasPage
+                ?: throw Exception("komikkuGetLatestUpdates returned $result instead of a MangasPage instance")
         }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
