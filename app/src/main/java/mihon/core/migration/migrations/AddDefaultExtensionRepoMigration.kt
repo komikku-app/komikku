@@ -10,11 +10,11 @@ class AddDefaultExtensionRepoMigration : Migration {
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
         val repository = migrationContext.get<ExtensionStoreRepository>() ?: return@withIOContext false
-        if (repository.getAll().any { it.indexUrl.contains("cursed-repo") }) return@withIOContext false
+        if (repository.getAll().any { it.indexUrl.contains("keiyoushi") }) return@withIOContext false
 
-        //
+        // Add Keiyoushi repository
         repository.insert(
-            indexUrl = "https://raw.githubusercontent.com/devil6venom/cursed-repo/repo/index.min.json",
+            indexUrl = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json",
         )
 
         return@withIOContext true
