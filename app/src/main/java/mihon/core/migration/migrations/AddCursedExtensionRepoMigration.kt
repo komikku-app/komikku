@@ -6,10 +6,11 @@ import mihon.domain.extension.repository.ExtensionStoreRepository
 import tachiyomi.core.common.util.lang.withIOContext
 
 class AddCursedExtensionRepoMigration : Migration {
-    override val version: Float = 84f
+    override val version: Float = Migration.ALWAYS
 
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
         val repository = migrationContext.get<ExtensionStoreRepository>() ?: return@withIOContext false
+        if (repository.getAll().any { it.indexUrl.contains("cursed-repo") }) return@withIOContext false
 
         // Add Cursed repository
         repository.insert(

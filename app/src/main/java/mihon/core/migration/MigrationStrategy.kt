@@ -24,7 +24,7 @@ class DefaultMigrationStrategy(
 
         launch {
             if (chain.await()) migrationCompletedListener()
-        }.start()
+        }
 
         chain
     }
@@ -33,7 +33,7 @@ class DefaultMigrationStrategy(
 class InitialMigrationStrategy(private val strategy: DefaultMigrationStrategy) : MigrationStrategy {
 
     override operator fun invoke(migrations: List<Migration>): Deferred<Boolean> {
-        return strategy(migrations.filter { it.isAlways })
+        return strategy(migrations)
     }
 }
 
