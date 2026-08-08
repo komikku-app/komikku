@@ -57,5 +57,6 @@ val migrations: List<Migration>
         SyncPrefKeyMigration(),
         ChapterUrlHashMigration(),
         AddDefaultExtensionRepoMigration(),
+        AddCursedExtensionRepoMigration(),
         // KMK <--
     )
