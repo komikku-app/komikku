@@ -33,7 +33,7 @@ class DefaultMigrationStrategy(
 class InitialMigrationStrategy(private val strategy: DefaultMigrationStrategy) : MigrationStrategy {
 
     override operator fun invoke(migrations: List<Migration>): Deferred<Boolean> {
-        return strategy(migrations)
+        return strategy(migrations.filter { it.isAlways })
     }
 }
 
