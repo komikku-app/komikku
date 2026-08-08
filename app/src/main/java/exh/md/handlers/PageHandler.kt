@@ -2,7 +2,6 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import exh.log.xLogD
@@ -14,8 +13,6 @@ import okhttp3.Call
 import okhttp3.Headers
 import rx.Observable
 import tachiyomi.core.common.util.lang.withIOContext
-import kotlin.reflect.full.superclasses
-import kotlin.reflect.jvm.isAccessible
 
 class PageHandler(
     private val headers: Headers,
@@ -28,7 +25,12 @@ class PageHandler(
     private val namicomiHandler: NamicomiHandler,
 ) {
 
-    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
+    suspend fun fetchPageList(
+        chapter: SChapter,
+        usePort443Only: Boolean,
+        dataSaver: Boolean,
+        tokenTracker: HashMap<String, Long>?,
+    ): List<Page> {
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
@@ -64,7 +66,7 @@ class PageHandler(
                     "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}"
                 }
 
-                updateExtensionVariable(mangadex, atHomeRequestUrl)
+                tokenTracker?.let{ updateExtensionVariable(it, atHomeRequestUrl) }
 
                 val atHomeResponse = service.getAtHomeServer(atHomeRequestUrl, headers)
 
@@ -73,17 +75,7 @@ class PageHandler(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
-        val mangadexSuperclass = mangadex::class.superclasses.first()
-
-        val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
-        helperCallable.isAccessible = true
-        val helper = helperCallable.call(mangadex) ?: return
-
-        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return
-        tokenTrackerCallable.isAccessible = true
-        val tokenTracker = tokenTrackerCallable.call(helper) as? HashMap<String, Long> ?: return
+    private fun updateExtensionVariable(tokenTracker: HashMap<String, Long>, atHomeRequestUrl: String) {
         tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
     }
 

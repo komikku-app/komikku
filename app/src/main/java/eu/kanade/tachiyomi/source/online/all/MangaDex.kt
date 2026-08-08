@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -51,7 +52,13 @@ import tachiyomi.core.common.util.lang.runAsObservable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import kotlin.collections.HashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.superclasses
+import kotlin.reflect.jvm.isAccessible
 
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
@@ -117,7 +124,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val bilibiliHandler by lazy {
         BilibiliHandler(network.client)
     }
-    private val azukHandler by lazy {
+    private val azukiHandler by lazy {
         AzukiHandler(network.client, network.defaultUserAgentProvider())
     }
     private val mangaHotHandler by lazy {
@@ -133,10 +140,53 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             mangaPlusHandler,
             comikeyHandler,
             bilibiliHandler,
-            azukHandler,
+            azukiHandler,
             mangaHotHandler,
             namicomiHandler,
         )
+    }
+
+    /**
+     * Signature:
+     *
+     * ```kotlin
+     * @Suppress(names = ["unused"])
+     * public final suspend fun komikkuGetSearchManga(
+     *     page: Int,
+     *     query: String,
+     *     filters: FilterList
+     * ): MangasPage
+     * ```
+     */
+    private val komikkuGetSearchManga by lazy {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetSearchManga" }
+    }
+
+    /**
+     * Signature:
+     *
+     * ```kotlin
+     * @Suppress(names = ["unused"])
+     * public final suspend fun komikkuGetLatestUpdates(
+     *     page: Int
+     * ): MangasPage
+     * ```
+     */
+    private val komikkuGetLatestUpdates by lazy {
+        delegate::class.memberFunctions.find { it.name == "komikkuGetLatestUpdates" }
+    }
+
+    private val tokenTracker: HashMap<String, Long>? by lazy {
+        val helperProperty = delegate::class.declaredMemberProperties.find { it.name == "helper" }
+            ?: delegate::class.superclasses.asSequence().flatMap { it.declaredMemberProperties }.find { it.name == "helper" }
+            ?: return@lazy null
+        helperProperty.isAccessible = true
+        val helper = helperProperty.call(delegate) ?: return@lazy null
+
+        val tokenTrackerProperty = helper::class.declaredMemberProperties.find { it.name == "tokenTracker" } ?: return@lazy null
+        tokenTrackerProperty.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        tokenTrackerProperty.call(helper) as? HashMap<String, Long>
     }
 
     // UrlImportableSource methods
@@ -161,8 +211,36 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getSearchManga"))
+    @Suppress("DEPRECATION")
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+        return komikkuGetSearchManga?.let {
+            runAsObservable {
+                val result = it.callSuspend(delegate, page, query, filters)
+                result as? MangasPage
+                    ?: throw Exception("komikkuGetSearchManga returned $result instead of a MangasPage instance")
+            }
+        } ?: delegate.fetchSearchManga(page, query, filters)
+    }
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        return komikkuGetSearchManga?.let {
+            val result = it.callSuspend(delegate, page, query, filters)
+            result as? MangasPage
+                ?: throw Exception("komikkuGetSearchManga returned $result instead of a MangasPage instance")
+        } ?: delegate.getSearchManga(page, query, filters)
+    }
+
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Suppress("DEPRECATION")
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        komikkuGetLatestUpdates?.let {
+            return runAsObservable {
+                val result = it.callSuspend(delegate, page)
+                result as? MangasPage
+                    ?: throw Exception("komikkuGetLatestUpdates returned $result instead of a MangasPage instance")
+            }
+        }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
             .removeAllQueryParameters("includeFutureUpdates")
@@ -174,7 +252,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             }
     }
 
+    @Suppress("DEPRECATION")
     override suspend fun getLatestUpdates(page: Int): MangasPage {
+        komikkuGetLatestUpdates?.let {
+            val result = it.callSuspend(delegate, page)
+            return result as? MangasPage
+                ?: throw Exception("komikkuGetLatestUpdates returned $result instead of a MangasPage instance")
+        }
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
             .removeAllQueryParameters("includeFutureUpdates")
@@ -233,11 +317,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
+        return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), tokenTracker) }
     }
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
-        return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate)
+        return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), tokenTracker)
     }
 
     override suspend fun getImage(page: Page): Response {
