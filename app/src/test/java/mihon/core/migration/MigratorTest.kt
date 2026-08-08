@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,7 +40,7 @@ class MigratorTest {
     @Test
     fun initialVersion() = runBlocking {
         val strategy = migrationStrategyFactory.create(0, 1)
-        assertInstanceOf(InitialMigrationStrategy::class.java, strategy)
+        assertTrue(strategy is InitialMigrationStrategy)
 
         val migrations = slot<List<Migration>>()
         val execute = strategy(listOf(Migration.of(Migration.ALWAYS) { true }, Migration.of(2f) { false }))
