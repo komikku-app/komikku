@@ -4,17 +4,9 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.dto.LANGUAGE_ENGLISH
-import exh.md.dto.LANGUAGE_FRENCH
-import exh.md.dto.LANGUAGE_GERMAN
-import exh.md.dto.LANGUAGE_INDONESIAN
-import exh.md.dto.LANGUAGE_PORTUGUESE_BR
-import exh.md.dto.LANGUAGE_RUSSIAN
-import exh.md.dto.LANGUAGE_SPANISH
-import exh.md.dto.LANGUAGE_THAI
-import exh.md.dto.LANGUAGE_VIETNAMESE
 import exh.md.dto.MangaPlusPage
 import exh.md.dto.MangaPlusResponse
+import exh.md.dto.toMangaPlusLanguage
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
@@ -61,18 +53,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
                     "super_high"
                 },
             )
-            .addQueryParameter("clang", when (lang) {
-                "en" -> "eng"
-                "es" -> "esp"
-                "fr" -> "fra"
-                "id" -> "ind"
-                "pt-BR" -> "ptb"
-                "ru" -> "rus"
-                "th" -> "tha"
-                "de" -> "deu"
-                "vi" -> "vie"
-                else -> throw IllegalStateException("Unsupported lang: $lang")
-            })
+            .addQueryParameter("clang", lang.toMangaPlusLanguage().clang)
             .toString()
 
         return GET(url, newHeaders)
@@ -82,21 +63,10 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body.bytes())
 
         if (result.success == null) {
-            throw Exception(result.error?.langPopup(when (lang) {
-                "en" -> LANGUAGE_ENGLISH
-                "es" -> LANGUAGE_SPANISH
-                "fr" -> LANGUAGE_FRENCH
-                "id" -> LANGUAGE_INDONESIAN
-                "pt-BR" -> LANGUAGE_PORTUGUESE_BR
-                "ru" -> LANGUAGE_RUSSIAN
-                "th" -> LANGUAGE_THAI
-                "de" -> LANGUAGE_GERMAN
-                "vi" -> LANGUAGE_VIETNAMESE
-                else -> throw IllegalStateException("Unsupported lang: $lang")
-            })?.body ?: "error getting images")
+            throw Exception(result.error?.langPopup(lang.toMangaPlusLanguage())?.body ?: "error getting images")
         }
 
-        val viewer = result.success.mangaViewer!!
+        val viewer = result.success.mangaViewer ?: throw Exception("mangaViewer missing from page list response")
 
         return viewer.pages
             .mapNotNull(MangaPlusPage::mangaPage)

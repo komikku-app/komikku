@@ -113,7 +113,11 @@ class PageHandler(
             page.imageUrl?.contains("tokyo-cdn.com", true) == true -> {
                 mangaPlusHandler.client.newCachelessCallWithProgress(GET(
                     page.imageUrl!!,
-                    mangaPlusHandler.headers.newBuilder().add("Plus-Vw-Token", page.url).build(),
+                    if (page.url.isEmpty()) {
+                        mangaPlusHandler.headers
+                    } else {
+                        mangaPlusHandler.headers.newBuilder().add("Plus-Vw-Token", page.url).build()
+                    },
                 ), page)
             }
             page.imageUrl?.contains("comikey", true) == true -> {

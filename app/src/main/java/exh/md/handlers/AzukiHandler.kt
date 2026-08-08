@@ -37,7 +37,7 @@ class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
 
     fun pageListParse(response: Response): List<Page> {
         return Json.decodeFromString<AzukiPageListDto>(response.body.string()).data.pages.mapIndexed { i, page ->
-            val highRes = page.image.webp.maxBy { it.width }
+            val highRes = page.image.webp.maxByOrNull { it.width } ?: throw Exception("No image urls found for page $i")
             // This will give the highest possible resolution even if x2400 image doesn't exist.
             val highResUrl = highRes.url.replace("""/\d+_""".toRegex(), "/2400_")
             Page(i, imageUrl = "$highResUrl?drm=1")
