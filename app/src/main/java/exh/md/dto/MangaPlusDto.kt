@@ -14,8 +14,8 @@ data class ErrorResult(
     @ProtoNumber(2) val englishPopup: Popup? = null,
     @ProtoNumber(3) val spanishPopup: Popup? = null,
 ) {
-    fun langPopup(langCode: Int): Popup? = when (langCode) {
-        LANGUAGE_SPANISH -> spanishPopup ?: englishPopup
+    fun langPopup(lang: MangaPlusLanguage): Popup? = when (lang) {
+        MangaPlusLanguage.SPANISH -> spanishPopup ?: englishPopup
         else -> englishPopup
     }
 }
@@ -47,12 +47,27 @@ data class MangaPage(
     @ProtoNumber(5) val encryptionKey: String? = null,
 )
 
-const val LANGUAGE_ENGLISH = 0
-const val LANGUAGE_SPANISH = 1
-const val LANGUAGE_FRENCH = 2
-const val LANGUAGE_INDONESIAN = 3
-const val LANGUAGE_PORTUGUESE_BR = 4
-const val LANGUAGE_RUSSIAN = 5
-const val LANGUAGE_THAI = 6
-const val LANGUAGE_GERMAN = 7
-const val LANGUAGE_VIETNAMESE = 9
+enum class MangaPlusLanguage(val code: Int, val clang: String) {
+    ENGLISH(0, "eng"),
+    SPANISH(1, "esp"),
+    FRENCH(2, "fra"),
+    INDONESIAN(3, "ind"),
+    PORTUGESE_BR(4, "ptb"),
+    RUSSIAN(5, "rus"),
+    THAI(6, "tha"),
+    GERMAN(7, "deu"),
+    VIETNAMESE(9, "vie"),
+}
+
+fun String.toMangaPlusLanguage(): MangaPlusLanguage = when (this) {
+    "en" -> MangaPlusLanguage.ENGLISH
+    "es" -> MangaPlusLanguage.SPANISH
+    "fr" -> MangaPlusLanguage.FRENCH
+    "id" -> MangaPlusLanguage.INDONESIAN
+    "pt-BR" -> MangaPlusLanguage.PORTUGESE_BR
+    "ru" -> MangaPlusLanguage.RUSSIAN
+    "th" -> MangaPlusLanguage.THAI
+    "de" -> MangaPlusLanguage.GERMAN
+    "vi" -> MangaPlusLanguage.VIETNAMESE
+    else -> throw IllegalStateException("Unsupported lang: $this")
+}
