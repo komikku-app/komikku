@@ -9,8 +9,9 @@ CREATE TABLE history(
     ON DELETE CASCADE
 );
 
-CREATE INDEX history_history_chapter_id_index ON history(chapter_id);
-CREATE INDEX idx_history_last_read ON history(last_read) WHERE last_read > 0;
+-- KMK -->
+-- Dropped: UNIQUE already indexes chapter_id, and no query matches last_read > 0.
+-- KMK <--
 
 getHistoryByMangaId:
 SELECT
@@ -64,6 +65,29 @@ DELETE FROM history;
 removeResettedHistory:
 DELETE FROM history
 WHERE last_read = 0;
+
+-- KMK -->
+-- Entries whose cached aggregates a bulk history change will invalidate.
+getMangaIdsWithHistory:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id;
+
+getMangaIdsByHistoryIds:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id
+WHERE H._id IN :historyIds;
+
+getMangaIdsWithResettedHistory:
+SELECT DISTINCT C.manga_id
+FROM history H
+JOIN chapters C
+ON C._id = H.chapter_id
+WHERE H.last_read = 0;
+-- KMK <--
 
 upsert:
 INSERT INTO history(chapter_id, last_read, time_read)

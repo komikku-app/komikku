@@ -1,0 +1,8 @@
+-- KMK -->
+-- Drop two history indexes no query can use.
+DROP INDEX IF EXISTS history_history_chapter_id_index;
+DROP INDEX IF EXISTS idx_history_last_read;
+
+-- `libraryView` is replaced by the queries in libraryView.sq.
+DROP VIEW IF EXISTS libraryView;
+-- KMK <--

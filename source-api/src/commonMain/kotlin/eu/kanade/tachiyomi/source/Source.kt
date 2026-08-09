@@ -10,10 +10,13 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
 import rx.Observable
 import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.system.logcat
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A basic interface for creating a source. It could be an online source, a local source, etc...
@@ -222,15 +225,23 @@ interface Source {
 
         coroutineScope {
             val filterList = getFilterList()
+            // KMK -->
+            // Limit concurrent keyword searches for this source.
+            val semaphore = relatedMangaSearchSemaphore(id)
+            // KMK <--
             words.map { keyword ->
                 launch {
-                    runCatching {
-                        getSearchManga(1, keyword.sanitize(), filterList).mangas
-                    }
-                        .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
-                        .onFailure { e ->
-                            logcat(LogPriority.ERROR, e) { "## getRelatedMangaListBySearch: $e" }
+                    // KMK -->
+                    semaphore.withPermit {
+                        runCatching {
+                            getSearchManga(1, keyword.sanitize(), filterList).mangas
                         }
+                            .onSuccess { if (it.isNotEmpty()) pushResults(Pair(keyword, it), false) }
+                            .onFailure { e ->
+                                logcat(LogPriority.ERROR, e) { "## getRelatedMangaListBySearch: $e" }
+                            }
+                    }
+                    // KMK <--
                 }
             }
         }
@@ -246,3 +257,15 @@ interface Source {
     @Deprecated("Use the suspend API instead", ReplaceWith("getPageList"))
     fun fetchPageList(chapter: SChapter): Observable<List<Page>> = throw UnsupportedOperationException()
 }
+
+// KMK -->
+/** Limits concurrent related-manga searches for each source. */
+private const val RELATED_MANGA_SEARCH_CONCURRENCY = 2
+
+/** Semaphores are shared by source across overlapping searches. */
+private val relatedMangaSearchSemaphores = ConcurrentHashMap<Long, Semaphore>()
+
+/** `computeIfAbsent`, not `getOrPut`: the latter is a non-atomic get-then-put. */
+private fun relatedMangaSearchSemaphore(sourceId: Long): Semaphore =
+    relatedMangaSearchSemaphores.computeIfAbsent(sourceId) { Semaphore(RELATED_MANGA_SEARCH_CONCURRENCY) }
+// KMK <--
