@@ -1,14 +1,18 @@
 package eu.kanade.tachiyomi.data.coil
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.palette.graphics.Palette
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata.setRatioAndColors
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
 import okio.BufferedSource
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -17,10 +21,48 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Jays2Kings
  */
 object MangaCoverMetadata {
-    private val preferences by injectLazy<LibraryPreferences>()
-    private val coverCache by injectLazy<CoverCache>()
+    private val preferences: LibraryPreferences
+        get() = Injekt.get()
+    private val coverCache: CoverCache
+        get() = Injekt.get()
 
-    fun load() {
+    private fun getRatiosFile(context: Context) = File(context.filesDir, "cover_ratios.bin")
+    private fun getColorsFile(context: Context) = File(context.filesDir, "cover_colors.bin")
+
+    fun load(context: Context) {
+        val ratiosFile = getRatiosFile(context)
+        val colorsFile = getColorsFile(context)
+
+        if (ratiosFile.exists()) {
+            loadRatiosBinary(ratiosFile)
+        } else {
+            loadRatiosPrefs()
+        }
+
+        if (colorsFile.exists()) {
+            loadColorsBinary(colorsFile)
+        } else {
+            loadColorsPrefs()
+        }
+    }
+
+    private fun loadRatiosBinary(file: File) {
+        try {
+            DataInputStream(file.inputStream().buffered()).use { ds ->
+                val size = ds.readInt()
+                val map = ConcurrentHashMap<Long, Float>(size)
+                for (i in 0 until size) {
+                    map[ds.readLong()] = ds.readFloat()
+                }
+                MangaCover.coverRatioMap = map
+            }
+        } catch (e: Exception) {
+            logcat(logcat.LogPriority.ERROR, e)
+            loadRatiosPrefs()
+        }
+    }
+
+    private fun loadRatiosPrefs() {
         val ratios = preferences.coverRatios().get()
         MangaCover.coverRatioMap = ConcurrentHashMap(
             ratios.mapNotNull {
@@ -34,6 +76,25 @@ object MangaCoverMetadata {
                 }
             }.toMap(),
         )
+    }
+
+    private fun loadColorsBinary(file: File) {
+        try {
+            DataInputStream(file.inputStream().buffered()).use { ds ->
+                val size = ds.readInt()
+                val map = ConcurrentHashMap<Long, Pair<Int, Int>>(size)
+                for (i in 0 until size) {
+                    map[ds.readLong()] = ds.readInt() to ds.readInt()
+                }
+                MangaCover.dominantCoverColorMap = map
+            }
+        } catch (e: Exception) {
+            logcat(logcat.LogPriority.ERROR, e)
+            loadColorsPrefs()
+        }
+    }
+
+    private fun loadColorsPrefs() {
         val colors = preferences.coverColors().get()
         MangaCover.dominantCoverColorMap = ConcurrentHashMap(
             colors.mapNotNull {
@@ -153,11 +214,37 @@ object MangaCoverMetadata {
         MangaCover.dominantCoverColorMap.remove(mangaId)
     }
 
-    fun savePrefs() {
-        val mapCopy = MangaCover.coverRatioMap.toMap()
-        preferences.coverRatios().set(mapCopy.map { "${it.key}|${it.value}" }.toSet())
-        val mapColorCopy = MangaCover.dominantCoverColorMap.toMap()
-        preferences.coverColors().set(mapColorCopy.map { "${it.key}|${it.value.first}|${it.value.second}" }.toSet())
+    fun savePrefs(context: Context) {
+        try {
+            val mapRatio = MangaCover.coverRatioMap.toMap()
+            DataOutputStream(getRatiosFile(context).outputStream().buffered()).use { ds ->
+                ds.writeInt(mapRatio.size)
+                for ((id, ratio) in mapRatio) {
+                    ds.writeLong(id)
+                    ds.writeFloat(ratio)
+                }
+            }
+
+            val mapColor = MangaCover.dominantCoverColorMap.toMap()
+            DataOutputStream(getColorsFile(context).outputStream().buffered()).use { ds ->
+                ds.writeInt(mapColor.size)
+                for ((id, colors) in mapColor) {
+                    ds.writeLong(id)
+                    ds.writeInt(colors.first)
+                    ds.writeInt(colors.second)
+                }
+            }
+
+            // Clear legacy prefs if they are not empty
+            if (preferences.coverRatios().get().isNotEmpty()) {
+                preferences.coverRatios().delete()
+            }
+            if (preferences.coverColors().get().isNotEmpty()) {
+                preferences.coverColors().delete()
+            }
+        } catch (e: Exception) {
+            logcat(logcat.LogPriority.ERROR, e)
+        }
     }
 
     private const val SUB_SAMPLE = 4

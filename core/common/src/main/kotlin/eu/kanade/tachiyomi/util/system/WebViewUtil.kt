@@ -55,14 +55,17 @@ object WebViewUtil {
         return context.packageManager.hasSystemFeature(PackageManager.FEATURE_WEBVIEW)
     }
 
+    private var cachedSpoofedPackageName: String? = null
+
     fun spoofedPackageName(context: Context): String {
+        cachedSpoofedPackageName?.let { return it }
         return try {
             context.packageManager.getPackageInfo(CHROME_PACKAGE, PackageManager.GET_META_DATA)
 
             CHROME_PACKAGE
         } catch (_: PackageManager.NameNotFoundException) {
             SYSTEM_SETTINGS_PACKAGE
-        }
+        }.also { cachedSpoofedPackageName = it }
     }
 }
 

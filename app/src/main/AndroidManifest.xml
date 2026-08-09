@@ -390,7 +390,10 @@
 
                 <data
                     android:host="mangadex-auth"
-                    android:scheme="tachiyomisy" />
+                    android:scheme="comick" />
+                <data
+                    android:host="mangadex-auth"
+                    android:scheme="mihon" />
             </intent-filter>
         </activity>
 

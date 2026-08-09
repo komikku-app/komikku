@@ -41,6 +41,7 @@ class MangaDexLoginHelper(
                     POST(MdApi.baseAuthUrl + MdApi.token, headers = headers, body = loginFormBody),
                 ).awaitSuccess().parseAs<MALOAuth>()
             }
+            preferences.pkceCodeVerifier().delete()
             mangaDexAuthInterceptor.setAuth(data)
         }.exceptionOrNull()
 

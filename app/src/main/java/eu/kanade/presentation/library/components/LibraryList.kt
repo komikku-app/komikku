@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.ui.library.LibraryItem
@@ -43,6 +44,13 @@ internal fun LibraryList(
             contentType = { "library_list_item" },
         ) { libraryItem ->
             val manga = libraryItem.libraryManga.manga
+            val onClickItem = remember(libraryItem) { { onClick(libraryItem.libraryManga) } }
+            val onLongClickItem = remember(libraryItem) { { onLongClick(libraryItem.libraryManga) } }
+            val onClickContinueReadingItem = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
+                remember(libraryItem) { { onClickContinueReading(libraryItem.libraryManga) } }
+            } else {
+                null
+            }
             MangaListItem(
                 isSelected = manga.id in selection,
                 title = manga.title,
@@ -67,13 +75,9 @@ internal fun LibraryList(
                     SourceIconBadge(source = libraryItem.source)
                     // KMK <--
                 },
-                onLongClick = { onLongClick(libraryItem.libraryManga) },
-                onClick = { onClick(libraryItem.libraryManga) },
-                onClickContinueReading = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
-                    { onClickContinueReading(libraryItem.libraryManga) }
-                } else {
-                    null
-                },
+                onLongClick = onLongClickItem,
+                onClick = onClickItem,
+                onClickContinueReading = onClickContinueReadingItem,
             )
         }
     }

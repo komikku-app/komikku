@@ -1,8 +1,13 @@
 package eu.kanade.tachiyomi.ui.setting.track
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import logcat.LogPriority
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.system.logcat
+import tachiyomi.i18n.MR
 
 class TrackLoginActivity : BaseOAuthLoginActivity() {
 
@@ -28,6 +33,9 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
                     "myanimelist-auth" -> handleMyAnimeList(data["code"])
                     "shikimori-auth" -> handleShikimori(data["code"])
                 }
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e) { "Tracker login failed" }
+                Toast.makeText(this@TrackLoginActivity, e.message ?: stringResource(MR.strings.unknown_error), Toast.LENGTH_LONG).show()
             } finally {
                 returnToSettings()
             }

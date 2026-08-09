@@ -4,12 +4,9 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
-import android.webkit.WebStorage
-import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,18 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.download.interactor.CleanInvalidDownloads
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
@@ -42,11 +35,7 @@ import eu.kanade.presentation.more.settings.screen.advanced.ClearDatabaseScreen
 import eu.kanade.presentation.more.settings.screen.debug.DebugInfoScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.data.download.DownloadCache
-import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.library.MetadataUpdateJob
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
-import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_360
 import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
@@ -63,13 +52,11 @@ import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.CrashLogUtil
-import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.isShizukuInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
-import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
@@ -83,28 +70,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.Headers
-import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
-import tachiyomi.core.common.util.lang.launchNonCancellable
-import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
-import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.manga.interactor.GetAllManga
-import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.domain.release.service.AppUpdatePolicy
-import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
-import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
     @Suppress("unused")
@@ -182,8 +159,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                 },
             ),
             // KMK <--
+            // KMK -->
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(KMR.strings.pref_category_cleanup),
+                onClick = { navigator.push(SettingsCleanupScreen) },
+            ),
+            // KMK <--
             getBackgroundActivityGroup(),
-            getDataGroup(),
             getNetworkGroup(networkPreferences = networkPreferences),
             getLibraryGroup(libraryPreferences = libraryPreferences),
             // SY -->
@@ -239,51 +221,10 @@ object SettingsAdvancedScreen : SearchableSettings {
     }
 
     @Composable
-    private fun getDataGroup(): Preference.PreferenceGroup {
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        val navigator = LocalNavigator.currentOrThrow
-
-        return Preference.PreferenceGroup(
-            title = stringResource(MR.strings.label_data),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_invalidate_download_cache),
-                    subtitle = stringResource(MR.strings.pref_invalidate_download_cache_summary),
-                    onClick = {
-                        Injekt.get<DownloadCache>().invalidateCache()
-                        context.toast(MR.strings.download_cache_invalidated)
-                    },
-                ),
-                // KMK -->
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(KMR.strings.pref_clean_invalid_downloads),
-                    subtitle = stringResource(KMR.strings.pref_clean_invalid_downloads_summary),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            Injekt.get<CleanInvalidDownloads>().await()
-                            withUIContext {
-                                context.toast(KMR.strings.invalid_downloads_cleaned)
-                            }
-                        }
-                    },
-                ),
-                // KMK <--
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_clear_database),
-                    subtitle = stringResource(MR.strings.pref_clear_database_summary),
-                    onClick = { navigator.push(ClearDatabaseScreen()) },
-                ),
-            ),
-        )
-    }
-
-    @Composable
     private fun getNetworkGroup(
         networkPreferences: NetworkPreferences,
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
-        val networkHelper = remember { Injekt.get<NetworkHelper>() }
 
         val userAgentPref = networkPreferences.defaultUserAgent()
         val userAgent by userAgentPref.collectAsState()
@@ -291,35 +232,6 @@ object SettingsAdvancedScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_network),
             preferenceItems = persistentListOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_clear_cookies),
-                    onClick = {
-                        networkHelper.cookieJar.removeAll()
-                        context.toast(MR.strings.cookies_cleared)
-                    },
-                ),
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_clear_webview_data),
-                    onClick = {
-                        try {
-                            WebView(context).run {
-                                setDefaultSettings()
-                                clearCache(true)
-                                clearFormData()
-                                clearHistory()
-                                clearSslPreferences()
-                            }
-                            WebStorage.getInstance().deleteAllData()
-                            context.applicationInfo?.dataDir?.let {
-                                File("$it/app_webview/").deleteRecursively()
-                            }
-                            context.toast(MR.strings.webview_data_deleted)
-                        } catch (e: Throwable) {
-                            logcat(LogPriority.ERROR, e)
-                            context.toast(MR.strings.cache_delete_error)
-                        }
-                    },
-                ),
                 Preference.PreferenceItem.ListPreference(
                     preference = networkPreferences.dohProvider(),
                     entries = persistentMapOf(
@@ -343,6 +255,29 @@ object SettingsAdvancedScreen : SearchableSettings {
                         true
                     },
                 ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = networkPreferences.userAgentType(),
+                    entries = persistentMapOf(
+                        0 to stringResource(KMR.strings.pref_user_agent_type_mobile),
+                        1 to stringResource(KMR.strings.pref_user_agent_type_ios),
+                        2 to stringResource(KMR.strings.pref_user_agent_type_desktop),
+                        3 to stringResource(KMR.strings.pref_user_agent_type_custom),
+                    ),
+                    title = stringResource(KMR.strings.pref_user_agent_type),
+                    onValueChanged = { type ->
+                        val newUa = when (type) {
+                            0 -> NetworkPreferences.DEFAULT_USER_AGENT
+                            1 -> NetworkPreferences.IOS_USER_AGENT
+                            2 -> NetworkPreferences.DESKTOP_USER_AGENT
+                            else -> null
+                        }
+                        if (newUa != null) {
+                            userAgentPref.set(newUa)
+                            context.toast(MR.strings.requires_app_restart)
+                        }
+                        true
+                    },
+                ),
                 Preference.PreferenceItem.EditTextPreference(
                     preference = userAgentPref,
                     title = stringResource(MR.strings.pref_user_agent_string),
@@ -350,6 +285,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         try {
                             // OkHttp checks for valid values internally
                             Headers.Builder().add("User-Agent", it)
+                            networkPreferences.userAgentType().set(3) // Custom
                             context.toast(MR.strings.requires_app_restart)
                         } catch (_: IllegalArgumentException) {
                             context.toast(MR.strings.error_user_agent_string_invalid)
@@ -374,8 +310,6 @@ object SettingsAdvancedScreen : SearchableSettings {
     private fun getLibraryGroup(
         libraryPreferences: LibraryPreferences,
     ): Preference.PreferenceGroup {
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
         // KMK -->
         val uiPreferences = remember { Injekt.get<UiPreferences>() }
         // KMK <--
@@ -383,33 +317,12 @@ object SettingsAdvancedScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_library),
             preferenceItems = persistentListOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_refresh_library_covers),
-                    onClick = { MetadataUpdateJob.startNow(context) },
-                ),
                 // KMK -->
                 Preference.PreferenceItem.SwitchPreference(
                     preference = uiPreferences.preloadLibraryColor(),
                     title = stringResource(KMR.strings.preload_library_cover_color),
                 ),
                 // KMK <--
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(MR.strings.pref_reset_viewer_flags),
-                    subtitle = stringResource(MR.strings.pref_reset_viewer_flags_summary),
-                    onClick = {
-                        scope.launchNonCancellable {
-                            val success = Injekt.get<ResetViewerFlags>().await()
-                            withUIContext {
-                                val message = if (success) {
-                                    MR.strings.pref_reset_viewer_flags_success
-                                } else {
-                                    MR.strings.pref_reset_viewer_flags_error
-                                }
-                                context.toast(message)
-                            }
-                        }
-                    },
-                ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.updateMangaTitles(),
                     title = stringResource(MR.strings.pref_update_library_manga_titles),
@@ -571,136 +484,6 @@ object SettingsAdvancedScreen : SearchableSettings {
     }
 
     // SY -->
-    @Composable
-    fun CleanupDownloadsDialog(
-        onDismissRequest: () -> Unit,
-        onCleanupDownloads: (removeRead: Boolean, removeNonFavorite: Boolean) -> Unit,
-    ) {
-        val resources = LocalResources.current
-        val options = remember(resources) { resources.getStringArray(R.array.clean_up_downloads).toList() }
-        val selection = remember {
-            options.toMutableStateList()
-        }
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            title = { Text(text = stringResource(SYMR.strings.clean_up_downloaded_chapters)) },
-            text = {
-                LazyColumn {
-                    options.forEachIndexed { index, option ->
-                        item {
-                            LabeledCheckbox(
-                                label = option,
-                                checked = index == 0 || selection.contains(option),
-                                onCheckedChange = {
-                                    when (it) {
-                                        true -> selection.add(option)
-                                        false -> selection.remove(option)
-                                    }
-                                },
-                            )
-                        }
-                    }
-                }
-            },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = true,
-            ),
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val removeRead = options[1] in selection
-                        val removeNonFavorite = options[2] in selection
-                        onCleanupDownloads(removeRead, removeNonFavorite)
-                    },
-                ) {
-                    Text(text = stringResource(MR.strings.action_ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(MR.strings.action_cancel))
-                }
-            },
-        )
-    }
-
-    @Composable
-    private fun getDownloaderGroup(): Preference.PreferenceGroup {
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        var dialogOpen by remember { mutableStateOf(false) }
-        if (dialogOpen) {
-            CleanupDownloadsDialog(
-                onDismissRequest = { dialogOpen = false },
-                onCleanupDownloads = { removeRead, removeNonFavorite ->
-                    dialogOpen = false
-                    if (job?.isActive == true) return@CleanupDownloadsDialog
-                    context.toast(SYMR.strings.starting_cleanup)
-                    job = scope.launchNonCancellable {
-                        val mangaList = Injekt.get<GetAllManga>().await()
-                        val downloadManager: DownloadManager = Injekt.get()
-                        var foldersCleared = 0
-                        Injekt.get<SourceManager>().getOnlineSources().forEach { source ->
-                            val mangaFolders = downloadManager.getMangaFolders(source)
-                            val sourceManga = mangaList
-                                .asSequence()
-                                .filter { it.source == source.id }
-                                .map { it to DiskUtil.buildValidFilename(it.ogTitle) }
-                                .toList()
-
-                            mangaFolders.forEach mangaFolder@{ mangaFolder ->
-                                val manga =
-                                    sourceManga.find { (_, folderName) ->
-                                        folderName == mangaFolder.name
-                                    }?.first
-                                if (manga == null) {
-                                    // download is orphaned delete it
-                                    foldersCleared += 1 + (
-                                        mangaFolder.listFiles()
-                                            .orEmpty().size
-                                        )
-                                    mangaFolder.delete()
-                                } else {
-                                    val chapterList = Injekt.get<GetChaptersByMangaId>().await(manga.id)
-                                    foldersCleared += downloadManager.cleanupChapters(
-                                        chapterList,
-                                        manga,
-                                        source,
-                                        removeRead,
-                                        removeNonFavorite,
-                                    )
-                                }
-                            }
-                        }
-                        withUIContext {
-                            val cleanupString =
-                                if (foldersCleared == 0) {
-                                    context.stringResource(SYMR.strings.no_folders_to_cleanup)
-                                } else {
-                                    context.pluralStringResource(
-                                        SYMR.plurals.cleanup_done,
-                                        foldersCleared,
-                                        foldersCleared,
-                                    )
-                                }
-                            context.toast(cleanupString, Toast.LENGTH_LONG)
-                        }
-                    }
-                },
-            )
-        }
-        return Preference.PreferenceGroup(
-            title = stringResource(MR.strings.download_notifier_downloader_title),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(SYMR.strings.clean_up_downloaded_chapters),
-                    subtitle = stringResource(SYMR.strings.delete_unused_chapters),
-                    onClick = { dialogOpen = true },
-                ),
-            ),
-        )
-    }
-
     @Composable
     private fun getDataSaverGroup(): Preference.PreferenceGroup {
         val sourcePreferences = remember { Injekt.get<SourcePreferences>() }

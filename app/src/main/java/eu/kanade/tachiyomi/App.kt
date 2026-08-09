@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.os.Looper
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -89,8 +88,12 @@ import org.conscrypt.Conscrypt
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.data.Database
+import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
@@ -111,12 +114,24 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
     @SuppressLint("LaunchActivityFromNotification")
     override fun onCreate() {
-        super<Application>.onCreate()
         patchInjekt()
+        Injekt.importModule(PreferenceModule(this))
+        Injekt.importModule(AppModule(this))
+        Injekt.importModule(DomainModule())
+        // KMK -->
+        Injekt.importModule(KMKDomainModule())
+        // KMK <--
+        // SY -->
+        Injekt.importModule(SYPreferenceModule(this))
+        Injekt.importModule(SYDomainModule())
+        // SY <--
+
+        super<Application>.onCreate()
+
         TelemetryConfig.init(
             applicationContext,
             isPreviewBuildType,
-            BuildConfig.COMMIT_COUNT,
+            eu.kanade.tachiyomi.BuildConfig.COMMIT_COUNT,
         )
 
         // KMK -->
@@ -135,17 +150,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             val process = getProcessName()
             if (packageName != process) WebView.setDataDirectorySuffix(process)
         }
-
-        Injekt.importModule(PreferenceModule(this))
-        Injekt.importModule(AppModule(this))
-        Injekt.importModule(DomainModule())
-        // KMK -->
-        Injekt.importModule(KMKDomainModule())
-        // KMK <--
-        // SY -->
-        Injekt.importModule(SYPreferenceModule(this))
-        Injekt.importModule(SYDomainModule())
-        // SY <--
 
         setupExhLogging() // EXH logging
         if (!LogcatLogger.isInstalled) {
@@ -219,7 +223,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         setAppCompatDelegateThemeMode(Injekt.get<UiPreferences>().themeMode().get())
 
         // KMK -->
-        MangaCoverMetadata.load()
+        scope.launchIO {
+            MangaCoverMetadata.load(this@App)
+        }
         // KMK <--
 
         // Updates widget update
@@ -235,6 +241,23 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         }
 
         initializeMigrator()
+
+        // Asynchronously init expensive components for a faster cold start
+        // KMK -->
+        scope.launchIO {
+            try {
+                Injekt.get<NetworkHelper>()
+                Injekt.get<SourceManager>()
+                Injekt.get<Database>()
+                Injekt.get<eu.kanade.tachiyomi.data.download.DownloadManager>()
+                // SY -->
+                Injekt.get<GetCustomMangaInfo>()
+                // SY <--
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e) { "Failed to warm up singletons" }
+            }
+        }
+        // KMK <--
     }
 
     private fun initializeMigrator() {
@@ -326,14 +349,13 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     override fun getPackageName(): String {
         try {
             // Override the value passed as X-Requested-With in WebView requests
-            val stackTrace = Looper.getMainLooper().thread.stackTrace
-            // KMK -->
-            val chromiumClasses = setOf("org.chromium.base.buildinfo", "org.chromium.base.apkinfo")
-            val chromiumMethods = setOf("getall", "getpackagename", "<init>")
-            // KMK <--
-            val isChromiumCall = stackTrace.any { trace ->
-                trace.className.lowercase() in chromiumClasses &&
-                    trace.methodName.lowercase() in chromiumMethods
+            val stackTrace = Thread.currentThread().stackTrace
+            var isChromiumCall = false
+            for (i in 0 until minOf(stackTrace.size, 25)) {
+                if (stackTrace[i].className.startsWith("org.chromium.")) {
+                    isChromiumCall = true
+                    break
+                }
             }
 
             if (isChromiumCall) return WebViewUtil.spoofedPackageName(applicationContext)
@@ -379,7 +401,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         val logFolder = Injekt.get<StorageManager>().getLogsDirectory()
 
         if (logFolder != null) {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("yyyy-MM-d HH:mm:ss.SSS", Locale.getDefault())
 
             printers += EnhancedFilePrinter
                 .Builder(logFolder) {

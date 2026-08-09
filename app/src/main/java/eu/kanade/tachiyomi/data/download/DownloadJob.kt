@@ -20,12 +20,11 @@ import eu.kanade.tachiyomi.util.system.activeNetworkState
 import eu.kanade.tachiyomi.util.system.networkStateFlow
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import tachiyomi.domain.download.service.DownloadPreferences
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -58,32 +57,25 @@ class DownloadJob(private val context: Context, workerParams: WorkerParameters) 
     }
 
     override suspend fun doWork(): Result {
-        var networkCheck = checkNetworkState(
+        val networkCheck = checkNetworkState(
             applicationContext.activeNetworkState(),
             downloadPreferences.downloadOnlyOverWifi().get(),
         )
-        var active = networkCheck && downloadManager.downloaderStart()
-
-        if (!active) {
+        if (!networkCheck || !downloadManager.downloaderStart()) {
             return Result.failure()
         }
 
         setForegroundSafely()
 
-        coroutineScope {
-            combineTransform(
-                applicationContext.networkStateFlow(),
-                downloadPreferences.downloadOnlyOverWifi().changes(),
-                transform = { a, b -> emit(checkNetworkState(a, b)) },
-            )
-                .onEach { networkCheck = it }
-                .launchIn(this)
+        combine(
+            downloadManager.isRunningFlow,
+            applicationContext.networkStateFlow(),
+            downloadPreferences.downloadOnlyOverWifi().changes(),
+        ) { isRunning: Boolean, networkState: NetworkState, onlyWifi: Boolean ->
+            isRunning && checkNetworkState(networkState, onlyWifi)
         }
-
-        // Keep the worker running when needed
-        while (active) {
-            active = !isStopped && downloadManager.isRunning && networkCheck
-        }
+            .filter { !it || isStopped }
+            .first()
 
         return Result.success()
     }

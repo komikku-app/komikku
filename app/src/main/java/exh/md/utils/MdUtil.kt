@@ -168,8 +168,6 @@ class MdUtil {
             }
         }
 
-        private var codeVerifier: String? = null
-
         fun refreshTokenRequest(oauth: MALOAuth): Request {
             val formBody = FormBody.Builder()
                 .add("client_id", MdConstants.Login.clientId)
@@ -190,7 +188,13 @@ class MdUtil {
         }
 
         fun getPkceChallengeCode(): String {
-            return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
+            val trackPreferences = Injekt.get<TrackPreferences>()
+            val codeVerifier = trackPreferences.pkceCodeVerifier().get()
+            if (codeVerifier.isNotBlank()) return codeVerifier
+
+            return PkceUtil.generateCodeVerifier().also {
+                trackPreferences.pkceCodeVerifier().set(it)
+            }
         }
 
         fun getEnabledMangaDex(

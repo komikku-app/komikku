@@ -30,9 +30,11 @@ class DelayedTrackingStore(context: Context) {
 
     fun getItems(): List<DelayedTrackingItem> {
         return preferences.all.mapNotNull {
+            val trackId = it.key.toLongOrNull() ?: return@mapNotNull null
+            val lastChapterRead = it.value.toString().toFloatOrNull() ?: return@mapNotNull null
             DelayedTrackingItem(
-                trackId = it.key.toLong(),
-                lastChapterRead = it.value.toString().toFloat(),
+                trackId = trackId,
+                lastChapterRead = lastChapterRead,
             )
         }
     }

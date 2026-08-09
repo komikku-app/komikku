@@ -53,6 +53,9 @@ class DownloadManager(
     val isRunning: Boolean
         get() = downloader.isRunning
 
+    val isRunningFlow: Flow<Boolean>
+        get() = downloader.runningState
+
     /**
      * Queue to delay the deletion of a list of chapters until triggered.
      */

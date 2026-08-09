@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.library.model.LibraryManga
@@ -34,6 +35,13 @@ internal fun LibraryCompactGrid(
             contentType = { "library_compact_grid_item" },
         ) { libraryItem ->
             val manga = libraryItem.libraryManga.manga
+            val onClickItem = remember(libraryItem) { { onClick(libraryItem.libraryManga) } }
+            val onLongClickItem = remember(libraryItem) { { onLongClick(libraryItem.libraryManga) } }
+            val onClickContinueReadingItem = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
+                remember(libraryItem) { { onClickContinueReading(libraryItem.libraryManga) } }
+            } else {
+                null
+            }
             MangaCompactGridItem(
                 isSelected = manga.id in selection,
                 title = manga.title.takeIf { showTitle },
@@ -60,13 +68,9 @@ internal fun LibraryCompactGrid(
                     SourceIconBadge(source = libraryItem.source)
                     // KMK <--
                 },
-                onLongClick = { onLongClick(libraryItem.libraryManga) },
-                onClick = { onClick(libraryItem.libraryManga) },
-                onClickContinueReading = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
-                    { onClickContinueReading(libraryItem.libraryManga) }
-                } else {
-                    null
-                },
+                onLongClick = onLongClickItem,
+                onClick = onClickItem,
+                onClickContinueReading = onClickContinueReadingItem,
             )
         }
     }

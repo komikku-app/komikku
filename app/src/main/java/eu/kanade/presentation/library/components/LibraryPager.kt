@@ -75,8 +75,8 @@ fun LibraryPager(
             remember { mutableIntStateOf(0) }
         }
 
-        val onClickManga: (LibraryManga) -> Unit = { onClickManga(category, it) }
-        val onLongClickManga: (LibraryManga) -> Unit = { onLongClickManga(category, it) }
+        val onClickMangaLambda = remember(category) { { it: LibraryManga -> onClickManga(category, it) } }
+        val onLongClickMangaLambda = remember(category) { { it: LibraryManga -> onLongClickManga(category, it) } }
 
         when (displayMode) {
             LibraryDisplayMode.List -> {
@@ -84,8 +84,8 @@ fun LibraryPager(
                     items = items,
                     contentPadding = contentPadding,
                     selection = selection,
-                    onClick = onClickManga,
-                    onLongClick = onLongClickManga,
+                    onClick = onClickMangaLambda,
+                    onLongClick = onLongClickMangaLambda,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
@@ -98,8 +98,8 @@ fun LibraryPager(
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selection,
-                    onClick = onClickManga,
-                    onLongClick = onLongClickManga,
+                    onClick = onClickMangaLambda,
+                    onLongClick = onLongClickMangaLambda,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
@@ -111,8 +111,8 @@ fun LibraryPager(
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selection,
-                    onClick = onClickManga,
-                    onLongClick = onLongClickManga,
+                    onClick = onClickMangaLambda,
+                    onLongClick = onLongClickMangaLambda,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
@@ -125,8 +125,8 @@ fun LibraryPager(
                     columns = columns,
                     contentPadding = contentPadding,
                     selection = selection,
-                    onClick = onClickManga,
-                    onLongClick = onLongClickManga,
+                    onClick = onClickMangaLambda,
+                    onLongClick = onLongClickMangaLambda,
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,

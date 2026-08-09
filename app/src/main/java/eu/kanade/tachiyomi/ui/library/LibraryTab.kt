@@ -118,29 +118,73 @@ data object LibraryTab : Tab {
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val onClickRefresh: (Category?) -> Boolean = { category ->
-            // SY -->
-            val started = LibraryUpdateJob.startNow(
-                context = context,
-                category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
-                group = state.groupType,
-                groupExtra = when (state.groupType) {
-                    LibraryGroup.BY_DEFAULT -> null
-                    LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
-                    LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
-                    else -> null
-                },
-            )
-            // SY <--
-            scope.launch {
-                val msgRes = when {
-                    !started -> MR.strings.update_already_running
-                    category != null -> MR.strings.updating_category
-                    else -> MR.strings.updating_library
+        val onClickRefresh: (Category?) -> Boolean = remember(state.groupType) {
+            { category ->
+                // SY -->
+                val started = LibraryUpdateJob.startNow(
+                    context = context,
+                    category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
+                    group = state.groupType,
+                    groupExtra = when (state.groupType) {
+                        LibraryGroup.BY_DEFAULT -> null
+                        LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
+                        LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
+                        else -> null
+                    },
+                )
+                // SY <--
+                scope.launch {
+                    val msgRes = when {
+                        !started -> MR.strings.update_already_running
+                        category != null -> MR.strings.updating_category
+                        else -> MR.strings.updating_library
+                    }
+                    snackbarHostState.showSnackbar(context.stringResource(msgRes))
                 }
-                snackbarHostState.showSnackbar(context.stringResource(msgRes))
+                started
             }
-            started
+        }
+
+        val onContinueReadingClicked = remember {
+            { it: LibraryManga ->
+                scope.launchIO {
+                    val chapter = screenModel.getNextUnreadChapter(it.manga)
+                    if (chapter != null) {
+                        context.startActivity(
+                            ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
+                        )
+                    } else {
+                        snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
+                    }
+                }
+                Unit
+            }
+        }
+        val onGlobalSearchClicked = remember {
+            {
+                navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
+            }
+        }
+        val getItemCountForCategory = remember {
+            { category: Category -> screenModel.state.value.getItemCountForCategory(category) }
+        }
+        val getDisplayMode = remember {
+            { _: Int -> screenModel.getDisplayMode() }
+        }
+        val getColumnsForOrientation = remember {
+            { isLandscape: Boolean -> screenModel.getColumnsForOrientation(isLandscape) }
+        }
+        val getItemsForCategory = remember {
+            { category: Category -> screenModel.state.value.getItemsForCategory(category) }
+        }
+        val onToggleRangeSelection = remember {
+            { category: Category, manga: LibraryManga ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                screenModel.toggleRangeSelection(category, manga)
+            }
+        }
+        val onRefresh = remember {
+            { onClickRefresh(screenModel.state.value.activeCategory) }
         }
 
         Scaffold(
@@ -314,32 +358,15 @@ data object LibraryTab : Tab {
                         showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
                         onChangeCurrentPage = screenModel::updateActiveCategoryIndex,
                         onClickManga = { navigator.push(MangaScreen(it)) },
-                        onContinueReadingClicked = { it: LibraryManga ->
-                            scope.launchIO {
-                                val chapter = screenModel.getNextUnreadChapter(it.manga)
-                                if (chapter != null) {
-                                    context.startActivity(
-                                        ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
-                                    )
-                                } else {
-                                    snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
-                                }
-                            }
-                            Unit
-                        }.takeIf { state.showMangaContinueButton },
+                        onContinueReadingClicked = onContinueReadingClicked.takeIf { state.showMangaContinueButton },
                         onToggleSelection = screenModel::toggleSelection,
-                        onToggleRangeSelection = { category, manga ->
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            screenModel.toggleRangeSelection(category, manga)
-                        },
-                        onRefresh = { onClickRefresh(state.activeCategory) },
-                        onGlobalSearchClicked = {
-                            navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
-                        },
-                        getItemCountForCategory = { state.getItemCountForCategory(it) },
-                        getDisplayMode = { screenModel.getDisplayMode() },
-                        getColumnsForOrientation = { screenModel.getColumnsForOrientation(it) },
-                        getItemsForCategory = { state.getItemsForCategory(it) },
+                        onToggleRangeSelection = onToggleRangeSelection,
+                        onRefresh = onRefresh,
+                        onGlobalSearchClicked = onGlobalSearchClicked,
+                        getItemCountForCategory = getItemCountForCategory,
+                        getDisplayMode = getDisplayMode,
+                        getColumnsForOrientation = getColumnsForOrientation,
+                        getItemsForCategory = getItemsForCategory,
                     )
                 }
             }

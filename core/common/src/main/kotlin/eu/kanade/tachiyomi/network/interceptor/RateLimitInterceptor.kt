@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import java.io.IOException
 import java.util.ArrayDeque
-import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -63,7 +62,6 @@ internal class RateLimitInterceptor(
 
     private val requestQueue = ArrayDeque<Long>(permits)
     private val rateLimitMillis = period.inWholeMilliseconds
-    private val fairLock = Semaphore(1, true)
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val call = chain.call()
@@ -75,43 +73,36 @@ internal class RateLimitInterceptor(
             else -> return chain.proceed(request)
         }
 
-        try {
-            fairLock.acquire()
-        } catch (e: InterruptedException) {
-            throw IOException(e)
-        }
-
         val requestQueue = this.requestQueue
         val timestamp: Long
 
-        try {
-            synchronized(requestQueue) {
-                while (requestQueue.size >= permits) { // queue is full, remove expired entries
-                    val periodStart = SystemClock.elapsedRealtime() - rateLimitMillis
-                    var hasRemovedExpired = false
-                    while (!requestQueue.isEmpty() && requestQueue.first <= periodStart) {
-                        requestQueue.removeFirst()
-                        hasRemovedExpired = true
-                    }
-                    if (call.isCanceled()) {
-                        throw IOException("Canceled")
-                    } else if (hasRemovedExpired) {
-                        break
-                    } else {
-                        try { // wait for the first entry to expire, or notified by cached response
-                            (requestQueue as Object).wait(requestQueue.first - periodStart)
-                        } catch (_: InterruptedException) {
-                            continue
+        synchronized(requestQueue) {
+            while (requestQueue.size >= permits) { // queue is full, remove expired entries
+                val periodStart = SystemClock.elapsedRealtime() - rateLimitMillis
+                var hasRemovedExpired = false
+                while (!requestQueue.isEmpty() && requestQueue.first <= periodStart) {
+                    requestQueue.removeFirst()
+                    hasRemovedExpired = true
+                }
+                if (call.isCanceled()) {
+                    throw IOException("Canceled")
+                } else if (hasRemovedExpired) {
+                    break
+                } else {
+                    try { // wait for the first entry to expire, or notified by cached response
+                        val waitMillis = requestQueue.first - periodStart
+                        if (waitMillis > 0) {
+                            (requestQueue as Object).wait(waitMillis)
                         }
+                    } catch (_: InterruptedException) {
+                        continue
                     }
                 }
-
-                // add request to queue
-                timestamp = SystemClock.elapsedRealtime()
-                requestQueue.addLast(timestamp)
             }
-        } finally {
-            fairLock.release()
+
+            // add request to queue
+            timestamp = SystemClock.elapsedRealtime()
+            requestQueue.addLast(timestamp)
         }
 
         val response = chain.proceed(request)

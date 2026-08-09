@@ -74,25 +74,26 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
                 mdex.updateRating(track)
             }
 
+            // SY -->
             // mangadex wont update chapters if manga is not follows this prevents unneeded network call
-
-            /*if (followStatus != FollowStatus.UNFOLLOWED) {
-                if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
-                    track.status = FollowStatus.COMPLETED.int
+            if (followStatus != FollowStatus.UNFOLLOWED) {
+                if (track.total_chapters != 0L && track.last_chapter_read == track.total_chapters.toDouble()) {
+                    track.status = FollowStatus.COMPLETED.long
                     mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), FollowStatus.COMPLETED)
                 }
                 if (followStatus == FollowStatus.PLAN_TO_READ && track.last_chapter_read > 0) {
                     val newFollowStatus = FollowStatus.READING
-                    track.status = FollowStatus.READING.int
+                    track.status = FollowStatus.READING.long
                     mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), newFollowStatus)
-                    remoteTrack.status = newFollowStatus.int
+                    remoteTrack.status = newFollowStatus.long
                 }
 
                 mdex.updateReadingProgress(track)
-            } else if (track.last_chapter_read != 0) {
+            } else if (track.last_chapter_read != 0.0) {
                 // When followStatus has been changed to unfollowed 0 out read chapters since dex does
-                track.last_chapter_read = 0
-            }*/
+                track.last_chapter_read = 0.0
+            }
+            // SY <--
             track
         }
     }

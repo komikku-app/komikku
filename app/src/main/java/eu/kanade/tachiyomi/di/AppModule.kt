@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.di
 
 import android.app.Application
+import android.content.Context
 import android.os.Build
-import androidx.core.content.ContextCompat
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import app.cash.sqldelight.db.SqlDriver
@@ -29,6 +29,9 @@ import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import exh.eh.EHentaiUpdateHelper
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import mihon.core.archive.CbzCrypto
@@ -71,6 +74,7 @@ class AppModule(val app: Application) : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
         addSingleton(app)
+        addSingleton<Context>(app)
 
         addSingletonFactory<SqlDriver> {
             // SY -->
@@ -103,6 +107,7 @@ class AppModule(val app: Application) : InjektModule {
                         setPragma(db, "foreign_keys = ON")
                         setPragma(db, "journal_mode = WAL")
                         setPragma(db, "synchronous = NORMAL")
+                        setPragma(db, "mmap_size = 268435456") // 256MB
                     }
                     private fun setPragma(db: SupportSQLiteDatabase, pragma: String) {
                         val cursor = db.query("PRAGMA $pragma")
@@ -172,8 +177,8 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { ImageSaver(app) }
 
         addSingletonFactory { AndroidStorageFolderProvider(app) }
-        addSingletonFactory { LocalSourceFileSystem(get()) }
-        addSingletonFactory { LocalCoverManager(app, get()) }
+        addSingletonFactory { tachiyomi.source.local.io.LocalSourceFileSystem(get()) }
+        addSingletonFactory { tachiyomi.source.local.image.LocalCoverManager(app, get()) }
         addSingletonFactory { StorageManager(app, get()) }
 
         // SY -->
@@ -191,21 +196,6 @@ class AppModule(val app: Application) : InjektModule {
         // AM (CONNECTIONS) -->
         addSingletonFactory { ConnectionsManager() }
         // <-- AM (CONNECTIONS)
-
-        // Asynchronously init expensive components for a faster cold start
-        ContextCompat.getMainExecutor(app).execute {
-            get<NetworkHelper>()
-
-            get<SourceManager>()
-
-            get<Database>()
-
-            get<DownloadManager>()
-
-            // SY -->
-            get<GetCustomMangaInfo>()
-            // SY <--
-        }
 
         addSingletonFactory { GoogleDriveService(app) }
     }

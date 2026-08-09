@@ -161,6 +161,9 @@ class MainActivity : BaseActivity() {
     // To be checked by splash screen. If true then splash screen will be removed.
     var ready = false
 
+    private var didMigration by mutableStateOf(false)
+    private var migrationFinished by mutableStateOf(false)
+
     private var navigator: Navigator? = null
 
     // AM (CONNECTIONS) -->
@@ -200,10 +203,19 @@ class MainActivity : BaseActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val didMigration = if (isLaunch) {
-            Migrator.awaitAndRelease()
+        if (isLaunch) {
+            lifecycleScope.launch {
+                try {
+                    didMigration = Migrator.await()
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e) { "Migration failed" }
+                } finally {
+                    Migrator.release()
+                    migrationFinished = true
+                }
+            }
         } else {
-            false
+            migrationFinished = true
         }
 
         // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
@@ -413,11 +425,13 @@ class MainActivity : BaseActivity() {
 
             var showChangelog by remember {
                 mutableStateOf(
-                    // KMK -->
-                    (isReleaseBuildType && didMigration) ||
-                        (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
-                    // KMK <--
+                    (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
                 )
+            }
+            LaunchedEffect(didMigration) {
+                if (didMigration && isReleaseBuildType) {
+                    showChangelog = true
+                }
             }
             if (showChangelog) {
                 // KMK -->
@@ -476,7 +490,7 @@ class MainActivity : BaseActivity() {
     // KMK -->
     override fun onPause() {
         super.onPause()
-        MangaCoverMetadata.savePrefs()
+        MangaCoverMetadata.savePrefs(this)
     }
     // KMK <--
 

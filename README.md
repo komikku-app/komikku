@@ -24,8 +24,6 @@
 
 *Requires Android 8.0 or higher.*
 
-[![Sponsor me on GitHub](https://custom-icon-badges.demolab.com/badge/-Sponsor-ea4aaa?style=for-the-badge&logo=heart&logoColor=white)](https://github.com/devil6venom "Sponsor me on GitHub")
-
 <div align="left">
 A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachiyomi. This fork is meant to provide new & useful features while regularly take features/updates from Mihon or other forks like SY, J2K and Neko...
 
@@ -33,9 +31,21 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 
 <div align="left">
 
+
+### APP INFO :
+Personal Fork of Komikku, tachiyomisy and mihon.
+
 ## Features
 
-### Comicks's unique features:
+### Comick's unique features:
+- Sync and upload to telegram.
+- Auto added Repo and bypass trust fingerprint.
+- Max Performance and reader setting to max.
+- Immediate backup and restore.
+- Library updates frequently.
+
+
+### Komikku's unique features:
 - `Suggestions` automatically showing source-website's recommendations / suggestions / related to current entry for all sources.
 - `Hidden categories` to hide yours things from *nosy* people.
 - `Auto theme color` based on each entry's cover for entry View & Reader.
@@ -116,62 +126,6 @@ A free and open source manga reader which is based off TachiyomiSY & Mihon/Tachi
 * Enhanced views for internal and integrated sources
 * Enhanced usability for internal and delegated sources
 
-Custom sources:
-* E-Hentai/ExHentai
-
-Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
-* 8Muses (EroMuse)
-* Mangadex
-* NHentai
-* Puruin
-* LANraragi
-
-</details>
-
-## Issues, Feature Requests and Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-<details><summary>Issues</summary>
-
-[Website](https://devil6venom.github.io/Comick/)
-
-1. **Before reporting a new issue, take a look at the [FAQ](https://devil6venom.github.io/Comick/docs/faq/general), the [changelog](https://github.com/devil6venom/Comick/releases) and the already opened [issues](https://github.com/devil6venom/Comick/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1242381704459452488.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
-
-</details>
-
-<details><summary>Bugs</summary>
-
-* Include version (More → About → Version)
- * If not latest, try updating, it may have already been solved
- * Preview version is equal to the number of commits as seen on the main page
-* Include steps to reproduce (if not obvious from description)
-* Include screenshot (if needed)
-* If it could be device-dependent, try reproducing on another device (if possible)
-* Don't group unrelated requests into one issue
-
-Use the [issue forms](https://github.com/devil6venom/Comick/issues/new/choose) to submit a bug.
-
-</details>
-
-<details><summary>Feature Requests</summary>
-
-* Write a detailed issue, explaining what it should do or how.
-* Include screenshot (if needed).
-</details>
-
-<details><summary>Contributing</summary>
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
-</details>
-
-<details><summary>Code of Conduct</summary>
-
-See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
-</details>
-
-<div align="center">
 
 ### Credits
 
@@ -180,8 +134,6 @@ Thank you to all the people who have contributed!
 <a href="https://github.com/devil6venom/Comick/graphs/contributors">
     <img src="https://contrib.rocks/image?repo=devil6venom/Comick" alt="Comicks app contributors" title="Comicks app contributors" width="800"/>
 </a>
-
-![Visitor Count](https://count.getloli.com/get/@devil6venom?theme=capoo-2)
 
 ### Disclaimer
 

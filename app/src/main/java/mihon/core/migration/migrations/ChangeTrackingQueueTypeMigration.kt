@@ -13,11 +13,16 @@ class ChangeTrackingQueueTypeMigration : Migration {
     override suspend fun invoke(migrationContext: MigrationContext): Boolean = withIOContext {
         val context = migrationContext.get<Application>() ?: return@withIOContext false
         val trackingQueuePref = context.getSharedPreferences("tracking_queue", Context.MODE_PRIVATE)
-        trackingQueuePref.all.forEach {
-            val (_, lastChapterRead) = it.value.toString().split(":")
-            trackingQueuePref.edit {
-                remove(it.key)
-                putFloat(it.key, lastChapterRead.toFloat())
+        trackingQueuePref.all.forEach { (key, value) ->
+            val stringValue = value.toString()
+            if (stringValue.contains(":")) {
+                val lastChapterRead = stringValue.split(":").getOrNull(1)?.toFloatOrNull()
+                if (lastChapterRead != null) {
+                    trackingQueuePref.edit {
+                        remove(key)
+                        putFloat(key, lastChapterRead)
+                    }
+                }
             }
         }
 

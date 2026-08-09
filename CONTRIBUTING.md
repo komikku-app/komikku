@@ -24,9 +24,6 @@ Before you start, please note that the ability to use following technologies is 
 - [Android Studio](https://developer.android.com/studio)
 - Emulator or phone with developer options enabled to test changes.
 
-## Getting help
-
-- Join [the Discord server](https://discord.gg/85jB7V5AJR) for online help and to ask questions while developing.
 
 # Translations
 

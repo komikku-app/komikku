@@ -90,8 +90,13 @@ fun MangaCompactGridItem(
     // KMK <--
 ) {
     // KMK -->
-    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
-    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+    val colors = remember(coverData.dominantCoverColors, libraryColored) {
+        val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+        val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+        bgColor to onBgColor
+    }
+    val bgColor = colors.first
+    val onBgColor = colors.second
     // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
@@ -224,9 +229,14 @@ fun MangaComfortableGridItem(
     // KMK <--
 ) {
     // KMK -->
-    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama
-    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
-    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+    val coverIsWide = coverRatio.floatValue <= RatioSwitchToPanorama // KMK -->
+    val colors = remember(coverData.dominantCoverColors, libraryColored) {
+        val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+        val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+        bgColor to onBgColor
+    }
+    val bgColor = colors.first
+    val onBgColor = colors.second
     // KMK <--
     GridItemSelectable(
         isSelected = isSelected,
@@ -442,8 +452,13 @@ fun MangaListItem(
     // KMK <--
 ) {
     // KMK -->
-    val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
-    val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+    val colors = remember(coverData.dominantCoverColors, libraryColored) {
+        val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
+        val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
+        bgColor to onBgColor
+    }
+    val bgColor = colors.first
+    val onBgColor = colors.second
     // KMK <--
     Row(
         modifier = Modifier

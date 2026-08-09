@@ -100,7 +100,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
 
     override fun getReadingStatus(): Long = READING
 
-    override fun getRereadingStatus(): Long = -1
+    override fun getRereadingStatus(): Long = PLAN_TO_READ // Bangumi doesn't have a re-reading status, use plan to read or reading
 
     override fun getCompletionStatus(): Long = COMPLETED
 

@@ -109,11 +109,14 @@ class Downloader(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var downloaderJob: Job? = null
 
+    private val _runningState = MutableStateFlow(false)
+    val runningState = _runningState.asStateFlow()
+
     /**
      * Whether the downloader is running.
      */
     val isRunning: Boolean
-        get() = downloaderJob?.isActive ?: false
+        get() = runningState.value
 
     /**
      * Whether the downloader is paused
@@ -205,48 +208,53 @@ class Downloader(
     private fun launchDownloaderJob() {
         if (isRunning) return
 
+        _runningState.value = true
         downloaderJob = scope.launch {
-            val activeDownloadsFlow = combine(
-                queueState,
-                downloadPreferences.parallelSourceLimit().changes(),
-            ) { a, b -> a to b }.transformLatest { (queue, parallelCount) ->
-                while (true) {
-                    val activeDownloads = queue.asSequence()
-                        // Ignore completed downloads, leave them in the queue
-                        .filter { it.status.value <= Download.State.DOWNLOADING.value }
-                        .groupBy { it.source }
-                        .toList()
-                        .take(parallelCount)
-                        .map { (_, downloads) -> downloads.first() }
-                    emit(activeDownloads)
+            try {
+                val activeDownloadsFlow = combine(
+                    queueState,
+                    downloadPreferences.parallelSourceLimit().changes(),
+                ) { a, b -> a to b }.transformLatest { (queue, parallelCount) ->
+                    while (true) {
+                        val activeDownloads = queue.asSequence()
+                            // Ignore completed downloads, leave them in the queue
+                            .filter { it.status.value <= Download.State.DOWNLOADING.value }
+                            .groupBy { it.source }
+                            .toList()
+                            .take(parallelCount)
+                            .map { (_, downloads) -> downloads.first() }
+                        emit(activeDownloads)
 
-                    if (activeDownloads.isEmpty()) break
-                    // Suspend until a download enters the ERROR state
-                    val activeDownloadsErroredFlow =
-                        combine(activeDownloads.map(Download::statusFlow)) { states ->
-                            states.contains(Download.State.ERROR)
-                        }.filter { it }
-                    activeDownloadsErroredFlow.first()
-                }
-            }
-                .distinctUntilChanged()
-
-            // Use supervisorScope to cancel child jobs when the downloader job is cancelled
-            supervisorScope {
-                val downloadJobs = mutableMapOf<Download, Job>()
-
-                activeDownloadsFlow.collectLatest { activeDownloads ->
-                    val downloadJobsToStop = downloadJobs.filter { it.key !in activeDownloads }
-                    downloadJobsToStop.forEach { (download, job) ->
-                        job.cancel()
-                        downloadJobs.remove(download)
-                    }
-
-                    val downloadsToStart = activeDownloads.filter { it !in downloadJobs }
-                    downloadsToStart.forEach { download ->
-                        downloadJobs[download] = launchDownloadJob(download)
+                        if (activeDownloads.isEmpty()) break
+                        // Suspend until a download enters the ERROR state
+                        val activeDownloadsErroredFlow =
+                            combine(activeDownloads.map(Download::statusFlow)) { states ->
+                                states.contains(Download.State.ERROR)
+                            }.filter { it }
+                        activeDownloadsErroredFlow.first()
                     }
                 }
+                    .distinctUntilChanged()
+
+                // Use supervisorScope to cancel child jobs when the downloader job is cancelled
+                supervisorScope {
+                    val downloadJobs = mutableMapOf<Download, Job>()
+
+                    activeDownloadsFlow.collectLatest { activeDownloads ->
+                        val downloadJobsToStop = downloadJobs.filter { it.key !in activeDownloads }
+                        downloadJobsToStop.forEach { (download, job) ->
+                            job.cancel()
+                            downloadJobs.remove(download)
+                        }
+
+                        val downloadsToStart = activeDownloads.filter { it !in downloadJobs }
+                        downloadsToStart.forEach { download ->
+                            downloadJobs[download] = launchDownloadJob(download)
+                        }
+                    }
+                }
+            } finally {
+                _runningState.value = false
             }
         }
     }
@@ -276,6 +284,7 @@ class Downloader(
     private fun cancelDownloaderJob() {
         downloaderJob?.cancel()
         downloaderJob = null
+        _runningState.value = false
     }
 
     /**

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.StubSource
@@ -84,7 +85,9 @@ class ExtensionManager(
     val untrustedExtensionsFlow = untrustedExtensionMapFlow.mapExtensions(scope)
 
     init {
-        initExtensions()
+        scope.launchIO {
+            initExtensions()
+        }
         ExtensionInstallReceiver(InstallationListener()).register(context)
     }
 
@@ -141,7 +144,7 @@ class ExtensionManager(
     /**
      * Loads and registers the installed extensions.
      */
-    private fun initExtensions() {
+    private suspend fun initExtensions() {
         val extensions = ExtensionLoader.loadExtensions(context)
 
         installedExtensionMapFlow.value = extensions

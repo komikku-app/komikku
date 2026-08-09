@@ -301,6 +301,7 @@ private val settingScreens = listOf(
     SettingsEhScreen,
     SettingsMangadexScreen,
     // SY <--
+    SettingsCleanupScreen,
     SettingsAdvancedScreen,
 )
 

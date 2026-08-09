@@ -8,6 +8,7 @@ import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
 import logcat.LogPriority
 import okhttp3.Cache
+import okhttp3.ConnectionPool
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -46,6 +47,7 @@ import kotlin.random.Random
     ): OkHttpClient.Builder = run {
         val builder = OkHttpClient.Builder()
             .cookieJar(cookieJar)
+            .connectionPool(ConnectionPool(10, 5, TimeUnit.MINUTES))
             // KMK -->
             .connectTimeout(connectTimeout, TimeUnit.SECONDS)
             .readTimeout(readTimeout, TimeUnit.SECONDS)

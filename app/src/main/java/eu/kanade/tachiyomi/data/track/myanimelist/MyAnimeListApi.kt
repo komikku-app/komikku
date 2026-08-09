@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.track.myanimelist
 
 import android.net.Uri
 import androidx.core.net.toUri
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -27,6 +28,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import tachiyomi.core.common.util.lang.withIOContext
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -44,16 +47,20 @@ class MyAnimeListApi(
 
     suspend fun getAccessToken(authCode: String): MALOAuth {
         return withIOContext {
+            val trackPreferences = Injekt.get<TrackPreferences>()
             val formBody: RequestBody = FormBody.Builder()
                 .add("client_id", CLIENT_ID)
                 .add("code", authCode)
-                .add("code_verifier", codeVerifier)
+                .add("code_verifier", trackPreferences.pkceCodeVerifier().get())
                 .add("grant_type", "authorization_code")
                 .build()
             with(json) {
                 client.newCall(POST("$BASE_OAUTH_URL/token", body = formBody))
                     .awaitSuccess()
-                    .parseAs()
+                    .parseAs<MALOAuth>()
+                    .also {
+                        trackPreferences.pkceCodeVerifier().delete()
+                    }
             }
         }
     }
@@ -312,12 +319,11 @@ class MyAnimeListApi(
 
         private const val LIST_PAGINATION_AMOUNT = 250
 
-        private var codeVerifier: String = ""
-
         fun authUrl(): Uri = "$BASE_OAUTH_URL/authorize".toUri().buildUpon()
             .appendQueryParameter("client_id", CLIENT_ID)
             .appendQueryParameter("code_challenge", getPkceChallengeCode())
             .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("redirect_uri", "comick://myanimelist-auth")
             .build()
 
         fun mangaUrl(id: Long): Uri = "$BASE_API_URL/manga".toUri().buildUpon()
@@ -343,7 +349,8 @@ class MyAnimeListApi(
         }
 
         private fun getPkceChallengeCode(): String {
-            codeVerifier = PkceUtil.generateCodeVerifier()
+            val codeVerifier = PkceUtil.generateCodeVerifier()
+            Injekt.get<TrackPreferences>().pkceCodeVerifier().set(codeVerifier)
             return codeVerifier
         }
     }

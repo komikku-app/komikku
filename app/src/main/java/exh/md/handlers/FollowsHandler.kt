@@ -83,34 +83,9 @@ class FollowsHandler(
         }
     }
 
-    /*suspend fun updateReadingProgress(track: Track): Boolean {
+    suspend fun updateReadingProgress(track: Track): Boolean {
         return true
-        return withIOContext {
-            val mangaID = getMangaId(track.tracking_url)
-            val formBody = FormBody.Builder()
-                .add("volume", "0")
-                .add("chapter", track.last_chapter_read.toString())
-            XLog.d("chapter to update %s", track.last_chapter_read.toString())
-            val result = runCatching {
-                client.newCall(
-                    POST(
-                        "$baseUrl/ajax/actions.ajax.php?function=edit_progress&id=$mangaID",
-                        headers,
-                        formBody.build()
-                    )
-                ).execute()
-            }
-            result.exceptionOrNull()?.let {
-                if (it is EOFException) {
-                    return@withIOContext true
-                } else {
-                    XLog.e("error updating reading progress", it)
-                    return@withIOContext false
-                }
-            }
-            result.isSuccess
-        }
-    }*/
+    }
 
     suspend fun updateRating(track: Track): Boolean {
         return withIOContext {

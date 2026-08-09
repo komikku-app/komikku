@@ -324,9 +324,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     // Tracker methods
-    /*suspend fun updateReadingProgress(track: Track): Boolean {
+    suspend fun updateReadingProgress(track: Track): Boolean {
         return followsHandler.updateReadingProgress(track)
-    }*/
+    }
 
     suspend fun updateRating(track: Track): Boolean {
         return followsHandler.updateRating(track)

@@ -27,10 +27,18 @@ class DelayedTrackingUpdateJob(private val context: Context, workerParams: Worke
             return Result.failure()
         }
 
-        val getTracks = Injekt.get<GetTracks>()
-        val trackChapter = Injekt.get<TrackChapter>()
+        val getTracks: GetTracks
+        val trackChapter: TrackChapter
+        val delayedTrackingStore: DelayedTrackingStore
 
-        val delayedTrackingStore = Injekt.get<DelayedTrackingStore>()
+        try {
+            getTracks = Injekt.get()
+            trackChapter = Injekt.get()
+            delayedTrackingStore = Injekt.get()
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Failed to get dependencies from Injekt" }
+            return Result.retry()
+        }
 
         withIOContext {
             delayedTrackingStore.getItems()
