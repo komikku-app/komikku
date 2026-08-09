@@ -46,7 +46,7 @@ class Kavita(id: Long) : BaseTracker(id, "Kavita"), EnhancedTracker {
 
     override fun getReadingStatus(): Long = READING
 
-    override fun getRereadingStatus(): Long = READING
+    override fun getRereadingStatus(): Long = -1
 
     override fun getCompletionStatus(): Long = COMPLETED
 

@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.data.track.myanimelist
 
 import android.net.Uri
 import androidx.core.net.toUri
-import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -23,13 +22,10 @@ import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.PkceUtil
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
-import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import tachiyomi.core.common.util.lang.withIOContext
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -42,25 +38,23 @@ class MyAnimeListApi(
 ) {
 
     private val json: Json by injectLazy()
+    private val trackPreferences: eu.kanade.domain.track.service.TrackPreferences by injectLazy()
 
     private val authClient = client.newBuilder().addInterceptor(interceptor).build()
 
     suspend fun getAccessToken(authCode: String): MALOAuth {
         return withIOContext {
-            val trackPreferences = Injekt.get<TrackPreferences>()
+            val codeVerifier = trackPreferences.pkceCodeVerifier().get()
             val formBody: RequestBody = FormBody.Builder()
                 .add("client_id", CLIENT_ID)
                 .add("code", authCode)
-                .add("code_verifier", trackPreferences.pkceCodeVerifier().get())
+                .add("code_verifier", codeVerifier)
                 .add("grant_type", "authorization_code")
                 .build()
             with(json) {
                 client.newCall(POST("$BASE_OAUTH_URL/token", body = formBody))
                     .awaitSuccess()
-                    .parseAs<MALOAuth>()
-                    .also {
-                        trackPreferences.pkceCodeVerifier().delete()
-                    }
+                    .parseAs()
             }
         }
     }
@@ -309,21 +303,24 @@ class MyAnimeListApi(
 
     companion object {
         // Registered under KMK's MAL account
-        private const val CLIENT_ID = "2be14959235191ece14eebdc2eea0466"
+        private const val CLIENT_ID = "5efc94e803a55b3405786c55d3e09156"
 
         private const val BASE_OAUTH_URL = "https://myanimelist.net/v1/oauth2"
         private const val BASE_API_URL = "https://api.myanimelist.net/v2"
+
+        private const val REDIRECT_URL = "comick://myanimelist-auth"
 
         private const val SEARCH_FIELDS =
             "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date,authors{first_name,last_name}"
 
         private const val LIST_PAGINATION_AMOUNT = 250
 
-        fun authUrl(): Uri = "$BASE_OAUTH_URL/authorize".toUri().buildUpon()
+        fun authUrl(trackPreferences: eu.kanade.domain.track.service.TrackPreferences): Uri = "$BASE_OAUTH_URL/authorize".toUri().buildUpon()
             .appendQueryParameter("client_id", CLIENT_ID)
-            .appendQueryParameter("code_challenge", getPkceChallengeCode())
+            .appendQueryParameter("code_challenge", getPkceChallengeCode(trackPreferences))
+            .appendQueryParameter("code_challenge_method", "plain")
             .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("redirect_uri", "comick://myanimelist-auth")
+            .appendQueryParameter("redirect_uri", REDIRECT_URL)
             .build()
 
         fun mangaUrl(id: Long): Uri = "$BASE_API_URL/manga".toUri().buildUpon()
@@ -338,19 +335,12 @@ class MyAnimeListApi(
                 .add("grant_type", "refresh_token")
                 .build()
 
-            // Add the Authorization header manually as this particular
-            // request is called by the interceptor itself so it doesn't reach
-            // the part where the token is added automatically.
-            val headers = Headers.Builder()
-                .add("Authorization", "Bearer ${oauth.accessToken}")
-                .build()
-
-            return POST("$BASE_OAUTH_URL/token", body = formBody, headers = headers)
+            return POST("$BASE_OAUTH_URL/token", body = formBody)
         }
 
-        private fun getPkceChallengeCode(): String {
+        private fun getPkceChallengeCode(trackPreferences: eu.kanade.domain.track.service.TrackPreferences): String {
             val codeVerifier = PkceUtil.generateCodeVerifier()
-            Injekt.get<TrackPreferences>().pkceCodeVerifier().set(codeVerifier)
+            trackPreferences.pkceCodeVerifier().set(codeVerifier)
             return codeVerifier
         }
     }

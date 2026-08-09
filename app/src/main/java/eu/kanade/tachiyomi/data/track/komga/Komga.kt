@@ -43,7 +43,7 @@ class Komga(id: Long) : BaseTracker(id, "Komga"), EnhancedTracker {
 
     override fun getReadingStatus(): Long = READING
 
-    override fun getRereadingStatus(): Long = READING
+    override fun getRereadingStatus(): Long = -1
 
     override fun getCompletionStatus(): Long = COMPLETED
 

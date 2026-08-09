@@ -61,7 +61,7 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
 
     override fun getReadingStatus(): Long = READING_LIST
 
-    override fun getRereadingStatus(): Long = READING_LIST
+    override fun getRereadingStatus(): Long = -1
 
     override fun getCompletionStatus(): Long = COMPLETE_LIST
 
