@@ -6,12 +6,14 @@
 // https://github.com/saikou-app/saikou
 package eu.kanade.tachiyomi.data.connections.discord
 
-import androidx.annotation.StringRes
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 // Constant for logging tag
 const val RICH_PRESENCE_TAG = "discord_rpc"
@@ -19,7 +21,7 @@ const val RICH_PRESENCE_TAG = "discord_rpc"
 // Constant for application id
 internal const val RICH_PRESENCE_APPLICATION_ID = "1424627741256585271"
 
-val DOWNLOAD_BUTTON_LABEL_RES = R.string.discord_download_button
+val DOWNLOAD_BUTTON_LABEL_RES = KMR.strings.discord_download_button
 const val DOWNLOAD_BUTTON_URL = "https://devil6venom.github.io/Comick/download/"
 const val DISCORD_BUTTON_LABEL = "Discord"
 const val DISCORD_BUTTON_URL = "https://discord.gg/85jB7V5AJR"
@@ -182,18 +184,18 @@ data class ReaderData(
 
 // Enum class for standard Rich Presence in-app screens
 enum class DiscordScreen(
-    @StringRes val text: Int,
-    @StringRes val details: Int,
+    val text: StringResource,
+    val details: StringResource,
     val imageUrl: String,
 ) {
-    APP(R.string.app_name, R.string.discord_status_using, COMICK_IMAGE),
-    LIBRARY(R.string.label_library, R.string.discord_status_browsing, LIBRARY_IMAGE_URL),
-    UPDATES(R.string.label_recent_updates, R.string.discord_status_scrolling, UPDATES_IMAGE_URL),
-    HISTORY(R.string.label_recent_manga, R.string.discord_status_scrolling, HISTORY_IMAGE_URL),
-    BROWSE(R.string.label_sources, R.string.discord_status_browsing, BROWSE_IMAGE_URL),
-    MORE(R.string.label_settings, R.string.discord_status_messing, MORE_IMAGE_URL),
-    WEBVIEW(R.string.action_web_view, R.string.discord_status_browsing, WEBVIEW_IMAGE_URL),
-    MANGA(R.string.manga, R.string.reading, MANGA_IMAGE_URL),
+    APP(MR.strings.app_name, KMR.strings.discord_status_using, COMICK_IMAGE),
+    LIBRARY(MR.strings.label_library, KMR.strings.discord_status_browsing, LIBRARY_IMAGE_URL),
+    UPDATES(MR.strings.label_recent_updates, KMR.strings.discord_status_scrolling, UPDATES_IMAGE_URL),
+    HISTORY(MR.strings.label_recent_manga, KMR.strings.discord_status_scrolling, HISTORY_IMAGE_URL),
+    BROWSE(MR.strings.label_sources, KMR.strings.discord_status_browsing, BROWSE_IMAGE_URL),
+    MORE(MR.strings.label_settings, KMR.strings.discord_status_messing, MORE_IMAGE_URL),
+    WEBVIEW(MR.strings.action_web_view, KMR.strings.discord_status_browsing, WEBVIEW_IMAGE_URL),
+    MANGA(MR.strings.manga, MR.strings.reading, MANGA_IMAGE_URL),
 }
 
 // Constants for standard Rich Presence image urls
