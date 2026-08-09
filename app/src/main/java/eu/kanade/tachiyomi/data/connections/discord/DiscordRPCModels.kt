@@ -7,7 +7,6 @@
 package eu.kanade.tachiyomi.data.connections.discord
 
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
