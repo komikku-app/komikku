@@ -35,8 +35,8 @@ android {
     defaultConfig {
         applicationId = "app.comick"
 
-        versionCode = 86
-        versionName = "1.14.7"
+        versionCode = 87
+        versionName = "1.14.8"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
