@@ -98,6 +98,7 @@ import tachiyomi.domain.chapter.interactor.GetBookmarkedChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.chapterTag.interactor.GetChapterTagsPerManga
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryGroup
@@ -161,6 +162,7 @@ class LibraryScreenModel(
     // SY <--
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
+    private val getChapterTagsPerManga: GetChapterTagsPerManga = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -190,9 +192,23 @@ class LibraryScreenModel(
                     state.map { it.excludedCategories }.distinctUntilChanged(),
                     ::Pair,
                 ),
+                combine(
+                    state.map { it.includedChapterTags }.distinctUntilChanged(),
+                    state.map { it.excludedChapterTags }.distinctUntilChanged(),
+                    getChapterTagsPerManga.subscribe(),
+                    ::Triple,
+                ),
                 // KMK <--
                 getLibraryItemPreferencesFlow(),
-            ) { (searchQuery, categories, favorites), (tracksMap, trackingFilters), (includedCategories, excludedCategories), itemPreferences ->
+            ) {
+                    (searchQuery, categories, favorites),
+                    (tracksMap, trackingFilters),
+                    (includedCategories, excludedCategories),
+                    // KMK -->
+                    (includedChapterTags, excludedChapterTags, chapterTagsPerManga),
+                    // KMK <--
+                    itemPreferences,
+                ->
                 val filteredFavorites = favorites
                     .applyFilters(
                         tracksMap,
@@ -201,6 +217,9 @@ class LibraryScreenModel(
                         // KMK -->
                         includedCategories,
                         excludedCategories,
+                        includedChapterTags,
+                        excludedChapterTags,
+                        chapterTagsPerManga,
                         // KMK <--
                     )
                     .let {
@@ -348,7 +367,8 @@ class LibraryScreenModel(
             )
                 .fastAny { it != TriState.DISABLED } ||
                 // KMK -->
-                prefs.filterCategories
+                prefs.filterCategories ||
+                prefs.filterChapterTags
             // KMK <--
         }
             .distinctUntilChanged()
@@ -415,6 +435,29 @@ class LibraryScreenModel(
             }
             .launchIn(screenModelScope)
 
+        combine(
+            libraryPreferences.filterChapterTags().changes(),
+            libraryPreferences.filterChapterTagsInclude().changes(),
+            libraryPreferences.filterChapterTagsExclude().changes(),
+        ) { filter, included, excluded ->
+            Triple(
+                filter,
+                included.mapNotNull(String::toLongOrNull).toImmutableSet(),
+                excluded.mapNotNull(String::toLongOrNull).toImmutableSet(),
+            )
+        }
+            .distinctUntilChanged()
+            .onEach { (filter, included, excluded) ->
+                mutableState.update { state ->
+                    state.copy(
+                        filterChapterTag = filter,
+                        includedChapterTags = included,
+                        excludedChapterTags = excluded,
+                    )
+                }
+            }
+            .launchIn(screenModelScope)
+
         screenModelScope.launchIO {
             if (mangaDexDmcaUuids.isEmpty()) {
                 mangaDexDmcaUuids = loadMangaDexDmcaUuids(context = Injekt.get<Application>())
@@ -430,6 +473,9 @@ class LibraryScreenModel(
         // KMK -->
         includedCategories: ImmutableSet<Long>,
         excludedCategories: ImmutableSet<Long>,
+        includedChapterTags: ImmutableSet<Long>,
+        excludedChapterTags: ImmutableSet<Long>,
+        chapterTagsPerManga: Map<Long, Set<Long>>,
         // KMK <--
     ): List<LibraryItem> {
         val downloadedOnly = preferences.globalFilterDownloaded
@@ -441,6 +487,9 @@ class LibraryScreenModel(
         val filterCompleted = preferences.filterCompleted
         val filterIntervalCustom = preferences.filterIntervalCustom
         val filterCategories = preferences.filterCategories
+        // KMK -->
+        val filterChapterTags = preferences.filterChapterTags
+        // KMK <--
 
         val isNotLoggedInAnyTrack = trackingFilter.isEmpty()
 
@@ -528,6 +577,22 @@ class LibraryScreenModel(
 
             !isExcluded && isIncluded
         }
+
+        val filterFnChapterTags: (LibraryItem) -> Boolean = chapterTags@{ item ->
+            if (!filterChapterTags) return@chapterTags true
+
+            val mangaTags = chapterTagsPerManga[item.id].orEmpty()
+
+            // Early return
+            if (mangaTags.isEmpty()) {
+                return@chapterTags includedChapterTags.isEmpty()
+            }
+
+            val isExcluded = excludedChapterTags.any { it in mangaTags }
+            val isIncluded = includedChapterTags.isEmpty() || includedChapterTags.all { it in mangaTags }
+
+            !isExcluded && isIncluded
+        }
         // KMK <--
 
         return fastFilter {
@@ -542,7 +607,8 @@ class LibraryScreenModel(
                 filterFnLewd(it) &&
                 // SY <--
                 // KMK -->
-                filterFnCategories(it)
+                filterFnCategories(it) &&
+                filterFnChapterTags(it)
             // KMK <--
         }
     }
@@ -749,6 +815,7 @@ class LibraryScreenModel(
             libraryPreferences.sourceBadge().changes(),
             libraryPreferences.useLangIcon().changes(),
             libraryPreferences.filterCategories().changes(),
+            libraryPreferences.filterChapterTags().changes(),
             // KMK <--
         ) {
             ItemPreferences(
@@ -771,6 +838,7 @@ class LibraryScreenModel(
                 sourceBadge = it[13] as Boolean,
                 useLangIcon = it[14] as Boolean,
                 filterCategories = it[15] as Boolean,
+                filterChapterTags = it[16] as Boolean,
             )
         }
     }
@@ -1685,6 +1753,7 @@ class LibraryScreenModel(
         // SY <--
         // KMK -->
         val filterCategories: Boolean,
+        val filterChapterTags: Boolean,
         // KMK <--
     )
 
@@ -1725,6 +1794,9 @@ class LibraryScreenModel(
         val filterCategory: Boolean = false,
         val includedCategories: ImmutableSet<Long> = persistentSetOf(),
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
+        val filterChapterTag: Boolean = false,
+        val includedChapterTags: ImmutableSet<Long> = persistentSetOf(),
+        val excludedChapterTags: ImmutableSet<Long> = persistentSetOf(),
         // KMK <--
     ) {
         /**

@@ -20,6 +20,7 @@ import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.chapter.model.toChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.chapter.service.ChapterRecognition
+import tachiyomi.domain.chapterTag.repository.ChapterTagRepository
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.local.isLocal
@@ -37,6 +38,9 @@ class SyncChaptersWithSource(
     private val getChaptersByMangaId: GetChaptersByMangaId,
     private val getExcludedScanlators: GetExcludedScanlators,
     private val libraryPreferences: LibraryPreferences,
+    // KMK -->
+    private val chapterTagRepository: ChapterTagRepository,
+    // KMK <--
 ) {
 
     /**
@@ -178,6 +182,20 @@ class SyncChaptersWithSource(
             deletedChapterNumbers.add(chapter.chapterNumber)
         }
 
+        // KMK -->
+        val deletedChapterTagIds: Map<Double, List<Long>> = if (removedChapters.isEmpty()) {
+            emptyMap()
+        } else {
+            val tagIdsByChapterId = chapterTagRepository.getTagIdsByChapterIds(removedChapters.map { it.id })
+            removedChapters
+                .filter { it.isRecognizedNumber }
+                .mapNotNull { chapter ->
+                    tagIdsByChapterId[chapter.id]?.takeIf { it.isNotEmpty() }?.let { chapter.chapterNumber to it }
+                }
+                .toMap()
+        }
+        // KMK <--
+
         val deletedChapterNumberDateFetchMap = removedChapters.sortedByDescending { it.dateFetch }
             .associate { it.chapterNumber to it.dateFetch }
 
@@ -238,6 +256,17 @@ class SyncChaptersWithSource(
         if (updatedToAdd.isNotEmpty()) {
             updatedToAdd = chapterRepository.addAll(updatedToAdd)
         }
+
+        // KMK -->
+        if (deletedChapterTagIds.isNotEmpty()) {
+            updatedToAdd.forEach { chapter ->
+                if (!chapter.isRecognizedNumber) return@forEach
+                deletedChapterTagIds[chapter.chapterNumber]?.let { tagIds ->
+                    chapterTagRepository.setChapterTags(chapter.id, tagIds)
+                }
+            }
+        }
+        // KMK <--
 
         if (updatedChapters.isNotEmpty()) {
             val chapterUpdates = updatedChapters.map { it.toChapterUpdate() }

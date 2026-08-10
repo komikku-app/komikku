@@ -238,4 +238,19 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <!-- Chapter tags -->
+    <string name="chapter_tags">Chapter tags</string>
+    <string name="pref_chapter_tags_summary">Create tags to organize individual chapters</string>
+    <string name="action_add_chapter_tag">Add tag</string>
+    <string name="action_rename_chapter_tag">Rename tag</string>
+    <string name="delete_chapter_tag">Delete tag</string>
+    <string name="delete_chapter_tag_confirmation">Do you wish to delete the tag %1$s?</string>
+    <string name="error_chapter_tag_exists">A tag with this name already exists!</string>
+    <string name="information_empty_chapter_tags">You have no chapter tags. Tap the plus button to create one.</string>
+    <string name="action_edit_chapter_tags">Edit tags</string>
+    <string name="information_empty_chapter_tags_dialog">You have no chapter tags. Use the edit button to create one.</string>
+    <string name="information_empty_chapter_tags_filter">You don\'t have any chapter tags yet.</string>
+    <string name="action_filter_chapter_tags">Filter by tag</string>
+    <string name="pref_library_filter_chapter_tags_details">Entries whose chapters carry all of the included tags will be shown. Entries with an excluded tag will not be shown even if they also carry an included tag.</string>
+    <string name="pref_filter_chapter_tags_details">Chapters carrying all of the included tags will be shown. Chapters with an excluded tag will not be shown even if they also carry an included tag.</string>
 </resources>
