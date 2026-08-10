@@ -199,16 +199,11 @@ fun MangaChapterListItem(
                             )
                         }
                         // KMK -->
-                        if (tags != null) {
-                            if (date != null || readProgress != null || sourceName != null || scanlator != null) {
-                                DotSeparatorText()
-                            }
-                            Text(
-                                text = tags,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        ChapterTagsText(
+                            tags = tags,
+                            precededBySubtitle = listOfNotNull(date, readProgress, sourceName, scanlator)
+                                .isNotEmpty(),
+                        )
                         // KMK <--
                     }
                 }
@@ -224,6 +219,22 @@ fun MangaChapterListItem(
         }
     }
 }
+
+// KMK -->
+@Composable
+private fun ChapterTagsText(
+    tags: String?,
+    precededBySubtitle: Boolean,
+) {
+    if (tags == null) return
+    if (precededBySubtitle) DotSeparatorText()
+    Text(
+        text = tags,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+// KMK <--
 
 internal fun getSwipeAction(
     action: LibraryPreferences.ChapterSwipeAction,

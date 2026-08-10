@@ -45,10 +45,11 @@ fun ChapterTagRenameDialog(
     chapterTag: String,
 ) {
     var name by remember { mutableStateOf(chapterTag) }
-    var valueHasChanged by remember { mutableStateOf(false) }
+    val valueHasChanged = name != chapterTag
 
     val focusRequester = remember { FocusRequester() }
-    val nameAlreadyExists = remember(name) { chapterTags.contains(name) }
+    // The tag being renamed is in the list, so only a *different* tag counts as a conflict.
+    val nameAlreadyExists = remember(name) { name != chapterTag && chapterTags.contains(name) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -75,27 +76,24 @@ fun ChapterTagRenameDialog(
             OutlinedTextField(
                 modifier = Modifier.focusRequester(focusRequester),
                 value = name,
-                onValueChange = {
-                    valueHasChanged = name != it
-                    name = it
-                },
+                onValueChange = { name = it },
                 label = { Text(text = stringResource(MR.strings.name)) },
                 supportingText = {
-                    val msgRes = if (valueHasChanged && nameAlreadyExists) {
+                    val msgRes = if (nameAlreadyExists) {
                         KMR.strings.error_chapter_tag_exists
                     } else {
                         MR.strings.information_required_plain
                     }
                     Text(text = stringResource(msgRes))
                 },
-                isError = valueHasChanged && nameAlreadyExists,
+                isError = nameAlreadyExists,
                 singleLine = true,
             )
         },
     )
 
     LaunchedEffect(focusRequester) {
-        // TODO: https://issuetracker.google.com/issues/204502668
+        // Workaround for https://issuetracker.google.com/issues/204502668
         delay(0.1.seconds)
         focusRequester.requestFocus()
     }
