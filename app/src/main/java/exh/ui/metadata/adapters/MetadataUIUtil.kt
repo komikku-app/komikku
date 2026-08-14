@@ -1,5 +1,6 @@
 package exh.ui.metadata.adapters
 
+import android.R
 import android.content.Context
 import android.graphics.Color
 import android.widget.TextView
@@ -12,7 +13,6 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.util.system.dpToPx
 import exh.util.SourceTagsUtil
 import tachiyomi.core.common.i18n.stringResource

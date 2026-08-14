@@ -310,6 +310,8 @@ class GoogleDriveService(private val context: Context) {
             .setApprovalPrompt("force")
             .build()
     }
+
+    @Suppress("DEPRECATION")
     internal suspend fun refreshToken() = withIOContext {
         val refreshToken = syncPreferences.googleDriveRefreshToken().get()
 
@@ -363,6 +365,7 @@ class GoogleDriveService(private val context: Context) {
      * @param accessToken The access token obtained from the SyncPreferences.
      * @param refreshToken The refresh token obtained from the SyncPreferences.
      */
+    @Suppress("DEPRECATION")
     private fun setupGoogleDriveService(accessToken: String, refreshToken: String) {
         val jsonFactory: GsonFactory = GsonFactory.getDefaultInstance()
         val secrets = GoogleClientSecrets.load(

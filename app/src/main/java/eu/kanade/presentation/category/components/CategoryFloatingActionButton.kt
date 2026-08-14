@@ -3,8 +3,8 @@ package eu.kanade.presentation.category.components
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,7 +18,7 @@ fun CategoryFloatingActionButton(
     onCreate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SmallExtendedFloatingActionButton(
+    ExtendedFloatingActionButton(
         text = { Text(text = stringResource(MR.strings.action_add)) },
         icon = { Icon(imageVector = Icons.Outlined.Add, contentDescription = null) },
         onClick = onCreate,

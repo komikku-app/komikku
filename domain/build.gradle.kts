@@ -1,6 +1,5 @@
 plugins {
     id("mihon.library")
-    kotlin("android")
     kotlin("plugin.serialization")
 }
 
@@ -24,6 +23,7 @@ dependencies {
     implementation(projects.core.common)
 
     implementation(platform(kotlinx.coroutines.bom))
+    implementation(platform(compose.bom))
     implementation(kotlinx.bundles.coroutines)
     implementation(kotlinx.bundles.serialization)
 

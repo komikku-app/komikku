@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath(libs.android.shortcut.gradle)
+
         classpath(sylibs.gradleversionsx)
     }
 }
@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.moko) apply false
     alias(libs.plugins.sqldelight) apply false
+    alias(libs.plugins.android.kmp.library) apply false
 }
 
 tasks.register<Delete>("clean") {

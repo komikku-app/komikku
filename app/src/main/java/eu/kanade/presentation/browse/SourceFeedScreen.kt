@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -161,7 +161,7 @@ fun SourceFeedScreen(
         },
         floatingActionButton = {
             // KMK -->
-            SmallExtendedFloatingActionButton(
+            ExtendedFloatingActionButton(
                 text = {
                     Text(
                         text = if (hasFilters) {

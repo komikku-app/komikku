@@ -2,7 +2,6 @@ import mihon.buildlogic.Config
 
 plugins {
     id("mihon.library")
-    kotlin("android")
 }
 
 android {

@@ -1,10 +1,10 @@
 [versions]
-aboutlib_version = "13.2.1"
+aboutlib_version = "15.0.4"
 leakcanary = "2.14"
 moko = "0.26.4"
 okhttp_version = "5.3.2"
 shizuku_version = "13.1.5"
-sqldelight = "2.2.1"
+sqldelight = "2.3.2"
 sqlite = "2.6.2"
 voyager = "1.1.0-beta03"
 spotless = "8.8.0"
@@ -16,7 +16,7 @@ materialKolor = "5.0.0-alpha07"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
-android-shortcut-gradle = "com.github.komikku-app:android-shortcut-gradle-plugin:0.2.0"
+
 
 rxjava = "io.reactivex:rxjava:1.3.8"
 
@@ -119,6 +119,7 @@ aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.re
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 moko = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.7" }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library" }
 
 [bundles]
 okhttp = ["okhttp-core", "okhttp-logging", "okhttp-brotli", "okhttp-dnsoverhttps", "okhttp-zstd"]

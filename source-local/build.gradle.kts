@@ -1,12 +1,20 @@
+import mihon.buildlogic.AndroidConfig
+import mihon.buildlogic.configureTest
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("mihon.library")
+    id("com.android.kotlin.multiplatform.library")
+    id("mihon.code.lint")
     kotlin("multiplatform")
 }
 
 kotlin {
-    androidTarget()
+    android {
+        compileSdk { version = release(AndroidConfig.COMPILE_SDK) }
+        namespace = "tachiyomi.source.local"
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -42,11 +50,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "tachiyomi.source.local"
-
-    defaultConfig {
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(AndroidConfig.JvmTarget)
     }
 }
+
+configureTest()

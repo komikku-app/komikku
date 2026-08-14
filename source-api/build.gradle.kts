@@ -1,14 +1,22 @@
+import mihon.buildlogic.AndroidConfig
+import mihon.buildlogic.configureTest
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("mihon.library")
+    id("com.android.kotlin.multiplatform.library")
+    id("mihon.code.lint")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.github.ben-manes.versions")
 }
 
 kotlin {
-    androidTarget()
+    android {
+        compileSdk { version = release(AndroidConfig.COMPILE_SDK) }
+        namespace = "eu.kanade.tachiyomi.source"
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -45,10 +53,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "eu.kanade.tachiyomi.source"
-
-    defaultConfig {
-        consumerProguardFile("consumer-proguard.pro")
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(AndroidConfig.JvmTarget)
     }
 }
+
+configureTest()

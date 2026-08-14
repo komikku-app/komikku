@@ -1,6 +1,8 @@
 package mihon.buildlogic
 
-import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.TestExtension
 import org.gradle.accessors.dm.LibrariesForAndroidx
 import org.gradle.accessors.dm.LibrariesForCompose
 import org.gradle.accessors.dm.LibrariesForKotlinx
@@ -22,21 +24,7 @@ val Project.compose get() = the<LibrariesForCompose>()
 val Project.kotlinx get() = the<LibrariesForKotlinx>()
 val Project.libs get() = the<LibrariesForLibs>()
 
-internal fun Project.configureAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
-    commonExtension.apply {
-        compileSdk = AndroidConfig.COMPILE_SDK
-
-        defaultConfig {
-            minSdk = AndroidConfig.MIN_SDK
-        }
-
-        compileOptions {
-            sourceCompatibility = AndroidConfig.JavaVersion
-            targetCompatibility = AndroidConfig.JavaVersion
-            isCoreLibraryDesugaringEnabled = true
-        }
-    }
-
+private fun Project.configureAndroidBase() {
     tasks.withType<KotlinCompile>().configureEach {
         compilerOptions {
             jvmTarget.set(AndroidConfig.JvmTarget)
@@ -58,10 +46,64 @@ internal fun Project.configureAndroid(commonExtension: CommonExtension<*, *, *, 
     }
 }
 
-internal fun Project.configureCompose(commonExtension: CommonExtension<*, *, *, *, *, *>) {
+internal fun Project.configureAndroid(extension: ApplicationExtension) {
+    extension.apply {
+        compileSdk = AndroidConfig.COMPILE_SDK
+
+        defaultConfig {
+            minSdk = AndroidConfig.MIN_SDK
+        }
+
+        compileOptions {
+            sourceCompatibility = AndroidConfig.JavaVersion
+            targetCompatibility = AndroidConfig.JavaVersion
+            isCoreLibraryDesugaringEnabled = true
+        }
+    }
+
+    configureAndroidBase()
+}
+
+internal fun Project.configureAndroid(extension: LibraryExtension) {
+    extension.apply {
+        compileSdk = AndroidConfig.COMPILE_SDK
+
+        defaultConfig {
+            minSdk = AndroidConfig.MIN_SDK
+        }
+
+        compileOptions {
+            sourceCompatibility = AndroidConfig.JavaVersion
+            targetCompatibility = AndroidConfig.JavaVersion
+            isCoreLibraryDesugaringEnabled = true
+        }
+    }
+
+    configureAndroidBase()
+}
+
+internal fun Project.configureAndroid(extension: TestExtension) {
+    extension.apply {
+        compileSdk = AndroidConfig.COMPILE_SDK
+
+        defaultConfig {
+            minSdk = AndroidConfig.MIN_SDK
+        }
+
+        compileOptions {
+            sourceCompatibility = AndroidConfig.JavaVersion
+            targetCompatibility = AndroidConfig.JavaVersion
+            isCoreLibraryDesugaringEnabled = true
+        }
+    }
+
+    configureAndroidBase()
+}
+
+internal fun Project.configureCompose(extension: ApplicationExtension) {
     pluginManager.apply(kotlinx.plugins.compose.compiler.get().pluginId)
 
-    commonExtension.apply {
+    extension.apply {
         buildFeatures {
             compose = true
         }
@@ -71,6 +113,26 @@ internal fun Project.configureCompose(commonExtension: CommonExtension<*, *, *, 
         }
     }
 
+    configureComposeBase()
+}
+
+internal fun Project.configureCompose(extension: LibraryExtension) {
+    pluginManager.apply(kotlinx.plugins.compose.compiler.get().pluginId)
+
+    extension.apply {
+        buildFeatures {
+            compose = true
+        }
+
+        dependencies {
+            "implementation"(platform(compose.bom))
+        }
+    }
+
+    configureComposeBase()
+}
+
+private fun Project.configureComposeBase() {
     extensions.configure<ComposeCompilerGradlePluginExtension> {
         val enableMetrics = project.providers.gradleProperty("enableComposeCompilerMetrics").orNull.toBoolean()
         val enableReports = project.providers.gradleProperty("enableComposeCompilerReports").orNull.toBoolean()
@@ -86,10 +148,9 @@ internal fun Project.configureCompose(commonExtension: CommonExtension<*, *, *, 
             rootBuildDir.resolve("compose-reports").resolve(relativePath).let(reportsDestination::set)
         }
     }
-
 }
 
-internal fun Project.configureTest() {
+fun Project.configureTest() {
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging {

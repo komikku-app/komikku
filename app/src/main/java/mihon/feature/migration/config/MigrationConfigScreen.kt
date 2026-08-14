@@ -22,12 +22,12 @@ import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -196,7 +196,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                     exit = fadeOut(),
                     content = {
                         // KMK <--
-                        SmallExtendedFloatingActionButton(
+                        ExtendedFloatingActionButton(
                             text = { Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText)) },
                             icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
                             onClick = {
