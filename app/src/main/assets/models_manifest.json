@@ -34,14 +34,6 @@
       "sizeBytes": 2215168
     },
     {
-      "modelId": "CUNET_SCALE2X",
-      "batchSize": 1,
-      "assetFileName": "cunet2x_384T_B1_float32.tflite",
-      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/cunet2x_384T_B1_float32.tflite",
-      "sha256": "62acc8772ba8d9a8f2962f34160e2b20680485c13c32b291442e8015ab762316",
-      "sizeBytes": 154539320
-    },
-    {
       "modelId": "REALCUGAN_SCALE2X",
       "batchSize": 1,
       "assetFileName": "realcugan2x_no_denoise_384T_B1_float32.tflite",
@@ -72,14 +64,6 @@
       "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan3x_no_denoise_384T_B3_float32.tflite",
       "sha256": "812220b8cc040700aa75ce9a662a72e0995b73973a2279a4b6188ef36a2bd7ff",
       "sizeBytes": 5172632
-    },
-    {
-      "modelId": "REALCUGAN_SCALE4X",
-      "batchSize": 1,
-      "assetFileName": "realcugan4x_no_denoise_384T_B1_float32.tflite",
-      "downloadUrl": "https://github.com/Rob-The-Coder/komikku-upscaling/releases/download/downloadable-models/realcugan4x_no_denoise_384T_B1_float32.tflite",
-      "sha256": "c401f1c60917442b36a0416c7c24899dd0ce7f4b96d1d1756ec594ba1ce842dc",
-      "sizeBytes": 5661340
     }
   ]
 }

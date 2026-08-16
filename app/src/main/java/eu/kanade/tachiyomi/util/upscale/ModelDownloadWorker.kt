@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.util.upscale
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import exh.log.xLogD
+import exh.log.xLogE
+import exh.log.xLogW
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -29,25 +31,25 @@ class ModelDownloadWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val modelId = inputData.getString(KEY_MODEL_ID) ?: run {
-            Log.e("ModelDownloadWorker", "model_id mancante in inputData")
-            return@withContext Result.failure(workDataOf(KEY_ERROR to "model_id mancante"))
+            xLogE("Missing model_id in inputData")
+            return@withContext Result.failure(workDataOf(KEY_ERROR to "missing model_id"))
         }
         val batchSize = inputData.getInt(KEY_BATCH_SIZE, -1)
         if (batchSize <= 0) {
-            Log.e("ModelDownloadWorker", "batch_size mancante o invalido: $batchSize")
-            return@withContext Result.failure(workDataOf(KEY_ERROR to "batch_size mancante"))
+            xLogE("batch_size missing or invalid: $batchSize")
+            return@withContext Result.failure(workDataOf(KEY_ERROR to "batch_size missing"))
         }
 
         val model = UpscaleModel.entries.find { it.name == modelId } ?: run {
-            Log.e("ModelDownloadWorker", "modello sconosciuto: $modelId")
-            return@withContext Result.failure(workDataOf(KEY_ERROR to "modello sconosciuto: $modelId"))
+            xLogE("Unknown model: $modelId")
+            return@withContext Result.failure(workDataOf(KEY_ERROR to "unknown model: $modelId"))
         }
         val entry = ModelManifestLoader.entryFor(applicationContext, model, batchSize) ?: run {
-            Log.e("ModelDownloadWorker", "nessuna entry manifest per $modelId/B$batchSize — controlla models_manifest.json")
-            return@withContext Result.failure(workDataOf(KEY_ERROR to "nessuna entry manifest per $modelId/B$batchSize"))
+            xLogE("No manifest entry for $modelId/B$batchSize — check models_manifest.json")
+            return@withContext Result.failure(workDataOf(KEY_ERROR to "no manifest entry for $modelId/B$batchSize"))
         }
 
-        Log.d("ModelDownloadWorker", "Scarico ${entry.assetFileName} da ${entry.downloadUrl}")
+        xLogD("Downloading ${entry.assetFileName} from ${entry.downloadUrl}")
 
         val modelsDir = File(applicationContext.filesDir, "models").apply { mkdirs() }
         val destFile = File(modelsDir, entry.assetFileName)
@@ -58,22 +60,22 @@ class ModelDownloadWorker(
 
             val actualSha256 = sha256Of(tmpFile)
             if (!actualSha256.equals(entry.sha256, ignoreCase = true)) {
-                Log.e("ModelDownloadWorker", "Checksum non corrispondente per ${entry.assetFileName}: atteso=${entry.sha256} ottenuto=$actualSha256")
+                xLogE("Checksum not matching for ${entry.assetFileName}: expected=${entry.sha256} received=$actualSha256")
                 tmpFile.delete()
                 return@withContext Result.failure(
-                    workDataOf(KEY_ERROR to "checksum non corrispondente (atteso ${entry.sha256}, ottenuto $actualSha256)"),
+                    workDataOf(KEY_ERROR to "checksum not matching (expected ${entry.sha256}, received $actualSha256)"),
                 )
             }
 
             tmpFile.renameTo(destFile)
-            Log.d("ModelDownloadWorker", "${entry.assetFileName} scaricato e verificato con successo")
+            xLogD("${entry.assetFileName} downloaded and verified successfully")
             Result.success()
         } catch (e: Exception) {
             if (isStopped) {
-                Log.w("ModelDownloadWorker", "Download annullato per ${entry.assetFileName}")
-                Result.failure(workDataOf(KEY_ERROR to "annullato"))
+                xLogW("Download cancelled for ${entry.assetFileName}")
+                Result.failure(workDataOf(KEY_ERROR to "cancelled"))
             } else {
-                Log.e("ModelDownloadWorker", "Errore scaricando ${entry.assetFileName}, riprovo", e)
+                xLogE("Error downloading ${entry.assetFileName}, retrying", e)
                 Result.retry()
             }
         }
@@ -88,19 +90,18 @@ class ModelDownloadWorker(
         }
 
         httpClient.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) throw java.io.IOException("HTTP ${response.code} scaricando ${entry.assetFileName}")
+            if (!response.isSuccessful) throw java.io.IOException("HTTP ${response.code} downloading ${entry.assetFileName}")
 
-            // Se il server ignora il Range (torna 200 invece di 206), ripartiamo da zero
-            // per evitare di appendere dati sbagliati in coda a un file incompleto.
+            // If server ignore Range (returns 200 instead of 206), start again from zero
             val resumed = response.code == 206 && existingBytes > 0
-            val body = response.body ?: throw java.io.IOException("Body vuoto")
+            val body = response.body
 
             var bytesWritten = if (resumed) existingBytes else 0L
             java.io.FileOutputStream(tmpFile, resumed).use { out ->
                 body.byteStream().use { input ->
                     val buffer = ByteArray(64 * 1024)
                     while (true) {
-                        if (isStopped) throw java.io.InterruptedIOException("Worker fermato")
+                        if (isStopped) throw java.io.InterruptedIOException("Worker stopped")
                         val read = input.read(buffer)
                         if (read == -1) break
                         out.write(buffer, 0, read)

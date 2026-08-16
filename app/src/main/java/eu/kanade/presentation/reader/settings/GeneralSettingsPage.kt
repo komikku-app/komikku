@@ -6,32 +6,21 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
-import eu.kanade.tachiyomi.util.upscale.ModelDownloadManager
-import eu.kanade.tachiyomi.util.upscale.ModelDownloadState
-import eu.kanade.tachiyomi.util.upscale.UpscaleModel
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.SettingsChipRow
 import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
-
 private val themes = listOf(
     MR.strings.black_background to 1,
     MR.strings.gray_background to 2,
@@ -45,7 +34,6 @@ private val flashColors = listOf(
     MR.strings.pref_flash_style_white_black to ReaderPreferences.FlashColor.WHITE_BLACK,
 )
 
-private val upscaleModels = UpscaleModel.entries.map { it.displayName to it }
 @Composable
 internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
     val readerTheme by screenModel.preferences.readerTheme().collectAsState()
@@ -71,6 +59,7 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
         }
     }
 
+    // KMK -->
     val aiUpscaleEnabled by screenModel.preferences.aiUpscaleEnabled().collectAsState()
 
     CheckboxItem(
@@ -89,12 +78,13 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
         Text(
-            text = stringResource(KMR.strings.pref_ai_upscale_manage_in_settings), // es. "Gestisci modelli dalle impostazioni del lettore"
+            text = stringResource(KMR.strings.pref_ai_upscale_manage_in_settings),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
     }
+    // KMK <--
 
     CheckboxItem(
         label = stringResource(MR.strings.pref_show_page_number),

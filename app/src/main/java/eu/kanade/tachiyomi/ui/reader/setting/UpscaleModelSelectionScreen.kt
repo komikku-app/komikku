@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
+import android.text.format.Formatter
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,8 +38,8 @@ import eu.kanade.tachiyomi.util.upscale.ModelDownloadManager
 import eu.kanade.tachiyomi.util.upscale.ModelDownloadState
 import eu.kanade.tachiyomi.util.upscale.ModelManifestLoader
 import eu.kanade.tachiyomi.util.upscale.UpscaleModel
-import eu.kanade.tachiyomi.util.upscale.toChapterDownloadState
 import eu.kanade.tachiyomi.util.upscale.progressPercent
+import eu.kanade.tachiyomi.util.upscale.toChapterDownloadState
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -88,7 +89,7 @@ class UpscaleModelSelectionScreen : Screen() {
                     val isSelected = selectedModel == variant.model && selectedBatch == variant.batchSize
 
                     val entry = remember(variant) { ModelManifestLoader.entryFor(context, variant.model, variant.batchSize) }
-                    val sizeMb = entry?.let { it.sizeBytes / 1_048_576.0 }
+                    val formattedSize = entry?.let { Formatter.formatShortFileSize(context, it.sizeBytes) }
 
                     ListItem(
                         headlineContent = {
@@ -106,11 +107,14 @@ class UpscaleModelSelectionScreen : Screen() {
                                 }
                             }
                         },
-                        supportingContent = { Text("Batch ${variant.batchSize} · ${sizeMb?.let { "%.1f MB".format(it) } ?: "—"}") },
+                        supportingContent = {
+                            Text(
+                                formattedSize?.let {
+                                    stringResource(KMR.strings.upscale_model_batch_size, variant.batchSize, it)
+                                } ?: variant.batchSize.toString(),
+                            )
+                        },
                         leadingContent = {
-                            // Radio, non checkmark: il checkmark ora appartiene solo all'indicatore
-                            // di download riusato (ChapterDownloadIndicator), per non avere due
-                            // spunte con significato diverso nella stessa riga.
                             if (downloadState is ModelDownloadState.Downloaded) {
                                 IconButton(onClick = {
                                     readerPreferences.aiUpscaleModel().set(variant.model)
@@ -136,7 +140,6 @@ class UpscaleModelSelectionScreen : Screen() {
                                     onClick = {
                                         if (isSelected) {
                                             context.toast(KMR.strings.pref_ai_upscale_cannot_delete_active_model)
-                                            // es. "Non puoi eliminare il modello attualmente in uso. Selezionane un altro prima."
                                         } else {
                                             downloadManager.deleteDownloaded(variant.model, variant.batchSize)
                                         }
@@ -158,7 +161,7 @@ class UpscaleModelSelectionScreen : Screen() {
                                                 downloadManager.enqueueDownload(variant.model, variant.batchSize, wifiOnly)
                                             ChapterDownloadAction.CANCEL ->
                                                 downloadManager.cancelDownload(variant.model, variant.batchSize)
-                                            ChapterDownloadAction.DELETE -> Unit // irraggiungibile: questo branch non vede mai lo stato Downloaded
+                                            ChapterDownloadAction.DELETE -> Unit
                                         }
                                     },
                                 )

@@ -118,7 +118,7 @@ object SettingsReaderScreen : SearchableSettings {
             getForkSettingsGroup(readerPreferences = readerPref),
             // SY <--
             // KMK -->
-            getUpscalingGroup(readerPreferences = readerPref)
+            getUpscalingGroup(readerPreferences = readerPref),
             // KMK <--
         )
     }
@@ -168,6 +168,7 @@ object SettingsReaderScreen : SearchableSettings {
         )
     }
 
+    // KMK -->
     @Composable
     private fun getUpscalingGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
         val navigator = LocalNavigator.currentOrThrow
@@ -182,7 +183,7 @@ object SettingsReaderScreen : SearchableSettings {
         val aiUpscaleTileOverlap by aiUpscaleTileOverlapPref.collectAsState()
 
         return Preference.PreferenceGroup(
-            title = stringResource(KMR.strings.pref_ai_upscale_model),
+            title = stringResource(KMR.strings.pref_category_upscaling),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
                     preference = aiUpscaleEnabledPref,
@@ -190,7 +191,7 @@ object SettingsReaderScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.pref_ai_upscale_model),
-                    subtitle = "${aiUpscaleModel.displayName} · Batch $aiUpscaleBatch",
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_model_subtitle, aiUpscaleModel.displayName, aiUpscaleBatch),
                     onClick = { navigator.push(UpscaleModelSelectionScreen()) },
                     enabled = aiUpscaleEnabled,
                 ),
@@ -222,9 +223,27 @@ object SettingsReaderScreen : SearchableSettings {
                     enabled = aiUpscaleEnabled,
                     onValueChanged = { aiUpscaleTileOverlapPref.set(it) },
                 ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.aiUpscaleCacheSize(),
+                    title = stringResource(KMR.strings.pref_ai_upscale_cache_size),
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_cache_size_summary),
+                    enabled = aiUpscaleEnabled,
+                    entries = persistentMapOf(
+                        50 to "50 MB",
+                        100 to "100 MB",
+                        200 to "200 MB",
+                        350 to "350 MB",
+                        500 to "500 MB",
+                        750 to "750 MB",
+                        1000 to "1 GB",
+                        1500 to "1.5 GB",
+                        2000 to "2 GB",
+                    ),
+                ),
             ),
         )
     }
+    // KMK <--
 
     @Composable
     private fun getEInkGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {

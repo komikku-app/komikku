@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.util.Log
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
@@ -21,10 +20,10 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.reader.viewer.UpscaleStatusIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.upscale.AiUpscaleCache
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.upscale.AiUpscalePrefetcher
+import eu.kanade.tachiyomi.util.upscale.AiUpscaleCache
 import eu.kanade.tachiyomi.util.upscale.UpscalePriorityGate
+import exh.log.xLogE
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -63,7 +62,9 @@ class WebtoonPageHolder(
      */
     private val progressIndicator = createProgressIndicator()
 
+    // KMK -->
     private var upscaleIndicator: UpscaleStatusIndicator? = null
+    // KMK <--
 
     /**
      * Progress bar container. Needed to keep a minimum height size of the holder, otherwise the
@@ -102,12 +103,14 @@ class WebtoonPageHolder(
         frame.onScaleChanged = { viewer.activity.hideMenu() }
     }
 
+    // KMK -->
     private fun initUpscaleIndicator() {
         if (upscaleIndicator == null) {
             upscaleIndicator = UpscaleStatusIndicator(context, seedColor = seedColor, alpha = 0.40f)
             frame.addView(upscaleIndicator)
         }
     }
+    // KMK <--
 
     /**
      * Binds the given [page] with this view holder, subscribing to its state.
@@ -143,9 +146,11 @@ class WebtoonPageHolder(
         progressIndicator.setProgress(0)
         progressContainer.isVisible = true
 
+        // KMK -->
         upscaleIndicator?.destroy()
-        frame.removeView(upscaleIndicator) // rimuove anche fisicamente la view, non solo il timer
-        upscaleIndicator = null // così initUpscaleIndicator() ne crea davvero una nuova al prossimo bind()
+        frame.removeView(upscaleIndicator)
+        upscaleIndicator = null
+        // KMK <--
     }
 
     /**
@@ -210,10 +215,13 @@ class WebtoonPageHolder(
      * Called when the page is ready.
      */
     private suspend fun setImage() {
-        upscaleIndicator?.hide()
         progressIndicator.setProgress(0)
 
-        val streamFn = page?.stream ?: return
+        // KMK -->
+        upscaleIndicator?.hide()
+        val currentPage = page ?: return
+        val streamFn = currentPage.stream ?: return
+        // KMK <--
 
         try {
             val (sourceBytes, isAnimated) = withIOContext {
@@ -223,7 +231,8 @@ class WebtoonPageHolder(
                 Pair(bytes, isAnimated)
             }
 
-            // 1. Mostriamo SUBITO l'immagine originale sul frame per non bloccare lo scorrimento
+            // KMK -->
+            // Showing the original image to avoid blocking scrolling
             frame.setImage(
                 Buffer().write(sourceBytes),
                 isAnimated,
@@ -236,11 +245,7 @@ class WebtoonPageHolder(
 
             val targetWidth = context.resources.displayMetrics.widthPixels
 
-            // 2. Upscaling in background, ma SENZA creare un Job scollegato:
-            // essendo una chiamata sospesa nella stessa catena strutturata di
-            // loadPageAndProcessStatus(), viene cancellata automaticamente se
-            // la holder viene riciclata o se arriva un nuovo Page.State.Ready
-            // (collectLatest cancella il blocco precedente).
+            // background upscaling in background
             val upscalePrefs = Injekt.get<ReaderPreferences>()
             if (upscalePrefs.aiUpscaleEnabled().get() && !isAnimated) {
                 initUpscaleIndicator()
@@ -249,33 +254,38 @@ class WebtoonPageHolder(
                 val upscaledSource = withIOContext {
                     try {
                         AiUpscaleCache.getOrUpscale(
-                            chapterId = page!!.chapter.chapter.id,
-                            pageIndex = page!!.index,
+                            chapterId = currentPage.chapter.chapter.id,
+                            pageIndex = currentPage.index,
                             source = Buffer().write(sourceBytes),
                             targetWidth = targetWidth,
-                            priority = UpscalePriorityGate.Priority.VISIBLE
+                            priority = UpscalePriorityGate.Priority.VISIBLE,
                         )
                     } catch (e: Throwable) {
-                        Log.e("AiUpscaleWebtoon", "Fallito upscaling pagina ${page!!.index}", e)
+                        xLogE("Upscaling failed for page ${currentPage.index}", e)
                         null
                     }
                 }
 
                 if (upscaledSource != null) {
                     withUIContext {
-                        frame.setImage(upscaledSource, false, ReaderPageImageView.Config(
-                            zoomDuration = viewer.config.doubleTapAnimDuration,
-                            minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
-                            cropBorders = (viewer.config.imageCropBorders && viewer.isContinuous) || (viewer.config.continuousCropBorders && !viewer.isContinuous),
-                        ),)
+                        frame.setImage(
+                            upscaledSource,
+                            false,
+                            ReaderPageImageView.Config(
+                                zoomDuration = viewer.config.doubleTapAnimDuration,
+                                minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
+                                cropBorders = (viewer.config.imageCropBorders && viewer.isContinuous) || (viewer.config.continuousCropBorders && !viewer.isContinuous),
+                            ),
+                        )
                         upscaleIndicator?.showSuccess()
                     }
                 } else {
                     withUIContext {
-                        upscaleIndicator?.showFailed() // prima: nessun feedback in caso di fallimento
+                        upscaleIndicator?.showFailed()
                     }
                 }
             }
+            // KMK <--
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
             withUIContext {

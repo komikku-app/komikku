@@ -166,7 +166,7 @@ android {
         checkReleaseBuilds = false
     }
 
-    androidResources{
+    androidResources {
         noCompress += "tflite"
     }
 
@@ -352,13 +352,11 @@ dependencies {
     // ZXing Android Embedded
     implementation(sylibs.zxing.android.embedded)
 
-    //implementation(libs.tensorflow.lite)
-    //implementation(libs.tensorflow.lite.gpu)
-    //implementation(libs.tensorflow.lite.support)
-
+    // KMK -->
     implementation(libs.litert)
     implementation(libs.litert.gpu)
     implementation(libs.litert.gpu.api)
+    // KMK <--
 }
 
 androidComponents {

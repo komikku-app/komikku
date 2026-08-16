@@ -31,7 +31,7 @@ object ModelManifestLoader {
         return json.decodeFromString<ModelManifest>(text).also { cached = it }
     }
 
-    /** Entry manifest per una precisa (modello, batch). Null se quella combinazione non è nel manifest. */
+    /** Manifest entry for an exact (model, batch) pair. Null if that combination isn't in the manifest. */
     fun entryFor(context: Context, model: UpscaleModel, batchSize: Int): ModelVariantEntry? =
         load(context).variants.find { it.modelId == model.name && it.batchSize == batchSize }
 }

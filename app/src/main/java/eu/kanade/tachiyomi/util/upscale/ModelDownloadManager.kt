@@ -67,8 +67,7 @@ class ModelDownloadManager(private val context: Application) {
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
             .build()
 
-        // KEEP: se l'utente rilancia il download di uno già in corso (es. riapre l'app),
-        // non duplichiamo il worker invece di accodarne uno secondo che scarica in parallelo.
+        // If the user re-starts the download process of one already in progress we don't duplicate the worker
         workManager.enqueueUniqueWork(uniqueWorkName(model, batchSize), ExistingWorkPolicy.KEEP, request)
     }
 
@@ -79,7 +78,7 @@ class ModelDownloadManager(private val context: Application) {
     fun deleteDownloaded(model: UpscaleModel, batchSize: Int) {
         val entry = ModelManifestLoader.entryFor(context, model, batchSize) ?: return
         File(context.filesDir, "models/${entry.assetFileName}").delete()
-        localChangeSignal.update { it + 1 } // fa ripartire observeState anche se WorkManager non è coinvolto
+        localChangeSignal.update { it + 1 } // restarts observeState even if WorkManager is not involved
     }
 
     fun observeState(model: UpscaleModel, batchSize: Int): Flow<ModelDownloadState> =

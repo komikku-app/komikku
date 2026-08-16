@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstring>
 
-// Helper inline per clampare i valori float a uint8
+// Inline helper to clamp float values to uint8
 inline uint8_t floatToUint8(float val) {
     float scaled = val * 255.0f;
     if (scaled <= 0.0f) return 0;

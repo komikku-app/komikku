@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.util.system.dpToPx
+import exh.log.xLogD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -57,11 +57,8 @@ private sealed interface UpscaleBadgeState {
 }
 
 /**
- * Badge compatto in basso a destra per segnalare l'upscaling AI in corso o appena
- * completato. Non sostituisce ReaderProgressIndicator: quello copre il caricamento
- * iniziale della pagina (download/decode), questo copre solo il passaggio successivo,
- * facoltativo, dell'upscaling — e a differenza di quello resta accanto all'immagine
- * già visibile invece di occupare tutto lo spazio.
+ * Compact badge at bottom right to report AI upscaling in progress or just
+ * completed.
  */
 class UpscaleStatusIndicator @JvmOverloads constructor(
     context: Context,
@@ -85,7 +82,7 @@ class UpscaleStatusIndicator @JvmOverloads constructor(
     private var autoDismissJob: Job? = null
 
     private fun setState(newState: UpscaleBadgeState, caller: String) {
-        Log.d("UpscaleBadge", "[$debugTag] stato: $state -> $newState (chiamato da $caller)")
+        xLogD("[$debugTag] state: $state -> $newState (called by $caller)")
         state = newState
     }
 
@@ -133,7 +130,7 @@ class UpscaleStatusIndicator @JvmOverloads constructor(
                                     UpscaleBadgeState.InProgress -> KMR.strings.upscale_badge_in_progress
                                     UpscaleBadgeState.Success -> KMR.strings.upscale_badge_done
                                     UpscaleBadgeState.Failed -> KMR.strings.upscale_badge_failed
-                                    else -> KMR.strings.upscale_badge_in_progress // irraggiungibile
+                                    else -> KMR.strings.upscale_badge_in_progress
                                 },
                             ),
                             style = MaterialTheme.typography.labelSmall,
@@ -148,44 +145,35 @@ class UpscaleStatusIndicator @JvmOverloads constructor(
 
     fun showInProgress() {
         autoDismissJob?.cancel()
-        //state = UpscaleBadgeState.InProgress
         setState(UpscaleBadgeState.InProgress, "showInProgress")
-
     }
 
     fun showSuccess(autoDismissMillis: Long = 1500) {
         autoDismissJob?.cancel()
-        //state = UpscaleBadgeState.Success
         setState(UpscaleBadgeState.Success, "showSuccess")
         autoDismissJob = scope.launch {
             delay(autoDismissMillis.milliseconds)
-            //state = UpscaleBadgeState.Active // non torna Hidden: resta il simbolo permanente
             setState(UpscaleBadgeState.Active, "showSuccess/autoDismiss")
         }
     }
 
     fun showFailed(autoDismissMillis: Long = 2000) {
         autoDismissJob?.cancel()
-        //state = UpscaleBadgeState.Failed
         setState(UpscaleBadgeState.Failed, "showFailed")
         autoDismissJob = scope.launch {
             delay(autoDismissMillis.milliseconds)
-            //state = UpscaleBadgeState.Hidden // qui invece sì Hidden: la pagina non è stata upscalata
             setState(UpscaleBadgeState.Hidden, "showFailed/autoDismiss")
         }
     }
 
     fun showActive() {
-        // Percorso rapido (prefetch già pronto): nessun flash, il simbolo compare direttamente.
         autoDismissJob?.cancel()
-        //state = UpscaleBadgeState.Active
         setState(UpscaleBadgeState.Active, "showActive")
     }
 
     fun hide() {
         autoDismissJob?.cancel()
         setState(UpscaleBadgeState.Hidden, "hide")
-        //state = UpscaleBadgeState.Hidden
     }
 
     fun destroy() {

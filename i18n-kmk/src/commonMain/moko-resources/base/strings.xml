@@ -38,18 +38,17 @@
     <string name="scale_type_20_9">20:9</string>
     <string name="scale_type_4_3">4:3</string>
     <string name="scale_type_3_2">3:2</string>
+    <string name="pref_category_upscaling">Upscaling</string>
     <string name="pref_ai_upscale_model">Upscaling Model</string>
     <string name="pref_ai_upscale_enabled">Ai upscaling (experimental)</string>
     <string name="pref_ai_upscale_manage_in_settings">Manage models directly from reader settings</string>
     <string name="action_delete_upscale_model">Delete downloaded model</string>
     <string name="pref_ai_upscale_cannot_delete_active_model">You cannot delete the model currently in use. Select another one first</string>
     <string name="desc_upscale_realesrgan_animevideov3">Quick generic model. Recommended as default: good compromise between quality and speed on medium hardware.</string>
-    <string name="desc_upscale_waifu2x">Placeholder.</string>
-    <string name="desc_upscale_cunet2x">Placeholder.</string>
-    <string name="desc_upscale_realcugan2x">Placeholder.</string>
-    <string name="desc_upscale_realcugan3x">Placeholder.</string>
-    <string name="desc_upscale_realcugan4x">Placeholder.</string>
-    <string name="action_model_info">Placeholder.</string>
+    <string name="desc_upscale_waifu2x">Lightweight model optimized for anime-style line art. Fast and low memory usage, but less effective on photographic or highly detailed pages.</string>
+    <string name="desc_upscale_realcugan2x">Balanced model tuned for anime/manga artwork, good at handling screentone patterns without excessive smoothing. Moderate speed and memory usage.</string>
+    <string name="desc_upscale_realcugan3x">Same architecture as Real-CUGAN 2x with a higher scale factor. Produces sharper results on smaller source pages, at the cost of more processing time.</string>
+    <string name="action_model_info">Model information</string>
     <string name="upscale_badge_in_progress">Upscaling...</string>
     <string name="upscale_badge_done">Upscaled</string>
     <string name="pref_ai_upscale_prefetch_ahead">Prefetch amount</string>
@@ -59,6 +58,13 @@
     <string name="pref_ai_upscale_tile_overlap_summary">Higher values reduce visible joints between tiles but increase required time and memory</string>
     <string name="pref_ai_upscale_tile_overlap_off">Disabled</string>
     <string name="upscale_badge_failed">Upscaling failed</string>
+    <string name="pref_empty_ai_cache">Empty AI upscaling cache</string>
+    <string name="pref_empty_ai_cache_summary">Delete upscaled pages from disk</string>
+    <string name="emptied_ai_cache">Emptied AI upscaling cache</string>
+    <string name="pref_ai_upscale_cache_size">AI upscaling cache size</string>
+    <string name="pref_ai_upscale_cache_size_summary">Maximum disk space used to store already-upscaled pages</string>
+    <string name="pref_ai_upscale_model_subtitle">%1$s · Batch %2$d</string>
+    <string name="upscale_model_batch_size">Batch %1$d · %2$s</string>
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>

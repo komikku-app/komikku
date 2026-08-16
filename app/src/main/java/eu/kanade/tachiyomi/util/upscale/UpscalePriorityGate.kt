@@ -5,17 +5,17 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Sostituisce un Semaphore(1) semplice quando serve dare priorità a certe
- * richieste (pagina visibile) rispetto ad altre (prefetch in background),
- * senza però poter interrompere un'inferenza già in corso: la priorità
- * incide solo su chi viene servito per primo tra le richieste IN ATTESA,
- * non su quella eventualmente già in esecuzione.
+ * Replaces a simple Semaphore(1) when you need to give priority to certain
+ * requests (visible page) versus others (background prefetch),
+ * without however being able to interrupt an ongoing inference: the priority
+ * only affects who is served first among the WAITING requests,
+ * not on the one that is possibly already running.
  */
 object UpscalePriorityGate {
 
     enum class Priority { VISIBLE, PREFETCH }
 
-    private val guard = Mutex() // protegge solo la contabilità sotto, mai il lavoro vero
+    private val guard = Mutex()
     private var slotFree = true
     private val highPriorityQueue = ArrayDeque<CompletableDeferred<Unit>>()
     private val lowPriorityQueue = ArrayDeque<CompletableDeferred<Unit>>()
@@ -32,7 +32,7 @@ object UpscalePriorityGate {
                 lowPriorityQueue.addLast(waiter)
             }
         }
-        waiter.await() // sospende qui, senza polling, finché non tocca il turno
+        waiter.await() // suspends here, without polling, until it's its turn
 
         try {
             return block()
@@ -40,7 +40,7 @@ object UpscalePriorityGate {
             guard.withLock {
                 val next = highPriorityQueue.removeFirstOrNull() ?: lowPriorityQueue.removeFirstOrNull()
                 if (next != null) {
-                    next.complete(Unit) // passa lo slot direttamente al prossimo, senza rilascio "a vuoto"
+                    next.complete(Unit)
                 } else {
                     slotFree = true
                 }

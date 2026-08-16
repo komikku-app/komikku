@@ -269,8 +269,7 @@ abstract class PagerViewer(
             adapter.nextTransition?.to?.let(activity::requestPreloadChapter)
         }
 
-        // Upscale prefetch: si estende automaticamente oltre il confine di capitolo
-        // se adapter.nextTransition?.to?.pages è già caricato in questo momento.
+        // KMK -->
         val prefetchAhead = Injekt.get<ReaderPreferences>().aiUpscalePrefetchAheadCount().get()
         val targetWidth = activity.resources.displayMetrics.widthPixels
         AiUpscalePrefetcher.updatePosition(
@@ -279,6 +278,7 @@ abstract class PagerViewer(
             targetWidth = targetWidth,
             nextChapterProvider = { adapter.nextTransition?.to?.pages },
         )
+        // KMK <--
     }
 
     /**

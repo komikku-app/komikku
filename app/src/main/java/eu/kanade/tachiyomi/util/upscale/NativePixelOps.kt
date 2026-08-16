@@ -12,27 +12,27 @@ object NativePixelOps {
         bitmap: Bitmap,
         directBuffer: ByteBuffer,
         bufferPixelOffset: Int,
-        tileSize: Int
+        tileSize: Int,
     )
 
     external fun writeBitmapToBufferNCHW(
         bitmap: Bitmap,
         directBuffer: ByteBuffer,
         bufferPixelOffset: Int,
-        tileSize: Int
+        tileSize: Int,
     )
 
     external fun readBufferToBitmapNHWC(
         directBuffer: ByteBuffer,
         bufferPixelOffset: Int,
         targetBitmap: Bitmap,
-        outSize: Int
+        outSize: Int,
     )
 
     external fun readBufferToBitmapNCHW(
         directBuffer: ByteBuffer,
         bufferPixelOffset: Int,
         targetBitmap: Bitmap,
-        outSize: Int
+        outSize: Int,
     )
 }
