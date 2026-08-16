@@ -909,4 +909,11 @@
     <string name="donationCampaign.paragraph3">Sendepende de tio, Komikku daŭre estos prizorgata de mi kaj la volontuloj, kaj ĝi restos malfermitkoda.</string>
     <string name="donationCampaign.contactPlatform">Discord</string>
     <string name="donationCampaign.dismiss">Kaŝi</string>
+    <string name="theme_tokyonight">Tokia nokto</string>
+    <string name="downloading_with_progress">Elŝutado… (%d%%)</string>
+    <string name="pref_vertical_navigator">Uzi vertikalan ĉapitran navigilon en</string>
+    <string name="pref_vertical_navigator_height">Alto de vertikala navigilo</string>
+    <string name="considering">Konsiderataj</string>
+    <string name="pref_filter_update_categories_details">Ĝisdatigoj en ekskluzivitaj kategorioj ne estos montrotaj, eĉ se ili estas ankaŭ en inkluzivitaj kategorioj.</string>
+    <string name="pref_filter_upcoming_categories_details">Titoloj en ekskluzivitaj kategorioj ne estos montrotaj, eĉ se ili estas ankaŭ en inkluzivitaj kategorioj.</string>
 </resources>

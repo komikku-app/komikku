@@ -925,4 +925,5 @@
     <string name="theme_tokyonight">도쿄 나이트</string>
     <string name="downloading_with_progress">다운로드 중… (%d%%)</string>
     <string name="pref_filter_update_categories_details">제외된 카테고리 업데이트는 포함되는 카테고리가 있어도 표시되지 않습니다.</string>
+    <string name="pref_filter_upcoming_categories_details">제외 범주에 속한 작품은 포함 범주에 속해 있더라도 표시되지 않습니다.</string>
 </resources>

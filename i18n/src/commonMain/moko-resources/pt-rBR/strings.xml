@@ -731,7 +731,7 @@
     <string name="action_apply">Aplicar</string>
     <string name="action_revert_to_default">Reverter para o padrão</string>
     <string name="no_scanlators_found">Nenhum scanlator encontrado</string>
-    <string name="scanlator">Scanner</string>
+    <string name="scanlator">Scanlator</string>
     <string name="exclude_scanlators">Excluir scanlators</string>
     <string name="action_create">Criar</string>
     <string name="selected">Selecionado</string>
@@ -923,4 +923,7 @@
     <string name="pref_vertical_navigator_height">Altura do navegador vertical</string>
     <string name="considering">Considerando</string>
     <string name="theme_tokyonight">Noite em Tóquio</string>
+    <string name="downloading_with_progress">Fazendo download…(%d%%)</string>
+    <string name="pref_filter_update_categories_details">Atualizações nas categorias excluídas não serão exibidas mesmo que eles também estejam nas categorias incluídas.</string>
+    <string name="pref_filter_upcoming_categories_details">Títulos nas categorias excluídas não serão exibidas, mesmo que eles também estejam nas categorias incluídas.</string>
 </resources>
