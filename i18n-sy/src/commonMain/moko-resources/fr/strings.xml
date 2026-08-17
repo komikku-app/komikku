@@ -494,8 +494,6 @@
     <string name="aes_128">AES 128</string>
     <string name="download_threads">Téléchargement des threads</string>
     <string name="reader_bottom_buttons">Boutons du bas du lecteur</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Active la barre de recherche verticale en mode paysage</string>
-    <string name="pref_force_horz_seekbar">Forcer la barre de recherche horizontale</string>
     <string name="eh_boost_page_downloading">Cette page est déjà en cours de téléchargement !</string>
     <string name="eh_autoscroll_freq_invalid">Fréquence non valide</string>
     <string name="pref_crop_borders_continuous_vertical">Rogner les bordures Vertical Continu</string>
@@ -526,8 +524,6 @@
     <string name="encryption_type">Type de chiffrement</string>
     <string name="standard_zip_encryption">Chiffrage zip standard (rapide mais peu sûr)</string>
     <string name="page_downloading">Téléchargement de pages</string>
-    <string name="pref_show_vert_seekbar_landscape">Afficher la barre de recherche verticale en mode paysage</string>
-    <string name="pref_force_horz_seekbar_summary">Suppression de la barre de recherche verticale au profit d\'une barre de recherche horizontale</string>
     <string name="pref_smooth_scroll">Défilement automatique fluide</string>
     <string name="eh_boost_page_invalid">Cette page ne peut pas être boostée (page invalide) !</string>
     <string name="shift_double_pages">Décaler d\'une page</string>
@@ -542,14 +538,12 @@
     <string name="custom_igneous_cookie_message">Certains utilisateurs ne peuvent pas accéder à ExHentai par la voie normale et doivent passer une valeur de cookie igné spécifique, cette option est destinée à ces utilisateurs.</string>
     <string name="failed_merge">Échec de la fusion de la série : %1$s</string>
     <string name="biometric_lock_days">Jours de verrouillage biométrique</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Change le côté de la barre de recherche</string>
     <string name="bandwidth_data_saver_server">Serveur Proxy Bandwidth Hero</string>
     <string name="error_deleting_google_drive_lock_file">Erreur lors de la suppression du fichier verrouillé de Google Drive</string>
     <string name="all_read_entries">Toutes les séries lues</string>
     <string name="invert_double_pages">Inverser les doubles pages</string>
     <string name="set_cbz_zip_password">Définir le mot de passe de l\'archive CBZ</string>
     <string name="eh_boost_invalid_loader">Cette page ne peut pas être boostée (chargeur de page invalide) !</string>
-    <string name="pref_left_handed_vertical_seekbar">Barre de recherche verticale pour gauchers</string>
     <string name="pref_sync_now_group_title">Actions de synchronisation</string>
     <string name="automatic_can_still_switch">Si vous utilisez la mise en page automatique, vous pouvez toujours passer d\'une mise en page à l\'autre en cours de lecture sans modifier ce paramètre</string>
     <string name="google_drive_sync_data_purged">Données de synchronisation supprimées de Google Drive</string>

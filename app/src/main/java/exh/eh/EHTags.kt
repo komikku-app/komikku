@@ -2,12 +2,14 @@ package exh.eh
 
 import exh.eh.tags.Artist
 import exh.eh.tags.Artist2
+import exh.eh.tags.Artist3
 import exh.eh.tags.Character
 import exh.eh.tags.Cosplayer
 import exh.eh.tags.Female
 import exh.eh.tags.Group
 import exh.eh.tags.Group2
 import exh.eh.tags.Language
+import exh.eh.tags.Location
 import exh.eh.tags.Male
 import exh.eh.tags.Mixed
 import exh.eh.tags.Other
@@ -29,6 +31,8 @@ object EHTags {
         Group2.getTags(),
         Artist.getTags(),
         Artist2.getTags(),
+        Artist3.getTags(),
+        Location.getTags(),
     ).flatten().flatten()
 
     fun getNamespaces(): List<String> = listOf(
@@ -42,6 +46,7 @@ object EHTags {
         "male",
         "female",
         "mixed",
+        "location",
         "other",
     )
 }
