@@ -53,6 +53,7 @@ import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.EH_PACKAGE
+import exh.source.ExhFavoritesSyncSort
 import exh.source.ExhPreferences
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
@@ -72,6 +73,7 @@ import tachiyomi.domain.manga.interactor.DeleteFavoriteEntries
 import tachiyomi.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -168,6 +170,7 @@ object SettingsEhScreen : SearchableSettings {
             Preference.PreferenceGroup(
                 stringResource(SYMR.strings.favorites_sync),
                 preferenceItems = persistentListOf(
+                    favoritesSyncSort(exhPreferences),
                     readOnlySync(exhPreferences),
                     syncFavoriteNotes(),
                     lenientSync(exhPreferences),
@@ -862,6 +865,18 @@ object SettingsEhScreen : SearchableSettings {
             preference = exhPreferences.enhancedEHentaiView(),
             title = stringResource(SYMR.strings.pref_enhanced_e_hentai_view),
             subtitle = stringResource(SYMR.strings.pref_enhanced_e_hentai_view_summary),
+        )
+    }
+
+    @Composable
+    fun favoritesSyncSort(exhPreferences: ExhPreferences): Preference.PreferenceItem.ListPreference<String> {
+        return Preference.PreferenceItem.ListPreference(
+            preference = exhPreferences.exhFavoritesSyncSort(),
+            entries = persistentMapOf(
+                ExhFavoritesSyncSort.FAVORITED to stringResource(KMR.strings.favorites_sync_sort_favorited),
+                ExhFavoritesSyncSort.PUBLISHED to stringResource(KMR.strings.favorites_sync_sort_published),
+            ),
+            title = stringResource(KMR.strings.favorites_sync_sort),
         )
     }
 
