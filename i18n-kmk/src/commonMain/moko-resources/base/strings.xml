@@ -65,6 +65,7 @@
     <string name="pref_ai_upscale_cache_size_summary">Maximum disk space used to store already-upscaled pages</string>
     <string name="pref_ai_upscale_model_subtitle">%1$s · Batch %2$d</string>
     <string name="upscale_model_batch_size">Batch %1$d · %2$s</string>
+    <string name="action_model_licenses">Model licenses</string>
     <!-- Preferences -->
       <!-- Appearance section -->
     <string name="pref_custom_theme_style">Custom theme style</string>

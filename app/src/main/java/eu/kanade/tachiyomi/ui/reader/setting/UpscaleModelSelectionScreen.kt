@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -77,6 +77,14 @@ class UpscaleModelSelectionScreen : Screen() {
                     title = stringResource(KMR.strings.pref_ai_upscale_model),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
+                    actions = {
+                        IconButton(onClick = { navigator.push(ModelLicensesScreen()) }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Gavel,
+                                contentDescription = stringResource(KMR.strings.action_model_licenses),
+                            )
+                        }
+                    },
                 )
             },
         ) { contentPadding ->
