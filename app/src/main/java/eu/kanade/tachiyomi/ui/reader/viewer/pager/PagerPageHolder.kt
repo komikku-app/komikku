@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
@@ -286,6 +287,62 @@ class PagerPageHolder(
     )
     // KMK <--
 
+    // KMK -->
+    private fun applyImage(source: BufferedSource, isAnimated: Boolean, background: Drawable?) {
+        setImage(source, isAnimated, buildConfig())
+        if (!isAnimated) pageBackground = background
+        removeErrorLayout()
+    }
+    // KMK <--
+
+    // KMK -->
+    private suspend fun setImageWithUpscale(itemBytes: ByteArray, background: Drawable?, targetWidth: Int) {
+        val upscaleDeferred = scope.async(Dispatchers.IO) {
+            try {
+                AiUpscaleCache.getOrUpscale(
+                    chapterId = page.chapter.chapter.id,
+                    pageIndex = page.index,
+                    source = Buffer().write(itemBytes),
+                    targetWidth = targetWidth,
+                    priority = UpscalePriorityGate.Priority.VISIBLE,
+                )
+            } catch (e: Throwable) {
+                xLogE("Upscaling failed for page ${page.index}", e)
+                null
+            }
+        }
+
+        val fastResult = withTimeoutOrNull(120.milliseconds) { upscaleDeferred.await() }
+
+        if (fastResult != null) {
+            withUIContext {
+                applyImage(fastResult, isAnimated = false, background)
+                initUpscaleIndicator()
+                upscaleIndicator?.showActive()
+            }
+            return
+        }
+
+        withUIContext {
+            applyImage(Buffer().write(itemBytes), isAnimated = false, background) // independent copy, UI only
+            initUpscaleIndicator()
+            upscaleIndicator?.showInProgress()
+        }
+
+        scope.launch {
+            val lateResult = upscaleDeferred.await()
+            withUIContext {
+                if (lateResult != null) {
+                    upscaleIndicator?.showSuccess()
+                    postOnAnimation { crossfadeToUpscaled(lateResult) }
+                } else {
+                    upscaleIndicator?.showFailed()
+                }
+            }
+        }
+    }
+    // KMK <--
+
     /**
      * Called when the page is ready.
      */
@@ -337,60 +394,9 @@ class PagerPageHolder(
             val upscaleEnabled = upscalePrefs.aiUpscaleEnabled().get() && !isAnimated
 
             if (!upscaleEnabled) {
-                withUIContext {
-                    setImage(Buffer().write(itemBytes), isAnimated, buildConfig())
-                    if (!isAnimated) pageBackground = background
-                    removeErrorLayout()
-                }
+                withUIContext { applyImage(Buffer().write(itemBytes), isAnimated, background) }
             } else {
-                val upscaleDeferred = scope.async(Dispatchers.IO) {
-                    try {
-                        AiUpscaleCache.getOrUpscale(
-                            chapterId = page.chapter.chapter.id,
-                            pageIndex = page.index,
-                            source = Buffer().write(itemBytes),
-                            targetWidth = targetWidth,
-                            priority = UpscalePriorityGate.Priority.VISIBLE,
-                        )
-                    } catch (e: Throwable) {
-                        xLogE("Upscaling failed for page ${page.index}", e)
-                        null
-                    }
-                }
-
-                val fastResult = withTimeoutOrNull(120.milliseconds) { upscaleDeferred.await() }
-
-                if (fastResult != null) {
-                    withUIContext {
-                        setImage(fastResult, false, buildConfig())
-                        pageBackground = background
-                        removeErrorLayout()
-                        initUpscaleIndicator()
-                        upscaleIndicator?.showActive()
-                    }
-                } else {
-                    withUIContext {
-                        setImage(Buffer().write(itemBytes), false, buildConfig()) // copia indipendente, sola per la UI
-                        pageBackground = background
-                        removeErrorLayout()
-                        initUpscaleIndicator()
-                        upscaleIndicator?.showInProgress()
-                    }
-
-                    scope.launch {
-                        val lateResult = upscaleDeferred.await()
-                        withUIContext {
-                            if (lateResult != null) {
-                                upscaleIndicator?.showSuccess()
-                                postOnAnimation {
-                                    crossfadeToUpscaled(lateResult)
-                                }
-                            } else {
-                                upscaleIndicator?.showFailed()
-                            }
-                        }
-                    }
-                }
+                setImageWithUpscale(itemBytes, background, targetWidth)
             }
             // KMK <--
         } catch (e: Throwable) {
