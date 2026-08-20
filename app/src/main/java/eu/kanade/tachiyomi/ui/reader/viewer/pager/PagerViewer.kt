@@ -79,6 +79,13 @@ abstract class PagerViewer(
      */
     private var awaitingIdleViewerChapters: ViewerChapters? = null
 
+    // KMK -->
+    /**
+     * Tracking of previous chapter
+     */
+    private var lastPrefetchChapterId: Long? = null
+    // KMK <--
+
     /**
      * Whether the view pager is currently in idle mode. It sets the awaiting chapters if setting
      * this field to true.
@@ -174,6 +181,9 @@ abstract class PagerViewer(
     override fun destroy() {
         super.destroy()
         scope.cancel()
+        // KMK -->
+        AiUpscalePrefetcher.clear()
+        // KMK <--
     }
 
     /**
@@ -313,6 +323,14 @@ abstract class PagerViewer(
      * Sets the active [chapters] on this pager.
      */
     internal fun setChaptersInternal(chapters: ViewerChapters) {
+        // KMK -->
+        val newChapterId = chapters.currChapter.chapter.id
+        if (lastPrefetchChapterId != null && lastPrefetchChapterId != newChapterId) {
+            AiUpscalePrefetcher.clear()
+        }
+        lastPrefetchChapterId = newChapterId
+        // KMK <--
+
         // Remove listener so the change in item doesn't trigger it
         // since we're about to change the size of the items
         // If we don't the size change could put us on a new chapter

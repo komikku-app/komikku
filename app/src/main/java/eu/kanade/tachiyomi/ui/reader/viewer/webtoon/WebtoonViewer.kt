@@ -91,6 +91,13 @@ class WebtoonViewer(
     /* [EXH] private */
     var currentPage: Any? = null
 
+    // KMK -->
+    /**
+     * Tracking of previous chapter
+     */
+    private var lastPrefetchChapterId: Long? = null
+    // KMK <--
+
     private val threshold: Int =
         // KMK -->
         readerPreferences
@@ -254,6 +261,9 @@ class WebtoonViewer(
     override fun destroy() {
         super.destroy()
         scope.cancel()
+        // KMK -->
+        AiUpscalePrefetcher.clear()
+        // KMK <--
     }
 
     /**
@@ -310,6 +320,14 @@ class WebtoonViewer(
      * Tells this viewer to set the given [chapters] as active.
      */
     override fun setChapters(chapters: ViewerChapters) {
+        // KMK -->
+        val newChapterId = chapters.currChapter.chapter.id
+        if (lastPrefetchChapterId != null && lastPrefetchChapterId != newChapterId) {
+            AiUpscalePrefetcher.clear()
+        }
+        lastPrefetchChapterId = newChapterId
+        // KMK <--
+
         val forceTransition = config.alwaysShowChapterTransition || currentPage is ChapterTransition
         adapter.setChapters(chapters, forceTransition)
 
