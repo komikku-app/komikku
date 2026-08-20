@@ -23,6 +23,7 @@ import tachiyomi.core.common.util.system.ImageUtil
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -129,7 +130,12 @@ object AiUpscalePrefetcher {
                 requested.add(key)
                 xLogD("offset=$offset page ${nextPage.index}: completed")
                 return true
-            } catch (e: Throwable) {
+            } catch (e: CancellationException) {
+                // The coroutine was intentionally deleted (e.g. clear() on chapter change).
+                // Throwing the exception to complete the deletion without logging errors.
+                throw e
+            } catch (e: Exception) {
+                // Actual errors
                 xLogE("offset=$offset page ${nextPage.index}: exception", e)
             }
         }
@@ -141,7 +147,12 @@ object AiUpscalePrefetcher {
         while (currentCoroutineContext().isActive) {
             val processedSomething = try {
                 tryFillNextGap()
-            } catch (e: Throwable) {
+            } catch (e: CancellationException) {
+                // The coroutine was intentionally deleted (e.g. clear() on chapter change).
+                // Throwing the exception to complete the deletion without logging errors.
+                throw e
+            } catch (e: Exception) {
+                // Actual errors
                 xLogE("tryFillNextGap threw an exception", e)
                 false
             }
