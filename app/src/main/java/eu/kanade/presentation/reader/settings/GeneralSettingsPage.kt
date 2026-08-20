@@ -1,15 +1,19 @@
 package eu.kanade.presentation.reader.settings
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.SettingsChipRow
@@ -17,7 +21,6 @@ import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
-
 private val themes = listOf(
     MR.strings.black_background to 1,
     MR.strings.gray_background to 2,
@@ -55,6 +58,33 @@ internal fun GeneralPage(screenModel: ReaderSettingsScreenModel) {
             )
         }
     }
+
+    // KMK -->
+    val aiUpscaleEnabled by screenModel.preferences.aiUpscaleEnabled().collectAsState()
+
+    CheckboxItem(
+        label = stringResource(KMR.strings.pref_ai_upscale_enabled),
+        pref = screenModel.preferences.aiUpscaleEnabled(),
+    )
+
+    if (aiUpscaleEnabled) {
+        val aiUpscaleModel by screenModel.preferences.aiUpscaleModel().collectAsState()
+        val aiUpscaleBatch by screenModel.preferences.aiUpscaleBatchSize().collectAsState()
+
+        Text(
+            text = "${aiUpscaleModel.displayName} · Batch $aiUpscaleBatch",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        Text(
+            text = stringResource(KMR.strings.pref_ai_upscale_manage_in_settings),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+    }
+    // KMK <--
 
     CheckboxItem(
         label = stringResource(MR.strings.pref_show_page_number),
