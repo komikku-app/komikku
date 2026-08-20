@@ -296,13 +296,13 @@ class PagerPageHolder(
     // KMK <--
 
     // KMK -->
-    private suspend fun setImageWithUpscale(itemBytes: ByteArray, background: Drawable?, targetWidth: Int) {
+    private suspend fun setImageWithUpscale(sourceBuffer: Buffer, background: Drawable?, targetWidth: Int) {
         val upscaleDeferred = scope.async(Dispatchers.IO) {
             try {
                 AiUpscaleCache.getOrUpscale(
                     chapterId = page.chapter.chapter.id,
                     pageIndex = page.index,
-                    source = Buffer().write(itemBytes),
+                    source = sourceBuffer.peek(),
                     targetWidth = targetWidth,
                     priority = UpscalePriorityGate.Priority.VISIBLE,
                 )
@@ -324,7 +324,7 @@ class PagerPageHolder(
         }
 
         withUIContext {
-            applyImage(Buffer().write(itemBytes), isAnimated = false, background) // independent copy, UI only
+            applyImage(sourceBuffer.peek(), isAnimated = false, background) // independent copy, UI only
             initUpscaleIndicator()
             upscaleIndicator?.showInProgress()
         }
@@ -392,11 +392,12 @@ class PagerPageHolder(
             val upscalePrefs = Injekt.get<ReaderPreferences>()
             val targetWidth = context.resources.displayMetrics.widthPixels
             val upscaleEnabled = upscalePrefs.aiUpscaleEnabled().get() && !isAnimated
+            val sourceBuffer = Buffer().write(itemBytes)
 
             if (!upscaleEnabled) {
-                withUIContext { applyImage(Buffer().write(itemBytes), isAnimated, background) }
+                withUIContext { applyImage(sourceBuffer, isAnimated, background) }
             } else {
-                setImageWithUpscale(itemBytes, background, targetWidth)
+                setImageWithUpscale(sourceBuffer, background, targetWidth)
             }
             // KMK <--
         } catch (e: Throwable) {

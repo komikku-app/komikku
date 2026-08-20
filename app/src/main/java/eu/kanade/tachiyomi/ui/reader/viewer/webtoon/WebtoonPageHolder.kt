@@ -232,9 +232,11 @@ class WebtoonPageHolder(
             }
 
             // KMK -->
+            val sourceBuffer = Buffer().write(sourceBytes)
+
             // Showing the original image to avoid blocking scrolling
             frame.setImage(
-                Buffer().write(sourceBytes),
+                sourceBuffer.peek(),
                 isAnimated,
                 ReaderPageImageView.Config(
                     zoomDuration = viewer.config.doubleTapAnimDuration,
@@ -256,7 +258,7 @@ class WebtoonPageHolder(
                         AiUpscaleCache.getOrUpscale(
                             chapterId = currentPage.chapter.chapter.id,
                             pageIndex = currentPage.index,
-                            source = Buffer().write(sourceBytes),
+                            source = sourceBuffer.peek(),
                             targetWidth = targetWidth,
                             priority = UpscalePriorityGate.Priority.VISIBLE,
                         )
