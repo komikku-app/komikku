@@ -12,7 +12,11 @@
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove original entries from library?</string>
     <string name="action_hide">Hide</string>
+    <string name="action_show">Show</string>
+    <string name="action_reorder_category">Reorder category</string>
     <string name="action_show_hidden_categories">Show hidden categories</string>
+    <string name="action_expand_category">Expand category</string>
+    <string name="action_collapse_category">Collapse category</string>
     <string name="action_panorama_cover">Panorama cover</string>
     <string name="action_open_folder">Open folder</string>
     <string name="action_clear_manga">Clear manga</string>
@@ -88,6 +92,10 @@
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
     <!-- Library section -->
+    <string name="parent_category">Parent category</string>
+    <string name="pref_library_parent_child_layout">Parent and sub-category layout</string>
+    <string name="pref_library_parent_child_layout_summary">Show parent categories as library tabs and sub-categories as filters</string>
+    <string name="library_filter_parent_only">Parent only</string>
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
     <string name="action_display_source_badge">Source icon</string>
     <string name="action_display_language_icon">Use language icon</string>

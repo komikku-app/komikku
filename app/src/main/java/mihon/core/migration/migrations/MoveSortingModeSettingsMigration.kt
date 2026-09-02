@@ -40,11 +40,9 @@ class MoveSortingModeSettingsMigration : Migration {
                         flags = it.flags and 0b00111100L.inv(),
                         name = null,
                         order = null,
-                        parentId = null,
                         // KMK -->
                         hidden = null,
                         // KMK <--
-
                     )
                 }
         }

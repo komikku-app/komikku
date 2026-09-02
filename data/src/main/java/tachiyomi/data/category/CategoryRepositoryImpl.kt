@@ -53,7 +53,7 @@ class CategoryRepositoryImpl(
     // SY <--
 
     override suspend fun updatePartial(update: CategoryUpdate) {
-        handler.await {
+        handler.await(inTransaction = update.parentIdChanged) {
             updatePartialBlocking(update)
         }
     }
@@ -71,12 +71,19 @@ class CategoryRepositoryImpl(
             name = update.name,
             order = update.order,
             flags = update.flags,
-            parentId = update.parentId,
             // KMK -->
             hidden = update.hidden?.let { if (it) 1L else 0L },
             // KMK <--
             categoryId = update.id,
         )
+        // KMK -->
+        if (update.parentIdChanged) {
+            categoriesQueries.updateParent(
+                parentId = update.parentId,
+                categoryId = update.id,
+            )
+        }
+        // KMK <--
     }
 
     override suspend fun updateAllFlags(flags: Long?) {

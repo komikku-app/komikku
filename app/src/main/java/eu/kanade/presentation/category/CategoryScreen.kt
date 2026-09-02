@@ -22,9 +22,6 @@ import eu.kanade.presentation.category.components.CategoryListItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.tachiyomi.ui.category.CategoryScreenState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import tachiyomi.domain.category.model.Category
@@ -42,16 +39,12 @@ fun CategoryScreen(
     onClickCreate: () -> Unit,
     onClickRename: (Category) -> Unit,
     onClickDelete: (Category) -> Unit,
-    onChangeOrder: (Category, Int) -> Unit,
-    onChangeParent: (Category, Long?) -> Unit,
+    onChangeOrder: (List<Category>) -> Unit,
     // KMK -->
     onClickHide: (Category) -> Unit,
     expanded: Set<Long>,
     onToggleExpand: (Long) -> Unit,
     // KMK <--
-    onCommitOrder: (List<Pair<Category, Int>>) -> Unit = { changes ->
-        changes.forEach { (cat, idx) -> onChangeOrder(cat, idx) }
-    },
     navigateUp: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -85,13 +78,11 @@ fun CategoryScreen(
             onClickRename = onClickRename,
             onClickDelete = onClickDelete,
             onChangeOrder = onChangeOrder,
-            onChangeParent = onChangeParent,
             // KMK -->
             onClickHide = onClickHide,
             expanded = expanded,
             onToggleExpand = onToggleExpand,
             // KMK <--
-            onCommitOrder = onCommitOrder,
         )
     }
 }
@@ -103,98 +94,41 @@ private fun CategoryContent(
     paddingValues: PaddingValues,
     onClickRename: (Category) -> Unit,
     onClickDelete: (Category) -> Unit,
-    onChangeOrder: (Category, Int) -> Unit,
-    onChangeParent: (Category, Long?) -> Unit,
+    onChangeOrder: (List<Category>) -> Unit,
     // KMK -->
     onClickHide: (Category) -> Unit,
     expanded: Set<Long>,
     onToggleExpand: (Long) -> Unit,
     // KMK <--
-    onCommitOrder: (List<Pair<Category, Int>>) -> Unit,
 ) {
-    // Filter entries based on expand/collapse state
-    val entries = remember(categories, expanded) {
-        buildCategoryHierarchy(categories).filter { entry ->
-            // Always show parent categories (depth == 0)
-            if (entry.depth == 0) return@filter true
-
-            // Show children only if their parent is expanded
-            val parentId = entry.category.parentId
-            parentId != null && expanded.contains(parentId)
-        }
-    }
-
-    val categoriesState = remember(entries) { entries.toMutableStateList() }
-    val pendingOrderFlow = remember { MutableStateFlow(categoriesState.map { it.category }) }
-    var lastCommittedIndices by remember { mutableStateOf(entries.mapIndexed { idx, e -> e.category.id to idx }.toMap()) }
+    val hierarchyState = remember { buildCategoryHierarchy(categories).toMutableStateList() }
+    val visibleEntries = visibleCategoryHierarchy(hierarchyState, expanded)
+    var hasPendingOrderChange by remember { mutableStateOf(false) }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState, paddingValues) { from, to ->
-        val newList = categoriesState.toMutableList()
+        val currentVisibleEntries = visibleCategoryHierarchy(hierarchyState, expanded)
+        val fromCategoryId = currentVisibleEntries.getOrNull(from.index)?.category?.id
+            ?: return@rememberReorderableLazyListState
+        val toCategoryId = currentVisibleEntries.getOrNull(to.index)?.category?.id
+            ?: return@rememberReorderableLazyListState
+        val reordered = moveCategoryHierarchy(hierarchyState, fromCategoryId, toCategoryId)
+        if (reordered == hierarchyState) return@rememberReorderableLazyListState
 
-        fun findSubtreeEnd(startIndex: Int, list: MutableList<CategoryHierarchyEntry>): Int {
-            val parentDepth = list[startIndex].depth
-            var idx = startIndex + 1
-            while (idx < list.size) {
-                if (list[idx].depth <= parentDepth) break
-                idx++
-            }
-            return idx
+        hierarchyState.clear()
+        hierarchyState.addAll(reordered)
+        hasPendingOrderChange = true
+    }
+
+    LaunchedEffect(categories) {
+        if (!reorderableState.isAnyItemDragging) {
+            hierarchyState.clear()
+            hierarchyState.addAll(buildCategoryHierarchy(categories))
         }
-
-        if (categoriesState[from.index].depth == 0) {
-            val subtreeEnd = findSubtreeEnd(from.index, newList)
-            val subtree = newList.subList(from.index, subtreeEnd).toList()
-            newList.subList(from.index, subtreeEnd).clear()
-            val adjustedTo = if (from.index < to.index) {
-                to.index - subtree.size
-            } else {
-                to.index
-            }.coerceIn(0, newList.size)
-            newList.addAll(adjustedTo, subtree)
-        } else if (categoriesState[from.index].depth > 0) {
-            val item = newList.removeAt(from.index)
-            val destIndex = to.index.coerceIn(0, newList.size)
-            newList.add(destIndex, item)
-        } else {
-            val item = newList.removeAt(from.index)
-            val destIndex = to.index.coerceIn(0, newList.size)
-            newList.add(destIndex, item)
-        }
-
-        categoriesState.clear()
-        categoriesState.addAll(newList)
-        pendingOrderFlow.value = newList.map { it.category }
     }
 
-    LaunchedEffect(pendingOrderFlow) {
-        val debounceMs = 700L
-        pendingOrderFlow
-            .debounce(debounceMs)
-            .collectLatest { newOrder ->
-                val changes = newOrder.mapIndexedNotNull { index, category ->
-                    val lastIndex = lastCommittedIndices[category.id]
-                    if (lastIndex == null || lastIndex != index) {
-                        category to index
-                    } else {
-                        null
-                    }
-                }
-
-                if (changes.isNotEmpty()) {
-                    onCommitOrder(changes)
-                    lastCommittedIndices = newOrder.mapIndexed { idx, cat -> cat.id to idx }.toMap()
-                }
-            }
+    val categoriesWithChildren = remember(categories) {
+        categories.mapNotNullTo(mutableSetOf()) { it.parentId }
     }
-
-    LaunchedEffect(entries) {
-        categoriesState.clear()
-        categoriesState.addAll(entries)
-        lastCommittedIndices = entries.mapIndexed { idx, e -> e.category.id to idx }.toMap()
-        pendingOrderFlow.value = entries.map { it.category }
-    }
-
-    val categoriesById = remember(categories) { categories.associateBy { it.id } }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -205,22 +139,17 @@ private fun CategoryContent(
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         items(
-            items = categoriesState,
+            items = visibleEntries,
             key = { entry -> entry.category.key },
         ) { entry ->
             ReorderableItem(reorderableState, entry.category.key) {
-                val parentCategory = entry.category.parentId?.let { categoriesById[it] }
-
-                // Check if this category has children
-                val hasChildren = categories.any { it.parentId == entry.category.id }
+                val hasChildren = entry.category.id in categoriesWithChildren
                 val isExpanded = expanded.contains(entry.category.id)
 
                 CategoryListItem(
-                    modifier = Modifier,
+                    modifier = Modifier.animateItem(),
                     category = entry.category,
                     indentLevel = entry.depth,
-                    isParent = entry.depth == 0,
-                    parentCategory = parentCategory,
                     onRename = { onClickRename(entry.category) },
                     onDelete = { onClickDelete(entry.category) },
                     // KMK -->
@@ -228,6 +157,12 @@ private fun CategoryContent(
                     hasChildren = hasChildren,
                     isExpanded = isExpanded,
                     onToggleExpand = { onToggleExpand(entry.category.id) },
+                    onDragStopped = {
+                        if (hasPendingOrderChange) {
+                            hasPendingOrderChange = false
+                            onChangeOrder(hierarchyState.map { it.category })
+                        }
+                    },
                     // KMK <--
                 )
             }
@@ -236,7 +171,3 @@ private fun CategoryContent(
 }
 
 private val Category.key inline get() = "category-$id"
-
-private interface AnyWithDepth {
-    val depth: Int
-}

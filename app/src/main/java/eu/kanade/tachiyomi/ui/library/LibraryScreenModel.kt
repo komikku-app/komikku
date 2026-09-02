@@ -21,6 +21,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.category.buildCategoryDescendants
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
 import eu.kanade.presentation.manga.DownloadAction
@@ -261,33 +262,34 @@ class LibraryScreenModel(
                     state.map { it.includedCategories }.distinctUntilChanged(),
                     ::Pair,
                 ),
+                uiPreferences.libraryParentChildLayout().changes(),
                 // KMK <--
-            ) { (data, groupType, noActiveFilterOrSearch), (sort, showHiddenCategories, showEmptyCategoriesSearch), (filterCategory, includedCategories) ->
-                data.favorites
-                    .applyGrouping(
-                        data.categories,
-                        // KMK -->
-                        if (filterCategory && includedCategories.isNotEmpty()) {
-                            LibraryGroup.UNGROUPED
-                        } else {
-                            groupType
-                        },
-                        showHiddenCategories,
-                        // KMK <--
-                    )
+            ) { (data, groupType, noActiveFilterOrSearch), (sort, showHiddenCategories, showEmptyCategoriesSearch), (filterCategory, includedCategories), showParentFilters ->
+                // KMK -->
+                val effectiveGroupType = if (filterCategory && includedCategories.isNotEmpty()) {
+                    LibraryGroup.UNGROUPED
+                } else {
+                    groupType
+                }
+                // SY -->
+                val groupSort = sort.takeIf { groupType != LibraryGroup.BY_DEFAULT }
+                // SY <--
+                val groupedFavorites = data.favorites.applyGrouping(
+                    data.categories,
+                    effectiveGroupType,
+                    showHiddenCategories,
+                )
+                val sortedFavorites = groupedFavorites
                     .applySort(
                         data.favoritesById,
                         data.tracksMap,
                         data.loggedInTrackerIds,
-                        // SY -->
-                        sort.takeIf { groupType != LibraryGroup.BY_DEFAULT },
-                        // SY <--
+                        groupSort,
                     )
-                    // KMK -->
-                    .filter {
-                        // Hide empty categories unless the setting is enabled or there are no active filters/search
-                        showEmptyCategoriesSearch || noActiveFilterOrSearch || it.value.isNotEmpty()
-                    }
+                    .filterEmptyCategories(
+                        showEmptyCategories = showEmptyCategoriesSearch || noActiveFilterOrSearch,
+                        retainParents = showParentFilters,
+                    )
                     .let {
                         // Fall back to default category if no categories are present
                         it.ifEmpty {
@@ -297,19 +299,34 @@ class LibraryScreenModel(
                                     name = preferences.context.stringResource(MR.strings.default_category),
                                     order = 0,
                                     flags = 0,
-                                    parentId = null,
                                     hidden = false,
                                 ) to emptyList(),
                             )
                         }
                     }
+                val aggregatedFavorites = if (showParentFilters) {
+                    groupedFavorites
+                        .includeDescendantItems()
+                        .applySort(
+                            data.favoritesById,
+                            data.tracksMap,
+                            data.loggedInTrackerIds,
+                            groupSort,
+                        )
+                        .filterKeys(sortedFavorites::containsKey)
+                        .ifEmpty { sortedFavorites }
+                } else {
+                    sortedFavorites
+                }
+                sortedFavorites to aggregatedFavorites
                 // KMK <--
             }
-                .collectLatest {
+                .collectLatest { (groupedFavorites, aggregatedFavorites) ->
                     mutableState.update { state ->
                         state.copy(
                             isLoading = false,
-                            groupedFavorites = it,
+                            groupedFavorites = groupedFavorites,
+                            aggregatedFavorites = aggregatedFavorites,
                         )
                     }
                 }
@@ -622,6 +639,50 @@ class LibraryScreenModel(
         }
         // KMK <--
     }
+
+    // KMK -->
+    private fun Map<Category, List<Long>>.filterEmptyCategories(
+        showEmptyCategories: Boolean,
+        retainParents: Boolean,
+    ): Map<Category, List<Long>> {
+        if (showEmptyCategories) return this
+
+        val retainedCategoryIds = filterValues { it.isNotEmpty() }
+            .keys
+            .mapTo(mutableSetOf()) { it.id }
+        if (retainParents) {
+            val categoriesById = keys.associateBy { it.id }
+            retainedCategoryIds.toList().forEach { categoryId ->
+                var parentId = categoriesById[categoryId]?.parentId
+                while (parentId != null && retainedCategoryIds.add(parentId)) {
+                    parentId = categoriesById[parentId]?.parentId
+                }
+            }
+        }
+
+        return filterKeys { it.id in retainedCategoryIds }
+    }
+
+    private fun Map<Category, List<Long>>.includeDescendantItems(): Map<Category, List<Long>> {
+        val itemsByCategory = this
+        val descendantsByCategory = buildCategoryDescendants(keys.toList())
+        return mapValues { (category, itemIds) ->
+            val descendants = descendantsByCategory[category.id].orEmpty()
+            if (descendants.isEmpty()) {
+                itemIds
+            } else {
+                buildList {
+                    val seenItemIds = mutableSetOf<Long>()
+                    (listOf(category) + descendants).forEach { descendant ->
+                        itemsByCategory[descendant].orEmpty().forEach { itemId ->
+                            if (seenItemIds.add(itemId)) add(itemId)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // KMK <--
 
     private fun Map<Category, List</* LibraryItem */ Long>>.applySort(
         favoritesById: Map<Long, LibraryItem>,
@@ -1140,8 +1201,7 @@ class LibraryScreenModel(
     }
 
     fun getRandomLibraryItemForCurrentCategory(): LibraryItem? {
-        val state = state.value
-        return state.getItemsForCategoryId(state.activeCategory?.id).randomOrNull()
+        return state.value.activeVisibleItems.randomOrNull()
     }
 
     fun showSettingsDialog() {
@@ -1351,9 +1411,13 @@ class LibraryScreenModel(
                     return@mutate
                 }
 
-                val items = state.getItemsForCategoryId(category.id).fastMap { it.id }
+                val items = state.getVisibleItemIds(category.id)
                 val lastMangaIndex = items.indexOf(lastSelected)
                 val curMangaIndex = items.indexOf(manga.id)
+                if (lastMangaIndex == -1 || curMangaIndex == -1) {
+                    list.add(manga.id)
+                    return@mutate
+                }
 
                 val selectionRange = when {
                     lastMangaIndex < curMangaIndex -> lastMangaIndex..curMangaIndex
@@ -1372,7 +1436,7 @@ class LibraryScreenModel(
         lastSelectionCategory = null
         mutableState.update { state ->
             val newSelection = state.selection.mutate { list ->
-                state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id }.let(list::addAll)
+                list.addAll(state.activeVisibleItemIds)
             }
             state.copy(selection = newSelection)
         }
@@ -1382,7 +1446,7 @@ class LibraryScreenModel(
         lastSelectionCategory = null
         mutableState.update { state ->
             val newSelection = state.selection.mutate { list ->
-                val itemIds = state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id }
+                val itemIds = state.activeVisibleItemIds
                 val (toRemove, toAdd) = itemIds.partition { it in list }
                 list.removeAll(toRemove.toSet())
                 list.addAll(toAdd)
@@ -1395,15 +1459,31 @@ class LibraryScreenModel(
         mutableState.update { it.copy(searchQuery = query) }
     }
 
-    fun updateActiveCategoryIndex(index: Int) {
+    fun updateActiveCategory(category: Category) {
         val newIndex = mutableState.updateAndGet { state ->
+            val index = state.displayedCategories.indexOfFirst { it.id == category.id }
+            if (index == -1) return@updateAndGet state
             state.copy(
                 activeCategoryIndex = index,
+                activeCategoryId = category.id,
             )
         }
-            .activeCategoryIndex
+            .coercedActiveCategoryIndex
 
         libraryPreferences.lastUsedCategory().set(newIndex)
+    }
+
+    fun updateVisibleItems(categoryId: Long?, itemIds: List<Long>) {
+        mutableState.update { state ->
+            if (state.visibleCategoryId == categoryId && state.visibleItemIds == itemIds) {
+                state
+            } else {
+                state.copy(
+                    visibleCategoryId = categoryId,
+                    visibleItemIds = itemIds,
+                )
+            }
+        }
     }
 
     fun openChangeCategoryDialog() {
@@ -1667,8 +1747,16 @@ class LibraryScreenModel(
         val showParentFilters: Boolean = false,
         val dialog: Dialog? = null,
         val libraryData: LibraryData = LibraryData(),
-        val activeCategoryIndex: Int = 0,
+        private val activeCategoryIndex: Int = 0,
+        // KMK -->
+        private val activeCategoryId: Long? = null,
+        // KMK <--
         private val groupedFavorites: Map<Category, List</* LibraryItem */ Long>> = emptyMap(),
+        private val aggregatedFavorites: Map<Category, List</* LibraryItem */ Long>> = emptyMap(),
+        // KMK -->
+        val visibleCategoryId: Long? = null,
+        val visibleItemIds: List<Long> = emptyList(),
+        // KMK <--
         // SY -->
         val showSyncExh: Boolean = false,
         val isSyncEnabled: Boolean = false,
@@ -1680,9 +1768,15 @@ class LibraryScreenModel(
         val excludedCategories: ImmutableSet<Long> = persistentSetOf(),
         // KMK <--
     ) {
-        val categories = groupedFavorites.keys.toList()
+        /** The categories displayed as tabs before parent filtering is applied. */
+        val displayedCategories: List<Category> = groupedFavorites.keys.toList()
 
-        val activeCategory: Category? = categories.getOrNull(activeCategoryIndex)
+        val coercedActiveCategoryIndex = displayedCategories.indexOfFirst { it.id == activeCategoryId }
+            .takeIf { it != -1 }
+            ?.coerceIn(0, displayedCategories.lastIndex.coerceAtLeast(0))
+            ?: activeCategoryIndex.coerceIn(0, displayedCategories.lastIndex.coerceAtLeast(0))
+
+        val activeCategory: Category? = displayedCategories.getOrNull(coercedActiveCategoryIndex)
 
         val isLibraryEmpty = libraryData.favorites.isEmpty()
 
@@ -1717,7 +1811,7 @@ class LibraryScreenModel(
 
         fun getItemsForCategoryId(categoryId: Long?): List<LibraryItem> {
             if (categoryId == null) return emptyList()
-            val category = categories.find { it.id == categoryId } ?: return emptyList()
+            val category = categoriesById[categoryId] ?: return emptyList()
             return getItemsForCategory(category)
         }
 
@@ -1726,24 +1820,44 @@ class LibraryScreenModel(
         }
 
         // KMK -->
-        val displayedCategories: List<Category> = groupedFavorites.keys.toList()
+        val itemIdsByCategory: Map<Category, List<Long>>
+            get() = groupedFavorites
 
-        // Recursively get all subcategories for a given parent category
-        private fun getAllSubcategories(parentId: Long, allCategories: List<Category>): List<Category> {
-            val directChildren = allCategories.filter { it.parentId == parentId }
-            return directChildren + directChildren.flatMap { getAllSubcategories(it.id, allCategories) }
+        val aggregatedItemIdsByCategory: Map<Category, List<Long>>
+            get() = aggregatedFavorites
+
+        val itemsById: Map<Long, LibraryItem>
+            get() = libraryData.favoritesById
+
+        private val categoriesById by lazy { displayedCategories.associateBy { it.id } }
+        private val descendantsByCategory by lazy { buildCategoryDescendants(displayedCategories) }
+
+        val activeCategoryHasDescendants: Boolean
+            get() = activeCategory?.id?.let { descendantsByCategory[it].orEmpty().isNotEmpty() } == true
+
+        val activeVisibleItemIds: List<Long>
+            get() {
+                val category = activeCategory ?: return emptyList()
+                return visibleItemIds.takeIf { visibleCategoryId == category.id }
+                    ?: groupedFavorites[category].orEmpty()
+            }
+
+        val activeVisibleItems: List<LibraryItem>
+            get() = activeVisibleItemIds.fastMapNotNull { libraryData.favoritesById[it] }
+
+        fun getVisibleItemIds(categoryId: Long): List<Long> {
+            if (visibleCategoryId == categoryId) return visibleItemIds
+            val category = categoriesById[categoryId] ?: return emptyList()
+            return groupedFavorites[category].orEmpty()
         }
         // KMK <--
 
         fun getItemCountForCategory(category: Category): Int? {
             if (!showMangaCount && searchQuery.isNullOrEmpty()) return null
-
-            // Get this category + all its subcategories
-            val categoriesToCount = listOf(category) + getAllSubcategories(category.id, displayedCategories)
-
-            // Sum up manga counts from all these categories
-            return categoriesToCount.sumOf { cat ->
-                groupedFavorites[cat]?.size ?: 0
+            return if (showParentFilters) {
+                aggregatedFavorites[category].orEmpty().size
+            } else {
+                groupedFavorites[category].orEmpty().size
             }
         }
 
@@ -1752,13 +1866,14 @@ class LibraryScreenModel(
             defaultCategoryTitle: String,
             page: Int,
         ): LibraryToolbarTitle {
-            val category = categories.getOrNull(page) ?: return LibraryToolbarTitle(defaultTitle)
+            val category = displayedCategories.getOrNull(page) ?: return LibraryToolbarTitle(defaultTitle)
             val categoryName = category.let {
                 if (it.isSystemCategory) defaultCategoryTitle else it.name
             }
             val title = if (showCategoryTabs) defaultTitle else categoryName
             val count = when {
                 !showMangaCount -> null
+                !showCategoryTabs && showParentFilters && visibleCategoryId == category.id -> visibleItemIds.size
                 !showCategoryTabs -> getItemCountForCategory(category)
                 // Whole library count
                 else -> libraryData.favorites.size

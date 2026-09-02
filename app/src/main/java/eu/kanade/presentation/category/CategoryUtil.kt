@@ -2,71 +2,141 @@ package eu.kanade.presentation.category
 
 import tachiyomi.domain.category.model.Category
 
-/**
- * Represents a category with its hierarchical depth for display purposes.
- */
+// KMK -->
 data class CategoryHierarchyEntry(
     val category: Category,
     val depth: Int,
 )
 
-/**
- * Builds a hierarchical list of categories with their depth levels.
- * Categories are ordered as parent followed by children, recursively.
- * Orphaned categories (those with invalid parent references) are included at the end.
- *
- * @param categories The list of categories to organize
- * @return A list of CategoryHierarchyEntry with proper depth values
- */
 fun buildCategoryHierarchy(categories: List<Category>): List<CategoryHierarchyEntry> {
     if (categories.isEmpty()) return emptyList()
 
-    val byParent = categories.groupBy { it.parentId }
+    val childrenByParent = categories
+        .groupBy { it.parentId }
+        .mapValues { (_, children) -> children.sortedBy { it.order } }
     val visited = mutableSetOf<Long>()
     val result = mutableListOf<CategoryHierarchyEntry>()
 
-    fun traverse(parentId: Long?, depth: Int) {
-        val children = byParent[parentId].orEmpty()
-            .sortedBy { it.order }
-        for (child in children) {
-            if (visited.add(child.id)) {
-                result += CategoryHierarchyEntry(child, depth)
-                traverse(child.id, depth + 1)
-            }
+    fun traverse(category: Category, depth: Int) {
+        if (!visited.add(category.id)) return
+
+        result += CategoryHierarchyEntry(category, depth)
+        childrenByParent[category.id].orEmpty().forEach { child ->
+            traverse(child, depth + 1)
         }
     }
 
-    // First pass: traverse all categories with parentId == null (top-level parents)
-    traverse(null, 0)
+    childrenByParent[null].orEmpty().forEach { category ->
+        traverse(category, 0)
+    }
 
-    // Second pass: include any orphaned categories that did not get visited
-    categories.filter { it.id !in visited }
-        .sortedBy { it.order }
-        .forEach { orphan ->
-            visited.add(orphan.id)
-            result += CategoryHierarchyEntry(orphan, 0)
-            traverse(orphan.id, 1)
-        }
+    // Invalid parents and cycles are promoted to roots instead of disappearing or being duplicated.
+    categories.sortedBy { it.order }.forEach { category ->
+        traverse(category, 0)
+    }
 
     return result
 }
 
-/**
- * Finds the parent category at a given position in a hierarchical list.
- * Looks backward from the position to find the nearest category with depth 0.
- *
- * @param entries The hierarchical category list
- * @param position The position to check
- * @return The parent category ID, or null if no parent found
- */
-fun findParentAtPosition(entries: List<CategoryHierarchyEntry>, position: Int): Long? {
-    if (position <= 0) return null
+fun visibleCategoryHierarchy(
+    entries: List<CategoryHierarchyEntry>,
+    expandedCategoryIds: Set<Long>,
+): List<CategoryHierarchyEntry> {
+    val visibleCategoryIds = mutableSetOf<Long>()
 
-    // Look backward to find the nearest parent (depth == 0)
-    for (i in position - 1 downTo 0) {
-        if (entries[i].depth == 0) {
-            return entries[i].category.id
+    return entries.filter { entry ->
+        val isVisible = entry.depth == 0 || entry.category.parentId?.let { parentId ->
+            parentId in visibleCategoryIds && parentId in expandedCategoryIds
+        } == true
+
+        if (isVisible) visibleCategoryIds += entry.category.id
+        isVisible
+    }
+}
+
+fun buildCategoryDescendants(categories: List<Category>): Map<Long, List<Category>> {
+    val childrenByParent = categories
+        .filter { it.parentId != null }
+        .groupBy { it.parentId!! }
+        .mapValues { (_, children) -> children.sortedBy { it.order } }
+
+    return categories.associate { category ->
+        val descendants = mutableListOf<Category>()
+        val visited = mutableSetOf(category.id)
+
+        fun collect(parentId: Long) {
+            childrenByParent[parentId].orEmpty().forEach { child ->
+                if (visited.add(child.id)) {
+                    descendants += child
+                    collect(child.id)
+                }
+            }
+        }
+
+        collect(category.id)
+        category.id to descendants
+    }
+}
+
+fun buildCategoryAncestorIds(
+    categories: List<Category>,
+    categoryIds: Collection<Long>,
+): Set<Long> {
+    val categoriesById = categories.associateBy { it.id }
+    return buildSet {
+        categoryIds.forEach { categoryId ->
+            val visited = mutableSetOf(categoryId)
+            var parentId = categoriesById[categoryId]?.parentId
+            while (parentId != null && visited.add(parentId)) {
+                add(parentId)
+                parentId = categoriesById[parentId]?.parentId
+            }
         }
     }
-    return null
 }
+
+fun moveCategoryHierarchy(
+    entries: List<CategoryHierarchyEntry>,
+    fromCategoryId: Long,
+    toCategoryId: Long,
+): List<CategoryHierarchyEntry> {
+    val fromIndex = entries.indexOfFirst { it.category.id == fromCategoryId }
+    val toIndex = entries.indexOfFirst { it.category.id == toCategoryId }
+    if (fromIndex == -1 || toIndex == -1 || fromIndex == toIndex) return entries
+
+    val fromEntry = entries[fromIndex]
+    val targetEntry = entries
+        .subList(0, toIndex + 1)
+        .lastOrNull { it.depth == fromEntry.depth }
+        ?: return entries
+    if (
+        targetEntry.category.id == fromCategoryId ||
+        (fromEntry.depth > 0 && targetEntry.category.parentId != fromEntry.category.parentId)
+    ) {
+        return entries
+    }
+
+    val reordered = entries.toMutableList()
+    var subtreeEnd = fromIndex + 1
+    while (subtreeEnd < reordered.size && reordered[subtreeEnd].depth > fromEntry.depth) {
+        subtreeEnd++
+    }
+    val subtree = reordered.subList(fromIndex, subtreeEnd).toList()
+    reordered.subList(fromIndex, subtreeEnd).clear()
+
+    val targetIndex = reordered.indexOfFirst { it.category.id == targetEntry.category.id }
+    if (targetIndex == -1) return entries
+    val insertionIndex = if (fromIndex < entries.indexOf(targetEntry)) {
+        var targetSubtreeEnd = targetIndex + 1
+        while (targetSubtreeEnd < reordered.size && reordered[targetSubtreeEnd].depth > targetEntry.depth) {
+            targetSubtreeEnd++
+        }
+        targetSubtreeEnd
+    } else {
+        targetIndex
+    }
+    reordered.addAll(insertionIndex, subtree)
+
+    return reordered
+}
+// KMK <--

@@ -7,9 +7,9 @@ data class Category(
     val name: String,
     val order: Long,
     val flags: Long,
-    val parentId: Long? = null,
     // KMK -->
     val hidden: Boolean,
+    val parentId: Long? = null,
     // KMK <--
 ) : Serializable {
 

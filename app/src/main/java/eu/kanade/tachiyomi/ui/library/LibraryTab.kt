@@ -118,7 +118,7 @@ data object LibraryTab : Tab {
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val onClickRefresh: (Category?) -> Boolean = { category ->
+        val onClickRefresh: (Category?, List<Long>?) -> Boolean = { category, mangaIds ->
             // SY -->
             val started = LibraryUpdateJob.startNow(
                 context = context,
@@ -130,6 +130,9 @@ data object LibraryTab : Tab {
                     LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
                     else -> null
                 },
+                // KMK -->
+                mangaIds = mangaIds.takeIf { state.groupType == LibraryGroup.BY_DEFAULT },
+                // KMK <--
             )
             // SY <--
             scope.launch {
@@ -148,7 +151,7 @@ data object LibraryTab : Tab {
                 val title = state.getToolbarTitle(
                     defaultTitle = stringResource(MR.strings.label_library),
                     defaultCategoryTitle = stringResource(MR.strings.label_default),
-                    page = state.activeCategoryIndex,
+                    page = state.coercedActiveCategoryIndex,
                 )
                 LibraryToolbar(
                     hasActiveFilters = state.hasActiveFilters,
@@ -158,8 +161,15 @@ data object LibraryTab : Tab {
                     onClickSelectAll = screenModel::selectAll,
                     onClickInvertSelection = screenModel::invertSelection,
                     onClickFilter = screenModel::showSettingsDialog,
-                    onClickRefresh = { onClickRefresh(state.activeCategory) },
-                    onClickGlobalUpdate = { onClickRefresh(null) },
+                    onClickRefresh = {
+                        onClickRefresh(
+                            state.activeCategory,
+                            state.activeVisibleItemIds.takeIf {
+                                state.showParentFilters && state.activeCategoryHasDescendants
+                            },
+                        )
+                    },
+                    onClickGlobalUpdate = { onClickRefresh(null, null) },
                     onClickOpenRandomManga = {
                         scope.launch {
                             val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
@@ -301,16 +311,17 @@ data object LibraryTab : Tab {
                 }
                 else -> {
                     LibraryContent(
-                        categories = state.categories,
-                        activeCategoryIndex = state.activeCategoryIndex,
+                        categories = state.displayedCategories,
+                        activeCategoryId = state.activeCategory?.id,
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,
-                        currentPage = state.activeCategoryIndex.coerceIn(0, state.categories.lastIndex.coerceAtLeast(0)),
                         hasActiveFilters = state.hasActiveFilters,
                         showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
-                        showParentFilters = state.showParentFilters && state.categories.any { it.parentId == null && !it.isSystemCategory },
-                        onChangeCurrentPage = screenModel::updateActiveCategoryIndex,
+                        showParentFilters = state.showParentFilters &&
+                            state.displayedCategories.any { it.parentId != null },
+                        onChangeCurrentCategory = screenModel::updateActiveCategory,
+                        onVisibleItemsChanged = screenModel::updateVisibleItems,
                         onClickManga = { navigator.push(MangaScreen(it)) },
                         onContinueReadingClicked = { it: LibraryManga ->
                             scope.launchIO {
@@ -330,14 +341,23 @@ data object LibraryTab : Tab {
                             screenModel.toggleRangeSelection(category, manga)
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         },
-                        onRefresh = { onClickRefresh(state.activeCategory) },
+                        onRefresh = {
+                            onClickRefresh(
+                                state.activeCategory,
+                                state.activeVisibleItemIds.takeIf {
+                                    state.showParentFilters && state.activeCategoryHasDescendants
+                                },
+                            )
+                        },
                         onGlobalSearchClicked = {
                             navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
                         },
                         getItemCountForCategory = { state.getItemCountForCategory(it) },
                         getDisplayMode = { screenModel.getDisplayMode() },
                         getColumnsForOrientation = { screenModel.getColumnsForOrientation(it) },
-                        getItemsForCategory = { state.getItemsForCategory(it) },
+                        itemIdsByCategory = state.itemIdsByCategory,
+                        aggregatedItemIdsByCategory = state.aggregatedItemIdsByCategory,
+                        itemsById = state.itemsById,
                     )
                 }
             }

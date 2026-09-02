@@ -14,27 +14,25 @@ class ReorderCategory(
 ) {
     private val mutex = Mutex()
 
-    suspend fun await(category: Category, newIndex: Int) = withNonCancellableContext {
+    suspend fun await(categoriesInOrder: List<Category>) = withNonCancellableContext {
         mutex.withLock {
-            val categories = categoryRepository.getAll()
+            val currentCategories = categoryRepository.getAll()
                 .filterNot(Category::isSystemCategory)
-                .toMutableList()
-
-            val currentIndex = categories.indexOfFirst { it.id == category.id }
-            if (currentIndex == -1) {
-                return@withNonCancellableContext Result.Unchanged
-            }
+            val currentCategoriesById = currentCategories.associateBy { it.id }
+            val requestedIds = categoriesInOrder.mapTo(mutableSetOf()) { it.id }
+            val reorderedCategories = categoriesInOrder
+                .mapNotNull { currentCategoriesById[it.id] }
+                .distinctBy { it.id } +
+                currentCategories.filterNot { it.id in requestedIds }
 
             try {
-                categories.add(newIndex, categories.removeAt(currentIndex))
-
-                val updates = categories.mapIndexed { index, category ->
-                    CategoryUpdate(
-                        id = category.id,
-                        order = index.toLong(),
-                    )
+                val updates = reorderedCategories.mapIndexedNotNull { index, category ->
+                    val order = index.toLong()
+                    CategoryUpdate(id = category.id, order = order)
+                        .takeIf { category.order != order }
                 }
 
+                if (updates.isEmpty()) return@withNonCancellableContext Result.Unchanged
                 categoryRepository.updatePartial(updates)
                 Result.Success
             } catch (e: Exception) {

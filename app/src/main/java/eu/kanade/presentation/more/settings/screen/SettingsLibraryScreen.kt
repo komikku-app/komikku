@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,7 +36,9 @@ import androidx.core.content.ContextCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.category.buildCategoryAncestorIds
 import eu.kanade.presentation.category.buildCategoryHierarchy
+import eu.kanade.presentation.category.visibleCategoryHierarchy
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
@@ -68,7 +71,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 object SettingsLibraryScreen : SearchableSettings {
-
     @Suppress("unused")
     private fun readResolve(): Any = SettingsLibraryScreen
 
@@ -81,19 +83,14 @@ object SettingsLibraryScreen : SearchableSettings {
         val navigator = LocalNavigator.currentOrThrow
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
-        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
-
-        val allCategories by getCategories.subscribe().collectAsState(emptyList())
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         return listOf(
             getCategoriesGroup(navigator, allCategories, libraryPreferences),
             getGlobalUpdateGroup(allCategories, libraryPreferences),
             getBehaviorGroup(libraryPreferences),
-            getSortingCategory(navigator, libraryPreferences),
-            getMigrationCategory(unsortedPreferences),
             // SY -->
-            getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
+            getSortingCategory(navigator, libraryPreferences),
             // SY <--
         )
     }
@@ -112,6 +109,7 @@ object SettingsLibraryScreen : SearchableSettings {
             DefaultCategoryDialog(
                 categories = allCategories,
                 selectedId = libraryPreferences.defaultCategory().get(),
+                askEveryTimeId = libraryPreferences.defaultCategory().defaultValue(),
                 onDismiss = { showDefaultDialog = false },
                 onConfirm = {
                     libraryPreferences.defaultCategory().set(it)
@@ -274,14 +272,28 @@ object SettingsLibraryScreen : SearchableSettings {
     private fun DefaultCategoryDialog(
         categories: List<Category>,
         selectedId: Int,
+        askEveryTimeId: Int,
         onDismiss: () -> Unit,
         onConfirm: (Int) -> Unit,
     ) {
-        var selected by remember { mutableStateOf(selectedId) }
-        var expandedParents by remember { mutableStateOf(setOf<Long>()) }
+        var selected by rememberSaveable { mutableStateOf(selectedId) }
+        var expandedParents by rememberSaveable {
+            mutableStateOf(
+                buildCategoryAncestorIds(
+                    categories = categories,
+                    categoryIds = listOf(selectedId.toLong()),
+                ),
+            )
+        }
 
         val hierarchy = remember(categories) {
             buildCategoryHierarchy(categories)
+        }
+        val categoriesWithChildren = remember(categories) {
+            categories.mapNotNullTo(mutableSetOf()) { it.parentId }
+        }
+        val visibleHierarchy = remember(hierarchy, expandedParents) {
+            visibleCategoryHierarchy(hierarchy, expandedParents)
         }
 
         AlertDialog(
@@ -299,13 +311,25 @@ object SettingsLibraryScreen : SearchableSettings {
             },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    hierarchy.forEach { entry ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selected = askEveryTimeId },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = selected == askEveryTimeId,
+                            onClick = { selected = askEveryTimeId },
+                        )
+                        Text(
+                            text = stringResource(MR.strings.default_category_summary),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                    visibleHierarchy.forEach { entry ->
                         val cat = entry.category
-                        val isParent = cat.parentId == null
-                        val hasChildren = hierarchy.any { it.category.parentId == cat.id }
-                        val isExpanded = expandedParents.contains(cat.id)
-
-                        if (!isParent && !expandedParents.contains(cat.parentId)) return@forEach
+                        val hasChildren = cat.id in categoriesWithChildren
+                        val isExpanded = cat.id in expandedParents
 
                         Row(
                             modifier = Modifier
@@ -324,26 +348,33 @@ object SettingsLibraryScreen : SearchableSettings {
                                     .weight(1f)
                                     .padding(start = 8.dp),
                             )
-                            if (isParent && hasChildren) {
-                                Icon(
-                                    imageVector =
-                                    if (isExpanded) {
-                                        Icons.Default.KeyboardArrowDown
-                                    } else {
-                                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                            if (hasChildren) {
+                                IconButton(
+                                    onClick = {
+                                        expandedParents =
+                                            if (isExpanded) {
+                                                expandedParents - cat.id
+                                            } else {
+                                                expandedParents + cat.id
+                                            }
                                     },
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .clickable {
-                                            expandedParents =
-                                                if (isExpanded) {
-                                                    expandedParents - cat.id
-                                                } else {
-                                                    expandedParents + cat.id
-                                                }
+                                ) {
+                                    Icon(
+                                        imageVector =
+                                        if (isExpanded) {
+                                            Icons.Default.KeyboardArrowDown
+                                        } else {
+                                            Icons.AutoMirrored.Filled.KeyboardArrowRight
                                         },
-                                )
+                                        contentDescription = stringResource(
+                                            if (isExpanded) {
+                                                KMR.strings.action_collapse_category
+                                            } else {
+                                                KMR.strings.action_expand_category
+                                            },
+                                        ),
+                                    )
+                                }
                             }
                         }
                     }
@@ -360,12 +391,36 @@ object SettingsLibraryScreen : SearchableSettings {
         onDismiss: () -> Unit,
         onConfirm: (Set<String>, Set<String>) -> Unit,
     ) {
-        var includedSet by remember { mutableStateOf(included) }
-        var excludedSet by remember { mutableStateOf(excluded) }
-        var expandedParents by remember { mutableStateOf(setOf<Long>()) }
+        var includedSet by rememberSaveable { mutableStateOf(included) }
+        var excludedSet by rememberSaveable { mutableStateOf(excluded) }
+        var expandedParents by rememberSaveable {
+            mutableStateOf(
+                buildCategoryAncestorIds(
+                    categories = categories,
+                    categoryIds = (included + excluded).mapNotNull(String::toLongOrNull),
+                ),
+            )
+        }
 
         val hierarchy = remember(categories) {
             buildCategoryHierarchy(categories)
+        }
+        val categoriesWithChildren = remember(categories) {
+            categories.mapNotNullTo(mutableSetOf()) { it.parentId }
+        }
+        val visibleHierarchy = remember(hierarchy, expandedParents) {
+            visibleCategoryHierarchy(hierarchy, expandedParents)
+        }
+
+        fun toggleCategory(id: String) {
+            when {
+                id in includedSet -> {
+                    includedSet -= id
+                    excludedSet += id
+                }
+                id in excludedSet -> excludedSet -= id
+                else -> includedSet += id
+            }
         }
 
         AlertDialog(
@@ -385,33 +440,21 @@ object SettingsLibraryScreen : SearchableSettings {
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                 ) {
-                    hierarchy.forEach { entry ->
+                    Text(
+                        text = stringResource(MR.strings.pref_library_update_categories_details),
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                    visibleHierarchy.forEach { entry ->
                         val category = entry.category
                         val id = category.id.toString()
 
-                        val isParent = category.parentId == null
-                        val hasChildren = hierarchy.any { it.category.parentId == category.id }
-                        val isExpanded = expandedParents.contains(category.id)
-
-                        if (!isParent && !expandedParents.contains(category.parentId)) return@forEach
+                        val hasChildren = category.id in categoriesWithChildren
+                        val isExpanded = category.id in expandedParents
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    when {
-                                        includedSet.contains(id) -> {
-                                            includedSet -= id
-                                            excludedSet += id
-                                        }
-                                        excludedSet.contains(id) -> {
-                                            excludedSet -= id
-                                        }
-                                        else -> {
-                                            includedSet += id
-                                        }
-                                    }
-                                }
+                                .clickable { toggleCategory(id) }
                                 .padding(start = (entry.depth * 24).dp, top = 8.dp, bottom = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -420,19 +463,19 @@ object SettingsLibraryScreen : SearchableSettings {
                                 includedSet.contains(id) -> {
                                     Checkbox(
                                         checked = true,
-                                        onCheckedChange = null,
+                                        onCheckedChange = { toggleCategory(id) },
                                     )
                                 }
                                 excludedSet.contains(id) -> {
                                     TriStateCheckbox(
                                         state = ToggleableState.Indeterminate,
-                                        onClick = null,
+                                        onClick = { toggleCategory(id) },
                                     )
                                 }
                                 else -> {
                                     Checkbox(
                                         checked = false,
-                                        onCheckedChange = null,
+                                        onCheckedChange = { toggleCategory(id) },
                                     )
                                 }
                             }
@@ -444,26 +487,33 @@ object SettingsLibraryScreen : SearchableSettings {
                                     .padding(start = 12.dp),
                             )
 
-                            if (isParent && hasChildren) {
-                                Icon(
-                                    imageVector =
-                                    if (isExpanded) {
-                                        Icons.Default.KeyboardArrowDown
-                                    } else {
-                                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                            if (hasChildren) {
+                                IconButton(
+                                    onClick = {
+                                        expandedParents =
+                                            if (isExpanded) {
+                                                expandedParents - category.id
+                                            } else {
+                                                expandedParents + category.id
+                                            }
                                     },
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .clickable {
-                                            expandedParents =
-                                                if (isExpanded) {
-                                                    expandedParents - category.id
-                                                } else {
-                                                    expandedParents + category.id
-                                                }
+                                ) {
+                                    Icon(
+                                        imageVector =
+                                        if (isExpanded) {
+                                            Icons.Default.KeyboardArrowDown
+                                        } else {
+                                            Icons.AutoMirrored.Filled.KeyboardArrowRight
                                         },
-                                )
+                                        contentDescription = stringResource(
+                                            if (isExpanded) {
+                                                KMR.strings.action_collapse_category
+                                            } else {
+                                                KMR.strings.action_expand_category
+                                            },
+                                        ),
+                                    )
+                                }
                             }
                         }
                     }
@@ -555,23 +605,5 @@ object SettingsLibraryScreen : SearchableSettings {
         )
     }
 
-    @Composable
-    fun getMigrationCategory(
-        unsortedPreferences: UnsortedPreferences,
-    ): Preference.PreferenceGroup {
-        val skipPreMigration by unsortedPreferences.skipPreMigration().collectAsState()
-        val migrationSources by unsortedPreferences.migrationSources().collectAsState()
-        return Preference.PreferenceGroup(
-            stringResource(SYMR.strings.migration),
-            enabled = skipPreMigration || migrationSources.isNotEmpty(),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = unsortedPreferences.skipPreMigration(),
-                    title = stringResource(SYMR.strings.skip_pre_migration),
-                    subtitle = stringResource(SYMR.strings.pref_skip_pre_migration_summary),
-                ),
-            ),
-        )
-    }
     // SY <--
 }

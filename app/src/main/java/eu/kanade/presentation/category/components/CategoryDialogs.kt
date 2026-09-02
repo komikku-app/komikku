@@ -13,12 +13,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asToggleableState
+import eu.kanade.presentation.category.buildCategoryAncestorIds
 import eu.kanade.presentation.category.buildCategoryHierarchy
+import eu.kanade.presentation.category.visibleCategoryHierarchy
 import eu.kanade.presentation.category.visualName
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -46,6 +49,7 @@ import kotlinx.coroutines.delay
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -145,18 +149,15 @@ fun CategoryRenameDialog(
     category: String,
     parentOptions: ImmutableList<Category> = persistentListOf(),
     initialParentId: Long? = null,
-    categoryHasChildren: Boolean = false,
 ) {
     var name by remember { mutableStateOf(category) }
     var valueHasChanged by remember { mutableStateOf(false) }
     var parentId by remember { mutableStateOf(initialParentId) }
 
     val focusRequester = remember { FocusRequester() }
-    val nameAlreadyExists = remember(name) { categories.contains(name) && name != category }
+    val nameAlreadyExists = remember(name, categories, category) { categories.contains(name) && name != category }
     val parentHasChanged = parentId != initialParentId
-    val canChangeName = valueHasChanged && !nameAlreadyExists
-    val canChangeParent = parentHasChanged && !(categoryHasChildren && parentId != initialParentId)
-    val hasChanges = canChangeName || canChangeParent
+    val hasChanges = name.isNotEmpty() && !nameAlreadyExists && (valueHasChanged || parentHasChanged)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -190,7 +191,7 @@ fun CategoryRenameDialog(
                         .focusRequester(focusRequester),
                     value = name,
                     onValueChange = {
-                        valueHasChanged = name != it
+                        valueHasChanged = category != it
                         name = it
                     },
                     label = { Text(text = stringResource(MR.strings.name)) },
@@ -209,7 +210,6 @@ fun CategoryRenameDialog(
                     parentOptions = parentOptions,
                     selectedParentId = parentId,
                     onSelectParent = { parentId = it },
-                    categoryHasChildren = categoryHasChildren,
                 )
             }
         },
@@ -265,7 +265,6 @@ private fun ParentCategorySelector(
     parentOptions: ImmutableList<Category>,
     selectedParentId: Long?,
     onSelectParent: (Long?) -> Unit,
-    categoryHasChildren: Boolean = false,
 ) {
     if (parentOptions.isEmpty()) return
 
@@ -276,15 +275,19 @@ private fun ParentCategorySelector(
     }
     val selectedLabel = if (selectedCategory != null) selectedCategory.visualName else noneLabel
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = MaterialTheme.padding.small),
     ) {
-        TextButton(onClick = { if (!categoryHasChildren) expanded = true }, enabled = !categoryHasChildren) {
-            Text(selectedLabel)
-        }
-        if (!categoryHasChildren) {
+        Text(
+            text = stringResource(KMR.strings.parent_category),
+            style = MaterialTheme.typography.labelMedium,
+        )
+        Box {
+            TextButton(onClick = { expanded = true }) {
+                Text(selectedLabel)
+            }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(
                     text = { Text(stringResource(MR.strings.none)) },
@@ -337,35 +340,35 @@ fun ChangeCategoryDialog(
         return
     }
     var selection by remember { mutableStateOf(initialSelection) }
-    var expandedParents by remember { mutableStateOf(setOf<Long>()) }
-
-    // Check which parents have children
-    val parentChildMap by remember(selection) {
+    val initiallySelectedCategoryIds = remember(initialSelection) {
+        initialSelection.mapNotNull { checkbox ->
+            checkbox.value.id.takeIf {
+                checkbox !is CheckboxState.State.None && checkbox !is CheckboxState.TriState.None
+            }
+        }
+    }
+    var expandedParents by rememberSaveable {
         mutableStateOf(
-            selection.groupBy { it.value.parentId }
-                .filterKeys { it != null }
-                .mapKeys { it.key!! },
+            buildCategoryAncestorIds(
+                categories = initialSelection.map { it.value },
+                categoryIds = initiallySelectedCategoryIds,
+            ),
         )
     }
 
-    val orderedSelection by remember(selection, expandedParents) {
+    val hierarchy = remember(initialSelection) {
+        buildCategoryHierarchy(initialSelection.map { it.value })
+    }
+    val categoriesWithChildren = remember(initialSelection) {
+        initialSelection.mapNotNullTo(mutableSetOf()) { it.value.parentId }
+    }
+    val orderedSelection = remember(selection, expandedParents, hierarchy) {
         val selectionMap = selection.associateBy { it.value.id }
-        mutableStateOf(
-            buildCategoryHierarchy(selection.map { it.value })
-                .mapNotNull { entry ->
-                    selectionMap[entry.category.id]?.let { CheckboxEntry(it, entry.depth) }
-                }
-                .filter { entry ->
-                    // Show all parents
-                    if (entry.checkbox.value.parentId == null) {
-                        true
-                    } // Show children only if their parent is expanded
-                    else {
-                        expandedParents.contains(entry.checkbox.value.parentId)
-                    }
-                }
-                .toImmutableList(),
-        )
+        visibleCategoryHierarchy(hierarchy, expandedParents)
+            .mapNotNull { entry ->
+                selectionMap[entry.category.id]?.let { CheckboxEntry(it, entry.depth) }
+            }
+            .toImmutableList()
     }
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -407,9 +410,8 @@ fun ChangeCategoryDialog(
             ) {
                 orderedSelection.forEach { entry ->
                     val checkbox = entry.checkbox
-                    val isParent = checkbox.value.parentId == null
                     val isExpanded = expandedParents.contains(checkbox.value.id)
-                    val hasChildren = parentChildMap.containsKey(checkbox.value.id)
+                    val hasChildren = checkbox.value.id in categoriesWithChildren
                     val onChange: (CheckboxState<Category>) -> Unit = {
                         val index = selection.indexOf(it)
                         if (index != -1) {
@@ -421,19 +423,7 @@ fun ChangeCategoryDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                if (isParent && hasChildren) {
-                                    // Toggle expand/collapse only for parents with children
-                                    expandedParents = if (isExpanded) {
-                                        expandedParents - checkbox.value.id
-                                    } else {
-                                        expandedParents + checkbox.value.id
-                                    }
-                                } else {
-                                    // Toggle checkbox for all items (parents without children and all children)
-                                    onChange(checkbox)
-                                }
-                            }
+                            .clickable { onChange(checkbox) }
                             .padding(start = MaterialTheme.padding.medium * entry.depth.coerceAtLeast(0).toFloat()),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -460,28 +450,31 @@ fun ChangeCategoryDialog(
                                 .weight(1f),
                         )
 
-                        // Show expand/collapse indicator on the right for parents with children
-                        if (isParent && hasChildren) {
-                            Icon(
-                                imageVector = if (isExpanded) {
-                                    Icons.Filled.KeyboardArrowDown
-                                } else {
-                                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                        if (hasChildren) {
+                            IconButton(
+                                onClick = {
+                                    expandedParents = if (isExpanded) {
+                                        expandedParents - checkbox.value.id
+                                    } else {
+                                        expandedParents + checkbox.value.id
+                                    }
                                 },
-                                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                modifier = Modifier
-                                    .padding(end = MaterialTheme.padding.medium)
-                                    .clickable(
-                                        enabled = true,
-                                        onClick = {
-                                            expandedParents = if (isExpanded) {
-                                                expandedParents - checkbox.value.id
-                                            } else {
-                                                expandedParents + checkbox.value.id
-                                            }
+                            ) {
+                                Icon(
+                                    imageVector = if (isExpanded) {
+                                        Icons.Filled.KeyboardArrowDown
+                                    } else {
+                                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                                    },
+                                    contentDescription = stringResource(
+                                        if (isExpanded) {
+                                            KMR.strings.action_collapse_category
+                                        } else {
+                                            KMR.strings.action_expand_category
                                         },
                                     ),
-                            )
+                                )
+                            }
                         }
                     }
                 }

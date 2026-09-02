@@ -7,11 +7,15 @@ CREATE TABLE categories(
     sort INTEGER NOT NULL,
     flags INTEGER NOT NULL,
     manga_order TEXT AS List<Long> NOT NULL,
-    parent_id INTEGER REFERENCES categories (_id),
     -- KMK -->
+    parent_id INTEGER REFERENCES categories (_id) ON DELETE SET NULL,
     hidden INTEGER NOT NULL DEFAULT 0
     -- KMK <--
 );
+
+-- KMK -->
+CREATE INDEX IF NOT EXISTS categories_parent_id_index ON categories(parent_id);
+-- KMK <--
 
 -- Insert system category
 INSERT OR IGNORE INTO categories(_id, name, sort, flags, manga_order, parent_id, hidden) VALUES (0, "", -1, 0, "", NULL, 0);
@@ -71,11 +75,17 @@ UPDATE categories
 SET name = coalesce(:name, name),
     sort = coalesce(:order, sort),
     flags = coalesce(:flags, flags),
-    parent_id = coalesce(:parentId, parent_id),
     -- KMK -->
     hidden = coalesce(:hidden, hidden)
     -- KMK <--
 WHERE _id = :categoryId;
+
+-- KMK -->
+updateParent:
+UPDATE categories
+SET parent_id = :parentId
+WHERE _id = :categoryId;
+-- KMK <--
 
 updateAllFlags:
 UPDATE categories SET

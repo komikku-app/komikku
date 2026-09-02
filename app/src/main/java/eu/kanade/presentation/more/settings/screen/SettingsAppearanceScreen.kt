@@ -253,8 +253,8 @@ object SettingsAppearanceScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = uiPreferences.libraryParentChildLayout(),
-                    title = "Library parent/child layout",
-                    subtitle = "Use parent-sub categories in Library tab",
+                    title = stringResource(KMR.strings.pref_library_parent_child_layout),
+                    subtitle = stringResource(KMR.strings.pref_library_parent_child_layout_summary),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     preference = uiPreferences.dateFormat(),

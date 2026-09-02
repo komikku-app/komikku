@@ -109,6 +109,8 @@ markdown-core = { module = "com.mikepenz:multiplatform-markdown-renderer", versi
 markdown-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdown" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3-version" }
 
+stringSimilarity = { module = "com.aallam.similarity:string-similarity-kotlin", version = "0.1.0" }
+
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 
 [plugins]

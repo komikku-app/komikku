@@ -81,7 +81,6 @@ class Tester {
                 name = "a",
                 order = 1,
                 flags = 0,
-                parentId = null,
                 // KMK -->
                 hidden = false,
                 // KMK <--
