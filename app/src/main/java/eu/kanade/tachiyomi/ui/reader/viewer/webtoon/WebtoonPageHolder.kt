@@ -15,10 +15,12 @@ import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.waifu2x.ImageEnhancementCache
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +36,8 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Holder of the webtoon reader for a single page of a chapter.
@@ -97,6 +101,12 @@ class WebtoonPageHolder(
      */
     fun bind(page: ReaderPage) {
         this.page = page
+        // KMK -->
+        frame.pageIndex = page.index
+        frame.mangaId = viewer.activity.viewModel.manga?.id ?: -1L
+        frame.chapterId = page.chapter.chapter.id ?: -1L
+        frame.readerPage = page
+        // KMK <--
         loadJob?.cancel()
         loadJob = scope.launch { loadPageAndProcessStatus() }
         refreshLayoutParams()
@@ -195,7 +205,16 @@ class WebtoonPageHolder(
 
         try {
             val (source, isAnimated) = withIOContext {
-                val source = streamFn().use { process(Buffer().readFrom(it)) }
+                // KMK --> Prefer the cached enhanced page when available (the transform in
+                // [process] is re-applied on the enhanced image).
+                val page = page
+                val enhancedFile = if (page != null) currentEnhancedFile(page) else null
+                val source = if (enhancedFile != null) {
+                    process(Buffer().readFrom(enhancedFile.inputStream()))
+                } else {
+                    streamFn().use { process(Buffer().readFrom(it)) }
+                }
+                // KMK <--
                 val isAnimated = ImageUtil.isAnimatedAndSupported(source)
                 Pair(source, isAnimated)
             }
@@ -236,6 +255,32 @@ class WebtoonPageHolder(
 
         return imageSource
     }
+
+    // KMK -->
+    private val readerPreferences: ReaderPreferences by lazy { Injekt.get() }
+
+    private fun currentEnhancedFile(targetPage: ReaderPage): java.io.File? {
+        if (!readerPreferences.realCuganEnabled().get()) return null
+        val mangaId = viewer.activity.viewModel.manga?.id ?: return null
+        val chapterId = targetPage.chapter.chapter.id ?: return null
+        ImageEnhancementCache.init(frame.context)
+        val configHash = ImageEnhancementCache.getConfigHash(
+            noise = readerPreferences.realCuganNoiseLevel().get(),
+            scale = readerPreferences.realCuganScale().get(),
+            model = readerPreferences.realCuganModel().get(),
+            realEsrganStyle = readerPreferences.realEsrganStyle().get(),
+            maxWidth = readerPreferences.realCuganMaxSizeWidth().get(),
+            maxHeight = readerPreferences.realCuganMaxSizeHeight().get(),
+            skipMaxWidth = readerPreferences.realCuganSkipMaxSizeWidth().get(),
+            skipMaxHeight = readerPreferences.realCuganSkipMaxSizeHeight().get(),
+            tileSize = readerPreferences.realCuganTileSize().get(),
+            precision = readerPreferences.realCuganPrecision().get(),
+            fp16Arithmetic = readerPreferences.realCuganFp16Arithmetic().get(),
+            processingBackend = readerPreferences.realCuganProcessingBackend().get(),
+        )
+        return ImageEnhancementCache.getCachedImage(mangaId, chapterId, targetPage.index, configHash, targetPage.enhancementKeySuffix)
+    }
+    // KMK <--
 
     private fun rotateDualPage(imageSource: BufferedSource): BufferedSource {
         val isDoublePage = ImageUtil.isWideImage(imageSource)

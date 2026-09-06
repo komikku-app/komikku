@@ -20,6 +20,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import kotlinx.coroutines.MainScope
@@ -252,6 +253,9 @@ class WebtoonViewer(
      */
     override fun destroy() {
         super.destroy()
+        // KMK -->
+        eu.kanade.tachiyomi.util.waifu2x.ImageEnhancer.cancelAll("webtoon viewer destroyed")
+        // KMK <--
         scope.cancel()
     }
 
@@ -262,6 +266,10 @@ class WebtoonViewer(
     private fun onPageSelected(page: ReaderPage, allowPreload: Boolean) {
         val pages = page.chapter.pages ?: return
         logcat { "onPageSelected: ${page.number}/${pages.size}" }
+        // KMK -->
+        ReaderPageImageView.currentGlobalPageIndex = page.index
+        eu.kanade.tachiyomi.util.waifu2x.ImageEnhancer.reprioritizeAround(page.index, page.enhancementKeySuffix)
+        // KMK <--
         activity.onPageSelected(page)
 
         // Preload next chapter once we're within the last 5 pages of the current chapter

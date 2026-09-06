@@ -1,0 +1,26 @@
+7767517
+24 25
+Input                    input                    0 1 input
+Split                    split_input              1 2 input input_main input_skip
+Convolution              body_0                  1 1 input_main b0 0=64 1=3 4=1 5=1 6=1728
+PReLU                    body_1                  1 1 b0 b1 0=64
+Convolution              body_2                  1 1 b1 b2 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_3                  1 1 b2 b3 0=64
+Convolution              body_4                  1 1 b3 b4 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_5                  1 1 b4 b5 0=64
+Convolution              body_6                  1 1 b5 b6 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_7                  1 1 b6 b7 0=64
+Convolution              body_8                  1 1 b7 b8 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_9                  1 1 b8 b9 0=64
+Convolution              body_10                 1 1 b9 b10 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_11                 1 1 b10 b11 0=64
+Convolution              body_12                 1 1 b11 b12 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_13                 1 1 b12 b13 0=64
+Convolution              body_14                 1 1 b13 b14 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_15                 1 1 b14 b15 0=64
+Convolution              body_16                 1 1 b15 b16 0=64 1=3 4=1 5=1 6=36864
+PReLU                    body_17                 1 1 b16 b17 0=64
+Convolution              body_18                 1 1 b17 b18 0=12 1=3 4=1 5=1 6=6912
+PixelShuffle             pixel_shuffle           1 1 b18 residual 0=2 1=0
+Interp                   nearest_skip            1 1 input_skip base 0=1 1=2.0 2=2.0
+BinaryOp                 residual_add             2 1 residual base output 0=0

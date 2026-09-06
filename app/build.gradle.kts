@@ -2,6 +2,7 @@ import mihon.buildlogic.Config
 import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
+import java.util.Properties
 
 plugins {
     id("mihon.android.application")
@@ -22,6 +23,27 @@ if (Config.includeTelemetry) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
+// KMK -->
+// Image upscaling (NCNN + Vulkan), ported from HaoweiLi97/mihon_img_upscale.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
+val bundledNcnnSdkDir = rootProject.file("third_party/ncnn-20260113-android-vulkan")
+
+val ncnnSdkDir = providers.gradleProperty("ncnnSdkDir").orNull
+    ?: localProperties.getProperty("ncnn.sdk.dir")
+    ?: System.getenv("NCNN_SDK_DIR")
+    ?: bundledNcnnSdkDir.takeIf { it.exists() }?.absolutePath
+
+// Vendored QAIRT (QNN) headers for compiling the optional NPU backend; the runtime
+// libraries are provided by the com.qualcomm.qti:qnn-runtime Maven dependency.
+val qnnHeadersDir = rootProject.file("third_party/qnn-include")
+// KMK <--
+
 android {
     namespace = "eu.kanade.tachiyomi"
 
@@ -38,6 +60,19 @@ android {
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // KMK -->
+        externalNativeBuild {
+            cmake {
+                if (ncnnSdkDir != null) {
+                    arguments += "-DNCNN_SDK_DIR=$ncnnSdkDir"
+                }
+                if (qnnHeadersDir.exists()) {
+                    arguments += "-DQNN_SDK_DIR=$qnnHeadersDir"
+                }
+            }
+        }
+        // KMK <--
     }
 
     buildTypes {
@@ -115,6 +150,9 @@ android {
 
     packaging {
         jniLibs {
+            // KMK -->
+            useLegacyPackaging = true
+            // KMK <--
             keepDebugSymbols += listOf(
                 "libandroidx.graphics.path",
                 "libarchive-jni",
@@ -161,6 +199,14 @@ android {
         abortOnError = false
         checkReleaseBuilds = false
     }
+
+    // KMK -->
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
+    // KMK <--
 }
 
 kotlin {
@@ -187,6 +233,8 @@ dependencies {
     implementation(projects.i18n)
     // KMK -->
     implementation(projects.i18nKmk)
+    // Qualcomm QNN runtime libraries (libQnnHtp.so, HTP stub/skel libs) for the NPU backend.
+    implementation("com.qualcomm.qti:qnn-runtime:2.49.0")
     // KMK <--
     // SY -->
     implementation(projects.i18nSy)

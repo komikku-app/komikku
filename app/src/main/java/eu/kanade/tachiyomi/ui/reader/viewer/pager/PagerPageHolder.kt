@@ -11,9 +11,11 @@ import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.waifu2x.ImageEnhancementCache
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -32,6 +34,8 @@ import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.decoder.ImageDecoder
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import kotlin.math.max
 
 /**
@@ -77,6 +81,20 @@ class PagerPageHolder(
     private var extraLoadJob: Job? = null
 
     init {
+        // KMK -->
+        // Set page context for enhancement priority tracking
+        pageIndex = page.index
+        mangaId = viewer.activity.viewModel.manga?.id ?: -1L
+        chapterId = page.chapter.chapter.id ?: -1L
+        readerPage = page
+        // Merged double pages are a transform of two sources; skip the live enhanced swap for them.
+        enhancementDisplayEnabled = extraPage == null
+        if (extraPage == null) {
+            enhancedImageSourceFactory = { file ->
+                processEnhanced(Buffer().readFrom(file.inputStream()))
+            }
+        }
+        // KMK <--
         loadJob = scope.launch { loadPageAndProcessStatus(1) }
         // SY -->
         extraLoadJob = scope.launch { loadPageAndProcessStatus(2) }
@@ -182,29 +200,46 @@ class PagerPageHolder(
 
         try {
             val (source, isAnimated, background) = withIOContext {
-                streamFn().buffered(16).use { source ->
-                    // SY -->
-                    if (extraPage != null) {
-                        streamFn2?.invoke()
-                            ?.buffered(16)
+                // KMK --> Prefer the cached enhanced page when available. The cached image is
+                // already a full page; only the display transform is re-applied here.
+                val enhancedFile = currentEnhancedFile(page)
+                if (enhancedFile != null) {
+                    val itemSource = processEnhanced(Buffer().readFrom(enhancedFile.inputStream()))
+                    val isAnimated = ImageUtil.isAnimatedAndSupported(itemSource)
+                    val background = if (!isAnimated && viewer.config.automaticBackground) {
+                        ImageUtil.chooseBackground(context, itemSource.peek())
                     } else {
                         null
-                    }.use { source2 ->
-                        val itemSource = if (viewer.config.dualPageSplit) {
-                            process(item.first, Buffer().readFrom(source))
-                        } else {
-                            mergePages(Buffer().readFrom(source), source2?.let { Buffer().readFrom(it) })
-                        }
-                        // SY <--
-                        val isAnimated = ImageUtil.isAnimatedAndSupported(itemSource)
-                        val background = if (!isAnimated && viewer.config.automaticBackground) {
-                            ImageUtil.chooseBackground(context, itemSource.peek())
+                    }
+                    Triple(itemSource, isAnimated, background)
+                } else {
+                    // KMK <--
+                    streamFn().buffered(16).use { source ->
+                        // SY -->
+                        if (extraPage != null) {
+                            streamFn2?.invoke()
+                                ?.buffered(16)
                         } else {
                             null
+                        }.use { source2 ->
+                            val itemSource = if (viewer.config.dualPageSplit) {
+                                process(item.first, Buffer().readFrom(source))
+                            } else {
+                                mergePages(Buffer().readFrom(source), source2?.let { Buffer().readFrom(it) })
+                            }
+                            // SY <--
+                            val isAnimated = ImageUtil.isAnimatedAndSupported(itemSource)
+                            val background = if (!isAnimated && viewer.config.automaticBackground) {
+                                ImageUtil.chooseBackground(context, itemSource.peek())
+                            } else {
+                                null
+                            }
+                            Triple(itemSource, isAnimated, background)
                         }
-                        Triple(itemSource, isAnimated, background)
                     }
+                    // KMK -->
                 }
+                // KMK <--
             }
             withUIContext {
                 setImage(
@@ -258,6 +293,66 @@ class PagerPageHolder(
 
         return splitInHalf(imageSource)
     }
+
+    // KMK -->
+    private val readerPreferences: ReaderPreferences by lazy { Injekt.get() }
+
+    /**
+     * Applies the display transform to an enhanced page image without re-triggering page split
+     * insertion (the sibling page was already inserted when the original was first displayed).
+     */
+    private fun processEnhanced(imageSource: BufferedSource): BufferedSource {
+        if (viewer.config.dualPageRotateToFit) {
+            return rotateDualPage(imageSource)
+        }
+
+        if (!viewer.config.dualPageSplit) {
+            return imageSource
+        }
+
+        if (page is InsertPage) {
+            return splitInHalf(imageSource)
+        }
+
+        if (!ImageUtil.isWideImage(imageSource)) {
+            return imageSource
+        }
+
+        return splitInHalf(imageSource)
+    }
+
+    private fun currentEnhancedFile(targetPage: ReaderPage): java.io.File? {
+        if (!readerPreferences.realCuganEnabled().get()) return null
+        if (extraPage != null) return null
+        // A source page must be inspected at full width once so the pager can create its sibling
+        // half. Using the cached image before that point would skip the split insertion.
+        if (
+            viewer.config.dualPageSplit &&
+            targetPage !is InsertPage &&
+            !viewer.hasSplitPage(targetPage)
+        ) {
+            return null
+        }
+        val mangaId = viewer.activity.viewModel.manga?.id ?: return null
+        val chapterId = targetPage.chapter.chapter.id ?: return null
+        ImageEnhancementCache.init(context)
+        val configHash = ImageEnhancementCache.getConfigHash(
+            noise = readerPreferences.realCuganNoiseLevel().get(),
+            scale = readerPreferences.realCuganScale().get(),
+            model = readerPreferences.realCuganModel().get(),
+            realEsrganStyle = readerPreferences.realEsrganStyle().get(),
+            maxWidth = readerPreferences.realCuganMaxSizeWidth().get(),
+            maxHeight = readerPreferences.realCuganMaxSizeHeight().get(),
+            skipMaxWidth = readerPreferences.realCuganSkipMaxSizeWidth().get(),
+            skipMaxHeight = readerPreferences.realCuganSkipMaxSizeHeight().get(),
+            tileSize = readerPreferences.realCuganTileSize().get(),
+            precision = readerPreferences.realCuganPrecision().get(),
+            fp16Arithmetic = readerPreferences.realCuganFp16Arithmetic().get(),
+            processingBackend = readerPreferences.realCuganProcessingBackend().get(),
+        )
+        return ImageEnhancementCache.getCachedImage(mangaId, chapterId, targetPage.index, configHash, targetPage.enhancementKeySuffix)
+    }
+    // KMK <--
 
     private fun rotateDualPage(imageSource: BufferedSource): BufferedSource {
         val isDoublePage = ImageUtil.isWideImage(imageSource)

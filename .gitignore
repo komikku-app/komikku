@@ -21,3 +21,6 @@ local.properties
 /app/google-services.json
 *.jks
 app/standard/preview/*
+
+# KMK: native build output
+.cxx

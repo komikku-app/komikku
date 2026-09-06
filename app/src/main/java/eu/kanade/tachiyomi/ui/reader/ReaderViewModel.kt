@@ -465,6 +465,10 @@ class ReaderViewModel @JvmOverloads constructor(
                     }
                     if (chapterId == -1L) chapterId = initialChapterId
 
+                    // KMK -->
+                    eu.kanade.tachiyomi.util.waifu2x.ImageEnhancer.reset(page ?: 0)
+                    // KMK <--
+
                     val context = Injekt.get<Application>()
                     // val source = sourceManager.getOrStub(manga.source)
                     loader = ChapterLoader(
@@ -1092,6 +1096,12 @@ class ReaderViewModel @JvmOverloads constructor(
         }
     }
     // SY <--
+
+    // KMK -->
+    fun toggleImageEnhancement(): Boolean {
+        return readerPreferences.realCuganEnabled().toggle()
+    }
+    // KMK <--
 
     /**
      * Generate a filename for the given [manga] and [page]

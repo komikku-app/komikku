@@ -1,3 +1,78 @@
+# Komikku_img_upscale
+
+### Description
+A high-performance Komikku fork featuring integrated AI upscaling (Real-CUGAN, Real-ESRGAN, Waifu2x and more) with Vulkan and Qualcomm NPU processing to enhance low-resolution manga in real time.
+
+<p align="center">
+  <img width="350" alt="Komikku AI Upscale Preview" src="./.github/readme-images/upscale-preview.png">
+  <br>
+</p>
+
+---
+
+## Upscaling Models
+
+| Model Name | Scale | Author | Project / Model |
+| :--- | :---: | :--- | :--- |
+| **Real-CUGAN SE** | 2x / 3x / 4x | Bilibili AI Lab | [Real-CUGAN](https://github.com/bilibili/ailab/tree/main/Real-CUGAN) |
+| **Real-CUGAN Pro** | 2x / 3x | Bilibili AI Lab | [Real-CUGAN](https://github.com/bilibili/ailab/tree/main/Real-CUGAN) |
+| **Real-CUGAN Nose** | 2x | Bilibili AI Lab | [Real-CUGAN](https://github.com/bilibili/ailab/tree/main/Real-CUGAN) |
+| **Real-ESRGAN animevideov3** | 2x / 3x / 4x | Xintao Wang et al. | [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) |
+| **Real-ESRGAN general-x4v3 (Photo)** | 2x | Xintao Wang et al. | [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) |
+| **Waifu2x** | 2x | nagadomi | [waifu2x](https://github.com/nagadomi/waifu2x) |
+| **Waifu2x (Fast)** | 2x | nagadomi | [waifu2x](https://github.com/nagadomi/waifu2x) |
+| **W2xEX Universal Fast** | 2x | AaronFeng753 | [W2xEX model files](https://huggingface.co/randomblock1/W2xEX-ESRGAN) |
+| **W2xEX Omni Mini V2** | 2x | AaronFeng753 | [W2xEX model files](https://huggingface.co/randomblock1/W2xEX-ESRGAN) |
+| **W2xEX Photo Small** | 2x | AaronFeng753 | [W2xEX model files](https://huggingface.co/randomblock1/W2xEX-ESRGAN) |
+| **AnimeJaNai v2 UltraCompact** | 2x | the-database | [OpenModelDB](https://openmodeldb.info/models/2x-AnimeJaNai-v2-UltraCompact) |
+| **sudo UltraCompact** | 2x | sudo rm -rf / --no-preserve-root#8353 | [OpenModelDB](https://openmodeldb.info/models/2x-sudo-UltraCompact) |
+| **SPAN NomosUni Photo** | 2x | Philip Hofmann | [OpenModelDB](https://openmodeldb.info/models/2x-NomosUni-span-multijpg-ldl) |
+
+## Qualcomm NPU Acceleration
+
+An optional Qualcomm QNN/HTP backend sits alongside the Vulkan backend. Vulkan and NPU are
+independent choices in the reader settings. Selecting NPU limits the model list to models with
+compatible offline contexts; unsupported devices keep the NPU option disabled and continue to
+use Vulkan.
+
+| Snapdragon platform | SoC | HTP architecture |
+| :--- | :---: | :---: |
+| Snapdragon 8+ Gen 1 | SM8475 | v69 |
+| Snapdragon 8 Gen 2 | SM8550 | v73 |
+| Snapdragon 8 Gen 3 | SM8650 | v75 |
+| Snapdragon 8 Elite | SM8750 | v79 |
+| Snapdragon 8 Elite Gen 5 | SM8850 | v81 |
+
+### NPU Model Support
+
+| Model | Scale | Precision | Variants |
+| :--- | :---: | :---: | :--- |
+| Real-ESRGAN animevideov3 | 2x | FP16 / INT8 | Standard |
+| Real-ESRGAN general-x4v3 (Photo) | 2x | FP16 / W8A16 | Standard |
+| Real-CUGAN SE | 2x | FP16 / W8A16 | No denoise, denoise1x, denoise2x, denoise3x, conservative |
+| Real-CUGAN Pro | 2x / 3x | FP16 / W8A16 | No denoise, denoise3x, conservative |
+| W2xEX Photo Small | 2x | FP16 / W8A16 | Standard |
+| SPAN NomosUni Photo | 2x | FP16 / W8A16 | Standard |
+
+Actual speed depends on image dimensions, model variant, thermal state, and device firmware.
+
+The QNN context binaries for all supported Snapdragon targets are bundled in the app, and the
+matching HTP Stub/Skel runtime libraries come from Qualcomm's official Maven artifact
+(`com.qualcomm.qti:qnn-runtime`). No Qualcomm SDK is required to build this project. See
+[docs/upscale-port-review.md](./docs/upscale-port-review.md) for port details and build
+configuration.
+
+## Acknowledgements
+
+- [HaoweiLi97/mihon_img_upscale](https://github.com/HaoweiLi97/mihon_img_upscale) — the real-time
+  AI upscaling feature (native NCNN/Vulkan engine, model pipeline, QNN backend and reader
+  integration) is a port of their outstanding work for Mihon.
+- [Komikku](https://github.com/komikku-app/komikku) — the base application this fork builds on,
+  along with its upstreams [Mihon](https://github.com/mihonapp/mihon) and
+  [TachiyomiSY](https://github.com/jobobby04/TachiyomiSY).
+
+---
+
 <div align="center">
 
 <a href="https://komikku-app.github.io">

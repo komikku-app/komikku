@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
+import android.app.Application
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
@@ -8,6 +9,8 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.waifu2x.ImageEnhancementCache
+import eu.kanade.tachiyomi.util.waifu2x.ImageEnhancer
 import exh.source.isEhBasedSource
 import exh.util.DataSaver
 import exh.util.DataSaver.Companion.getImage
@@ -21,8 +24,10 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
+import logcat.LogPriority
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.PriorityBlockingQueue
@@ -52,7 +57,14 @@ internal class HttpPageLoader(
      */
     private val queue = PriorityBlockingQueue<PriorityPage>()
 
-    private val preloadSize = /* SY --> */ readerPreferences.preloadSize().get() // SY <--
+    // KMK -->
+    private val preloadSize: Int
+        get() = if (readerPreferences.realCuganEnabled().get()) {
+            readerPreferences.realCuganPreloadSize().get()
+        } else {
+            readerPreferences.preloadSize().get()
+        }
+    // KMK <--
 
     // SY -->
     private val dataSaver = DataSaver(source, sourcePreferences)
@@ -223,7 +235,61 @@ internal class HttpPageLoader(
                 chapterCache.putImageToCache(imageUrl, imageResponse)
             }
 
-            page.stream = { chapterCache.getImageFile(imageUrl).inputStream() }
+            // KMK --> Image enhancement (upscale)
+            // Start with original stream
+            var streamSource = { chapterCache.getImageFile(imageUrl).inputStream() }
+            // Keep a raw source available so enhancement can reprocess this page.
+            page.enhancementStream = streamSource
+
+            // Check for enhanced version
+            if (readerPreferences.realCuganEnabled().get()) {
+                val context = Injekt.get<Application>()
+                ImageEnhancementCache.init(context)
+
+                val mangaId = page.chapter.chapter.manga_id ?: -1L
+                val chapterId = page.chapter.chapter.id ?: -1L
+
+                if (mangaId != -1L && chapterId != -1L) {
+                    val configHash = ImageEnhancementCache.getConfigHash(
+                        noise = readerPreferences.realCuganNoiseLevel().get(),
+                        scale = readerPreferences.realCuganScale().get(),
+                        model = readerPreferences.realCuganModel().get(),
+                        realEsrganStyle = readerPreferences.realEsrganStyle().get(),
+                        maxWidth = readerPreferences.realCuganMaxSizeWidth().get(),
+                        maxHeight = readerPreferences.realCuganMaxSizeHeight().get(),
+                        skipMaxWidth = readerPreferences.realCuganSkipMaxSizeWidth().get(),
+                        skipMaxHeight = readerPreferences.realCuganSkipMaxSizeHeight().get(),
+                        tileSize = readerPreferences.realCuganTileSize().get(),
+                        precision = readerPreferences.realCuganPrecision().get(),
+                        fp16Arithmetic = readerPreferences.realCuganFp16Arithmetic().get(),
+                        processingBackend = readerPreferences.realCuganProcessingBackend().get(),
+                    )
+                    val cachedFile = ImageEnhancementCache.getCachedImage(
+                        mangaId,
+                        chapterId,
+                        page.index,
+                        configHash,
+                        page.enhancementKeySuffix,
+                    )
+                    if (cachedFile != null) {
+                        // Use enhanced stream
+                        streamSource = { cachedFile.inputStream() }
+                    } else {
+                        // Set the stream first so enhance can use it
+                        page.stream = streamSource
+
+                        // Not cached, trigger enhancement via unified decoder (Low priority for preload)
+                        logcat(LogPriority.DEBUG) { "HttpPageLoader: Triggering enhancement for page ${page.index}" }
+                        ImageEnhancer.enhance(context, page, false)
+                    }
+                }
+            }
+
+            // Set stream if not already set (for non-enhancement path or cached path)
+            if (page.stream == null) {
+                page.stream = streamSource
+            }
+            // KMK <--
             page.status = Page.State.Ready
         } catch (e: Throwable) {
             page.status = Page.State.Error(e)

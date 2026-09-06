@@ -1,0 +1,8 @@
+AnimeJaNai v2 UltraCompact
+Copyright (c) the-database
+License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+Model information: https://openmodeldb.info/models/2x-AnimeJaNai-v2-UltraCompact
+NCNN conversion: https://github.com/Justin62628/animejanai-ncnn-vulkan
+
+The model is downloaded on demand for non-commercial use under CC BY-NC-SA 4.0:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
