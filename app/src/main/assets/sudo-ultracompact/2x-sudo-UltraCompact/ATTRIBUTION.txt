@@ -1,0 +1,12 @@
+sudo UltraCompact 2x
+Copyright (c) sudo
+License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+Model information: https://openmodeldb.info/models/2x-sudo-UltraCompact
+Original PyTorch model SHA-256: e53987f0312dee424b4dbd9dce7b2eacbe03fdf1380e44a11f8a4d2ca88c99e3
+Converted NCNN model SHA-256: 9ed1184eeaad5993d56bce6679d6c0c755e1109ef7fb6285f09c1cb5cd1f2e96
+
+The bundled NCNN conversion preserves the original float32 weights. The RGB
+input and output channel groups are reordered to BGR for this application's
+image pipeline. This conversion is distributed for non-commercial use under
+CC BY-NC-SA 4.0:
+https://creativecommons.org/licenses/by-nc-sa/4.0/

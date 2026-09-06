@@ -1,0 +1,15 @@
+2xNomosUni SPAN multijpg ldl
+Copyright (c) Philip Hofmann
+License: Creative Commons Attribution 4.0 International
+Model information: https://openmodeldb.info/models/2x-NomosUni-span-multijpg-ldl
+Original model: https://huggingface.co/Phips/2xNomosUni_span_multijpg_ldl
+Original PyTorch model SHA-256: a3d35e01b8b71b4b3041ad1686f8ebd7bc4e1f3a10378319c2ac61c78b67012a
+
+The bundled NCNN conversion preserves the original float32 weights. The RGB
+normalization, input, and PixelShuffle output channel groups are reordered to
+BGR for this application's Vulkan image pipeline.
+Converted NCNN parameter SHA-256: 2f7d4993869adf232b3f64e6b8299653127be7e8d2d1206146d89d959261a365
+Converted NCNN weights SHA-256: f5201f05e07f646f2ff4f1df3d7f51e7dbcd3240457c9b9fc2e25308ceaedfd2
+
+This model is distributed under CC BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
