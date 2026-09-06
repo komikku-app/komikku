@@ -17,6 +17,14 @@ open class ReaderPage(
 
 ) : Page(index, url, imageUrl, null), ReaderItem {
 
+    // KMK -->
+    /** Optional raw stream kept around so image enhancement can reprocess this page. */
+    var enhancementStream: (() -> InputStream)? = null
+
+    /** Extra key appended to enhancement cache keys (e.g. split page variants). */
+    var enhancementKeySuffix: String = ""
+    // KMK <--
+
     open lateinit var chapter: ReaderChapter
 
     /** Value to check if a page is too wide to be doubled up */

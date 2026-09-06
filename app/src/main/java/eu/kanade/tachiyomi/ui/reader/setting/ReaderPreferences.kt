@@ -109,7 +109,6 @@ class ReaderPreferences(
     // region Split two page spread
 
     fun dualPageSplitPaged() = preferenceStore.getBoolean("pref_dual_page_split", false)
-
     fun dualPageInvertPaged() = preferenceStore.getBoolean("pref_dual_page_invert", false)
 
     fun dualPageSplitWebtoon() = preferenceStore.getBoolean("pref_dual_page_split_webtoon", false)
@@ -143,6 +142,44 @@ class ReaderPreferences(
     fun invertedColors() = preferenceStore.getBoolean("pref_inverted_colors", false)
 
     // endregion
+
+    // KMK -->
+    // region Image enhancement (upscale)
+
+    fun realCuganEnabled() = preferenceStore.getBoolean("pref_realcugan_enabled", false)
+
+    fun realCuganNoiseLevel() = preferenceStore.getInt("pref_realcugan_noise_level", 0) // 0: No Denoise, 1: Denoise 1x, 2: Denoise 2x, 3: Denoise 3x, 4: Conservative
+
+    fun realCuganScale() = preferenceStore.getInt("pref_realcugan_scale", 2) // 2x, 3x, 4x
+
+    fun realCuganModel() = preferenceStore.getInt("pref_realcugan_model", 0)
+
+    fun realEsrganStyle() = preferenceStore.getInt("pref_realesrgan_style", 0) // 0: Anime, 1: Photo
+
+    fun realCuganPreloadSize() = preferenceStore.getInt("pref_realcugan_preload_size", 3)
+
+    fun realCuganPerformanceMode() = preferenceStore.getInt("pref_realcugan_performance_mode", 0) // 0: 90%, 1: 50%, 2: 30%
+
+    fun realCuganTileSize() = preferenceStore.getInt("pref_realcugan_tile_size", 128)
+
+    fun realCuganPrecision() = preferenceStore.getInt("pref_realcugan_precision", 0) // 0: FP16, 1: FP32, 2: INT8, 3: BF16
+
+    fun realCuganProcessingBackend() = preferenceStore.getInt("pref_realcugan_processing_backend", 1) // 0: Vulkan, 1: Qualcomm NPU
+
+    fun realCuganFp16Arithmetic() = preferenceStore.getBoolean("pref_realcugan_fp16_arithmetic", false)
+
+    fun realCuganMaxSizeWidth() = preferenceStore.getInt("pref_realcugan_max_size_width", 1600)
+
+    fun realCuganMaxSizeHeight() = preferenceStore.getInt("pref_realcugan_max_size_height", 1600)
+
+    fun realCuganSkipMaxSizeWidth() = preferenceStore.getInt("pref_realcugan_skip_max_size_width", 0)
+
+    fun realCuganSkipMaxSizeHeight() = preferenceStore.getInt("pref_realcugan_skip_max_size_height", 0)
+
+    fun realCuganShowStatus() = preferenceStore.getBoolean("pref_realcugan_show_status", false)
+
+    // endregion
+    // KMK <--
 
     // region Controls
 
