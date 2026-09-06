@@ -113,7 +113,10 @@ abstract class PagerViewer(
         pager.isVisible = false // Don't layout the pager yet
         pager.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         pager.isFocusable = false
-        pager.offscreenPageLimit = 1
+        // KMK -->
+        val preferences: eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences by uy.kohesive.injekt.injectLazy()
+        pager.offscreenPageLimit = if (preferences.realCuganEnabled().get()) preferences.realCuganPreloadSize().get() else 1
+        // KMK <--
         pager.id = R.id.reader_pager
         pager.adapter = adapter
         pager.addOnPageChangeListener(pagerListener)
@@ -169,6 +172,9 @@ abstract class PagerViewer(
 
     override fun destroy() {
         super.destroy()
+        // KMK -->
+        eu.kanade.tachiyomi.util.waifu2x.ImageEnhancer.cancelAll("pager viewer destroyed")
+        // KMK <--
         scope.cancel()
     }
 
@@ -422,6 +428,10 @@ abstract class PagerViewer(
      */
     private fun refreshAdapter() {
         val currentItem = pager.currentItem
+        // KMK -->
+        val preferences: eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences by uy.kohesive.injekt.injectLazy()
+        pager.offscreenPageLimit = if (preferences.realCuganEnabled().get()) preferences.realCuganPreloadSize().get() else 1
+        // KMK <--
         adapter.refresh()
         pager.adapter = adapter
         pager.setCurrentItem(currentItem, false)
@@ -496,6 +506,13 @@ abstract class PagerViewer(
             adapter.onPageSplit(currentPage, newPage)
         }
     }
+
+    // KMK -->
+    /** Returns whether a split sibling ([InsertPage]) already exists for [page]. */
+    fun hasSplitPage(page: ReaderPage): Boolean {
+        return adapter.joinedItems.any { (it.first as? InsertPage)?.parent == page }
+    }
+    // KMK <--
 
     private fun cleanupPageSplit() {
         adapter.cleanupPageSplit()

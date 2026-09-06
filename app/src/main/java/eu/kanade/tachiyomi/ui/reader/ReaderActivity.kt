@@ -110,12 +110,14 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setComposeContent
+import eu.kanade.tachiyomi.util.waifu2x.Waifu2x
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -152,6 +154,10 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 class ReaderActivity : BaseActivity() {
 
     companion object {
+
+        // KMK -->
+        private const val UI_BUSY_COOLDOWN_MS = 1_000L
+        // KMK <--
 
         fun newIntent(context: Context, mangaId: Long?, chapterId: Long?/* SY --> */, page: Int? = null/* SY <-- */): Intent {
             return Intent(context, ReaderActivity::class.java).apply {
@@ -192,6 +198,11 @@ class ReaderActivity : BaseActivity() {
 
     private var menuToggleToast: Toast? = null
     private var readingModeToast: Toast? = null
+
+    // KMK -->
+    private var uiBusyJob: Job? = null
+    // KMK <--
+
     private val displayRefreshHost = DisplayRefreshHost()
 
     private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, window.decorView) }
@@ -522,6 +533,10 @@ class ReaderActivity : BaseActivity() {
      */
     override fun onDestroy() {
         super.onDestroy()
+        // KMK -->
+        uiBusyJob?.cancel()
+        Waifu2x.setUiBusy(false)
+        // KMK <--
         viewModel.state.value.viewer?.destroy()
         config = null
         menuToggleToast?.cancel()
@@ -605,6 +620,9 @@ class ReaderActivity : BaseActivity() {
      * Dispatches a key event. If the viewer doesn't handle it, call the default implementation.
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // KMK -->
+        onUiInteracted()
+        // KMK <--
         val handled = viewModel.state.value.viewer?.handleKeyEvent(event) ?: false
         return handled || super.dispatchKeyEvent(event)
     }
@@ -614,9 +632,19 @@ class ReaderActivity : BaseActivity() {
      * implementation.
      */
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        // KMK -->
+        onUiInteracted()
+        // KMK <--
         val handled = viewModel.state.value.viewer?.handleGenericMotionEvent(event) ?: false
         return handled || super.dispatchGenericMotionEvent(event)
     }
+
+    // KMK -->
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        onUiInteracted()
+        return super.dispatchTouchEvent(ev)
+    }
+    // KMK <--
 
     @Composable
     private fun ContentOverlay(state: ReaderViewModel.State) {
@@ -928,12 +956,33 @@ class ReaderActivity : BaseActivity() {
      */
     private fun setMenuVisibility(visible: Boolean) {
         viewModel.showMenus(visible)
+        // KMK -->
+        if (visible) {
+            uiBusyJob?.cancel()
+            Waifu2x.setUiBusy(true)
+        } else {
+            onUiInteracted()
+        }
+        // KMK <--
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         } else if (readerPreferences.fullscreen().get()) {
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
         }
     }
+
+    // KMK -->
+    private fun onUiInteracted() {
+        Waifu2x.setUiBusy(true)
+        uiBusyJob?.cancel()
+        uiBusyJob = lifecycleScope.launch {
+            delay(UI_BUSY_COOLDOWN_MS)
+            if (!viewModel.state.value.menuVisible) {
+                Waifu2x.setUiBusy(false)
+            }
+        }
+    }
+    // KMK <--
 
     /**
      * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer.
