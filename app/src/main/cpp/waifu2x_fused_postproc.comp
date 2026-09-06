@@ -1,0 +1,85 @@
+#version 450
+
+#ifdef FUSED_FP16
+#extension GL_EXT_shader_16bit_storage : require
+#define storage_t float16_t
+#else
+#define storage_t float
+#endif
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(std430, binding = 0) readonly buffer bottom_blob {
+    storage_t bottom_blob_data[];
+};
+layout(std430, binding = 1) writeonly buffer top_blob {
+    float top_blob_data[];
+};
+layout(std430, binding = 2) readonly buffer packed_input {
+    float packed_input_data[];
+};
+
+layout(push_constant) uniform parameter {
+    int w;
+    int h;
+    int cstep;
+    int outw;
+    int outh;
+    int src_offset_x;
+    int src_offset_y;
+    int offset_x;
+    int offset_y;
+    int copy_w;
+    int copy_h;
+    int channels;
+    int alphaw;
+    int alphah;
+    int has_alpha;
+    int grayscale;
+} p;
+
+void main() {
+    int gx = int(gl_GlobalInvocationID.x);
+    int gy = int(gl_GlobalInvocationID.y);
+    if (gx >= p.copy_w || gy >= p.copy_h) return;
+
+    int sx = gx + p.src_offset_x;
+    int sy = gy + p.src_offset_y;
+    vec3 rgb = vec3(
+        float(bottom_blob_data[p.cstep * 2 + sy * p.w + sx]),
+        float(bottom_blob_data[p.cstep + sy * p.w + sx]),
+        float(bottom_blob_data[sy * p.w + sx])
+    );
+    if (p.grayscale != 0) {
+        rgb = vec3((rgb.r + rgb.g + rgb.b) / 3.0);
+    }
+
+    float alpha = 255.0;
+    if (p.has_alpha != 0) {
+        int output_x = gx + p.offset_x;
+        int output_y = gy + p.offset_y;
+        float source_x = (float(output_x) + 0.5) * float(p.alphaw) / float(p.outw) - 0.5;
+        float source_y = (float(output_y) + 0.5) * float(p.alphah) / float(p.outh) - 0.5;
+        int base_x = int(floor(source_x));
+        int base_y = int(floor(source_y));
+        int x0 = clamp(base_x, 0, p.alphaw - 1);
+        int y0 = clamp(base_y, 0, p.alphah - 1);
+        int x1 = clamp(base_x + 1, 0, p.alphaw - 1);
+        int y1 = clamp(base_y + 1, 0, p.alphah - 1);
+        float fx = clamp(source_x - floor(source_x), 0.0, 1.0);
+        float fy = clamp(source_y - floor(source_y), 0.0, 1.0);
+        float a00 = float((floatBitsToUint(packed_input_data[y0 * p.alphaw + x0]) >> 24) & 255u);
+        float a10 = float((floatBitsToUint(packed_input_data[y0 * p.alphaw + x1]) >> 24) & 255u);
+        float a01 = float((floatBitsToUint(packed_input_data[y1 * p.alphaw + x0]) >> 24) & 255u);
+        float a11 = float((floatBitsToUint(packed_input_data[y1 * p.alphaw + x1]) >> 24) & 255u);
+        alpha = mix(mix(a00, a10, fx), mix(a01, a11, fx), fy);
+    }
+
+    uvec4 rgba = uvec4(clamp(
+        floor(vec4(rgb * 255.0, alpha) + vec4(0.5)),
+        vec4(0.0),
+        vec4(255.0)
+    ));
+    uint packed_pixel = rgba.r | (rgba.g << 8) | (rgba.b << 16) | (rgba.a << 24);
+    int output_index = (gy + p.offset_y) * p.outw + gx + p.offset_x;
+    top_blob_data[output_index] = uintBitsToFloat(packed_pixel);
+}
