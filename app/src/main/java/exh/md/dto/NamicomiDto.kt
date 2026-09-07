@@ -2,7 +2,6 @@ package exh.md.dto
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class NamicomiPageListDto(
     val result: String,

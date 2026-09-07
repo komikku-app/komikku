@@ -28,9 +28,12 @@ class AzukiHandler(val client: OkHttpClient) {
     private fun pageListRequest(chapterId: String): Request {
         val token = client.cookieJar.loadForRequest(baseUrl.toHttpUrl())
             .firstOrNull { it.name == "idToken" }?.value
-        return GET("$apiUrl/chapter/$chapterId/pages/v1", token?.let {
-            headers.newBuilder().add("x-user-token", token).build()
-        } ?: headers)
+        return GET(
+            "$apiUrl/chapter/$chapterId/pages/v1",
+            token?.let {
+                headers.newBuilder().add("x-user-token", token).build()
+            } ?: headers,
+        )
     }
 
     fun pageListParse(response: Response): List<Page> {
