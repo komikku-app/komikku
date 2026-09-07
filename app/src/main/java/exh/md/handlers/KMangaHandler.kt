@@ -261,7 +261,7 @@ private object ImageInterceptor : Interceptor {
         }
 
         // The final 32-bit seed is xor'd against the sum of titleId and episodeId
-        var seed32 = parsedInt.toUInt() xor (titleId.toUInt() + episodeId.toUInt())
+        var seed32 = parsedInt.toUInt() xor titleId.toUInt() + episodeId.toUInt()
 
         val pairs = mutableListOf<Pair<UInt, Int>>()
 
@@ -287,8 +287,8 @@ private object ImageInterceptor : Interceptor {
         val result = createBitmap(width, height)
         val canvas = Canvas(result)
 
-        val blockWidth = (width / 8 * 8) / 4
-        val blockHeight = (height / 8 * 8) / 4
+        val blockWidth = (width and -8) / 4
+        val blockHeight = (height and -8) / 4
         val srcRect = Rect()
         val dstRect = Rect()
 
