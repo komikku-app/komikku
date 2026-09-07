@@ -2,6 +2,7 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.AzukiPageListDto
 import kotlinx.serialization.json.Json
@@ -10,8 +11,11 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import uy.kohesive.injekt.injectLazy
+import kotlin.getValue
 
 class AzukiHandler(val client: OkHttpClient) {
+    private val json by injectLazy<Json>()
     val baseUrl = "https://www.omoi.com"
     private val apiUrl = "https://production.api.azuki.co"
 
@@ -37,7 +41,7 @@ class AzukiHandler(val client: OkHttpClient) {
     }
 
     fun pageListParse(response: Response): List<Page> {
-        return Json.decodeFromString<AzukiPageListDto>(response.body.string()).data.pages.mapIndexed { i, page ->
+        return with(json) { response.parseAs<AzukiPageListDto>() }.data.pages.mapIndexed { i, page ->
             val highRes = page.image.webp.maxByOrNull { it.width } ?: throw Exception("No image urls found for page $i")
             // This will give the highest possible resolution even if x2400 image doesn't exist.
             val highResUrl = highRes.url.replace("""/\d+_""".toRegex(), "/2400_")
