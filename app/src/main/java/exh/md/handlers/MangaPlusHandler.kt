@@ -59,7 +59,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     }
 
     private fun pageListParse(response: Response, lang: String): List<Page> {
-        val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body.bytes())
+        val result = response.use { ProtoBuf.decodeFromByteArray<MangaPlusResponse>(it.body.bytes()) }
 
         if (result.success == null) {
             throw Exception(result.error?.langPopup(lang.toMangaPlusLanguage())?.body ?: "error getting images")

@@ -69,5 +69,6 @@ fun String.toMangaPlusLanguage(): MangaPlusLanguage = when (this) {
     "th" -> MangaPlusLanguage.THAI
     "de" -> MangaPlusLanguage.GERMAN
     "vi" -> MangaPlusLanguage.VIETNAMESE
-    else -> throw IllegalStateException("Unsupported lang: $this")
+    // Default to English
+    else -> MangaPlusLanguage.ENGLISH
 }
