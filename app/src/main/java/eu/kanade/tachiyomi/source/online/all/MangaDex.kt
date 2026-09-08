@@ -34,6 +34,7 @@ import exh.md.handlers.KMangaHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaHotHandler
 import exh.md.handlers.MangaPlusHandler
+import exh.md.handlers.MangaUpHandler
 import exh.md.handlers.NamicomiHandler
 import exh.md.handlers.PageHandler
 import exh.md.network.MangaDexLoginHelper
@@ -136,6 +137,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val kMangaHandler by lazy {
         KMangaHandler(network.client)
     }
+    private val mangaUpHandler by lazy {
+        MangaUpHandler(network.client)
+    }
     private val pageHandler by lazy {
         PageHandler(
             delegate,
@@ -147,6 +151,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             mangaHotHandler,
             namicomiHandler,
             kMangaHandler,
+            mangaUpHandler,
         )
     }
 

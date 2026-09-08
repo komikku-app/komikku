@@ -18,6 +18,8 @@ import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.BirthdayCookie
 import exh.md.dto.LocalStorageAccount
 import exh.md.dto.ViewerApiResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Headers
@@ -49,11 +51,11 @@ class KMangaHandler(currentClient: OkHttpClient) {
 
     private var reloadUserId = false
 
-    private val baseUrl = "https://kmanga.kodansha.com"
-
     private val app = Injekt.get<Application>()
 
     private val executor = ContextCompat.getMainExecutor(app)
+
+    val baseUrl = "https://kmanga.kodansha.com"
 
     val headers = Headers.Builder()
         .add("Origin", baseUrl)
@@ -63,7 +65,7 @@ class KMangaHandler(currentClient: OkHttpClient) {
 
     val client = currentClient
         .newBuilder()
-        .addInterceptor(ImageInterceptor)
+        .addInterceptor(KMangaImageInterceptor)
         .addInterceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
@@ -158,7 +160,7 @@ class KMangaHandler(currentClient: OkHttpClient) {
         return "${keyHash}_$valueHash"
     }
 
-    private fun setUserId() {
+    private suspend fun setUserId() {
         reloadUserId = false
         val latch = CountDownLatch(1)
         var webView: WebView? = null
@@ -189,7 +191,7 @@ class KMangaHandler(currentClient: OkHttpClient) {
             view.loadDataWithBaseURL(baseUrl, "", "text/html", "UTF-8", null)
         }
 
-        latch.await(10, TimeUnit.SECONDS)
+        withContext(Dispatchers.IO) { latch.await(10, TimeUnit.SECONDS) }
 
         executor.execute { webView?.destroy() }
 
@@ -207,7 +209,7 @@ class KMangaHandler(currentClient: OkHttpClient) {
     }
 }
 
-private object ImageInterceptor : Interceptor {
+private object KMangaImageInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)

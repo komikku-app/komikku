@@ -27,6 +27,7 @@ class PageHandler(
     private val mangaHotHandler: MangaHotHandler,
     private val namicomiHandler: NamicomiHandler,
     private val kMangaHandler: KMangaHandler,
+    private val mangaUpHandler: MangaUpHandler,
 ) {
 
     suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean): List<Page> {
@@ -59,6 +60,10 @@ class PageHandler(
                     )
                     chapter.scanlator.equals("K Manga", true) -> kMangaHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
+                    )
+                    chapter.scanlator.equals("Manga UP!", true) -> mangaUpHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                        mangadex.lang,
                     )
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
@@ -148,6 +153,9 @@ class PageHandler(
             }
             page.imageUrl?.contains("kmanga", true) == true -> {
                 kMangaHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, kMangaHandler.headers), page)
+            }
+            page.imageUrl?.contains("manga-up", true) == true -> {
+                mangaUpHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaUpHandler.headers), page)
             }
             else -> null
         }
