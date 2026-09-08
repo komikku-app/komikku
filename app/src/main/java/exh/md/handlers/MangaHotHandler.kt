@@ -2,16 +2,18 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
+import exh.md.dto.MangaHotPageList
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import uy.kohesive.injekt.injectLazy
+import kotlin.getValue
 
 class MangaHotHandler(currentClient: OkHttpClient, userAgent: String) {
+    private val json by injectLazy<Json>()
     val baseUrl = "https://mangahot.jp"
     private val apiUrl = "https://api.mangahot.jp"
     val headers = Headers.Builder()
@@ -32,11 +34,9 @@ class MangaHotHandler(currentClient: OkHttpClient, userAgent: String) {
     }
 
     fun pageListParse(response: Response): List<Page> {
-        return Json.parseToJsonElement(response.body.string())
-            .jsonObject["content"]!!.jsonObject["contentUrls"]!!
-            .jsonArray.mapIndexed { index, element ->
-                val url = element.jsonPrimitive.content
-                Page(index, url, url)
-            }
+        return with(json) { response.parseAs<MangaHotPageList>() }
+            .content
+            .contentUrls
+            .mapIndexed { index, url -> Page(index, url, url) }
     }
 }
