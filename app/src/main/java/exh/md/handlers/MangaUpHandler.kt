@@ -41,11 +41,12 @@ class MangaUpHandler(currentClient: OkHttpClient) {
     private val apiUrl = "https://global-api.$domain/api"
     private val imgUrl = "https://global-img.$domain"
 
-    private val app = Injekt.get<Application>()
+    private val context = Injekt.get<Application>()
 
-    private val executor = ContextCompat.getMainExecutor(app)
+    private val executor = ContextCompat.getMainExecutor(context)
 
     private var secret: String? = null
+
     private val secretMutex = Mutex()
 
     val baseUrl = "https://global.$domain"
@@ -123,13 +124,16 @@ class MangaUpHandler(currentClient: OkHttpClient) {
         var token: String? = null
 
         executor.execute {
-            val webView = WebView(Injekt.get<Application>())
+            val webView = WebView(context)
+
+            @Suppress("DEPRECATION")
             with(webView.settings) {
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 databaseEnabled = true
                 blockNetworkImage = true
             }
+
             webView.webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView, url: String?) {
                     view.evaluateJavascript("window.localStorage.getItem('secret')") { value ->
@@ -142,6 +146,7 @@ class MangaUpHandler(currentClient: OkHttpClient) {
                     }
                 }
             }
+
             webView.loadDataWithBaseURL("$baseUrl/", " ", "text/html", "utf-8", null)
         }
 
@@ -153,13 +158,16 @@ class MangaUpHandler(currentClient: OkHttpClient) {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun flushSecret(target: String) = executor.execute {
-        val webView = WebView(Injekt.get<Application>())
+        val webView = WebView(context)
+
+        @Suppress("DEPRECATION")
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
             databaseEnabled = true
             blockNetworkImage = true
         }
+
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String?) {
                 val script = "if(window.localStorage.getItem('secret')==='$target'){window.localStorage.removeItem('secret');}"
@@ -169,6 +177,7 @@ class MangaUpHandler(currentClient: OkHttpClient) {
                 }
             }
         }
+
         webView.loadDataWithBaseURL("$baseUrl/", " ", "text/html", "utf-8", null)
     }
 
