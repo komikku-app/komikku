@@ -7,6 +7,9 @@
 # Gradle wrapper
 *.jar binary
 
+# Native static libraries - CRLF normalization corrupts ar archives
+*.a binary
+
 # Images
 *.webp binary
 *.png binary
