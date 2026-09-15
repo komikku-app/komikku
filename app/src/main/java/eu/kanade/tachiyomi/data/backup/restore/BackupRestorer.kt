@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.data.backup.BackupDecoder
 import eu.kanade.tachiyomi.data.backup.BackupNotifier
+import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionStore
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
@@ -80,31 +81,7 @@ class BackupRestorer(
 
     private suspend fun restoreFromFile(uri: Uri, options: RestoreOptions) {
         val backup = BackupDecoder(context).decode(uri)
-
-        // Store source mapping for error messages
-        val backupMaps = backup.backupSources
-        sourceMapping = backupMaps.associate { it.sourceId to it.name }
-
-        if (options.libraryEntries) {
-            restoreAmount += backup.backupManga.size + 1
-        }
-        if (options.categories) {
-            restoreAmount += 1
-        }
-        // SY -->
-        if (options.savedSearchesFeeds) {
-            restoreAmount += 1
-        }
-        // SY <--
-        if (options.appSettings) {
-            restoreAmount += 1
-        }
-        if (options.extensionStores) {
-            restoreAmount += backup.backupExtensionStores.size
-        }
-        if (options.sourceSettings) {
-            restoreAmount += 1
-        }
+        prepareRestore(backup, options)
 
         coroutineScope {
             if (options.categories) {
@@ -141,6 +118,30 @@ class BackupRestorer(
             }
 
             // TODO: optionally trigger online library + tracker update
+        }
+    }
+
+    private fun prepareRestore(backup: Backup, options: RestoreOptions) {
+        sourceMapping = backup.backupSources.associate { it.sourceId to it.name }
+        if (options.libraryEntries) {
+            restoreAmount += backup.backupManga.size + 1
+        }
+        if (options.categories) {
+            restoreAmount += 1
+        }
+        // SY -->
+        if (options.savedSearchesFeeds) {
+            restoreAmount += 1
+        }
+        // SY <--
+        if (options.appSettings) {
+            restoreAmount += 1
+        }
+        if (options.extensionStores) {
+            restoreAmount += backup.backupExtensionStores.size
+        }
+        if (options.sourceSettings) {
+            restoreAmount += 1
         }
     }
 
