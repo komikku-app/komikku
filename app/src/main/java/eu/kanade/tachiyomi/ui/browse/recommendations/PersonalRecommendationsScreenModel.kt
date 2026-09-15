@@ -154,7 +154,7 @@ class PersonalRecommendationsScreenModel(
                 val candidates = source.getPopularManga(1).mangas
                     .asSequence()
                     .distinctBy { it.url }
-                    .filterNot { manga -> (source.id to manga.url) in libraryKeys }
+                    .filterNot { manga -> source.id to manga.url in libraryKeys }
                     .take(MAX_CANDIDATES_PER_SOURCE)
                     .toList()
 
