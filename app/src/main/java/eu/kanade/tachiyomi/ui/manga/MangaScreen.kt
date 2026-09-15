@@ -330,6 +330,13 @@ class MangaScreen(
                     screenModel.showTrackDialog()
                 }
             },
+            onTasteClicked = { rating ->
+                if (rating == null) {
+                    screenModel.clearMangaTaste()
+                } else {
+                    screenModel.setMangaTaste(rating)
+                }
+            },
             onTagSearch = { scope.launch { performGenreSearch(navigator, it, screenModel.source!!) } },
             onFilterButtonClicked = screenModel::showSettingsDialog,
             onRefresh = screenModel::fetchAllFromSource,

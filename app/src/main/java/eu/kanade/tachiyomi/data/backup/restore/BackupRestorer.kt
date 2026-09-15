@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionStore
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import eu.kanade.tachiyomi.data.backup.models.BackupMangaTaste
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
@@ -17,6 +18,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.FeedRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
+import eu.kanade.tachiyomi.data.backup.restore.restorers.TasteRestorer
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +47,7 @@ class BackupRestorer(
     // SY <--
     // KMK -->
     private val feedRestorer: FeedRestorer = FeedRestorer(),
+    private val tasteRestorer: TasteRestorer = TasteRestorer(),
     // KMK <--
 ) {
 
@@ -83,7 +86,7 @@ class BackupRestorer(
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
 
         if (options.libraryEntries) {
-            restoreAmount += backup.backupManga.size
+            restoreAmount += backup.backupManga.size + 1
         }
         if (options.categories) {
             restoreAmount += 1
@@ -123,11 +126,18 @@ class BackupRestorer(
             if (options.sourceSettings) {
                 restoreSourcePreferences(backup.backupSourcePreferences)
             }
-            if (options.libraryEntries) {
+            val mangaJob = if (options.libraryEntries) {
                 restoreManga(backup.backupManga, if (options.categories) backup.backupCategories else emptyList())
+            } else {
+                null
             }
             if (options.extensionStores) {
                 restoreExtensionStores(backup.backupExtensionStores)
+            }
+
+            if (options.libraryEntries) {
+                mangaJob?.join()
+                restoreMangaTastes(backup.backupMangaTastes)
             }
 
             // TODO: optionally trigger online library + tracker update
@@ -204,6 +214,19 @@ class BackupRestorer(
                     // KMK <--
                 }
             }
+    }
+
+    private suspend fun restoreMangaTastes(backupTastes: List<BackupMangaTaste>) {
+        tasteRestorer(backupTastes).forEach { message -> errors.add(Date() to message) }
+        restoreProgress += 1
+        with(notifier) {
+            showRestoreProgress(
+                context.stringResource(MR.strings.rated_manga_title),
+                restoreProgress,
+                restoreAmount,
+                isSync,
+            ).show(Notifications.ID_RESTORE_PROGRESS)
+        }
     }
 
     private fun CoroutineScope.restoreAppPreferences(
