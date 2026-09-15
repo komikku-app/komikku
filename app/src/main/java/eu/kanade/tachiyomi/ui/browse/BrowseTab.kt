@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.Navigator
@@ -27,6 +28,7 @@ import eu.kanade.tachiyomi.ui.browse.extension.extensionsTab
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.feedTab
 import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
+import eu.kanade.tachiyomi.ui.browse.recommendations.personalRecommendationsTab
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.sourcesTab
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -73,6 +75,7 @@ data object BrowseTab : Tab {
         // SY -->
         val hideFeedTab by remember { Injekt.get<UiPreferences>().hideFeedTab().asState(scope) }
         val feedTabInFront by remember { Injekt.get<UiPreferences>().feedTabInFront().asState(scope) }
+        val showPersonalRecommendations by remember { Injekt.get<UiPreferences>().showPersonalRecommendations().asState(scope) }
         // SY <--
 
         // Hoisted for extensions tab's search bar
@@ -118,10 +121,24 @@ data object BrowseTab : Tab {
                     extensionsTab(extensionsScreenModel),
                     migrateSourceTab(),
                 )
+        }.let { currentTabs ->
+            if (showPersonalRecommendations) {
+                currentTabs.add(
+                    currentTabs.lastIndex,
+                    personalRecommendationsTab(bulkFavoriteScreenModel),
+                )
+            } else {
+                currentTabs
+            }
         }
         // SY <--
 
         val state = rememberPagerState { tabs.size }
+        val currentTabs by rememberUpdatedState(tabs)
+
+        LaunchedEffect(tabs.size) {
+            if (state.currentPage >= tabs.size) state.scrollToPage(tabs.lastIndex)
+        }
 
         TabbedScreen(
             titleRes = MR.strings.browse,
@@ -136,7 +153,10 @@ data object BrowseTab : Tab {
         )
         LaunchedEffect(Unit) {
             switchToExtensionTabChannel.receiveAsFlow()
-                .collectLatest { state.scrollToPage(/* SY --> */2/* SY <-- */) }
+                .collectLatest {
+                    val extensionPage = currentTabs.indexOfFirst { it.titleRes == MR.strings.label_extensions }
+                    if (extensionPage >= 0) state.scrollToPage(extensionPage)
+                }
         }
 
         LaunchedEffect(Unit) {
