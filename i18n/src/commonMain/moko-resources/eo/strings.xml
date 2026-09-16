@@ -916,4 +916,5 @@
     <string name="considering">Konsiderataj</string>
     <string name="pref_filter_update_categories_details">Ĝisdatigoj en ekskluzivitaj kategorioj ne estos montrotaj, eĉ se ili estas ankaŭ en inkluzivitaj kategorioj.</string>
     <string name="pref_filter_upcoming_categories_details">Titoloj en ekskluzivitaj kategorioj ne estos montrotaj, eĉ se ili estas ankaŭ en inkluzivitaj kategorioj.</string>
+    <string name="pref_category_extensions">Etendaĵoj</string>
 </resources>

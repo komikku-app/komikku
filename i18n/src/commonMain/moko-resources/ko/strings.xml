@@ -918,4 +918,10 @@
     <string name="downloading_with_progress">다운로드 중… (%d%%)</string>
     <string name="pref_filter_update_categories_details">제외된 카테고리 업데이트는 포함되는 카테고리가 있어도 표시되지 않습니다.</string>
     <string name="pref_filter_upcoming_categories_details">제외 범주에 속한 작품은 포함 범주에 속해 있더라도 표시되지 않습니다.</string>
+    <string name="pref_category_extensions">확장 앱</string>
+    <string name="pref_allowed_content_warnings">허용 컨텐츠 등급</string>
+    <string name="pref_apply_content_warnings_to_installed">설치된 확장 앱에도 적용</string>
+    <string name="pref_apply_content_warnings_to_installed_summary">비활성화하면 이미 설치한 확장 앱은 등급과 무관하게 컨텐츠를 불러오고 업데이트합니다</string>
+    <string name="content_warnings_info">허용하지 않은 등급의 확장 앱은 이미 설치된 경우 목록에 남지만 소스는 표시되지 않으며, 설치하지 않은 경우 목록에서 숨겨집니다. 이 설정으로도 비공식 확장 앱이나 등급이 잘못 지정된 확장 앱이 앱에 18+ 콘텐츠를 표시하는 것을 완전히 막을 수는 없습니다.</string>
+    <string name="ext_filtered">필터링됨</string>
 </resources>

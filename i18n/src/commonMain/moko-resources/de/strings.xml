@@ -916,4 +916,13 @@
     <string name="downloading_with_progress">Wird heruntergeladen… (%d%%)</string>
     <string name="pref_filter_update_categories_details">Aktualisierungen in ausgeschlossen Kategorien werden nicht angezeigt, selbst wenn sie in eingeschlossenen Kategorien vorkommen.</string>
     <string name="pref_filter_upcoming_categories_details">Titel in ausgeschlossen Kategorien werden nicht angezeigt, selbst wenn sie in eingeschlossenen Kategorien vorkommen.</string>
+    <string name="pref_category_extensions">Erweiterungen</string>
+    <string name="pref_allowed_content_warnings">Erlaubte Inhaltswarnungen</string>
+    <string name="pref_apply_content_warnings_to_installed">Auch auf installierte Erweiterungen anwenden</string>
+    <string name="pref_apply_content_warnings_to_installed_summary">Wenn deaktiviert, werden bereits installierte Erweiterungen unabhängig von ihren Warnungen weiterhin geladen und aktualisiert</string>
+    <string name="content_warnings_info">Installierte Erweiterungen, die nicht geladen sind, bleiben ohne ihre Quellen gelistet; nicht installierte Erweiterungen bleiben versteckt. Dies verhindert nicht, dass inoffizielle oder potentiell falsch markierte Erweiterungen Ü18-Inhalte in der App anzeigen.</string>
+    <string name="ext_filtered">Gefiltert</string>
+    <string name="ext_not_loaded">Nicht geladen</string>
+    <string name="ext_not_loaded_dialog">Konnte nicht geladen werden</string>
+    <string name="ext_copy_stacktrace">Stacktrace kopieren</string>
 </resources>

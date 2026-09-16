@@ -888,4 +888,16 @@
     <string name="download_bookmarked">Segnato</string>
     <string name="action_filter_excluded_scanlators">Filtrare i scanlator esclusi</string>
     <string name="considering">Considerando</string>
+    <string name="ext_content_warning_mixed_description">La fonte per questa estensione potebbe contenere contenuto non sicuro o 18+.</string>
+    <string name="downloading_with_progress">Scaricamento… (%d%%)</string>
+    <string name="ext_info_warning">Avviso</string>
+    <string name="ext_content_warning_nsfw">Per maggiorenni</string>
+    <string name="label_support_us">Supportaci</string>
+    <string name="pref_allowed_content_warnings">Avvisi sui contenuti consentiti</string>
+    <string name="ext_content_warning_nsfw_description">Le fonti per questa estensione sono dirette principalmente a contenuti 18+.</string>
+    <string name="theme_tokyonight">Tokyo Notte</string>
+    <string name="pref_category_extensions">Estensioni</string>
+    <string name="ext_content_warning_mixed">Misto</string>
+    <string name="ext_content_warning_safe">Sicuro</string>
+    <string name="content_warnings_info">Per rendere effettive le modifiche è necessario riavviare l\'app. Le estensioni che non sono caricate non forniranno le loro fonti in nessuna parte dell\'app. Ciò non impedisce alle estensioni non ufficiali o potenzialmente contrassegnate in modo errato di mostrare contenuti 18+ all\'interno dell\'app.</string>
 </resources>
