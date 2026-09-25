@@ -182,7 +182,11 @@ fun HistoryItem(
                 }
                 // KMK <--
                 Text(
-                    text = if (history.chapterNumber > -1) {
+                    // KMK -->
+                    text = history.chapterCustomName?.let {
+                        stringResource(KMR.strings.recent_manga_custom_name_time, it, readAt)
+                    } ?: if (history.chapterNumber > -1) {
+                        // KMK <--
                         stringResource(
                             MR.strings.recent_manga_time,
                             formatChapterNumber(history.chapterNumber),

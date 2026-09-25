@@ -242,4 +242,5 @@
     <!-- Chapter renaming -->
     <string name="action_rename_chapter">Rename chapter</string>
     <string name="rename_chapter_source_name">Source name: %s</string>
+    <string name="recent_manga_custom_name_time">%1$s - %2$s</string>
 </resources>

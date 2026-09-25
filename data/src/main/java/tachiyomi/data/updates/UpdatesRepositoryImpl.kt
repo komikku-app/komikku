@@ -80,6 +80,9 @@ class UpdatesRepositoryImpl(
         @Suppress("UNUSED_PARAMETER") dateUpload: Long,
         dateFetch: Long,
         excludedScanlator: String?,
+        // KMK -->
+        chapterCustomName: String?,
+        // KMK <--
     ): UpdatesWithRelations = UpdatesWithRelations(
         mangaId = mangaId,
         // SY -->
@@ -101,5 +104,8 @@ class UpdatesRepositoryImpl(
             ogUrl = thumbnailUrl,
             lastModified = coverLastModified,
         ),
+        // KMK -->
+        chapterCustomName = chapterCustomName,
+        // KMK <--
     )
 }
