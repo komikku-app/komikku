@@ -37,6 +37,10 @@ class ChapterImpl : Chapter {
 
     override var memo: JsonObject = JsonObject.EMPTY
 
+    // KMK -->
+    override var custom_name: String? = null
+    // KMK <--
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false

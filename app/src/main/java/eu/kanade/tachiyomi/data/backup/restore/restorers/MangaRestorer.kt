@@ -270,6 +270,9 @@ class MangaRestorer(
                     chapter.dateUpload,
                     chapter.version,
                     chapter.memo,
+                    // KMK -->
+                    chapter.customName,
+                    // KMK <--
                 )
             }
         }
@@ -297,6 +300,10 @@ class MangaRestorer(
                     isSyncing = 1,
                     memo = chapter.memo.let(MemoColumnAdapter::encode),
                 )
+                // KMK -->
+                // A backup without a custom name keeps the one already set on this device
+                chapter.customName?.let { chaptersQueries.updateCustomName(it, chapter.id) }
+                // KMK <--
             }
         }
     }

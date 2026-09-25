@@ -45,4 +45,7 @@ fun Chapter.toDbChapter(): DbChapter = ChapterImpl().also {
     // SY -->
     it.last_modified = lastModifiedAt
     // SY <--
+    // KMK -->
+    it.custom_name = customName
+    // KMK <--
 }

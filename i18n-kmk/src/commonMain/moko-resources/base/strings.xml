@@ -238,4 +238,8 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+
+    <!-- Chapter renaming -->
+    <string name="action_rename_chapter">Rename chapter</string>
+    <string name="rename_chapter_source_name">Source name: %s</string>
 </resources>

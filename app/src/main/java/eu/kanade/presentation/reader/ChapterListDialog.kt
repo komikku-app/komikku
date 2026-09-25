@@ -89,7 +89,9 @@ fun ChapterListDialog(
                     else -> Download.State.NOT_DOWNLOADED
                 }
                 MangaChapterListItem(
-                    title = chapterItem.chapter.name,
+                    // KMK -->
+                    title = chapterItem.chapter.displayName,
+                    // KMK <--
                     date = chapterItem.chapter.dateUpload
                         .takeIf { it > 0L }
                         ?.let {

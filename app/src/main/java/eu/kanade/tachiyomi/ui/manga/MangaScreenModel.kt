@@ -121,6 +121,7 @@ import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.DeleteChapters
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
+import tachiyomi.domain.chapter.interactor.SetChapterCustomName
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
@@ -231,6 +232,7 @@ class MangaScreenModel(
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get(),
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get(),
     private val deleteChaptersFromDb: DeleteChapters = Injekt.get(),
+    private val setChapterCustomName: SetChapterCustomName = Injekt.get(),
     // KMK <--
 ) : StateScreenModel<MangaScreenModel.State>(State.Loading) {
 
@@ -1903,6 +1905,7 @@ class MangaScreenModel(
 
         // KMK -->
         data object ClearManga : Dialog
+        data class RenameChapter(val chapter: Chapter) : Dialog
         // KMK <--
 
         data object SettingsSheet : Dialog
@@ -1969,6 +1972,20 @@ class MangaScreenModel(
     // KMK -->
     fun showClearMangaDialog() {
         updateSuccessState { it.copy(dialog = Dialog.ClearManga) }
+    }
+
+    fun showRenameChapterDialog(chapter: Chapter) {
+        updateSuccessState { it.copy(dialog = Dialog.RenameChapter(chapter)) }
+    }
+
+    /**
+     * @param customName the name to display, or `null` to use the source name again.
+     */
+    fun renameChapter(chapter: Chapter, customName: String?) {
+        toggleAllSelection(false)
+        screenModelScope.launchIO {
+            setChapterCustomName.await(chapter.id, customName)
+        }
     }
     // KMK <--
 

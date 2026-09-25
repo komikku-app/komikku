@@ -19,9 +19,18 @@ data class Chapter(
     val lastModifiedAt: Long,
     val version: Long,
     val memo: JsonObject,
+    // KMK -->
+    /** User-defined name, kept across source updates. `null` means the source name is used. */
+    val customName: String? = null,
+    // KMK <--
 ) {
     val isRecognizedNumber: Boolean
         get() = chapterNumber >= 0f
+
+    // KMK -->
+    val displayName: String
+        get() = customName ?: name
+    // KMK <--
 
     fun copyFrom(other: Chapter): Chapter {
         return copy(
