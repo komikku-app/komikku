@@ -425,37 +425,40 @@ class MangaRestorer(
     }
 
     private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
-        val toUpdate = backupHistory.mapNotNull { history ->
-            // KMK -->
-            val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, history.url) }
-                .firstOrNull()
-            // KMK <--
-            val item = history.getHistoryImpl()
-
-            if (dbHistory == null) {
+        val toUpdate = backupHistory
+            .groupBy { it.url }
+            .mapNotNull { (chapterUrl, copies) ->
+                val readAt = copies.maxOf { it.lastRead }
+                val readDuration = copies.sumOf { it.readDuration }
                 // KMK -->
-                val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(history.url, manga.id) }
+                val dbHistory = handler.awaitList { historyQueries.getHistoryByChapterUrl(manga.id, chapterUrl) }
                     .firstOrNull()
                 // KMK <--
-                return@mapNotNull if (chapter == null) {
-                    // Chapter doesn't exist; skip
-                    null
-                } else {
-                    // New history entry
-                    item.copy(chapterId = chapter._id)
-                }
-            }
+                val item = copies.first().getHistoryImpl()
 
-            // Update history entry
-            item.copy(
-                id = dbHistory._id,
-                chapterId = dbHistory.chapter_id,
-                readAt = max(item.readAt?.time ?: 0L, dbHistory.last_read?.time ?: 0L)
-                    .takeIf { it > 0L }
-                    ?.let { Date(it) },
-                readDuration = max(item.readDuration, dbHistory.time_read) - dbHistory.time_read,
-            )
-        }
+                if (dbHistory == null) {
+                    // KMK -->
+                    val chapter = handler.awaitList { chaptersQueries.getChapterByUrlAndMangaId(chapterUrl, manga.id) }
+                        .firstOrNull()
+                        // KMK <--
+                        // Chapter doesn't exist; skip
+                        ?: return@mapNotNull null
+                    // New history entry
+                    return@mapNotNull item.copy(
+                        chapterId = chapter._id,
+                        readAt = Date(readAt),
+                        readDuration = readDuration,
+                    )
+                }
+
+                // Update history entry
+                item.copy(
+                    id = dbHistory._id,
+                    chapterId = dbHistory.chapter_id,
+                    readAt = Date(max(readAt, dbHistory.last_read?.time ?: 0L)),
+                    readDuration = max(readDuration, dbHistory.time_read) - dbHistory.time_read,
+                )
+            }
 
         if (toUpdate.isNotEmpty()) {
             handler.await(true) {
