@@ -7,7 +7,7 @@ data class SyncSettings(
     val tracking: Boolean = true,
     val history: Boolean = true,
     val appSettings: Boolean = true,
-    val extensionRepoSettings: Boolean = true,
+    val extensionStores: Boolean = true,
     val sourceSettings: Boolean = true,
     val privateSettings: Boolean = false,
 

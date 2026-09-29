@@ -119,7 +119,7 @@
     <string name="action_copy_to_clipboard_combined_page">Скопировать объединенную страницу в буфер обмена</string>
     <string name="auto_update_app_disable_auto_download">Не скачивать автоматически</string>
     <string name="action_remove_merged">Удалить оригинальные тайтлы из библиотеки?</string>
-    <string name="batch_add_description">Поддержка: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Поддержка: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="pref_top_align_cover">Выровнять обложку к верху</string>
     <string name="pref_top_align_cover_summary">Показать обложку выровненной к вершине рядом с информацией о манге</string>
     <string name="theme_doom">Дум</string>

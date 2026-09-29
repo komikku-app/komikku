@@ -10,8 +10,8 @@ import java.util.UUID
 class SyncPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
-    fun clientHost() = preferenceStore.getString("sync_client_host", "https://sync.tachiyomi.org")
-    fun clientAPIKey() = preferenceStore.getString("sync_client_api_key", "")
+    fun clientHost() = preferenceStore.getString("connection_sync_client_host", "https://sync.tachiyomi.org")
+    fun clientAPIKey() = preferenceStore.getString("connection_sync_client_api_key", "")
     fun lastSyncTimestamp() = preferenceStore.getLong(Preference.appStateKey("last_sync_timestamp"), 0L)
 
     fun lastSyncEtag() = preferenceStore.getString("sync_etag", "")
@@ -20,19 +20,19 @@ class SyncPreferences(
     fun syncService() = preferenceStore.getInt("sync_service", 0)
 
     // KMK -->
-    fun webDavUrl() = preferenceStore.getString("webdav_url", "")
-    fun webDavUsername() = preferenceStore.getString("webdav_username", "")
-    fun webDavPassword() = preferenceStore.getString("webdav_password", "")
-    fun webDavFolder() = preferenceStore.getString("webdav_folder", "komikku")
+    fun webDavUrl() = preferenceStore.getString("connection_webdav_url", "")
+    fun webDavUsername() = preferenceStore.getString("connection_webdav_username", "")
+    fun webDavPassword() = preferenceStore.getString("connection_webdav_password", "")
+    fun webDavFolder() = preferenceStore.getString("connection_webdav_folder", "komikku")
     // KMK <--
 
     fun googleDriveAccessToken() = preferenceStore.getString(
-        Preference.appStateKey("google_drive_access_token"),
+        Preference.appStateKey("connection_google_drive_access_token"),
         "",
     )
 
     fun googleDriveRefreshToken() = preferenceStore.getString(
-        Preference.appStateKey("google_drive_refresh_token"),
+        Preference.appStateKey("connection_google_drive_refresh_token"),
         "",
     )
 
@@ -55,39 +55,39 @@ class SyncPreferences(
 
     fun getSyncSettings(): SyncSettings {
         return SyncSettings(
-            libraryEntries = preferenceStore.getBoolean("library_entries", true).get(),
-            categories = preferenceStore.getBoolean("categories", true).get(),
-            chapters = preferenceStore.getBoolean("chapters", true).get(),
-            tracking = preferenceStore.getBoolean("tracking", true).get(),
-            history = preferenceStore.getBoolean("history", true).get(),
-            appSettings = preferenceStore.getBoolean("appSettings", true).get(),
-            extensionRepoSettings = preferenceStore.getBoolean("extensionRepoSettings", true).get(),
-            sourceSettings = preferenceStore.getBoolean("sourceSettings", true).get(),
-            privateSettings = preferenceStore.getBoolean("privateSettings", true).get(),
+            libraryEntries = preferenceStore.getBoolean("sync_library_entries", true).get(),
+            categories = preferenceStore.getBoolean("sync_categories", true).get(),
+            chapters = preferenceStore.getBoolean("sync_chapters", true).get(),
+            tracking = preferenceStore.getBoolean("sync_tracking", true).get(),
+            history = preferenceStore.getBoolean("sync_history", true).get(),
+            appSettings = preferenceStore.getBoolean("sync_appSettings", true).get(),
+            extensionStores = preferenceStore.getBoolean("sync_extensionStores", true).get(),
+            sourceSettings = preferenceStore.getBoolean("sync_sourceSettings", true).get(),
+            privateSettings = preferenceStore.getBoolean("sync_privateSettings", true).get(),
 
             // SY -->
-            customInfo = preferenceStore.getBoolean("customInfo", true).get(),
-            readEntries = preferenceStore.getBoolean("readEntries", true).get(),
-            savedSearchesFeeds = preferenceStore.getBoolean("savedSearchesFeeds", true).get(),
+            customInfo = preferenceStore.getBoolean("sync_customInfo", true).get(),
+            readEntries = preferenceStore.getBoolean("sync_readEntries", true).get(),
+            savedSearchesFeeds = preferenceStore.getBoolean("sync_savedSearchesFeeds", true).get(),
             // SY <--
         )
     }
 
     fun setSyncSettings(syncSettings: SyncSettings) {
-        preferenceStore.getBoolean("library_entries", true).set(syncSettings.libraryEntries)
-        preferenceStore.getBoolean("categories", true).set(syncSettings.categories)
-        preferenceStore.getBoolean("chapters", true).set(syncSettings.chapters)
-        preferenceStore.getBoolean("tracking", true).set(syncSettings.tracking)
-        preferenceStore.getBoolean("history", true).set(syncSettings.history)
-        preferenceStore.getBoolean("appSettings", true).set(syncSettings.appSettings)
-        preferenceStore.getBoolean("extensionRepoSettings", true).set(syncSettings.extensionRepoSettings)
-        preferenceStore.getBoolean("sourceSettings", true).set(syncSettings.sourceSettings)
-        preferenceStore.getBoolean("privateSettings", true).set(syncSettings.privateSettings)
+        preferenceStore.getBoolean("sync_library_entries", true).set(syncSettings.libraryEntries)
+        preferenceStore.getBoolean("sync_categories", true).set(syncSettings.categories)
+        preferenceStore.getBoolean("sync_chapters", true).set(syncSettings.chapters)
+        preferenceStore.getBoolean("sync_tracking", true).set(syncSettings.tracking)
+        preferenceStore.getBoolean("sync_history", true).set(syncSettings.history)
+        preferenceStore.getBoolean("sync_appSettings", true).set(syncSettings.appSettings)
+        preferenceStore.getBoolean("sync_extensionStores", true).set(syncSettings.extensionStores)
+        preferenceStore.getBoolean("sync_sourceSettings", true).set(syncSettings.sourceSettings)
+        preferenceStore.getBoolean("sync_privateSettings", true).set(syncSettings.privateSettings)
 
         // SY -->
-        preferenceStore.getBoolean("customInfo", true).set(syncSettings.customInfo)
-        preferenceStore.getBoolean("readEntries", true).set(syncSettings.readEntries)
-        preferenceStore.getBoolean("savedSearchesFeeds", true).set(syncSettings.savedSearchesFeeds)
+        preferenceStore.getBoolean("sync_customInfo", true).set(syncSettings.customInfo)
+        preferenceStore.getBoolean("sync_readEntries", true).set(syncSettings.readEntries)
+        preferenceStore.getBoolean("sync_savedSearchesFeeds", true).set(syncSettings.savedSearchesFeeds)
         // SY <--
     }
 

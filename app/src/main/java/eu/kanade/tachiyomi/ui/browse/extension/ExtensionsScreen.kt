@@ -59,7 +59,7 @@ class ExtensionsScreen(private val searchSource: String? = null) : Screen() {
 
             /*
              * This will redo the searching for [searchSource] every times the screen is launched, for example when
-             * back from the [ExtensionFilterScreen] or from the [ExtensionReposScreen].
+             * back from the [ExtensionFilterScreen] or from the [ExtensionStoresScreen].
              * Not really desired but let's accept it.
              */
             if (!searchSource.isNullOrBlank()) onChangeSearchQuery(searchSource)

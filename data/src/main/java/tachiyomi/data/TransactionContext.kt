@@ -3,6 +3,7 @@ package tachiyomi.data
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asContextElement
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -14,14 +15,13 @@ import kotlin.concurrent.atomics.incrementAndFetch
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 
 /**
  * Returns the transaction dispatcher if we are on a transaction, or the database dispatchers.
  */
 internal suspend fun AndroidDatabaseHandler.getCurrentDatabaseContext(): CoroutineContext {
-    return coroutineContext[TransactionElement]?.transactionDispatcher ?: queryDispatcher
+    return currentCoroutineContext()[TransactionElement]?.transactionDispatcher ?: queryDispatcher
 }
 
 /**
@@ -41,7 +41,7 @@ internal suspend fun AndroidDatabaseHandler.getCurrentDatabaseContext(): Corouti
 internal suspend fun <T> AndroidDatabaseHandler.withTransaction(block: suspend () -> T): T {
     // Use inherited transaction context if available, this allows nested suspending transactions.
     val transactionContext =
-        coroutineContext[TransactionElement]?.transactionDispatcher ?: createTransactionContext()
+        currentCoroutineContext()[TransactionElement]?.transactionDispatcher ?: createTransactionContext()
     return withContext(transactionContext) {
         val transactionElement = coroutineContext[TransactionElement]!!
         transactionElement.acquire()
@@ -81,7 +81,7 @@ private suspend fun AndroidDatabaseHandler.createTransactionContext(): Coroutine
     // context get cancelled before we can even start using this job. Otherwise, the acquired
     // transaction thread will forever wait for the controlJob to be cancelled.
     // see b/148181325
-    coroutineContext[Job]?.invokeOnCompletion {
+    currentCoroutineContext()[Job]?.invokeOnCompletion {
         controlJob.cancel()
     }
 

@@ -36,7 +36,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.SourcesSearchBox
-import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import kotlinx.collections.immutable.ImmutableList
@@ -46,7 +46,6 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
-import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
@@ -58,11 +57,12 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.plus
 import kotlin.time.Duration.Companion.seconds
+import tachiyomi.domain.source.model.Source as DomainSource
 
 data class FeedItemUI(
     val feed: FeedSavedSearch,
     val savedSearch: SavedSearch?,
-    val source: CatalogueSource?,
+    val source: Source?,
     val title: String,
     val subtitle: String,
     val results: List<Manga>?,
@@ -72,8 +72,8 @@ data class FeedItemUI(
 fun FeedScreen(
     state: FeedScreenState,
     contentPadding: PaddingValues,
-    onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
-    onClickSource: (CatalogueSource) -> Unit,
+    onClickSavedSearch: (SavedSearch, Source) -> Unit,
+    onClickSource: (Source) -> Unit,
     // KMK -->
     onLongClickFeed: (FeedItemUI) -> Unit,
     // KMK <--
@@ -185,9 +185,9 @@ fun FeedItem(
 
 @Composable
 fun FeedAddDialog(
-    sources: ImmutableList<CatalogueSource>,
+    sources: ImmutableList<Source>,
     onDismiss: () -> Unit,
-    onClickAdd: (CatalogueSource?) -> Unit,
+    onClickAdd: (Source?) -> Unit,
 ) {
     // KMK -->
     var query by remember { mutableStateOf("") }
@@ -204,7 +204,7 @@ fun FeedAddDialog(
     val composeOptions: List<@Composable () -> Unit> = sourceList
         .map {
             {
-                val source = Source(
+                val source = DomainSource(
                     id = it.id,
                     lang = it.lang,
                     name = it.name,
@@ -247,10 +247,10 @@ fun FeedAddDialog(
 
 @Composable
 fun FeedAddSearchDialog(
-    source: CatalogueSource,
+    source: Source,
     savedSearches: ImmutableList<SavedSearch?>,
     onDismiss: () -> Unit,
-    onClickAdd: (CatalogueSource, SavedSearch?) -> Unit,
+    onClickAdd: (Source, SavedSearch?) -> Unit,
 ) {
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(

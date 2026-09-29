@@ -53,7 +53,7 @@
         <item quantity="other">%1$d சில நாட்களுக்கு முன்பு</item>
     </plurals>
     <plurals name="humanize_hour">
-        <item quantity="one">%1$d மணி நேரத்திற்கு முன்பு</item>
+        <item quantity="one">%1$d மணி முன்பு</item>
         <item quantity="other">%1$d மணி நேரத்திற்கு முன்பு</item>
     </plurals>
     <plurals name="humanize_minute">

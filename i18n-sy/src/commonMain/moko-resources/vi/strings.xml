@@ -112,7 +112,7 @@
     <string name="google_drive_sync_data_not_found">Không tìm thấy dữ liệu đồng bộ trong Google Drive</string>
     <string name="author">Tác giả</string>
     <string name="artist">Họa sĩ</string>
-    <string name="clear_db_exclude_read">Giữ các mục có chương đã đọc</string>
+    <string name="clear_db_exclude_read">Giữ các truyện có chương đã đọc</string>
     <string name="action_clean_titles">Làm sạch tiêu đề</string>
     <string name="pref_category_fork">Cài đặt nhánh</string>
     <string name="ehentai_prefs_account_settings">Cài đặt tài khoản trang web E-Hentai</string>

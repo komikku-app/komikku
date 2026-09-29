@@ -10,10 +10,12 @@ import exh.md.handlers.SimilarHandler
 import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
 import exh.md.utils.MdLang
+import exh.md.utils.MdUtil.Companion.baseUrl
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import okhttp3.Headers
 import tachiyomi.data.source.NoResultsException
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
@@ -45,7 +47,16 @@ internal class MangaDexSimilarPagingSource(
         // KMK -->
         get() = recommendationSource.id
 
-    private val client by lazy { Injekt.get<NetworkHelper>().client }
+    private val network by lazy { Injekt.get<NetworkHelper>() }
+    private val client by lazy { network.client }
+    private val headers by lazy {
+        Headers.Builder().apply {
+            set("Referer", "$baseUrl/")
+            set("Origin", baseUrl)
+            set("sec-fetch-dest", "document")
+            set("sec-fetch-mode", "navigate")
+        }.build()
+    }
 
     private val mdLang by lazy {
         recommendationSource.lang.let { lang ->
@@ -54,7 +65,7 @@ internal class MangaDexSimilarPagingSource(
     }
 
     private val mangadexService by lazy {
-        MangaDexService(client)
+        MangaDexService(client, headers)
     }
     private val similarService by lazy {
         SimilarService(client)

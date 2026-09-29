@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">Ачыстка завершана. Выдалена %d тэчка</item>
+        <item quantity="few">Ачыстка завершана. Выдалена %d тэчкі</item>
+        <item quantity="many">Ачыстка завершана. Выдалена %d тэчак</item>
+        <item quantity="other">Ачыстка завершана. Выдалена %d тэчак</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d таймер блакіроўкі</item>
+        <item quantity="few">%d таймеры блакіроўкі</item>
+        <item quantity="many">%d таймераў блакіроўкі</item>
+        <item quantity="other">%d таймераў блакіроўкі</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Паўтор %1$d няўдалай старонкі…</item>
+        <item quantity="few">Паўтор %1$d няўдалых старонак…</item>
+        <item quantity="many">Паўтор %1$d няўдалых старонак…</item>
+        <item quantity="other">Паўтор %1$d няўдалых старонак…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d тэг у спісе сартавання. Ён дадае магчымасць сартаваць бібліятэку так, каб творы з больш прыярытэтнымі тэгамі ішлі першымі</item>
+        <item quantity="few">%1$d тэгі ў спісе сартавання. Яны дадаюць магчымасць сартаваць бібліятэку так, каб творы з больш прыярытэтнымі тэгамі ішлі першымі</item>
+        <item quantity="many">%1$d тэгаў у спісе сартавання. Яны дадаюць магчымасць сартаваць бібліятэку так, каб творы з больш прыярытэтнымі тэгамі ішлі першымі</item>
+        <item quantity="other">%1$d тэгаў у спісе сартавання. Яны дадаюць магчымасць сартаваць бібліятэку так, каб творы з больш прыярытэтнымі тэгамі ішлі першымі</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">Перанесці %1$d%2$s твор?</item>
+        <item quantity="few">Перанесці %1$d%2$s творы?</item>
+        <item quantity="many">Перанесці %1$d%2$s твораў?</item>
+        <item quantity="other">Перанесці %1$d%2$s твораў?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">Скапіяваць %1$d%2$s твор?</item>
+        <item quantity="few">Скапіяваць %1$d%2$s творы?</item>
+        <item quantity="many">Скапіяваць %1$d%2$s твораў?</item>
+        <item quantity="other">Скапіяваць %1$d%2$s твораў?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%d твор перанесен</item>
+        <item quantity="few">%d творы перанесены</item>
+        <item quantity="many">%d твораў перанесена</item>
+        <item quantity="other">%d твораў перанесена</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d старонка</item>
+        <item quantity="few">%1$d старонкі</item>
+        <item quantity="many">%1$d старонак</item>
+        <item quantity="other">%1$d старонак</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d старонка</item>
+        <item quantity="few">%2$s, %1$d старонкі</item>
+        <item quantity="many">%2$s, %1$d старонак</item>
+        <item quantity="other">%2$s, %1$d старонак</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d год таму</item>
+        <item quantity="few">%1$d гады таму</item>
+        <item quantity="many">%1$d гадоў таму</item>
+        <item quantity="other">%1$d гадоў таму</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d месяц таму</item>
+        <item quantity="few">%1$d месяцы таму</item>
+        <item quantity="many">%1$d месяцаў таму</item>
+        <item quantity="other">%1$d месяцаў таму</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d тыдзень таму</item>
+        <item quantity="few">%1$d тыдні таму</item>
+        <item quantity="many">%1$d тыдняў таму</item>
+        <item quantity="other">%1$d тыдняў таму</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d дзень таму</item>
+        <item quantity="few">%1$d дні таму</item>
+        <item quantity="many">%1$d дзён таму</item>
+        <item quantity="other">%1$d дзён таму</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d гадзіну таму</item>
+        <item quantity="few">%1$d гадзіны таму</item>
+        <item quantity="many">%1$d гадзін таму</item>
+        <item quantity="other">%1$d гадзін таму</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d хвіліну таму</item>
+        <item quantity="few">%1$d хвіліны таму</item>
+        <item quantity="many">%1$d хвілін таму</item>
+        <item quantity="other">%1$d хвілін таму</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d секунду таму</item>
+        <item quantity="few">%1$d секунды таму</item>
+        <item quantity="many">%1$d секунд таму</item>
+        <item quantity="other">%1$d секунд таму</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d радок</item>
+        <item quantity="few">%d радкі</item>
+        <item quantity="many">%d радкоў</item>
+        <item quantity="other">%d радкоў</item>
+    </plurals>
+</resources>

@@ -116,7 +116,7 @@
     <string name="action_copy_to_clipboard_combined_page">Kombinierte Seite in Zwischenablage kopieren</string>
     <string name="auto_update_app_disable_auto_download">Update nicht automatisch herunterladen</string>
     <string name="action_remove_merged">Originale Einträge aus der Bibliothek entfernen?</string>
-    <string name="batch_add_description">Unterstützung: MangaDex, E-H, ExH, nH, 8Muses, Tsumino</string>
+    <string name="batch_add_description">Unterstützung: MangaDex, E-H, ExH, nH, 8Muses</string>
     <string name="pref_panorama_cover_flow">Panorama-Cover Flow</string>
     <string name="theme_doom">Untergang</string>
     <string name="pref_custom_color">Paletten-Personalisierer</string>
@@ -192,4 +192,7 @@
     <string name="pref_discord_online">🟢 Online</string>
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
+    <string name="web_dav">WebDAV</string>
+    <string name="pref_webdav_username">Benutzername</string>
+    <string name="pref_webdav_password">Passwort</string>
 </resources>

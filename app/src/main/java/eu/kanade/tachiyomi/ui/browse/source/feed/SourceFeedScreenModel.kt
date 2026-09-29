@@ -17,7 +17,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.extension.ExtensionManager
-import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
@@ -33,7 +33,6 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -72,10 +71,10 @@ import tachiyomi.domain.manga.model.Manga as DomainManga
 open class SourceFeedScreenModel(
     val sourceId: Long,
     uiPreferences: UiPreferences = Injekt.get(),
-    private val sourceManager: SourceManager = Injekt.get(),
+    sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
+    getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
     private val getSavedSearchBySourceIdFeed: GetSavedSearchBySourceIdFeed = Injekt.get(),
     private val countFeedSavedSearchBySourceId: CountFeedSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
@@ -83,7 +82,7 @@ open class SourceFeedScreenModel(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
-    private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    getIncognitoState: GetIncognitoState = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
@@ -103,41 +102,30 @@ open class SourceFeedScreenModel(
     // KMK <--
 
     init {
+        setFilters(source.getFilterList())
+
         // KMK -->
-        screenModelScope.launch {
-            var retry = 10
-            while (source !is CatalogueSource && retry-- > 0) {
-                // Sometime source is late to load, so we need to wait a bit
-                delay(100)
-                source = sourceManager.getOrStub(sourceId)
+        reloadSavedSearches()
+
+        getIncognitoState.subscribe(sourceId)
+            .onEach {
+                if (!it) sourcePreferences.lastUsedSource().set(source.id)
+                incognitoMode.value = it
             }
-            val source = source
-            if (source !is CatalogueSource) return@launch
-            // KMK <--
+            .launchIn(screenModelScope)
+        // KMK <--
 
-            setFilters(source.getFilterList())
-            // KMK -->
-            reloadSavedSearches()
-
-            getIncognitoState.subscribe(sourceId)
-                .onEach {
-                    if (!it) sourcePreferences.lastUsedSource().set(source.id)
-                    incognitoMode.value = it
+        getFeedSavedSearchBySourceId.subscribe(source.id)
+            .onEach {
+                val items = getSourcesToGetFeed(it)
+                mutableState.update { state ->
+                    state.copy(
+                        items = items,
+                    )
                 }
-                .launchIn(screenModelScope)
-            // KMK <--
-            getFeedSavedSearchBySourceId.subscribe(source.id)
-                .onEach {
-                    val items = getSourcesToGetFeed(it)
-                    mutableState.update { state ->
-                        state.copy(
-                            items = items,
-                        )
-                    }
-                    getFeed(items)
-                }
-                .launchIn(screenModelScope)
-        }
+                getFeed(items)
+            }
+            .launchIn(screenModelScope)
     }
 
     // KMK-->
@@ -154,11 +142,7 @@ open class SourceFeedScreenModel(
     }
 
     fun resetFilters() {
-        val source = source
-        if (source !is CatalogueSource) return
-
         setFilters(source.getFilterList())
-
         reloadSavedSearches()
     }
     // KMK <--
@@ -200,10 +184,6 @@ open class SourceFeedScreenModel(
     // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): ImmutableList<SourceFeedUI> {
-        // KMK -->
-        val source = source
-        // KMK <--
-        if (source !is CatalogueSource) return persistentListOf()
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
             .associateBy { it.id }
 
@@ -229,10 +209,6 @@ open class SourceFeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
-        // KMK -->
-        val source = source
-        // KMK <--
-        if (source !is CatalogueSource) return
         screenModelScope.launch {
             feedSavedSearch.map { sourceFeed ->
                 async {
@@ -248,7 +224,7 @@ open class SourceFeedScreenModel(
                                 )
                             }
                         }.mangas
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         emptyList()
                     }
 
@@ -275,7 +251,7 @@ open class SourceFeedScreenModel(
 
     private val filterSerializer = FilterSerializer()
 
-    private fun getFilterList(savedSearch: SavedSearch, source: CatalogueSource): FilterList {
+    private fun getFilterList(savedSearch: SavedSearch, source: Source): FilterList {
         val filters = savedSearch.filtersJson ?: return FilterList()
         return runCatching {
             val originalFilters = source.getFilterList()
@@ -308,15 +284,11 @@ open class SourceFeedScreenModel(
     // KMK <--
 
     private suspend fun loadSearches() =
-        getExhSavedSearch.await(source.id, (source as CatalogueSource)::getFilterList)
+        getExhSavedSearch.await(source.id, source::getFilterList)
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name))
             .toImmutableList()
 
     fun onFilter(onBrowseClick: (query: String?, filters: String?) -> Unit) {
-        // KMK -->
-        val source = source
-        // KMK <--
-        if (source !is CatalogueSource) return
         screenModelScope.launchIO {
             val allDefault = state.value.filters == source.getFilterList()
             dismissDialog()
@@ -342,10 +314,6 @@ open class SourceFeedScreenModel(
         onBrowseClick: (query: String?, searchId: Long) -> Unit,
         onToast: (StringResource) -> Unit,
     ) {
-        // KMK -->
-        val source = source
-        // KMK <--
-        if (source !is CatalogueSource) return
         screenModelScope.launchIO {
             // KMK -->
             val search = getExhSavedSearch.awaitOne(loadedSearch.id, source::getFilterList) ?: loadedSearch

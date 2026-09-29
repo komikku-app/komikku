@@ -356,12 +356,6 @@
     <string name="tap_scroll_page_summary">இந்த விருப்பம் இயக்கப்பட்டிருக்கும் போது திரை அளவிற்கு பதிலாக தட்டுவது பக்கத்தால் உருட்டப்படும்</string>
     <string name="reader_bottom_buttons">வாசகர் கீழ் பொத்தான்கள்</string>
     <string name="reader_bottom_buttons_summary">வாசகரின் அடிப்பகுதியில் என்ன பொத்தான்கள் தோன்றும் என்பதைத் தனிப்பயனாக்குங்கள்</string>
-    <string name="pref_show_vert_seekbar_landscape">நிலப்பரப்பில் செங்குத்து சீக்பரைக் காட்டு</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">நிலப்பரப்பில் இருக்கும்போது செங்குத்து சீக்பரை இயக்குகிறது</string>
-    <string name="pref_left_handed_vertical_seekbar">இடது கை செங்குத்து சீக்பார்</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">சீக்பர் எந்தப் பக்கத்தில் உள்ளது</string>
-    <string name="pref_force_horz_seekbar">கிடைமட்ட சீக்பரை கட்டாயப்படுத்துங்கள்</string>
-    <string name="pref_force_horz_seekbar_summary">செங்குத்து சீக்பரை முற்றிலும் கிடைமட்டத்திற்கு ஆதரவாக நீக்குகிறது</string>
     <string name="pref_smooth_scroll">மென்மையான ஆட்டோ சுருள்</string>
     <string name="eh_autoscroll">ஆட்டோச்க்ரோல்</string>
     <string name="eh_retry_all">அனைத்தையும் மீண்டும் முயற்சிக்கவும்</string>
@@ -620,4 +614,10 @@
     <string name="rec_error_string">தேடல் செயல்பாட்டின் போது பிழை ஏற்பட்டது: %1$s</string>
     <string name="rec_processing_state">செயலாக்க நுழைவு %1$d %2$d</string>
     <string name="similar_titles">ஒத்த தலைப்புகள்</string>
+    <string name="pref_include_chapter_url_hash">அத்தியாய முகவரி ஆசைச் சேர்க்கவும்</string>
+    <string name="pref_include_chapter_url_hash_desc">அத்தியாயம் முகவரி இன் MD5 ஆசின் முதல் ஆறு எழுத்துக்களை அத்தியாயக் கோப்பு அல்லது கோப்புறை பெயரில் இணைக்கவும்.</string>
+    <string name="filename">கோப்பு பெயர்</string>
+    <string name="file_extension">கோப்பு நீட்டிப்பு</string>
+    <string name="base_url">அடிப்படை முகவரி</string>
+    <string name="final_chapter">இறுதி அத்தியாயம்</string>
 </resources>

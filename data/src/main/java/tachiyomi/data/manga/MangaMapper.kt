@@ -1,6 +1,7 @@
 package tachiyomi.data.manga
 
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import kotlinx.serialization.json.JsonObject
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
@@ -37,6 +38,7 @@ object MangaMapper {
         @Suppress("UNUSED_PARAMETER")
         isSyncing: Long,
         notes: String,
+        memo: JsonObject,
     ): Manga = Manga(
         id = id,
         source = source,
@@ -64,6 +66,7 @@ object MangaMapper {
         favoriteModifiedAt = favoriteModifiedAt,
         version = version,
         notes = notes,
+        memo = memo,
     )
 
     fun mapLibraryManga(
@@ -95,6 +98,7 @@ object MangaMapper {
         version: Long,
         isSyncing: Long,
         notes: String,
+        memo: JsonObject,
         totalCount: Long,
         readCount: Double,
         latestUpload: Long,
@@ -135,6 +139,7 @@ object MangaMapper {
             version,
             isSyncing,
             notes,
+            memo,
         ),
         categories = categories.split(",").map { it.toLong() },
         totalChapters = totalCount,
@@ -178,6 +183,7 @@ object MangaMapper {
         version: Long,
         isSyncing: Long,
         notes: String,
+        memo: JsonObject,
         totalCount: Long,
     ): MangaWithChapterCount = MangaWithChapterCount(
         manga = mapManga(
@@ -209,6 +215,7 @@ object MangaMapper {
             version,
             isSyncing,
             notes,
+            memo,
         ),
         chapterCount = totalCount,
     )

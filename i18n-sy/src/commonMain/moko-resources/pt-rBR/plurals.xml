@@ -2,6 +2,7 @@
 <resources>
     <plurals name="cleanup_done">
         <item quantity="one">Limpeza feita. %d pasta removida</item>
+        <item quantity="many">Limpeza feita. %d pastas removidas</item>
         <item quantity="other">Limpeza feita. %d pastas removidas</item>
     </plurals>
     <plurals name="num_lock_times">
@@ -9,11 +10,10 @@
         <item quantity="other">%d tempos de bloqueio</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">Sem tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
         <item quantity="one">%1$d tag na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
+        <item quantity="many">%1$d tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
         <item quantity="other">%1$d tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
     </plurals>
-
     <plurals name="migrate_entry">
         <item quantity="one">Migrar %1$d%2$s mangá?</item>
         <item quantity="other">Migrar %1$d%2$s mangás?</item>
@@ -26,19 +26,16 @@
         <item quantity="one">%d mangá migrado</item>
         <item quantity="other">%d mangás migrados</item>
     </plurals>
-
     <!-- Extra gallery info -->
     <plurals name="num_pages">
         <item quantity="one">%1$d página</item>
         <item quantity="other">%1$d páginas</item>
     </plurals>
-
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s %1$d página</item>
-        <item quantity="other">%2$s %1$d páginas</item>
+        <item quantity="one">%2$s, %1$d página</item>
+        <item quantity="other">%2$s, %1$d páginas</item>
     </plurals>
-
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="one">há %1$d ano</item>
@@ -67,5 +64,15 @@
     <plurals name="humanize_second">
         <item quantity="one">há %1$d segundo</item>
         <item quantity="other">há %1$d segundo</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Tentando novamente %1$d página com falha…</item>
+        <item quantity="many">Tentando novamente %1$d páginas com falha…</item>
+        <item quantity="other">Tentando novamente %1$d páginas com falha…</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%d linha</item>
+        <item quantity="many">%d linhas</item>
+        <item quantity="other">%d linhas</item>
     </plurals>
 </resources>
