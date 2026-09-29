@@ -1,13 +1,12 @@
 package exh.source
 
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.pref.DelegateSourcePreferences
-import okhttp3.Response
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -18,99 +17,22 @@ class EnhancedHttpSource(
 ) : HttpSource() {
 
     /**
-     * Returns the request for the popular manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Returns the request for the search manga given the page.
-     *
-     * @param page the page number to retrieve.
-     * @param query the search query.
-     * @param filters the list of filters to apply.
-     */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Returns the request for latest manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns the details of a manga.
-     *
-     * @param response the response from the site.
-     */
-    override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a list of chapters.
-     *
-     * @param response the response from the site.
-     */
-    override fun chapterListParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a SChapter Object.
-     *
-     * @param response the response from the site.
-     */
-    override fun chapterPageParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns a list of pages.
-     *
-     * @param response the response from the site.
-     */
-    override fun pageListParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
-     * Parses the response from the site and returns the absolute url to the source image.
-     *
-     * @param response the response from the site.
-     */
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException("Should never be called!")
-
-    /**
      * Base url of the website without the trailing slash, like: http://mysite.com
      */
     override val baseUrl get() = source().baseUrl
+
+    /**
+     * Returns the base (home) URL of the website as a string.
+     *
+     * This is typically the root address that serves as the main entry point
+     * to the site's content, such as "https://mihon.tech".
+     *
+     * This method is used in the browse screen to determine the URL
+     * opened when tapping "Open in WebView".
+     *
+     * @return The website’s home page URL. Defaults to [baseUrl].
+     */
+    override fun getHomeUrl() = source().getHomeUrl()
 
     /**
      * Headers used for requests.
@@ -157,7 +79,7 @@ class EnhancedHttpSource(
      *
      * @param page the page number to retrieve.
      */
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularManga"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPopularManga"))
     override fun fetchPopularManga(page: Int) = source().fetchPopularManga(page)
 
     override suspend fun getPopularManga(page: Int) = source().getPopularManga(page)
@@ -170,7 +92,7 @@ class EnhancedHttpSource(
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getSearchManga"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getSearchManga"))
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         source().fetchSearchManga(page, query, filters)
 
@@ -182,10 +104,17 @@ class EnhancedHttpSource(
      *
      * @param page the page number to retrieve.
      */
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int) = source().fetchLatestUpdates(page)
 
     override suspend fun getLatestUpdates(page: Int) = source().getLatestUpdates(page)
+
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate = source().getMangaUpdate(manga, chapters, fetchDetails, fetchChapters)
 
     /**
      * Returns an observable with the updated details for a manga. Normally it's not needed to
@@ -193,13 +122,8 @@ class EnhancedHttpSource(
      *
      * @param manga the manga to be updated.
      */
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchMangaDetails(manga: SManga) = source().fetchMangaDetails(manga)
-
-    /**
-     * [1.x API] Get the updated details for a manga.
-     */
-    override suspend fun getMangaDetails(manga: SManga): SManga = source().getMangaDetails(manga)
 
     /**
      * Returns the request for the details of a manga. Override only if it's needed to change the
@@ -207,6 +131,7 @@ class EnhancedHttpSource(
      *
      * @param manga the manga to be updated.
      */
+    @Deprecated("The helper functions are inherently limiting and hides the underlying implementation. Source developers should make their own implementation according to their needs.")
     override fun mangaDetailsRequest(manga: SManga) = source().mangaDetailsRequest(manga)
 
     /**
@@ -215,20 +140,15 @@ class EnhancedHttpSource(
      *
      * @param manga the manga to look for chapters.
      */
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchChapterList(manga: SManga) = source().fetchChapterList(manga)
-
-    /**
-     * [1.x API] Get all the available chapters for a manga.
-     */
-    override suspend fun getChapterList(manga: SManga): List<SChapter> = source().getChapterList(manga)
 
     /**
      * Returns an observable with the page list for a chapter.
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter) = source().fetchPageList(chapter)
 
     /**
@@ -242,7 +162,7 @@ class EnhancedHttpSource(
      *
      * @param page the page whose source image has to be fetched.
      */
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page) = source().fetchImageUrl(page)
 
     override suspend fun getImageUrl(page: Page) = source().getImageUrl(page)
@@ -279,6 +199,7 @@ class EnhancedHttpSource(
      * @param chapter the chapter to be added.
      * @param manga the manga of the chapter.
      */
+    @Deprecated("All modifications should be done when constructing the chapter")
     override fun prepareNewChapter(chapter: SChapter, manga: SManga) =
         source().prepareNewChapter(chapter, manga)
 

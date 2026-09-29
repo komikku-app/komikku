@@ -19,6 +19,7 @@ class GetMergedChaptersByMangaId(
     suspend fun await(
         mangaId: Long,
         dedupe: Boolean = true,
+        /** Filter excluded scanlators & bookmarked/unbookmarked filter */
         applyFilter: Boolean = false,
     ): List<Chapter> {
         return transformMergedChapters(
@@ -31,6 +32,7 @@ class GetMergedChaptersByMangaId(
     suspend fun subscribe(
         mangaId: Long,
         dedupe: Boolean = true,
+        /** Filter excluded scanlators & bookmarked/unbookmarked filter */
         applyFilter: Boolean = false,
     ): Flow<List<Chapter>> {
         return try {
@@ -46,6 +48,7 @@ class GetMergedChaptersByMangaId(
 
     private suspend fun getFromDatabase(
         mangaId: Long,
+        /** Filter excluded scanlators & bookmarked/unbookmarked filter */
         applyFilter: Boolean = false,
     ): List<Chapter> {
         return try {

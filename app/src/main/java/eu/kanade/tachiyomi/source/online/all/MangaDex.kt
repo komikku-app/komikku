@@ -12,10 +12,10 @@ import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
@@ -35,11 +35,9 @@ import exh.md.handlers.MangaHotHandler
 import exh.md.handlers.MangaPlusHandler
 import exh.md.handlers.NamicomiHandler
 import exh.md.handlers.PageHandler
-import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
 import exh.md.service.MangaDexAuthService
 import exh.md.service.MangaDexService
-import exh.md.service.SimilarService
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdApi
 import exh.md.utils.MdLang
@@ -79,7 +77,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val loginHelper = MangaDexLoginHelper(network.client, trackPreferences, mdList, mdList.interceptor)
+    private val loginHelper = MangaDexLoginHelper(network.client, headers, trackPreferences, mdList, mdList.interceptor)
 
     override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
         .addInterceptor(mdList.interceptor)
@@ -96,13 +94,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private fun preferExtensionLangTitle() = sourcePreferences.getBoolean(getPreferExtensionLangTitlePrefKey(mdLang.extLang), true)
 
     private val mangadexService by lazy {
-        MangaDexService(client)
+        MangaDexService(client, headers)
     }
     private val mangadexAuthService by lazy {
         MangaDexAuthService(baseHttpClient, headers)
-    }
-    private val similarService by lazy {
-        SimilarService(client)
     }
     private val apiMangaParser by lazy {
         ApiMangaParser(mdLang.lang)
@@ -112,9 +107,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
     private val mangaHandler by lazy {
         MangaHandler(mdLang.lang, mangadexService, apiMangaParser)
-    }
-    private val similarHandler by lazy {
-        SimilarHandler(mdLang.lang, mangadexService, similarService)
     }
     private val mangaPlusHandler by lazy {
         MangaPlusHandler(network.client)
@@ -144,8 +136,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             azukHandler,
             mangaHotHandler,
             namicomiHandler,
-            trackPreferences,
-            mdList,
         )
     }
 
@@ -171,7 +161,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getLatestUpdates"))
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         val request = delegate.latestUpdatesRequest(page)
         val url = request.url.newBuilder()
@@ -194,7 +184,20 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return delegate.latestUpdatesParse(response)
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
+    // KMK -->
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate {
+        val asyncManga = if (fetchDetails) getMangaDetails(manga) else null
+        val asyncChapters = if (fetchChapters) getChapterList(manga) else null
+        return SMangaUpdate(asyncManga ?: manga, asyncChapters ?: chapters)
+    }
+    // KMK <--
+
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(
             manga,
@@ -207,7 +210,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
     }
 
-    override suspend fun getMangaDetails(manga: SManga): SManga {
+    internal suspend fun getMangaDetails(manga: SManga): SManga {
         return mangaHandler.getMangaDetails(
             manga,
             id,
@@ -219,16 +222,16 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Deprecated("Use the combined suspend API instead", replaceWith = ReplaceWith("getMangaUpdate"))
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return mangaHandler.fetchChapterListObservable(manga, blockedGroups(), blockedUploaders())
     }
 
-    override suspend fun getChapterList(manga: SManga): List<SChapter> {
+    private suspend fun getChapterList(manga: SManga): List<SChapter> {
         return mangaHandler.getChapterList(manga, blockedGroups(), blockedUploaders())
     }
 
-    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver(), delegate) }
     }
@@ -242,7 +245,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return call?.awaitSuccess() ?: super.getImage(page)
     }
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getImageUrl"))
+    @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getImageUrl"))
     override fun fetchImageUrl(page: Page): Observable<String> {
         return pageHandler.fetchImageUrl(page) {
             @Suppress("DEPRECATION")
@@ -332,14 +335,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     // RandomMangaSource method
     override suspend fun fetchRandomMangaUrl(): String {
         return mangaHandler.fetchRandomMangaId()
-    }
-
-    suspend fun getMangaSimilar(manga: SManga): MetadataMangasPage {
-        return similarHandler.getSimilar(manga)
-    }
-
-    suspend fun getMangaRelated(manga: SManga): MetadataMangasPage {
-        return similarHandler.getRelated(manga)
     }
 
     suspend fun getMangaMetadata(track: Track): SManga {

@@ -278,8 +278,8 @@ class MangaScreen(
             onChapterClicked = { openChapter(context, it) },
             onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
-                screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                screenModel.toggleFavorite()
             },
             // SY -->
             onWebViewClicked = {
@@ -420,7 +420,7 @@ class MangaScreen(
                         context,
                         navigator,
                         successState.mergedData,
-                        action = { _, nav, manga, source -> screenModel.openMangaFolder(source, manga) },
+                        action = { _, _, manga, source -> screenModel.openMangaFolder(source, manga) },
                         titleRes = KMR.strings.action_open_folder,
                     )
                 }

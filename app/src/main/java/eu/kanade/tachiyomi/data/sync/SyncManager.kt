@@ -88,7 +88,7 @@ class SyncManager(
             chapters = syncOptions.chapters,
             tracking = syncOptions.tracking,
             history = syncOptions.history,
-            extensionRepoSettings = syncOptions.extensionRepoSettings,
+            extensionStores = syncOptions.extensionStores,
             appSettings = syncOptions.appSettings,
             sourceSettings = syncOptions.sourceSettings,
             privateSettings = syncOptions.privateSettings,
@@ -107,8 +107,8 @@ class SyncManager(
             backupCategories = backupCreator.backupCategories(backupOptions),
             backupSources = backupCreator.backupSources(backupManga),
             backupPreferences = backupCreator.backupAppPreferences(backupOptions),
-            backupExtensionRepo = backupCreator.backupExtensionRepos(backupOptions),
             backupSourcePreferences = backupCreator.backupSourcePreferences(backupOptions),
+            backupExtensionStores = backupCreator.backupExtensionStores(backupOptions),
 
             // SY -->
             backupSavedSearches = backupCreator.backupSavedSearches(backupOptions),
@@ -192,7 +192,7 @@ class SyncManager(
             backupSources = remoteBackup.backupSources,
             backupPreferences = remoteBackup.backupPreferences,
             backupSourcePreferences = remoteBackup.backupSourcePreferences,
-            backupExtensionRepo = remoteBackup.backupExtensionRepo,
+            backupExtensionStores = remoteBackup.backupExtensionStores,
 
             // SY -->
             backupSavedSearches = remoteBackup.backupSavedSearches,
@@ -222,7 +222,7 @@ class SyncManager(
                     appSettings = true,
                     sourceSettings = true,
                     libraryEntries = true,
-                    extensionRepoSettings = true,
+                    extensionStores = true,
                 ),
             )
 

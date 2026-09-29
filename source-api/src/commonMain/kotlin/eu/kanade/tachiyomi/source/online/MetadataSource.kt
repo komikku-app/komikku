@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.source.online
 
-import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 /**
  * LEWD!
  */
-interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
+interface MetadataSource<M : RaisedSearchMetadata, I> : Source {
     interface GetMangaId {
         suspend fun awaitId(url: String, sourceId: Long): Long?
     }

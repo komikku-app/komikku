@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,7 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -48,7 +49,8 @@ import eu.kanade.presentation.browse.components.BaseBrowseItem
 import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.manga.components.DotSeparatorNoSpaceText
-import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
+import eu.kanade.presentation.more.settings.screen.browse.ExtensionStoresScreen
+import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -58,6 +60,8 @@ import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import kotlinx.collections.immutable.persistentListOf
+import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.KOMIKKU_SIGNATURE
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -110,9 +114,9 @@ fun ExtensionScreen(
                     modifier = Modifier.padding(contentPadding),
                     actions = persistentListOf(
                         EmptyScreenAction(
-                            stringRes = MR.strings.label_extension_repos,
+                            stringRes = MR.strings.extensionStores,
                             icon = Icons.Outlined.Settings,
-                            onClick = { navigator.push(ExtensionReposScreen()) },
+                            onClick = { navigator.push(ExtensionStoresScreen()) },
                         ),
                     ),
                 )
@@ -195,9 +199,9 @@ private fun ExtensionContent(
                                 // KMK -->
                                 KMR.strings.extensions_page_more -> {
                                     {
-                                        Button(onClick = { navigator?.push(ExtensionReposScreen()) }) {
+                                        Button(onClick = { navigator?.push(ExtensionStoresScreen()) }) {
                                             Text(
-                                                text = stringResource(MR.strings.action_add_repo),
+                                                text = stringResource(MR.strings.action_addExtensionStore),
                                                 style = LocalTextStyle.current.copy(
                                                     color = MaterialTheme.colorScheme.onPrimary,
                                                 ),
@@ -401,7 +405,7 @@ private fun ExtensionItemContent(
                 }
 
                 // KMK -->
-                Text(text = extension.repoName?.let { "@$it" } ?: "(?)")
+                Text(text = extension.storeName?.let { "@$it" } ?: "(?)")
                 // KMK <--
 
                 val warning = when {
@@ -592,7 +596,7 @@ private fun ExtensionTrustDialog(
 }
 
 // KMK -->
-@Preview
+@PreviewLightDark
 @Composable
 private fun ExtensionItemContentPreview() {
     val extAvail = Extension.Available(
@@ -604,11 +608,11 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Komikku",
         sources = emptyList(),
-        apkName = "Test",
+        apkUrl = "Test",
         iconUrl = "",
-        repoUrl = "",
+        store = ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
     )
     val extInstalled = Extension.Installed(
         name = "Tachiyomi",
@@ -619,9 +623,9 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Komikku",
         sources = emptyList(),
-        repoUrl = "",
+        store = ExtensionStore("https://komikku", "Komikku", "", KOMIKKU_SIGNATURE, ExtensionStore.Contact("", ""), false, null),
         pkgFactory = null,
         icon = null,
         hasUpdate = false,
@@ -638,30 +642,35 @@ private fun ExtensionItemContentPreview() {
         libVersion = 1.0,
         isNsfw = true,
         signatureHash = "900000",
-        repoName = "Repository",
+        storeName = "Repository",
     )
-    Column {
-        ExtensionItemContent(
-            extension = extAvail.copy(
-                repoName = "Repository extensions minion multiple languages various sources",
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
-        ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
-        ExtensionItemContent(
-            extension = extInstalled.copy(
-                isObsolete = true,
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(
-            extension = extInstalled.copy(
-                isRedundant = true,
-            ),
-            installStep = InstallStep.Idle,
-        )
-        ExtensionItemContent(extension = extUntrusted, installStep = InstallStep.Idle)
+
+    TachiyomiPreviewTheme {
+        Surface {
+            Column {
+                ExtensionItemContent(
+                    extension = extAvail.copy(
+                        storeName = "Repository extensions minion multiple languages various sources",
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(extension = extAvail, installStep = InstallStep.Installing)
+                ExtensionItemContent(extension = extInstalled, installStep = InstallStep.Idle)
+                ExtensionItemContent(
+                    extension = extInstalled.copy(
+                        isObsolete = true,
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(
+                    extension = extInstalled.copy(
+                        isRedundant = true,
+                    ),
+                    installStep = InstallStep.Idle,
+                )
+                ExtensionItemContent(extension = extUntrusted, installStep = InstallStep.Idle)
+            }
+        }
     }
 }
 // KMK <--

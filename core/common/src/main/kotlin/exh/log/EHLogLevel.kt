@@ -12,17 +12,37 @@ enum class EHLogLevel(val nameRes: StringResource, val description: StringResour
     ;
 
     companion object {
-        private var curLogLevel: Int? = null
+        private var _curLogLevel: Int = MINIMAL.ordinal
+        val curLogLevel: Int get() = _curLogLevel
 
-        val currentLogLevel get() = values()[curLogLevel!!]
+        const val EH_LOG_LEVEL_PREF = "eh_log_level"
 
-        fun init(context: Context) {
-            curLogLevel = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt("eh_log_level", MINIMAL.ordinal) // todo
+        fun defaultLogLevel(isDebugBuildType: Boolean) = if (isDebugBuildType) EXTRA.ordinal else MINIMAL.ordinal
+
+        val currentLogLevel get() = entries.getOrNull(curLogLevel) ?: MINIMAL
+
+        fun init(
+            context: Context,
+            isDebugBuildType: Boolean = false,
+        ) {
+            _curLogLevel = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(EH_LOG_LEVEL_PREF, defaultLogLevel(isDebugBuildType))
         }
 
-        fun shouldLog(requiredLogLevel: EHLogLevel): Boolean {
-            return curLogLevel!! >= requiredLogLevel.ordinal
+        /**
+         * Same as Mihon's `verboseLogging`, which is:
+         * - Always follow [Companion.curLogLevel] value which user set
+         * - If user hasn't set it, default value is `EXTRA` for *Debug* build type, `MINIMAL` for *Release* build type
+         */
+        fun isExtraLogging() = shouldLog(EXTRA)
+
+        /**
+         * Enable extremely detail `||EH-NETWORK-JSON` log by [maybeInjectEHLogger]
+         */
+        fun isExtremeLogging() = shouldLog(EXTREME)
+
+        private fun shouldLog(requiredLogLevel: EHLogLevel): Boolean {
+            return curLogLevel >= requiredLogLevel.ordinal
         }
     }
 }

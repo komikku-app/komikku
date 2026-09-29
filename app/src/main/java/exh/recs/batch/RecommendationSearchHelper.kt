@@ -8,7 +8,8 @@ import androidx.core.net.toUri
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.log.xLog
+import exh.log.ResettableLogger
+import exh.log.safeXLogTag
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
 import exh.recs.sources.TrackerRecommendationPagingSource
@@ -23,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -37,7 +39,6 @@ import tachiyomi.domain.track.model.Track
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.util.Collections
-import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -52,7 +53,9 @@ class RecommendationSearchHelper(val context: Context) {
 
     private val smartSearchEngine by lazy { SmartLibrarySearchEngine() }
 
-    private val logger by lazy { xLog() }
+    // KMK -->
+    private val logger = ResettableLogger { safeXLogTag() }
+    // KMK <--
 
     val status: MutableStateFlow<SearchStatus> = MutableStateFlow(SearchStatus.Idle)
 
@@ -94,7 +97,7 @@ class RecommendationSearchHelper(val context: Context) {
 
             mangaList.forEachIndexed { index, sourceManga ->
                 // Check if the job has been cancelled
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
 
                 status.value = SearchStatus.Processing(sourceManga.toSManga(), index + 1, mangaList.size)
 
@@ -114,7 +117,7 @@ class RecommendationSearchHelper(val context: Context) {
                     }
 
                     // Parallelize fetching recommendations from all sources in the current context
-                    CoroutineScope(coroutineContext).async(Dispatchers.IO) {
+                    CoroutineScope(currentCoroutineContext()).async(Dispatchers.IO) {
                         val recSourceId = source::class.qualifiedName!!
 
                         try {
@@ -135,7 +138,7 @@ class RecommendationSearchHelper(val context: Context) {
                             }.results.addAll(mangas)
                         } catch (_: NoResultsException) {
                         } catch (e: Exception) {
-                            logger.e("Error while fetching recommendations for $recSourceId", e)
+                            logger()?.e("Error while fetching recommendations for $recSourceId", e)
                         }
                     }
                 }
@@ -172,7 +175,7 @@ class RecommendationSearchHelper(val context: Context) {
         } catch (_: CancellationException) {
         } catch (e: Exception) {
             status.value = SearchStatus.Error(e.message.orEmpty())
-            logger.e("Error during recommendation search", e)
+            logger()?.e("Error during recommendation search", e)
             return
         } finally {
             // Release wake + wifi locks

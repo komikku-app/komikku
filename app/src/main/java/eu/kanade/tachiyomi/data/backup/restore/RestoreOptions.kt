@@ -9,7 +9,7 @@ data class RestoreOptions(
     val libraryEntries: Boolean = true,
     val categories: Boolean = true,
     val appSettings: Boolean = true,
-    val extensionRepoSettings: Boolean = true,
+    val extensionStores: Boolean = true,
     val sourceSettings: Boolean = true,
     // SY -->
     val savedSearchesFeeds: Boolean = true,
@@ -20,7 +20,7 @@ data class RestoreOptions(
         libraryEntries,
         categories,
         appSettings,
-        extensionRepoSettings,
+        extensionStores,
         sourceSettings,
         // SY -->
         savedSearchesFeeds,
@@ -31,7 +31,7 @@ data class RestoreOptions(
         libraryEntries ||
             categories ||
             appSettings ||
-            extensionRepoSettings ||
+            extensionStores ||
             sourceSettings /* SY --> */ ||
             savedSearchesFeeds /* SY <-- */
 
@@ -53,9 +53,9 @@ data class RestoreOptions(
                 setter = { options, enabled -> options.copy(appSettings = enabled) },
             ),
             Entry(
-                label = MR.strings.extensionRepo_settings,
-                getter = RestoreOptions::extensionRepoSettings,
-                setter = { options, enabled -> options.copy(extensionRepoSettings = enabled) },
+                label = MR.strings.extensionStores,
+                getter = RestoreOptions::extensionStores,
+                setter = { options, enabled -> options.copy(extensionStores = enabled) },
             ),
             Entry(
                 label = MR.strings.source_settings,
@@ -77,7 +77,7 @@ data class RestoreOptions(
             libraryEntries = array[0],
             categories = array[1],
             appSettings = array[2],
-            extensionRepoSettings = array[3],
+            extensionStores = array[3],
             sourceSettings = array[4],
             // SY -->
             savedSearchesFeeds = array[5],

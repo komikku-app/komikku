@@ -30,7 +30,7 @@
     </plurals>
     <plurals name="eh_retry_toast">
         <item quantity="one">%1$d başarısız sayfa tekrar deneniyor…</item>
-        <item quantity="other">%1$d başarısız sayfa tekrar deneniyor…</item>
+        <item quantity="other">%1$d başarısız sayfalar tekrar deneniyor…</item>
     </plurals>
     <plurals name="browse_language_and_pages">
         <item quantity="one">%2$s %1$d sayfa</item>
@@ -38,7 +38,7 @@
     </plurals>
     <plurals name="cleanup_done">
         <item quantity="one">Temizleme tamamlandı. %d klasör kaldırıldı</item>
-        <item quantity="other">Temizleme tamamlandı. %d klasör kaldırıldı</item>
+        <item quantity="other">Temizleme tamamlandı. %d klasörleri kaldırıldı</item>
     </plurals>
     <plurals name="entry_migrated">
         <item quantity="one">%d girdi taşındı</item>
@@ -53,8 +53,8 @@
         <item quantity="other">%1$d dakika önce</item>
     </plurals>
     <plurals name="num_lock_times">
-        <item quantity="one">%d kilit zamanı</item>
-        <item quantity="other">%d kilit zamanı</item>
+        <item quantity="one">%d kilitli zaman</item>
+        <item quantity="other">%d kilitli zamanlar</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
         <item quantity="one">Sıralama listesinde %1$d etiket. Bu, kitaplığa önceliğe dayalı bir sıralama seçeneği ekler. Girdiler, istediğiniz etiketlere sahip olma durumuna göre öncelik alacaktır</item>

@@ -154,12 +154,11 @@ private class MigrateDialogScreenModel(
         }
         val selectedFlags = sourcePreference.migrationFlags().get()
         mutableState.update {
-            it.copy(
+            State(
                 current = current,
                 target = target,
                 applicableFlags = applicableFlags,
                 selectedFlags = selectedFlags,
-                isMigrated = false,
             )
         }
     }

@@ -60,7 +60,6 @@ import eu.kanade.tachiyomi.di.AppModule
 import eu.kanade.tachiyomi.di.PreferenceModule
 import eu.kanade.tachiyomi.di.SYPreferenceModule
 import eu.kanade.tachiyomi.network.NetworkHelper
-import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.DeviceUtil
@@ -107,7 +106,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
     private val basePreferences: BasePreferences by injectLazy()
     private val privacyPreferences: PrivacyPreferences by injectLazy()
-    private val networkPreferences: NetworkPreferences by injectLazy()
 
     private val disableIncognitoReceiver = DisableIncognitoReceiver()
 
@@ -152,7 +150,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         setupExhLogging() // EXH logging
         if (!LogcatLogger.isInstalled) {
             val minLogPriority = when {
-                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
+                // KMK -->
+                EHLogLevel.isExtraLogging() -> LogPriority.VERBOSE
+                // KMK <--
                 BuildConfig.DEBUG -> LogPriority.DEBUG
                 else -> LogPriority.INFO
             }
@@ -290,7 +290,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(DeviceUtil.isLowRamDevice(this@App))
-            if (networkPreferences.verboseLogging().get()) logger(DebugLogger())
+            // KMK -->
+            if (EHLogLevel.isExtraLogging()) logger(DebugLogger())
+            // KMK <--
 
             // Coil spawns a new thread for every image load by default
             fetcherCoroutineContext(Dispatchers.IO.limitedParallelism(8))
@@ -351,11 +353,18 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
     // EXH
     private fun setupExhLogging() {
-        EHLogLevel.init(this)
+        EHLogLevel.init(
+            this,
+            // KMK -->
+            isDebugBuildType = isDebugBuildType,
+            // KMK <--
+        )
 
         val logLevel = when {
-            EHLogLevel.shouldLog(EHLogLevel.EXTREME) -> LogLevel.ALL
-            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || isDebugBuildType -> LogLevel.DEBUG
+            // KMK -->
+            EHLogLevel.isExtremeLogging() -> LogLevel.ALL
+            EHLogLevel.isExtraLogging() -> LogLevel.DEBUG
+            // KMK <--
             else -> LogLevel.WARN
         }
 

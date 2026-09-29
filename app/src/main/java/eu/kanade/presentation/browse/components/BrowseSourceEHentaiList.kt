@@ -209,7 +209,7 @@ fun BrowseSourceEHentaiListItem(
                 MangaCoverHide.Book(
                     modifier = Modifier
                         .fillMaxHeight(),
-                    bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                    bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                     tint = onBgColor,
                 )
             } else {
@@ -219,7 +219,7 @@ fun BrowseSourceEHentaiListItem(
                         .fillMaxHeight(),
                     // KMK -->
                     alpha = if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha,
-                    bgColor = bgColor ?: (MaterialTheme.colorScheme.surface.takeIf { isSelected }),
+                    bgColor = bgColor ?: MaterialTheme.colorScheme.surface.takeIf { isSelected },
                     tint = onBgColor,
                     // KMK <--
                     data = coverData,

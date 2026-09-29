@@ -27,6 +27,7 @@ import okhttp3.OkHttpClient
 
 class MangaDexService(
     private val client: OkHttpClient,
+    private val headers: Headers,
 ) {
 
     suspend fun viewMangas(
@@ -45,6 +46,7 @@ class MangaDexService(
                             }
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -66,6 +68,7 @@ class MangaDexService(
                             addQueryParameter("includes[]", MdConstants.Types.artist)
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -86,6 +89,7 @@ class MangaDexService(
                             }
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -107,6 +111,7 @@ class MangaDexService(
                             addQueryParameter("translatedLanguage[]", translatedLanguage)
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -150,6 +155,7 @@ class MangaDexService(
             client.newCall(
                 GET(
                     url,
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -158,7 +164,7 @@ class MangaDexService(
 
     suspend fun viewChapter(id: String): ChapterDto {
         return with(MdUtil.jsonParser) {
-            client.newCall(GET("${MdApi.chapter}/$id", cache = CacheControl.FORCE_NETWORK))
+            client.newCall(GET("${MdApi.chapter}/$id", headers, cache = CacheControl.FORCE_NETWORK))
                 .awaitSuccess()
                 .parseAs()
         }
@@ -166,7 +172,7 @@ class MangaDexService(
 
     suspend fun randomManga(): MangaDto {
         return with(MdUtil.jsonParser) {
-            client.newCall(GET("${MdApi.manga}/random", cache = CacheControl.FORCE_NETWORK))
+            client.newCall(GET("${MdApi.manga}/random", headers, cache = CacheControl.FORCE_NETWORK))
                 .awaitSuccess()
                 .parseAs()
         }
@@ -177,6 +183,7 @@ class MangaDexService(
             client.newCall(
                 POST(
                     MdConstants.atHomeReportUrl,
+                    headers,
                     body = MdUtil.encodeToBody(atHomeImageReportDto),
                     cache = CacheControl.FORCE_NETWORK,
                 ),
@@ -205,6 +212,7 @@ class MangaDexService(
                             addPathSegment("relation")
                         }
                         .build(),
+                    headers,
                     cache = CacheControl.FORCE_NETWORK,
                 ),
             ).awaitSuccess().parseAs()
@@ -224,6 +232,7 @@ class MangaDexService(
                             addQueryParameter("limit", "1")
                         }
                         .build(),
+                    headers,
                 ),
             ).awaitSuccess().parseAs()
         }
