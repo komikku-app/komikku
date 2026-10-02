@@ -55,6 +55,9 @@ fun MangaChapterListItem(
     // SY -->
     sourceName: String?,
     // SY <--
+    // KMK -->
+    tags: String? = null,
+    // KMK <--
     read: Boolean,
     bookmark: Boolean,
     selected: Boolean,
@@ -195,6 +198,13 @@ fun MangaChapterListItem(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        // KMK -->
+                        ChapterTagsText(
+                            tags = tags,
+                            precededBySubtitle = listOfNotNull(date, readProgress, sourceName, scanlator)
+                                .isNotEmpty(),
+                        )
+                        // KMK <--
                     }
                 }
             }
@@ -209,6 +219,22 @@ fun MangaChapterListItem(
         }
     }
 }
+
+// KMK -->
+@Composable
+private fun ChapterTagsText(
+    tags: String?,
+    precededBySubtitle: Boolean,
+) {
+    if (tags == null) return
+    if (precededBySubtitle) DotSeparatorText()
+    Text(
+        text = tags,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+// KMK <--
 
 internal fun getSwipeAction(
     action: LibraryPreferences.ChapterSwipeAction,

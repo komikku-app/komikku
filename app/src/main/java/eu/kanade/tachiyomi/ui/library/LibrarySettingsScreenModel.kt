@@ -15,6 +15,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.category.interactor.SetDisplayMode
 import tachiyomi.domain.category.interactor.SetSortModeForCategory
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.chapterTag.interactor.GetChapterTags
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -28,6 +29,9 @@ class LibrarySettingsScreenModel(
     private val setDisplayMode: SetDisplayMode = Injekt.get(),
     private val setSortModeForCategory: SetSortModeForCategory = Injekt.get(),
     trackerManager: TrackerManager = Injekt.get(),
+    // KMK -->
+    getChapterTags: GetChapterTags = Injekt.get(),
+    // KMK <--
 ) : ScreenModel {
 
     val trackersFlow = trackerManager.loggedInTrackersFlow()
@@ -36,6 +40,15 @@ class LibrarySettingsScreenModel(
             started = SharingStarted.WhileSubscribed(5.seconds.inWholeMilliseconds),
             initialValue = trackerManager.loggedInTrackers(),
         )
+
+    // KMK -->
+    val chapterTagsFlow = getChapterTags.subscribe()
+        .stateIn(
+            scope = screenModelScope,
+            started = SharingStarted.WhileSubscribed(5.seconds.inWholeMilliseconds),
+            initialValue = emptyList(),
+        )
+    // KMK <--
 
     // SY -->
     val grouping by libraryPreferences.groupLibraryBy().asState(screenModelScope)

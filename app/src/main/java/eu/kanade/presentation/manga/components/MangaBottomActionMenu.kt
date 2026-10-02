@@ -83,6 +83,9 @@ fun MangaBottomActionMenu(
     onMarkPreviousAsReadClicked: (() -> Unit)? = null,
     onDownloadClicked: (() -> Unit)? = null,
     onDeleteClicked: (() -> Unit)? = null,
+    // KMK -->
+    onEditTagsClicked: (() -> Unit)? = null,
+    // KMK <--
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -96,7 +99,9 @@ fun MangaBottomActionMenu(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+            val confirm = remember {
+                mutableStateListOf(false, false, false, false, false, false, false /* KMK --> */, false /* KMK <-- */)
+            }
             var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -179,6 +184,17 @@ fun MangaBottomActionMenu(
                         onClick = onDeleteClicked,
                     )
                 }
+                // KMK -->
+                if (onEditTagsClicked != null) {
+                    Button(
+                        title = stringResource(KMR.strings.action_edit_chapter_tags),
+                        icon = Icons.AutoMirrored.Outlined.Label,
+                        toConfirm = confirm[7],
+                        onLongClick = { onLongClickItem(7) },
+                        onClick = onEditTagsClicked,
+                    )
+                }
+                // KMK <--
             }
         }
     }

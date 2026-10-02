@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -35,6 +36,7 @@ import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.RadioItem
 import tachiyomi.presentation.core.components.SortItem
@@ -53,6 +55,10 @@ fun ChapterSettingsDialog(
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
     onScanlatorFilterClicked: () -> Unit,
+    // KMK -->
+    chapterTagFilterActive: Boolean,
+    onChapterTagFilterClicked: () -> Unit,
+    // KMK <--
     onSortModeChanged: (Long) -> Unit,
     onDisplayModeChanged: (Long) -> Unit,
     onSetAsDefault: (applyToExistingManga: Boolean) -> Unit,
@@ -109,6 +115,10 @@ fun ChapterSettingsDialog(
                         onBookmarkedFilterChanged = onBookmarkedFilterChanged,
                         scanlatorFilterActive = scanlatorFilterActive,
                         onScanlatorFilterClicked = onScanlatorFilterClicked,
+                        // KMK -->
+                        chapterTagFilterActive = chapterTagFilterActive,
+                        onChapterTagFilterClicked = onChapterTagFilterClicked,
+                        // KMK <--
                     )
                 }
                 1 -> {
@@ -139,6 +149,10 @@ private fun ColumnScope.FilterPage(
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
     onScanlatorFilterClicked: () -> Unit,
+    // KMK -->
+    chapterTagFilterActive: Boolean,
+    onChapterTagFilterClicked: () -> Unit,
+    // KMK <--
 ) {
     TriStateItem(
         label = stringResource(MR.strings.label_downloaded),
@@ -159,6 +173,12 @@ private fun ColumnScope.FilterPage(
         active = scanlatorFilterActive,
         onClick = onScanlatorFilterClicked,
     )
+    // KMK -->
+    ChapterTagFilterItem(
+        active = chapterTagFilterActive,
+        onClick = onChapterTagFilterClicked,
+    )
+    // KMK <--
 }
 
 @Composable
@@ -189,6 +209,37 @@ fun ScanlatorFilterItem(
         )
     }
 }
+
+// KMK -->
+@Composable
+fun ChapterTagFilterItem(
+    active: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .fillMaxWidth()
+            .padding(horizontal = TabbedDialogPaddings.Horizontal, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.Label,
+            contentDescription = null,
+            tint = if (active) {
+                MaterialTheme.colorScheme.active
+            } else {
+                LocalContentColor.current
+            },
+        )
+        Text(
+            text = stringResource(KMR.strings.chapter_tags),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+// KMK <--
 
 @Composable
 private fun ColumnScope.SortPage(
