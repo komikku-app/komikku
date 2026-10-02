@@ -156,6 +156,9 @@ fun MangaScreen(
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    // KMK -->
+    nextUnreadChapterNumber: Double?,
+    // KMK <--
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -236,6 +239,9 @@ fun MangaScreen(
             onFilterClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
+            // KMK -->
+            nextUnreadChapterNumber = nextUnreadChapterNumber,
+            // KMK <--
             onSearch = onSearch,
             onCoverClicked = onCoverClicked,
             onShareClicked = onShareClicked,
@@ -298,6 +304,9 @@ fun MangaScreen(
             onFilterButtonClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
+            // KMK -->
+            nextUnreadChapterNumber = nextUnreadChapterNumber,
+            // KMK <--
             onSearch = onSearch,
             onCoverClicked = onCoverClicked,
             onShareClicked = onShareClicked,
@@ -366,6 +375,9 @@ private fun MangaScreenSmallImpl(
     onFilterClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    // KMK -->
+    nextUnreadChapterNumber: Double?,
+    // KMK <--
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -538,9 +550,15 @@ private fun MangaScreenSmallImpl(
                     val isReading = remember(state.chapters) {
                         state.chapters.fastAny { it.chapter.read }
                     }
-                    Text(
-                        text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
-                    )
+                    // KMK -->
+                    val label = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start)
+                    val text = if (isReading && nextUnreadChapterNumber != null && nextUnreadChapterNumber >= 0) {
+                        // KMK <--
+                        "$label ${formatChapterNumber(nextUnreadChapterNumber)}"
+                    } else {
+                        label
+                    }
+                    Text(text = text)
                 },
                 icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                 onClick = onContinueReading,
@@ -830,6 +848,9 @@ private fun MangaScreenLargeImpl(
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    // KMK -->
+    nextUnreadChapterNumber: Double?,
+    // KMK <--
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -998,11 +1019,17 @@ private fun MangaScreenLargeImpl(
                     val isReading = remember(state.chapters) {
                         state.chapters.fastAny { it.chapter.read }
                     }
-                    Text(
-                        text = stringResource(
-                            if (isReading) MR.strings.action_resume else MR.strings.action_start,
-                        ),
+                    // KMK -->
+                    val label = stringResource(
+                        if (isReading) MR.strings.action_resume else MR.strings.action_start,
                     )
+                    val text = if (isReading && nextUnreadChapterNumber != null && nextUnreadChapterNumber >= 0) {
+                        // KMK <--
+                        "$label ${formatChapterNumber(nextUnreadChapterNumber)}"
+                    } else {
+                        label
+                    }
+                    Text(text = text)
                 },
                 icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                 onClick = onContinueReading,
