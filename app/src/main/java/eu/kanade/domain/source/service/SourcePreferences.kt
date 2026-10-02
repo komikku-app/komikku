@@ -145,6 +145,13 @@ class SourcePreferences(
     // KMK -->
     fun relatedMangas() = preferenceStore.getBoolean("related_mangas", true)
 
+    /**
+     * Stores custom group ordering as a comma-separated string of group keys.
+     * e.g. "pinned,category-English,ja,last_used"
+     * Groups not in this list fall back to default ordering after custom-ordered ones.
+     */
+    fun customGroupOrder() = preferenceStore.getString("custom_source_group_order", "")
+
     companion object {
         const val PINNED_SOURCES_PREF_KEY = "pinned_catalogues"
     }

@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material.icons.outlined._18UpRating
@@ -62,6 +63,12 @@ fun Screen.sourcesTab(
                 iconTint = if (state.nsfwOnly) MaterialTheme.colorScheme.error else LocalContentColor.current,
                 onClick = { screenModel.toggleNsfwOnly() },
             ),
+            AppBar.Action(
+                title = stringResource(KMR.strings.action_reorder_sources),
+                icon = Icons.Outlined.DragIndicator,
+                iconTint = if (state.reorderMode) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                onClick = { screenModel.toggleReorderMode() },
+            ),
             // KMK <--
         ).let {
             when (smartSearchConfig) {
@@ -98,6 +105,8 @@ fun Screen.sourcesTab(
                 onLongClickItem = screenModel::showSourceDialog,
                 // KMK -->
                 onChangeSearchQuery = screenModel::search,
+                onReorderGroup = screenModel::reorderGroup,
+                onReorderSource = screenModel::reorderSourceWithinGroup,
                 // KMK <--
             )
 

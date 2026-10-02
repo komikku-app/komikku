@@ -22,13 +22,20 @@ class SourceRepositoryImpl(
 ) : SourceRepository {
 
     override fun getSources(): Flow<List<DomainSource>> {
-        return sourceManager.sources.map { sources ->
+        // KMK -->
+        return combine(
+            sourceManager.sources,
+            handler.subscribeToList { sourcesQueries.findAll { id, _, _, sort -> id to sort } },
+        ) { sources, sourceSorts ->
+            val sortMap = sourceSorts.associate { it.first to it.second }
             sources.map {
                 mapSourceToDomainSource(it).copy(
                     supportsLatest = it.supportsLatest,
+                    sort = sortMap[it.id] ?: 0L,
                 )
             }
         }
+        // KMK <--
     }
 
     override fun getOnlineSources(): Flow<List<DomainSource>> {
@@ -113,4 +120,12 @@ class SourceRepositoryImpl(
         supportsLatest = false,
         isStub = false,
     )
+
+    // KMK -->
+    override suspend fun updateSort(sourceId: Long, sort: Long) {
+        handler.await {
+            sourcesQueries.updateSort(sort, sourceId)
+        }
+    }
+    // KMK <--
 }
