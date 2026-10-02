@@ -5,10 +5,12 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -18,6 +20,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -76,6 +79,31 @@ abstract class SearchScreenModel(
             preferences.globalSearchPinnedState().changes().collectLatest { state ->
                 mutableState.update { it.copy(sourceFilter = state) }
             }
+        }
+
+        mutableState.update {
+            it.copy(
+                blacklistedTitles = if (preferences.enableSeriesBlacklist().get()) {
+                    preferences.blacklistedSeries().get()
+                        .mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                },
+            )
+        }
+
+        screenModelScope.launch {
+            preferences.enableSeriesBlacklist().changes()
+                .combine(preferences.blacklistedSeries().changes()) { enabled, blacklist ->
+                    if (enabled) {
+                        blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                    } else {
+                        emptySet()
+                    }
+                }
+                .collectLatest { blacklistedTitles ->
+                    mutableState.update { it.copy(blacklistedTitles = blacklistedTitles) }
+                }
         }
         // KMK <--
     }
@@ -238,11 +266,26 @@ abstract class SearchScreenModel(
         val onlyShowHasResults: Boolean = false,
         val items: PersistentMap<Source, SearchItemResult> = persistentMapOf(),
         val dialog: Dialog? = null,
+        // KMK -->
+        val blacklistedTitles: Set<String> = emptySet(),
+        // KMK <--
     ) {
         val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
-        val filteredItems = items.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
+        // KMK -->
+        val filteredItems = items.mapValues { (_, result) ->
+            if (result is SearchItemResult.Success && blacklistedTitles.isNotEmpty()) {
+                result.copy(
+                    result = result.result.filter { manga ->
+                        manga.title.toBlacklistNormalizedTitle() !in blacklistedTitles
+                    },
+                )
+            } else {
+                result
+            }
+        }.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
             .toImmutableMap()
+        // KMK <--
     }
 
     sealed interface Dialog {
