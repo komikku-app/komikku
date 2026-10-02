@@ -108,7 +108,11 @@ The title is normalized before comparing: lowercased, conventional-commit prefix
 - Notes are always kept, and new upstream commits are added in their place in the order.
 - If a commit is no longer reachable from its upstream branch (force-push), it moves to a **Gone from upstream** section
   and keeps its status and notes. Delete it by hand once you no longer need it.
-- If a commit is still upstream but no longer matches the filters (e.g. you changed `since`), it is dropped.
+- Rows dated **before `since`** that are already in the file stay at the end of the list, unchanged, in their current
+  order. These were added by a one-off pass over older history, e.g. the pre-2024 mihon commits that SY never picked,
+  whose Details start with `pre-2024-01-01`. An empty or `?` row there only changes to `O`, when new `O` evidence appears.
+- If a commit is still upstream and dated on or after `since`, but no longer matches the filters (e.g. you changed
+  `exclude_identity_regex`), it is dropped.
 
 ## Config (`config.json`)
 

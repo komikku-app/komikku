@@ -24,7 +24,9 @@ How it works (full explanation in README.md next to this file):
   A commit and its copies in other upstreams share one status.
 * Re-running keeps ``O`` / ``X`` (and any other hand-written status) and the Notes
   column, re-checks empty / ``?`` rows, adds new upstream commits, and moves commits
-  that disappeared from upstream into a "Gone from upstream" section.
+  that disappeared from upstream into a "Gone from upstream" section. Rows dated before
+  ``since`` that are already in the file (added by a one-off pass over older history) are
+  kept as they are at the end of the list; an empty / ``?`` one only changes to ``O``.
 
 Commands:
     update     (default) fetch upstreams and regenerate the log
@@ -512,12 +514,35 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
 
     builder = Builder(root, cfg)
     entries = builder.build()
-    builder.detect(entries)
 
     out = root / cfg.output
     old_rows = {r.full: r for _, r in parse_rows(out)}
     gh_to_up = {u.github.lower(): u for u in cfg.upstreams}
     new_hashes = {e.commit.full for e in entries}
+
+    # Rows dated before `since` (e.g. added by a one-off pass over older history) are kept as they are,
+    # at the end of the list. They are re-checked against the target branch like the generated rows.
+    pre_rows: dict[str, tuple[Row, Upstream]] = {}
+    gone_rows: list[Row] = []
+    for full, row in old_rows.items():
+        if full in new_hashes:
+            continue
+        up = gh_to_up.get(row.github.lower())
+        if not (up and git_ok("merge-base", "--is-ancestor", full, up.ref, cwd=root)):
+            gone_rows.append(row)
+        elif row.cells[3] < cfg.since:
+            pre_rows[full] = (row, up)
+        # else: still upstream but filtered out now (config change) -> drop
+    pre_entries: list[Entry] = []
+    if pre_rows:
+        log = git("log", "--no-walk=unsorted", f"--format={LOG_FORMAT}", *pre_rows, cwd=root)
+        for c in parse_log(log):
+            up = pre_rows[c.full][1]
+            c.repo = up.name
+            entry = Entry(c, up, "primary" if up is builder.primary else "own", c.full)
+            builder.members[entry.cluster].append(entry)
+            pre_entries.append(entry)
+    builder.detect(entries + pre_entries)
 
     lines: list[str] = []
     counts: dict[str, Counter] = defaultdict(Counter)
@@ -553,13 +578,20 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             ),
         )
 
+    for e in pre_entries:
+        row = pre_rows[e.commit.full][0]
+        cells = list(row.cells)
+        # Only strong evidence changes a kept row; its '?' may come from the pass that added it.
+        if row.status in RECHECKED_STATUSES and e.status == STATUS_DONE:
+            cells[0] = STATUS_DONE
+            evidence = [d for d in e.details if d not in unesc(cells[6])]
+            cells[6] = esc("; ".join([unesc(cells[6]), *evidence]).strip("; "))
+            changed += 1
+        counts[e.upstream.name][cells[0] or "empty"] += 1
+        lines.append(format_row(cells))
+
     gone: list[str] = []
-    for full, row in old_rows.items():
-        if full in new_hashes:
-            continue
-        up = gh_to_up.get(row.github.lower())
-        if up and git_ok("merge-base", "--is-ancestor", full, up.ref, cwd=root):
-            continue  # still upstream, just filtered out now (config change) -> drop
+    for row in gone_rows:
         cells = list(row.cells)
         if "gone from upstream" not in cells[6]:
             cells[6] = (cells[6] + "; " if cells[6] else "") + "gone from upstream"
