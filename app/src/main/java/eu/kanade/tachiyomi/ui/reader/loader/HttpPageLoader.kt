@@ -65,11 +65,16 @@ internal class HttpPageLoader(
             scope.launchIO {
                 flow {
                     while (true) {
-                        emit(runInterruptible { queue.take() }.page)
+                        emit(runInterruptible { queue.take() })
                     }
                 }
-                    .filter { it.status == Page.State.Queue }
-                    .collect(::internalLoadPage)
+                    .filter { it.page.status == Page.State.Queue }
+                    .collect {
+                        internalLoadPage(
+                            page = it.page,
+                            force = it.priority == PriorityPage.RETRY,
+                        )
+                    }
             }
             // EXH -->
         }
@@ -99,7 +104,7 @@ internal class HttpPageLoader(
         if (readerPreferences.aggressivePageLoading().get()) {
             rp.forEach {
                 if (it.status == Page.State.Queue) {
-                    queue.offer(PriorityPage(it, 0))
+                    queue.offer(PriorityPage(it, PriorityPage.ADJACENT))
                 }
             }
         }
@@ -110,7 +115,11 @@ internal class HttpPageLoader(
     /**
      * Loads a page through the queue. Handles re-enqueueing pages if they were evicted from the cache.
      */
-    override suspend fun loadPage(page: ReaderPage) = withIOContext {
+    override suspend fun loadPage(page: ReaderPage) = loadPageInternal(page, PriorityPage.DEFAULT)
+
+    // KMK -->
+    private suspend fun loadPageInternal(page: ReaderPage, priority: Int): Unit = withIOContext {
+        // KMK <--
         val imageUrl = page.imageUrl
 
         // Check if the image has been deleted
@@ -125,7 +134,7 @@ internal class HttpPageLoader(
 
         val queuedPages = mutableListOf<PriorityPage>()
         if (page.status == Page.State.Queue) {
-            queuedPages += PriorityPage(page, 1).also { queue.offer(it) }
+            queuedPages += PriorityPage(page, /* KMK --> */ priority /* KMK <-- */).also { queue.offer(it) }
         }
         queuedPages += preloadNextPages(page, preloadSize)
 
@@ -157,7 +166,7 @@ internal class HttpPageLoader(
             boostPage(page)
         } else {
             // EXH <--
-            queue.offer(PriorityPage(page, 2))
+            queue.offer(PriorityPage(page, PriorityPage.RETRY))
         }
     }
 
@@ -196,7 +205,7 @@ internal class HttpPageLoader(
             .subList(pageIndex + 1, min(pageIndex + 1 + amount, pages.size))
             .mapNotNull {
                 if (it.status == Page.State.Queue) {
-                    PriorityPage(it, 0).apply { queue.offer(this) }
+                    PriorityPage(it, PriorityPage.ADJACENT).apply { queue.offer(this) }
                 } else {
                     null
                 }
@@ -209,7 +218,7 @@ internal class HttpPageLoader(
      *
      * @param page the page whose source image has to be downloaded.
      */
-    private suspend fun internalLoadPage(page: ReaderPage) {
+    private suspend fun internalLoadPage(page: ReaderPage, force: Boolean) {
         try {
             if (page.imageUrl.isNullOrEmpty()) {
                 page.status = Page.State.LoadPage
@@ -217,7 +226,7 @@ internal class HttpPageLoader(
             }
             val imageUrl = page.imageUrl!!
 
-            if (!chapterCache.isImageInCache(imageUrl)) {
+            if (force || !chapterCache.isImageInCache(imageUrl)) {
                 page.status = Page.State.DownloadImage
                 val imageResponse = source.getImage(page, dataSaver)
                 chapterCache.putImageToCache(imageUrl, imageResponse)
@@ -237,7 +246,10 @@ internal class HttpPageLoader(
     fun boostPage(page: ReaderPage) {
         if (page.status == Page.State.Queue) {
             scope.launchIO {
-                loadPage(page)
+                // KMK -->
+                // Force a redownload since this is a retry, not a normal load
+                loadPageInternal(page, PriorityPage.RETRY)
+                // KMK <--
             }
         }
     }
@@ -254,6 +266,10 @@ private class PriorityPage(
 ) : Comparable<PriorityPage> {
     companion object {
         private val idGenerator = AtomicInt(0)
+
+        const val RETRY = 2
+        const val DEFAULT = 1
+        const val ADJACENT = 0
     }
 
     private val identifier = idGenerator.incrementAndFetch()
