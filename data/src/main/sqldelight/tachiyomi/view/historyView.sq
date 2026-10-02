@@ -10,6 +10,7 @@ SELECT
     mangas.cover_last_modified,
     chapters.chapter_number AS chapterNumber,
     -- KMK -->
+    chapters.custom_name AS chapterCustomName,
     mangas.chapter_flags AS chapterFlags,
     chapters.read AS read,
     chapters.last_page_read AS lastPageRead,
@@ -65,6 +66,7 @@ favorite,
 cover_last_modified,
 chapterNumber,
 -- KMK -->
+chapterCustomName,
 read,
 lastPageRead,
 CASE
@@ -107,6 +109,7 @@ favorite,
 cover_last_modified,
 chapterNumber,
 -- KMK -->
+chapterCustomName,
 read,
 lastPageRead,
 CASE

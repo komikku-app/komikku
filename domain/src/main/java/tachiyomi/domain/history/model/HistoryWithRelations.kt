@@ -14,6 +14,7 @@ data class HistoryWithRelations(
     // SY <--
     val chapterNumber: Double,
     // KMK -->
+    val chapterCustomName: String? = null,
     val read: Boolean,
     val lastPageRead: Long,
     val totalCountCalculated: Long,

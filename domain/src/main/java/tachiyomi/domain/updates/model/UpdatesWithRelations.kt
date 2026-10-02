@@ -19,6 +19,9 @@ data class UpdatesWithRelations(
     val sourceId: Long,
     val dateFetch: Long,
     val coverData: MangaCover,
+    // KMK -->
+    val chapterCustomName: String? = null,
+    // KMK <--
 ) {
     // SY -->
     val mangaTitle: String = getCustomMangaInfo.get(mangaId)?.title ?: ogMangaTitle

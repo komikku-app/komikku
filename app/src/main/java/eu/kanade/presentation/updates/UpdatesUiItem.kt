@@ -398,7 +398,9 @@ private fun UpdatesUiItem(
                         Spacer(modifier = Modifier.width(2.dp))
                     }
                     Text(
-                        text = update.chapterName,
+                        // KMK -->
+                        text = update.chapterCustomName ?: update.chapterName,
+                        // KMK <--
                         maxLines = 1,
                         style = MaterialTheme.typography.bodySmall,
                         color = LocalContentColor.current.copy(alpha = textAlpha),

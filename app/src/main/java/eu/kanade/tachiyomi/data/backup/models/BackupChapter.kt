@@ -26,6 +26,9 @@ class BackupChapter(
     @ProtoNumber(11) var lastModifiedAt: Long = 0,
     @ProtoNumber(12) var version: Long = 0,
     @ProtoNumber(13) var memo: ByteArray = JsonObjectEmptyBytes,
+    // KMK -->
+    @ProtoNumber(900) var customName: String? = null,
+    // KMK <--
 ) {
     fun toChapterImpl(): Chapter {
         return Chapter.create().copy(
@@ -42,6 +45,9 @@ class BackupChapter(
             lastModifiedAt = this@BackupChapter.lastModifiedAt,
             version = this@BackupChapter.version,
             memo = MemoColumnAdapter.decode(this@BackupChapter.memo),
+            // KMK -->
+            customName = this@BackupChapter.customName,
+            // KMK <--
         )
     }
 }
@@ -63,6 +69,9 @@ val backupChapterMapper = {
         version: Long,
         _: Long,
         memo: JsonObject,
+        // KMK -->
+        customName: String?,
+    // KMK <--
     ->
     BackupChapter(
         url = url,
@@ -78,5 +87,8 @@ val backupChapterMapper = {
         lastModifiedAt = lastModifiedAt,
         version = version,
         memo = MemoColumnAdapter.encode(memo),
+        // KMK -->
+        customName = customName,
+        // KMK <--
     )
 }

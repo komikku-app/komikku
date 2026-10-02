@@ -185,6 +185,9 @@ fun MangaScreen(
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    // KMK -->
+    onRenameChapterClicked: (Chapter) -> Unit,
+    // KMK <--
 
     // For chapter swipe
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
@@ -259,6 +262,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            // KMK -->
+            onRenameChapterClicked = onRenameChapterClicked,
+            // KMK <--
             onChapterSwipe = onChapterSwipe,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
@@ -321,6 +327,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            // KMK -->
+            onRenameChapterClicked = onRenameChapterClicked,
+            // KMK <--
             onChapterSwipe = onChapterSwipe,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
@@ -395,6 +404,9 @@ private fun MangaScreenSmallImpl(
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    // KMK -->
+    onRenameChapterClicked: (Chapter) -> Unit,
+    // KMK <--
 
     // For chapter swipe
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
@@ -525,6 +537,9 @@ private fun MangaScreenSmallImpl(
                 onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
                 onDownloadChapter = onDownloadChapter,
                 onMultiDeleteClicked = onMultiDeleteClicked,
+                // KMK -->
+                onRenameChapterClicked = onRenameChapterClicked,
+                // KMK <--
                 fillFraction = 1f,
             )
         },
@@ -859,6 +874,9 @@ private fun MangaScreenLargeImpl(
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    // KMK -->
+    onRenameChapterClicked: (Chapter) -> Unit,
+    // KMK <--
 
     // For swipe actions
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
@@ -984,6 +1002,9 @@ private fun MangaScreenLargeImpl(
                     onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
                     onDownloadChapter = onDownloadChapter,
                     onMultiDeleteClicked = onMultiDeleteClicked,
+                    // KMK -->
+                    onRenameChapterClicked = onRenameChapterClicked,
+                    // KMK <--
                     fillFraction = 0.5f,
                 )
             }
@@ -1257,6 +1278,9 @@ private fun SharedMangaBottomActionMenu(
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    // KMK -->
+    onRenameChapterClicked: (Chapter) -> Unit,
+    // KMK <--
     fillFraction: Float,
     modifier: Modifier = Modifier,
 ) {
@@ -1288,6 +1312,11 @@ private fun SharedMangaBottomActionMenu(
         }.takeIf {
             selected.fastAny { it.downloadState == Download.State.DOWNLOADED }
         },
+        // KMK -->
+        onRenameClicked = {
+            onRenameChapterClicked(selected[0].chapter)
+        }.takeIf { selected.size == 1 },
+        // KMK <--
     )
 }
 
@@ -1326,7 +1355,9 @@ private fun LazyListScope.sharedChapterItems(
             }
             is ChapterList.Item -> {
                 MangaChapterListItem(
-                    title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
+                    // KMK -->
+                    title = item.chapter.customName ?: if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
+                        // KMK <--
                         stringResource(
                             MR.strings.display_mode_chapter,
                             formatChapterNumber(item.chapter.chapterNumber),

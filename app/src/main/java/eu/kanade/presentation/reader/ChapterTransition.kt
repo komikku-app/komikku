@@ -103,7 +103,9 @@ private fun TransitionText(
         if (topChapter != null) {
             ChapterText(
                 header = topLabel,
-                name = topChapter.name,
+                // KMK -->
+                name = topChapter.displayName,
+                // KMK <--
                 scanlator = topChapter.scanlator,
                 downloaded = topChapterDownloaded,
             )
@@ -128,7 +130,9 @@ private fun TransitionText(
 
             ChapterText(
                 header = bottomLabel,
-                name = bottomChapter.name,
+                // KMK -->
+                name = bottomChapter.displayName,
+                // KMK <--
                 scanlator = bottomChapter.scanlator,
                 downloaded = bottomChapterDownloaded,
             )
