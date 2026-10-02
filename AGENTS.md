@@ -193,6 +193,8 @@ Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):
 - `build_pull_request.yml` – PR validation: dependency review → wrapper validation → `spotlessCheck` → `assemblePreview` → `testReleaseUnitTest` → APK signing (authorized forks)
 - `build_push.yml` – push to `master`: full build + signing
 - `build_release.yml` – release builds from `v*` tags
+- `build_preview.yml` – manual preview builder
+- `build_benchmark.yml` – manual benchmark builder
 
 ---
 
