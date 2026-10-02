@@ -777,6 +777,15 @@
 
     <!-- Tracking Screen -->
     <string name="manga_tracking_tab">Tracking</string>
+    <string name="manga_personal_rating">Rate</string>
+    <string name="manga_rating_love">Love</string>
+    <string name="manga_rating_like">Like</string>
+    <string name="manga_rating_dislike">Dislike</string>
+    <string name="manga_rating_not_interested">Not interested</string>
+    <string name="manga_rating_clear">Clear rating</string>
+    <string name="rated_manga_title">Rated manga</string>
+    <string name="rated_manga_empty">No manga have this rating yet</string>
+    <string name="rated_manga_error">Couldn\'t load rated manga</string>
     <string name="add_tracking">Add tracking</string>
     <string name="action_track">Track</string>
     <string name="unread">Unread</string>

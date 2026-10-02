@@ -1,0 +1,52 @@
+CREATE TABLE manga_taste (
+    manga_id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    title TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY(manga_id) REFERENCES mangas(_id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX manga_taste_source_url_index ON manga_taste(source, url);
+CREATE INDEX manga_taste_rating_index ON manga_taste(rating);
+
+getByMangaId:
+SELECT *
+FROM manga_taste
+WHERE manga_id = :mangaId;
+
+getBySourceUrl:
+SELECT *
+FROM manga_taste
+WHERE source = :source
+AND url = :url;
+
+getAll:
+SELECT *
+FROM manga_taste;
+
+upsert:
+INSERT INTO manga_taste(manga_id, source, url, title, rating, created_at, updated_at)
+VALUES (:mangaId, :source, :url, :title, :rating, :createdAt, :updatedAt)
+ON CONFLICT(manga_id)
+DO UPDATE SET
+    source = :source,
+    url = :url,
+    title = :title,
+    rating = :rating,
+    updated_at = :updatedAt
+WHERE manga_id = :mangaId;
+
+delete:
+DELETE FROM manga_taste
+WHERE manga_id = :mangaId;
+
+deleteBySourceUrl:
+DELETE FROM manga_taste
+WHERE source = :source
+AND url = :url;
+
+deleteAll:
+DELETE FROM manga_taste;

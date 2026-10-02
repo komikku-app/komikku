@@ -43,6 +43,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -101,6 +102,8 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.taste.model.MangaRating
+import tachiyomi.domain.taste.model.MangaTaste
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -247,6 +250,8 @@ fun MangaActionRow(
     // KMK -->
     status: Long,
     interval: Int,
+    mangaTaste: MangaTaste? = null,
+    onTasteClicked: ((MangaRating?) -> Unit)? = null,
     // KMK <--
     modifier: Modifier = Modifier,
 ) {
@@ -327,6 +332,63 @@ fun MangaActionRow(
             color = if (trackingCount == 0) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
             onClick = onTrackingClicked,
         )
+        if (onTasteClicked != null) {
+            var ratingMenuExpanded by remember { mutableStateOf(false) }
+            val currentRating = MangaRating.fromValue(mangaTaste?.rating ?: 0)
+            val title = when (currentRating) {
+                MangaRating.LOVE -> MR.strings.manga_rating_love
+                MangaRating.LIKE -> MR.strings.manga_rating_like
+                MangaRating.DISLIKE -> MR.strings.manga_rating_dislike
+                MangaRating.NOT_INTERESTED -> MR.strings.manga_rating_not_interested
+                null -> MR.strings.manga_personal_rating
+            }
+            val icon = when (currentRating) {
+                MangaRating.LOVE -> Icons.Filled.Favorite
+                MangaRating.LIKE -> Icons.Outlined.Done
+                MangaRating.DISLIKE -> Icons.Outlined.Block
+                MangaRating.NOT_INTERESTED -> Icons.Outlined.VisibilityOff
+                null -> Icons.Outlined.FavoriteBorder
+            }
+            MangaActionButton(
+                title = stringResource(title),
+                icon = icon,
+                color = if (currentRating == null) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
+                onClick = { ratingMenuExpanded = true },
+            )
+            DropdownMenu(
+                expanded = ratingMenuExpanded,
+                onDismissRequest = { ratingMenuExpanded = false },
+            ) {
+                listOf(
+                    MangaRating.LOVE to Pair(MR.strings.manga_rating_love, Icons.Filled.Favorite),
+                    MangaRating.LIKE to Pair(MR.strings.manga_rating_like, Icons.Outlined.Done),
+                    MangaRating.DISLIKE to Pair(MR.strings.manga_rating_dislike, Icons.Outlined.Block),
+                    MangaRating.NOT_INTERESTED to Pair(
+                        MR.strings.manga_rating_not_interested,
+                        Icons.Outlined.VisibilityOff,
+                    ),
+                ).forEach { (rating, presentation) ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(presentation.first)) },
+                        onClick = {
+                            onTasteClicked(rating)
+                            ratingMenuExpanded = false
+                        },
+                        leadingIcon = { Icon(presentation.second, contentDescription = null) },
+                    )
+                }
+                if (currentRating != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(MR.strings.manga_rating_clear)) },
+                        onClick = {
+                            onTasteClicked(null)
+                            ratingMenuExpanded = false
+                        },
+                        leadingIcon = { Icon(Icons.Outlined.Close, contentDescription = null) },
+                    )
+                }
+            }
+        }
         if (onWebViewClicked != null) {
             MangaActionButton(
                 title = stringResource(MR.strings.action_web_view),

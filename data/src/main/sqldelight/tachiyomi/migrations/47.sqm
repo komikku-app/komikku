@@ -1,0 +1,13 @@
+CREATE TABLE manga_taste (
+    manga_id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    title TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY(manga_id) REFERENCES mangas(_id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX manga_taste_source_url_index ON manga_taste(source, url);
+CREATE INDEX manga_taste_rating_index ON manga_taste(rating);

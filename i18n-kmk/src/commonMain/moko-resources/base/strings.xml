@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="personal_recommendations">For You</string>
+    <string name="personal_recommendations_need_ratings">Love or Like manga in your library that include genre information to get recommendations.</string>
+    <string name="personal_recommendations_load_failed">Recommendations could not be loaded. Try refreshing.</string>
+    <string name="personal_recommendations_source_failed">This source could not be checked. You can still review any other sources that finish loading.</string>
+    <string name="personal_recommendations_no_results">No recommendations were found. Try refreshing later or enable more sources.</string>
+    <string name="pref_show_personal_recommendations">Show For You</string>
+    <string name="pref_show_personal_recommendations_summary">Use Love, Like, Dislike, and Not interested choices to suggest titles from enabled sources.</string>
     <!-- Actions -->
     <string name="action_search_for_source">Search for sources</string>
     <string name="action_source_search">Search in source</string>
