@@ -212,7 +212,7 @@ class Config:
             sys.exit("config: at least one upstream is required")
         return Config(
             target_branch=raw.get("target_branch", "master"),
-            since=raw.get("since", "2025-01-01"),
+            since=raw.get("since", "2024-01-01"),
             output=raw.get("output", "cherrypick_log.md"),
             exclude_identity_regex=raw.get("exclude_identity_regex", "renovate"),
             upstreams=ups,
@@ -310,7 +310,8 @@ def unesc(text: str) -> str:
 
 
 def format_row(cells: list[str]) -> str:
-    return "| " + " | ".join(cells) + " |"
+    # An empty Status is written as one space, so it is as wide as "O" / "?" / "X" and the raw table stays aligned.
+    return "| " + " | ".join([cells[0] or " ", *cells[1:]]) + " |"
 
 
 # --------------------------------------------------------------------------- update

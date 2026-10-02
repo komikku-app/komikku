@@ -44,7 +44,7 @@ All commands accept `--config PATH` (default: `config.json` next to the script).
 
 | Column | Meaning |
 |--------|---------|
-| Status | `O` cherry-picked into the target branch · `?` maybe, needs review · empty = not found · `X` won't pick (set by hand) |
+| Status | `O` cherry-picked into the target branch · `?` maybe, needs review · empty (written as one space so the raw table stays aligned) = not found · `X` won't pick (set by hand) |
 | Commit | Short hash, linked to the full GitHub commit. The script reads the full hash back from this link, so don't edit it |
 | Upstream | `mihon`, `tachiyomiSY`, or `↳ tachiyomiSY` for SY's copy of the mihon commit directly below it |
 | Date | Committer date, i.e. when the commit landed on that upstream branch (ISO) |
