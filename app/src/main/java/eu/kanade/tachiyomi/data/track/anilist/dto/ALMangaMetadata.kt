@@ -21,4 +21,5 @@ data class ALMangaMetadataMedia(
     val coverImage: ItemCover,
     val description: String?,
     val staff: ALStaff,
+    val bannerImage: String? = null,
 )

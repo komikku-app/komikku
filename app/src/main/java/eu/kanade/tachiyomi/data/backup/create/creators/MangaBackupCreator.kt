@@ -145,6 +145,9 @@ private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* 
         version = this.version,
         notes = this.notes,
         initialized = this.initialized,
+        // KMK -->
+        bannerUrl = this.ogBannerUrl,
+        // KMK <--
         memo = MemoColumnAdapter.encode(this.memo),
         // SY -->
     ).also { backupManga ->
@@ -156,6 +159,9 @@ private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* 
             backupManga.customDescription = it.description
             backupManga.customGenre = it.genre
             backupManga.customStatus = it.status?.toInt() ?: 0
+            // KMK -->
+            backupManga.customBannerUrl = it.bannerUrl
+            // KMK <--
         }
     }
 // SY <--

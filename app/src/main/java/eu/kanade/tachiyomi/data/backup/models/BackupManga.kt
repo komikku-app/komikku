@@ -61,6 +61,10 @@ class BackupManga(
     @ProtoNumber(804) var customDescription: String? = null,
     @ProtoNumber(805) var customGenre: List<String>? = null,
 
+    // KMK specific values
+    @ProtoNumber(900) var bannerUrl: String? = null,
+    @ProtoNumber(901) var customBannerUrl: String? = null,
+
 ) {
     fun getMangaImpl(): Manga {
         return Manga.create().copy(
@@ -85,6 +89,9 @@ class BackupManga(
             version = this@BackupManga.version,
             notes = this@BackupManga.notes,
             initialized = this@BackupManga.initialized,
+            // KMK -->
+            ogBannerUrl = this@BackupManga.bannerUrl,
+            // KMK <--
             memo = MemoColumnAdapter.decode(this@BackupManga.memo),
         )
     }
