@@ -1,0 +1,20 @@
+{
+  "target_branch": "master",
+  "since": "2025-01-01",
+  "output": "cherrypick_log.md",
+  "exclude_identity_regex": "renovate",
+  "upstreams": [
+    {
+      "name": "mihon",
+      "remote": "mihon",
+      "branch": "main",
+      "github": "mihonapp/mihon"
+    },
+    {
+      "name": "tachiyomiSY",
+      "remote": "tachiyomiSY",
+      "branch": "master",
+      "github": "jobobby04/TachiyomiSY"
+    }
+  ]
+}
