@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -35,6 +36,8 @@ import eu.kanade.presentation.theme.colorscheme.TealTurqoiseColorScheme
 import eu.kanade.presentation.theme.colorscheme.TidalWaveColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
+import tachiyomi.presentation.core.theme.AppShapes
+import tachiyomi.presentation.core.theme.AppTypography
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -103,6 +106,9 @@ private fun BaseTachiyomiTheme(
                 isAmoled = isAmoled,
             )
         },
+        motionScheme = MotionScheme.expressive(),
+        shapes = AppShapes,
+        typography = AppTypography,
         content = content,
     )
 }

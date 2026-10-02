@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package tachiyomi.presentation.core.components
 
 import androidx.compose.animation.AnimatedContent
@@ -16,7 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
@@ -49,7 +52,7 @@ fun CombinedCircularProgressIndicator(
     ) { indeterminate ->
         if (indeterminate) {
             // Indeterminate
-            CircularProgressIndicator()
+            CircularWavyProgressIndicator()
         } else {
             // Determinate
             val infiniteTransition = rememberInfiniteTransition(label = "infiniteRotation")
@@ -67,7 +70,7 @@ fun CombinedCircularProgressIndicator(
                 animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
                 label = "progress",
             )
-            CircularProgressIndicator(
+            CircularWavyProgressIndicator(
                 progress = { animatedProgress },
                 modifier = Modifier.rotate(rotation),
             )

@@ -3,9 +3,14 @@ agp_version = "8.13.2"
 lifecycle_version = "2.10.0"
 paging_version = "3.4.1"
 interpolator_version = "1.0.0"
+window_version = "1.4.0"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "agp_version" }
+
+# window-core holds WindowSizeClass, which the adaptive library returns and the app provides
+# through a composition local. The version matches the one that material3-adaptive 1.2.0 requests.
+window-core = { module = "androidx.window:window-core", version.ref = "window_version" }
 
 annotation = "androidx.annotation:annotation:1.10.0"
 appcompat = "androidx.appcompat:appcompat:1.7.1"

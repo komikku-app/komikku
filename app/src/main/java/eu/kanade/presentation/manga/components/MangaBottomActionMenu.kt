@@ -3,7 +3,6 @@ package eu.kanade.presentation.manga.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,17 +11,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.BookmarkAdd
@@ -37,7 +27,6 @@ import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -69,6 +58,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.m3e.ExpressiveFloatingToolbar
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.time.Duration.Companion.seconds
 
@@ -84,102 +74,85 @@ fun MangaBottomActionMenu(
     onDownloadClicked: (() -> Unit)? = null,
     onDeleteClicked: (() -> Unit)? = null,
 ) {
-    AnimatedVisibility(
-        visible = visible,
-        enter = expandVertically(expandFrom = Alignment.Bottom),
-        exit = shrinkVertically(shrinkTowards = Alignment.Bottom),
+    ExpressiveFloatingToolbar(
+        expanded = visible,
+        modifier = modifier,
     ) {
         val scope = rememberCoroutineScope()
-        Surface(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.large.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ) {
-            val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
-            var resetJob by remember { mutableStateOf<Job?>(null) }
-            val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
-                resetJob?.cancel()
-                resetJob = scope.launch {
-                    delay(1.seconds)
-                    if (isActive) confirm[toConfirmIndex] = false
-                }
+        val haptic = LocalHapticFeedback.current
+        val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+        var resetJob by remember { mutableStateOf<Job?>(null) }
+        val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
+            resetJob?.cancel()
+            resetJob = scope.launch {
+                delay(1.seconds)
+                if (isActive) confirm[toConfirmIndex] = false
             }
-            Row(
-                modifier = Modifier
-                    .padding(
-                        WindowInsets.navigationBars
-                            .only(WindowInsetsSides.Bottom)
-                            .asPaddingValues(),
-                    )
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
-            ) {
-                if (onBookmarkClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_bookmark),
-                        icon = Icons.Outlined.BookmarkAdd,
-                        toConfirm = confirm[0],
-                        onLongClick = { onLongClickItem(0) },
-                        onClick = onBookmarkClicked,
-                    )
-                }
-                if (onRemoveBookmarkClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_remove_bookmark),
-                        icon = Icons.Outlined.BookmarkRemove,
-                        toConfirm = confirm[1],
-                        onLongClick = { onLongClickItem(1) },
-                        onClick = onRemoveBookmarkClicked,
-                    )
-                }
-                if (onMarkAsReadClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_mark_as_read),
-                        icon = Icons.Outlined.DoneAll,
-                        toConfirm = confirm[2],
-                        onLongClick = { onLongClickItem(2) },
-                        onClick = onMarkAsReadClicked,
-                    )
-                }
-                if (onMarkAsUnreadClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_mark_as_unread),
-                        icon = Icons.Outlined.RemoveDone,
-                        toConfirm = confirm[3],
-                        onLongClick = { onLongClickItem(3) },
-                        onClick = onMarkAsUnreadClicked,
-                    )
-                }
-                if (onMarkPreviousAsReadClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_mark_previous_as_read),
-                        icon = ImageVector.vectorResource(R.drawable.ic_done_prev_24dp),
-                        toConfirm = confirm[4],
-                        onLongClick = { onLongClickItem(4) },
-                        onClick = onMarkPreviousAsReadClicked,
-                    )
-                }
-                if (onDownloadClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_download),
-                        icon = Icons.Outlined.Download,
-                        toConfirm = confirm[5],
-                        onLongClick = { onLongClickItem(5) },
-                        onClick = onDownloadClicked,
-                    )
-                }
-                if (onDeleteClicked != null) {
-                    Button(
-                        title = stringResource(MR.strings.action_delete),
-                        icon = Icons.Outlined.Delete,
-                        toConfirm = confirm[6],
-                        onLongClick = { onLongClickItem(6) },
-                        onClick = onDeleteClicked,
-                    )
-                }
-            }
+        }
+        if (onBookmarkClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_bookmark),
+                icon = Icons.Outlined.BookmarkAdd,
+                toConfirm = confirm[0],
+                onLongClick = { onLongClickItem(0) },
+                onClick = onBookmarkClicked,
+            )
+        }
+        if (onRemoveBookmarkClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_remove_bookmark),
+                icon = Icons.Outlined.BookmarkRemove,
+                toConfirm = confirm[1],
+                onLongClick = { onLongClickItem(1) },
+                onClick = onRemoveBookmarkClicked,
+            )
+        }
+        if (onMarkAsReadClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_mark_as_read),
+                icon = Icons.Outlined.DoneAll,
+                toConfirm = confirm[2],
+                onLongClick = { onLongClickItem(2) },
+                onClick = onMarkAsReadClicked,
+            )
+        }
+        if (onMarkAsUnreadClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_mark_as_unread),
+                icon = Icons.Outlined.RemoveDone,
+                toConfirm = confirm[3],
+                onLongClick = { onLongClickItem(3) },
+                onClick = onMarkAsUnreadClicked,
+            )
+        }
+        if (onMarkPreviousAsReadClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_mark_previous_as_read),
+                icon = ImageVector.vectorResource(R.drawable.ic_done_prev_24dp),
+                toConfirm = confirm[4],
+                onLongClick = { onLongClickItem(4) },
+                onClick = onMarkPreviousAsReadClicked,
+            )
+        }
+        if (onDownloadClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_download),
+                icon = Icons.Outlined.Download,
+                toConfirm = confirm[5],
+                onLongClick = { onLongClickItem(5) },
+                onClick = onDownloadClicked,
+            )
+        }
+        if (onDeleteClicked != null) {
+            Button(
+                title = stringResource(MR.strings.action_delete),
+                icon = Icons.Outlined.Delete,
+                toConfirm = confirm[6],
+                onLongClick = { onLongClickItem(6) },
+                onClick = onDeleteClicked,
+            )
         }
     }
 }
@@ -276,162 +249,146 @@ fun LibraryBottomActionMenu(
     // SY <--
     modifier: Modifier = Modifier,
 ) {
-    AnimatedVisibility(
-        visible = visible,
-        enter = expandVertically(animationSpec = tween(delayMillis = 300)),
-        exit = shrinkVertically(animationSpec = tween()),
+    ExpressiveFloatingToolbar(
+        expanded = visible,
+        modifier = modifier,
     ) {
         val scope = rememberCoroutineScope()
-        Surface(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.large.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ) {
-            val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
-            var resetJob by remember { mutableStateOf<Job?>(null) }
-            val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
-                resetJob?.cancel()
-                resetJob = scope.launch {
-                    delay(1.seconds)
-                    if (isActive) confirm[toConfirmIndex] = false
-                }
+        val haptic = LocalHapticFeedback.current
+        val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+        var resetJob by remember { mutableStateOf<Job?>(null) }
+        val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            confirm.indices.forEach { i -> confirm[i] = i == toConfirmIndex }
+            resetJob?.cancel()
+            resetJob = scope.launch {
+                delay(1.seconds)
+                if (isActive) confirm[toConfirmIndex] = false
             }
-            Row(
-                modifier = Modifier
-                    .windowInsetsPadding(
-                        WindowInsets.navigationBars
-                            .only(WindowInsetsSides.Bottom),
-                    )
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
+        }
+        Button(
+            title = stringResource(MR.strings.action_move_category),
+            icon = Icons.AutoMirrored.Outlined.Label,
+            toConfirm = confirm[0],
+            onLongClick = { onLongClickItem(0) },
+            onClick = onChangeCategoryClicked,
+        )
+        Button(
+            title = stringResource(MR.strings.action_mark_as_read),
+            icon = Icons.Outlined.DoneAll,
+            toConfirm = confirm[1],
+            onLongClick = { onLongClickItem(1) },
+            onClick = onMarkAsReadClicked,
+        )
+        Button(
+            title = stringResource(MR.strings.action_mark_as_unread),
+            icon = Icons.Outlined.RemoveDone,
+            toConfirm = confirm[2],
+            onLongClick = { onLongClickItem(2) },
+            onClick = onMarkAsUnreadClicked,
+        )
+        if (onDownloadClicked != null) {
+            var downloadExpanded by remember { mutableStateOf(false) }
+            Button(
+                title = stringResource(MR.strings.action_download),
+                icon = Icons.Outlined.Download,
+                toConfirm = confirm[3],
+                onLongClick = { onLongClickItem(3) },
+                onClick = { downloadExpanded = !downloadExpanded },
             ) {
-                Button(
-                    title = stringResource(MR.strings.action_move_category),
-                    icon = Icons.AutoMirrored.Outlined.Label,
-                    toConfirm = confirm[0],
-                    onLongClick = { onLongClickItem(0) },
-                    onClick = onChangeCategoryClicked,
+                DownloadDropdownMenu(
+                    expanded = downloadExpanded,
+                    onDismissRequest = { downloadExpanded = false },
+                    onDownloadClicked = onDownloadClicked,
+                    offset = BottomBarMenuDpOffset,
                 )
-                Button(
-                    title = stringResource(MR.strings.action_mark_as_read),
-                    icon = Icons.Outlined.DoneAll,
-                    toConfirm = confirm[1],
-                    onLongClick = { onLongClickItem(1) },
-                    onClick = onMarkAsReadClicked,
-                )
-                Button(
-                    title = stringResource(MR.strings.action_mark_as_unread),
-                    icon = Icons.Outlined.RemoveDone,
-                    toConfirm = confirm[2],
-                    onLongClick = { onLongClickItem(2) },
-                    onClick = onMarkAsUnreadClicked,
-                )
-                if (onDownloadClicked != null) {
-                    var downloadExpanded by remember { mutableStateOf(false) }
-                    Button(
-                        title = stringResource(MR.strings.action_download),
-                        icon = Icons.Outlined.Download,
-                        toConfirm = confirm[3],
-                        onLongClick = { onLongClickItem(3) },
-                        onClick = { downloadExpanded = !downloadExpanded },
-                    ) {
-                        DownloadDropdownMenu(
-                            expanded = downloadExpanded,
-                            onDismissRequest = { downloadExpanded = false },
-                            onDownloadClicked = onDownloadClicked,
-                            offset = BottomBarMenuDpOffset,
+            }
+        }
+        // SY -->
+        val configuration = LocalConfiguration.current
+        val isTabletUi = remember { configuration.isTabletUi() }
+        // SY <--
+        // KMK -->
+        if (onDownloadClicked == null || isTabletUi) {
+            Button(
+                title = stringResource(KMR.strings.action_update),
+                icon = Icons.Outlined.Refresh,
+                toConfirm = confirm[4],
+                onLongClick = { onLongClickItem(4) },
+                onClick = onSelectionUpdateClicked,
+            )
+        }
+        if (isTabletUi) {
+            // KMK <--
+            Button(
+                title = stringResource(MR.strings.migrate),
+                icon = Icons.Outlined.SwapCalls,
+                toConfirm = confirm[5],
+                onLongClick = { onLongClickItem(5) },
+                onClick = onMigrateClicked,
+            )
+        }
+        var overflowMenuOpen by remember { mutableStateOf(false) }
+        Button(
+            title = stringResource(MR.strings.label_more),
+            icon = Icons.Outlined.MoreVert,
+            toConfirm = confirm[6],
+            onLongClick = { onLongClickItem(6) },
+            onClick = { overflowMenuOpen = true },
+        ) {
+            DropdownMenu(
+                expanded = overflowMenuOpen,
+                onDismissRequest = { overflowMenuOpen = false },
+                offset = BottomBarMenuDpOffset,
+            ) {
+                // KMK -->
+                if (!isTabletUi) {
+                    if (onDownloadClicked != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(KMR.strings.action_update)) },
+                            onClick = onSelectionUpdateClicked,
                         )
                     }
-                }
-                // SY -->
-                val configuration = LocalConfiguration.current
-                val isTabletUi = remember { configuration.isTabletUi() }
-                // SY <--
-                // KMK -->
-                if (onDownloadClicked == null || isTabletUi) {
-                    Button(
-                        title = stringResource(KMR.strings.action_update),
-                        icon = Icons.Outlined.Refresh,
-                        toConfirm = confirm[4],
-                        onLongClick = { onLongClickItem(4) },
-                        onClick = onSelectionUpdateClicked,
-                    )
-                }
-                if (isTabletUi) {
                     // KMK <--
-                    Button(
-                        title = stringResource(MR.strings.migrate),
-                        icon = Icons.Outlined.SwapCalls,
-                        toConfirm = confirm[5],
-                        onLongClick = { onLongClickItem(5) },
+                    DropdownMenuItem(
+                        text = { Text(stringResource(MR.strings.migrate)) },
                         onClick = onMigrateClicked,
                     )
                 }
-                var overflowMenuOpen by remember { mutableStateOf(false) }
-                Button(
-                    title = stringResource(MR.strings.label_more),
-                    icon = Icons.Outlined.MoreVert,
-                    toConfirm = confirm[6],
-                    onLongClick = { onLongClickItem(6) },
-                    onClick = { overflowMenuOpen = true },
-                ) {
-                    DropdownMenu(
-                        expanded = overflowMenuOpen,
-                        onDismissRequest = { overflowMenuOpen = false },
-                        offset = BottomBarMenuDpOffset,
-                    ) {
-                        // KMK -->
-                        if (!isTabletUi) {
-                            if (onDownloadClicked != null) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(KMR.strings.action_update)) },
-                                    onClick = onSelectionUpdateClicked,
-                                )
-                            }
-                            // KMK <--
-                            DropdownMenuItem(
-                                text = { Text(stringResource(MR.strings.migrate)) },
-                                onClick = onMigrateClicked,
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { Text(stringResource(MR.strings.action_delete)) },
-                            onClick = onDeleteClicked,
-                        )
-                        // KMK -->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(SYMR.strings.merge)) },
-                            onClick = onMergeClicked,
-                        )
-                        if (onClickCleanTitles != null) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(SYMR.strings.action_clean_titles)) },
-                                onClick = onClickCleanTitles,
-                            )
-                        }
-                        if (onClickCollectRecommendations != null) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(SYMR.strings.rec_search_short)) },
-                                onClick = onClickCollectRecommendations,
-                            )
-                        }
-                        if (onClickAddToMangaDex != null) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(SYMR.strings.mangadex_add_to_follows)) },
-                                onClick = onClickAddToMangaDex,
-                            )
-                        }
-                        if (onClickResetInfo != null) {
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(SYMR.strings.reset_info)) },
-                                onClick = onClickResetInfo,
-                            )
-                        }
-                        // KMK <--
-                    }
+                DropdownMenuItem(
+                    text = { Text(stringResource(MR.strings.action_delete)) },
+                    onClick = onDeleteClicked,
+                )
+                // KMK -->
+                DropdownMenuItem(
+                    text = { Text(stringResource(SYMR.strings.merge)) },
+                    onClick = onMergeClicked,
+                )
+                if (onClickCleanTitles != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(SYMR.strings.action_clean_titles)) },
+                        onClick = onClickCleanTitles,
+                    )
                 }
+                if (onClickCollectRecommendations != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(SYMR.strings.rec_search_short)) },
+                        onClick = onClickCollectRecommendations,
+                    )
+                }
+                if (onClickAddToMangaDex != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(SYMR.strings.mangadex_add_to_follows)) },
+                        onClick = onClickAddToMangaDex,
+                    )
+                }
+                if (onClickResetInfo != null) {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(SYMR.strings.reset_info)) },
+                        onClick = onClickResetInfo,
+                    )
+                }
+                // KMK <--
             }
         }
     }

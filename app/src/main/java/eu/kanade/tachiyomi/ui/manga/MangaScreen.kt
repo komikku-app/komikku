@@ -334,6 +334,20 @@ class MangaScreen(
             onFilterButtonClicked = screenModel::showSettingsDialog,
             onRefresh = screenModel::fetchAllFromSource,
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
+            // KMK -->
+            // The variant of the read action is available only when reading has started, because
+            // it is the same action as Start before that point.
+            onStartFromFirstChapter = if (successState.chapters.any { it.chapter.read }) {
+                {
+                    successState.chapters
+                        .minByOrNull { it.chapter.sourceOrder }
+                        ?.chapter
+                        ?.let { openChapter(context, it) }
+                }
+            } else {
+                null
+            },
+            // KMK <--
             onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
             // KMK -->
             librarySearch = { query ->

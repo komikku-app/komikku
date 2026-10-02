@@ -1,8 +1,9 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package tachiyomi.presentation.core.components
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -47,8 +49,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-private val sheetAnimationSpec = tween<Float>(durationMillis = 350)
-
 @Composable
 fun AdaptiveSheet(
     isTabletUi: Boolean,
@@ -57,6 +57,7 @@ fun AdaptiveSheet(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val sheetAnimationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     if (isTabletUi) {

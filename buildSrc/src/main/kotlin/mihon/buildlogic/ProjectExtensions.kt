@@ -68,6 +68,18 @@ internal fun Project.configureCompose(commonExtension: CommonExtension<*, *, *, 
 
         dependencies {
             "implementation"(platform(compose.bom))
+
+            constraints {
+                // Keep every Compose module on one material3 version. A module resolves its own
+                // graph, so a transitive dependency can lift one module above another: a wrapper
+                // that one module compiles then fails at runtime in the next. materialkolor is the
+                // concrete case, because it requests material3 through
+                // org.jetbrains.compose.material3. Raise the catalog version and this constraint
+                // with it.
+                add("implementation", compose.material3.core) {
+                    version { strictly(compose.versions.material3.get()) }
+                }
+            }
         }
     }
 

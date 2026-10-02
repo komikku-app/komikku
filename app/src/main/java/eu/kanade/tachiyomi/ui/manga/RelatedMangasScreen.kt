@@ -47,6 +47,19 @@ fun RelatedMangasScreen(
 
     Scaffold(
         topBar = { scrollBehavior ->
+            if (!bulkFavoriteState.selectionMode) {
+                BrowseSourceSimpleToolbar(
+                    navigateUp = navigateUp,
+                    title = successState.manga.title,
+                    displayMode = displayMode,
+                    onDisplayModeChange = { displayMode = it },
+                    scrollBehavior = scrollBehavior,
+                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    isRunning = bulkFavoriteState.isRunning,
+                )
+            }
+        },
+        bottomBar = {
             if (bulkFavoriteState.selectionMode) {
                 BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
@@ -67,16 +80,6 @@ fun RelatedMangasScreen(
                                 .let { bulkFavoriteScreenModel.reverseSelection(it) }
                         }
                     },
-                )
-            } else {
-                BrowseSourceSimpleToolbar(
-                    navigateUp = navigateUp,
-                    title = successState.manga.title,
-                    displayMode = displayMode,
-                    onDisplayModeChange = { displayMode = it },
-                    scrollBehavior = scrollBehavior,
-                    toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
-                    isRunning = bulkFavoriteState.isRunning,
                 )
             }
         },

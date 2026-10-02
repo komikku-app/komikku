@@ -93,24 +93,7 @@ data class MigrateSourceSearchScreen(
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
-                if (bulkFavoriteState.selectionMode) {
-                    BulkSelectionToolbar(
-                        selectedCount = bulkFavoriteState.selection.size,
-                        isRunning = bulkFavoriteState.isRunning,
-                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                        onSelectAll = {
-                            mangaList.itemSnapshotList.items
-                                .map { it.value.first }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
-                        },
-                        onReverseSelection = {
-                            mangaList.itemSnapshotList.items
-                                .map { it.value.first }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                        },
-                    )
-                } else {
+                if (!bulkFavoriteState.selectionMode) {
                     // KMK <--
                     SearchToolbar(
                         searchQuery = state.toolbarQuery,
@@ -131,7 +114,31 @@ data class MigrateSourceSearchScreen(
                         },
                         // KMK <--
                     )
+                    // KMK -->
                 }
+                // KMK <--
+            },
+            bottomBar = {
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    BulkSelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { bulkFavoriteScreenModel.select(it) }
+                        },
+                        onReverseSelection = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        },
+                    )
+                }
+                // KMK <--
             },
             floatingActionButton = {
                 SmallExtendedFloatingActionButton(

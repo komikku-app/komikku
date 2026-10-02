@@ -213,6 +213,10 @@ dependencies {
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
 
+    // MainActivity reads the window size class from the adaptive library and provides it.
+    implementation(compose.material3.adaptive)
+    implementation(androidx.window.core)
+
     implementation(androidx.interpolator)
 
     implementation(androidx.paging.runtime)

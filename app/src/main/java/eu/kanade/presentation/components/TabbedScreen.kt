@@ -58,6 +58,21 @@ fun TabbedScreen(
             val tab = tabs[state.currentPage]
             val searchEnabled = tab.searchEnabled
             // KMK -->
+            if (!bulkFavoriteState.selectionMode) {
+                // KMK <--
+                SearchToolbar(
+                    titleContent = { AppBarTitle(stringResource(titleRes)) },
+                    searchEnabled = searchEnabled,
+                    searchQuery = if (searchEnabled) searchQuery else null,
+                    onChangeSearchQuery = onChangeSearchQuery,
+                    actions = { AppBarActions(tab.actions) },
+                )
+                // KMK -->
+            }
+            // KMK <--
+        },
+        bottomBar = {
+            // KMK -->
             if (bulkFavoriteState.selectionMode) {
                 BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
@@ -79,16 +94,8 @@ fun TabbedScreen(
                         }
                     },
                 )
-            } else {
-                // KMK <--
-                SearchToolbar(
-                    titleContent = { AppBarTitle(stringResource(titleRes)) },
-                    searchEnabled = searchEnabled,
-                    searchQuery = if (searchEnabled) searchQuery else null,
-                    onChangeSearchQuery = onChangeSearchQuery,
-                    actions = { AppBarActions(tab.actions) },
-                )
             }
+            // KMK <--
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->

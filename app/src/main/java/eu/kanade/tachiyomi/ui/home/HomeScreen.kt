@@ -7,7 +7,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
@@ -16,9 +15,8 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.WideNavigationRailValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +38,6 @@ import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.Screen
-import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
@@ -58,8 +55,12 @@ import soup.compose.material.motion.animation.materialFadeThroughIn
 import soup.compose.material.motion.animation.materialFadeThroughOut
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.components.material.NavigationBar
-import tachiyomi.presentation.core.components.material.NavigationRail
+import tachiyomi.presentation.core.components.m3e.ExpressiveNavigationBar
+import tachiyomi.presentation.core.components.m3e.ExpressiveNavigationBarItem
+import tachiyomi.presentation.core.components.m3e.ExpressiveNavigationRail
+import tachiyomi.presentation.core.components.m3e.ExpressiveNavigationRailItem
+import tachiyomi.presentation.core.components.m3e.rememberExpressiveNavigationRailState
+import tachiyomi.presentation.core.components.m3e.useNavigationRail
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import uy.kohesive.injekt.Injekt
@@ -100,22 +101,28 @@ object HomeScreen : Screen() {
         ) { tabNavigator ->
             // Provide usable navigator to content screen
             CompositionLocalProvider(LocalNavigator provides navigator) {
+                val useRail = useNavigationRail()
+                val railState = rememberExpressiveNavigationRailState()
                 Scaffold(
                     startBar = {
-                        if (isTabletUi()) {
-                            NavigationRail {
+                        if (useRail) {
+                            ExpressiveNavigationRail(state = railState) {
                                 TABS
                                     // SY -->
                                     .fastFilter { it.isEnabled() }
                                     // SY <--
                                     .fastForEach {
-                                        NavigationRailItem(it/* SY --> */, alwaysShowLabel/* SY <-- */)
+                                        NavigationRailItem(
+                                            it,
+                                            railExpanded = railState.targetValue == WideNavigationRailValue.Expanded,
+                                            /* SY --> */ alwaysShowLabel = alwaysShowLabel, /* SY <-- */
+                                        )
                                     }
                             }
                         }
                     },
                     bottomBar = {
-                        if (!isTabletUi()) {
+                        if (!useRail) {
                             val bottomNavVisible by produceState(initialValue = true) {
                                 showBottomNavEvent.receiveAsFlow().collectLatest { value = it }
                             }
@@ -124,7 +131,7 @@ object HomeScreen : Screen() {
                                 enter = expandVertically(),
                                 exit = shrinkVertically(),
                             ) {
-                                NavigationBar {
+                                ExpressiveNavigationBar {
                                     TABS
                                         // SY -->
                                         .fastFilter { it.isEnabled() }
@@ -210,7 +217,7 @@ object HomeScreen : Screen() {
     }
 
     @Composable
-    private fun RowScope.NavigationBarItem(
+    private fun NavigationBarItem(
         tab: eu.kanade.presentation.util.Tab,
         // SY -->
         alwaysShowLabel: Boolean,
@@ -220,7 +227,7 @@ object HomeScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
         val selected = tabNavigator.current::class == tab::class
-        NavigationBarItem(
+        ExpressiveNavigationBarItem(
             selected = selected,
             onClick = {
                 if (!selected) {
@@ -230,21 +237,29 @@ object HomeScreen : Screen() {
                 }
             },
             icon = { NavigationIconItem(tab) },
-            label = {
-                Text(
-                    text = tab.options.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            // SY -->
+            // The short navigation bar always shows the label it is given, so the label
+            // preference works by giving it none.
+            label = if (alwaysShowLabel) {
+                {
+                    Text(
+                        text = tab.options.title,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            } else {
+                null
             },
-            alwaysShowLabel = /* SY --> */alwaysShowLabel, /* SY <-- */
+            // SY <--
         )
     }
 
     @Composable
-    fun NavigationRailItem(
+    private fun NavigationRailItem(
         tab: eu.kanade.presentation.util.Tab,
+        railExpanded: Boolean,
         // SY -->
         alwaysShowLabel: Boolean,
         // SY <--
@@ -253,7 +268,7 @@ object HomeScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
         val selected = tabNavigator.current::class == tab::class
-        NavigationRailItem(
+        ExpressiveNavigationRailItem(
             selected = selected,
             onClick = {
                 if (!selected) {
@@ -263,15 +278,21 @@ object HomeScreen : Screen() {
                 }
             },
             icon = { NavigationIconItem(tab) },
-            label = {
-                Text(
-                    text = tab.options.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            // The rail shows its labels when it is expanded, and the label preference decides the
+            // rest: a collapsed rail with the preference off shows the icon only.
+            label = if (railExpanded || alwaysShowLabel) {
+                {
+                    Text(
+                        text = tab.options.title,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            } else {
+                null
             },
-            alwaysShowLabel = /* SY --> */alwaysShowLabel, /* SY <-- */
+            railExpanded = railExpanded,
         )
     }
 
