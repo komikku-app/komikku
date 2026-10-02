@@ -38,6 +38,10 @@ android {
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86_64"))
+        }
     }
 
     buildTypes {
@@ -161,6 +165,17 @@ android {
         abortOnError = false
         checkReleaseBuilds = false
     }
+
+    androidResources {
+        noCompress += "tflite"
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 }
 
 kotlin {
@@ -184,6 +199,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.material3)
     implementation(projects.i18n)
     // KMK -->
     implementation(projects.i18nKmk)
@@ -335,6 +351,12 @@ dependencies {
 
     // ZXing Android Embedded
     implementation(sylibs.zxing.android.embedded)
+
+    // KMK -->
+    implementation(libs.litert)
+    implementation(libs.litert.gpu)
+    implementation(libs.litert.gpu.api)
+    // KMK <--
 }
 
 androidComponents {

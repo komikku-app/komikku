@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.BlendMode
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
+import eu.kanade.tachiyomi.util.upscale.UpscaleModel
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.i18n.MR
@@ -34,6 +35,22 @@ class ReaderPreferences(
     fun doubleTapAnimSpeed() = preferenceStore.getInt("pref_double_tap_anim_speed", 500)
 
     fun showPageNumber() = preferenceStore.getBoolean("pref_show_page_number_key", true)
+
+    // KMK -->
+    fun aiUpscaleEnabled() = preferenceStore.getBoolean("pref_ai_upscale_enabled", false)
+
+    fun aiUpscaleModel() = preferenceStore.getEnum("pref_ai_upscale_model", UpscaleModel.REALESRGAN_ANIMEVIDEOV3)
+
+    fun aiUpscaleBatchSize() = preferenceStore.getInt("pref_ai_upscale_batch_size", 3)
+
+    fun aiUpscaleWifiOnlyDownloads() = preferenceStore.getBoolean("pref_ai_upscale_wifi_only", true)
+
+    fun aiUpscalePrefetchAheadCount() = preferenceStore.getInt("pref_ai_upscale_prefetch_ahead", 4)
+
+    fun aiUpscaleTileOverlap() = preferenceStore.getInt("pref_ai_upscale_tile_overlap", 0)
+
+    fun aiUpscaleCacheSize() = preferenceStore.getInt("pref_ai_upscale_cache_size_mb", 350)
+    // KMK <--
 
     fun showReadingMode() = preferenceStore.getBoolean("pref_show_reading_mode", true)
 

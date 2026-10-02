@@ -70,6 +70,7 @@ import eu.kanade.tachiyomi.util.system.isShizukuInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.upscale.AiUpscaleCache
 import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
@@ -78,6 +79,7 @@ import exh.util.toAnnotatedString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -241,6 +243,7 @@ object SettingsAdvancedScreen : SearchableSettings {
     private fun getDataGroup(): Preference.PreferenceGroup {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
 
         return Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_data),
@@ -258,6 +261,18 @@ object SettingsAdvancedScreen : SearchableSettings {
                     subtitle = stringResource(MR.strings.pref_clear_database_summary),
                     onClick = { navigator.push(ClearDatabaseScreen()) },
                 ),
+                // KMK -->
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_empty_ai_cache),
+                    subtitle = stringResource(KMR.strings.pref_empty_ai_cache_summary),
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            AiUpscaleCache.clear()
+                            withUIContext { context.toast(resource = KMR.strings.emptied_ai_cache) }
+                        }
+                    },
+                ),
+                // KMK <--
             ),
         )
     }
