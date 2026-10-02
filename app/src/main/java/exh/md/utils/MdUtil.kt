@@ -177,6 +177,11 @@ class MdUtil {
                 .add("refresh_token", oauth.refreshToken)
                 .add("code_verifier", getPkceChallengeCode())
                 .add("redirect_uri", MdConstants.Login.redirectUri)
+                // KMK -->
+                // Keep refreshing as an offline token so renewal does not depend on the
+                // browser SSO session lifetime.
+                .add("scope", MdConstants.Login.scope)
+                // KMK <--
                 .build()
 
             // Add the Authorization header manually as this particular
