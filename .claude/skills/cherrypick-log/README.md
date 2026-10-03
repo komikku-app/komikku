@@ -35,7 +35,7 @@ unless you pass `--no-fetch`.
 | Command | What it does |
 |---------|--------------|
 | `update` (default) | Fetch upstreams, rebuild the list, keep manual marks and Notes. Options: `--no-fetch`, `--dry-run`, `--verbose` |
-| `uncertain` | Print `?` rows that haven't been AI-reviewed yet. Options: `--include-empty`, `--include-reviewed`, `--repo NAME`, `--limit N`, `--json` |
+| `uncertain` | Print `?` rows that haven't been AI-reviewed yet. Options: `--include-empty`, `--include-reviewed`, `--repo NAME`, `--grep REGEX` (title), `--limit N`, `--json` |
 | `mark HASH` | Set one row's status (`--status O\|?\|X\|none`) and/or append a note (`--note`, `--replace-note`). Refuses to change `O`/`X` rows unless you pass `--force` |
 
 All commands accept `--config PATH` (default: `config.json` next to the script). Quote `?` in zsh (`--status '?'`).
@@ -44,7 +44,7 @@ All commands accept `--config PATH` (default: `config.json` next to the script).
 
 | Column | Meaning |
 |--------|---------|
-| Status | `O` cherry-picked into the target branch · `?` maybe, needs review · empty (written as one space so the raw table stays aligned) = not found · `X` won't pick (set by hand) |
+| Status | `O` cherry-picked into the target branch · `?` maybe, needs review · empty (written as one space so the raw table stays aligned) = not found · `X` won't pick (set by hand, or omitted automatically, see [Omitted commits](#omitted-commits-x)) |
 | Commit | Short hash, linked to the full GitHub commit. The script reads the full hash back from this link, so don't edit it |
 | Upstream | `mihon`, `tachiyomiSY`, or `↳ tachiyomiSY` for SY's copy of the mihon commit directly below it |
 | Date | Committer date, i.e. when the commit landed on that upstream branch (ISO) |
@@ -100,6 +100,17 @@ A mihon commit and its SY copies share one status, and evidence for any of them 
 Title matches only count if the title is unique among the listed upstream commits, has at least 3 words,
 and the target commit is at most 180 days older than the upstream commit.
 The title is normalized before comparing: lowercased, conventional-commit prefix removed, `(#N)` refs and quotes removed.
+
+### Omitted commits (X)
+
+`X` means "won't pick". Apart from your own marks, two kinds of commit are marked `X` automatically:
+
+| Who | What | Note |
+|-----|------|------|
+| Script, on every `update` | Commits that cancel each other out. These are found by following `This reverts commit <hash>` links between listed commits, a mihon commit and its SY copies counting as one. A chain is only omitted when it is linear and every row in it is still empty or `?` (the fork has none of them). An even-length chain cancels out completely. In an odd-length chain (`C`, `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and stays | `Omitted (script): cancels out - reverts / reverted by <hash>` |
+| AI skill, when asked to clean the log | Commits whose whole diff is release bookkeeping for that fork: version code/name, release notes, version numbers in issue templates. See SKILL.md section 5 | `AI checked <date>: omitted - version bump only (<files>)` |
+
+If the fork already has one side of a revert pair, the pair is not omitted, because the other side may still matter.
 
 ### Rerunning
 

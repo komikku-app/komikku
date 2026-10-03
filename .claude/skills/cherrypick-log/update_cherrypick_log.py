@@ -27,6 +27,9 @@ How it works (full explanation in README.md next to this file):
   that disappeared from upstream into a "Gone from upstream" section. Rows dated before
   ``since`` that are already in the file (added by a one-off pass over older history) are
   kept as they are at the end of the list; an empty / ``?`` one only changes to ``O``.
+* Commits that cancel each other out (``This reverts commit …`` chains) are marked ``X``
+  with an ``Omitted (script):`` note, but only while the fork has none of them (all rows
+  empty / ``?``). Commits that only bump the app version are marked ``X`` by the AI review.
 
 Commands:
     update     (default) fetch upstreams and regenerate the log
@@ -60,12 +63,15 @@ RECHECKED_STATUSES = ("", STATUS_MAYBE)
 # Notes written by the AI review start with this; an empty status with such a note is a
 # reviewed "not picked" verdict and is only overridden by strong (O) evidence.
 AI_NOTE_MARK = "AI checked"
+# Notes for rows the script itself marks X (commits that cancel each other out).
+OMIT_NOTE_MARK = "Omitted (script):"
 
 COLUMNS = ["Status", "Commit", "Upstream", "Date", "Title", "Author", "Details", "Notes"]
 SHORT_LEN = 10
 
 LOG_FORMAT = "%H%x1f%cs%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1e"
 
+REVERT_RE = re.compile(r"This reverts commit ([0-9a-f]{7,40})", re.I)
 CHERRY_RE = re.compile(r"cherry[- ]picked from commit ([0-9a-f]{7,40})", re.I)
 COMMIT_URL_RE = re.compile(r"github\.com/([\w.-]+/[\w.-]+)/commit/([0-9a-f]{7,40})", re.I)
 SUBJECT_PR_RE = re.compile(r"\((?:([\w.-]+/[\w.-]+))?#(\d+)\)")
@@ -506,6 +512,72 @@ class Builder:
             e.details += evidence
 
 
+def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
+    """Mark commits that cancel each other out (``This reverts commit …``) as X.
+
+    Works on clusters (a primary commit plus its secondary copies). Revert links form chains
+    (C <- revert C <- revert of the revert ...). A chain is only touched if it is linear and every
+    row in it is still empty / '?' (the fork has none of them). An even-length chain cancels out
+    completely; in an odd-length chain the oldest commit carries the net change and is kept.
+    Returns the number of rows changed.
+    """
+    by_hash: dict[str, str] = {}
+    cluster_rows: dict[str, list[list[str]]] = defaultdict(list)
+    cluster_head: dict[str, Commit] = {}
+    for e, cells in rendered:
+        by_hash[e.commit.full] = e.cluster
+        cluster_rows[e.cluster].append(cells)
+        if e.kind != "copy":
+            cluster_head[e.cluster] = e.commit
+
+    def resolve(h: str) -> str | None:
+        h = h.lower()
+        if h in by_hash:
+            return by_hash[h]
+        hits = {k for full, k in by_hash.items() if full.startswith(h)}
+        return hits.pop() if len(hits) == 1 else None
+
+    reverts: dict[str, set[str]] = defaultdict(set)  # cluster -> clusters it reverts
+    for e, _ in rendered:
+        for h in REVERT_RE.findall(e.commit.message):
+            target = resolve(h)
+            if target and target != e.cluster:
+                reverts[e.cluster].add(target)
+    reverted_by: dict[str, set[str]] = defaultdict(set)
+    for r, targets in reverts.items():
+        for t in targets:
+            reverted_by[t].add(r)
+
+    changed = 0
+    done: set[str] = set()
+    for root in list(cluster_head):
+        if root in done or root in reverts or root not in reverted_by:
+            continue  # start from an original commit that is reverted but reverts nothing
+        chain = [root]
+        while True:
+            nxt = reverted_by.get(chain[-1], set())
+            if not nxt:
+                break
+            if len(nxt) > 1 or len(reverts.get(next(iter(nxt)), set())) > 1 or next(iter(nxt)) in chain:
+                chain = []  # branching or cyclic history: leave it to a human
+                break
+            chain.append(next(iter(nxt)))
+        done.update(chain)
+        if len(chain) < 2 or any(c not in cluster_head for c in chain):
+            continue
+        if any(cells[0] not in RECHECKED_STATUSES for c in chain for cells in cluster_rows[c]):
+            continue
+        omit = chain if len(chain) % 2 == 0 else chain[1:]
+        for older, newer in zip(omit[::2], omit[1::2]):
+            for key, text in ((older, f"reverted by `{cluster_head[newer].short}`"), (newer, f"reverts `{cluster_head[older].short}`")):
+                note = esc(f"{OMIT_NOTE_MARK} cancels out - {text}")
+                for cells in cluster_rows[key]:
+                    cells[0] = STATUS_SKIP
+                    cells[-1] = note if not cells[-1] else f"{cells[-1]}; {note}"
+                    changed += 1
+    return changed
+
+
 def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
     if not args.no_fetch:
         for up in cfg.upstreams:
@@ -544,8 +616,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             pre_entries.append(entry)
     builder.detect(entries + pre_entries)
 
-    lines: list[str] = []
-    counts: dict[str, Counter] = defaultdict(Counter)
+    rendered: list[tuple[Entry, list[str]]] = []  # (entry, cells) in list order
     changed = added = 0
     for e in entries:
         c = e.commit
@@ -561,10 +632,10 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
                 status = ""
             if status != old.status:
                 changed += 1
-        counts[e.upstream.name][status or "empty"] += 1
         label = f"↳ {e.upstream.name}" if e.kind == "copy" else e.upstream.name
-        lines.append(
-            format_row(
+        rendered.append(
+            (
+                e,
                 [
                     status,
                     f"[{c.short}](https://github.com/{e.upstream.github}/commit/{c.full})",
@@ -587,6 +658,13 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             evidence = [d for d in e.details if d not in unesc(cells[6])]
             cells[6] = esc("; ".join([unesc(cells[6]), *evidence]).strip("; "))
             changed += 1
+        rendered.append((e, cells))
+
+    changed += omit_revert_chains(rendered)
+
+    lines: list[str] = []
+    counts: dict[str, Counter] = defaultdict(Counter)
+    for e, cells in rendered:
         counts[e.upstream.name][cells[0] or "empty"] += 1
         lines.append(format_row(cells))
 
@@ -650,6 +728,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
 
 def cmd_uncertain(root: Path, cfg: Config, args: argparse.Namespace) -> None:
     wanted = {STATUS_MAYBE} | ({""} if args.include_empty else set())
+    title_re = re.compile(args.grep, re.I) if args.grep else None
     shown = 0
     for _, row in parse_rows(root / cfg.output):
         if row.status not in wanted:
@@ -659,6 +738,8 @@ def cmd_uncertain(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             continue
         repo = row.cells[2].replace("↳", "").strip()
         if args.repo and repo != args.repo:
+            continue
+        if title_re and not title_re.search(unesc(row.cells[4])):
             continue
         item = {
             "status": row.status,
@@ -725,6 +806,7 @@ def main() -> None:
     p_unc.add_argument("--include-reviewed", action="store_true", help=f"include rows with an '{AI_NOTE_MARK}' note")
     p_unc.add_argument("--repo", help="only this upstream name (e.g. mihon)")
     p_unc.add_argument("--limit", type=int, default=0, help="at most N rows")
+    p_unc.add_argument("--grep", help="only rows whose title matches this regex (case-insensitive)")
     p_unc.add_argument("--json", action="store_true", help="one JSON object per line")
 
     p_mark = sub.add_parser("mark", help="set the Status and/or Notes of one row")

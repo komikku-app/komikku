@@ -1,6 +1,6 @@
 ---
 name: cherrypick-log
-description: Update and review cherrypick_log.md, the todo list of upstream commits (mihon/main, tachiyomiSY/master) not yet cherry-picked into master. Use when asked to refresh/update the cherry-pick log, list new upstream commits, or resolve '?' (uncertain) entries by checking whether an upstream change is already in master.
+description: Update and review cherrypick_log.md, the todo list of upstream commits (mihon/main, tachiyomiSY/master) not yet cherry-picked into master. Use when asked to refresh/update the cherry-pick log, list new upstream commits, resolve '?' (uncertain) entries by checking whether an upstream change is already in master, or clean the log by omitting (marking X) commits that only bump the app version.
 ---
 
 # Cherry-pick log: update + AI review
@@ -15,8 +15,11 @@ Everything for this tool lives in this folder (`.claude/skills/cherrypick-log/`)
 | `README.md` | Human documentation: rules, columns, commands, porting to another project |
 
 The output is `cherrypick_log.md` in the repo root. **The script is the source of truth** for
-the list, its order and statuses found by hash or PR. The AI's job is narrow: decide the rows the script
-could not (`?`, and empty rows only if the user asks), by comparing the code itself.
+the list, its order and statuses found by hash or PR. It also omits commits that cancel each other out:
+a commit and its revert (or a longer revert chain) that the fork has none of are marked **X** with an
+`Omitted (script):` note on every `update`. The AI's job is narrow:
+- decide the rows the script could not (`?`, and empty rows only if the user asks) by comparing the code itself (sections 2-4);
+- when asked to clean the log, omit the commits that only bump the app version (section 5).
 
 ## 1. Update the list
 
@@ -57,7 +60,8 @@ For upstream commit `H` (already fetched locally):
    - **O**: the change is in `master` (cherry-picked, squashed into another commit, or re-implemented).
    - **?**: partly present, conflicts with a Komikku rework, or you can't tell.
    - **empty**: not present.
-   Never set **X**. That is the maintainer's "won't pick" decision.
+   Never set **X** here. That is the maintainer's "won't pick" decision. The only exception is
+   section 5 (version-bump-only commits).
 
 ## 4. Record the verdict (never hand-edit the table)
 
@@ -72,10 +76,34 @@ python3 $P mark <hash> --status none --note "AI checked YYYY-MM-DD: not found - 
 - `mark` refuses to change `O` / `X` rows. Do not pass `--force` unless the user explicitly asks.
 - Keep notes to one line. Mention the evidence (target commit hash, file, or search done).
 
-## 5. Finish
+## 5. Clean the log: omit version-bump-only commits
 
-1. `python3 $P update --no-fetch` to make sure the file still parses and to refresh the summary.
-2. Report to the user how many rows you reviewed, how many became O / stayed ? / empty, and any rows
+Run this step when the user asks to clean the log, or together with a review if they ask for that.
+Release commits of a fork (mihon's `Release v0.20.4`, SY's `Release 1.13.2` / `1.10.5`, `Bump versionCode
+to 33`, `Update version code`) are only for that fork's releases, so the fork never picks them.
+
+1. List candidates among empty and `?` rows (an `AI checked` note does not exclude them here):
+   ```bash
+   python3 $P uncertain --json --include-empty --include-reviewed \
+     --grep '^(release|v?[0-9]+\.[0-9]+(\.[0-9]+)?$)|version ?code|bump (the )?(app )?version|update (app )?version'
+   ```
+   The title only nominates a row. Also nominate rows you come across whose diff only bumps the version.
+2. Check each one: `git show --stat --format= H`, then `git show H` for small diffs. Mark it **X** only if
+   **every** change is release bookkeeping:
+   - `versionCode` / `versionName` (or a version constant) in `app/build.gradle.kts` or another build file;
+   - release notes: `CHANGELOG.md` release headings and links, `fastlane/**/changelogs`, release README badges;
+   - version numbers in `.github` issue templates, and the release-notes text in a release workflow;
+   - whitespace-only fixes (e.g. a missing final newline) that ride along with the release.
+   Anything else in the diff (min/target SDK, dependency bumps, migrations, code, strings) means **not** X:
+   leave the row as it is, and mention it in the report if it looks interesting.
+3. Record it: `python3 $P mark H --status X --note "AI checked YYYY-MM-DD: omitted - version bump only (<files>)"`.
+   SY copies (`↳` rows) of a version-bump commit get the same mark.
+
+## 6. Finish
+
+1. `python3 $P update --no-fetch` to make sure the file still parses and to refresh the summary. This also
+   applies the script's revert-chain omission.
+2. Report to the user how many rows you reviewed, how many became O / stayed ? / empty / X, and any rows
    that need a human decision (big reworks, likely X candidates).
 3. Do not commit unless asked. If asked, follow `AGENTS.md` git rules (feature branch, never `master`).
 
