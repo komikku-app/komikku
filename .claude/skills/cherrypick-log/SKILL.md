@@ -1,6 +1,6 @@
 ---
 name: cherrypick-log
-description: Update and review cherrypick_log.md, the todo list of upstream commits (mihon/main, tachiyomiSY/master) not yet cherry-picked into master. Use when asked to refresh/update the cherry-pick log, list new upstream commits, resolve '?' (uncertain) entries by checking whether an upstream change is already in master, or clean the log by omitting (marking X) commits that only bump the app version.
+description: Update and review cherrypick_log.md, the todo list of upstream commits not yet cherry-picked into the fork's target branch. The upstreams are set in config.json (one main upstream plus one or more additional ones; in Komikku, main mihon/main, additional tachiyomiSY/master). Use when asked to refresh/update the cherry-pick log, list new upstream commits, resolve '?' (uncertain) entries by checking whether an upstream change is already in master, or clean the log by omitting (marking X) commits that only bump the app version.
 ---
 
 # Cherry-pick log: update + AI review
@@ -11,7 +11,7 @@ Everything for this tool lives in this folder (`.claude/skills/cherrypick-log/`)
 |------|------|
 | `SKILL.md` | This file: the procedure an AI agent follows |
 | `update_cherrypick_log.py` | Deterministic generator: fetch, filter, pair, order, detect, keep manual marks |
-| `config.json` | Upstreams, target branch, start date, output path, excluded identities |
+| `config.json` | Main upstream + additional upstreams, target branch, start date (`since`, per repo), output path, excluded identities |
 | `README.md` | Human documentation: rules, columns, commands, porting to another project |
 
 The output is `cherrypick_log.md` in the repo root. **The script is the source of truth** for

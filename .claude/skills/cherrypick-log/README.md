@@ -26,8 +26,8 @@ python3 .claude/skills/cherrypick-log/update_cherrypick_log.py mark 1a2b3c4d --s
 python3 .claude/skills/cherrypick-log/update_cherrypick_log.py mark 5e6f7a8b --status X --note "SY-only release bump"
 ```
 
-The upstream remotes must exist (`git remote add mihon https://github.com/mihonapp/mihon` and
-`git remote add tachiyomiSY https://github.com/jobobby04/TachiyomiSY`). The script fetches them itself
+The upstream remotes named in `config.json` must exist. In Komikku these are `git remote add mihon https://github.com/mihonapp/mihon`
+and `git remote add tachiyomiSY https://github.com/jobobby04/TachiyomiSY`. The script fetches them itself
 unless you pass `--no-fetch`.
 
 ## Commands
@@ -66,7 +66,8 @@ Only **Status** and **Notes** are yours to edit. Every other cell, the order of 
 
 ### Pairing SY commits with mihon commits
 
-The first upstream in `config.json` is the **primary** one (mihon), and the others are **secondary** (SY).
+`main_upstream` in `config.json` is the **primary** one (mihon in Komikku). Each entry of `additional_upstreams`
+is a **secondary** (tachiyomiSY in Komikku), and each secondary is interleaved with the primary on its own.
 A secondary commit is a copy of a primary commit if one of these applies, checked in this order (shown as Details `pick of mihon … [method]`):
 
 1. `marker`: its message has `cherry picked from commit <primary hash>`.
@@ -135,15 +136,17 @@ If the fork already has one side of a revert pair, the pair is not omitted, beca
 | `target_branch` | Branch to check for already-picked commits (`master`) |
 | `since` | First commit date to include, `YYYY-MM-DD` (committer date). Required, and specific to each repo (Komikku: `2024-01-01`); `--since` overrides it |
 | `output` | Output Markdown path, relative to the repo root (or absolute) |
-| `exclude_identity_regex` | Case-insensitive regex matched against author, committer and co-authors (`renovate`) |
-| `upstreams` | List of `{name, remote, branch, github}`. **The first one is the primary** and sets the order |
+| `exclude_identity_regex` | Case-insensitive regex matched against author, committer and co-authors (Komikku: `renovate`). Empty = exclude nothing |
+| `main_upstream` | `{name, remote, branch, github}` of the main upstream. Its commits set the order of the list. Required |
+| `additional_upstreams` | List of one or more `{name, remote, branch, github}`. Their commits are paired with, and interleaved into, the main upstream's. Names must be unique |
 
 Tuning constants (similarity threshold, date limits, minimum title words) are at the top of the script.
 
 ## Using this in another project
 
 1. Copy the whole `.claude/skills/cherrypick-log/` folder.
-2. Edit `config.json` with the upstream remotes, branches, GitHub `owner/repo`, target branch, start date and output.
+2. Edit `config.json`: the `main_upstream`, one or more `additional_upstreams` (remote, branch, GitHub `owner/repo`),
+   target branch, start date (`since`, specific to that repo), excluded identities and output.
 3. Add the remotes (`git remote add <name> <url>`) and run the script.
 4. Search `README.md` and `SKILL.md` for project-specific wording (mihon, SY, `// KMK` markers, `AGENTS.md`) and adjust it.
 
