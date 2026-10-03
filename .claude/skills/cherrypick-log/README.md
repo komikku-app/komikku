@@ -38,7 +38,8 @@ unless you pass `--no-fetch`.
 | `uncertain` | Print `?` rows that haven't been AI-reviewed yet. Options: `--include-empty`, `--include-reviewed`, `--repo NAME`, `--grep REGEX` (title), `--limit N`, `--json` |
 | `mark HASH` | Set one row's status (`--status O\|?\|X\|none`) and/or append a note (`--note`, `--replace-note`). Refuses to change `O`/`X` rows unless you pass `--force` |
 
-All commands accept `--config PATH` (default: `config.json` next to the script). Quote `?` in zsh (`--status '?'`).
+All commands accept `--config PATH` (default: `config.json` next to the script) and `--since YYYY-MM-DD`
+(overrides the config's start date for this run, e.g. `... --since 2024-01-01 update`). Quote `?` in zsh (`--status '?'`).
 
 ## Columns and statuses
 
@@ -120,8 +121,10 @@ If the fork already has one side of a revert pair, the pair is not omitted, beca
 - If a commit is no longer reachable from its upstream branch (force-push), it moves to a **Gone from upstream** section
   and keeps its status and notes. Delete it by hand once you no longer need it.
 - Rows dated **before `since`** that are already in the file stay at the end of the list, unchanged, in their current
-  order. These were added by a one-off pass over older history, e.g. the pre-2024 mihon commits that SY never picked,
-  whose Details start with `pre-2024-01-01`. An empty or `?` row there only changes to `O`, when new `O` evidence appears.
+  order. These were added by a one-off pass over older history (in Komikku: the mihon commits before its `since` that
+  SY never picked, whose Details start with `pre-<since>`). An empty or `?` row there only changes to `O`, when new `O`
+  evidence appears. You may delete such rows by hand; they are not re-added, and the summary simply counts the rows
+  that are in the file.
 - If a commit is still upstream and dated on or after `since`, but no longer matches the filters (e.g. you changed
   `exclude_identity_regex`), it is dropped.
 
@@ -130,7 +133,7 @@ If the fork already has one side of a revert pair, the pair is not omitted, beca
 | Key | Meaning |
 |-----|---------|
 | `target_branch` | Branch to check for already-picked commits (`master`) |
-| `since` | First commit date to include, `YYYY-MM-DD` (committer date) |
+| `since` | First commit date to include, `YYYY-MM-DD` (committer date). Required, and specific to each repo (Komikku: `2024-01-01`); `--since` overrides it |
 | `output` | Output Markdown path, relative to the repo root (or absolute) |
 | `exclude_identity_regex` | Case-insensitive regex matched against author, committer and co-authors (`renovate`) |
 | `upstreams` | List of `{name, remote, branch, github}`. **The first one is the primary** and sets the order |

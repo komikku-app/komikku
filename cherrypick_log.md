@@ -11,7 +11,7 @@ How to update / review: [.claude/skills/cherrypick-log/README.md](.claude/skills
 
 | Upstream | O | ? | X | empty | other | total |
 |---|--:|--:|--:|--:|--:|--:|
-| mihon | 580 | 11 | 83 | 552 | 0 | 1226 |
+| mihon | 580 | 10 | 75 | 545 | 0 | 1210 |
 | tachiyomiSY | 719 | 0 | 12 | 228 | 0 | 959 |
 
 ## Commits

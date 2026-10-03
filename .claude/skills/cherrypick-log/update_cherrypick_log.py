@@ -10,7 +10,8 @@ How it works (full explanation in README.md next to this file):
 * Upstreams are listed in ``config.json``. The FIRST upstream is the *primary* one
   (mihon); its commits define the order of the list. Every other upstream is a
   *secondary* (tachiyomiSY), whose commits are interleaved with the primary's.
-* Only non-merge commits whose committer date is on/after ``since`` are listed.
+* Only non-merge commits whose committer date is on/after ``since`` are listed. ``since`` is
+  per repo: set it in ``config.json`` or override it with ``--since YYYY-MM-DD``.
   Commits whose author / committer / co-author matches ``exclude_identity_regex``
   (Renovate) are dropped, along with secondary copies of them.
 * A secondary commit is paired with the primary commit it copies, checked in this order:
@@ -220,7 +221,7 @@ class Config:
             sys.exit("config: at least one upstream is required")
         return Config(
             target_branch=raw.get("target_branch", "master"),
-            since=raw.get("since", "2024-01-01"),
+            since=raw.get("since", ""),
             output=raw.get("output", "cherrypick_log.md"),
             exclude_identity_regex=raw.get("exclude_identity_regex", "renovate"),
             upstreams=ups,
@@ -794,6 +795,10 @@ def cmd_mark(root: Path, cfg: Config, args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help="config file (default: %(default)s)")
+    parser.add_argument(
+        "--since",
+        help="first commit date to list, YYYY-MM-DD (overrides `since` in the config; it is per repo)",
+    )
     sub = parser.add_subparsers(dest="command")
 
     p_update = sub.add_parser("update", help="fetch upstreams and regenerate the log (default)")
@@ -818,10 +823,14 @@ def main() -> None:
 
     args = parser.parse_args()
     if args.command is None:
-        args = parser.parse_args(["--config", str(args.config), "update"])
+        args = parser.parse_args(["--config", str(args.config), *(["--since", args.since] if args.since else []), "update"])
 
     root = Path(git("rev-parse", "--show-toplevel", cwd=Path.cwd()).strip())
     cfg = Config.load(args.config)
+    if args.since:
+        cfg.since = args.since
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", cfg.since or ""):
+        sys.exit("a start date is required: set `since` (YYYY-MM-DD) in the config or pass --since")
     {"update": cmd_update, "uncertain": cmd_uncertain, "mark": cmd_mark}[args.command](root, cfg, args)
 
 
