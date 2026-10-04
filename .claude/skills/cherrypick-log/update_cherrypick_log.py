@@ -67,6 +67,7 @@ RECHECKED_STATUSES = ("", STATUS_MAYBE)
 AI_NOTE_MARK = "AI checked"
 # Notes for rows the script itself marks X (commits that cancel each other out).
 OMIT_NOTE_MARK = "Omitted (script):"
+OMIT_WAS_RE = re.compile(r"\[was: ([^\]]*)\]")
 
 COLUMNS = ["Status", "Commit", "Upstream", "Date", "Title", "Author", "Details", "Notes"]
 SHORT_LEN = 10
@@ -534,7 +535,9 @@ def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
     (C <- revert C <- revert of the revert ...). A chain is only touched if it is linear and every
     row in it is still empty / '?' (the fork has none of them). An even-length chain cancels out
     completely; in an odd-length chain the oldest commit carries the net change and is kept.
-    Returns the number of rows changed.
+    Rows this function omitted on an earlier run are released first by ``release_script_omission``,
+    so chains are always recomputed (e.g. when a later revert extends one). Returns the number of
+    rows changed.
     """
     by_hash: dict[str, str] = {}
     cluster_rows: dict[str, list[list[str]]] = defaultdict(list)
@@ -585,12 +588,33 @@ def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
         omit = chain if len(chain) % 2 == 0 else chain[1:]
         for older, newer in zip(omit[::2], omit[1::2]):
             for key, text in ((older, f"reverted by `{cluster_head[newer].short}`"), (newer, f"reverts `{cluster_head[older].short}`")):
-                note = esc(f"{OMIT_NOTE_MARK} cancels out - {text}")
                 for cells in cluster_rows[key]:
+                    note = esc(f"{OMIT_NOTE_MARK} cancels out - {text} [was: {cells[0] or 'empty'}]")
                     cells[0] = STATUS_SKIP
                     cells[-1] = note if not cells[-1] else f"{cells[-1]}; {note}"
                     changed += 1
     return changed
+
+
+def release_script_omission(status: str, notes: str) -> tuple[str, str]:
+    """Undo a previous run's revert-chain omission so the chain can be recomputed.
+
+    A row is script-owned when its status is X and its Notes contain an ``Omitted (script):`` part.
+    That part is removed and the status recorded in it (``[was: …]``) is restored; rows omitted by
+    older versions without that record go back to empty. Manual X marks (no such note) are returned
+    unchanged.
+    """
+    if status != STATUS_SKIP or OMIT_NOTE_MARK not in notes:
+        return status, notes
+    kept, previous = [], ""
+    for part in notes.split("; "):
+        if part.startswith(OMIT_NOTE_MARK):
+            m = OMIT_WAS_RE.search(part)
+            if m and m.group(1) != "empty":
+                previous = m.group(1)
+        else:
+            kept.append(part)
+    return previous, "; ".join(kept)
 
 
 def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
@@ -632,7 +656,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
     builder.detect(entries + pre_entries)
 
     rendered: list[tuple[Entry, list[str]]] = []  # (entry, cells) in list order
-    changed = added = 0
+    added = 0
     for e in entries:
         c = e.commit
         old = old_rows.get(c.full)
@@ -640,13 +664,11 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
         if old is None:
             added += 1
         else:
-            notes = old.notes
-            if old.status not in RECHECKED_STATUSES:
-                status = old.status
-            elif old.status == "" and AI_NOTE_MARK in unesc(notes) and status != STATUS_DONE:
+            old_status, notes = release_script_omission(old.status, old.notes)
+            if old_status not in RECHECKED_STATUSES:
+                status = old_status
+            elif old_status == "" and AI_NOTE_MARK in unesc(notes) and status != STATUS_DONE:
                 status = ""
-            if status != old.status:
-                changed += 1
         label = f"↳ {e.upstream.name}" if e.kind == "copy" else e.upstream.name
         rendered.append(
             (
@@ -667,15 +689,18 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
     for e in pre_entries:
         row = pre_rows[e.commit.full][0]
         cells = list(row.cells)
+        cells[0], cells[-1] = release_script_omission(cells[0], cells[-1])
         # Only strong evidence changes a kept row; its '?' may come from the pass that added it.
-        if row.status in RECHECKED_STATUSES and e.status == STATUS_DONE:
+        if cells[0] in RECHECKED_STATUSES and e.status == STATUS_DONE:
             cells[0] = STATUS_DONE
             evidence = [d for d in e.details if d not in unesc(cells[6])]
             cells[6] = esc("; ".join([unesc(cells[6]), *evidence]).strip("; "))
-            changed += 1
         rendered.append((e, cells))
 
-    changed += omit_revert_chains(rendered)
+    omit_revert_chains(rendered)
+    changed = sum(
+        1 for e, cells in rendered if e.commit.full in old_rows and old_rows[e.commit.full].status != cells[0]
+    )
 
     lines: list[str] = []
     counts: dict[str, Counter] = defaultdict(Counter)

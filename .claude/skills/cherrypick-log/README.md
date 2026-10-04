@@ -116,7 +116,10 @@ If the fork already has one side of a revert pair, the pair is not omitted, beca
 
 ### Rerunning
 
-- Rows with a status other than empty or `?` (e.g. `O`, `X`) are **never changed**.
+- Rows with a status other than empty or `?` (e.g. `O`, a manual `X`) are **never changed**. The exception is an `X`
+  the script set itself (an `Omitted (script):` note). That `X` is released on every run, back to the status recorded
+  in its `[was: …]` part, and the revert chains are recomputed. So when a later revert extends a chain, the odd/even
+  rule applies to the whole chain again. To pin such a row, delete its `Omitted (script):` note and keep the `X`.
 - Empty and `?` rows are checked again. An empty row whose Notes contain `AI checked` stays empty unless new `O` evidence appears.
 - Notes are always kept, and new upstream commits are added in their place in the order.
 - If a commit is no longer reachable from its upstream branch (force-push), it moves to a **Gone from upstream** section
