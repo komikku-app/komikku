@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
+import android.graphics.Bitmap
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.model.getComicInfo
@@ -53,6 +54,7 @@ import tachiyomi.core.common.storage.extension
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNow
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.ImageCompressor
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE
@@ -444,6 +446,9 @@ class Downloader(
                 tmpDir.renameTo(chapterDirname)
             }
             cache.addChapter(chapterDirname, mangaDir, download.manga)
+            // KMK -->
+            DownloadOptimizerState.clearCache()
+            // KMK <--
 
             DiskUtil.createNoMediaFile(tmpDir, context)
 
@@ -494,7 +499,16 @@ class Downloader(
             // When the page is ready, set page path, progress (just in case) and status
             splitTallImageIfNeeded(page, tmpDir)
 
-            page.uri = file.uri
+            // KMK -->
+            compressImageIfNeeded(filename, tmpDir)
+            // KMK <--
+
+            val finalFile = tmpDir.listFiles()?.firstOrNull {
+                val name = it.name.orEmpty()
+                name.startsWith(filename) && !name.endsWith(".tmp") && !name.endsWith(".tmp_comp")
+            } ?: file
+
+            page.uri = finalFile.uri
             page.progress = 100
             page.status = Page.State.Ready
         } catch (e: Throwable) {
@@ -595,15 +609,67 @@ class Downloader(
             // If the original page was previously split, then skip
             if (imageFile.name.orEmpty().startsWith("${filenamePrefix}__")) return
 
+            // KMK -->
+            val shouldCompress = downloadPreferences.compressDownloadedChapters().get()
+            val (compressFormat, targetExtension) = if (shouldCompress) {
+                ImageCompressor.getTargetCompressFormat(
+                    downloadPreferences.downloadCompressionFormat().get(),
+                    downloadPreferences.downloadCompressionQuality().get(),
+                )
+            } else {
+                Pair(Bitmap.CompressFormat.JPEG, "jpg")
+            }
+            val quality = if (shouldCompress) downloadPreferences.downloadCompressionQuality().get() else 100
+            val autoGrayscale = if (shouldCompress) downloadPreferences.autoGrayscaleBWManga().get() else false
+
             ImageUtil.splitTallImage(
                 tmpDir,
                 imageFile,
                 filenamePrefix,
+                compressFormat = compressFormat,
+                quality = quality,
+                targetExtension = targetExtension,
+                autoGrayscale = autoGrayscale,
             )
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to split downloaded image" }
         }
     }
+
+    // KMK -->
+    private fun compressImageIfNeeded(filenamePrefix: String, tmpDir: UniFile) {
+        if (!downloadPreferences.compressDownloadedChapters().get()) return
+
+        try {
+            val files = tmpDir.listFiles()?.filter {
+                val name = it.name.orEmpty()
+                name.startsWith(filenamePrefix) && !name.endsWith(".tmp") && !name.endsWith(".tmp_comp")
+            }.orEmpty()
+
+            val format = downloadPreferences.downloadCompressionFormat().get()
+            val quality = downloadPreferences.downloadCompressionQuality().get()
+            val autoGrayscale = downloadPreferences.autoGrayscaleBWManga().get()
+            val stripMetadata = downloadPreferences.stripImageMetadata().get()
+
+            files.forEach { file ->
+                if (!ImageCompressor.isAlreadyCompressed(file)) {
+                    val result = ImageCompressor.compressFile(
+                        file = file,
+                        parentDir = tmpDir,
+                        format = format,
+                        quality = quality,
+                        autoGrayscale = autoGrayscale,
+                        stripMetadata = stripMetadata,
+                    )
+                    logcat(LogPriority.INFO) { "Downloaded image compression for ${file.name}: result=$result" }
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Failed to compress downloaded image" }
+        }
+    }
+    // KMK <--
 
     /**
      * Checks if the download was successful.
@@ -630,7 +696,9 @@ class Downloader(
                 fileName in listOf(COMIC_INFO_FILE, NOMEDIA_FILE) -> false
                 fileName.endsWith(".tmp") -> false
                 // Only count the first split page and not the others
-                fileName.contains("__") && !fileName.endsWith("__001.jpg") -> false
+                // KMK -->
+                fileName.contains("__") && !fileName.substringBeforeLast('.').endsWith("__001") -> false
+                // KMK <--
                 else -> true
             }
         }

@@ -718,6 +718,13 @@ class MainActivity : BaseActivity() {
             (scheme == "mihon" && data?.host == "extension-store")
     }
 
+    // KMK -->
+    override fun onDestroy() {
+        super.onDestroy()
+        eu.kanade.tachiyomi.data.download.DownloadOptimizerState.clearCache()
+    }
+    // KMK <--
+
     companion object {
         const val INTENT_SEARCH = "eu.kanade.tachiyomi.SEARCH"
         const val INTENT_SEARCH_QUERY = "query"
