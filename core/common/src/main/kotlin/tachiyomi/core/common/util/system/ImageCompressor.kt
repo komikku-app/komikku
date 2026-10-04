@@ -294,17 +294,65 @@ object ImageCompressor {
             }
         }
 
-        var originalSize = file.length()
-        val originalName = file.name ?: return CompressionResult(
+        val originalSize = file.length()
+        val originalName = file.name ?: return createFallbackResult(file, originalSize)
+
+        val skippableResult = checkUniFileSkippable(file, originalSize)
+        if (skippableResult != null) return skippableResult
+
+        val effectiveParentDir = resolveEffectiveParentDir(file, parentDir) ?: run {
+            logcat(LogPriority.WARN) { "Cannot find parent directory for UniFile: $originalName" }
+            return createFallbackResult(file, originalSize)
+        }
+
+        val (compressFormat, targetExtension) = getTargetCompressFormat(format, quality)
+        val baseName = file.nameWithoutExtension ?: originalName.substringBeforeLast('.')
+        val tempFileName = "$baseName.tmp_comp"
+        val tempFile = effectiveParentDir.createFile(tempFileName) ?: run {
+            logcat(LogPriority.WARN) { "Cannot create temp file $tempFileName in parent ${effectiveParentDir.name}" }
+            return createFallbackResult(file, originalSize)
+        }
+
+        val ctx = UniFileCompressionContext(
+            file = file,
+            tempFile = tempFile,
+            effectiveParentDir = effectiveParentDir,
+            baseName = baseName,
+            targetExtension = targetExtension,
+            compressFormat = compressFormat,
+            quality = quality,
+            autoGrayscale = autoGrayscale,
+            originalSize = originalSize,
+            originalName = originalName,
+        )
+        return executeUniFileCompression(ctx)
+    }
+
+    private data class UniFileCompressionContext(
+        val file: UniFile,
+        val tempFile: UniFile,
+        val effectiveParentDir: UniFile,
+        val baseName: String,
+        val targetExtension: String,
+        val compressFormat: Bitmap.CompressFormat,
+        val quality: Int,
+        val autoGrayscale: Boolean,
+        val originalSize: Long,
+        val originalName: String,
+    )
+
+    private fun createFallbackResult(file: UniFile, size: Long): CompressionResult {
+        return CompressionResult(
             success = false,
             compressed = false,
-            originalSize = originalSize,
-            finalSize = originalSize,
+            originalSize = size,
+            finalSize = size,
             extension = file.extension.orEmpty(),
             resultingFile = file,
         )
+    }
 
-        // Skip animated images and already compressed files
+    private fun checkUniFileSkippable(file: UniFile, originalSize: Long): CompressionResult? {
         try {
             val stream: InputStream? = file.openInputStream()
             val source = stream?.use { Buffer().readFrom(it) }
@@ -332,131 +380,108 @@ object ImageCompressor {
                 resultingFile = file,
             )
         }
+        return null
+    }
 
-        val effectiveParentDir = parentDir
+    private fun resolveEffectiveParentDir(file: UniFile, parentDir: UniFile?): UniFile? {
+        return parentDir
             ?: file.parentFile
             ?: file.filePath?.let { File(it).parentFile }?.let { UniFile.fromFile(it) }
-            ?: run {
-                logcat(LogPriority.WARN) { "Cannot find parent directory for UniFile: $originalName" }
-                return CompressionResult(
-                    success = false,
-                    compressed = false,
-                    originalSize = originalSize,
-                    finalSize = originalSize,
-                    extension = file.extension.orEmpty(),
-                    resultingFile = file,
-                )
-            }
+    }
 
-        val (compressFormat, targetExtension) = getTargetCompressFormat(format, quality)
-        val baseName = file.nameWithoutExtension ?: originalName.substringBeforeLast('.')
-        val tempFileName = "$baseName.tmp_comp"
-        val tempFile = effectiveParentDir.createFile(tempFileName) ?: run {
-            logcat(LogPriority.WARN) { "Cannot create temp file $tempFileName in parent ${effectiveParentDir.name}" }
-            return CompressionResult(
-                success = false,
-                compressed = false,
-                originalSize = originalSize,
-                finalSize = originalSize,
-                extension = file.extension.orEmpty(),
-                resultingFile = file,
-            )
-        }
-
+    private fun executeUniFileCompression(ctx: UniFileCompressionContext): CompressionResult {
         var bitmap: Bitmap? = null
         var processedBitmap: Bitmap? = null
+        var effectiveOriginalSize = ctx.originalSize
 
         return try {
             val options = BitmapFactory.Options().apply {
                 inPreferredConfig = Bitmap.Config.ARGB_8888
             }
-            bitmap = file.openInputStream()?.buffered()?.use { stream ->
-                if (originalSize <= 0) {
-                    originalSize = stream.available().toLong().coerceAtLeast(0L)
+            bitmap = ctx.file.openInputStream().buffered().use { stream ->
+                if (effectiveOriginalSize <= 0) {
+                    effectiveOriginalSize = stream.available().toLong().coerceAtLeast(0L)
                 }
                 BitmapFactory.decodeStream(stream, null, options)
             }
 
             if (bitmap == null) {
-                logcat(LogPriority.WARN) { "BitmapFactory.decodeStream returned NULL for $originalName" }
-                tempFile.delete()
-                return CompressionResult(
-                    success = false,
-                    compressed = false,
-                    originalSize = originalSize,
-                    finalSize = originalSize,
-                    extension = file.extension.orEmpty(),
-                    resultingFile = file,
-                )
+                logcat(LogPriority.WARN) { "BitmapFactory.decodeStream returned NULL for ${ctx.originalName}" }
+                ctx.tempFile.delete()
+                return createFallbackResult(ctx.file, effectiveOriginalSize)
             }
 
-            processedBitmap = if (autoGrayscale && isMonochrome(bitmap)) {
+            processedBitmap = if (ctx.autoGrayscale && isMonochrome(bitmap)) {
                 toGrayscale(bitmap)
             } else {
                 bitmap
             }
 
-            var bytesWritten = 0L
-            val encodeSuccess = tempFile.openOutputStream()?.buffered()?.use { rawOutput ->
-                val countingOutput = object : java.io.FilterOutputStream(rawOutput) {
-                    override fun write(b: Int) {
-                        out.write(b)
-                        bytesWritten++
-                    }
-                    override fun write(b: ByteArray, off: Int, len: Int) {
-                        out.write(b, off, len)
-                        bytesWritten += len
-                    }
-                }
-                processedBitmap.compress(compressFormat, quality.coerceIn(1, 100), countingOutput)
-            } ?: false
+            val compressedSize = writeBitmapToTemp(processedBitmap, ctx.tempFile, ctx.compressFormat, ctx.quality)
+            logcat(LogPriority.INFO) { "Encoded ${ctx.originalName} with ${ctx.compressFormat} q=${ctx.quality}: compressedSize=$compressedSize, originalSize=$effectiveOriginalSize" }
 
-            val compressedSize = if (bytesWritten > 0) bytesWritten else tempFile.length()
-            logcat(LogPriority.INFO) { "Encoded $originalName with $compressFormat q=$quality: encodeSuccess=$encodeSuccess, compressedSize=$compressedSize, originalSize=$originalSize" }
-
-            // Strict size check: Only keep if smaller than original (if original size is known > 0)
-            val isSmaller = if (originalSize > 0) compressedSize < originalSize else true
-            if (encodeSuccess && compressedSize > 0 && isSmaller) {
-                file.delete()
-                val targetFileName = "$baseName.$targetExtension"
-                tempFile.renameTo(targetFileName)
-                val finalFile = effectiveParentDir.findFile(targetFileName) ?: tempFile
+            val isSmaller = if (effectiveOriginalSize > 0) compressedSize < effectiveOriginalSize else true
+            if (compressedSize > 0 && isSmaller) {
+                ctx.file.delete()
+                val targetFileName = "${ctx.baseName}.${ctx.targetExtension}"
+                ctx.tempFile.renameTo(targetFileName)
+                val finalFile = ctx.effectiveParentDir.findFile(targetFileName) ?: ctx.tempFile
                 CompressionResult(
                     success = true,
                     compressed = true,
-                    originalSize = originalSize,
+                    originalSize = effectiveOriginalSize,
                     finalSize = compressedSize,
-                    extension = targetExtension,
+                    extension = ctx.targetExtension,
                     resultingFile = finalFile,
                 )
             } else {
-                // Compression didn't yield savings, keep original
-                tempFile.delete()
+                ctx.tempFile.delete()
                 CompressionResult(
                     success = true,
                     compressed = false,
-                    originalSize = originalSize,
-                    finalSize = originalSize,
-                    extension = file.extension.orEmpty(),
-                    resultingFile = file,
+                    originalSize = effectiveOriginalSize,
+                    finalSize = effectiveOriginalSize,
+                    extension = ctx.file.extension.orEmpty(),
+                    resultingFile = ctx.file,
                 )
             }
         } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e) { "Failed to compress image file: $originalName" }
-            tempFile.delete()
-            CompressionResult(
-                success = false,
-                compressed = false,
-                originalSize = originalSize,
-                finalSize = originalSize,
-                extension = file.extension.orEmpty(),
-                resultingFile = file,
-            )
+            logcat(LogPriority.ERROR, e) { "Failed to compress image file: ${ctx.originalName}" }
+            ctx.tempFile.delete()
+            createFallbackResult(ctx.file, effectiveOriginalSize)
         } finally {
             if (processedBitmap != null && processedBitmap != bitmap) {
                 processedBitmap.recycle()
             }
             bitmap?.recycle()
+        }
+    }
+
+    private fun writeBitmapToTemp(
+        bitmap: Bitmap,
+        tempFile: UniFile,
+        compressFormat: Bitmap.CompressFormat,
+        quality: Int,
+    ): Long {
+        var bytesWritten = 0L
+        val encodeSuccess = tempFile.openOutputStream().buffered().use { rawOutput ->
+            val countingOutput = object : java.io.FilterOutputStream(rawOutput) {
+                override fun write(b: Int) {
+                    out.write(b)
+                    bytesWritten++
+                }
+                override fun write(b: ByteArray, off: Int, len: Int) {
+                    out.write(b, off, len)
+                    bytesWritten += len
+                }
+            }
+            bitmap.compress(compressFormat, quality.coerceIn(1, 100), countingOutput)
+        } ?: false
+
+        return if (encodeSuccess) {
+            if (bytesWritten > 0) bytesWritten else tempFile.length()
+        } else {
+            -1L
         }
     }
 }

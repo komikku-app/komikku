@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -195,165 +196,195 @@ class BatchCompressScreen : Screen() {
             },
             bottomBar = {
                 if (!isLoading && currentSeries.isNotEmpty()) {
-                    Surface(
-                        tonalElevation = 4.dp,
-                        shadowElevation = 8.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(KMR.strings.optimize_selected_count, selectedCount),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                                Text(
-                                    text = stringResource(
-                                        KMR.strings.optimize_selected_saving_est,
-                                        Formatter.formatFileSize(context, estSavings),
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                            }
+                    BatchCompressBottomBar(
+                        selectedCount = selectedCount,
+                        estSavings = estSavings,
+                        isOptimizerRunning = isOptimizerRunning,
+                        onStartClick = {
+                            DownloadOptimizerState.format.value = format
+                            DownloadOptimizerState.quality.value = quality
+                            DownloadOptimizerState.effort.value = effort
+                            DownloadOptimizerState.autoGrayscale.value = autoGrayscale
+                            DownloadOptimizerState.stripMetadata.value = stripMetadata
+                            DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
 
-                            Button(
-                                onClick = {
+                            DownloadOptimizerJob.start(
+                                context = context,
+                                onlyWhileCharging = onlyWhileCharging,
+                                options = JobOptions(
+                                    format = format,
+                                    quality = quality,
+                                    effort = effort,
+                                    autoGrayscale = autoGrayscale,
+                                    stripMetadata = stripMetadata,
+                                    selectedChapterUris = currentSelectedUris,
+                                ),
+                            )
+                            context.toast(KMR.strings.batch_compress_job_started)
+                            navigator.pop()
+                        },
+                    )
+                }
+            },
+        ) { contentPadding ->
+            when {
+                isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
+                currentSeries.isEmpty() -> EmptyScreen(
+                    message = stringResource(KMR.strings.optimize_nothing_to_optimize),
+                    modifier = Modifier.padding(contentPadding),
+                )
+                else -> {
+                    val summary = remember(selectedCount, selectedSize, estSavings, selectedSeriesCount) {
+                        ChapterSelectionSummary(
+                            selectedCount = selectedCount,
+                            selectedSize = selectedSize,
+                            estSavings = estSavings,
+                            selectedSeriesCount = selectedSeriesCount,
+                        )
+                    }
+                    val settingsData = remember(format, quality, effort, isAvifSupported) {
+                        CompressionSettingsData(
+                            format = format,
+                            quality = quality,
+                            effort = effort,
+                            isAvifSupported = isAvifSupported,
+                        )
+                    }
+                    BatchCompressList(
+                        contentPadding = contentPadding,
+                        targetCard = {
+                            TargetChaptersCard(
+                                summary = summary,
+                                onSelectClick = {
                                     DownloadOptimizerState.format.value = format
                                     DownloadOptimizerState.quality.value = quality
                                     DownloadOptimizerState.effort.value = effort
                                     DownloadOptimizerState.autoGrayscale.value = autoGrayscale
                                     DownloadOptimizerState.stripMetadata.value = stripMetadata
                                     DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
-
-                                    DownloadOptimizerJob.start(
-                                        context = context,
-                                        onlyWhileCharging = onlyWhileCharging,
-                                        options = JobOptions(
-                                            format = format,
-                                            quality = quality,
-                                            effort = effort,
-                                            autoGrayscale = autoGrayscale,
-                                            stripMetadata = stripMetadata,
-                                            selectedChapterUris = currentSelectedUris,
-                                        ),
-                                    )
-                                    context.toast(KMR.strings.batch_compress_job_started)
-                                    navigator.pop()
+                                    navigator.push(StorageOptimizationScreen())
                                 },
-                                enabled = selectedCount > 0 && !isOptimizerRunning,
-                                shape = RoundedCornerShape(12.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(text = stringResource(KMR.strings.batch_compress_start))
-                            }
-                        }
-                    }
-                }
-            },
-        ) { contentPadding ->
-            if (isLoading) {
-                LoadingScreen(modifier = Modifier.padding(contentPadding))
-            } else if (currentSeries.isEmpty()) {
-                EmptyScreen(
-                    message = stringResource(KMR.strings.optimize_nothing_to_optimize),
-                    modifier = Modifier.padding(contentPadding),
-                )
-            } else {
-                LazyColumn(
-                    contentPadding = contentPadding,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    // Warning Banner
-                    item {
-                        WarningBanner(
-                            textRes = KMR.strings.optimize_dialog_irreversible_warning,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp)),
-                        )
-                    }
-
-                    // 1. Target Chapters Card
-                    item {
-                        TargetChaptersCard(
-                            format = format, quality = quality, effort = effort,
-                            autoGrayscale = autoGrayscale, stripMetadata = stripMetadata,
-                            onlyWhileCharging = onlyWhileCharging,
-                            selectedCount = selectedCount, selectedSize = selectedSize,
-                            estSavings = estSavings, selectedSeriesCount = selectedSeriesCount,
-                            navigator = navigator,
-                        )
-                    }
-
-                    // 2. Compression Settings Card
-                    item {
-                        CompressionSettingsCard(
-                            format = format,
-                            onFormatChange = { format = it },
-                            quality = quality,
-                            onQualityChange = { quality = it },
-                            effort = effort,
-                            onEffortChange = { effort = it },
-                            autoGrayscale = autoGrayscale,
-                            onAutoGrayscaleChange = { autoGrayscale = it },
-                            stripMetadata = stripMetadata,
-                            onStripMetadataChange = { stripMetadata = it },
-                            onlyWhileCharging = onlyWhileCharging,
-                            onOnlyWhileChargingChange = { onlyWhileCharging = it },
-                            isAvifSupported = isAvifSupported,
-                            downloadPreferences = downloadPreferences,
-                            allChapters = allChapters,
-                        )
-                    }
-
-                    // 3. Advanced Options Card
-                    item {
-                        AdvancedOptionsCard(
-                            autoGrayscale = autoGrayscale,
-                            onAutoGrayscaleChange = { autoGrayscale = it },
-                            stripMetadata = stripMetadata,
-                            onStripMetadataChange = { stripMetadata = it },
-                            onlyWhileCharging = onlyWhileCharging,
-                            onOnlyWhileChargingChange = { onlyWhileCharging = it },
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                            )
+                        },
+                        settingsCard = {
+                            CompressionSettingsCard(
+                                settings = settingsData,
+                                onFormatChange = { format = it },
+                                onQualityChange = { quality = it },
+                                onEffortChange = { effort = it },
+                                onRestoreDefaults = {
+                                    format = downloadPreferences.downloadCompressionFormat().get()
+                                    quality = downloadPreferences.downloadCompressionQuality().get()
+                                    effort = downloadPreferences.downloadEncoderEffort().get()
+                                    autoGrayscale = downloadPreferences.autoGrayscaleBWManga().get()
+                                    stripMetadata = downloadPreferences.stripImageMetadata().get()
+                                    onlyWhileCharging = false
+                                    DownloadOptimizerState.selectedChapterUris.value = allChapters.map { it.uriString }.toSet()
+                                },
+                            )
+                        },
+                        advancedCard = {
+                            AdvancedOptionsCard(
+                                autoGrayscale = autoGrayscale,
+                                onAutoGrayscaleChange = { autoGrayscale = it },
+                                stripMetadata = stripMetadata,
+                                onStripMetadataChange = { stripMetadata = it },
+                                onlyWhileCharging = onlyWhileCharging,
+                                onOnlyWhileChargingChange = { onlyWhileCharging = it },
+                            )
+                        },
+                    )
                 }
             }
         }
     }
 
     @Composable
-    private fun TargetChaptersCard(
-        format: String,
-        quality: Int,
-        effort: Int,
-        autoGrayscale: Boolean,
-        stripMetadata: Boolean,
-        onlyWhileCharging: Boolean,
+    private fun BatchCompressBottomBar(
         selectedCount: Int,
-        selectedSize: Long,
         estSavings: Long,
-        selectedSeriesCount: Int,
-        navigator: cafe.adriel.voyager.navigator.Navigator,
+        isOptimizerRunning: Boolean,
+        onStartClick: () -> Unit,
+    ) {
+        val context = LocalContext.current
+        Surface(
+            tonalElevation = 4.dp,
+            shadowElevation = 8.dp,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(KMR.strings.optimize_selected_count, selectedCount),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(
+                            KMR.strings.optimize_selected_saving_est,
+                            Formatter.formatFileSize(context, estSavings),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                Button(
+                    onClick = onStartClick,
+                    enabled = selectedCount > 0 && !isOptimizerRunning,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(KMR.strings.batch_compress_start))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun BatchCompressList(
+        contentPadding: PaddingValues,
+        targetCard: @Composable () -> Unit,
+        settingsCard: @Composable () -> Unit,
+        advancedCard: @Composable () -> Unit,
+    ) {
+        LazyColumn(
+            contentPadding = contentPadding,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                WarningBanner(
+                    textRes = KMR.strings.optimize_dialog_irreversible_warning,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp)),
+                )
+            }
+            item { targetCard() }
+            item { settingsCard() }
+            item { advancedCard() }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+        }
+    }
+
+    @Composable
+    private fun TargetChaptersCard(
+        summary: ChapterSelectionSummary,
+        onSelectClick: () -> Unit,
     ) {
         val context = LocalContext.current
         Card(
@@ -396,15 +427,7 @@ class BatchCompressScreen : Screen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .clickable {
-                            DownloadOptimizerState.format.value = format
-                            DownloadOptimizerState.quality.value = quality
-                            DownloadOptimizerState.effort.value = effort
-                            DownloadOptimizerState.autoGrayscale.value = autoGrayscale
-                            DownloadOptimizerState.stripMetadata.value = stripMetadata
-                            DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
-                            navigator.push(StorageOptimizationScreen())
-                        },
+                        .clickable { onSelectClick() },
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(12.dp),
                     tonalElevation = 2.dp,
@@ -426,7 +449,7 @@ class BatchCompressScreen : Screen() {
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = selectedCount.toString(),
+                                    text = summary.selectedCount.toString(),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -437,13 +460,13 @@ class BatchCompressScreen : Screen() {
 
                             Column {
                                 Text(
-                                    text = stringResource(KMR.strings.optimize_selected_count, selectedCount),
+                                    text = stringResource(KMR.strings.optimize_selected_count, summary.selectedCount),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                 )
                                 Text(
-                                    text = "${Formatter.formatFileSize(context, selectedSize)} • " +
-                                        stringResource(KMR.strings.optimize_selected_saving_est, Formatter.formatFileSize(context, estSavings)),
+                                    text = "${Formatter.formatFileSize(context, summary.selectedSize)} • " +
+                                        stringResource(KMR.strings.optimize_selected_saving_est, Formatter.formatFileSize(context, summary.estSavings)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -476,7 +499,7 @@ class BatchCompressScreen : Screen() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = stringResource(KMR.strings.batch_compress_series_count, selectedSeriesCount),
+                        text = stringResource(KMR.strings.batch_compress_series_count, summary.selectedSeriesCount),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                     )
@@ -493,21 +516,11 @@ class BatchCompressScreen : Screen() {
 
     @Composable
     private fun CompressionSettingsCard(
-        format: String,
+        settings: CompressionSettingsData,
         onFormatChange: (String) -> Unit,
-        quality: Int,
         onQualityChange: (Int) -> Unit,
-        effort: Int,
         onEffortChange: (Int) -> Unit,
-        autoGrayscale: Boolean,
-        onAutoGrayscaleChange: (Boolean) -> Unit,
-        stripMetadata: Boolean,
-        onStripMetadataChange: (Boolean) -> Unit,
-        onlyWhileCharging: Boolean,
-        onOnlyWhileChargingChange: (Boolean) -> Unit,
-        isAvifSupported: Boolean,
-        downloadPreferences: DownloadPreferences,
-        allChapters: List<OptimizableChapter>,
+        onRestoreDefaults: () -> Unit,
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -536,19 +549,19 @@ class BatchCompressScreen : Screen() {
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilterChip(
-                            selected = format == "WEBP",
+                            selected = settings.format == "WEBP",
                             onClick = { onFormatChange("WEBP") },
                             label = { Text("WebP") },
                         )
                         FilterChip(
-                            selected = format == "AVIF",
-                            onClick = { if (isAvifSupported) onFormatChange("AVIF") },
+                            selected = settings.format == "AVIF",
+                            onClick = { if (settings.isAvifSupported) onFormatChange("AVIF") },
                             label = {
                                 Text(
-                                    if (isAvifSupported) "AVIF" else stringResource(KMR.strings.pref_download_compression_format_avif_disabled),
+                                    if (settings.isAvifSupported) "AVIF" else stringResource(KMR.strings.pref_download_compression_format_avif_disabled),
                                 )
                             },
-                            enabled = isAvifSupported,
+                            enabled = settings.isAvifSupported,
                         )
                     }
                 }
@@ -568,20 +581,20 @@ class BatchCompressScreen : Screen() {
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
-                            text = "$quality%",
+                            text = "${settings.quality}%",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
                     Slider(
-                        value = quality.toFloat(),
+                        value = settings.quality.toFloat(),
                         onValueChange = { onQualityChange(it.roundToInt()) },
                         valueRange = 50f..100f,
                         steps = 50,
                     )
                     Text(
-                        text = getQualityDescription(quality),
+                        text = getQualityDescription(settings.quality),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -608,7 +621,7 @@ class BatchCompressScreen : Screen() {
                     ) {
                         effortOptions.forEachIndexed { index, (value, labelRes) ->
                             SegmentedButton(
-                                checked = effort == value,
+                                checked = settings.effort == value,
                                 onCheckedChange = { onEffortChange(value) },
                                 shape = SegmentedButtonDefaults.itemShape(index, effortOptions.size),
                             ) {
@@ -617,7 +630,7 @@ class BatchCompressScreen : Screen() {
                         }
                     }
                     Text(
-                        text = getEffortDescription(effort),
+                        text = getEffortDescription(settings.effort),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -627,15 +640,7 @@ class BatchCompressScreen : Screen() {
 
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     TextButton(
-                        onClick = {
-                            onFormatChange(downloadPreferences.downloadCompressionFormat().get())
-                            onQualityChange(downloadPreferences.downloadCompressionQuality().get())
-                            onEffortChange(downloadPreferences.downloadEncoderEffort().get())
-                            onAutoGrayscaleChange(downloadPreferences.autoGrayscaleBWManga().get())
-                            onStripMetadataChange(downloadPreferences.stripImageMetadata().get())
-                            onOnlyWhileChargingChange(false)
-                            DownloadOptimizerState.selectedChapterUris.value = allChapters.map { it.uriString }.toSet()
-                        },
+                        onClick = onRestoreDefaults,
                     ) {
                         Text(text = stringResource(KMR.strings.batch_compress_restore_defaults))
                     }
@@ -771,4 +776,18 @@ class BatchCompressScreen : Screen() {
         }
     }
 }
+
+private data class ChapterSelectionSummary(
+    val selectedCount: Int,
+    val selectedSize: Long,
+    val estSavings: Long,
+    val selectedSeriesCount: Int,
+)
+
+private data class CompressionSettingsData(
+    val format: String,
+    val quality: Int,
+    val effort: Int,
+    val isAvifSupported: Boolean,
+)
 // KMK <--
