@@ -136,31 +136,7 @@ class BatchCompressScreen : Screen() {
         var isLoading by remember { mutableStateOf(DownloadOptimizerState.eligibleSeries.value == null) }
 
         LaunchedEffect(eligibleSeries) {
-            val series = DownloadOptimizerState.eligibleSeries.value
-            if (series != null) {
-                // Prune any chapters that no longer exist on disk
-                val pruned = series.mapNotNull { s ->
-                    val existing = s.chapters.filter { ch ->
-                        val u = UniFile.fromUri(context, Uri.parse(ch.uriString))
-                        u != null && u.exists()
-                    }
-                    if (existing.isNotEmpty()) s.copy(chapters = existing) else null
-                }
-                if (pruned.size != series.size || pruned.any { it.chapters.size != series.find { s -> s.id == it.id }?.chapters?.size }) {
-                    DownloadOptimizerState.eligibleSeries.value = pruned
-                }
-            } else {
-                isLoading = true
-                val downloadsDir = storageManager.getDownloadsDirectory()
-                val freshSeries = if (downloadsDir != null) {
-                    DownloadOptimizerJob.getEligibleChaptersBySeries(context, downloadsDir)
-                } else {
-                    emptyList()
-                }
-                DownloadOptimizerState.eligibleSeries.value = freshSeries
-                DownloadOptimizerState.selectedChapterUris.value = freshSeries.flatMap { it.chapters }.map { it.uriString }.toSet()
-                isLoading = false
-            }
+            pruneOrLoadSeries(context, storageManager) { isLoading = it }
         }
 
         var isOptimizerRunning by remember { mutableStateOf(DownloadOptimizerJob.isRunning(context)) }
@@ -172,7 +148,7 @@ class BatchCompressScreen : Screen() {
 
         val currentSeries = eligibleSeries.orEmpty()
         val allChapters = currentSeries.flatMap { it.chapters }
-        val currentSelectedUris = selectedChapterUris ?: allChapters.map { it.uriString }.toSet()
+        val currentSelectedUris = selectedChapterUris.ifEmpty { allChapters.map { it.uriString }.toSet() }
         val selectedChapters = allChapters.filter { currentSelectedUris.contains(it.uriString) }
         val selectedCount = selectedChapters.size
         val selectedSize = selectedChapters.sumOf { it.sizeBytes }
@@ -201,14 +177,7 @@ class BatchCompressScreen : Screen() {
                         estSavings = estSavings,
                         isOptimizerRunning = isOptimizerRunning,
                         onStartClick = {
-                            DownloadOptimizerState.format.value = format
-                            DownloadOptimizerState.quality.value = quality
-                            DownloadOptimizerState.effort.value = effort
-                            DownloadOptimizerState.autoGrayscale.value = autoGrayscale
-                            DownloadOptimizerState.stripMetadata.value = stripMetadata
-                            DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
-
-                            DownloadOptimizerJob.start(
+                            startBatchCompression(
                                 context = context,
                                 onlyWhileCharging = onlyWhileCharging,
                                 options = JobOptions(
@@ -219,9 +188,8 @@ class BatchCompressScreen : Screen() {
                                     stripMetadata = stripMetadata,
                                     selectedChapterUris = currentSelectedUris,
                                 ),
+                                navigator = navigator,
                             )
-                            context.toast(KMR.strings.batch_compress_job_started)
-                            navigator.pop()
                         },
                     )
                 }
@@ -297,6 +265,59 @@ class BatchCompressScreen : Screen() {
                 }
             }
         }
+    }
+
+    private suspend fun pruneOrLoadSeries(
+        context: android.content.Context,
+        storageManager: StorageManager,
+        onLoadingChange: (Boolean) -> Unit,
+    ) {
+        val series = DownloadOptimizerState.eligibleSeries.value
+        if (series != null) {
+            val pruned = series.mapNotNull { s ->
+                val existing = s.chapters.filter { ch ->
+                    val u = UniFile.fromUri(context, Uri.parse(ch.uriString))
+                    u != null && u.exists()
+                }
+                if (existing.isNotEmpty()) s.copy(chapters = existing) else null
+            }
+            if (pruned.size != series.size || pruned.any { it.chapters.size != series.find { s -> s.id == it.id }?.chapters?.size }) {
+                DownloadOptimizerState.eligibleSeries.value = pruned
+            }
+        } else {
+            onLoadingChange(true)
+            val downloadsDir = storageManager.getDownloadsDirectory()
+            val freshSeries = if (downloadsDir != null) {
+                DownloadOptimizerJob.getEligibleChaptersBySeries(context, downloadsDir)
+            } else {
+                emptyList()
+            }
+            DownloadOptimizerState.eligibleSeries.value = freshSeries
+            DownloadOptimizerState.selectedChapterUris.value = freshSeries.flatMap { it.chapters }.map { it.uriString }.toSet()
+            onLoadingChange(false)
+        }
+    }
+
+    private fun startBatchCompression(
+        context: android.content.Context,
+        onlyWhileCharging: Boolean,
+        options: JobOptions,
+        navigator: cafe.adriel.voyager.navigator.Navigator,
+    ) {
+        DownloadOptimizerState.format.value = options.format.orEmpty()
+        DownloadOptimizerState.quality.value = options.quality ?: 80
+        DownloadOptimizerState.effort.value = options.effort ?: 4
+        DownloadOptimizerState.autoGrayscale.value = options.autoGrayscale
+        DownloadOptimizerState.stripMetadata.value = options.stripMetadata
+        DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
+
+        DownloadOptimizerJob.start(
+            context = context,
+            onlyWhileCharging = onlyWhileCharging,
+            options = options,
+        )
+        context.toast(KMR.strings.batch_compress_job_started)
+        navigator.pop()
     }
 
     @Composable
