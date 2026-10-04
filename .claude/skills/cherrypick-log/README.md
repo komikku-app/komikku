@@ -111,7 +111,7 @@ The title is normalized before comparing: lowercased, conventional-commit prefix
 
 | Who | What | Note |
 |-----|------|------|
-| Script, on every `update` | Commits that cancel each other out. These are found by following `This reverts commit <hash>` links between listed commits, a mihon commit and its SY copies counting as one. A chain is only omitted when it is linear and every row in it is still empty or `?` (the fork has none of them). An even-length chain cancels out completely. In an odd-length chain (`C`, `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and stays | `Omitted (script): cancels out - reverts / reverted by <hash>` |
+| Script, on every `update` | Commits that cancel each other out. These are found by following `This reverts commit <hash>` links between listed commits, a mihon commit and its SY copies counting as one. A chain is only omitted when it is linear, every row in it is still empty or `?` (the fork has none of them), and no row has an AI verdict. An even-length chain cancels out completely. In an odd-length chain (`C`, `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and stays | `Omitted (script): cancels out - reverts / reverted by <hash>` |
 | AI skill, when asked to clean the log | Commits whose whole diff is release bookkeeping for that fork: version code/name, release notes, version numbers in issue templates. See SKILL.md section 5 | `AI checked <date>: omitted - version bump only (<files>)` |
 
 If the fork already has one side of a revert pair, the pair is not omitted, because the other side may still matter.
@@ -166,7 +166,8 @@ python3 -m unittest discover -s .claude/skills/cherrypick-log -p 'test_*.py'
 ```
 
 The tests in `test_update_cherrypick_log.py` cover revert-chain omission (including when a chain gets longer), releasing
-the script's own `X` marks, manual `X` pins, and keeping AI verdicts. They need no git repository.
+the script's own `X` marks (including notes with escaped characters), manual `X` pins, and the rerun status rules
+(`carry_over`: manual status kept, AI verdict kept unless `O` evidence appears). They need no git repository.
 
 ## Limitations
 
@@ -174,6 +175,7 @@ the script's own `X` marks, manual `X` pins, and keeping AI verdicts. They need 
 - Reverts are only linked through git's default `This reverts commit <hash>` message, and only to commits that are in
   the list. A reworded revert, or a revert of a commit outside the list (before `since`, excluded, or deleted by hand),
   stays an ordinary row.
-- Revert chains are only omitted automatically when they are linear and the fork has none of their commits. Branching
-  chains (two reverts of one commit) and pairs where the fork already has one side stay as they are for a human to decide.
+- Revert chains are only omitted automatically when they are linear, the fork has none of their commits and no row in
+  them has an AI verdict (`AI checked`). Branching chains (two reverts of one commit), pairs where the fork already has
+  one side, and AI-reviewed chains stay as they are for a human to decide.
 - One SY commit that squashes several mihon commits is shown only once, above the newest of them.

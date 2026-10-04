@@ -68,7 +68,7 @@ AI_NOTE_MARK = "AI checked"
 # Notes for rows the script itself marks X (commits that cancel each other out).
 OMIT_NOTE_MARK = "Omitted (script):"
 OMIT_WAS_RE = re.compile(r"\[was: ([^\]]*)\]")
-NOTE_SPLIT_RE = re.compile(r";\s*")
+NOTE_SPLIT_RE = re.compile(r"((?<!&lt);\s*)")  # capturing: re.split keeps the separators
 
 COLUMNS = ["Status", "Commit", "Upstream", "Date", "Title", "Author", "Details", "Notes"]
 SHORT_LEN = 10
@@ -533,8 +533,8 @@ def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
     """Mark commits that cancel each other out (``This reverts commit …``) as X.
 
     Works on clusters (a primary commit plus its secondary copies). Revert links form chains
-    (C <- revert C <- revert of the revert ...). A chain is only touched if it is linear and every
-    row in it is still empty / '?' (the fork has none of them). An even-length chain cancels out
+    (C <- revert C <- revert of the revert ...). A chain is only touched if it is linear, every
+    row in it is still empty / '?' (the fork has none of them) and none has an AI verdict. An even-length chain cancels out
     completely; in an odd-length chain the oldest commit carries the net change and is kept.
     Rows this function omitted on an earlier run are released first by ``release_script_omission``,
     so chains are always recomputed (e.g. when a later revert extends one). Returns the number of
@@ -586,6 +586,8 @@ def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
             continue
         if any(cells[0] not in RECHECKED_STATUSES for c in chain for cells in cluster_rows[c]):
             continue
+        if any(AI_NOTE_MARK in unesc(cells[-1]) for c in chain for cells in cluster_rows[c]):
+            continue  # an AI-reviewed row: its verdict wins, a human decides
         omit = chain if len(chain) % 2 == 0 else chain[1:]
         for older, newer in zip(omit[::2], omit[1::2]):
             for key, text in ((older, f"reverted by `{cluster_head[newer].short}`"), (newer, f"reverts `{cluster_head[older].short}`")):
@@ -604,19 +606,40 @@ def release_script_omission(status: str, notes: str) -> tuple[str, str]:
     That part is removed and the status recorded in it (``[was: …]``) is restored. Only empty and
     '?' are restored; anything else, or an old-format note without the record, gives empty. Manual X
     marks (no such note) are returned unchanged. On a row whose status was changed by hand away from
-    X, a stale ``Omitted (script):`` part is removed and the status is kept.
+    X, a stale ``Omitted (script):`` part is removed and the status is kept. Only the omission parts
+    and one adjacent separator are removed; the rest of the note is kept byte for byte.
     """
     if OMIT_NOTE_MARK not in notes:
         return status, notes
-    kept, previous = [], ""
-    for part in NOTE_SPLIT_RE.split(notes):
+    # [part, sep, part, sep, part]; `;` inside an `&lt;` entity (from esc) is not a separator
+    pieces = NOTE_SPLIT_RE.split(notes)
+    parts, seps = pieces[0::2], pieces[1::2]
+    previous, out = "", ""
+    for i, part in enumerate(parts):
         if OMIT_NOTE_MARK in part:
             m = OMIT_WAS_RE.search(part)
             if m and m.group(1) == STATUS_MAYBE:
                 previous = STATUS_MAYBE
-        elif part:
-            kept.append(part)
-    return (previous if status == STATUS_SKIP else status), "; ".join(kept)
+            continue
+        if out:
+            out += seps[i - 1]
+        out += part
+    return (previous if status == STATUS_SKIP else status), out.strip()
+
+
+def carry_over(old_status: str, old_notes: str, computed: str) -> tuple[str, str]:
+    """Status and Notes of a regenerated row, from its previous row and this run's detection.
+
+    Script omissions are released first. A manual status (O, X, …) is kept. An empty / '?' row is
+    re-checked (``computed``), except that an AI verdict (Notes with ``AI checked``) is kept unless
+    strong O evidence appears.
+    """
+    status, notes = release_script_omission(old_status, old_notes)
+    if status not in RECHECKED_STATUSES:
+        return status, notes
+    if AI_NOTE_MARK in unesc(notes) and computed != STATUS_DONE:
+        return status, notes
+    return computed, notes
 
 
 def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
@@ -666,11 +689,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
         if old is None:
             added += 1
         else:
-            old_status, notes = release_script_omission(old.status, old.notes)
-            if old_status not in RECHECKED_STATUSES:
-                status = old_status
-            elif AI_NOTE_MARK in unesc(notes) and status != STATUS_DONE:
-                status = old_status  # keep an AI verdict ('' or '?') unless strong O evidence appears
+            status, notes = carry_over(old.status, old.notes, e.status)
         label = f"↳ {e.upstream.name}" if e.kind == "copy" else e.upstream.name
         rendered.append(
             (

@@ -78,6 +78,11 @@ class RevertChainTest(unittest.TestCase):
         self.assertEqual(statuses(rows), ["X", ""])
         self.assertEqual(rows[0][1][-1], "won't pick")
 
+    def test_ai_verdict_blocks_chain(self):
+        rows = render([self.c, self.r1], [("?", "AI checked 2026-10-03: partial - x"), ("", "")])
+        m.omit_revert_chains(rows)
+        self.assertEqual(statuses(rows), ["?", ""])
+
     def test_picked_side_blocks_chain(self):
         rows = render([self.c, self.r1], [("O", ""), ("", "")])
         m.omit_revert_chains(rows)
@@ -105,6 +110,34 @@ class ReleaseTest(unittest.TestCase):
     def test_stale_note_removed_when_status_changed_by_hand(self):
         notes = "Omitted (script): cancels out - reverts `abc` [was: empty]; picked manually"
         self.assertEqual(m.release_script_omission("O", notes), ("O", "picked manually"))
+
+
+    def test_escaped_entity_in_note_is_kept(self):
+        notes = "use a &lt;b&gt; tag; Omitted (script): x [was: empty]"
+        self.assertEqual(m.release_script_omission("X", notes), ("", "use a &lt;b&gt; tag"))
+
+    def test_user_separators_are_kept(self):
+        notes = "a;b; Omitted (script): x [was: empty]; c"
+        self.assertEqual(m.release_script_omission("X", notes), ("", "a;b; c"))
+
+
+class CarryOverTest(unittest.TestCase):
+    def test_manual_status_kept(self):
+        self.assertEqual(m.carry_over("O", "", ""), ("O", ""))
+        self.assertEqual(m.carry_over("X", "no", "O"), ("X", "no"))
+
+    def test_rechecked_without_ai_note(self):
+        self.assertEqual(m.carry_over("?", "", ""), ("", ""))
+        self.assertEqual(m.carry_over("", "", "?"), ("?", ""))
+
+    def test_ai_verdict_kept_unless_strong_evidence(self):
+        note = "AI checked 2026-10-03: partial - x"
+        self.assertEqual(m.carry_over("?", note, ""), ("?", note))
+        self.assertEqual(m.carry_over("", note, "?"), ("", note))
+        self.assertEqual(m.carry_over("?", note, "O"), ("O", note))
+
+    def test_script_omission_released_then_rechecked(self):
+        self.assertEqual(m.carry_over("X", "Omitted (script): x [was: empty]", "?"), ("?", ""))
 
 
 if __name__ == "__main__":
