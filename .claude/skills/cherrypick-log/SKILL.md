@@ -17,7 +17,9 @@ Everything for this tool lives in this folder (`.claude/skills/cherrypick-log/`)
 The output is `cherrypick_log.md` in the repo root. **The script is the source of truth** for
 the list, its order and statuses found by hash or PR. It also omits commits that cancel each other out:
 a commit and its revert (or a longer revert chain) that the fork has none of are marked **X** with an
-`Omitted (script):` note on every `update`. The AI's job is narrow:
+`Omitted (script):` note on every `update`. These script `X` rows are recomputed on every run, so don't
+add to or rely on them. To pin one, remove its `Omitted (script):` note and keep the `X`
+(see README "Rerunning"). The AI's job is narrow:
 - decide the rows the script could not (`?`, and empty rows only if the user asks) by comparing the code itself (sections 2-4);
 - when asked to clean the log, omit the commits that only bump the app version (section 5).
 

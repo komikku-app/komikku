@@ -68,6 +68,7 @@ AI_NOTE_MARK = "AI checked"
 # Notes for rows the script itself marks X (commits that cancel each other out).
 OMIT_NOTE_MARK = "Omitted (script):"
 OMIT_WAS_RE = re.compile(r"\[was: ([^\]]*)\]")
+NOTE_SPLIT_RE = re.compile(r";\s*")
 
 COLUMNS = ["Status", "Commit", "Upstream", "Date", "Title", "Author", "Details", "Notes"]
 SHORT_LEN = 10
@@ -600,21 +601,22 @@ def release_script_omission(status: str, notes: str) -> tuple[str, str]:
     """Undo a previous run's revert-chain omission so the chain can be recomputed.
 
     A row is script-owned when its status is X and its Notes contain an ``Omitted (script):`` part.
-    That part is removed and the status recorded in it (``[was: …]``) is restored; rows omitted by
-    older versions without that record go back to empty. Manual X marks (no such note) are returned
-    unchanged.
+    That part is removed and the status recorded in it (``[was: …]``) is restored. Only empty and
+    '?' are restored; anything else, or an old-format note without the record, gives empty. Manual X
+    marks (no such note) are returned unchanged. On a row whose status was changed by hand away from
+    X, a stale ``Omitted (script):`` part is removed and the status is kept.
     """
-    if status != STATUS_SKIP or OMIT_NOTE_MARK not in notes:
+    if OMIT_NOTE_MARK not in notes:
         return status, notes
     kept, previous = [], ""
-    for part in notes.split("; "):
-        if part.startswith(OMIT_NOTE_MARK):
+    for part in NOTE_SPLIT_RE.split(notes):
+        if OMIT_NOTE_MARK in part:
             m = OMIT_WAS_RE.search(part)
-            if m and m.group(1) != "empty":
-                previous = m.group(1)
-        else:
+            if m and m.group(1) == STATUS_MAYBE:
+                previous = STATUS_MAYBE
+        elif part:
             kept.append(part)
-    return previous, "; ".join(kept)
+    return (previous if status == STATUS_SKIP else status), "; ".join(kept)
 
 
 def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
@@ -667,8 +669,8 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             old_status, notes = release_script_omission(old.status, old.notes)
             if old_status not in RECHECKED_STATUSES:
                 status = old_status
-            elif old_status == "" and AI_NOTE_MARK in unesc(notes) and status != STATUS_DONE:
-                status = ""
+            elif AI_NOTE_MARK in unesc(notes) and status != STATUS_DONE:
+                status = old_status  # keep an AI verdict ('' or '?') unless strong O evidence appears
         label = f"↳ {e.upstream.name}" if e.kind == "copy" else e.upstream.name
         rendered.append(
             (

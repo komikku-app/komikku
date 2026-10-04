@@ -1,0 +1,111 @@
+"""Unit tests for update_cherrypick_log.py (stdlib only, no git repository needed).
+
+Run: python3 -m unittest discover -s .claude/skills/cherrypick-log -p 'test_*.py'
+"""
+
+import sys
+import unittest
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import update_cherrypick_log as m  # noqa: E402
+
+UP = m.Upstream("main", "main", "main", "owner/repo")
+
+
+def commit(ch: str, message: str, date: str) -> m.Commit:
+    return m.Commit(ch * 40, date, "a", "a@x", "a", "a@x", message, repo=UP.name)
+
+
+def revert_of(ch: str, target: m.Commit, date: str) -> m.Commit:
+    return commit(ch, f'Revert "{target.subject}"\n\nThis reverts commit {target.full}.', date)
+
+
+def render(commits, states=None):
+    """Rows as cmd_update builds them: (entry, cells) with status and notes from `states`."""
+    states = states or [("", "")] * len(commits)
+    return [
+        (m.Entry(c, UP, "primary", c.full), [st, "", UP.name, c.date, c.subject, "a", "", notes])
+        for c, (st, notes) in zip(commits, states)
+    ]
+
+
+def rerender(rows, extra=()):
+    """Next run: release script omissions like cmd_update does, then add new commits."""
+    released = [(e, list(m.release_script_omission(c[0], c[-1]))) for e, c in rows]
+    return render([e.commit for e, _ in released] + list(extra), [tuple(x) for _, x in released] + [("", "")] * len(extra))
+
+
+def statuses(rows):
+    return [cells[0] for _, cells in rows]
+
+
+class RevertChainTest(unittest.TestCase):
+    def setUp(self):
+        self.c = commit("c", "Feature", "2026-01-01")
+        self.r1 = revert_of("d", self.c, "2026-01-02")
+        self.r2 = revert_of("e", self.r1, "2026-01-03")
+
+    def test_pair_is_omitted_with_previous_status(self):
+        rows = render([self.c, self.r1], [("?", ""), ("", "")])
+        m.omit_revert_chains(rows)
+        self.assertEqual(statuses(rows), ["X", "X"])
+        self.assertIn("[was: ?]", rows[0][1][-1])
+        self.assertIn("[was: empty]", rows[1][1][-1])
+
+    def test_extended_chain_is_recomputed(self):
+        rows = render([self.c, self.r1])
+        m.omit_revert_chains(rows)
+        rows = rerender(rows, extra=[self.r2])
+        m.omit_revert_chains(rows)
+        # odd chain: the original keeps the net change, the revert pair cancels out
+        self.assertEqual(statuses(rows), ["", "X", "X"])
+        self.assertEqual(rows[0][1][-1], "")
+
+    def test_rerun_is_stable(self):
+        rows = render([self.c, self.r1])
+        m.omit_revert_chains(rows)
+        first = [list(c) for _, c in rows]
+        rows = rerender(rows)
+        m.omit_revert_chains(rows)
+        self.assertEqual([c for _, c in rows], first)
+
+    def test_manual_x_blocks_chain(self):
+        rows = render([self.c, self.r1], [("X", "won't pick"), ("", "")])
+        m.omit_revert_chains(rows)
+        self.assertEqual(statuses(rows), ["X", ""])
+        self.assertEqual(rows[0][1][-1], "won't pick")
+
+    def test_picked_side_blocks_chain(self):
+        rows = render([self.c, self.r1], [("O", ""), ("", "")])
+        m.omit_revert_chains(rows)
+        self.assertEqual(statuses(rows), ["O", ""])
+
+
+class ReleaseTest(unittest.TestCase):
+    def test_manual_x_untouched(self):
+        self.assertEqual(m.release_script_omission("X", "my reason"), ("X", "my reason"))
+
+    def test_restores_recorded_status_and_keeps_user_notes(self):
+        notes = "mine; Omitted (script): cancels out - reverts `abc` [was: ?]"
+        self.assertEqual(m.release_script_omission("X", notes), ("?", "mine"))
+
+    def test_old_format_note_goes_back_to_empty(self):
+        self.assertEqual(m.release_script_omission("X", "Omitted (script): cancels out - reverts `abc`"), ("", ""))
+
+    def test_part_not_at_segment_start(self):
+        notes = "ok, Omitted (script): cancels out - reverts `abc` [was: empty];mine"
+        self.assertEqual(m.release_script_omission("X", notes), ("", "mine"))
+
+    def test_bogus_recorded_status_is_ignored(self):
+        self.assertEqual(m.release_script_omission("X", "Omitted (script): x [was: done]"), ("", ""))
+
+    def test_stale_note_removed_when_status_changed_by_hand(self):
+        notes = "Omitted (script): cancels out - reverts `abc` [was: empty]; picked manually"
+        self.assertEqual(m.release_script_omission("O", notes), ("O", "picked manually"))
+
+
+if __name__ == "__main__":
+    unittest.main()
