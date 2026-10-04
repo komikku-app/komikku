@@ -233,9 +233,11 @@ class StorageOptimizationScreen : Screen() {
                                     series = series,
                                     selectedUris = s.selectedChapterUris,
                                     isExpanded = s.expandedSeriesIds.contains(series.id),
-                                    onToggleExpand = { model.toggleExpand(series.id) },
-                                    onToggleSeries = { shouldSelect -> model.toggleSeries(series, shouldSelect) },
-                                    onToggleChapter = model::toggleChapter,
+                                    actions = SeriesItemActions(
+                                        onToggleExpand = { model.toggleExpand(series.id) },
+                                        onToggleSeries = { shouldSelect -> model.toggleSeries(series, shouldSelect) },
+                                        onToggleChapter = model::toggleChapter,
+                                    ),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 )
                             }
@@ -246,14 +248,18 @@ class StorageOptimizationScreen : Screen() {
         }
     }
 
+    data class SeriesItemActions(
+        val onToggleExpand: () -> Unit,
+        val onToggleSeries: (Boolean) -> Unit,
+        val onToggleChapter: (String) -> Unit,
+    )
+
     @Composable
     private fun SeriesItem(
         series: OptimizableSeries,
         selectedUris: Set<String>,
         isExpanded: Boolean,
-        onToggleExpand: () -> Unit,
-        onToggleSeries: (Boolean) -> Unit,
-        onToggleChapter: (String) -> Unit,
+        actions: SeriesItemActions,
         modifier: Modifier = Modifier,
     ) {
         val context = LocalContext.current
@@ -278,7 +284,7 @@ class StorageOptimizationScreen : Screen() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = onToggleExpand)
+                        .clickable(onClick = actions.onToggleExpand)
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -345,12 +351,12 @@ class StorageOptimizationScreen : Screen() {
                         state = triState,
                         onClick = {
                             val nextSelect = triState != ToggleableState.On
-                            onToggleSeries(nextSelect)
+                            actions.onToggleSeries(nextSelect)
                         },
                     )
 
                     // Expand / Collapse chevron
-                    IconButton(onClick = onToggleExpand) {
+                    IconButton(onClick = actions.onToggleExpand) {
                         Icon(
                             imageVector = Icons.Default.ExpandMore,
                             contentDescription = null,
@@ -380,7 +386,7 @@ class StorageOptimizationScreen : Screen() {
                             ChapterRow(
                                 chapter = chapter,
                                 isSelected = selectedUris.contains(chapter.uriString),
-                                onToggle = { onToggleChapter(chapter.uriString) },
+                                onToggle = { actions.onToggleChapter(chapter.uriString) },
                             )
                         }
                     }

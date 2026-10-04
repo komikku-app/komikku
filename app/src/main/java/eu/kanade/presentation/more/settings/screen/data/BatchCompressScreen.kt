@@ -59,6 +59,7 @@ import com.hippo.unifile.UniFile
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.download.OptimizableChapter
 import eu.kanade.tachiyomi.data.download.DownloadOptimizerJob
 import eu.kanade.tachiyomi.data.download.DownloadOptimizerState
 import eu.kanade.tachiyomi.util.system.toast
@@ -286,381 +287,462 @@ class BatchCompressScreen : Screen() {
 
                     // 1. Target Chapters Card
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = stringResource(KMR.strings.optimize_target_chapters).uppercase(),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                    TextButton(
-                                        onClick = { DownloadOptimizerState.clearCache() },
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Refresh,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(stringResource(KMR.strings.batch_compress_rescan_storage))
-                                    }
-                                }
-
-                                // Single Clickable Tile for Chapters Selection
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable {
-                                            DownloadOptimizerState.format.value = format
-                                            DownloadOptimizerState.quality.value = quality
-                                            DownloadOptimizerState.effort.value = effort
-                                            DownloadOptimizerState.autoGrayscale.value = autoGrayscale
-                                            DownloadOptimizerState.stripMetadata.value = stripMetadata
-                                            DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
-                                            navigator.push(StorageOptimizationScreen())
-                                        },
-                                    color = MaterialTheme.colorScheme.surface,
-                                    shape = RoundedCornerShape(12.dp),
-                                    tonalElevation = 2.dp,
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .clip(RoundedCornerShape(10.dp))
-                                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                Text(
-                                                    text = selectedCount.toString(),
-                                                    style = MaterialTheme.typography.titleSmall,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                )
-                                            }
-
-                                            Spacer(modifier = Modifier.width(12.dp))
-
-                                            Column {
-                                                Text(
-                                                    text = stringResource(KMR.strings.optimize_selected_count, selectedCount),
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                )
-                                                Text(
-                                                    text = "${Formatter.formatFileSize(context, selectedSize)} • " +
-                                                        stringResource(KMR.strings.optimize_selected_saving_est, Formatter.formatFileSize(context, estSavings)),
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            }
-                                        }
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(start = 8.dp),
-                                        ) {
-                                            Text(
-                                                text = stringResource(KMR.strings.optimize_target_chapters_change),
-                                                style = MaterialTheme.typography.labelLarge,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                fontWeight = FontWeight.SemiBold,
-                                            )
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(20.dp),
-                                            )
-                                        }
-                                    }
-                                }
-
-                                // Footer info with "X series" and estimated reduction
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
-                                    Text(
-                                        text = stringResource(KMR.strings.batch_compress_series_count, selectedSeriesCount),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                    Text(
-                                        text = stringResource(KMR.strings.batch_compress_est_reduction, "85%"),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                }
-                            }
-                        }
+                        TargetChaptersCard(
+                            format = format, quality = quality, effort = effort,
+                            autoGrayscale = autoGrayscale, stripMetadata = stripMetadata,
+                            onlyWhileCharging = onlyWhileCharging,
+                            selectedCount = selectedCount, selectedSize = selectedSize,
+                            estSavings = estSavings, selectedSeriesCount = selectedSeriesCount,
+                            navigator = navigator,
+                        )
                     }
 
                     // 2. Compression Settings Card
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(KMR.strings.pref_download_compression_category).uppercase(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-
-                                // Format selector
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Text(
-                                        text = stringResource(KMR.strings.pref_download_compression_format),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        FilterChip(
-                                            selected = format == "WEBP",
-                                            onClick = { format = "WEBP" },
-                                            label = { Text("WebP") },
-                                        )
-                                        FilterChip(
-                                            selected = format == "AVIF",
-                                            onClick = { if (isAvifSupported) format = "AVIF" },
-                                            label = {
-                                                Text(
-                                                    if (isAvifSupported) "AVIF" else stringResource(KMR.strings.pref_download_compression_format_avif_disabled),
-                                                )
-                                            },
-                                            enabled = isAvifSupported,
-                                        )
-                                    }
-                                }
-
-                                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
-
-                                // Quality slider
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Text(
-                                            text = stringResource(KMR.strings.pref_download_compression_quality),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Medium,
-                                        )
-                                        Text(
-                                            text = "$quality%",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
-                                    Slider(
-                                        value = quality.toFloat(),
-                                        onValueChange = { quality = it.roundToInt() },
-                                        valueRange = 50f..100f,
-                                        steps = 50,
-                                    )
-                                    Text(
-                                        text = getQualityDescription(quality),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-
-                                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
-
-                                // Encoder effort
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Text(
-                                        text = stringResource(KMR.strings.pref_download_encoder_effort),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                    val effortOptions = remember {
-                                        listOf(
-                                            1 to KMR.strings.batch_compress_effort_fast,
-                                            4 to KMR.strings.batch_compress_effort_balanced,
-                                            6 to KMR.strings.batch_compress_effort_maximum,
-                                        )
-                                    }
-                                    MultiChoiceSegmentedButtonRow(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        effortOptions.forEachIndexed { index, (value, labelRes) ->
-                                            SegmentedButton(
-                                                checked = effort == value,
-                                                onCheckedChange = { effort = value },
-                                                shape = SegmentedButtonDefaults.itemShape(index, effortOptions.size),
-                                            ) {
-                                                Text(stringResource(labelRes))
-                                            }
-                                        }
-                                    }
-                                    Text(
-                                        text = getEffortDescription(effort),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-
-                                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
-
-                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                    TextButton(
-                                        onClick = {
-                                            format = downloadPreferences.downloadCompressionFormat().get()
-                                            quality = downloadPreferences.downloadCompressionQuality().get()
-                                            effort = downloadPreferences.downloadEncoderEffort().get()
-                                            autoGrayscale = downloadPreferences.autoGrayscaleBWManga().get()
-                                            stripMetadata = downloadPreferences.stripImageMetadata().get()
-                                            onlyWhileCharging = false
-                                            DownloadOptimizerState.selectedChapterUris.value = allChapters.map { it.uriString }.toSet()
-                                        },
-                                    ) {
-                                        Text(text = stringResource(KMR.strings.batch_compress_restore_defaults))
-                                    }
-                                }
-                            }
-                        }
+                        CompressionSettingsCard(
+                            format = format,
+                            onFormatChange = { format = it },
+                            quality = quality,
+                            onQualityChange = { quality = it },
+                            effort = effort,
+                            onEffortChange = { effort = it },
+                            autoGrayscale = autoGrayscale,
+                            onAutoGrayscaleChange = { autoGrayscale = it },
+                            stripMetadata = stripMetadata,
+                            onStripMetadataChange = { stripMetadata = it },
+                            onlyWhileCharging = onlyWhileCharging,
+                            onOnlyWhileChargingChange = { onlyWhileCharging = it },
+                            isAvifSupported = isAvifSupported,
+                            downloadPreferences = downloadPreferences,
+                            allChapters = allChapters,
+                        )
                     }
 
                     // 3. Advanced Options Card
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(MR.strings.pref_category_advanced).uppercase(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-
-                                // Grayscale switch
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { autoGrayscale = !autoGrayscale },
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(KMR.strings.pref_auto_grayscale_bw_manga),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                        Text(
-                                            text = stringResource(KMR.strings.pref_auto_grayscale_bw_manga_summary),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Switch(
-                                        checked = autoGrayscale,
-                                        onCheckedChange = { autoGrayscale = it },
-                                    )
-                                }
-
-                                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
-
-                                // Metadata switch
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { stripMetadata = !stripMetadata },
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(KMR.strings.pref_strip_image_metadata),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                        Text(
-                                            text = stringResource(KMR.strings.pref_strip_image_metadata_summary),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Switch(
-                                        checked = stripMetadata,
-                                        onCheckedChange = { stripMetadata = it },
-                                    )
-                                }
-
-                                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
-
-                                // Only charging switch
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { onlyWhileCharging = !onlyWhileCharging },
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(KMR.strings.optimize_dialog_only_charging),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Switch(
-                                        checked = onlyWhileCharging,
-                                        onCheckedChange = { onlyWhileCharging = it },
-                                    )
-                                }
-                            }
-                        }
+                        AdvancedOptionsCard(
+                            autoGrayscale = autoGrayscale,
+                            onAutoGrayscaleChange = { autoGrayscale = it },
+                            stripMetadata = stripMetadata,
+                            onStripMetadataChange = { stripMetadata = it },
+                            onlyWhileCharging = onlyWhileCharging,
+                            onOnlyWhileChargingChange = { onlyWhileCharging = it },
+                        )
                     }
 
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun TargetChaptersCard(
+        format: String,
+        quality: Int,
+        effort: Int,
+        autoGrayscale: Boolean,
+        stripMetadata: Boolean,
+        onlyWhileCharging: Boolean,
+        selectedCount: Int,
+        selectedSize: Long,
+        estSavings: Long,
+        selectedSeriesCount: Int,
+        navigator: cafe.adriel.voyager.navigator.Navigator,
+    ) {
+        val context = LocalContext.current
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(KMR.strings.optimize_target_chapters).uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    TextButton(
+                        onClick = { DownloadOptimizerState.clearCache() },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(KMR.strings.batch_compress_rescan_storage))
+                    }
+                }
+
+                // Single Clickable Tile for Chapters Selection
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            DownloadOptimizerState.format.value = format
+                            DownloadOptimizerState.quality.value = quality
+                            DownloadOptimizerState.effort.value = effort
+                            DownloadOptimizerState.autoGrayscale.value = autoGrayscale
+                            DownloadOptimizerState.stripMetadata.value = stripMetadata
+                            DownloadOptimizerState.onlyWhileCharging.value = onlyWhileCharging
+                            navigator.push(StorageOptimizationScreen())
+                        },
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                    tonalElevation = 2.dp,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = selectedCount.toString(),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column {
+                                Text(
+                                    text = stringResource(KMR.strings.optimize_selected_count, selectedCount),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "${Formatter.formatFileSize(context, selectedSize)} • " +
+                                        stringResource(KMR.strings.optimize_selected_saving_est, Formatter.formatFileSize(context, estSavings)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 8.dp),
+                        ) {
+                            Text(
+                                text = stringResource(KMR.strings.optimize_target_chapters_change),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                }
+
+                // Footer info with "X series" and estimated reduction
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(KMR.strings.batch_compress_series_count, selectedSeriesCount),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Text(
+                        text = stringResource(KMR.strings.batch_compress_est_reduction, "85%"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun CompressionSettingsCard(
+        format: String,
+        onFormatChange: (String) -> Unit,
+        quality: Int,
+        onQualityChange: (Int) -> Unit,
+        effort: Int,
+        onEffortChange: (Int) -> Unit,
+        autoGrayscale: Boolean,
+        onAutoGrayscaleChange: (Boolean) -> Unit,
+        stripMetadata: Boolean,
+        onStripMetadataChange: (Boolean) -> Unit,
+        onlyWhileCharging: Boolean,
+        onOnlyWhileChargingChange: (Boolean) -> Unit,
+        isAvifSupported: Boolean,
+        downloadPreferences: DownloadPreferences,
+        allChapters: List<OptimizableChapter>,
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = stringResource(KMR.strings.pref_download_compression_category).uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                // Format selector
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = stringResource(KMR.strings.pref_download_compression_format),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = format == "WEBP",
+                            onClick = { onFormatChange("WEBP") },
+                            label = { Text("WebP") },
+                        )
+                        FilterChip(
+                            selected = format == "AVIF",
+                            onClick = { if (isAvifSupported) onFormatChange("AVIF") },
+                            label = {
+                                Text(
+                                    if (isAvifSupported) "AVIF" else stringResource(KMR.strings.pref_download_compression_format_avif_disabled),
+                                )
+                            },
+                            enabled = isAvifSupported,
+                        )
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
+
+                // Quality slider
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(KMR.strings.pref_download_compression_quality),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            text = "$quality%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Slider(
+                        value = quality.toFloat(),
+                        onValueChange = { onQualityChange(it.roundToInt()) },
+                        valueRange = 50f..100f,
+                        steps = 50,
+                    )
+                    Text(
+                        text = getQualityDescription(quality),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
+
+                // Encoder effort
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = stringResource(KMR.strings.pref_download_encoder_effort),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    val effortOptions = remember {
+                        listOf(
+                            1 to KMR.strings.batch_compress_effort_fast,
+                            4 to KMR.strings.batch_compress_effort_balanced,
+                            6 to KMR.strings.batch_compress_effort_maximum,
+                        )
+                    }
+                    MultiChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        effortOptions.forEachIndexed { index, (value, labelRes) ->
+                            SegmentedButton(
+                                checked = effort == value,
+                                onCheckedChange = { onEffortChange(value) },
+                                shape = SegmentedButtonDefaults.itemShape(index, effortOptions.size),
+                            ) {
+                                Text(stringResource(labelRes))
+                            }
+                        }
+                    }
+                    Text(
+                        text = getEffortDescription(effort),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
+
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    TextButton(
+                        onClick = {
+                            onFormatChange(downloadPreferences.downloadCompressionFormat().get())
+                            onQualityChange(downloadPreferences.downloadCompressionQuality().get())
+                            onEffortChange(downloadPreferences.downloadEncoderEffort().get())
+                            onAutoGrayscaleChange(downloadPreferences.autoGrayscaleBWManga().get())
+                            onStripMetadataChange(downloadPreferences.stripImageMetadata().get())
+                            onOnlyWhileChargingChange(false)
+                            DownloadOptimizerState.selectedChapterUris.value = allChapters.map { it.uriString }.toSet()
+                        },
+                    ) {
+                        Text(text = stringResource(KMR.strings.batch_compress_restore_defaults))
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun AdvancedOptionsCard(
+        autoGrayscale: Boolean,
+        onAutoGrayscaleChange: (Boolean) -> Unit,
+        stripMetadata: Boolean,
+        onStripMetadataChange: (Boolean) -> Unit,
+        onlyWhileCharging: Boolean,
+        onOnlyWhileChargingChange: (Boolean) -> Unit,
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    text = stringResource(MR.strings.pref_category_advanced).uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                // Grayscale switch
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onAutoGrayscaleChange(!autoGrayscale) },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(KMR.strings.pref_auto_grayscale_bw_manga),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = stringResource(KMR.strings.pref_auto_grayscale_bw_manga_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = autoGrayscale,
+                        onCheckedChange = { onAutoGrayscaleChange(it) },
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
+
+                // Metadata switch
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onStripMetadataChange(!stripMetadata) },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(KMR.strings.pref_strip_image_metadata),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = stringResource(KMR.strings.pref_strip_image_metadata_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = stripMetadata,
+                        onCheckedChange = { onStripMetadataChange(it) },
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.secondaryItemAlpha())
+
+                // Only charging switch
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOnlyWhileChargingChange(!onlyWhileCharging) },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(KMR.strings.optimize_dialog_only_charging),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = onlyWhileCharging,
+                        onCheckedChange = { onOnlyWhileChargingChange(it) },
+                    )
                 }
             }
         }
