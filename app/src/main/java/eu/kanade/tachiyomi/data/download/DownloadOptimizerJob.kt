@@ -60,6 +60,37 @@ import java.io.File
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
+private val UNCOMPRESSED_EXTS = setOf("jpg", "jpeg", "png", "bmp")
+private val COMPRESSED_EXTS = setOf("webp", "avif")
+
+private class ImageCounts(var uncompressed: Int = 0, var compressed: Int = 0) {
+    fun record(ext: String) {
+        if (ext in UNCOMPRESSED_EXTS) {
+            uncompressed++
+        } else if (ext in COMPRESSED_EXTS) {
+            compressed++
+        }
+    }
+    val isEligible: Boolean get() {
+        val total = uncompressed + compressed
+        return total > 0 && (uncompressed.toDouble() / total > 0.10)
+    }
+}
+
+private data class CompressionConfig(
+    val format: String,
+    val quality: Int,
+    val autoGrayscale: Boolean,
+    val stripMetadata: Boolean,
+)
+
+private data class ChapterProgress(
+    val chapterIndex: Int = 0,
+    val totalChapters: Int = 0,
+    val seriesTitle: String? = null,
+    val chapterTitle: String = "",
+)
+
 class DownloadOptimizerJob(
     private val context: Context,
     workerParams: WorkerParameters,
@@ -86,10 +117,7 @@ class DownloadOptimizerJob(
     }
 
     private fun updateProgressNotification(
-        chapterIndex: Int = 0,
-        totalChapters: Int = 0,
-        seriesTitle: String? = null,
-        chapterTitle: String = "",
+        progress: ChapterProgress = ChapterProgress(),
         isExtracting: Boolean = false,
         currentPage: Int = 0,
         totalPages: Int = 0,
@@ -103,10 +131,7 @@ class DownloadOptimizerJob(
 
         try {
             val notification = createNotification(
-                chapterIndex = chapterIndex,
-                totalChapters = totalChapters,
-                seriesTitle = seriesTitle,
-                chapterTitle = chapterTitle,
+                progress = progress,
                 isExtracting = isExtracting,
                 currentPage = currentPage,
                 totalPages = totalPages,
@@ -121,27 +146,24 @@ class DownloadOptimizerJob(
     }
 
     private fun createNotification(
-        chapterIndex: Int = 0,
-        totalChapters: Int = 0,
-        seriesTitle: String? = null,
-        chapterTitle: String = "",
+        progress: ChapterProgress = ChapterProgress(),
         isExtracting: Boolean = false,
         currentPage: Int = 0,
         totalPages: Int = 0,
     ): Notification {
         val cancelIntent = NotificationReceiver.cancelDownloadOptimizerPendingBroadcast(context)
-        val title = if (totalChapters > 0) {
-            context.stringResource(KMR.strings.optimize_notification_title, chapterIndex, totalChapters)
+        val title = if (progress.totalChapters > 0) {
+            context.stringResource(KMR.strings.optimize_notification_title, progress.chapterIndex, progress.totalChapters)
         } else {
             context.stringResource(KMR.strings.optimize_notification_channel)
         }
 
-        val baseText = if (!seriesTitle.isNullOrBlank() && !chapterTitle.isNullOrBlank()) {
-            "$seriesTitle • $chapterTitle"
-        } else if (!chapterTitle.isNullOrBlank()) {
-            chapterTitle
-        } else if (totalChapters > 0) {
-            context.stringResource(KMR.strings.optimize_notification_running, chapterIndex, totalChapters)
+        val baseText = if (!progress.seriesTitle.isNullOrBlank() && !progress.chapterTitle.isNullOrBlank()) {
+            "${progress.seriesTitle} • ${progress.chapterTitle}"
+        } else if (!progress.chapterTitle.isNullOrBlank()) {
+            progress.chapterTitle
+        } else if (progress.totalChapters > 0) {
+            context.stringResource(KMR.strings.optimize_notification_running, progress.chapterIndex, progress.totalChapters)
         } else {
             context.stringResource(KMR.strings.optimize_calculating_chapters)
         }
@@ -159,12 +181,12 @@ class DownloadOptimizerJob(
             setColor(ContextCompat.getColor(context, R.color.ic_launcher))
             setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.komikku))
             setOngoing(true)
-            if (isExtracting || (totalPages <= 0 && totalChapters <= 0)) {
+            if (isExtracting || (totalPages <= 0 && progress.totalChapters <= 0)) {
                 setProgress(0, 0, true)
             } else if (totalPages > 0) {
                 setProgress(totalPages, currentPage, false)
             } else {
-                setProgress(totalChapters, chapterIndex, false)
+                setProgress(progress.totalChapters, progress.chapterIndex, false)
             }
             addAction(
                 android.R.drawable.ic_menu_close_clear_cancel,
@@ -192,7 +214,8 @@ class DownloadOptimizerJob(
 
         var totalSavedBytes = 0L
         try {
-            totalSavedBytes = processChapters(chapters, format, quality, autoGrayscale, stripMetadata)
+            val config = CompressionConfig(format, quality, autoGrayscale, stripMetadata)
+            totalSavedBytes = processChapters(chapters, config)
         } finally {
             context.cancelNotification(Notifications.ID_STORAGE_OPTIMIZER_PROGRESS)
         }
@@ -216,10 +239,7 @@ class DownloadOptimizerJob(
 
     private fun processChapters(
         chapters: List<UniFile>,
-        format: String,
-        quality: Int,
-        autoGrayscale: Boolean,
-        stripMetadata: Boolean,
+        config: CompressionConfig,
     ): Long {
         var totalSavedBytes = 0L
         for ((index, chapter) in chapters.withIndex()) {
@@ -228,15 +248,18 @@ class DownloadOptimizerJob(
                 break
             }
 
-            val chapterIndex = index + 1
-            val seriesTitle = chapter.parentFile?.name?.takeIf { it != "downloads" }
-            val chapterTitle = chapter.nameWithoutExtension ?: chapter.name.orEmpty()
+            val progress = ChapterProgress(
+                chapterIndex = index + 1,
+                totalChapters = chapters.size,
+                seriesTitle = chapter.parentFile?.name?.takeIf { it != "downloads" },
+                chapterTitle = chapter.nameWithoutExtension ?: chapter.name.orEmpty(),
+            )
 
             try {
                 val saved = if (chapter.isFile && chapter.extension.equals("cbz", ignoreCase = true)) {
-                    optimizeCbzChapter(chapter, format, quality, autoGrayscale, stripMetadata, chapterIndex, chapters.size, seriesTitle, chapterTitle)
+                    optimizeCbzChapter(chapter, config, progress)
                 } else if (chapter.isDirectory) {
-                    optimizeDirectoryChapter(chapter, format, quality, autoGrayscale, stripMetadata, chapterIndex, chapters.size, seriesTitle, chapterTitle)
+                    optimizeDirectoryChapter(chapter, config, progress)
                 } else {
                     0L
                 }
@@ -250,14 +273,8 @@ class DownloadOptimizerJob(
 
     private fun optimizeDirectoryChapter(
         chapterDir: UniFile,
-        format: String,
-        quality: Int,
-        autoGrayscale: Boolean,
-        stripMetadata: Boolean,
-        chapterIndex: Int,
-        totalChapters: Int,
-        seriesTitle: String?,
-        chapterTitle: String,
+        config: CompressionConfig,
+        progress: ChapterProgress,
     ): Long {
         var savedBytes = 0L
         val files = chapterDir.listFiles().orEmpty().filter {
@@ -268,10 +285,7 @@ class DownloadOptimizerJob(
         var currentImage = 0
 
         updateProgressNotification(
-            chapterIndex = chapterIndex,
-            totalChapters = totalChapters,
-            seriesTitle = seriesTitle,
-            chapterTitle = chapterTitle,
+            progress = progress,
             isExtracting = false,
             currentPage = 0,
             totalPages = totalImages,
@@ -283,10 +297,10 @@ class DownloadOptimizerJob(
             if (!ImageCompressor.isAlreadyCompressed(file)) {
                 val result = ImageCompressor.compressFile(
                     file = file,
-                    format = format,
-                    quality = quality,
-                    autoGrayscale = autoGrayscale,
-                    stripMetadata = stripMetadata,
+                    format = config.format,
+                    quality = config.quality,
+                    autoGrayscale = config.autoGrayscale,
+                    stripMetadata = config.stripMetadata,
                 )
                 if (result.compressed) {
                     savedBytes += (result.originalSize - result.finalSize)
@@ -294,41 +308,31 @@ class DownloadOptimizerJob(
             }
             currentImage++
             updateProgressNotification(
-                chapterIndex = chapterIndex,
-                totalChapters = totalChapters,
-                seriesTitle = seriesTitle,
-                chapterTitle = chapterTitle,
+                progress = progress,
                 isExtracting = false,
                 currentPage = currentImage,
                 totalPages = totalImages,
                 force = (currentImage == 1 || currentImage == totalImages),
             )
         }
+        if (!isStopped) {
+            chapterDir.createFile(OPTIMIZED_MARKER)
+        }
         return savedBytes
     }
 
     private fun optimizeCbzChapter(
         cbzFile: UniFile,
-        format: String,
-        quality: Int,
-        autoGrayscale: Boolean,
-        stripMetadata: Boolean,
-        chapterIndex: Int,
-        totalChapters: Int,
-        seriesTitle: String?,
-        chapterTitle: String,
+        config: CompressionConfig,
+        progress: ChapterProgress,
     ): Long {
-        val parentDir = cbzFile.parentFile ?: return 0L
+        if (cbzFile.parentFile == null || cbzFile.name == null) return 0L
         val originalSize = cbzFile.length()
-        val finalName = cbzFile.name ?: return 0L
         val tempExtractDir = File(context.cacheDir, "cbz_opt_${System.currentTimeMillis()}")
         tempExtractDir.mkdirs()
 
         updateProgressNotification(
-            chapterIndex = chapterIndex,
-            totalChapters = totalChapters,
-            seriesTitle = seriesTitle,
-            chapterTitle = chapterTitle,
+            progress = progress,
             isExtracting = true,
             force = true,
         )
@@ -342,16 +346,22 @@ class DownloadOptimizerJob(
             extractArchive(cbzFile, localInputFile, tempExtractDir, isEncrypted)
 
             val anyCompressed = compressExtractedImages(
-                tempExtractDir, format, quality, autoGrayscale, stripMetadata,
-                chapterIndex, totalChapters, seriesTitle, chapterTitle,
+                tempExtractDir = tempExtractDir,
+                config = config,
+                progress = progress,
             )
 
-            if (!anyCompressed) {
-                logcat(LogPriority.INFO) { "No images were compressed for ${cbzFile.name}" }
-                return 0L
-            }
+            if (isStopped) return 0L
 
-            return repackAndReplaceCbz(cbzFile, parentDir, finalName, tempExtractDir, isEncrypted, originalSize)
+            File(tempExtractDir, OPTIMIZED_MARKER).createNewFile()
+
+            return repackAndReplaceCbz(
+                cbzFile = cbzFile,
+                tempExtractDir = tempExtractDir,
+                isEncrypted = isEncrypted,
+                originalSize = originalSize,
+                anyCompressed = anyCompressed,
+            )
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to optimize CBZ: ${cbzFile.name}" }
             return 0L
@@ -394,58 +404,66 @@ class DownloadOptimizerJob(
     }
 
     private fun extractArchive(cbzFile: UniFile, localInputFile: File?, tempExtractDir: File, isEncrypted: Boolean) {
-        var extractSuccess = false
-        if (!isEncrypted && localInputFile != null) {
-            try {
-                ZipFile(localInputFile).use { zf ->
-                    val entries = zf.entries()
-                    while (entries.hasMoreElements()) {
-                        val entry = entries.nextElement()
-                        if (!entry.isDirectory) {
-                            val outFile = File(tempExtractDir, entry.name)
-                            outFile.parentFile?.mkdirs()
-                            zf.getInputStream(entry).use { inStream ->
-                                outFile.outputStream().buffered().use { outStream ->
-                                    inStream.copyTo(outStream)
-                                }
-                            }
-                        }
-                    }
-                }
-                extractSuccess = true
-            } catch (e: Exception) {
-                logcat(LogPriority.WARN, e) { "ZipFile extraction failed for ${cbzFile.name}, trying ArchiveReader" }
-            }
+        val extractSuccess = if (!isEncrypted && localInputFile != null) {
+            extractLocalZip(cbzFile, localInputFile, tempExtractDir)
+        } else {
+            false
         }
 
         if (!extractSuccess) {
-            cbzFile.archiveReader(context).use { reader ->
-                reader.useEntries { entries ->
-                    entries.filter { it.isFile }.forEach { entry ->
-                        val outFile = File(tempExtractDir, entry.name)
-                        outFile.parentFile?.mkdirs()
-                        outFile.outputStream().buffered().use { out ->
-                            reader.getInputStream(entry.name)?.use { input ->
-                                input.copyTo(out)
-                            }
-                        }
-                    }
-                }
-            }
+            extractWithArchiveReader(cbzFile, tempExtractDir)
         }
         logcat(LogPriority.INFO) { "Extracted files for ${cbzFile.name} to $tempExtractDir: ${tempExtractDir.list()?.size} entries" }
     }
 
+    private fun extractLocalZip(cbzFile: UniFile, localInputFile: File, tempExtractDir: File): Boolean {
+        return try {
+            ZipFile(localInputFile).use { zf ->
+                val entries = zf.entries()
+                while (entries.hasMoreElements()) {
+                    extractZipEntry(zf, entries.nextElement(), tempExtractDir)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) { "ZipFile extraction failed for ${cbzFile.name}, trying ArchiveReader" }
+            false
+        }
+    }
+
+    private fun extractZipEntry(zf: ZipFile, entry: java.util.zip.ZipEntry, tempExtractDir: File) {
+        if (entry.isDirectory) return
+        val outFile = File(tempExtractDir, entry.name)
+        outFile.parentFile?.mkdirs()
+        zf.getInputStream(entry).use { inStream ->
+            outFile.outputStream().buffered().use { outStream ->
+                inStream.copyTo(outStream)
+            }
+        }
+    }
+
+    private fun extractWithArchiveReader(cbzFile: UniFile, tempExtractDir: File) {
+        cbzFile.archiveReader(context).use { reader ->
+            reader.useEntries { entries ->
+                entries.filter { it.isFile }.forEach { extractArchiveReaderEntry(reader, it, tempExtractDir) }
+            }
+        }
+    }
+
+    private fun extractArchiveReaderEntry(reader: mihon.core.archive.ArchiveReader, entry: mihon.core.archive.ArchiveEntry, tempExtractDir: File) {
+        val outFile = File(tempExtractDir, entry.name)
+        outFile.parentFile?.mkdirs()
+        outFile.outputStream().buffered().use { out ->
+            reader.getInputStream(entry.name)?.use { input ->
+                input.copyTo(out)
+            }
+        }
+    }
+
     private fun compressExtractedImages(
         tempExtractDir: File,
-        format: String,
-        quality: Int,
-        autoGrayscale: Boolean,
-        stripMetadata: Boolean,
-        chapterIndex: Int,
-        totalChapters: Int,
-        seriesTitle: String?,
-        chapterTitle: String,
+        config: CompressionConfig,
+        progress: ChapterProgress,
     ): Boolean {
         var anyCompressed = false
         val imageFiles = tempExtractDir.walkTopDown().filter { file ->
@@ -455,10 +473,7 @@ class DownloadOptimizerJob(
         var currentImage = 0
 
         updateProgressNotification(
-            chapterIndex = chapterIndex,
-            totalChapters = totalChapters,
-            seriesTitle = seriesTitle,
-            chapterTitle = chapterTitle,
+            progress = progress,
             isExtracting = false,
             currentPage = 0,
             totalPages = totalImages,
@@ -470,10 +485,10 @@ class DownloadOptimizerJob(
             if (!ImageCompressor.isAlreadyCompressed(file)) {
                 val res = ImageCompressor.compressFile(
                     file = file,
-                    format = format,
-                    quality = quality,
-                    autoGrayscale = autoGrayscale,
-                    stripMetadata = stripMetadata,
+                    format = config.format,
+                    quality = config.quality,
+                    autoGrayscale = config.autoGrayscale,
+                    stripMetadata = config.stripMetadata,
                 )
                 logcat(LogPriority.INFO) { "Compression result for ${file.name}: success=${res.success}, compressed=${res.compressed}, orig=${res.originalSize}, final=${res.finalSize}" }
                 if (res.compressed) {
@@ -482,10 +497,7 @@ class DownloadOptimizerJob(
             }
             currentImage++
             updateProgressNotification(
-                chapterIndex = chapterIndex,
-                totalChapters = totalChapters,
-                seriesTitle = seriesTitle,
-                chapterTitle = chapterTitle,
+                progress = progress,
                 isExtracting = false,
                 currentPage = currentImage,
                 totalPages = totalImages,
@@ -497,47 +509,55 @@ class DownloadOptimizerJob(
 
     private fun repackAndReplaceCbz(
         cbzFile: UniFile,
-        parentDir: UniFile,
-        finalName: String,
         tempExtractDir: File,
         isEncrypted: Boolean,
         originalSize: Long,
+        anyCompressed: Boolean,
     ): Long {
+        val parentDir = cbzFile.parentFile ?: return 0L
+        val finalName = cbzFile.name ?: return 0L
         val tempCbzName = "$finalName.tmp_opt.cbz"
         val tempCbz = parentDir.createFile(tempCbzName) ?: return 0L
 
         if (isEncrypted) {
-            ZipWriter(context, tempCbz, true).use { writer ->
-                tempExtractDir.walkTopDown().forEach { file ->
-                    if (file.isFile) {
-                        UniFile.fromFile(file)?.let { writer.write(it) }
-                    }
-                }
-            }
+            writeEncryptedArchive(tempCbz, tempExtractDir)
         } else {
-            tempCbz.openOutputStream()?.buffered()?.let { outStream ->
-                java.util.zip.ZipOutputStream(outStream).use { zipOut ->
-                    tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                        val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
-                        zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
-                        file.inputStream().buffered().use { inStream ->
-                            inStream.copyTo(zipOut)
-                        }
-                        zipOut.closeEntry()
-                    }
-                }
-            }
+            writePlainArchive(tempCbz, tempExtractDir)
         }
 
         val newSize = tempCbz.length()
-        logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize" }
-        if (newSize > 0 && newSize < originalSize) {
+        logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed" }
+        val shouldReplace = newSize > 0 && (newSize < originalSize || (!anyCompressed && newSize <= originalSize + 4096))
+        if (shouldReplace) {
             cbzFile.delete()
             tempCbz.renameTo(finalName)
-            return originalSize - newSize
+            return if (newSize < originalSize) originalSize - newSize else 0L
         } else {
             tempCbz.delete()
             return 0L
+        }
+    }
+
+    private fun writeEncryptedArchive(tempCbz: UniFile, tempExtractDir: File) {
+        ZipWriter(context, tempCbz, true).use { writer ->
+            tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                UniFile.fromFile(file)?.let { writer.write(it) }
+            }
+        }
+    }
+
+    private fun writePlainArchive(tempCbz: UniFile, tempExtractDir: File) {
+        tempCbz.openOutputStream()?.buffered()?.let { outStream ->
+            java.util.zip.ZipOutputStream(outStream).use { zipOut ->
+                tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                    val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
+                    zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
+                    file.inputStream().buffered().use { inStream ->
+                        inStream.copyTo(zipOut)
+                    }
+                    zipOut.closeEntry()
+                }
+            }
         }
     }
 
@@ -576,6 +596,7 @@ class DownloadOptimizerJob(
 
     companion object {
         private const val TAG = "DownloadOptimizer"
+        const val OPTIMIZED_MARKER = ".optimized"
         const val KEY_FORMAT = "format"
         const val KEY_QUALITY = "quality"
         const val KEY_EFFORT = "effort"
@@ -586,12 +607,7 @@ class DownloadOptimizerJob(
         fun start(
             context: Context,
             onlyWhileCharging: Boolean = true,
-            format: String? = null,
-            quality: Int? = null,
-            effort: Int? = null,
-            autoGrayscale: Boolean? = null,
-            stripMetadata: Boolean? = null,
-            selectedChapterUris: Set<String>? = null,
+            options: JobOptions = JobOptions(),
         ) {
             val constraints = Constraints.Builder().apply {
                 if (onlyWhileCharging) {
@@ -600,12 +616,12 @@ class DownloadOptimizerJob(
             }.build()
 
             val inputData = androidx.work.Data.Builder().apply {
-                if (format != null) putString(KEY_FORMAT, format)
-                if (quality != null) putInt(KEY_QUALITY, quality)
-                if (effort != null) putInt(KEY_EFFORT, effort)
-                if (autoGrayscale != null) putBoolean(KEY_AUTO_GRAYSCALE, autoGrayscale)
-                if (stripMetadata != null) putBoolean(KEY_STRIP_METADATA, stripMetadata)
-                if (selectedChapterUris != null) putStringArray(KEY_SELECTED_CHAPTERS, selectedChapterUris.toTypedArray())
+                if (options.format != null) putString(KEY_FORMAT, options.format)
+                if (options.quality != null) putInt(KEY_QUALITY, options.quality)
+                if (options.effort != null) putInt(KEY_EFFORT, options.effort)
+                if (options.autoGrayscale != null) putBoolean(KEY_AUTO_GRAYSCALE, options.autoGrayscale)
+                if (options.stripMetadata != null) putBoolean(KEY_STRIP_METADATA, options.stripMetadata)
+                if (options.selectedChapterUris != null) putStringArray(KEY_SELECTED_CHAPTERS, options.selectedChapterUris.toTypedArray())
             }.build()
 
             val request = OneTimeWorkRequestBuilder<DownloadOptimizerJob>()
@@ -648,33 +664,33 @@ class DownloadOptimizerJob(
                 if (f != null && f.exists() && f.canRead()) return f
             }
             if (uri.scheme == "content" && uri.authority == "com.android.externalstorage.documents") {
-                val pathStr = uri.path.orEmpty()
-                val docId = try {
-                    when {
-                        pathStr.contains("/document/") -> pathStr.substringAfter("/document/")
-                        pathStr.contains("/tree/") -> pathStr.substringAfter("/tree/")
-                        else -> null
-                    }?.let { android.net.Uri.decode(it) }
-                } catch (_: Throwable) {
-                    null
-                }
-
-                if (docId != null) {
-                    val file = if (docId.startsWith("primary:", ignoreCase = true)) {
-                        val relPath = docId.substringAfter(':')
-                        File(android.os.Environment.getExternalStorageDirectory(), relPath)
-                    } else if (docId.contains(':')) {
-                        val parts = docId.split(':', limit = 2)
-                        File("/storage/${parts[0]}/${parts[1]}")
-                    } else {
-                        null
-                    }
-                    if (file != null && file.exists() && file.canRead()) {
-                        return file
-                    }
-                }
+                return resolveExternalDocFile(uri)
             }
             return null
+        }
+
+        private fun resolveExternalDocFile(uri: android.net.Uri): File? {
+            val pathStr = uri.path.orEmpty()
+            val docId = try {
+                when {
+                    pathStr.contains("/document/") -> pathStr.substringAfter("/document/")
+                    pathStr.contains("/tree/") -> pathStr.substringAfter("/tree/")
+                    else -> null
+                }?.let { android.net.Uri.decode(it) }
+            } catch (_: Throwable) {
+                null
+            } ?: return null
+
+            val file = if (docId.startsWith("primary:", ignoreCase = true)) {
+                val relPath = docId.substringAfter(':')
+                File(android.os.Environment.getExternalStorageDirectory(), relPath)
+            } else if (docId.contains(':')) {
+                val parts = docId.split(':', limit = 2)
+                File("/storage/${parts[0]}/${parts[1]}")
+            } else {
+                null
+            }
+            return file?.takeIf { it.exists() && it.canRead() }
         }
 
         fun getEligibleChapters(context: Context, downloadsDir: UniFile): List<UniFile> {
@@ -687,46 +703,34 @@ class DownloadOptimizerJob(
         private fun getEligibleChaptersLocal(context: Context, downloadsDir: UniFile): List<UniFile> {
             val rootFile = downloadsDir.toLocalFile()
             val localSourceDirs = rootFile?.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: return emptyList()
-
-            val eligible = mutableListOf<UniFile>()
-            for (sourceDir in localSourceDirs) {
+            return localSourceDirs.flatMap { sourceDir ->
                 val mangaDirs = sourceDir.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: emptyArray()
-                for (mangaDir in mangaDirs) {
-                    val chapterFiles = mangaDir.listFiles { f ->
-                        !f.name.endsWith(Downloader.TMP_DIR_SUFFIX) &&
-                            (f.isDirectory || (f.isFile && f.extension.equals("cbz", ignoreCase = true)))
-                    } ?: emptyArray()
-                    for (chapterFile in chapterFiles) {
-                        val uni = UniFile.fromFile(chapterFile) ?: continue
-                        if (isChapterEligible(context, uni)) {
-                            eligible.add(uni)
-                        }
-                    }
-                }
+                mangaDirs.flatMap { collectMangaEligibleChapters(context, it) }
             }
-            return eligible
+        }
+
+        private fun collectMangaEligibleChapters(context: Context, mangaDir: File): List<UniFile> {
+            val chapterFiles = mangaDir.listFiles { f ->
+                !f.name.endsWith(Downloader.TMP_DIR_SUFFIX) &&
+                    (f.isDirectory || (f.isFile && f.extension.equals("cbz", ignoreCase = true)))
+            } ?: emptyArray()
+            return chapterFiles.mapNotNull { UniFile.fromFile(it) }.filter { isChapterEligible(context, it) }
         }
 
         private fun getEligibleChaptersSaf(context: Context, downloadsDir: UniFile): List<UniFile> {
-            val eligible = mutableListOf<UniFile>()
             val sourceDirs = downloadsDir.listFiles().orEmpty().filter { it.isDirectory && !it.name.isNullOrBlank() }
-
-            for (sourceDir in sourceDirs) {
+            return sourceDirs.flatMap { sourceDir ->
                 val mangaDirs = sourceDir.listFiles().orEmpty().filter { it.isDirectory && !it.name.isNullOrBlank() }
-                for (mangaDir in mangaDirs) {
-                    val chapterEntries = mangaDir.listFiles().orEmpty().filter {
-                        !it.name.orEmpty().endsWith(Downloader.TMP_DIR_SUFFIX) &&
-                            (it.isDirectory || (it.isFile && it.extension.equals("cbz", ignoreCase = true)))
-                    }
-
-                    for (chapter in chapterEntries) {
-                        if (isChapterEligible(context, chapter)) {
-                            eligible.add(chapter)
-                        }
-                    }
-                }
+                mangaDirs.flatMap { collectSafMangaEligibleChapters(context, it) }
             }
-            return eligible
+        }
+
+        private fun collectSafMangaEligibleChapters(context: Context, mangaDir: UniFile): List<UniFile> {
+            val chapterEntries = mangaDir.listFiles().orEmpty().filter {
+                !it.name.orEmpty().endsWith(Downloader.TMP_DIR_SUFFIX) &&
+                    (it.isDirectory || (it.isFile && it.extension.equals("cbz", ignoreCase = true)))
+            }
+            return chapterEntries.filter { isChapterEligible(context, it) }
         }
 
         suspend fun getEligibleChaptersBySeries(context: Context, downloadsDir: UniFile): List<OptimizableSeries> = withContext(Dispatchers.IO) {
@@ -884,103 +888,9 @@ class DownloadOptimizerJob(
             return try {
                 val localFile = chapter.toLocalFile()
                 if (chapter.isFile && chapter.extension.equals("cbz", ignoreCase = true)) {
-                    var uncompressedCount = 0
-                    var compressedCount = 0
-
-                    if (localFile != null && localFile.canRead()) {
-                        try {
-                            ZipFile(localFile).use { zf ->
-                                val entries = zf.entries()
-                                while (entries.hasMoreElements()) {
-                                    val ext = entries.nextElement().name.substringAfterLast('.', "").lowercase()
-                                    if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp") {
-                                        uncompressedCount++
-                                    } else if (ext == "webp" || ext == "avif") {
-                                        compressedCount++
-                                    }
-                                }
-                            }
-                            val total = uncompressedCount + compressedCount
-                            return total > 0 && (uncompressedCount.toDouble() / total > 0.10)
-                        } catch (e: Exception) {
-                            logcat(LogPriority.DEBUG, e) { "ZipFile check failed for ${chapter.name}, trying ZipInputStream" }
-                        }
-                    }
-
-                    try {
-                        uncompressedCount = 0
-                        compressedCount = 0
-                        var foundAny = false
-                        chapter.openInputStream()?.buffered()?.use { stream ->
-                            ZipInputStream(stream).use { zis ->
-                                var entry = zis.nextEntry
-                                while (entry != null) {
-                                    foundAny = true
-                                    val ext = entry.name.substringAfterLast('.', "").lowercase()
-                                    if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp") {
-                                        uncompressedCount++
-                                    } else if (ext == "webp" || ext == "avif") {
-                                        compressedCount++
-                                    }
-                                    entry = zis.nextEntry
-                                }
-                            }
-                        }
-                        if (foundAny) {
-                            val total = uncompressedCount + compressedCount
-                            return total > 0 && (uncompressedCount.toDouble() / total > 0.10)
-                        }
-                    } catch (e: Throwable) {
-                        logcat(LogPriority.DEBUG, e) { "ZipInputStream check failed for ${chapter.name}, trying ArchiveReader" }
-                    }
-
-                    try {
-                        uncompressedCount = 0
-                        compressedCount = 0
-                        chapter.archiveReader(context).use { reader ->
-                            reader.useEntries { entries ->
-                                entries.forEach { entry ->
-                                    val ext = entry.name.substringAfterLast('.', "").lowercase()
-                                    if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp") {
-                                        uncompressedCount++
-                                    } else if (ext == "webp" || ext == "avif") {
-                                        compressedCount++
-                                    }
-                                }
-                            }
-                        }
-                        val total = uncompressedCount + compressedCount
-                        total > 0 && (uncompressedCount.toDouble() / total > 0.10)
-                    } catch (e: Throwable) {
-                        logcat(LogPriority.DEBUG, e) { "ArchiveReader check failed for ${chapter.name}" }
-                        false
-                    }
+                    isCbzEligible(context, chapter, localFile)
                 } else if (chapter.isDirectory) {
-                    var uncompressedCount = 0
-                    var compressedCount = 0
-                    if (localFile != null && localFile.canRead()) {
-                        val files = localFile.listFiles { f -> f.isFile } ?: emptyArray()
-                        for (file in files) {
-                            val ext = file.extension.lowercase()
-                            if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp") {
-                                uncompressedCount++
-                            } else if (ext == "webp" || ext == "avif") {
-                                compressedCount++
-                            }
-                        }
-                    } else {
-                        val files = chapter.listFiles().orEmpty()
-                        for (file in files) {
-                            val ext = file.extension?.lowercase().orEmpty()
-                            if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp") {
-                                uncompressedCount++
-                            } else if (ext == "webp" || ext == "avif") {
-                                compressedCount++
-                            }
-                        }
-                    }
-                    val total = uncompressedCount + compressedCount
-                    total > 0 && (uncompressedCount.toDouble() / total > 0.10)
+                    isDirectoryEligible(chapter, localFile)
                 } else {
                     false
                 }
@@ -989,8 +899,122 @@ class DownloadOptimizerJob(
                 false
             }
         }
+
+        private fun isCbzEligible(context: Context, chapter: UniFile, localFile: File?): Boolean {
+            if (localFile != null && localFile.canRead()) {
+                val eligible = isCbzEligibleFast(localFile)
+                if (eligible != null) return eligible
+            }
+
+            val streamEligible = isCbzEligibleStream(chapter)
+            if (streamEligible != null) return streamEligible
+
+            return isCbzEligibleArchiveReader(context, chapter)
+        }
+
+        private fun isCbzEligibleFast(localFile: File): Boolean? {
+            return try {
+                ZipFile(localFile).use { zf ->
+                    if (zf.getEntry(OPTIMIZED_MARKER) != null) return false
+                    val counts = ImageCounts()
+                    if (!countZipFileEntries(zf, counts)) return false
+                    counts.isEligible
+                }
+            } catch (e: Exception) {
+                logcat(LogPriority.DEBUG, e) { "ZipFile check failed for ${localFile.name}, trying ZipInputStream" }
+                null
+            }
+        }
+
+        private fun countZipFileEntries(zf: ZipFile, counts: ImageCounts): Boolean {
+            val entries = zf.entries()
+            while (entries.hasMoreElements()) {
+                val name = entries.nextElement().name
+                if (name == OPTIMIZED_MARKER || name.endsWith("/$OPTIMIZED_MARKER")) return false
+                counts.record(name.substringAfterLast('.', "").lowercase())
+            }
+            return true
+        }
+
+        private fun isCbzEligibleStream(chapter: UniFile): Boolean? {
+            return try {
+                chapter.openInputStream()?.buffered()?.use { stream ->
+                    ZipInputStream(stream).use { zis ->
+                        countZipStreamEntries(zis, ImageCounts())
+                    }
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.DEBUG, e) { "ZipInputStream check failed for ${chapter.name}" }
+                null
+            }
+        }
+
+        private fun countZipStreamEntries(zis: ZipInputStream, counts: ImageCounts): Boolean? {
+            var foundAny = false
+            var entry = zis.nextEntry
+            while (entry != null) {
+                foundAny = true
+                val name = entry.name
+                if (name == OPTIMIZED_MARKER || name.endsWith("/$OPTIMIZED_MARKER")) return false
+                counts.record(name.substringAfterLast('.', "").lowercase())
+                entry = zis.nextEntry
+            }
+            return if (foundAny) counts.isEligible else null
+        }
+
+        private fun isCbzEligibleArchiveReader(context: Context, chapter: UniFile): Boolean {
+            return try {
+                val counts = ImageCounts()
+                var isOptimized = false
+                chapter.archiveReader(context).use { reader ->
+                    reader.useEntries { entries ->
+                        entries.forEach { entry ->
+                            val name = entry.name
+                            if (name == OPTIMIZED_MARKER || name.endsWith("/$OPTIMIZED_MARKER")) {
+                                isOptimized = true
+                            }
+                            counts.record(name.substringAfterLast('.', "").lowercase())
+                        }
+                    }
+                }
+                if (isOptimized) return false
+                counts.isEligible
+            } catch (e: Throwable) {
+                logcat(LogPriority.DEBUG, e) { "ArchiveReader check failed for ${chapter.name}" }
+                false
+            }
+        }
+
+        private fun isDirectoryEligible(chapter: UniFile, localFile: File?): Boolean {
+            if (localFile != null && localFile.canRead()) {
+                if (File(localFile, OPTIMIZED_MARKER).exists()) return false
+                val files = localFile.listFiles { f -> f.isFile } ?: emptyArray()
+                val counts = ImageCounts()
+                for (file in files) {
+                    counts.record(file.extension.lowercase())
+                }
+                return counts.isEligible
+            }
+
+            if (chapter.findFile(OPTIMIZED_MARKER) != null) return false
+            val files = chapter.listFiles().orEmpty()
+            val counts = ImageCounts()
+            for (file in files) {
+                counts.record(file.extension?.lowercase().orEmpty())
+            }
+            return counts.isEligible
+        }
     }
 }
+
+data class JobOptions(
+    val format: String? = null,
+    val quality: Int? = null,
+    val effort: Int? = null,
+    val autoGrayscale: Boolean? = null,
+    val stripMetadata: Boolean? = null,
+    val selectedChapterUris: Set<String>? = null,
+)
 
 data class OptimizableChapter(
     val uriString: String,

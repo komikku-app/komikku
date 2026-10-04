@@ -439,6 +439,12 @@ class Downloader(
                 download.source,
             )
 
+            // KMK -->
+            if (downloadPreferences.compressDownloadedChapters().get()) {
+                tmpDir.createFile(DownloadOptimizerJob.OPTIMIZED_MARKER)
+            }
+            // KMK <--
+
             // Only rename the directory if it's downloaded
             if (downloadPreferences.saveChaptersAsCBZ().get()) {
                 archiveChapter(mangaDir, chapterDirname, tmpDir)
@@ -693,7 +699,9 @@ class Downloader(
         val downloadedImagesCount = tmpDir.listFiles().orEmpty().count {
             val fileName = it.name.orEmpty()
             when {
-                fileName in listOf(COMIC_INFO_FILE, NOMEDIA_FILE) -> false
+                // KMK -->
+                fileName in listOf(COMIC_INFO_FILE, NOMEDIA_FILE, DownloadOptimizerJob.OPTIMIZED_MARKER) -> false
+                // KMK <--
                 fileName.endsWith(".tmp") -> false
                 // Only count the first split page and not the others
                 // KMK -->

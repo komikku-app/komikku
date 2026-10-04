@@ -59,9 +59,10 @@ import com.hippo.unifile.UniFile
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.data.download.OptimizableChapter
 import eu.kanade.tachiyomi.data.download.DownloadOptimizerJob
 import eu.kanade.tachiyomi.data.download.DownloadOptimizerState
+import eu.kanade.tachiyomi.data.download.JobOptions
+import eu.kanade.tachiyomi.data.download.OptimizableChapter
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -234,12 +235,14 @@ class BatchCompressScreen : Screen() {
                                     DownloadOptimizerJob.start(
                                         context = context,
                                         onlyWhileCharging = onlyWhileCharging,
-                                        format = format,
-                                        quality = quality,
-                                        effort = effort,
-                                        autoGrayscale = autoGrayscale,
-                                        stripMetadata = stripMetadata,
-                                        selectedChapterUris = currentSelectedUris,
+                                        options = JobOptions(
+                                            format = format,
+                                            quality = quality,
+                                            effort = effort,
+                                            autoGrayscale = autoGrayscale,
+                                            stripMetadata = stripMetadata,
+                                            selectedChapterUris = currentSelectedUris,
+                                        ),
                                     )
                                     context.toast(KMR.strings.batch_compress_job_started)
                                     navigator.pop()
