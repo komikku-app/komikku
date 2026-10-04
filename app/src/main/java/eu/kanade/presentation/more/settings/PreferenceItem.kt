@@ -110,6 +110,9 @@ internal fun PreferenceItem(
                     subtitle = item.internalSubtitleProvider(value, item.entries),
                     icon = item.icon,
                     entries = item.entries,
+                    // KMK -->
+                    entryEnabled = { item.internalEntryEnabled(it) },
+                    // KMK <--
                     onValueChange = { newValue ->
                         scope.launch {
                             if (item.internalOnValueChanged(newValue!!)) {
