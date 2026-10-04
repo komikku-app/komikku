@@ -73,7 +73,7 @@ private class ImageCounts(var uncompressed: Int = 0, var compressed: Int = 0) {
     }
     val isEligible: Boolean get() {
         val total = uncompressed + compressed
-        return total > 0 && (uncompressed.toDouble() / total > 0.10)
+        return total > 0 && uncompressed.toDouble() / total > 0.10
     }
 }
 
@@ -124,7 +124,7 @@ class DownloadOptimizerJob(
         force: Boolean = false,
     ) {
         val now = System.currentTimeMillis()
-        if (!force && (now - lastNotificationTime < 350L)) {
+        if (!force && now - lastNotificationTime < 350L) {
             return
         }
         lastNotificationTime = now
@@ -303,7 +303,7 @@ class DownloadOptimizerJob(
                     stripMetadata = config.stripMetadata,
                 )
                 if (result.compressed) {
-                    savedBytes += (result.originalSize - result.finalSize)
+                    savedBytes += result.originalSize - result.finalSize
                 }
             }
             currentImage++
@@ -312,7 +312,7 @@ class DownloadOptimizerJob(
                 isExtracting = false,
                 currentPage = currentImage,
                 totalPages = totalImages,
-                force = (currentImage == 1 || currentImage == totalImages),
+                force = currentImage == 1 || currentImage == totalImages,
             )
         }
         if (!isStopped) {
@@ -501,7 +501,7 @@ class DownloadOptimizerJob(
                 isExtracting = false,
                 currentPage = currentImage,
                 totalPages = totalImages,
-                force = (currentImage == 1 || currentImage == totalImages),
+                force = currentImage == 1 || currentImage == totalImages,
             )
         }
         return anyCompressed

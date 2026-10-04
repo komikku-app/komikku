@@ -118,7 +118,7 @@ object ImageCompressor {
         }
 
         if (sampleCount == 0) return true
-        return (totalColorDelta.toDouble() / sampleCount) < 3.5
+        return totalColorDelta.toDouble() / sampleCount < 3.5
     }
 
     /**
