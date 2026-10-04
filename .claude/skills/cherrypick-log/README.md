@@ -72,7 +72,9 @@ A secondary commit is a copy of a primary commit if one of these applies, checke
 
 1. `marker`: its message has `cherry picked from commit <primary hash>`.
 2. `pr+title`: its title has the same `(#N)` as a primary commit, and the titles are similar.
-3. `title+author`: the normalized title is identical, matches only one primary commit, has the same author, and the dates are within 30 days.
+3. `title+author`: the normalized title is identical, matches only one primary commit, and has the same author. The date window is one-sided: the secondary copy may land
+   any time after the primary commit, but at most 30 days before it (`PAIR_DATE_SLACK_DAYS`; a copy can be picked from
+   the PR before upstream merges it).
 
 If an SY commit copies a mihon commit dated before `since`, it is listed as an SY-only commit, with `(before <since>)` in Details.
 
@@ -159,5 +161,9 @@ with `git cherry-pick -x` (`cherry picked from commit …`) or `owner/repo#N` re
 ## Limitations
 
 - These are heuristics. A reworded, split or hand-ported change can show as empty or `?`. That's what the AI review is for.
-- Reverts are listed as normal commits. A revert and the commit it reverts are not linked.
+- Reverts are only linked through git's default `This reverts commit <hash>` message, and only to commits that are in
+  the list. A reworded revert, or a revert of a commit outside the list (before `since`, excluded, or deleted by hand),
+  stays an ordinary row.
+- Revert chains are only omitted automatically when they are linear and the fork has none of their commits. Branching
+  chains (two reverts of one commit) and pairs where the fork already has one side stay as they are for a human to decide.
 - One SY commit that squashes several mihon commits is shown only once, above the newest of them.
