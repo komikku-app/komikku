@@ -29,9 +29,11 @@ How it works (full explanation in README.md next to this file):
   that disappeared from upstream into a "Gone from upstream" section. Rows dated before
   ``since`` that are already in the file (added by a one-off pass over older history) are
   kept as they are at the end of the list; an empty / ``?`` one only changes to ``O``.
-* Commits that cancel each other out (``This reverts commit …`` chains) are marked ``X``
-  with an ``Omitted (script):`` note, but only while the fork has none of them (all rows
-  empty / ``?``). Commits that only bump the app version are marked ``X`` by the AI review.
+* Commits that cancel each other out (``This reverts commit …`` chains) are flagged ``?``
+  with a ``Cancels out (script):`` note for a human (or the AI review) to decide, but only
+  while the fork has none of them (all rows empty / ``?``) and none is AI-reviewed. The flags
+  are recomputed on every run. Commits that only bump the app version are marked ``X`` by
+  the AI review.
 
 Commands:
     update     (default) fetch upstreams and regenerate the log
@@ -65,8 +67,10 @@ RECHECKED_STATUSES = ("", STATUS_MAYBE)
 # Notes written by the AI review start with this; an empty status with such a note is a
 # reviewed "not picked" verdict and is only overridden by strong (O) evidence.
 AI_NOTE_MARK = "AI checked"
-# Notes for rows the script itself marks X (commits that cancel each other out).
-OMIT_NOTE_MARK = "Omitted (script):"
+# Notes for rows the script itself flags '?' (commits that cancel each other out). Older versions
+# marked them X with an "Omitted (script):" note; such rows are released the same way.
+REVERT_NOTE_MARK = "Cancels out (script):"
+SCRIPT_NOTE_MARKS = (REVERT_NOTE_MARK, "Omitted (script):")
 OMIT_WAS_RE = re.compile(r"\[was: ([^\]]*)\]")
 NOTE_SPLIT_RE = re.compile(r"((?<!&lt);\s*)")  # capturing: re.split keeps the separators
 
@@ -529,15 +533,16 @@ class Builder:
             e.details += evidence
 
 
-def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
-    """Mark commits that cancel each other out (``This reverts commit …``) as X.
+def flag_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
+    """Flag commits that cancel each other out (``This reverts commit …``) as '?' for review.
 
     Works on clusters (a primary commit plus its secondary copies). Revert links form chains
     (C <- revert C <- revert of the revert ...). A chain is only touched if it is linear, every
     row in it is still empty / '?' (the fork has none of them) and none has an AI verdict. An even-length chain cancels out
-    completely; in an odd-length chain the oldest commit carries the net change and is kept.
-    Rows this function omitted on an earlier run are released first by ``release_script_omission``,
-    so chains are always recomputed (e.g. when a later revert extends one). Returns the number of
+    completely; in an odd-length chain the oldest commit carries the net change and is not flagged.
+    Flagged rows get '?' and a ``Cancels out (script):`` note; a human (or the AI review) decides.
+    Rows this function flagged on an earlier run are released first by ``release_script_flag``, so
+    chains are always recomputed (e.g. when a later revert extends one). Returns the number of
     rows changed.
     """
     by_hash: dict[str, str] = {}
@@ -588,53 +593,66 @@ def omit_revert_chains(rendered: list[tuple[Entry, list[str]]]) -> int:
             continue
         if any(AI_NOTE_MARK in unesc(cells[-1]) for c in chain for cells in cluster_rows[c]):
             continue  # an AI-reviewed row: its verdict wins, a human decides
-        omit = chain if len(chain) % 2 == 0 else chain[1:]
-        for older, newer in zip(omit[::2], omit[1::2]):
+        flagged = chain if len(chain) % 2 == 0 else chain[1:]
+        for older, newer in zip(flagged[::2], flagged[1::2]):
             for key, text in ((older, f"reverted by `{cluster_head[newer].short}`"), (newer, f"reverts `{cluster_head[older].short}`")):
                 for cells in cluster_rows[key]:
-                    note = esc(f"{OMIT_NOTE_MARK} cancels out - {text} [was: {cells[0] or 'empty'}]")
-                    cells[0] = STATUS_SKIP
+                    note = esc(f"{REVERT_NOTE_MARK} {text} [was: {cells[0] or 'empty'}]")
+                    cells[0] = STATUS_MAYBE
                     cells[-1] = note if not cells[-1] else f"{cells[-1]}; {note}"
                     changed += 1
     return changed
 
 
-def release_script_omission(status: str, notes: str) -> tuple[str, str]:
-    """Undo a previous run's revert-chain omission so the chain can be recomputed.
+def release_script_flag(status: str, notes: str) -> tuple[str, str]:
+    """Undo a previous run's revert-chain flag so the chain can be recomputed.
 
-    A row is script-owned when its status is X and its Notes contain an ``Omitted (script):`` part.
-    That part is removed and the status recorded in it (``[was: …]``) is restored. Only empty and
-    '?' are restored; anything else, or an old-format note without the record, gives empty. Manual X
-    marks (no such note) are returned unchanged. On a row whose status was changed by hand away from
-    X, a stale ``Omitted (script):`` part is removed and the status is kept. Only the omission parts
-    and one adjacent separator are removed; the rest of the note is kept byte for byte.
+    A row is script-owned when its Notes contain a ``Cancels out (script):`` part (or the older
+    ``Omitted (script):``), its status is the one the script set ('?', or X for the older note) and it
+    has no AI verdict. The script's part is removed and the status recorded in it (``[was: …]``) is
+    restored: only '?' or empty, and '?' wins if several parts disagree; anything else, or a note
+    without the record, gives empty.
+
+    - No script part, or an AI verdict (``AI checked``): returned unchanged.
+    - Status changed by hand (e.g. O or a manual X on a new-style flag): the stale script part is
+      removed and the status kept.
+
+    Only the script's text is removed: from its mark to the end of its ``;``-separated part, plus one
+    separator. Any user text before the mark in the same part, and the rest of the note, is kept byte
+    for byte (``;`` inside an ``&lt;`` entity is not a separator).
     """
-    if OMIT_NOTE_MARK not in notes:
+    if not any(mark in notes for mark in SCRIPT_NOTE_MARKS) or AI_NOTE_MARK in unesc(notes):
         return status, notes
-    # [part, sep, part, sep, part]; `;` inside an `&lt;` entity (from esc) is not a separator
-    pieces = NOTE_SPLIT_RE.split(notes)
+    pieces = NOTE_SPLIT_RE.split(notes)  # [part, sep, part, sep, part]
     parts, seps = pieces[0::2], pieces[1::2]
-    previous, out = "", ""
+    previous, legacy, out = "", False, ""
     for i, part in enumerate(parts):
-        if OMIT_NOTE_MARK in part:
-            m = OMIT_WAS_RE.search(part)
+        idx = min((part.find(mark) for mark in SCRIPT_NOTE_MARKS if mark in part), default=-1)
+        if idx >= 0:
+            legacy = legacy or REVERT_NOTE_MARK not in part
+            m = OMIT_WAS_RE.search(part[idx:])
             if m and m.group(1) == STATUS_MAYBE:
                 previous = STATUS_MAYBE
-            continue
+            part = part[:idx].rstrip(" ,-")
+            if part.endswith(";") and not part.endswith("&lt;"):
+                part = part[:-1].rstrip(" ,-")
+            if not part:
+                continue
         if out:
             out += seps[i - 1]
         out += part
-    return (previous if status == STATUS_SKIP else status), out.strip()
+    owned = status == (STATUS_SKIP if legacy else STATUS_MAYBE)
+    return (previous if owned else status), out.strip()
 
 
 def carry_over(old_status: str, old_notes: str, computed: str) -> tuple[str, str]:
     """Status and Notes of a regenerated row, from its previous row and this run's detection.
 
-    Script omissions are released first. A manual status (O, X, …) is kept. An empty / '?' row is
+    Script revert-chain flags are released first. A manual status (O, X, …) is kept. An empty / '?' row is
     re-checked (``computed``), except that an AI verdict (Notes with ``AI checked``) is kept unless
     strong O evidence appears.
     """
-    status, notes = release_script_omission(old_status, old_notes)
+    status, notes = release_script_flag(old_status, old_notes)
     if status not in RECHECKED_STATUSES:
         return status, notes
     if AI_NOTE_MARK in unesc(notes) and computed != STATUS_DONE:
@@ -710,7 +728,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
     for e in pre_entries:
         row = pre_rows[e.commit.full][0]
         cells = list(row.cells)
-        cells[0], cells[-1] = release_script_omission(cells[0], cells[-1])
+        cells[0], cells[-1] = release_script_flag(cells[0], cells[-1])
         # Only strong evidence changes a kept row; its '?' may come from the pass that added it.
         if cells[0] in RECHECKED_STATUSES and e.status == STATUS_DONE:
             cells[0] = STATUS_DONE
@@ -718,7 +736,7 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
             cells[6] = esc("; ".join([unesc(cells[6]), *evidence]).strip("; "))
         rendered.append((e, cells))
 
-    omit_revert_chains(rendered)
+    flag_revert_chains(rendered)
     changed = sum(
         1 for e, cells in rendered if e.commit.full in old_rows and old_rows[e.commit.full].status != cells[0]
     )
@@ -760,9 +778,9 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
         f"Last updated **{dt.date.today().isoformat()}** from {heads}.",
         f"How to update / review: [{README_REL}]({README_REL}).",
         "",
-        f"**Status:** `{STATUS_DONE}` cherry-picked · `{STATUS_MAYBE}` maybe (needs review) · empty = not found · "
-        f"`{STATUS_SKIP}` won't pick (set by hand, or omitted: commits that cancel each other out, "
-        f"version-bump-only commits). **Upstream** `↳ name` = copy of the {builder.primary.name} commit "
+        f"**Status:** `{STATUS_DONE}` cherry-picked · `{STATUS_MAYBE}` maybe, needs review (includes commits that "
+        f"cancel each other out, flagged by the script) · empty = not found · `{STATUS_SKIP}` won't pick (set by hand, "
+        f"or version-bump-only commits). **Upstream** `↳ name` = copy of the {builder.primary.name} commit "
         "right below it. **Details** = how pairing / status was found (regenerated); **Notes** = yours, kept.",
         "",
         *summary,
