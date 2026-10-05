@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.text.format.Formatter
 import androidx.core.app.NotificationCompat
@@ -226,15 +227,36 @@ class DownloadOptimizerJob(
     }
 
     private fun filterChapters(allChapters: List<UniFile>, selectedUris: Set<String>?): List<UniFile> {
-        if (selectedUris.isNullOrEmpty()) return allChapters
+        if (selectedUris == null) return allChapters
+        if (selectedUris.isEmpty()) return emptyList()
+
+        val decodedSelected = selectedUris.map { Uri.decode(it) }.toSet()
         return allChapters.filter { chapter ->
-            val uriStr = chapter.uri.toString()
-            val filePath = chapter.filePath
-            val name = chapter.name
-            selectedUris.contains(uriStr) ||
-                (filePath != null && selectedUris.contains(filePath)) ||
-                (name != null && selectedUris.any { it.endsWith("/$name") || it.endsWith("%2F$name") })
+            isChapterSelected(chapter, selectedUris, decodedSelected)
         }
+    }
+
+    private fun isChapterSelected(
+        chapter: UniFile,
+        selectedUris: Set<String>,
+        decodedSelected: Set<String>,
+    ): Boolean {
+        val uriStr = chapter.uri.toString()
+        val decodedUri = Uri.decode(uriStr)
+        if (selectedUris.contains(uriStr) || decodedSelected.contains(decodedUri)) return true
+
+        val filePath = chapter.filePath
+        if (filePath != null && (selectedUris.contains(filePath) || decodedSelected.contains(filePath))) return true
+
+        val mangaName = chapter.parentFile?.name?.let { Uri.decode(it) }
+        val chapterName = chapter.name?.let { Uri.decode(it) }
+        if (mangaName != null && chapterName != null) {
+            val relativePath = "/$mangaName/$chapterName"
+            val encodedRelativePath = "%2F$mangaName%2F$chapterName"
+            return decodedSelected.any { it.contains(relativePath) } ||
+                selectedUris.any { it.contains(encodedRelativePath) }
+        }
+        return false
     }
 
     private fun processChapters(
@@ -277,6 +299,7 @@ class DownloadOptimizerJob(
         progress: ChapterProgress,
     ): Long {
         var savedBytes = 0L
+        var hadError = false
         val files = chapterDir.listFiles().orEmpty().filter {
             !it.name.orEmpty().endsWith(".tmp") && !it.name.orEmpty().endsWith(".tmp_comp") && ImageUtil.isImage(it.name)
         }
@@ -302,6 +325,9 @@ class DownloadOptimizerJob(
                     autoGrayscale = config.autoGrayscale,
                     stripMetadata = config.stripMetadata,
                 )
+                if (!result.success) {
+                    hadError = true
+                }
                 if (result.compressed) {
                     savedBytes += result.originalSize - result.finalSize
                 }
@@ -315,7 +341,7 @@ class DownloadOptimizerJob(
                 force = currentImage == 1 || currentImage == totalImages,
             )
         }
-        if (!isStopped) {
+        if (!isStopped && !hadError) {
             chapterDir.createFile(OPTIMIZED_MARKER)
         }
         return savedBytes
@@ -345,7 +371,7 @@ class DownloadOptimizerJob(
             val isEncrypted = isArchiveEncrypted(cbzFile)
             extractArchive(cbzFile, localInputFile, tempExtractDir, isEncrypted)
 
-            val anyCompressed = compressExtractedImages(
+            val outcome = compressExtractedImages(
                 tempExtractDir = tempExtractDir,
                 config = config,
                 progress = progress,
@@ -353,14 +379,17 @@ class DownloadOptimizerJob(
 
             if (isStopped) return 0L
 
-            File(tempExtractDir, OPTIMIZED_MARKER).createNewFile()
+            if (!outcome.hadError) {
+                File(tempExtractDir, OPTIMIZED_MARKER).createNewFile()
+            }
 
             return repackAndReplaceCbz(
                 cbzFile = cbzFile,
                 tempExtractDir = tempExtractDir,
                 isEncrypted = isEncrypted,
                 originalSize = originalSize,
-                anyCompressed = anyCompressed,
+                anyCompressed = outcome.anyCompressed,
+                hadError = outcome.hadError,
             )
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to optimize CBZ: ${cbzFile.name}" }
@@ -460,12 +489,18 @@ class DownloadOptimizerJob(
         }
     }
 
+    private data class CompressionOutcome(
+        val anyCompressed: Boolean,
+        val hadError: Boolean,
+    )
+
     private fun compressExtractedImages(
         tempExtractDir: File,
         config: CompressionConfig,
         progress: ChapterProgress,
-    ): Boolean {
+    ): CompressionOutcome {
         var anyCompressed = false
+        var hadError = false
         val imageFiles = tempExtractDir.walkTopDown().filter { file ->
             file.isFile && !file.name.endsWith(".tmp") && !file.name.endsWith(".tmp_comp") && ImageUtil.isImage(file.name) { file.inputStream() }
         }.toList()
@@ -481,7 +516,7 @@ class DownloadOptimizerJob(
         )
 
         for (file in imageFiles) {
-            if (isStopped) return false
+            if (isStopped) return CompressionOutcome(anyCompressed, hadError)
             if (!ImageCompressor.isAlreadyCompressed(file)) {
                 val res = ImageCompressor.compressFile(
                     file = file,
@@ -491,6 +526,9 @@ class DownloadOptimizerJob(
                     stripMetadata = config.stripMetadata,
                 )
                 logcat(LogPriority.INFO) { "Compression result for ${file.name}: success=${res.success}, compressed=${res.compressed}, orig=${res.originalSize}, final=${res.finalSize}" }
+                if (!res.success) {
+                    hadError = true
+                }
                 if (res.compressed) {
                     anyCompressed = true
                 }
@@ -504,7 +542,7 @@ class DownloadOptimizerJob(
                 force = currentImage == 1 || currentImage == totalImages,
             )
         }
-        return anyCompressed
+        return CompressionOutcome(anyCompressed, hadError)
     }
 
     private fun repackAndReplaceCbz(
@@ -513,6 +551,7 @@ class DownloadOptimizerJob(
         isEncrypted: Boolean,
         originalSize: Long,
         anyCompressed: Boolean,
+        hadError: Boolean,
     ): Long {
         val parentDir = cbzFile.parentFile ?: return 0L
         val finalName = cbzFile.name ?: return 0L
@@ -526,8 +565,8 @@ class DownloadOptimizerJob(
         }
 
         val newSize = tempCbz.length()
-        logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed" }
-        val shouldReplace = newSize > 0 && (newSize < originalSize || (!anyCompressed && newSize <= originalSize + 4096))
+        logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed, hadError=$hadError" }
+        val shouldReplace = newSize > 0 && (newSize < originalSize || (!hadError && !anyCompressed && newSize <= originalSize + 4096))
         if (shouldReplace) {
             cbzFile.delete()
             tempCbz.renameTo(finalName)
@@ -1033,7 +1072,7 @@ data class OptimizableSeries(
 
 object DownloadOptimizerState {
     val eligibleSeries = MutableStateFlow<List<OptimizableSeries>?>(null)
-    val selectedChapterUris = MutableStateFlow<Set<String>>(emptySet())
+    val selectedChapterUris = MutableStateFlow<Set<String>?>(null)
 
     val format = MutableStateFlow("")
     val quality = MutableStateFlow(0)
@@ -1044,7 +1083,7 @@ object DownloadOptimizerState {
 
     fun clearCache() {
         eligibleSeries.value = null
-        selectedChapterUris.value = emptySet()
+        selectedChapterUris.value = null
     }
 
     fun reset() {

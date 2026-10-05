@@ -440,7 +440,7 @@ class Downloader(
             )
 
             // KMK -->
-            if (downloadPreferences.compressDownloadedChapters().get()) {
+            if (downloadPreferences.compressDownloadedChapters().get() && !download.hasCompressionError) {
                 tmpDir.createFile(DownloadOptimizerJob.OPTIMIZED_MARKER)
             }
             // KMK <--
@@ -506,7 +506,10 @@ class Downloader(
             splitTallImageIfNeeded(page, tmpDir)
 
             // KMK -->
-            compressImageIfNeeded(filename, tmpDir)
+            val compressSuccess = compressImageIfNeeded(filename, tmpDir)
+            if (!compressSuccess) {
+                download.hasCompressionError = true
+            }
             // KMK <--
 
             val finalFile = tmpDir.listFiles()?.firstOrNull {
@@ -644,10 +647,10 @@ class Downloader(
     }
 
     // KMK -->
-    private fun compressImageIfNeeded(filenamePrefix: String, tmpDir: UniFile) {
-        if (!downloadPreferences.compressDownloadedChapters().get()) return
+    private fun compressImageIfNeeded(filenamePrefix: String, tmpDir: UniFile): Boolean {
+        if (!downloadPreferences.compressDownloadedChapters().get()) return true
 
-        try {
+        return try {
             val files = tmpDir.listFiles()?.filter {
                 val name = it.name.orEmpty()
                 name.startsWith(filenamePrefix) && !name.endsWith(".tmp") && !name.endsWith(".tmp_comp")
@@ -658,6 +661,7 @@ class Downloader(
             val autoGrayscale = downloadPreferences.autoGrayscaleBWManga().get()
             val stripMetadata = downloadPreferences.stripImageMetadata().get()
 
+            var allSucceeded = true
             files.forEach { file ->
                 if (!ImageCompressor.isAlreadyCompressed(file)) {
                     val result = ImageCompressor.compressFile(
@@ -669,10 +673,15 @@ class Downloader(
                         stripMetadata = stripMetadata,
                     )
                     logcat(LogPriority.INFO) { "Downloaded image compression for ${file.name}: result=$result" }
+                    if (!result.success) {
+                        allSucceeded = false
+                    }
                 }
             }
+            allSucceeded
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Failed to compress downloaded image" }
+            false
         }
     }
     // KMK <--

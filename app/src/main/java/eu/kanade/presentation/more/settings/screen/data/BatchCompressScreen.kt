@@ -148,7 +148,7 @@ class BatchCompressScreen : Screen() {
 
         val currentSeries = eligibleSeries.orEmpty()
         val allChapters = currentSeries.flatMap { it.chapters }
-        val currentSelectedUris = selectedChapterUris.ifEmpty { allChapters.map { it.uriString }.toSet() }
+        val currentSelectedUris = selectedChapterUris ?: allChapters.map { it.uriString }.toSet()
         val selectedChapters = allChapters.filter { currentSelectedUris.contains(it.uriString) }
         val selectedCount = selectedChapters.size
         val selectedSize = selectedChapters.sumOf { it.sizeBytes }
