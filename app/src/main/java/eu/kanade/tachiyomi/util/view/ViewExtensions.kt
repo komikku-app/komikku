@@ -15,6 +15,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,6 +23,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.m3e.LocalWindowSizeClass
 
 inline fun ComponentActivity.setComposeContent(
     parent: CompositionContext? = null,
@@ -32,6 +34,7 @@ inline fun ComponentActivity.setComposeContent(
             CompositionLocalProvider(
                 LocalTextStyle provides MaterialTheme.typography.bodySmall,
                 LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+                LocalWindowSizeClass provides currentWindowAdaptiveInfo().windowSizeClass,
             ) {
                 content()
             }

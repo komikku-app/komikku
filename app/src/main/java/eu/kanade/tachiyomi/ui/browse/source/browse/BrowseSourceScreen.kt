@@ -190,24 +190,7 @@ data class BrowseSourceScreen(
                         .pointerInput(Unit) {},
                 ) {
                     // KMK -->
-                    if (bulkFavoriteState.selectionMode) {
-                        BulkSelectionToolbar(
-                            selectedCount = bulkFavoriteState.selection.size,
-                            isRunning = bulkFavoriteState.isRunning,
-                            onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                            onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                            onSelectAll = {
-                                mangaList.itemSnapshotList.items
-                                    .map { it.value.first }
-                                    .forEach { bulkFavoriteScreenModel.select(it) }
-                            },
-                            onReverseSelection = {
-                                mangaList.itemSnapshotList.items
-                                    .map { it.value.first }
-                                    .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                            },
-                        )
-                    } else {
+                    if (!bulkFavoriteState.selectionMode) {
                         // KMK <--
                         BrowseSourceToolbar(
                             searchQuery = state.toolbarQuery,
@@ -241,7 +224,9 @@ data class BrowseSourceScreen(
                             isRunning = bulkFavoriteState.isRunning,
                             // KMK <--
                         )
+                        // KMK -->
                     }
+                    // KMK <--
 
                     Row(
                         modifier = Modifier
@@ -337,6 +322,28 @@ data class BrowseSourceScreen(
 
                     HorizontalDivider()
                 }
+            },
+            bottomBar = {
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    BulkSelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { bulkFavoriteScreenModel.select(it) }
+                        },
+                        onReverseSelection = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        },
+                    )
+                }
+                // KMK <--
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->

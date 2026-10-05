@@ -92,24 +92,7 @@ class BrowseRecommendsScreen(
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
-                if (bulkFavoriteState.selectionMode) {
-                    BulkSelectionToolbar(
-                        selectedCount = bulkFavoriteState.selection.size,
-                        isRunning = bulkFavoriteState.isRunning,
-                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                        onSelectAll = {
-                            mangaList.itemSnapshotList.items
-                                .map { it.value.first }
-                                .forEach { bulkFavoriteScreenModel.select(it) }
-                        },
-                        onReverseSelection = {
-                            mangaList.itemSnapshotList.items
-                                .map { it.value.first }
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                        },
-                    )
-                } else {
+                if (!bulkFavoriteState.selectionMode) {
                     // KMK <--
                     val title = remember {
                         val recSource = screenModel.recommendationPagingSource
@@ -129,7 +112,31 @@ class BrowseRecommendsScreen(
                         isRunning = bulkFavoriteState.isRunning,
                         // KMK <--
                     )
+                    // KMK -->
                 }
+                // KMK <--
+            },
+            bottomBar = {
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    BulkSelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .forEach { bulkFavoriteScreenModel.select(it) }
+                        },
+                        onReverseSelection = {
+                            mangaList.itemSnapshotList.items
+                                .map { it.value.first }
+                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                        },
+                    )
+                }
+                // KMK <--
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->

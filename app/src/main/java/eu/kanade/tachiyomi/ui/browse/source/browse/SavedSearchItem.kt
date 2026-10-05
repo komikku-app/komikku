@@ -11,11 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.SuggestionChip
-import eu.kanade.presentation.components.SuggestionChipDefaults
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.EXHSavedSearch
 import tachiyomi.presentation.core.components.SettingsItemsPaddings
+import tachiyomi.presentation.core.components.m3e.ExpressiveSuggestionChip
 
 @Composable
 fun SavedSearchItem(
@@ -46,7 +45,7 @@ fun SavedSearchItem(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             savedSearches.forEach {
-                SuggestionChip(
+                ExpressiveSuggestionChip(
                     onClick = { onSavedSearch(it) },
                     onLongClick = { onSavedSearchPress(it) },
                     label = {
@@ -57,10 +56,8 @@ fun SavedSearchItem(
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                        labelColor = MaterialTheme.colorScheme.onSurface,
-                    ),
+                    containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                    labelColor = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

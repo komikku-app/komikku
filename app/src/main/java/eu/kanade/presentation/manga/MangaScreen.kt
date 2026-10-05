@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.FirstPage
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -120,6 +121,8 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
+import tachiyomi.presentation.core.components.m3e.ExpressiveSplitButton
+import tachiyomi.presentation.core.components.m3e.SplitButtonSecondaryAction
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -156,6 +159,7 @@ fun MangaScreen(
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    onStartFromFirstChapter: (() -> Unit)?,
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -236,6 +240,7 @@ fun MangaScreen(
             onFilterClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
+            onStartFromFirstChapter = onStartFromFirstChapter,
             onSearch = onSearch,
             onCoverClicked = onCoverClicked,
             onShareClicked = onShareClicked,
@@ -298,6 +303,7 @@ fun MangaScreen(
             onFilterButtonClicked = onFilterButtonClicked,
             onRefresh = onRefresh,
             onContinueReading = onContinueReading,
+            onStartFromFirstChapter = onStartFromFirstChapter,
             onSearch = onSearch,
             onCoverClicked = onCoverClicked,
             onShareClicked = onShareClicked,
@@ -366,6 +372,7 @@ private fun MangaScreenSmallImpl(
     onFilterClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    onStartFromFirstChapter: (() -> Unit)?,
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -533,49 +540,88 @@ private fun MangaScreenSmallImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            SmallExtendedFloatingActionButton(
-                text = {
-                    val isReading = remember(state.chapters) {
-                        state.chapters.fastAny { it.chapter.read }
-                    }
-                    Text(
-                        text = stringResource(if (isReading) MR.strings.action_resume else MR.strings.action_start),
-                    )
-                },
-                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                onClick = onContinueReading,
-                expanded = chapterListState.shouldExpandFAB(),
-                modifier = Modifier.animateFloatingActionButton(
+            val isReading = remember(state.chapters) {
+                state.chapters.fastAny { it.chapter.read }
+            }
+            val readButtonModifier = Modifier
+                .animateFloatingActionButton(
                     visible = isFABVisible,
                     alignment = Alignment.BottomEnd,
                 )
-                    // KMK -->
-                    .offset { IntOffset(offsetX.roundToInt(), 0) }
-                    .onGloballyPositioned { coordinates ->
-                        fabSize = coordinates.size
-                        positionOnScreen = coordinates.positionOnScreen()
-                    }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
-                                    readButtonPosition.set(FabPosition.End.toString())
-                                } else {
-                                    readButtonPosition.set(FabPosition.Start.toString())
-                                }
-                                offsetX = 0f
-                            },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            val newOffsetX = offsetX + dragAmount
-                            if (!newOffsetX.isNaN()) {
-                                offsetX = newOffsetX
+                // KMK -->
+                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .onGloballyPositioned { coordinates ->
+                    fabSize = coordinates.size
+                    positionOnScreen = coordinates.positionOnScreen()
+                }
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
+                                readButtonPosition.set(FabPosition.End.toString())
+                            } else {
+                                readButtonPosition.set(FabPosition.Start.toString())
                             }
+                            offsetX = 0f
+                        },
+                    ) { change, dragAmount ->
+                        change.consume()
+                        val newOffsetX = offsetX + dragAmount
+                        if (!newOffsetX.isNaN()) {
+                            offsetX = newOffsetX
                         }
+                    }
+                }
+            // KMK <--
+
+            val startFromFirstChapter = onStartFromFirstChapter
+            if (startFromFirstChapter == null) {
+                Box(modifier = readButtonModifier) {
+                    SmallExtendedFloatingActionButton(
+                        text = {
+                            Text(
+                                text = stringResource(
+                                    if (isReading) MR.strings.action_resume else MR.strings.action_start,
+                                ),
+                            )
+                        },
+                        icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                        onClick = onContinueReading,
+                        expanded = chapterListState.shouldExpandFAB(),
+                        // KMK -->
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        // KMK <--
+                    )
+                }
+            } else {
+                ExpressiveSplitButton(
+                    modifier = readButtonModifier,
+                    leadingButton = {
+                        SmallExtendedFloatingActionButton(
+                            text = {
+                                Text(
+                                    text = stringResource(
+                                        if (isReading) MR.strings.action_resume else MR.strings.action_start,
+                                    ),
+                                )
+                            },
+                            icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                            onClick = onContinueReading,
+                            expanded = chapterListState.shouldExpandFAB(),
+                            // KMK -->
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            // KMK <--
+                        )
                     },
-                containerColor = MaterialTheme.colorScheme.primary,
-                // KMK <--
-            )
+                    trailingButton = {
+                        SplitButtonSecondaryAction(
+                            icon = Icons.Outlined.FirstPage,
+                            title = stringResource(KMR.strings.action_start_from_first_chapter),
+                            onClick = startFromFirstChapter,
+                        )
+                    },
+                )
+            }
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
@@ -830,6 +876,7 @@ private fun MangaScreenLargeImpl(
     onFilterButtonClicked: () -> Unit,
     onRefresh: () -> Unit,
     onContinueReading: () -> Unit,
+    onStartFromFirstChapter: (() -> Unit)?,
     onSearch: (query: String, global: Boolean) -> Unit,
 
     // For cover dialog
@@ -993,51 +1040,83 @@ private fun MangaScreenLargeImpl(
             val isFABVisible = remember(chapters) {
                 chapters.fastAny { !it.chapter.read } && !isAnySelected
             }
-            SmallExtendedFloatingActionButton(
-                text = {
-                    val isReading = remember(state.chapters) {
-                        state.chapters.fastAny { it.chapter.read }
-                    }
-                    Text(
-                        text = stringResource(
-                            if (isReading) MR.strings.action_resume else MR.strings.action_start,
-                        ),
-                    )
-                },
-                icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                onClick = onContinueReading,
-                expanded = chapterListState.shouldExpandFAB(),
-                modifier = Modifier.animateFloatingActionButton(
+            val isReading = remember(state.chapters) {
+                state.chapters.fastAny { it.chapter.read }
+            }
+            val readButtonModifier = Modifier
+                .animateFloatingActionButton(
                     visible = isFABVisible,
                     alignment = Alignment.BottomEnd,
                 )
-                    // KMK -->
-                    .offset { IntOffset(offsetX.roundToInt(), 0) }
-                    .onGloballyPositioned { coordinates ->
-                        fabSize = coordinates.size
-                        positionOnScreen = coordinates.positionOnScreen()
-                    }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragEnd = {
-                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
-                                    readButtonPosition.set(FabPosition.End.toString())
-                                } else {
-                                    readButtonPosition.set(FabPosition.Start.toString())
-                                }
-                                offsetX = 0f
-                            },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            val newOffsetX = offsetX + dragAmount
-                            if (!newOffsetX.isNaN()) {
-                                offsetX = newOffsetX
+                // KMK -->
+                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .onGloballyPositioned { coordinates ->
+                    fabSize = coordinates.size
+                    positionOnScreen = coordinates.positionOnScreen()
+                }
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
+                                readButtonPosition.set(FabPosition.End.toString())
+                            } else {
+                                readButtonPosition.set(FabPosition.Start.toString())
                             }
+                            offsetX = 0f
+                        },
+                    ) { change, dragAmount ->
+                        change.consume()
+                        val newOffsetX = offsetX + dragAmount
+                        if (!newOffsetX.isNaN()) {
+                            offsetX = newOffsetX
                         }
+                    }
+                }
+            // KMK <--
+
+            val startFromFirstChapter = onStartFromFirstChapter
+            val readButtonText: @Composable () -> Unit = {
+                Text(
+                    text = stringResource(
+                        if (isReading) MR.strings.action_resume else MR.strings.action_start,
+                    ),
+                )
+            }
+            if (startFromFirstChapter == null) {
+                Box(modifier = readButtonModifier) {
+                    SmallExtendedFloatingActionButton(
+                        text = readButtonText,
+                        icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                        onClick = onContinueReading,
+                        expanded = chapterListState.shouldExpandFAB(),
+                        // KMK -->
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        // KMK <--
+                    )
+                }
+            } else {
+                ExpressiveSplitButton(
+                    modifier = readButtonModifier,
+                    leadingButton = {
+                        SmallExtendedFloatingActionButton(
+                            text = readButtonText,
+                            icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
+                            onClick = onContinueReading,
+                            expanded = chapterListState.shouldExpandFAB(),
+                            // KMK -->
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            // KMK <--
+                        )
                     },
-                containerColor = MaterialTheme.colorScheme.primary,
-                // KMK <--
-            )
+                    trailingButton = {
+                        SplitButtonSecondaryAction(
+                            icon = Icons.Outlined.FirstPage,
+                            title = stringResource(KMR.strings.action_start_from_first_chapter),
+                            onClick = startFromFirstChapter,
+                        )
+                    },
+                )
+            }
         },
         // KMK -->
         floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {

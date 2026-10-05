@@ -49,26 +49,7 @@ fun GlobalSearchScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (bulkFavoriteState.selectionMode) {
-                BulkSelectionToolbar(
-                    selectedCount = bulkFavoriteState.selection.size,
-                    isRunning = bulkFavoriteState.isRunning,
-                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                    onSelectAll = {
-                        state.filteredItems.values
-                            .filterIsInstance<SearchItemResult.Success>()
-                            .flatMap { it.result }
-                            .forEach { bulkFavoriteScreenModel.select(it) }
-                    },
-                    onReverseSelection = {
-                        state.filteredItems.values
-                            .filterIsInstance<SearchItemResult.Success>()
-                            .flatMap { it.result }
-                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                    },
-                )
-            } else {
+            if (!bulkFavoriteState.selectionMode) {
                 // KMK <--
                 GlobalSearchToolbar(
                     searchQuery = state.searchQuery,
@@ -89,7 +70,33 @@ fun GlobalSearchScreen(
                     hasPinnedSources = hasPinnedSources,
                     // KMK <--
                 )
+                // KMK -->
             }
+            // KMK <--
+        },
+        bottomBar = {
+            // KMK -->
+            if (bulkFavoriteState.selectionMode) {
+                BulkSelectionToolbar(
+                    selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        state.filteredItems.values
+                            .filterIsInstance<SearchItemResult.Success>()
+                            .flatMap { it.result }
+                            .forEach { bulkFavoriteScreenModel.select(it) }
+                    },
+                    onReverseSelection = {
+                        state.filteredItems.values
+                            .filterIsInstance<SearchItemResult.Success>()
+                            .flatMap { it.result }
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                    },
+                )
+            }
+            // KMK <--
         },
     ) { paddingValues ->
         GlobalSearchContent(

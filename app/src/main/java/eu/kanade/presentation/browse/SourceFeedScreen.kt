@@ -122,24 +122,7 @@ fun SourceFeedScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             // KMK -->
-            if (bulkFavoriteState.selectionMode) {
-                BulkSelectionToolbar(
-                    selectedCount = bulkFavoriteState.selection.size,
-                    isRunning = bulkFavoriteState.isRunning,
-                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                    onSelectAll = {
-                        items.mapNotNull { it.results }
-                            .flatten()
-                            .forEach { bulkFavoriteScreenModel.select(it) }
-                    },
-                    onReverseSelection = {
-                        items.mapNotNull { it.results }
-                            .flatten()
-                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                    },
-                )
-            } else {
+            if (!bulkFavoriteState.selectionMode) {
                 // KMK <--
                 SourceFeedToolbar(
                     title = name,
@@ -157,7 +140,31 @@ fun SourceFeedScreen(
                     isRunning = bulkFavoriteState.isRunning,
                     // KMK <--
                 )
+                // KMK -->
             }
+            // KMK <--
+        },
+        bottomBar = {
+            // KMK -->
+            if (bulkFavoriteState.selectionMode) {
+                BulkSelectionToolbar(
+                    selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
+                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    onSelectAll = {
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .forEach { bulkFavoriteScreenModel.select(it) }
+                    },
+                    onReverseSelection = {
+                        items.mapNotNull { it.results }
+                            .flatten()
+                            .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                    },
+                )
+            }
+            // KMK <--
         },
         floatingActionButton = {
             // KMK -->

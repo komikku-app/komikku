@@ -21,9 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.ChipBorder
-import eu.kanade.presentation.components.SuggestionChip
-import eu.kanade.presentation.components.SuggestionChipDefaults
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
@@ -31,6 +28,7 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.EXH_SOURCE_ID
 import exh.source.eHentaiSourceIds
 import exh.util.SourceTagsUtil
+import tachiyomi.presentation.core.components.m3e.StaticTagChip
 import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
 @Immutable
@@ -123,18 +121,6 @@ fun NamespaceTags(
                             modifier = Modifier.padding(vertical = 4.dp),
                             text = text,
                             onClick = { onClick(search) },
-                            border = borderDp?.let {
-                                SuggestionChipDefaults.suggestionChipBorder(
-                                    borderWidth = it,
-                                    // KMK -->
-                                    borderColor = MaterialTheme.colorScheme.primary,
-                                    // KMK <--
-                                )
-                            } ?: SuggestionChipDefaults.suggestionChipBorder(
-                                // KMK -->
-                                borderColor = MaterialTheme.colorScheme.primary,
-                                // KMK <--
-                            ),
                             borderM3 = borderDp?.let {
                                 SuggestionChipDefaultsM3.suggestionChipBorder(
                                     enabled = true,
@@ -162,13 +148,21 @@ fun TagsChip(
     text: String,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    border: ChipBorder? = SuggestionChipDefaults.suggestionChipBorder(),
     // KMK -->
     // borderM3: BorderStroke? = SuggestionChipDefaultsM3.suggestionChipBorder(enabled = true),
     borderM3: BorderStroke? = null,
     pureDarkMode: Boolean = false,
     // KMK <--
 ) {
+    val label: @Composable () -> Unit = {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
         if (onClick != null) {
             // KMK -->
@@ -177,14 +171,7 @@ fun TagsChip(
                 SuggestionChip(
                     modifier = modifier,
                     onClick = onClick,
-                    label = {
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
+                    label = label,
                     border = borderM3
                         // KMK -->
                         ?: SuggestionChipDefaultsM3.suggestionChipBorder(
@@ -196,14 +183,7 @@ fun TagsChip(
                 ElevatedSuggestionChip(
                     modifier = modifier,
                     onClick = onClick,
-                    label = {
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
+                    label = label,
                     colors = SuggestionChipDefaultsM3.elevatedSuggestionChipColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
@@ -211,17 +191,10 @@ fun TagsChip(
             }
             // KMK <--
         } else {
-            SuggestionChip(
+            StaticTagChip(
                 modifier = modifier,
-                label = {
-                    Text(
-                        text = text,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                border = border,
+                label = label,
+                border = borderM3,
             )
         }
     }

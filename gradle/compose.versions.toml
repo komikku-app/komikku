@@ -1,5 +1,10 @@
 [versions]
 compose-bom = "2026.06.01"
+# The Material 3 Expressive APIs are not in a stable release. The newest stable, 1.4.0, keeps
+# MaterialExpressiveTheme internal and has no ButtonGroup, FloatingToolbar, LoadingIndicator,
+# MaterialShapes, SplitButton or wavy progress. This version is authoritative: buildSrc pins it
+# through a strict constraint, so no transitive dependency can move one module alone.
+material3 = "1.5.0-alpha14"
 
 [libraries]
 activity = "androidx.activity:activity-compose:1.13.0"
@@ -13,7 +18,8 @@ ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 ui-util = { module = "androidx.compose.ui:ui-util" }
 
-material3-core = { module = "androidx.compose.material3:material3" }
+material3-core = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 material-icons = { module = "androidx.compose.material:material-icons-extended" }
 
 glance = "androidx.glance:glance-appwidget:1.1.1"

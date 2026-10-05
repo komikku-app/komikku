@@ -67,6 +67,23 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
         Scaffold(
             topBar = { scrollBehavior ->
                 // KMK -->
+                if (!bulkFavoriteState.selectionMode) {
+                    // KMK <--
+                    BrowseSourceSimpleToolbar(
+                        title = stringResource(SYMR.strings.mangadex_follows),
+                        displayMode = screenModel.displayMode,
+                        onDisplayModeChange = { screenModel.displayMode = it },
+                        navigateUp = navigator::pop,
+                        scrollBehavior = scrollBehavior,
+                        // KMK -->
+                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                        isRunning = bulkFavoriteState.isRunning,
+                        // KMK <--
+                    )
+                }
+            },
+            bottomBar = {
+                // KMK -->
                 if (bulkFavoriteState.selectionMode) {
                     BulkSelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
@@ -84,20 +101,8 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                                 .let { bulkFavoriteScreenModel.reverseSelection(it) }
                         },
                     )
-                } else {
-                    // KMK <--
-                    BrowseSourceSimpleToolbar(
-                        title = stringResource(SYMR.strings.mangadex_follows),
-                        displayMode = screenModel.displayMode,
-                        onDisplayModeChange = { screenModel.displayMode = it },
-                        navigateUp = navigator::pop,
-                        scrollBehavior = scrollBehavior,
-                        // KMK -->
-                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
-                        isRunning = bulkFavoriteState.isRunning,
-                        // KMK <--
-                    )
                 }
+                // KMK <--
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState)

@@ -45,6 +45,9 @@ dependencies {
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
 
+    // The window size class composition local exposes WindowSizeClass, so callers need the type.
+    api(androidx.window.core)
+
     implementation(androidx.paging.runtime)
     implementation(androidx.paging.compose)
     implementation(kotlinx.immutables)
