@@ -15,11 +15,10 @@ Everything for this tool lives in this folder (`.claude/skills/cherrypick-log/`)
 | `README.md` | Human documentation: rules, columns, commands, porting to another project |
 
 The output is `cherrypick_log.md` in the repo root. **The script is the source of truth** for
-the list, its order and statuses found by hash or PR. It also omits commits that cancel each other out:
-a commit and its revert (or a longer revert chain) that the fork has none of are marked **X** with an
-`Omitted (script):` note on every `update`. These script `X` rows are recomputed on every run, so don't
-add to or rely on them. To pin one, remove its `Omitted (script):` note and keep the `X`
-(see README "Rerunning"). The AI's job is narrow:
+the list, its order and statuses found by hash or PR. It also flags commits that cancel each other out:
+a commit and its revert (or a longer revert chain) that the fork has none of get **?** with a
+`Cancels out (script):` note on every `update`. These flags are recomputed on every run until the row gets
+an `AI checked` note or a status set by hand (see README "Revert chains"). The AI's job is narrow:
 - decide the rows the script could not (`?`, and empty rows only if the user asks) by comparing the code itself (sections 2-4);
 - when asked to clean the log, omit the commits that only bump the app version (section 5).
 
@@ -47,6 +46,10 @@ A `↳ tachiyomiSY` row is SY's copy of the mihon row directly below it. Both sh
 review the mihon commit once and mark both rows.
 
 ## 3. Review each row
+
+A row with a `Cancels out (script):` note is part of a revert pair or chain: review all of its rows together
+(the hashes in the notes) and give them consistent verdicts. Leave them `?` with an `AI checked` note when the
+pair cancels out and the fork has neither side, since dropping the pair (X) is the maintainer's decision.
 
 For upstream commit `H` (already fetched locally):
 

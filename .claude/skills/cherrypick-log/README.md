@@ -45,7 +45,7 @@ All commands accept `--config PATH` (default: `config.json` next to the script) 
 
 | Column | Meaning |
 |--------|---------|
-| Status | `O` cherry-picked into the target branch · `?` maybe, needs review · empty (written as one space so the raw table stays aligned) = not found · `X` won't pick (set by hand, or omitted automatically, see [Omitted commits](#omitted-commits-x)) |
+| Status | `O` cherry-picked into the target branch · `?` maybe, needs review (including commits that cancel each other out, see [Revert chains](#revert-chains-flagged-)) · empty (written as one space so the raw table stays aligned) = not found · `X` won't pick (set by hand, or version-bump-only commits, see [Omitted commits](#omitted-commits-x)) |
 | Commit | Short hash, linked to the full GitHub commit. The script reads the full hash back from this link, so don't edit it |
 | Upstream | `mihon`, `tachiyomiSY`, or `↳ tachiyomiSY` for SY's copy of the mihon commit directly below it |
 | Date | Committer date, i.e. when the commit landed on that upstream branch (ISO) |
@@ -105,23 +105,35 @@ Title matches only count if the title is unique among the listed upstream commit
 and the target commit is at most 180 days older than the upstream commit.
 The title is normalized before comparing: lowercased, conventional-commit prefix removed, `(#N)` refs and quotes removed.
 
+### Revert chains (flagged `?`)
+
+On every `update`, the script flags commits that cancel each other out as `?`, with a
+`Cancels out (script): reverts / reverted by <hash> [was: …]` note. You (or the AI review) decide what to do with them,
+e.g. mark both `X`.
+
+- They are found by following `This reverts commit <hash>` links between listed commits. A mihon commit and its SY copies
+  count as one.
+- A chain is only flagged when it is linear, every row in it is still empty or `?` (the fork has none of them), and no
+  row has an AI verdict.
+- An even-length chain cancels out completely, so every commit in it is flagged. In an odd-length chain (`C`,
+  `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and is not flagged.
+- If the fork already has one side of a revert pair, the pair is not flagged, because the other side may still matter.
+
+Older versions marked these rows `X` with an `Omitted (script):` note. Those rows are turned into `?` flags on the next run.
+
 ### Omitted commits (X)
 
-`X` means "won't pick". Apart from your own marks, two kinds of commit are marked `X` automatically:
-
-| Who | What | Note |
-|-----|------|------|
-| Script, on every `update` | Commits that cancel each other out. These are found by following `This reverts commit <hash>` links between listed commits, a mihon commit and its SY copies counting as one. A chain is only omitted when it is linear, every row in it is still empty or `?` (the fork has none of them), and no row has an AI verdict. An even-length chain cancels out completely. In an odd-length chain (`C`, `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and stays | `Omitted (script): cancels out - reverts / reverted by <hash>` |
-| AI skill, when asked to clean the log | Commits whose whole diff is release bookkeeping for that fork: version code/name, release notes, version numbers in issue templates. See SKILL.md section 5 | `AI checked <date>: omitted - version bump only (<files>)` |
-
-If the fork already has one side of a revert pair, the pair is not omitted, because the other side may still matter.
+`X` means "won't pick". Apart from your own marks, the AI skill marks one kind of commit `X` when asked to clean the log:
+commits whose whole diff is release bookkeeping for that fork (version code/name, release notes, version numbers in issue
+templates). Their note is `AI checked <date>: omitted - version bump only (<files>)`. See SKILL.md section 5.
 
 ### Rerunning
 
-- Rows with a status other than empty or `?` (e.g. `O`, a manual `X`) are **never changed**. The exception is an `X`
-  the script set itself (an `Omitted (script):` note). That `X` is released on every run, back to the status recorded
-  in its `[was: …]` part, and the revert chains are recomputed. So when a later revert extends a chain, the odd/even
-  rule applies to the whole chain again. To pin such a row, delete its `Omitted (script):` note and keep the `X`.
+- Rows with a status other than empty or `?` (e.g. `O`, a manual `X`) are **never changed**.
+- A revert-chain flag (a `?` with a `Cancels out (script):` note, or an older `X` with `Omitted (script):`) is released on
+  every run, back to the status recorded in its `[was: …]` part, and the chains are recomputed. So when a later revert
+  extends a chain, the odd/even rule applies to the whole chain again. A flagged row is left alone once it has an
+  `AI checked` note, or once you change its status (e.g. to `X`). Only the stale script note is removed then.
 - Empty and `?` rows are checked again. An empty or `?` row whose Notes contain `AI checked` keeps that AI verdict
   unless new `O` evidence appears.
 - Notes are always kept, and new upstream commits are added in their place in the order.
@@ -165,8 +177,8 @@ with `git cherry-pick -x` (`cherry picked from commit …`) or `owner/repo#N` re
 python3 -m unittest discover -s .claude/skills/cherrypick-log -p 'test_*.py'
 ```
 
-The tests in `test_update_cherrypick_log.py` cover revert-chain omission (including when a chain gets longer), releasing
-the script's own `X` marks (including notes with escaped characters), manual `X` pins, and the rerun status rules
+The tests in `test_update_cherrypick_log.py` cover revert-chain flags (including when a chain gets longer and the older `X` omissions), releasing
+the script's own flags (including notes with escaped characters and user text), manual `X` pins, and the rerun status rules
 (`carry_over`: manual status kept, AI verdict kept unless `O` evidence appears). They need no git repository.
 
 ## Limitations
@@ -175,7 +187,7 @@ the script's own `X` marks (including notes with escaped characters), manual `X`
 - Reverts are only linked through git's default `This reverts commit <hash>` message, and only to commits that are in
   the list. A reworded revert, or a revert of a commit outside the list (before `since`, excluded, or deleted by hand),
   stays an ordinary row.
-- Revert chains are only omitted automatically when they are linear, the fork has none of their commits and no row in
-  them has an AI verdict (`AI checked`). Branching chains (two reverts of one commit), pairs where the fork already has
-  one side, and AI-reviewed chains stay as they are for a human to decide.
+- Revert chains are only flagged when they are linear, the fork has none of their commits and no row in them has an AI
+  verdict (`AI checked`). Branching chains (two reverts of one commit) and pairs where the fork already has one side are
+  not flagged.
 - One SY commit that squashes several mihon commits is shown only once, above the newest of them.
