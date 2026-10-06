@@ -209,17 +209,7 @@ class DownloadOptimizerJob(
         val stripMetadata = if (inputData.keyValueMap.containsKey(KEY_STRIP_METADATA)) inputData.getBoolean(KEY_STRIP_METADATA, true) else downloadPreferences.stripImageMetadata().get()
 
         val selectedUris = getSelectedUris()
-        val chapters = if (selectedUris != null) {
-            val resolved = resolveSelectedChapters(context, selectedUris)
-            if (resolved.isNotEmpty()) {
-                resolved
-            } else {
-                val allChapters = getEligibleChapters(context, downloadsDir)
-                filterChapters(allChapters, selectedUris)
-            }
-        } else {
-            getEligibleChapters(context, downloadsDir)
-        }
+        val chapters = getEligibleChapters(context, downloadsDir, selectedUris)
 
         logcat(LogPriority.INFO) { "DownloadOptimizerJob: found ${chapters.size} eligible chapters to optimize" }
         if (chapters.isEmpty()) return Result.success()
@@ -255,61 +245,6 @@ class DownloadOptimizerJob(
             }
         }
         return inputData.getStringArray(KEY_SELECTED_CHAPTERS)?.toSet()
-    }
-
-    private fun resolveSelectedChapters(context: Context, selectedUris: Set<String>): List<UniFile> {
-        if (selectedUris.isEmpty()) return emptyList()
-        return selectedUris.mapNotNull { uriStr ->
-            try {
-                if (uriStr.startsWith("file://") || uriStr.startsWith("/")) {
-                    val file = File(uriStr.removePrefix("file://"))
-                    if (file.exists()) UniFile.fromFile(file) else null
-                } else {
-                    UniFile.fromUri(context, Uri.parse(uriStr))
-                }
-            } catch (e: Throwable) {
-                null
-            }
-        }.filter { chapter ->
-            try {
-                chapter.exists() && isChapterEligible(context, chapter)
-            } catch (e: Throwable) {
-                false
-            }
-        }
-    }
-
-    private fun filterChapters(allChapters: List<UniFile>, selectedUris: Set<String>?): List<UniFile> {
-        if (selectedUris == null) return allChapters
-        if (selectedUris.isEmpty()) return emptyList()
-
-        val decodedSelected = selectedUris.map { Uri.decode(it) }.toSet()
-        return allChapters.filter { chapter ->
-            isChapterSelected(chapter, selectedUris, decodedSelected)
-        }
-    }
-
-    private fun isChapterSelected(
-        chapter: UniFile,
-        selectedUris: Set<String>,
-        decodedSelected: Set<String>,
-    ): Boolean {
-        val uriStr = chapter.uri.toString()
-        val decodedUri = Uri.decode(uriStr)
-        if (selectedUris.contains(uriStr) || decodedSelected.contains(decodedUri)) return true
-
-        val filePath = chapter.filePath
-        if (filePath != null && (selectedUris.contains(filePath) || decodedSelected.contains(filePath))) return true
-
-        val mangaName = chapter.parentFile?.name?.let { Uri.decode(it) }
-        val chapterName = chapter.name?.let { Uri.decode(it) }
-        if (mangaName != null && chapterName != null) {
-            val relativePath = "/$mangaName/$chapterName"
-            val encodedRelativePath = "%2F$mangaName%2F$chapterName"
-            return decodedSelected.any { it.contains(relativePath) } ||
-                selectedUris.any { it.contains(encodedRelativePath) }
-        }
-        return false
     }
 
     private fun processChapters(
@@ -405,8 +340,11 @@ class DownloadOptimizerJob(
         config: CompressionConfig,
         progress: ChapterProgress,
     ): Long {
-        if (cbzFile.parentFile == null || cbzFile.name == null) return 0L
-        val originalSize = cbzFile.length()
+        if (cbzFile.name == null) return 0L
+        val localInputPair = getLocalInputFile(cbzFile)
+        val localInputFile = localInputPair.first
+        val isTempInputFile = localInputPair.second
+        val originalSize = localInputFile?.length()?.takeIf { it > 0 } ?: cbzFile.length()
         val tempExtractDir = File(context.cacheDir, "cbz_opt_${System.currentTimeMillis()}")
         tempExtractDir.mkdirs()
 
@@ -415,10 +353,6 @@ class DownloadOptimizerJob(
             isExtracting = true,
             force = true,
         )
-
-        val localInputPair = getLocalInputFile(cbzFile)
-        val localInputFile = localInputPair.first
-        val isTempInputFile = localInputPair.second
 
         try {
             val isEncrypted = isArchiveEncrypted(cbzFile)
@@ -606,60 +540,101 @@ class DownloadOptimizerJob(
         anyCompressed: Boolean,
         hadError: Boolean,
     ): Long {
-        val parentDir = cbzFile.parentFile ?: return 0L
-        val finalName = cbzFile.name ?: return 0L
-        val tempCbzName = "$finalName.tmp_opt.cbz"
-        val tempCbz = parentDir.createFile(tempCbzName) ?: return 0L
-        var replaced = false
+        val tempArchive = File(context.cacheDir, "temp_repack_${System.currentTimeMillis()}.cbz")
         try {
             if (isEncrypted) {
-                writeEncryptedArchive(tempCbz, tempExtractDir)
+                writeEncryptedArchive(tempArchive, tempExtractDir)
             } else {
-                writePlainArchive(tempCbz, tempExtractDir)
+                writePlainArchive(tempArchive, tempExtractDir)
             }
 
-            val newSize = tempCbz.length()
+            val newSize = tempArchive.length()
             logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed, hadError=$hadError" }
             val shouldReplace = newSize > 0 && (newSize < originalSize || (!hadError && !anyCompressed && newSize <= originalSize + 4096))
             if (shouldReplace) {
-                cbzFile.delete()
-                tempCbz.renameTo(finalName)
-                replaced = true
+                replaceCbzTarget(cbzFile, tempArchive)
                 return if (newSize < originalSize) originalSize - newSize else 0L
             } else {
                 return 0L
             }
         } finally {
-            if (!replaced) {
-                tempCbz.delete()
+            tempArchive.delete()
+        }
+    }
+
+    private fun replaceCbzTarget(cbzFile: UniFile, tempArchive: File) {
+        val parentDir = cbzFile.parentFile
+        val finalName = cbzFile.name
+        if (parentDir != null && finalName != null) {
+            val tempCbzName = "$finalName.tmp_opt.cbz"
+            val tempCbz = parentDir.createFile(tempCbzName)
+            if (tempCbz != null) {
+                var copied = false
+                try {
+                    tempArchive.inputStream().buffered().use { inStream ->
+                        tempCbz.openOutputStream()?.buffered()?.use { outStream ->
+                            inStream.copyTo(outStream)
+                            copied = true
+                        }
+                    }
+                    if (copied) {
+                        cbzFile.delete()
+                        if (tempCbz.renameTo(finalName)) {
+                            return
+                        }
+                        val newFinalFile = parentDir.createFile(finalName)
+                        if (newFinalFile != null) {
+                            tempArchive.inputStream().buffered().use { inStream ->
+                                newFinalFile.openOutputStream()?.buffered()?.use { outStream ->
+                                    inStream.copyTo(outStream)
+                                }
+                            }
+                            return
+                        }
+                    }
+                } finally {
+                    if (!copied) {
+                        tempCbz.delete()
+                    }
+                }
+            }
+        }
+
+        // Direct stream overwrite fallback if parentDir is null or temp file creation failed
+        tempArchive.inputStream().buffered().use { inStream ->
+            cbzFile.openOutputStream()?.buffered()?.use { outStream ->
+                inStream.copyTo(outStream)
             }
         }
     }
 
-    private fun writeEncryptedArchive(tempCbz: UniFile, tempExtractDir: File) {
-        ZipWriter(context, tempCbz, true).use { writer ->
-            tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                if (isStopped) {
-                    throw CancellationException("Job stopped during CBZ compression")
+    private fun writeEncryptedArchive(tempArchive: File, tempExtractDir: File) {
+        UniFile.fromFile(tempArchive)?.let { uniTemp ->
+            ZipWriter(context, uniTemp, true).use { writer ->
+                tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                    if (isStopped) {
+                        throw CancellationException("Job stopped during CBZ compression")
+                    }
+                    UniFile.fromFile(file)?.let { writer.write(it) }
                 }
-                UniFile.fromFile(file)?.let { writer.write(it) }
             }
         }
     }
 
-    private fun writePlainArchive(tempCbz: UniFile, tempExtractDir: File) {
-        val outStream = tempCbz.openOutputStream()?.buffered() ?: return
-        java.util.zip.ZipOutputStream(outStream).use { zipOut ->
-            tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                if (isStopped) {
-                    throw CancellationException("Job stopped during CBZ compression")
+    private fun writePlainArchive(tempArchive: File, tempExtractDir: File) {
+        tempArchive.outputStream().buffered().use { outStream ->
+            java.util.zip.ZipOutputStream(outStream).use { zipOut ->
+                tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                    if (isStopped) {
+                        throw CancellationException("Job stopped during CBZ compression")
+                    }
+                    val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
+                    zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
+                    file.inputStream().buffered().use { inStream ->
+                        inStream.copyTo(zipOut)
+                    }
+                    zipOut.closeEntry()
                 }
-                val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
-                zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
-                file.inputStream().buffered().use { inStream ->
-                    inStream.copyTo(zipOut)
-                }
-                zipOut.closeEntry()
             }
         }
     }
@@ -822,51 +797,129 @@ class DownloadOptimizerJob(
             return file?.takeIf { it.exists() && it.canRead() }
         }
 
-        suspend fun getEligibleChapters(context: Context, downloadsDir: UniFile): List<UniFile> = withContext(Dispatchers.IO) {
+        suspend fun getEligibleChapters(
+            context: Context,
+            downloadsDir: UniFile,
+            selectedUris: Set<String>? = null,
+        ): List<UniFile> = withContext(Dispatchers.IO) {
+            if (selectedUris != null && selectedUris.isEmpty()) {
+                return@withContext emptyList()
+            }
+            val decodedSelected = selectedUris?.map { Uri.decode(it) }?.toSet()
+
             val rootFile = downloadsDir.toLocalFile()
             if (rootFile != null) {
-                val localEligible = getEligibleChaptersLocal(context, rootFile)
+                val localEligible = getEligibleChaptersLocal(context, rootFile, selectedUris, decodedSelected)
                 if (localEligible.isNotEmpty()) {
                     return@withContext localEligible
                 }
             }
-            return@withContext getEligibleChaptersSaf(context, downloadsDir)
+            return@withContext getEligibleChaptersSaf(context, downloadsDir, selectedUris, decodedSelected)
         }
 
-        private suspend fun getEligibleChaptersLocal(context: Context, rootFile: File): List<UniFile> = coroutineScope {
+        private suspend fun getEligibleChaptersLocal(
+            context: Context,
+            rootFile: File,
+            selectedUris: Set<String>?,
+            decodedSelected: Set<String>?,
+        ): List<UniFile> = coroutineScope {
             val localSourceDirs = rootFile.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: return@coroutineScope emptyList()
             val allMangaDirs = localSourceDirs.flatMap { it.listFiles { f -> f.isDirectory && f.name.isNotBlank() }?.toList() ?: emptyList() }
             allMangaDirs.map { mangaDir ->
                 async(Dispatchers.IO) {
-                    collectMangaEligibleChapters(context, mangaDir)
+                    collectMangaEligibleChapters(context, mangaDir, selectedUris, decodedSelected)
                 }
             }.awaitAll().flatten()
         }
 
-        private fun collectMangaEligibleChapters(context: Context, mangaDir: File): List<UniFile> {
+        private fun collectMangaEligibleChapters(
+            context: Context,
+            mangaDir: File,
+            selectedUris: Set<String>?,
+            decodedSelected: Set<String>?,
+        ): List<UniFile> {
             val chapterFiles = mangaDir.listFiles { f ->
                 !f.name.endsWith(Downloader.TMP_DIR_SUFFIX) &&
                     (f.isDirectory || (f.isFile && f.extension.equals("cbz", ignoreCase = true)))
             } ?: emptyArray()
-            return chapterFiles.mapNotNull { UniFile.fromFile(it) }.filter { isChapterEligible(context, it) }
+            return chapterFiles.mapNotNull { UniFile.fromFile(it) }.filter { uni ->
+                if (selectedUris != null && decodedSelected != null) {
+                    if (!isChapterSelected(uni, selectedUris, decodedSelected, mangaDir.name)) {
+                        return@filter false
+                    }
+                }
+                isChapterEligible(context, uni)
+            }
         }
 
-        private suspend fun getEligibleChaptersSaf(context: Context, downloadsDir: UniFile): List<UniFile> = coroutineScope {
+        private suspend fun getEligibleChaptersSaf(
+            context: Context,
+            downloadsDir: UniFile,
+            selectedUris: Set<String>?,
+            decodedSelected: Set<String>?,
+        ): List<UniFile> = coroutineScope {
             val sourceDirs = downloadsDir.listFiles().orEmpty().filter { it.isDirectory && !it.name.isNullOrBlank() }
             val allMangaDirs = sourceDirs.flatMap { it.listFiles().orEmpty().filter { m -> m.isDirectory && !m.name.isNullOrBlank() } }
             allMangaDirs.map { mangaDir ->
                 async(Dispatchers.IO) {
-                    collectSafMangaEligibleChapters(context, mangaDir)
+                    collectSafMangaEligibleChapters(context, mangaDir, selectedUris, decodedSelected)
                 }
             }.awaitAll().flatten()
         }
 
-        private fun collectSafMangaEligibleChapters(context: Context, mangaDir: UniFile): List<UniFile> {
+        private fun collectSafMangaEligibleChapters(
+            context: Context,
+            mangaDir: UniFile,
+            selectedUris: Set<String>?,
+            decodedSelected: Set<String>?,
+        ): List<UniFile> {
             val chapterEntries = mangaDir.listFiles().orEmpty().filter {
                 !it.name.orEmpty().endsWith(Downloader.TMP_DIR_SUFFIX) &&
                     (it.isDirectory || (it.isFile && it.extension.equals("cbz", ignoreCase = true)))
             }
-            return chapterEntries.filter { isChapterEligible(context, it) }
+            return chapterEntries.filter { uni ->
+                if (selectedUris != null && decodedSelected != null) {
+                    if (!isChapterSelected(uni, selectedUris, decodedSelected, mangaDir.name.orEmpty())) {
+                        return@filter false
+                    }
+                }
+                isChapterEligible(context, uni)
+            }
+        }
+
+        private fun isChapterSelected(
+            chapter: UniFile,
+            selectedUris: Set<String>,
+            decodedSelected: Set<String>,
+            parentMangaName: String? = null,
+        ): Boolean {
+            val uriStr = chapter.uri.toString()
+            val decodedUri = Uri.decode(uriStr)
+            if (selectedUris.contains(uriStr) || decodedSelected.contains(decodedUri)) return true
+
+            val filePath = chapter.filePath
+            if (filePath != null && (selectedUris.contains(filePath) || decodedSelected.contains(filePath))) return true
+
+            val mangaName = (parentMangaName ?: chapter.parentFile?.name)?.let { Uri.decode(it) }
+            val chapterName = chapter.name?.let { Uri.decode(it) }
+            val chapterNameWithoutExt = chapter.nameWithoutExtension?.let { Uri.decode(it) }
+            if (mangaName != null) {
+                if (chapterName != null) {
+                    val relativePath = "/$mangaName/$chapterName"
+                    val encodedRelativePath = "%2F$mangaName%2F$chapterName"
+                    if (decodedSelected.any { it.contains(relativePath) } || selectedUris.any { it.contains(encodedRelativePath) }) {
+                        return true
+                    }
+                }
+                if (chapterNameWithoutExt != null && chapterNameWithoutExt != chapterName) {
+                    val relativePathNoExt = "/$mangaName/$chapterNameWithoutExt"
+                    val encodedRelativePathNoExt = "%2F$mangaName%2F$chapterNameWithoutExt"
+                    if (decodedSelected.any { it.contains(relativePathNoExt) } || selectedUris.any { it.contains(encodedRelativePathNoExt) }) {
+                        return true
+                    }
+                }
+            }
+            return false
         }
 
         suspend fun getEligibleChaptersBySeries(context: Context, downloadsDir: UniFile): List<OptimizableSeries> = withContext(Dispatchers.IO) {
