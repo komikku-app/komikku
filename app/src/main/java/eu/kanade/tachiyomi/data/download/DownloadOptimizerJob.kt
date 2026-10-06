@@ -609,6 +609,27 @@ class DownloadOptimizerJob(
     }
 
     private fun replaceCbzTarget(cbzFile: UniFile, tempArchive: File) {
+        val localTarget = cbzFile.toLocalFile()
+        if (localTarget != null && localTarget.parentFile != null && localTarget.parentFile.canWrite()) {
+            val localParent = localTarget.parentFile
+            val tempLocalFile = File(localParent, "${localTarget.name}.tmp_opt_${System.currentTimeMillis()}.cbz")
+            try {
+                tempArchive.copyTo(tempLocalFile, overwrite = true)
+                if (tempLocalFile.exists() && tempLocalFile.length() == tempArchive.length()) {
+                    if (localTarget.delete() && tempLocalFile.renameTo(localTarget)) {
+                        return
+                    }
+                    if (tempLocalFile.renameTo(localTarget)) {
+                        return
+                    }
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.WARN, e) { "Failed local atomic replace for ${localTarget.name}, trying SAF" }
+            } finally {
+                tempLocalFile.delete()
+            }
+        }
+
         val parentDir = cbzFile.parentFile
         val finalName = cbzFile.name
         if (parentDir != null && finalName != null) {
@@ -646,10 +667,36 @@ class DownloadOptimizerJob(
             }
         }
 
-        // Direct stream overwrite fallback if parentDir is null or temp file creation failed
-        tempArchive.inputStream().buffered().use { inStream ->
-            cbzFile.openOutputStream()?.buffered()?.use { outStream ->
-                inStream.copyTo(outStream)
+        val uri = cbzFile.uri
+        val truncated = try {
+            context.contentResolver.openFileDescriptor(uri, "rwt")?.use { pfd ->
+                android.system.Os.ftruncate(pfd.fileDescriptor, 0)
+                java.io.FileOutputStream(pfd.fileDescriptor).buffered().use { outStream ->
+                    tempArchive.inputStream().buffered().use { inStream ->
+                        inStream.copyTo(outStream)
+                    }
+                }
+                android.system.Os.ftruncate(pfd.fileDescriptor, tempArchive.length())
+                true
+            } ?: false
+        } catch (e: Throwable) {
+            logcat(LogPriority.WARN, e) { "Failed ftruncate overwrite for ${cbzFile.name}, falling back to openOutputStream('wt')" }
+            false
+        }
+        if (truncated) return
+
+        try {
+            context.contentResolver.openOutputStream(uri, "wt")?.buffered()?.use { outStream ->
+                tempArchive.inputStream().buffered().use { inStream ->
+                    inStream.copyTo(outStream)
+                }
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e) { "Failed write-truncate fallback for ${cbzFile.name}" }
+            tempArchive.inputStream().buffered().use { inStream ->
+                cbzFile.openOutputStream()?.buffered()?.use { outStream ->
+                    inStream.copyTo(outStream)
+                }
             }
         }
     }
