@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cleanup_done">
+        <item quantity="one">পরিষ্কার সম্পন্ন হয়েছে। %dটি ফোল্ডার সরানো হয়েছে</item>
+        <item quantity="other">পরিষ্কার সম্পন্ন হয়েছে। %dটি ফোল্ডার সরানো হয়েছে</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%dটি লকের সময়</item>
+        <item quantity="other">%dটি লকের সময়</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">%1$dটি ব্যর্থ পৃষ্ঠা পুনরায় চেষ্টা করা হচ্ছে…</item>
+        <item quantity="other">%1$dটি ব্যর্থ পৃষ্ঠা পুনরায় চেষ্টা করা হচ্ছে…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">সাজানোর তালিকায় %1$dটি ট্যাগ রয়েছে। এটি অগ্রাধিকারভিত্তিক ট্যাগ তালিকার মাধ্যমে সাজানোর একটি বিকল্প লাইব্রেরিতে যোগ করে, যার অর্থ আপনার পছন্দের ট্যাগযুক্ত এন্ট্রিগুলোকে অগ্রাধিকার দিয়ে সাজানো হবে</item>
+        <item quantity="other">সাজানোর তালিকায় %1$dটি ট্যাগ রয়েছে। এটি অগ্রাধিকারভিত্তিক ট্যাগ তালিকার মাধ্যমে সাজানোর একটি বিকল্প লাইব্রেরিতে যোগ করে, যার অর্থ আপনার পছন্দের ট্যাগযুক্ত এন্ট্রিগুলোকে অগ্রাধিকার দিয়ে সাজানো হবে</item>
+    </plurals>
+    <plurals name="migrate_entry">
+        <item quantity="one">%1$d%2$sটি এন্ট্রি মাইগ্রেট করবেন?</item>
+        <item quantity="other">%1$d%2$sটি এন্ট্রি মাইগ্রেট করবেন?</item>
+    </plurals>
+    <plurals name="copy_entry">
+        <item quantity="one">%1$d%2$sটি এন্ট্রি কপি করবেন?</item>
+        <item quantity="other">%1$d%2$sটি এন্ট্রি কপি করবেন?</item>
+    </plurals>
+    <plurals name="entry_migrated">
+        <item quantity="one">%dটি এন্ট্রি মাইগ্রেট করা হয়েছে</item>
+        <item quantity="other">%dটি এন্ট্রি মাইগ্রেট করা হয়েছে</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$dটি পৃষ্ঠা</item>
+        <item quantity="other">%1$dটি পৃষ্ঠা</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s %1$dটি পৃষ্ঠা</item>
+        <item quantity="other">%2$s %1$dটি পৃষ্ঠা</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d বছর আগে</item>
+        <item quantity="other">%1$d বছর আগে</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d মাস আগে</item>
+        <item quantity="other">%1$d মাস আগে</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d সপ্তাহ আগে</item>
+        <item quantity="other">%1$d সপ্তাহ আগে</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d দিন আগে</item>
+        <item quantity="other">%1$d দিন আগে</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d ঘণ্টা আগে</item>
+        <item quantity="other">%1$d ঘণ্টা আগে</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d মিনিট আগে</item>
+        <item quantity="other">%1$d মিনিট আগে</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d সেকেন্ড আগে</item>
+        <item quantity="other">%1$d সেকেন্ড আগে</item>
+    </plurals>
+    <plurals name="row_count">
+        <item quantity="one">%dটি সারি</item>
+        <item quantity="other">%dটি সারি</item>
+    </plurals>
+</resources>
