@@ -209,7 +209,16 @@ class DownloadOptimizerJob(
         val stripMetadata = if (inputData.keyValueMap.containsKey(KEY_STRIP_METADATA)) inputData.getBoolean(KEY_STRIP_METADATA, true) else downloadPreferences.stripImageMetadata().get()
 
         val selectedUris = getSelectedUris()
-        val chapters = getEligibleChapters(context, downloadsDir, selectedUris)
+        val chapters = if (selectedUris != null) {
+            val direct = resolveSelectedChaptersDirectly(context, selectedUris)
+            if (direct.isNotEmpty()) {
+                direct
+            } else {
+                getEligibleChapters(context, downloadsDir, selectedUris)
+            }
+        } else {
+            getEligibleChapters(context, downloadsDir, null)
+        }
 
         logcat(LogPriority.INFO) { "DownloadOptimizerJob: found ${chapters.size} eligible chapters to optimize" }
         if (chapters.isEmpty()) return Result.success()
@@ -225,6 +234,39 @@ class DownloadOptimizerJob(
         notifyComplete(totalSavedBytes)
         DownloadOptimizerState.clearCache()
         return Result.success()
+    }
+
+    private fun resolveSelectedChaptersDirectly(context: Context, selectedUris: Set<String>): List<UniFile> {
+        if (selectedUris.isEmpty()) return emptyList()
+        return selectedUris.mapNotNull { uriStr ->
+            try {
+                if (uriStr.startsWith("file://") || uriStr.startsWith("/")) {
+                    val file = File(uriStr.removePrefix("file://"))
+                    if (file.exists()) UniFile.fromFile(file) else null
+                } else {
+                    val uri = Uri.parse(uriStr)
+                    UniFile.fromUri(context, uri)?.takeIf { it.exists() }
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.WARN, e) { "Failed to resolve chapter URI directly: $uriStr" }
+                null
+            }
+        }
+    }
+
+    private fun resolveSeriesTitleFromUri(uri: Uri): String? {
+        val decodedPath = try {
+            Uri.decode(uri.toString())
+        } catch (_: Throwable) {
+            return null
+        }
+        val cleanPath = decodedPath.substringBefore('?').trimEnd('/')
+        val lastSlash = cleanPath.lastIndexOf('/')
+        if (lastSlash <= 0) return null
+        val parentPath = cleanPath.substring(0, lastSlash)
+        val mangaFolder = parentPath.substringAfterLast('/')
+        return mangaFolder.takeIf { it.isNotBlank() && it != "downloads" && !it.contains(':') }
+            ?: mangaFolder.substringAfterLast(':').takeIf { it.isNotBlank() && it != "downloads" }
     }
 
     private fun getSelectedUris(): Set<String>? {
@@ -261,11 +303,15 @@ class DownloadOptimizerJob(
             val progress = ChapterProgress(
                 chapterIndex = index + 1,
                 totalChapters = chapters.size,
-                seriesTitle = chapter.parentFile?.name?.takeIf { it != "downloads" },
+                seriesTitle = chapter.parentFile?.name?.takeIf { it != "downloads" }
+                    ?: resolveSeriesTitleFromUri(chapter.uri),
                 chapterTitle = chapter.nameWithoutExtension ?: chapter.name.orEmpty(),
             )
 
             try {
+                if (!chapter.exists() || !isChapterEligible(context, chapter)) {
+                    continue
+                }
                 val saved = if (chapter.isFile && chapter.extension.equals("cbz", ignoreCase = true)) {
                     optimizeCbzChapter(chapter, config, progress)
                 } else if (chapter.isDirectory) {
