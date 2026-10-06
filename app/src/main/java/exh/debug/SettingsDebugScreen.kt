@@ -6,7 +6,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -201,11 +201,7 @@ class SettingsDebugScreen : Screen() {
                         .fillMaxSize()
                         .background(color = Color.White.copy(alpha = 0.3F))
                         .pointerInput(running && result == null) {
-                            forEachGesture {
-                                awaitPointerEventScope {
-                                    waitForUpOrCancellation()?.consume()
-                                }
-                            }
+                            awaitEachGesture { waitForUpOrCancellation()?.consume() }
                         },
                     contentAlignment = Alignment.Center,
                 ) {

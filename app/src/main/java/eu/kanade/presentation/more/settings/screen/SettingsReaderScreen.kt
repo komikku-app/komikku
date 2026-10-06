@@ -27,8 +27,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.NumberFormat
 
-@Suppress("unused")
 object SettingsReaderScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsReaderScreen
 
     @ReadOnlyComposable
