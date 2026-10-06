@@ -43,6 +43,17 @@ interface DatabaseHandler {
 
     fun <T : Any> subscribeToList(block: Database.() -> Query<T>): Flow<List<T>>
 
+    // KMK -->
+    /**
+     * Like [subscribeToList], but runs [prepare] before each query. When [prepare] returns true
+     * it wrote to the database, and that round is skipped: the write re-triggers the query.
+     */
+    fun <T : Any> subscribeToList(
+        prepare: Database.() -> Boolean,
+        block: Database.() -> Query<T>,
+    ): Flow<List<T>>
+    // KMK <--
+
     fun <T : Any> subscribeToOne(block: Database.() -> Query<T>): Flow<T>
 
     fun <T : Any> subscribeToOneOrNull(block: Database.() -> Query<T>): Flow<T?>

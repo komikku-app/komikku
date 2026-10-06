@@ -1,0 +1,110 @@
+-- KMK -->
+-- Cached per-manga chapter aggregates for library entries, invalidated by triggers.
+
+CREATE TABLE manga_chapter_stats(
+    manga_id INTEGER NOT NULL PRIMARY KEY,
+    total_count INTEGER NOT NULL,
+    read_count INTEGER NOT NULL,
+    bookmark_count INTEGER NOT NULL,
+    bookmark_read_count INTEGER NOT NULL,
+    latest_upload INTEGER NOT NULL,
+    chapter_fetched_at INTEGER NOT NULL,
+    last_read INTEGER NOT NULL,
+    FOREIGN KEY(manga_id) REFERENCES mangas (_id)
+    ON DELETE CASCADE
+);
+
+-- Any write that can change an entry's aggregates drops its row; the library query
+-- aggregates entries without a row live until `refill` restores it.
+CREATE TRIGGER manga_chapter_stats_insert_chapter
+AFTER INSERT ON chapters
+BEGIN
+    DELETE FROM manga_chapter_stats WHERE manga_id = new.manga_id;
+END;
+
+-- Page progress and other columns the aggregates don't read keep the row.
+CREATE TRIGGER manga_chapter_stats_update_chapter
+AFTER UPDATE OF manga_id, scanlator, read, bookmark, date_upload, date_fetch ON chapters
+WHEN old.manga_id IS NOT new.manga_id
+OR old.scanlator IS NOT new.scanlator
+OR old.read IS NOT new.read
+OR old.bookmark IS NOT new.bookmark
+OR old.date_upload IS NOT new.date_upload
+OR old.date_fetch IS NOT new.date_fetch
+BEGIN
+    DELETE FROM manga_chapter_stats WHERE manga_id IN (old.manga_id, new.manga_id);
+END;
+
+CREATE TRIGGER manga_chapter_stats_delete_chapter
+AFTER DELETE ON chapters
+BEGIN
+    DELETE FROM manga_chapter_stats WHERE manga_id = old.manga_id;
+END;
+
+CREATE TRIGGER manga_chapter_stats_insert_history
+AFTER INSERT ON history
+BEGIN
+    DELETE FROM manga_chapter_stats
+    WHERE manga_id = (SELECT manga_id FROM chapters WHERE _id = new.chapter_id);
+END;
+
+CREATE TRIGGER manga_chapter_stats_update_history
+AFTER UPDATE OF last_read ON history
+WHEN old.last_read IS NOT new.last_read
+BEGIN
+    DELETE FROM manga_chapter_stats
+    WHERE manga_id = (SELECT manga_id FROM chapters WHERE _id = new.chapter_id);
+END;
+
+CREATE TRIGGER manga_chapter_stats_delete_history
+AFTER DELETE ON history
+BEGIN
+    DELETE FROM manga_chapter_stats
+    WHERE manga_id = (SELECT manga_id FROM chapters WHERE _id = old.chapter_id);
+END;
+
+CREATE TRIGGER manga_chapter_stats_insert_excluded_scanlator
+AFTER INSERT ON excluded_scanlators
+BEGIN
+    DELETE FROM manga_chapter_stats WHERE manga_id = new.manga_id;
+END;
+
+CREATE TRIGGER manga_chapter_stats_delete_excluded_scanlator
+AFTER DELETE ON excluded_scanlators
+BEGIN
+    DELETE FROM manga_chapter_stats WHERE manga_id = old.manga_id;
+END;
+
+-- Merged entries (6969) aggregate their children live, so they never get a row.
+hasMissing:
+SELECT EXISTS (
+    SELECT 1 FROM mangas
+    WHERE favorite = 1 AND source <> 6969
+    AND _id NOT IN (SELECT manga_id FROM manga_chapter_stats)
+);
+
+-- Recomputes the rows of library entries that have none.
+refill:
+INSERT INTO manga_chapter_stats
+SELECT
+    M._id,
+    count(C._id),
+    coalesce(sum(C.read), 0),
+    coalesce(sum(C.bookmark), 0),
+    coalesce(sum(CASE WHEN C.bookmark = 1 AND C.read = 1 THEN 1 ELSE 0 END), 0),
+    coalesce(max(C.date_upload), 0),
+    coalesce(max(C.date_fetch), 0),
+    coalesce(max(H.last_read), 0)
+FROM mangas M
+LEFT JOIN chapters C
+ON C.manga_id = M._id
+AND NOT EXISTS (
+    SELECT 1 FROM excluded_scanlators ES
+    WHERE ES.manga_id = C.manga_id AND ES.scanlator = C.scanlator
+)
+LEFT JOIN history H
+ON H.chapter_id = C._id
+WHERE M.favorite = 1 AND M.source <> 6969
+AND M._id NOT IN (SELECT manga_id FROM manga_chapter_stats)
+GROUP BY M._id;
+-- KMK <--

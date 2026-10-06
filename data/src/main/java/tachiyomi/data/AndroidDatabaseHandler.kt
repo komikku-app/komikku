@@ -11,6 +11,7 @@ import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 
 class AndroidDatabaseHandler(
@@ -73,6 +74,19 @@ class AndroidDatabaseHandler(
     override fun <T : Any> subscribeToList(block: Database.() -> Query<T>): Flow<List<T>> {
         return block(db).asFlow().mapToList(queryDispatcher)
     }
+
+    // KMK -->
+    override fun <T : Any> subscribeToList(
+        prepare: Database.() -> Boolean,
+        block: Database.() -> Query<T>,
+    ): Flow<List<T>> {
+        return block(db).asFlow().transform { query ->
+            if (!dispatch(inTransaction = false) { prepare(db) }) {
+                emit(withContext(queryDispatcher) { query.executeAsList() })
+            }
+        }
+    }
+    // KMK <--
 
     override fun <T : Any> subscribeToOne(block: Database.() -> Query<T>): Flow<T> {
         return block(db).asFlow().mapToOne(queryDispatcher)
