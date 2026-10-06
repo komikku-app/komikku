@@ -119,7 +119,7 @@ google-services = { id = "com.google.gms.google-services", version = "4.5.0" }
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlib_version" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 moko = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko" }
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.7" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.8" }
 
 [bundles]
 okhttp = ["okhttp-core", "okhttp-logging", "okhttp-brotli", "okhttp-dnsoverhttps", "okhttp-zstd"]
