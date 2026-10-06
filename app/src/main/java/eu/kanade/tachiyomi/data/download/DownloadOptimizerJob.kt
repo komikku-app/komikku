@@ -609,67 +609,75 @@ class DownloadOptimizerJob(
     }
 
     private fun replaceCbzTarget(cbzFile: UniFile, tempArchive: File) {
+        if (replaceLocalFile(cbzFile, tempArchive)) return
+        if (replaceSafParentFile(cbzFile, tempArchive)) return
+        if (truncateAndStreamSaf(cbzFile, tempArchive)) return
+        streamFallback(cbzFile, tempArchive)
+    }
+
+    private fun replaceLocalFile(cbzFile: UniFile, tempArchive: File): Boolean {
         val localTarget = cbzFile.toLocalFile()
-        if (localTarget != null && localTarget.parentFile != null && localTarget.parentFile.canWrite()) {
-            val localParent = localTarget.parentFile
-            val tempLocalFile = File(localParent, "${localTarget.name}.tmp_opt_${System.currentTimeMillis()}.cbz")
-            try {
-                tempArchive.copyTo(tempLocalFile, overwrite = true)
-                if (tempLocalFile.exists() && tempLocalFile.length() == tempArchive.length()) {
-                    if (localTarget.delete() && tempLocalFile.renameTo(localTarget)) {
-                        return
-                    }
-                    if (tempLocalFile.renameTo(localTarget)) {
-                        return
-                    }
-                }
-            } catch (e: Throwable) {
-                logcat(LogPriority.WARN, e) { "Failed local atomic replace for ${localTarget.name}, trying SAF" }
-            } finally {
-                tempLocalFile.delete()
-            }
-        }
+        val localParent = localTarget?.parentFile
+        if (localTarget == null || localParent == null || !localParent.canWrite()) return false
 
-        val parentDir = cbzFile.parentFile
-        val finalName = cbzFile.name
-        if (parentDir != null && finalName != null) {
-            val tempCbzName = "$finalName.tmp_opt.cbz"
-            val tempCbz = parentDir.createFile(tempCbzName)
-            if (tempCbz != null) {
-                var copied = false
-                try {
-                    tempArchive.inputStream().buffered().use { inStream ->
-                        tempCbz.openOutputStream()?.buffered()?.use { outStream ->
-                            inStream.copyTo(outStream)
-                            copied = true
-                        }
-                    }
-                    if (copied) {
-                        cbzFile.delete()
-                        if (tempCbz.renameTo(finalName)) {
-                            return
-                        }
-                        val newFinalFile = parentDir.createFile(finalName)
-                        if (newFinalFile != null) {
-                            tempArchive.inputStream().buffered().use { inStream ->
-                                newFinalFile.openOutputStream()?.buffered()?.use { outStream ->
-                                    inStream.copyTo(outStream)
-                                }
-                            }
-                            return
-                        }
-                    }
-                } finally {
-                    if (!copied) {
-                        tempCbz.delete()
-                    }
+        val tempLocalFile = File(localParent, "${localTarget.name}.tmp_opt_${System.currentTimeMillis()}.cbz")
+        return try {
+            tempArchive.copyTo(tempLocalFile, overwrite = true)
+            if (tempLocalFile.exists() && tempLocalFile.length() == tempArchive.length()) {
+                (localTarget.delete() && tempLocalFile.renameTo(localTarget)) || tempLocalFile.renameTo(localTarget)
+            } else {
+                false
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.WARN, e) { "Failed local atomic replace for ${localTarget.name}, trying SAF" }
+            false
+        } finally {
+            tempLocalFile.delete()
+        }
+    }
+
+    private fun replaceSafParentFile(cbzFile: UniFile, tempArchive: File): Boolean {
+        val parentDir = cbzFile.parentFile ?: return false
+        val finalName = cbzFile.name ?: return false
+        val tempCbzName = "$finalName.tmp_opt.cbz"
+        val tempCbz = parentDir.createFile(tempCbzName) ?: return false
+
+        var copied = false
+        try {
+            tempArchive.inputStream().buffered().use { inStream ->
+                tempCbz.openOutputStream()?.buffered()?.use { outStream ->
+                    inStream.copyTo(outStream)
+                    copied = true
                 }
             }
+            if (copied) {
+                cbzFile.delete()
+                if (tempCbz.renameTo(finalName)) return true
+                return copyToNewFinalFile(parentDir, finalName, tempArchive)
+            }
+        } finally {
+            if (!copied) tempCbz.delete()
         }
+        return false
+    }
 
-        val uri = cbzFile.uri
-        val truncated = try {
-            context.contentResolver.openFileDescriptor(uri, "rwt")?.use { pfd ->
+    private fun copyToNewFinalFile(parentDir: UniFile, finalName: String, tempArchive: File): Boolean {
+        val newFinalFile = parentDir.createFile(finalName) ?: return false
+        return try {
+            tempArchive.inputStream().buffered().use { inStream ->
+                newFinalFile.openOutputStream()?.buffered()?.use { outStream ->
+                    inStream.copyTo(outStream)
+                    true
+                }
+            } ?: false
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    private fun truncateAndStreamSaf(cbzFile: UniFile, tempArchive: File): Boolean {
+        return try {
+            context.contentResolver.openFileDescriptor(cbzFile.uri, "rwt")?.use { pfd ->
                 android.system.Os.ftruncate(pfd.fileDescriptor, 0)
                 java.io.FileOutputStream(pfd.fileDescriptor).buffered().use { outStream ->
                     tempArchive.inputStream().buffered().use { inStream ->
@@ -683,10 +691,11 @@ class DownloadOptimizerJob(
             logcat(LogPriority.WARN, e) { "Failed ftruncate overwrite for ${cbzFile.name}, falling back to openOutputStream('wt')" }
             false
         }
-        if (truncated) return
+    }
 
+    private fun streamFallback(cbzFile: UniFile, tempArchive: File) {
         try {
-            context.contentResolver.openOutputStream(uri, "wt")?.buffered()?.use { outStream ->
+            context.contentResolver.openOutputStream(cbzFile.uri, "wt")?.buffered()?.use { outStream ->
                 tempArchive.inputStream().buffered().use { inStream ->
                     inStream.copyTo(outStream)
                 }
