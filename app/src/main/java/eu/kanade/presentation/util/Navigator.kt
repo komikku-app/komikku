@@ -90,6 +90,12 @@ fun ScreenTransition(
         transitionSpec = transition,
         modifier = modifier,
         label = "transition",
+        // KMK -->
+        // Key children by the same key saveableState uses, like Voyager's ScreenTransition. Keying by equality
+        // lets two screens sharing a key be composed at once (e.g. a restored copy of an object screen and the
+        // object itself), crashing with "Key <screen.key>:transition was used multiple times".
+        contentKey = { it.key },
+        // KMK <--
     ) { screen ->
         navigator.saveableState("transition", screen) {
             content(screen)

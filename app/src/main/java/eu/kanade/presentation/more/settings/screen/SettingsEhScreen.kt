@@ -85,6 +85,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object SettingsEhScreen : SearchableSettings {
+    @Suppress("unused")
     private fun readResolve(): Any = SettingsEhScreen
 
     @ReadOnlyComposable
