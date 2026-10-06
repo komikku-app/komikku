@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.asFlow
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
@@ -30,6 +31,7 @@ import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -206,11 +208,20 @@ class DownloadOptimizerJob(
         val autoGrayscale = if (inputData.keyValueMap.containsKey(KEY_AUTO_GRAYSCALE)) inputData.getBoolean(KEY_AUTO_GRAYSCALE, true) else downloadPreferences.autoGrayscaleBWManga().get()
         val stripMetadata = if (inputData.keyValueMap.containsKey(KEY_STRIP_METADATA)) inputData.getBoolean(KEY_STRIP_METADATA, true) else downloadPreferences.stripImageMetadata().get()
 
-        val allChapters = getEligibleChapters(context, downloadsDir)
-        val selectedUris = inputData.getStringArray(KEY_SELECTED_CHAPTERS)?.toSet()
-        val chapters = filterChapters(allChapters, selectedUris)
+        val selectedUris = getSelectedUris()
+        val chapters = if (selectedUris != null) {
+            val resolved = resolveSelectedChapters(context, selectedUris)
+            if (resolved.isNotEmpty()) {
+                resolved
+            } else {
+                val allChapters = getEligibleChapters(context, downloadsDir)
+                filterChapters(allChapters, selectedUris)
+            }
+        } else {
+            getEligibleChapters(context, downloadsDir)
+        }
 
-        logcat(LogPriority.INFO) { "DownloadOptimizerJob: found ${chapters.size} eligible chapters to optimize (out of ${allChapters.size} total)" }
+        logcat(LogPriority.INFO) { "DownloadOptimizerJob: found ${chapters.size} eligible chapters to optimize" }
         if (chapters.isEmpty()) return Result.success()
 
         var totalSavedBytes = 0L
@@ -224,6 +235,48 @@ class DownloadOptimizerJob(
         notifyComplete(totalSavedBytes)
         DownloadOptimizerState.clearCache()
         return Result.success()
+    }
+
+    private fun getSelectedUris(): Set<String>? {
+        val selectedFilePath = inputData.getString(KEY_SELECTED_CHAPTERS_FILE)
+        if (selectedFilePath != null) {
+            val file = File(selectedFilePath)
+            return try {
+                if (file.exists()) {
+                    file.readLines().filter { it.isNotBlank() }.toSet()
+                } else {
+                    null
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e) { "Failed to read selected chapters file: $selectedFilePath" }
+                null
+            } finally {
+                file.delete()
+            }
+        }
+        return inputData.getStringArray(KEY_SELECTED_CHAPTERS)?.toSet()
+    }
+
+    private fun resolveSelectedChapters(context: Context, selectedUris: Set<String>): List<UniFile> {
+        if (selectedUris.isEmpty()) return emptyList()
+        return selectedUris.mapNotNull { uriStr ->
+            try {
+                if (uriStr.startsWith("file://") || uriStr.startsWith("/")) {
+                    val file = File(uriStr.removePrefix("file://"))
+                    if (file.exists()) UniFile.fromFile(file) else null
+                } else {
+                    UniFile.fromUri(context, Uri.parse(uriStr))
+                }
+            } catch (e: Throwable) {
+                null
+            }
+        }.filter { chapter ->
+            try {
+                chapter.exists() && isChapterEligible(context, chapter)
+            } catch (e: Throwable) {
+                false
+            }
+        }
     }
 
     private fun filterChapters(allChapters: List<UniFile>, selectedUris: Set<String>?): List<UniFile> {
@@ -557,45 +610,56 @@ class DownloadOptimizerJob(
         val finalName = cbzFile.name ?: return 0L
         val tempCbzName = "$finalName.tmp_opt.cbz"
         val tempCbz = parentDir.createFile(tempCbzName) ?: return 0L
+        var replaced = false
+        try {
+            if (isEncrypted) {
+                writeEncryptedArchive(tempCbz, tempExtractDir)
+            } else {
+                writePlainArchive(tempCbz, tempExtractDir)
+            }
 
-        if (isEncrypted) {
-            writeEncryptedArchive(tempCbz, tempExtractDir)
-        } else {
-            writePlainArchive(tempCbz, tempExtractDir)
-        }
-
-        val newSize = tempCbz.length()
-        logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed, hadError=$hadError" }
-        val shouldReplace = newSize > 0 && (newSize < originalSize || (!hadError && !anyCompressed && newSize <= originalSize + 4096))
-        if (shouldReplace) {
-            cbzFile.delete()
-            tempCbz.renameTo(finalName)
-            return if (newSize < originalSize) originalSize - newSize else 0L
-        } else {
-            tempCbz.delete()
-            return 0L
+            val newSize = tempCbz.length()
+            logcat(LogPriority.INFO) { "CBZ optimization for ${cbzFile.name}: originalSize=$originalSize, newSize=$newSize, anyCompressed=$anyCompressed, hadError=$hadError" }
+            val shouldReplace = newSize > 0 && (newSize < originalSize || (!hadError && !anyCompressed && newSize <= originalSize + 4096))
+            if (shouldReplace) {
+                cbzFile.delete()
+                tempCbz.renameTo(finalName)
+                replaced = true
+                return if (newSize < originalSize) originalSize - newSize else 0L
+            } else {
+                return 0L
+            }
+        } finally {
+            if (!replaced) {
+                tempCbz.delete()
+            }
         }
     }
 
     private fun writeEncryptedArchive(tempCbz: UniFile, tempExtractDir: File) {
         ZipWriter(context, tempCbz, true).use { writer ->
             tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                if (isStopped) {
+                    throw CancellationException("Job stopped during CBZ compression")
+                }
                 UniFile.fromFile(file)?.let { writer.write(it) }
             }
         }
     }
 
     private fun writePlainArchive(tempCbz: UniFile, tempExtractDir: File) {
-        tempCbz.openOutputStream()?.buffered()?.let { outStream ->
-            java.util.zip.ZipOutputStream(outStream).use { zipOut ->
-                tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                    val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
-                    zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
-                    file.inputStream().buffered().use { inStream ->
-                        inStream.copyTo(zipOut)
-                    }
-                    zipOut.closeEntry()
+        val outStream = tempCbz.openOutputStream()?.buffered() ?: return
+        java.util.zip.ZipOutputStream(outStream).use { zipOut ->
+            tempExtractDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                if (isStopped) {
+                    throw CancellationException("Job stopped during CBZ compression")
                 }
+                val relativePath = file.relativeTo(tempExtractDir).path.replace('\\', '/')
+                zipOut.putNextEntry(java.util.zip.ZipEntry(relativePath))
+                file.inputStream().buffered().use { inStream ->
+                    inStream.copyTo(zipOut)
+                }
+                zipOut.closeEntry()
             }
         }
     }
@@ -642,6 +706,7 @@ class DownloadOptimizerJob(
         const val KEY_AUTO_GRAYSCALE = "auto_grayscale"
         const val KEY_STRIP_METADATA = "strip_metadata"
         const val KEY_SELECTED_CHAPTERS = "selected_chapters"
+        const val KEY_SELECTED_CHAPTERS_FILE = "selected_chapters_file"
 
         fun start(
             context: Context,
@@ -654,13 +719,13 @@ class DownloadOptimizerJob(
                 }
             }.build()
 
-            val inputData = androidx.work.Data.Builder().apply {
+            val inputData = Data.Builder().apply {
                 if (options.format != null) putString(KEY_FORMAT, options.format)
                 if (options.quality != null) putInt(KEY_QUALITY, options.quality)
                 if (options.effort != null) putInt(KEY_EFFORT, options.effort)
                 if (options.autoGrayscale != null) putBoolean(KEY_AUTO_GRAYSCALE, options.autoGrayscale)
                 if (options.stripMetadata != null) putBoolean(KEY_STRIP_METADATA, options.stripMetadata)
-                if (options.selectedChapterUris != null) putStringArray(KEY_SELECTED_CHAPTERS, options.selectedChapterUris.toTypedArray())
+                putSelectedChapters(context, options.selectedChapterUris)
             }.build()
 
             val request = OneTimeWorkRequestBuilder<DownloadOptimizerJob>()
@@ -671,6 +736,31 @@ class DownloadOptimizerJob(
 
             WorkManager.getInstance(context)
                 .enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+        }
+
+        private fun Data.Builder.putSelectedChapters(
+            context: Context,
+            selectedChapterUris: Set<String>?,
+        ) {
+            if (selectedChapterUris.isNullOrEmpty()) return
+            val approxBytes = selectedChapterUris.sumOf { it.length }
+            if (approxBytes > 8000) {
+                try {
+                    val tempFile = File(context.cacheDir, "selected_opt_${System.currentTimeMillis()}.txt")
+                    tempFile.bufferedWriter().use { writer ->
+                        for (uri in selectedChapterUris) {
+                            writer.write(uri)
+                            writer.newLine()
+                        }
+                    }
+                    putString(KEY_SELECTED_CHAPTERS_FILE, tempFile.absolutePath)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e) { "Failed to write selected chapters to cache file" }
+                    putStringArray(KEY_SELECTED_CHAPTERS, selectedChapterUris.toTypedArray())
+                }
+            } else {
+                putStringArray(KEY_SELECTED_CHAPTERS, selectedChapterUris.toTypedArray())
+            }
         }
 
         fun stop(context: Context) {
@@ -732,20 +822,22 @@ class DownloadOptimizerJob(
             return file?.takeIf { it.exists() && it.canRead() }
         }
 
-        fun getEligibleChapters(context: Context, downloadsDir: UniFile): List<UniFile> {
-            val localEligible = getEligibleChaptersLocal(context, downloadsDir)
-            if (localEligible.isNotEmpty()) return localEligible
-
-            return getEligibleChaptersSaf(context, downloadsDir)
+        suspend fun getEligibleChapters(context: Context, downloadsDir: UniFile): List<UniFile> = withContext(Dispatchers.IO) {
+            val rootFile = downloadsDir.toLocalFile()
+            if (rootFile != null) {
+                return@withContext getEligibleChaptersLocal(context, rootFile)
+            }
+            return@withContext getEligibleChaptersSaf(context, downloadsDir)
         }
 
-        private fun getEligibleChaptersLocal(context: Context, downloadsDir: UniFile): List<UniFile> {
-            val rootFile = downloadsDir.toLocalFile()
-            val localSourceDirs = rootFile?.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: return emptyList()
-            return localSourceDirs.flatMap { sourceDir ->
-                val mangaDirs = sourceDir.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: emptyArray()
-                mangaDirs.flatMap { collectMangaEligibleChapters(context, it) }
-            }
+        private suspend fun getEligibleChaptersLocal(context: Context, rootFile: File): List<UniFile> = coroutineScope {
+            val localSourceDirs = rootFile.listFiles { f -> f.isDirectory && f.name.isNotBlank() } ?: return@coroutineScope emptyList()
+            val allMangaDirs = localSourceDirs.flatMap { it.listFiles { f -> f.isDirectory && f.name.isNotBlank() }?.toList() ?: emptyList() }
+            allMangaDirs.map { mangaDir ->
+                async(Dispatchers.IO) {
+                    collectMangaEligibleChapters(context, mangaDir)
+                }
+            }.awaitAll().flatten()
         }
 
         private fun collectMangaEligibleChapters(context: Context, mangaDir: File): List<UniFile> {
@@ -756,12 +848,14 @@ class DownloadOptimizerJob(
             return chapterFiles.mapNotNull { UniFile.fromFile(it) }.filter { isChapterEligible(context, it) }
         }
 
-        private fun getEligibleChaptersSaf(context: Context, downloadsDir: UniFile): List<UniFile> {
+        private suspend fun getEligibleChaptersSaf(context: Context, downloadsDir: UniFile): List<UniFile> = coroutineScope {
             val sourceDirs = downloadsDir.listFiles().orEmpty().filter { it.isDirectory && !it.name.isNullOrBlank() }
-            return sourceDirs.flatMap { sourceDir ->
-                val mangaDirs = sourceDir.listFiles().orEmpty().filter { it.isDirectory && !it.name.isNullOrBlank() }
-                mangaDirs.flatMap { collectSafMangaEligibleChapters(context, it) }
-            }
+            val allMangaDirs = sourceDirs.flatMap { it.listFiles().orEmpty().filter { m -> m.isDirectory && !m.name.isNullOrBlank() } }
+            allMangaDirs.map { mangaDir ->
+                async(Dispatchers.IO) {
+                    collectSafMangaEligibleChapters(context, mangaDir)
+                }
+            }.awaitAll().flatten()
         }
 
         private fun collectSafMangaEligibleChapters(context: Context, mangaDir: UniFile): List<UniFile> {
@@ -789,9 +883,8 @@ class DownloadOptimizerJob(
             val mangaByTitle = mangaList.associateBy { DiskUtil.buildValidFilename(it.title) }
             val findManga = { name: String -> mangaByOgTitle[name] ?: mangaByTitle[name] }
 
-            val fastResults = getEligibleChaptersBySeriesFastPath(context, downloadsDir, findManga, getChaptersByMangaId)
-            if (fastResults.isNotEmpty()) {
-                return@withContext fastResults
+            if (downloadsDir.toLocalFile() != null) {
+                return@withContext getEligibleChaptersBySeriesFastPath(context, downloadsDir, findManga, getChaptersByMangaId)
             }
 
             return@withContext getEligibleChaptersBySeriesFallbackPath(context, downloadsDir, findManga, getChaptersByMangaId)
@@ -1004,20 +1097,18 @@ class DownloadOptimizerJob(
         private fun isCbzEligibleArchiveReader(context: Context, chapter: UniFile): Boolean {
             return try {
                 val counts = ImageCounts()
-                var isOptimized = false
                 chapter.archiveReader(context).use { reader ->
                     reader.useEntries { entries ->
-                        entries.forEach { entry ->
+                        for (entry in entries) {
                             val name = entry.name
                             if (name == OPTIMIZED_MARKER || name.endsWith("/$OPTIMIZED_MARKER")) {
-                                isOptimized = true
+                                return@use false
                             }
                             counts.record(name.substringAfterLast('.', "").lowercase())
                         }
+                        counts.isEligible
                     }
                 }
-                if (isOptimized) return false
-                counts.isEligible
             } catch (e: Throwable) {
                 logcat(LogPriority.DEBUG, e) { "ArchiveReader check failed for ${chapter.name}" }
                 false

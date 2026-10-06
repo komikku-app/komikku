@@ -159,6 +159,7 @@ class BatchCompressScreen : Screen() {
         }
 
         val isAvifSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        val isCustomSelection = selectedChapterUris != null && currentSelectedUris.size < allChapters.size
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -186,7 +187,7 @@ class BatchCompressScreen : Screen() {
                                     effort = effort,
                                     autoGrayscale = autoGrayscale,
                                     stripMetadata = stripMetadata,
-                                    selectedChapterUris = currentSelectedUris,
+                                    selectedChapterUris = if (isCustomSelection) currentSelectedUris else null,
                                 ),
                                 navigator = navigator,
                             )
