@@ -15,15 +15,12 @@ import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.ScreenTransitionContent
-import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.plus
-import logcat.LogPriority
-import logcat.logcat
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 
@@ -42,9 +39,8 @@ interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
 }
 
 abstract class Screen : Screen {
-    // known bug: https://github.com/mihonapp/mihon/issues/712
-    // This is where it create a key Screen#uuid:transition which causes exception Key ... was used multiple times
-    override val key: ScreenKey = "$uniqueScreenKey#${this::class.simpleName}"
+
+    override val key: ScreenKey = uniqueScreenKey
 }
 
 /**
@@ -92,12 +88,9 @@ fun ScreenTransition(
         targetState = navigator.lastItem,
         transitionSpec = transition,
         modifier = modifier,
-        label = "screen-transition",
+        label = "transition",
     ) { screen ->
-        if (isPreviewBuildType) {
-            logcat(LogPriority.ERROR) { "ScreenTransition: ${screen.key}" }
-        }
-        navigator.saveableState("screen-transition-${screen.key}", screen) {
+        navigator.saveableState("transition", screen) {
             content(screen)
         }
     }
