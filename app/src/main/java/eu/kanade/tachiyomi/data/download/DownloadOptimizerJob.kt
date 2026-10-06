@@ -825,7 +825,10 @@ class DownloadOptimizerJob(
         suspend fun getEligibleChapters(context: Context, downloadsDir: UniFile): List<UniFile> = withContext(Dispatchers.IO) {
             val rootFile = downloadsDir.toLocalFile()
             if (rootFile != null) {
-                return@withContext getEligibleChaptersLocal(context, rootFile)
+                val localEligible = getEligibleChaptersLocal(context, rootFile)
+                if (localEligible.isNotEmpty()) {
+                    return@withContext localEligible
+                }
             }
             return@withContext getEligibleChaptersSaf(context, downloadsDir)
         }
@@ -883,8 +886,9 @@ class DownloadOptimizerJob(
             val mangaByTitle = mangaList.associateBy { DiskUtil.buildValidFilename(it.title) }
             val findManga = { name: String -> mangaByOgTitle[name] ?: mangaByTitle[name] }
 
-            if (downloadsDir.toLocalFile() != null) {
-                return@withContext getEligibleChaptersBySeriesFastPath(context, downloadsDir, findManga, getChaptersByMangaId)
+            val fastResults = getEligibleChaptersBySeriesFastPath(context, downloadsDir, findManga, getChaptersByMangaId)
+            if (fastResults.isNotEmpty()) {
+                return@withContext fastResults
             }
 
             return@withContext getEligibleChaptersBySeriesFallbackPath(context, downloadsDir, findManga, getChaptersByMangaId)
@@ -1097,18 +1101,20 @@ class DownloadOptimizerJob(
         private fun isCbzEligibleArchiveReader(context: Context, chapter: UniFile): Boolean {
             return try {
                 val counts = ImageCounts()
+                var isOptimized = false
                 chapter.archiveReader(context).use { reader ->
                     reader.useEntries { entries ->
-                        for (entry in entries) {
+                        entries.forEach { entry ->
                             val name = entry.name
                             if (name == OPTIMIZED_MARKER || name.endsWith("/$OPTIMIZED_MARKER")) {
-                                return@use false
+                                isOptimized = true
                             }
                             counts.record(name.substringAfterLast('.', "").lowercase())
                         }
-                        counts.isEligible
                     }
                 }
+                if (isOptimized) return false
+                counts.isEligible
             } catch (e: Throwable) {
                 logcat(LogPriority.DEBUG, e) { "ArchiveReader check failed for ${chapter.name}" }
                 false
