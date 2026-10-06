@@ -85,6 +85,12 @@ fun ScreenTransition(
     modifier: Modifier = Modifier,
     content: ScreenTransitionContent = { it.Content() },
 ) {
+    // KMK -->
+    // Registered before the content so back handlers inside screens (and nested navigators) keep priority even
+    // when everything is composed at once, e.g. after the activity is recreated.
+    BackHandler(enabled = navigator.canPop, onBack = navigator::pop)
+    // KMK <--
+
     AnimatedContent(
         targetState = navigator.lastItem,
         transitionSpec = transition,
@@ -101,6 +107,5 @@ fun ScreenTransition(
             content(screen)
         }
     }
-
-    BackHandler(enabled = navigator.canPop, onBack = navigator::pop)
+    // KMK: BackHandler moved above AnimatedContent
 }
