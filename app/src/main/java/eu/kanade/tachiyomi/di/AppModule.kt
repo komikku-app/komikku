@@ -2,11 +2,16 @@ package eu.kanade.tachiyomi.di
 
 import android.app.Application
 import androidx.core.content.ContextCompat
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.SQLiteDriver
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.sqlite.execSQL
 import app.cash.sqldelight.db.SqlDriver
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteConfiguration
+import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteConnectionFactory
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDatabaseType
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDriver
+import com.eygraber.sqldelight.androidx.driver.DefaultAndroidxSqliteConnectionFactory
 import com.eygraber.sqldelight.androidx.driver.FileProvider
 import eu.kanade.domain.track.store.DelayedTrackingStore
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -86,10 +91,21 @@ class AppModule(val app: Application) : InjektModule {
 
                 AndroidxSqliteDriver(
                     // KMK -->
-                    driver = if (encryptDatabase) {
-                        SQLCipherDriver(CbzCrypto.getDecryptedPasswordSql(), null, null)
+                    connectionFactory = if (encryptDatabase) {
+                        // SQLCipher uses a single connection, so threads wait on it instead of hitting SQLITE_BUSY
+                        DefaultAndroidxSqliteConnectionFactory(
+                            SQLCipherDriver(CbzCrypto.getDecryptedPasswordSql(), null, null),
+                        )
                     } else {
-                        BundledSQLiteDriver()
+                        object : AndroidxSqliteConnectionFactory {
+                            override val driver: SQLiteDriver = BundledSQLiteDriver()
+
+                            override fun createConnection(name: String): SQLiteConnection {
+                                return driver.open(name).apply {
+                                    execSQL("PRAGMA busy_timeout = 3000")
+                                }
+                            }
+                        }
                     },
                     databaseType = AndroidxSqliteDatabaseType.FileProvider(
                         app,
