@@ -10,7 +10,7 @@ gradle = { module = "com.android.tools.build:gradle", version.ref = "agp_version
 annotation = "androidx.annotation:annotation:1.10.0"
 appcompat = "androidx.appcompat:appcompat:1.7.1"
 biometricktx = "androidx.biometric:biometric-ktx:1.2.0-alpha05"
-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
+constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.2"
 corektx = "androidx.core:core-ktx:1.17.0"
 splashscreen = "androidx.core:core-splashscreen:1.2.0"
 recyclerview = "androidx.recyclerview:recyclerview:1.4.0"
