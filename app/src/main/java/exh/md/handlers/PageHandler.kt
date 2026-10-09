@@ -14,10 +14,14 @@ import okhttp3.Call
 import okhttp3.Headers
 import rx.Observable
 import tachiyomi.core.common.util.lang.withIOContext
+import kotlin.collections.set
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 
 class PageHandler(
+    private val mangadex: Source,
     private val headers: Headers,
     private val service: MangaDexService,
     private val mangaPlusHandler: MangaPlusHandler,
@@ -26,9 +30,11 @@ class PageHandler(
     private val azukiHandler: AzukiHandler,
     private val mangaHotHandler: MangaHotHandler,
     private val namicomiHandler: NamicomiHandler,
+    private val kMangaHandler: KMangaHandler,
+    private val mangaUpHandler: MangaUpHandler,
 ) {
 
-    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
+    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean): List<Page> {
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
@@ -37,6 +43,7 @@ class PageHandler(
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                         dataSaver = dataSaver,
+                        mangadex.lang,
                     )
                     /*chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
@@ -55,6 +62,13 @@ class PageHandler(
                         chapterResponse.data.attributes.externalUrl,
                         dataSaver = dataSaver,
                     )
+                    chapter.scanlator.equals("K Manga", true) -> kMangaHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                    )
+                    chapter.scanlator.equals("Manga UP!", true) -> mangaUpHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                        mangadex.lang,
+                    )
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
             } else {
@@ -64,7 +78,7 @@ class PageHandler(
                     "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}"
                 }
 
-                updateExtensionVariable(mangadex, atHomeRequestUrl)
+                updateExtensionVariable(atHomeRequestUrl)
 
                 val atHomeResponse = service.getAtHomeServer(atHomeRequestUrl, headers)
 
@@ -74,17 +88,22 @@ class PageHandler(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
-        val mangadexSuperclass = mangadex::class.superclasses.first()
+    private val tokenTracker: HashMap<String, Long>? by lazy {
+        // The helper property now appears in the current class
+        val helperProperty = mangadex::class.declaredMemberProperties.find { it.name == "helper" }
+            ?: mangadex::class.superclasses.first().declaredMemberProperties.find { it.name == "helper" }
+            ?: return@lazy null
+        helperProperty.isAccessible = true
+        val helper = helperProperty.call(mangadex) ?: return@lazy null
 
-        val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
-        helperCallable.isAccessible = true
-        val helper = helperCallable.call(mangadex) ?: return
+        val tokenTrackerProperty = helper::class.declaredMemberProperties.find { it.name == "tokenTracker" }
+            ?: return@lazy null
+        tokenTrackerProperty.isAccessible = true
+        tokenTrackerProperty.call(helper) as? HashMap<String, Long>
+    }
 
-        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return
-        tokenTrackerCallable.isAccessible = true
-        val tokenTracker = tokenTrackerCallable.call(helper) as? HashMap<String, Long> ?: return
-        tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
+    private fun updateExtensionVariable(atHomeRequestUrl: String) {
+        tokenTracker?.set(atHomeRequestUrl, System.currentTimeMillis())
     }
 
     private fun pageListParse(
@@ -108,8 +127,18 @@ class PageHandler(
     fun getImageCall(page: Page): Call? {
         xLogD(page.imageUrl)
         return when {
-            page.imageUrl?.contains("mangaplus", true) == true -> {
-                mangaPlusHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, headers), page)
+            page.imageUrl?.contains("tokyo-cdn.com", true) == true -> {
+                mangaPlusHandler.client.newCachelessCallWithProgress(
+                    GET(
+                        page.imageUrl!!,
+                        if (page.url.isEmpty()) {
+                            mangaPlusHandler.headers
+                        } else {
+                            mangaPlusHandler.headers.newBuilder().add("Plus-Vw-Token", page.url).build()
+                        },
+                    ),
+                    page,
+                )
             }
             page.imageUrl?.contains("comikey", true) == true -> {
                 comikeyHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, comikeyHandler.headers), page)
@@ -124,7 +153,13 @@ class PageHandler(
                 mangaHotHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaHotHandler.headers), page)
             }
             page.imageUrl?.contains("namicomi", true) == true -> {
-                mangaHotHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaHotHandler.headers), page)
+                namicomiHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, namicomiHandler.headers), page)
+            }
+            page.imageUrl?.contains("kmanga", true) == true -> {
+                kMangaHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, kMangaHandler.headers), page)
+            }
+            page.imageUrl?.contains("manga-up", true) == true -> {
+                mangaUpHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaUpHandler.headers), page)
             }
             else -> null
         }
