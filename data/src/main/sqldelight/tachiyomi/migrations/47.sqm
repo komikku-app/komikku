@@ -1,0 +1,22 @@
+-- Remove rows left orphaned while foreign keys were not enforced.
+-- The AndroidX driver checks foreign keys after every migration and fails to open the database on any violation.
+-- Each statement applies the constraint's own ON DELETE action. Chapters go before history, since history
+-- rows of a removed chapter become orphans themselves.
+
+DELETE FROM chapters WHERE manga_id NOT IN (SELECT _id FROM mangas);
+DELETE FROM history WHERE chapter_id NOT IN (SELECT _id FROM chapters);
+
+DELETE FROM mangas_categories WHERE manga_id NOT IN (SELECT _id FROM mangas);
+DELETE FROM mangas_categories WHERE category_id NOT IN (SELECT _id FROM categories);
+
+DELETE FROM manga_sync WHERE manga_id NOT IN (SELECT _id FROM mangas);
+DELETE FROM excluded_scanlators WHERE manga_id NOT IN (SELECT _id FROM mangas);
+
+DELETE FROM search_metadata WHERE manga_id NOT IN (SELECT _id FROM mangas);
+DELETE FROM search_tags WHERE manga_id NOT IN (SELECT _id FROM mangas);
+DELETE FROM search_titles WHERE manga_id NOT IN (SELECT _id FROM mangas);
+
+DELETE FROM merged WHERE merge_id NOT IN (SELECT _id FROM mangas);
+UPDATE merged SET manga_id = NULL WHERE manga_id NOT IN (SELECT _id FROM mangas);
+
+DELETE FROM feed_saved_search WHERE saved_search NOT IN (SELECT _id FROM saved_search);
