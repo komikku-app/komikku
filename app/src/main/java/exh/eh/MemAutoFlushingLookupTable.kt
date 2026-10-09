@@ -26,6 +26,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.nio.ByteBuffer
 import kotlin.concurrent.thread
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * In memory Int -> Obj lookup table implementation that
@@ -108,7 +109,7 @@ class MemAutoFlushingLookupTable<T>(
         val id = ++writeCounter
         flushed = false
         launch {
-            delay(debounceTimeMs)
+            delay(debounceTimeMs.milliseconds)
             if (id != writeCounter) return@launch
 
             mutex.withLock {
