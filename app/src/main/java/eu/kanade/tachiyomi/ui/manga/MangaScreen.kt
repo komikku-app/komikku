@@ -412,6 +412,12 @@ class MangaScreen(
                 }
             }.takeIf { isConfigurableSource },
             onClearManga = { screenModel.showClearMangaDialog() },
+            // KMK -->
+            onReindexDownloads = {
+                screenModel.reindexDownloads()
+                context.toast(MR.strings.download_cache_invalidated)
+            },
+            // KMK <--
             onOpenMangaFolder = {
                 if (successState.mergedData == null) {
                     screenModel.openMangaFolder(screenModel.source, screenModel.manga)
