@@ -25,7 +25,16 @@ interface Chapter : SChapter, Serializable {
     var last_modified: Long
 
     var version: Long
+
+    // KMK -->
+    var custom_name: String?
+    // KMK <--
 }
+
+// KMK -->
+val Chapter.displayName: String
+    get() = custom_name ?: name
+// KMK <--
 
 val Chapter.isRecognizedNumber: Boolean
     get() = chapter_number >= 0f
@@ -48,5 +57,8 @@ fun Chapter.toDomainChapter(): DomainChapter? {
         lastModifiedAt = last_modified,
         version = version,
         memo = memo,
+        // KMK -->
+        customName = custom_name,
+        // KMK <--
     )
 }

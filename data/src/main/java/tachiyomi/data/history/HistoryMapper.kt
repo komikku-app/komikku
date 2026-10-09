@@ -29,6 +29,7 @@ object HistoryMapper {
         coverLastModified: Long,
         chapterNumber: Double,
         // KMK -->
+        chapterCustomName: String?,
         read: Boolean,
         lastPageRead: Long,
         totalCount: Double,
@@ -45,6 +46,7 @@ object HistoryMapper {
         // SY <--
         chapterNumber = chapterNumber,
         // KMK -->
+        chapterCustomName = chapterCustomName,
         read = read,
         lastPageRead = lastPageRead,
         totalCountCalculated = totalCount.toLong(),

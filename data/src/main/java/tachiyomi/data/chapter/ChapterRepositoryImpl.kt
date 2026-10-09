@@ -33,6 +33,9 @@ class ChapterRepositoryImpl(
                         chapter.dateUpload,
                         chapter.version,
                         chapter.memo,
+                        // KMK -->
+                        chapter.customName,
+                        // KMK <--
                     )
                     val lastInsertId = chaptersQueries.selectLastInsertedRowId().executeAsOne()
                     chapter.copy(id = lastInsertId)
@@ -75,6 +78,12 @@ class ChapterRepositoryImpl(
             }
         }
     }
+
+    // KMK -->
+    override suspend fun updateCustomName(chapterId: Long, customName: String?) {
+        handler.await { chaptersQueries.updateCustomName(customName, chapterId) }
+    }
+    // KMK <--
 
     override suspend fun removeChaptersWithIds(chapterIds: List<Long>) {
         try {

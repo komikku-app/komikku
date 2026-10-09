@@ -12,6 +12,10 @@ interface ChapterRepository {
 
     suspend fun updateAll(chapterUpdates: List<ChapterUpdate>)
 
+    // KMK -->
+    suspend fun updateCustomName(chapterId: Long, customName: String?)
+    // KMK <--
+
     suspend fun removeChaptersWithIds(chapterIds: List<Long>)
 
     suspend fun getChapterByMangaId(mangaId: Long, applyFilter: Boolean = false): List<Chapter>

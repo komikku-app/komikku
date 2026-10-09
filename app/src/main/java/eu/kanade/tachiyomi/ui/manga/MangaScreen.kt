@@ -54,6 +54,7 @@ import eu.kanade.presentation.manga.MangaScreen
 import eu.kanade.presentation.manga.components.ClearMangaDialog
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
+import eu.kanade.presentation.manga.components.RenameChapterDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
 import eu.kanade.presentation.manga.components.SetIntervalDialog
 import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
@@ -396,6 +397,9 @@ class MangaScreen(
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
+            // KMK -->
+            onRenameChapterClicked = screenModel::showRenameChapterDialog,
+            // KMK <--
             onChapterSwipe = screenModel::chapterSwipe,
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
@@ -639,6 +643,14 @@ class MangaScreen(
                 ClearMangaDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = screenModel::clearManga,
+                )
+            }
+            is MangaScreenModel.Dialog.RenameChapter -> {
+                RenameChapterDialog(
+                    sourceName = dialog.chapter.name,
+                    customName = dialog.chapter.customName,
+                    onDismissRequest = onDismissRequest,
+                    onRename = { screenModel.renameChapter(dialog.chapter, it) },
                 )
             }
             // KMK <--
