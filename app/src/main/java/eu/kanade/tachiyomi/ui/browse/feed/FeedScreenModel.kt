@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -51,7 +51,6 @@ import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
-import java.util.concurrent.Executors
 import tachiyomi.domain.manga.model.Manga as DomainManga
 
 /**
@@ -76,7 +75,11 @@ open class FeedScreenModel(
     private val _events = Channel<Event>(Int.MAX_VALUE)
     val events = _events.receiveAsFlow()
 
-    private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+    // KMK -->
+    // Shares Dispatchers.IO's threads instead of owning a pool, so nothing has to be closed on dispose
+    // (mihonapp/mihon#4036)
+    private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(1)
+    // KMK <--
     var pushed: Boolean = false
 
     init {
@@ -349,11 +352,6 @@ open class FeedScreenModel(
                 }
         }
     }
-    override fun onDispose() {
-        super.onDispose()
-        coroutineDispatcher.close()
-    }
-
     // KMK -->
     fun showDialog(dialog: Dialog) {
         if (!state.value.isLoading) {
