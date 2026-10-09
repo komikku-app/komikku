@@ -55,6 +55,12 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         return try {
             SyncManager(context).syncData()
             Result.success()
+        } catch (e: OutOfMemoryError) {
+            // Backup creation/merge happens before doSync, so an OOM there never reaches
+            // SyncYomiSyncService's handler. Report instead of crashing silently.
+            logcat(LogPriority.ERROR) { "Out of memory syncing: ${e.message}" }
+            notifier.showSyncError("Not enough memory to sync this library")
+            Result.success() // try again next time
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             notifier.showSyncError(e.message)
