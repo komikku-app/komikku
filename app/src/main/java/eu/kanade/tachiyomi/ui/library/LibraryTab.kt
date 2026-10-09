@@ -1,9 +1,12 @@
 package eu.kanade.tachiyomi.ui.library
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -145,53 +148,63 @@ data object LibraryTab : Tab {
 
         Scaffold(
             topBar = { scrollBehavior ->
-                val title = state.getToolbarTitle(
-                    defaultTitle = stringResource(MR.strings.label_library),
-                    defaultCategoryTitle = stringResource(MR.strings.label_default),
-                    page = state.coercedActiveCategoryIndex,
-                )
-                LibraryToolbar(
-                    hasActiveFilters = state.hasActiveFilters,
-                    selectedCount = state.selection.size,
-                    title = title,
-                    onClickUnselectAll = screenModel::clearSelection,
-                    onClickSelectAll = screenModel::selectAll,
-                    onClickInvertSelection = screenModel::invertSelection,
-                    onClickFilter = screenModel::showSettingsDialog,
-                    onClickRefresh = { onClickRefresh(state.activeCategory) },
-                    onClickGlobalUpdate = { onClickRefresh(null) },
-                    onClickOpenRandomManga = {
-                        scope.launch {
-                            val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
-                            if (randomItem != null) {
-                                navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
-                            } else {
-                                snackbarHostState.showSnackbar(
-                                    context.stringResource(MR.strings.information_no_entries_found),
-                                )
+                // KMK -->
+                // Auto-hide top bar on scroll for more viewing space
+                AnimatedVisibility(
+                    visible = !HomeScreen.LocalBarsScrolledDown.current,
+                    enter = expandVertically(),
+                    exit = shrinkVertically(),
+                ) {
+                    // KMK <--
+                    val title = state.getToolbarTitle(
+                        defaultTitle = stringResource(MR.strings.label_library),
+                        defaultCategoryTitle = stringResource(MR.strings.label_default),
+                        page = state.coercedActiveCategoryIndex,
+                    )
+                    LibraryToolbar(
+                        hasActiveFilters = state.hasActiveFilters,
+                        selectedCount = state.selection.size,
+                        title = title,
+                        onClickUnselectAll = screenModel::clearSelection,
+                        onClickSelectAll = screenModel::selectAll,
+                        onClickInvertSelection = screenModel::invertSelection,
+                        onClickFilter = screenModel::showSettingsDialog,
+                        onClickRefresh = { onClickRefresh(state.activeCategory) },
+                        onClickGlobalUpdate = { onClickRefresh(null) },
+                        onClickOpenRandomManga = {
+                            scope.launch {
+                                val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
+                                if (randomItem != null) {
+                                    navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
+                                } else {
+                                    snackbarHostState.showSnackbar(
+                                        context.stringResource(MR.strings.information_no_entries_found),
+                                    )
+                                }
                             }
-                        }
-                    },
-                    onClickSyncNow = {
-                        if (!SyncDataJob.isRunning(context)) {
-                            SyncDataJob.startNow(context, manual = true)
-                        } else {
-                            context.toast(SYMR.strings.sync_in_progress)
-                        }
-                    },
-                    // SY -->
-                    onClickSyncExh = screenModel::openFavoritesSyncDialog.takeIf { state.showSyncExh },
-                    isSyncEnabled = state.isSyncEnabled,
-                    // SY <--
-                    searchQuery = state.searchQuery,
-                    onSearchQueryChange = screenModel::search,
-                    onInvalidateDownloadCache = { context ->
-                        Injekt.get<DownloadCache>().invalidateCache()
-                        context.toast(MR.strings.download_cache_invalidated)
-                    },
-                    // For scroll overlay when no tab
-                    scrollBehavior = scrollBehavior.takeIf { !state.showCategoryTabs },
-                )
+                        },
+                        onClickSyncNow = {
+                            if (!SyncDataJob.isRunning(context)) {
+                                SyncDataJob.startNow(context, manual = true)
+                            } else {
+                                context.toast(SYMR.strings.sync_in_progress)
+                            }
+                        },
+                        // SY -->
+                        onClickSyncExh = screenModel::openFavoritesSyncDialog.takeIf { state.showSyncExh },
+                        isSyncEnabled = state.isSyncEnabled,
+                        // SY <--
+                        searchQuery = state.searchQuery,
+                        onSearchQueryChange = screenModel::search,
+                        onInvalidateDownloadCache = { context ->
+                            Injekt.get<DownloadCache>().invalidateCache()
+                            context.toast(MR.strings.download_cache_invalidated)
+                        },
+                        scrollBehavior = scrollBehavior,
+                    )
+                    // KMK -->
+                }
+                // KMK <--
             },
             bottomBar = {
                 LibraryBottomActionMenu(
