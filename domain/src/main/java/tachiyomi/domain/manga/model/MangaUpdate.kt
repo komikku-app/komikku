@@ -30,6 +30,9 @@ data class MangaUpdate(
     // SY -->
     val filteredScanlators: List<String>? = null,
     // SY <--
+    // KMK -->
+    val bannerUrl: String? = null,
+    // KMK <--
 )
 
 fun Manga.toMangaUpdate(): MangaUpdate {
@@ -54,6 +57,9 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         genre = ogGenre,
         status = ogStatus,
         // SY <--
+        // KMK -->
+        bannerUrl = ogBannerUrl,
+        // KMK <--
         updateStrategy = updateStrategy,
         initialized = initialized,
         version = version,

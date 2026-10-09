@@ -171,6 +171,7 @@ class MangaRestorer(
                 version = manga.version,
                 isSyncing = 1,
                 notes = manga.notes,
+                bannerUrl = manga.ogBannerUrl,
                 memo = manga.memo.let(MemoColumnAdapter::encode),
             )
         }
@@ -332,6 +333,7 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
                 notes = manga.notes,
+                bannerUrl = manga.ogBannerUrl,
                 memo = manga.memo,
             )
             mangasQueries.selectLastInsertedRowId()
@@ -583,7 +585,8 @@ class MangaRestorer(
             customThumbnailUrl != null ||
             customDescription != null ||
             customGenre != null ||
-            customStatus != 0
+            customStatus != 0 ||
+            customBannerUrl?.isNotBlank() == true
         ) {
             return CustomMangaInfo(
                 id = 0L,
@@ -594,6 +597,7 @@ class MangaRestorer(
                 description = customDescription,
                 genre = customGenre,
                 status = customStatus.takeUnless { it == 0 }?.toLong(),
+                bannerUrl = customBannerUrl?.takeUnless { it.isBlank() },
             )
         }
         return null
