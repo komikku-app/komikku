@@ -5,6 +5,7 @@
     <string name="action_source_search">Search in source</string>
     <string name="action_library_search">Library search</string>
     <string name="action_toggle_nsfw_only">Toggle NSFW only</string>
+    <string name="action_reorder_sources">Reorder sources</string>
     <string name="action_bulk_select">Bulk selection mode</string>
     <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_move_up">Move up</string>
