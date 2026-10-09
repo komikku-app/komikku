@@ -117,6 +117,9 @@
     <string name="auto_update_app_disable_auto_download">No descargar actualización automática</string>
     <string name="action_remove_merged">¿Eliminar entradas originales de la biblioteca?</string>
     <string name="batch_add_description">Soporte: MangaDex, E-H, ExH, nH, 8Muses</string>
+    <string name="favorites_sync_sort">Orden de sincronización de favoritos</string>
+    <string name="favorites_sync_sort_published">Fecha de publicación</string>
+    <string name="favorites_sync_sort_favorited">Fecha de favorito</string>
     <string name="action_open_folder">Abrir carpeta</string>
     <string name="action_update">Actualizar</string>
     <string name="error_opening_folder">Fallo al abrir la carpeta</string>
