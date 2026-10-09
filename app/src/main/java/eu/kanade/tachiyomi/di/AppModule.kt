@@ -2,10 +2,8 @@ package eu.kanade.tachiyomi.di
 
 import android.app.Application
 import androidx.core.content.ContextCompat
-import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteConfiguration
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDatabaseType
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDriver
@@ -29,11 +27,12 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.AndroidSourceManager
+import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import exh.eh.EHentaiUpdateHelper
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import mihon.core.archive.CbzCrypto
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.zetetic.database.sqlcipher.driver.SQLCipherDriver
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
@@ -71,38 +70,31 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory<SqlDriver> {
             // SY -->
-            if (securityPreferences.encryptDatabase().get()) {
+            val encryptDatabase = securityPreferences.encryptDatabase().get()
+            if (encryptDatabase) {
                 System.loadLibrary("sqlcipher")
-
-                return@addSingletonFactory AndroidSqliteDriver(
-                    schema = Database.Schema,
-                    context = app,
-                    name = CbzCrypto.DATABASE_NAME,
-                    factory = SupportOpenHelperFactory(CbzCrypto.getDecryptedPasswordSql(), null, false, 25),
-                    callback = object : AndroidSqliteDriver.Callback(Database.Schema) {
-                        override fun onOpen(db: SupportSQLiteDatabase) {
-                            super.onOpen(db)
-                            setPragma(db, "foreign_keys = ON")
-                            setPragma(db, "journal_mode = WAL")
-                            setPragma(db, "synchronous = NORMAL")
-                        }
-
-                        private fun setPragma(db: SupportSQLiteDatabase, pragma: String) {
-                            val cursor = db.query("PRAGMA $pragma")
-                            cursor.moveToFirst()
-                            cursor.close()
-                        }
-                    },
-                )
             }
             // SY <--
 
             AndroidxSqliteDriver(
-                driver = BundledSQLiteDriver(),
-                databaseType = AndroidxSqliteDatabaseType.FileProvider(app, "tachiyomi.db"),
+                // KMK -->
+                driver = if (encryptDatabase) {
+                    SQLCipherDriver(CbzCrypto.getDecryptedPasswordSql(), null, null)
+                } else {
+                    BundledSQLiteDriver()
+                },
+                databaseType = AndroidxSqliteDatabaseType.FileProvider(
+                    app,
+                    if (encryptDatabase) CbzCrypto.DATABASE_NAME else "tachiyomi.db",
+                ),
+                // KMK <--
                 schema = Database.Schema,
                 configuration = AndroidxSqliteConfiguration(
                     isForeignKeyConstraintsEnabled = true,
+                    // KMK -->
+                    // Prevent crash when using Database Inspector
+                    cacheSize = if (isDebugBuildType) 0 else 25,
+                    // KMK <--
                 ),
             )
         }

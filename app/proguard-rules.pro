@@ -283,7 +283,6 @@
  -keepattributes Signature
  -keep,allowoptimization class kotlin.coroutines.Continuation
  -keep,allowoptimization class * extends uy.kohesive.injekt.api.TypeReference
- -keep,allowoptimization public class io.requery.android.database.sqlite.SQLiteConnection { *; }
 
  # Keep apache http client
  -keep class org.apache.http.** { *; }
