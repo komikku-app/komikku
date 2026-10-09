@@ -18,6 +18,8 @@ import tachiyomi.data.manga.MergedMangaMapper
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.chapterTag.interactor.GetChapterTags
+import tachiyomi.domain.chapterTag.interactor.SetChapterTags
 import tachiyomi.domain.manga.interactor.FetchInterval
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetMangaByUrlAndSourceId
@@ -51,6 +53,10 @@ class MangaRestorer(
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
     private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
     // SY <--
+    // KMK -->
+    private val getChapterTags: GetChapterTags = Injekt.get(),
+    private val setChapterTags: SetChapterTags = Injekt.get(),
+    // KMK <--
 ) {
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
@@ -204,7 +210,36 @@ class MangaRestorer(
 
         insertNewChapters(newChapters)
         updateExistingChapters(existingChapters)
+
+        // KMK -->
+        restoreChapterTags(manga, backupChapters)
+        // KMK <--
     }
+
+    // KMK -->
+    /**
+     * Reattaches chapter tags by name. Runs after the chapters themselves are written, and re-reads
+     * them so newly inserted rows have ids. Unchanged chapters are skipped by [restoreChapters], so
+     * their tags are restored here rather than on the insert/update paths.
+     */
+    private suspend fun restoreChapterTags(manga: Manga, backupChapters: List<BackupChapter>) {
+        val tagsByChapterUrl = backupChapters
+            .filter { it.chapterTags.isNotEmpty() }
+            .associate { it.url to it.chapterTags }
+        if (tagsByChapterUrl.isEmpty()) return
+
+        val tagIdsByName = getChapterTags.await().associate { it.name to it.id }
+        if (tagIdsByName.isEmpty()) return
+
+        getChaptersByMangaId.await(manga.id).forEach { chapter ->
+            val tagIds = tagsByChapterUrl[chapter.url]
+                ?.mapNotNull { tagIdsByName[it] }
+                ?.takeUnless { it.isEmpty() }
+                ?: return@forEach
+            setChapterTags.awaitAdd(chapter.id, tagIds)
+        }
+    }
+    // KMK <--
 
     private fun updateChapterBasedOnSyncState(chapter: Chapter, dbChapter: Chapter): Chapter {
         return if (isSync) {

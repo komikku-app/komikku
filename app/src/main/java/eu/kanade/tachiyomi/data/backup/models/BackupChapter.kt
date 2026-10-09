@@ -26,6 +26,10 @@ class BackupChapter(
     @ProtoNumber(11) var lastModifiedAt: Long = 0,
     @ProtoNumber(12) var version: Long = 0,
     @ProtoNumber(13) var memo: ByteArray = JsonObjectEmptyBytes,
+    // KMK -->
+    // Chapter tag names, matched against existing tags by name on restore
+    @ProtoNumber(900) var chapterTags: List<String> = emptyList(),
+    // KMK <--
 ) {
     fun toChapterImpl(): Chapter {
         return Chapter.create().copy(

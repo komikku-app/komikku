@@ -46,11 +46,13 @@ import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.chapterTag.components.ChangeChapterTagsDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.ChapterSettingsDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
+import eu.kanade.presentation.manga.components.ChapterTagFilterDialog
 import eu.kanade.presentation.manga.components.ClearMangaDialog
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
@@ -73,6 +75,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
+import eu.kanade.tachiyomi.ui.chapterTag.ChapterTagsScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
 import eu.kanade.tachiyomi.ui.manga.notes.MangaNotesScreen
@@ -396,6 +399,9 @@ class MangaScreen(
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
+            // KMK -->
+            onMultiEditTagsClicked = screenModel::showChangeChapterTagsDialog,
+            // KMK <--
             onChapterSwipe = screenModel::chapterSwipe,
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
@@ -466,6 +472,10 @@ class MangaScreen(
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
 
+        // KMK -->
+        var showChapterTagsFilterDialog by remember { mutableStateOf(false) }
+        // KMK <--
+
         val onDismissRequest = {
             screenModel.dismissDialog()
             // KMK -->
@@ -531,6 +541,10 @@ class MangaScreen(
                 onResetToDefault = screenModel::resetToDefaultSettings,
                 scanlatorFilterActive = successState.scanlatorFilterActive,
                 onScanlatorFilterClicked = { showScanlatorsDialog = true },
+                // KMK -->
+                chapterTagFilterActive = successState.chapterTagFilterActive,
+                onChapterTagFilterClicked = { showChapterTagsFilterDialog = true },
+                // KMK <--
             )
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
@@ -641,6 +655,16 @@ class MangaScreen(
                     onConfirm = screenModel::clearManga,
                 )
             }
+            is MangaScreenModel.Dialog.ChangeChapterTags -> {
+                ChangeChapterTagsDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onDismissRequest,
+                    onEditChapterTags = { navigator.push(ChapterTagsScreen()) },
+                    onConfirm = { include, exclude ->
+                        screenModel.setChapterTags(dialog.chapters, include, exclude)
+                    },
+                )
+            }
             // KMK <--
         }
 
@@ -652,6 +676,17 @@ class MangaScreen(
                 onConfirm = screenModel::setExcludedScanlators,
             )
         }
+
+        // KMK -->
+        if (showChapterTagsFilterDialog) {
+            ChapterTagFilterDialog(
+                chapterTags = successState.chapterTags,
+                filter = successState.chapterTagFilter,
+                onDismissRequest = { showChapterTagsFilterDialog = false },
+                onConfirm = screenModel::setChapterTagFilter,
+            )
+        }
+        // KMK <--
     }
 
     private fun continueReading(context: Context, unreadChapter: Chapter?) {

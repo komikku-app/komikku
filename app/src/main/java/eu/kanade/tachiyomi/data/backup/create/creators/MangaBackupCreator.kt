@@ -87,6 +87,10 @@ class MangaBackupCreator(
             }
                 .takeUnless(List<BackupChapter>::isEmpty)
                 ?.let { mangaObject.chapters = it }
+
+            // KMK -->
+            backupChapterTags(manga.id, mangaObject.chapters)
+            // KMK <--
         }
 
         if (options.categories) {
@@ -119,6 +123,29 @@ class MangaBackupCreator(
 
         return mangaObject
     }
+
+    // KMK -->
+    /**
+     * Stamps each backed up chapter with the names of the tags assigned to it. Chapters are matched
+     * by url because [backupChapterMapper] drops the row id.
+     */
+    private suspend fun backupChapterTags(mangaId: Long, chapters: List<BackupChapter>) {
+        if (chapters.isEmpty()) return
+
+        val tagNamesByChapterUrl = handler.awaitList {
+            chapter_tagsQueries.getChapterTagNamesByMangaId(mangaId) { chapterUrl, tagName ->
+                chapterUrl to tagName
+            }
+        }
+            .groupBy({ it.first }, { it.second })
+
+        if (tagNamesByChapterUrl.isEmpty()) return
+
+        chapters.forEach { chapter ->
+            tagNamesByChapterUrl[chapter.url]?.let { chapter.chapterTags = it }
+        }
+    }
+    // KMK <--
 }
 
 private fun Manga.toBackupManga(/* SY --> */customMangaInfo: CustomMangaInfo?/* SY <-- */) =
