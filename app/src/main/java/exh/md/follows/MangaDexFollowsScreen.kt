@@ -73,6 +73,9 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        // KMK -->
+                        onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
+                        // KMK <--
                         onSelectAll = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
