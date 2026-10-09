@@ -215,7 +215,14 @@ abstract class SearchScreenModel(
     }
 
     private fun updateItem(source: Source, result: SearchItemResult) {
-        updateItems(state.value.items + (source to result))
+        mutableState.update { currentState ->
+            val newItems = currentState.items + (source to result)
+            currentState.copy(
+                items = newItems
+                    .toSortedMap(sortComparator(newItems))
+                    .toPersistentMap(),
+            )
+        }
     }
 
     fun setMigrateDialog(currentId: Long, target: Manga) {
