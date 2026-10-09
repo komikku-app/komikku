@@ -334,6 +334,9 @@ class MangaScreen(
             onFilterButtonClicked = screenModel::showSettingsDialog,
             onRefresh = screenModel::fetchAllFromSource,
             onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
+            // KMK -->
+            nextUnreadChapterNumber = remember(successState) { screenModel.getNextUnreadChapter()?.chapterNumber },
+            // KMK <--
             onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
             // KMK -->
             librarySearch = { query ->
