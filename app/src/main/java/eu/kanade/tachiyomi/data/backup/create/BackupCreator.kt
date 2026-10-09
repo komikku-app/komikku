@@ -12,11 +12,13 @@ import eu.kanade.tachiyomi.data.backup.create.creators.MangaBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.PreferenceBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SavedSearchBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SourcesBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.TasteBackupCreator
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionStore
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import eu.kanade.tachiyomi.data.backup.models.BackupMangaTaste
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.models.BackupSource
@@ -58,6 +60,7 @@ class BackupCreator(
     private val sourcesBackupCreator: SourcesBackupCreator = SourcesBackupCreator(),
     // KMK -->
     private val feedBackupCreator: FeedBackupCreator = FeedBackupCreator(),
+    private val tasteBackupCreator: TasteBackupCreator = TasteBackupCreator(),
     // KMK <--
     // SY -->
     private val savedSearchBackupCreator: SavedSearchBackupCreator = SavedSearchBackupCreator(),
@@ -110,6 +113,7 @@ class BackupCreator(
 
                 // KMK -->
                 backupFeeds = backupFeeds(options),
+                backupMangaTastes = backupMangaTastes(options),
                 // KMK <--
             )
 
@@ -193,6 +197,11 @@ class BackupCreator(
         if (!options.savedSearchesFeeds) return emptyList()
 
         return feedBackupCreator()
+    }
+
+    suspend fun backupMangaTastes(options: BackupOptions): List<BackupMangaTaste> {
+        if (!options.libraryEntries) return emptyList()
+        return tasteBackupCreator()
     }
     // KMK <--
 

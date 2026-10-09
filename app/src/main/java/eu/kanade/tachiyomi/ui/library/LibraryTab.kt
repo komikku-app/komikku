@@ -59,6 +59,7 @@ import exh.recs.RecommendsScreen
 import exh.recs.batch.RecommendationSearchBottomSheetDialog
 import exh.recs.batch.RecommendationSearchProgressDialog
 import exh.recs.batch.SearchStatus
+import exh.recs.ratings.RatedMangaScreen
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -172,6 +173,7 @@ data object LibraryTab : Tab {
                             }
                         }
                     },
+                    onClickRatedManga = { navigator.push(RatedMangaScreen()) },
                     onClickSyncNow = {
                         if (!SyncDataJob.isRunning(context)) {
                             SyncDataJob.startNow(context, manual = true)

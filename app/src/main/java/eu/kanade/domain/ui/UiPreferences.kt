@@ -50,6 +50,8 @@ class UiPreferences(
 
     fun hideFeedTab() = preferenceStore.getBoolean("hide_latest_tab", false)
 
+    fun showPersonalRecommendations() = preferenceStore.getBoolean("show_personal_recommendations", true)
+
     fun feedTabInFront() = preferenceStore.getBoolean("latest_tab_position", false)
 
     // KMK -->

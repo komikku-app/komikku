@@ -157,6 +157,11 @@ import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.taste.interactor.ClearMangaTaste
+import tachiyomi.domain.taste.interactor.GetMangaTaste
+import tachiyomi.domain.taste.interactor.SetMangaTaste
+import tachiyomi.domain.taste.model.MangaRating
+import tachiyomi.domain.taste.model.MangaTaste
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
@@ -225,6 +230,9 @@ class MangaScreenModel(
     private val mangaRepository: MangaRepository = Injekt.get(),
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get(),
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
+    private val getMangaTaste: GetMangaTaste = Injekt.get(),
+    private val setMangaTaste: SetMangaTaste = Injekt.get(),
+    private val clearMangaTaste: ClearMangaTaste = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // KMK -->
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get(),
@@ -403,6 +411,15 @@ class MangaScreenModel(
         }
 
         screenModelScope.launchIO {
+            getMangaTaste.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
+                .distinctUntilChanged()
+                .collectLatest { taste ->
+                    updateSuccessState { it.copy(mangaTaste = taste) }
+                }
+        }
+
+        screenModelScope.launchIO {
             getAvailableScanlators.subscribe(mangaId)
                 .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
@@ -492,6 +509,7 @@ class MangaScreenModel(
                     },
                     alwaysShowReadingProgress =
                     readerPreferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
+                    mangaTaste = getMangaTaste.await(manga.id),
                     previewsRowCount = uiPreferences.previewsRowCount().get(),
                     // SY <--
                 )
@@ -1970,6 +1988,20 @@ class MangaScreenModel(
     fun showClearMangaDialog() {
         updateSuccessState { it.copy(dialog = Dialog.ClearManga) }
     }
+
+    fun setMangaTaste(rating: MangaRating) {
+        val manga = successState?.manga ?: return
+        screenModelScope.launchIO {
+            setMangaTaste.await(manga.id, manga.source, manga.url, manga.title, rating)
+        }
+    }
+
+    fun clearMangaTaste() {
+        val manga = successState?.manga ?: return
+        screenModelScope.launchIO {
+            clearMangaTaste.await(manga.id)
+        }
+    }
     // KMK <--
 
     sealed interface State {
@@ -2014,6 +2046,7 @@ class MangaScreenModel(
              */
             val relatedMangaCollection: List<RelatedManga>? = null,
             val seedColor: Color? = manga.asMangaCover().vibrantCoverColor?.let { Color(it) },
+            val mangaTaste: MangaTaste? = null,
             // KMK <--
         ) : State {
             // KMK -->

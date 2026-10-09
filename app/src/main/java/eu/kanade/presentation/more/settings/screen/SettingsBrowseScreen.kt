@@ -113,6 +113,16 @@ object SettingsBrowseScreen : SearchableSettings {
                 ),
             ),
             Preference.PreferenceGroup(
+                title = stringResource(KMR.strings.personal_recommendations),
+                preferenceItems = persistentListOf(
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = uiPreferences.showPersonalRecommendations(),
+                        title = stringResource(KMR.strings.pref_show_personal_recommendations),
+                        subtitle = stringResource(KMR.strings.pref_show_personal_recommendations_summary),
+                    ),
+                ),
+            ),
+            Preference.PreferenceGroup(
                 title = stringResource(SYMR.strings.feed),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.SwitchPreference(
