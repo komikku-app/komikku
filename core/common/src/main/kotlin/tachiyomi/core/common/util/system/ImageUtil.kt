@@ -262,6 +262,12 @@ object ImageUtil {
         tmpDir: UniFile,
         imageFile: UniFile,
         filenamePrefix: String,
+        // KMK -->
+        compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
+        quality: Int = 100,
+        targetExtension: String = "jpg",
+        autoGrayscale: Boolean = false,
+        // KMK <--
     ): Boolean {
         val imageSource = imageFile.openInputStream().use { Buffer().readFrom(it) }
         if (isAnimatedAndSupported(imageSource) || !isTallImage(imageSource)) {
@@ -282,7 +288,7 @@ object ImageUtil {
 
         return try {
             splitDataList.forEach { splitData ->
-                val splitImageName = splitImageName(filenamePrefix, splitData.index)
+                val splitImageName = splitImageName(filenamePrefix, splitData.index, targetExtension)
                 // Remove pre-existing split if exists (this split shouldn't exist under normal circumstances)
                 tmpDir.findFile(splitImageName)?.delete()
 
@@ -291,8 +297,15 @@ object ImageUtil {
                 val region = Rect(0, splitData.topOffset, splitData.splitWidth, splitData.bottomOffset)
 
                 splitFile.openOutputStream().use { outputStream ->
-                    val splitBitmap = bitmapRegionDecoder.decodeRegion(region, options)
-                    splitBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                    var splitBitmap = bitmapRegionDecoder.decodeRegion(region, options)
+                    // KMK -->
+                    if (autoGrayscale && ImageCompressor.isMonochrome(splitBitmap)) {
+                        val grayscale = ImageCompressor.toGrayscale(splitBitmap)
+                        splitBitmap.recycle()
+                        splitBitmap = grayscale
+                    }
+                    splitBitmap.compress(compressFormat, quality, outputStream)
+                    // KMK <--
                     splitBitmap.recycle()
                 }
                 logcat {
@@ -305,7 +318,7 @@ object ImageUtil {
         } catch (e: Exception) {
             // Image splits were not successfully saved so delete them and keep the original image
             splitDataList
-                .map { splitImageName(filenamePrefix, it.index) }
+                .map { splitImageName(filenamePrefix, it.index, targetExtension) }
                 .forEach { tmpDir.findFile(it)?.delete() }
             logcat(LogPriority.ERROR, e)
             false
@@ -314,10 +327,16 @@ object ImageUtil {
         }
     }
 
-    private fun splitImageName(filenamePrefix: String, index: Int) = "${filenamePrefix}__${"%03d".format(
+    private fun splitImageName(
+        filenamePrefix: String,
+        index: Int,
+        // KMK -->
+        extension: String = "jpg",
+        // KMK <--
+    ) = "${filenamePrefix}__${"%03d".format(
         Locale.ENGLISH,
         index + 1,
-    )}.jpg"
+    )}.$extension"
 
     private val BitmapFactory.Options.splitData
         get(): List<SplitData> {
