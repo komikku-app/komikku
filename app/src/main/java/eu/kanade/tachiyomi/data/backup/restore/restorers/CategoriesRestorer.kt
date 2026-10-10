@@ -25,7 +25,11 @@ class CategoriesRestorer(
                     val dbCategory = dbCategoriesByName[it.name]
                     if (dbCategory != null) return@map dbCategory
                     val order = nextOrder++
-                    handler.awaitOneExecutable {
+                    handler.awaitOneExecutable(
+                        // KMK -->
+                        inTransaction = true,
+                        // KMK <--
+                    ) {
                         categoriesQueries.insert(
                             it.name,
                             order,

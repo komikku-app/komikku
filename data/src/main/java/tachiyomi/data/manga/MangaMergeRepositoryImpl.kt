@@ -73,7 +73,11 @@ class MangaMergeRepositoryImpl(
     }
 
     override suspend fun insert(reference: MergedMangaReference): Long? {
-        return handler.awaitOneOrNullExecutable {
+        return handler.awaitOneOrNullExecutable(
+            // KMK -->
+            inTransaction = true,
+            // KMK <--
+        ) {
             mergedQueries.insert(
                 infoManga = reference.isInfoManga,
                 getChapterUpdates = reference.getChapterUpdates,
