@@ -168,8 +168,10 @@ class LibraryUpdateErrorScreenModel(
     }
 
     fun updateManga() {
-        val mangaIds = mutableState.value.selected.map { it.error.mangaId }
-        val idsToUpdate = mangaIds.ifEmpty { mutableState.value.items.map { it.error.mangaId } }
+        val selectedMangaIds = mutableState.value.selected.map { it.error.mangaId }
+        val idsToUpdate = selectedMangaIds
+            .ifEmpty { mutableState.value.items.map { it.error.mangaId } }
+            .distinct()
 
         if (idsToUpdate.isNotEmpty()) {
             LibraryUpdateJob.startNow(

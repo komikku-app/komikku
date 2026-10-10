@@ -326,6 +326,11 @@ private fun LibraryUpdateErrorAppBar(
                 AppBarActions(
                     persistentListOf(
                         AppBar.Action(
+                            title = stringResource(KMR.strings.action_update),
+                            icon = Icons.Outlined.Refresh,
+                            onClick = onClickUpdateManga,
+                        ),
+                        AppBar.Action(
                             title = stringResource(MR.strings.action_select_all),
                             icon = Icons.Outlined.SelectAll,
                             onClick = onClickSelectAll,
