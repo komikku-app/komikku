@@ -10,7 +10,7 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedSource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.source.model.StubSource
-import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -93,9 +93,9 @@ private fun getMergedSourcesString(
     // otherwise use the localized format string so RTL languages can reorder the
     // label and the sources as needed.
     return if (realSources.isEmpty()) {
-        context.stringResource(MR.strings.label_merged_entry)
+        context.stringResource(KMR.strings.label_merged_entry)
     } else {
-        context.stringResource(MR.strings.label_merged_entry_with_sources, sourceNames)
+        context.stringResource(KMR.strings.label_merged_entry_with_sources, sourceNames)
     }
     // KMK <--
 }
