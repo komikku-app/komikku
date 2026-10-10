@@ -178,6 +178,7 @@ class LibraryUpdateErrorScreenModel(
                 context = Injekt.get<Application>(),
                 mangaIds = idsToUpdate,
                 target = LibraryUpdateJob.Target.CHAPTERS,
+                forceUpdate = true,
             )
         }
     }
