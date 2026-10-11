@@ -31,6 +31,9 @@ CREATE TABLE mangas(
     version INTEGER NOT NULL DEFAULT 0,
     is_syncing INTEGER NOT NULL DEFAULT 0,
     notes TEXT NOT NULL DEFAULT "",
+    -- KMK -->
+    banner_url TEXT
+    -- KMK <--
     memo BLOB AS JsonObject NOT NULL DEFAULT (CAST('{}' AS BLOB))
 );
 
@@ -199,6 +202,8 @@ AND (
 );
 
 insert:
+INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, notes, banner_url)
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :notes, :bannerUrl);
 INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, notes, memo)
 VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :notes, :memo);
 
@@ -226,6 +231,9 @@ UPDATE mangas SET
     version = coalesce(:version, version),
     is_syncing = coalesce(:isSyncing, is_syncing),
     notes = coalesce(:notes, notes),
+    -- KMK -->
+    banner_url = coalesce(:bannerUrl, banner_url)
+    -- KMK <--
     memo = coalesce(:memo, memo)
 WHERE _id = :mangaId;
 
@@ -237,11 +245,19 @@ insertNetworkManga {
     INSERT INTO mangas(
         source, url, artist, author, description, genre, title, status, thumbnail_url, favorite,
         last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added,
+        update_strategy, calculate_interval, last_modified_at, version,
+        -- KMK -->
+        banner_url
+        -- KMK <--
         update_strategy, calculate_interval, last_modified_at, version, memo
     )
     SELECT
         :source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite,
         :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded,
+        :updateStrategy, :calculateInterval, 0, :version,
+        -- KMK -->
+        :bannerUrl
+        -- KMK <--
         :updateStrategy, :calculateInterval, 0, :version, :memo
     WHERE NOT EXISTS(SELECT 0 FROM mangas WHERE source = :source AND url = :url);
 
@@ -257,6 +273,10 @@ insertNetworkManga {
         status = CASE WHEN :updateDetails THEN :status ELSE status END,
         update_strategy = CASE WHEN :updateDetails THEN :updateStrategy ELSE update_strategy END,
         initialized = :updateDetails,
+        -- KMK -->
+        banner_url = CASE WHEN :updateDetails THEN :bannerUrl ELSE banner_url END
+        -- KMK <--
+    WHERE source = :source AND :updateInfo
         memo = :memo
     WHERE source = :source
     -- KMK -->
