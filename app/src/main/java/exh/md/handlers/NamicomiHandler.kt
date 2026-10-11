@@ -7,25 +7,17 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Response
 
-class NamicomiHandler(currentClient: OkHttpClient, userAgent: String) {
+class NamicomiHandler(val client: OkHttpClient) {
     private val apiUrl = "https://api.namicomi.com"
-
-    private val headers = Headers.Builder()
-        .add("User-Agent", userAgent)
-        .build()
-
-    val client: OkHttpClient = currentClient
 
     suspend fun fetchPageList(externalUrl: String, dataSaver: Boolean): List<Page> {
         val chapterId = externalUrl.substringBefore("?").substringAfterLast("/")
         val request =
             GET(
                 "$apiUrl/images/chapter/$chapterId?newQualities=true",
-                headers,
             )
         return pageListParse(client.newCall(request).awaitSuccess(), chapterId, dataSaver)
     }
