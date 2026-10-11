@@ -1,5 +1,8 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -16,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import eu.kanade.core.preference.PreferenceMutableState
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,16 +79,24 @@ fun LibraryContent(
                 }
                 // KMK <--
             }
-            LibraryTabs(
-                categories = categories,
-                pagerState = pagerState,
-                getItemCountForCategory = getItemCountForCategory,
-                onTabItemClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(it)
-                    }
-                },
-            )
+            // KMK -->
+            AnimatedVisibility(
+                visible = !HomeScreen.LocalBarsScrolledDown.current,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
+                // KMK <--
+                LibraryTabs(
+                    categories = categories,
+                    pagerState = pagerState,
+                    getItemCountForCategory = getItemCountForCategory,
+                    onTabItemClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(it)
+                        }
+                    },
+                )
+            }
         }
 
         PullRefresh(
