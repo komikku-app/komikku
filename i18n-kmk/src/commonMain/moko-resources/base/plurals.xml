@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <plurals name="num_blacklisted_series">
+        <item quantity="one">%d title hidden</item>
+        <item quantity="other">%d titles hidden</item>
+    </plurals>
 </resources>

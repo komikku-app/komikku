@@ -128,6 +128,9 @@ fun SourceFeedScreen(
                     isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                     onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                    // KMK -->
+                    onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
+                    // KMK <--
                     onSelectAll = {
                         items.mapNotNull { it.results }
                             .flatten()

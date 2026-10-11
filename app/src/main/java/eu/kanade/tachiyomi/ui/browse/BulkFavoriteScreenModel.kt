@@ -10,6 +10,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -49,6 +50,9 @@ class BulkFavoriteScreenModel(
     initialState: State = State(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    // KMK -->
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    // KMK <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -417,6 +421,19 @@ class BulkFavoriteScreenModel(
             haptic?.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
+
+    // KMK -->
+    fun massBlacklist() {
+        screenModelScope.launchNonCancellable {
+            startRunning()
+            state.value.selection.fastForEach { manga ->
+                sourcePreferences.addBlacklistedSeries(manga.title)
+            }
+            stopRunning()
+            toggleSelectionMode(false)
+        }
+    }
+    // KMK <--
 
     internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
         setDialog(Dialog.Migrate(target = manga, current = duplicate))
