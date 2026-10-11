@@ -230,7 +230,14 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
         }
     }
 
-    suspend fun getCurrentUser(): String {
+    // KMK -->
+    /**
+     * Returns the user's id paired with the rating system configured on their Kitsu account.
+     *
+     * `ratingSystem` is only exposed to the authenticated user, so it falls back to
+     * [Kitsu.ADVANCED] — the scale the app used unconditionally before — when absent.
+     */
+    suspend fun getCurrentUser(): Pair<String, String> {
         return withIOContext {
             val url = "${BASE_URL}users".toUri().buildUpon()
                 .encodedQuery("filter[self]=true")
@@ -240,10 +247,11 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                     .awaitSuccess()
                     .parseAs<KitsuCurrentUserResult>()
                     .data[0]
-                    .id
+                    .let { it.id to (it.attributes?.ratingSystem ?: Kitsu.ADVANCED) }
             }
         }
     }
+    // KMK <--
 
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
