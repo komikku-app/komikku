@@ -33,6 +33,7 @@ class LibraryUpdateErrorScreen : Screen() {
             onErrorsDelete = screenModel::deleteSelected,
             onErrorDelete = screenModel::delete,
             onErrorSelected = screenModel::toggleSelection,
+            onUpdateMangaClicked = screenModel::updateManga,
             navigateUp = navigator::pop,
         )
     }
