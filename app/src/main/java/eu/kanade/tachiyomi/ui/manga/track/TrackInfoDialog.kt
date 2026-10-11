@@ -59,6 +59,7 @@ import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.data.track.yamtrack.Yamtrack
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.convertEpochMillisZone
@@ -858,6 +859,27 @@ data class TrackerSearchScreen(
                         queryResult = result,
                         selected = result.getOrNull()?.find { it.tracking_url == currentUrl },
                     )
+                }
+
+                // Yamtrack's search endpoint only returns title/cover/id; the synopsis,
+                // score, format, and start date come from per-item detail calls. Stream
+                // those updates in the background so the search list renders immediately
+                // and each card fills in as its detail call returns.
+                val initial = result.getOrNull() ?: return@launch
+                if (tracker is Yamtrack && initial.isNotEmpty()) {
+                    tracker.enrichSearchResults(initial).collect { enriched ->
+                        mutableState.update { state ->
+                            val current = state.queryResult?.getOrNull() ?: return@update state
+                            state.copy(
+                                queryResult = Result.success(current.toList()),
+                                selected = if (state.selected?.remote_id == enriched.remote_id) {
+                                    enriched
+                                } else {
+                                    state.selected
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
