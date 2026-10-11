@@ -7,19 +7,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 
-class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
+class AzukiHandler(val client: OkHttpClient) {
     val baseUrl = "https://www.azuki.co"
     private val apiUrl = "https://production.api.azuki.co"
-    val headers = Headers.Builder()
-        .add("User-Agent", userAgent)
-        .build()
-
-    val client: OkHttpClient = currentClient
 
     suspend fun fetchPageList(externalUrl: String): List<Page> {
         val chapterId = externalUrl.substringAfterLast("/").substringBefore("?")
@@ -28,7 +22,7 @@ class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
     }
 
     private fun pageListRequest(chapterId: String): Request {
-        return GET("$apiUrl/chapter/$chapterId/pages/v0", headers)
+        return GET("$apiUrl/chapter/$chapterId/pages/v0")
     }
 
     fun pageListParse(response: Response): List<Page> {

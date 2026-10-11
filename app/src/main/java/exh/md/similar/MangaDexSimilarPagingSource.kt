@@ -10,6 +10,7 @@ import exh.md.handlers.SimilarHandler
 import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
 import exh.md.utils.MdLang
+import exh.md.utils.MdUtil
 import exh.md.utils.MdUtil.Companion.baseUrl
 import exh.recs.sources.RecommendationPagingSource
 import exh.recs.sources.RecommendationSource
@@ -47,15 +48,15 @@ internal class MangaDexSimilarPagingSource(
         // KMK -->
         get() = recommendationSource.id
 
-    private val network by lazy { Injekt.get<NetworkHelper>() }
-    private val client by lazy { network.client }
+    private val client by lazy { Injekt.get<NetworkHelper>().client }
     private val headers by lazy {
-        Headers.Builder().apply {
-            set("Referer", "$baseUrl/")
-            set("Origin", baseUrl)
-            set("sec-fetch-dest", "document")
-            set("sec-fetch-mode", "navigate")
-        }.build()
+        MdUtil.getEnabledMangaDex()?.headers
+            ?: Headers.Builder().apply {
+                set("Referer", "$baseUrl/")
+                set("Origin", baseUrl)
+                set("sec-fetch-dest", "document")
+                set("sec-fetch-mode", "navigate")
+            }.build()
     }
 
     private val mdLang by lazy {

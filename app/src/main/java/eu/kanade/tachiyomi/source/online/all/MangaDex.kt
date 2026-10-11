@@ -77,7 +77,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val loginHelper = MangaDexLoginHelper(network.client, headers, trackPreferences, mdList, mdList.interceptor)
+    // KMK -->
+    private val networkClient by lazy { network.client }
+
+    private val loginHelper by lazy {
+        // KMK <--
+        MangaDexLoginHelper(networkClient, headers, trackPreferences, mdList, mdList.interceptor)
+    }
 
     override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
         .addInterceptor(mdList.interceptor)
@@ -109,26 +115,25 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         MangaHandler(mdLang.lang, mangadexService, apiMangaParser)
     }
     private val mangaPlusHandler by lazy {
-        MangaPlusHandler(network.client)
+        MangaPlusHandler(networkClient)
     }
     private val comikeyHandler by lazy {
-        ComikeyHandler(network.client, network.defaultUserAgentProvider())
+        ComikeyHandler(networkClient)
     }
     private val bilibiliHandler by lazy {
-        BilibiliHandler(network.client)
+        BilibiliHandler(networkClient)
     }
     private val azukHandler by lazy {
-        AzukiHandler(network.client, network.defaultUserAgentProvider())
+        AzukiHandler(networkClient)
     }
     private val mangaHotHandler by lazy {
-        MangaHotHandler(network.client, network.defaultUserAgentProvider())
+        MangaHotHandler(networkClient)
     }
     private val namicomiHandler by lazy {
-        NamicomiHandler(network.client, network.defaultUserAgentProvider())
+        NamicomiHandler(networkClient)
     }
     private val pageHandler by lazy {
         PageHandler(
-            headers,
             mangadexService,
             mangaPlusHandler,
             comikeyHandler,
