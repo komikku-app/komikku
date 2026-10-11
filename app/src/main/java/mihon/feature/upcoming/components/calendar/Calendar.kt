@@ -19,9 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
+import com.cheonjaeung.compose.grid.SimpleGridCells
+import com.cheonjaeung.compose.grid.VerticalGrid
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
-import io.woong.compose.grid.SimpleGridCells
-import io.woong.compose.grid.VerticalGrid
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
