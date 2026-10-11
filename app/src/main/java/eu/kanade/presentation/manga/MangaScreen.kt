@@ -199,6 +199,7 @@ fun MangaScreen(
     onClickSourceSettingsClicked: (() -> Unit)?,
     onClearManga: () -> Unit,
     onOpenMangaFolder: (() -> Unit)?,
+    onReindexDownloads: () -> Unit,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -268,6 +269,7 @@ fun MangaScreen(
             onClickSourceSettingsClicked = onClickSourceSettingsClicked,
             onClearManga = onClearManga,
             onOpenMangaFolder = onOpenMangaFolder,
+            onReindexDownloads = onReindexDownloads,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -330,6 +332,7 @@ fun MangaScreen(
             onClickSourceSettingsClicked = onClickSourceSettingsClicked,
             onClearManga = onClearManga,
             onOpenMangaFolder = onOpenMangaFolder,
+            onReindexDownloads = onReindexDownloads,
             onRelatedMangasScreenClick = onRelatedMangasScreenClick,
             onRelatedMangaClick = onRelatedMangaClick,
             onRelatedMangaLongClick = onRelatedMangaLongClick,
@@ -409,6 +412,7 @@ private fun MangaScreenSmallImpl(
     onClickSourceSettingsClicked: (() -> Unit)?,
     onClearManga: () -> Unit,
     onOpenMangaFolder: (() -> Unit)?,
+    onReindexDownloads: () -> Unit,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -489,6 +493,7 @@ private fun MangaScreenSmallImpl(
                 onClickSourceSettings = onClickSourceSettingsClicked,
                 onClearManga = onClearManga,
                 onOpenMangaFolder = onOpenMangaFolder,
+                onReindexDownloads = onReindexDownloads,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
@@ -869,6 +874,7 @@ private fun MangaScreenLargeImpl(
     onClickSourceSettingsClicked: (() -> Unit)?,
     onClearManga: () -> Unit,
     onOpenMangaFolder: (() -> Unit)?,
+    onReindexDownloads: () -> Unit,
     onRelatedMangasScreenClick: () -> Unit,
     onRelatedMangaClick: (Manga) -> Unit,
     onRelatedMangaLongClick: (Manga) -> Unit,
@@ -941,6 +947,7 @@ private fun MangaScreenLargeImpl(
                 onClickSourceSettings = onClickSourceSettingsClicked,
                 onClearManga = onClearManga,
                 onOpenMangaFolder = onOpenMangaFolder,
+                onReindexDownloads = onReindexDownloads,
                 onClickRelatedMangas = onRelatedMangasScreenClick.takeIf {
                     !expandRelatedMangas &&
                         showRelatedMangasInOverflow &&
