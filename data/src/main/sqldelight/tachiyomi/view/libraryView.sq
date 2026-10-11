@@ -64,28 +64,85 @@ LEFT JOIN (
 ) AS ME
 ON ME.merge_id = M._id
 LEFT JOIN(
+    WITH chapter_data AS (
+        SELECT DISTINCT
+            chapters.*,
+            ME.merge_id,
+            ME.chapter_priority,
+            MS.chapter_sort_mode
+        FROM chapters
+        JOIN merged ME
+        ON ME.manga_id = chapters.manga_id
+        JOIN merged MS
+        ON MS.merge_id = ME.merge_id
+        AND MS.manga_source = 6969
+        LEFT JOIN excluded_scanlators
+        ON ME.merge_id = excluded_scanlators.manga_id
+        AND chapters.scanlator = excluded_scanlators.scanlator
+        WHERE excluded_scanlators.scanlator IS NULL
+    ),
+    deduped_chapters AS (
+        SELECT C.*
+        FROM chapter_data C
+        WHERE
+            C.chapter_sort_mode = 0
+            OR (
+                C.chapter_sort_mode = 1
+                AND (
+                    C.chapter_number < 0
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM chapter_data D
+                        WHERE D.merge_id = C.merge_id
+                        AND D.manga_id != C.manga_id
+                        AND D.chapter_number = C.chapter_number
+                        AND (
+                            D.chapter_priority < C.chapter_priority
+                            OR (
+                                D.chapter_priority = C.chapter_priority
+                                AND D.manga_id < C.manga_id
+                            )
+                        )
+                    )
+                )
+            )
+            OR (
+                C.chapter_sort_mode = 2
+                AND C.manga_id = (
+                    SELECT manga_id
+                    FROM chapter_data D
+                    WHERE D.merge_id = C.merge_id
+                    GROUP BY D.merge_id, D.manga_id
+                    ORDER BY count(*) DESC, D.manga_id
+                    LIMIT 1
+                )
+            )
+            OR (
+                C.chapter_sort_mode = 3
+                AND C.manga_id = (
+                    SELECT D.manga_id
+                    FROM chapter_data D
+                    WHERE D.merge_id = C.merge_id
+                    ORDER BY D.chapter_number DESC, D.manga_id
+                    LIMIT 1
+                )
+            )
+    )
     SELECT
-        ME.merge_id,
+        deduped_chapters.merge_id,
         count(*) AS total,
-        sum(read) AS readCount,
-        coalesce(max(chapters.date_upload), 0) AS latestUpload,
+        sum(deduped_chapters.read) AS readCount,
+        coalesce(max(deduped_chapters.date_upload), 0) AS latestUpload,
         coalesce(max(history.last_read), 0) AS lastRead,
-        coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
-        sum(chapters.bookmark) AS bookmarkCount,
+        coalesce(max(deduped_chapters.date_fetch), 0) AS fetchedAt,
+        sum(deduped_chapters.bookmark) AS bookmarkCount,
         -- KMK -->
-        sum(CASE WHEN chapters.bookmark = 1 AND chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount,
+        sum(CASE WHEN deduped_chapters.bookmark = 1 AND deduped_chapters.read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount
         -- KMK <--
-        excluded_scanlators.scanlator AS ex_scanlator
-    FROM chapters
-    LEFT JOIN excluded_scanlators
-    ON chapters.manga_id = excluded_scanlators.manga_id
-    AND chapters.scanlator = excluded_scanlators.scanlator
+    FROM deduped_chapters
     LEFT JOIN history
-    ON chapters._id = history.chapter_id
-    LEFT JOIN merged ME
-    ON ME.manga_id = chapters.manga_id
-    WHERE ex_scanlator IS NULL
-    GROUP BY ME.merge_id
+    ON deduped_chapters._id = history.chapter_id
+    GROUP BY deduped_chapters.merge_id
 ) AS C
 ON M._id = C.merge_id  -- ON ME.merge_id = C.merge_id
 LEFT JOIN (
