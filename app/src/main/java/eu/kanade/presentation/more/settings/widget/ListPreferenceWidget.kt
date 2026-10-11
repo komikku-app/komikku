@@ -34,6 +34,9 @@ fun <T> ListPreferenceWidget(
     subtitle: String?,
     icon: ImageVector?,
     entries: Map<out T, String>,
+    // KMK -->
+    entryEnabled: (T) -> Boolean = { true },
+    // KMK <--
     onValueChange: (T) -> Unit,
 ) {
     var isDialogShown by remember { mutableStateOf(false) }
@@ -55,10 +58,16 @@ fun <T> ListPreferenceWidget(
                     ScrollbarLazyColumn(state = state) {
                         entries.forEach { current ->
                             val isSelected = value == current.key
+                            // KMK -->
+                            val isItemEnabled = entryEnabled(current.key)
+                            // KMK <--
                             item {
                                 DialogRow(
                                     label = current.value,
                                     isSelected = isSelected,
+                                    // KMK -->
+                                    enabled = isItemEnabled,
+                                    // KMK <--
                                     onSelected = {
                                         onValueChange(current.key!!)
                                         isDialogShown = false
@@ -84,6 +93,9 @@ fun <T> ListPreferenceWidget(
 private fun DialogRow(
     label: String,
     isSelected: Boolean,
+    // KMK -->
+    enabled: Boolean = true,
+    // KMK <--
     onSelected: () -> Unit,
 ) {
     Row(
@@ -92,18 +104,27 @@ private fun DialogRow(
             .clip(MaterialTheme.shapes.small)
             .selectable(
                 selected = isSelected,
-                onClick = { if (!isSelected) onSelected() },
+                // KMK -->
+                enabled = enabled,
+                onClick = { if (!isSelected && enabled) onSelected() },
+                // KMK <--
             )
             .fillMaxWidth()
             .minimumInteractiveComponentSize(),
     ) {
         RadioButton(
             selected = isSelected,
+            // KMK -->
+            enabled = enabled,
+            // KMK <--
             onClick = null,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge.merge(),
+            // KMK -->
+            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            // KMK <--
             modifier = Modifier.padding(start = 24.dp),
         )
     }

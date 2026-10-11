@@ -3,27 +3,42 @@ package eu.kanade.presentation.more.settings.screen
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.text.format.Formatter
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,6 +54,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -49,6 +66,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.SettingsSecurityScreen.PasswordDialog
+import eu.kanade.presentation.more.settings.screen.data.BatchCompressScreen
 import eu.kanade.presentation.more.settings.screen.data.CreateBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.more.settings.screen.data.StorageInfo
@@ -63,6 +81,8 @@ import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
+import eu.kanade.tachiyomi.data.download.DownloadOptimizerJob
+import eu.kanade.tachiyomi.data.download.DownloadOptimizerState
 import eu.kanade.tachiyomi.data.export.LibraryExporter
 import eu.kanade.tachiyomi.data.export.LibraryExporter.ExportOptions
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
@@ -73,19 +93,24 @@ import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.displayablePath
+import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.storage.service.StorageManager.Companion.allowAccessStorage
 import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
 import tachiyomi.domain.storage.service.StoragePreferences
@@ -96,6 +121,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.roundToInt
 
 object SettingsDataScreen : SearchableSettings {
     @Suppress("unused")
@@ -133,6 +159,9 @@ object SettingsDataScreen : SearchableSettings {
 
             getBackupAndRestoreGroup(backupPreferences = backupPreferences),
             getDataGroup(),
+            // KMK -->
+            getDownloadCompressionGroup(),
+            // KMK <--
             getExportGroup(),
         ) +
             // SY -->
@@ -410,6 +439,135 @@ object SettingsDataScreen : SearchableSettings {
             ),
         )
     }
+
+    // KMK -->
+    @Composable
+    private fun getQualityDescription(quality: Int): String {
+        return when {
+            quality >= 100 -> stringResource(KMR.strings.pref_download_compression_quality_desc_100)
+            quality >= 90 -> stringResource(KMR.strings.pref_download_compression_quality_desc_90)
+            quality >= 80 -> stringResource(KMR.strings.pref_download_compression_quality_desc_80)
+            quality >= 65 -> stringResource(KMR.strings.pref_download_compression_quality_desc_65)
+            else -> stringResource(KMR.strings.pref_download_compression_quality_desc_50)
+        }
+    }
+
+    @Composable
+    private fun getDownloadCompressionGroup(): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
+        val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
+        val storageManager = remember { Injekt.get<StorageManager>() }
+
+        val compressEnabled by downloadPreferences.compressDownloadedChapters().collectAsState()
+        val quality by downloadPreferences.downloadCompressionQuality().collectAsState()
+        var isOptimizerRunning by remember { mutableStateOf(DownloadOptimizerJob.isRunning(context)) }
+        LaunchedEffect(Unit) {
+            DownloadOptimizerJob.isRunningFlow(context).collectLatest {
+                isOptimizerRunning = it
+            }
+        }
+
+        val isAvifSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        val formatEntries = remember {
+            persistentMapOf(
+                "WEBP" to "WebP",
+                "AVIF" to if (isAvifSupported) "AVIF" else context.stringResource(KMR.strings.pref_download_compression_format_avif_disabled),
+            )
+        }
+
+        val effortEntries = remember {
+            persistentMapOf(
+                1 to context.stringResource(KMR.strings.pref_download_encoder_effort_fast),
+                4 to context.stringResource(KMR.strings.pref_download_encoder_effort_balanced),
+                6 to context.stringResource(KMR.strings.pref_download_encoder_effort_maximum),
+            )
+        }
+
+        val items = buildList {
+            // 1. Batch action: Compress downloaded chapters
+            add(
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_optimize_downloaded_chapters),
+                    subtitle = if (isOptimizerRunning) {
+                        stringResource(KMR.strings.optimize_notification_running, 0, 0)
+                    } else {
+                        stringResource(KMR.strings.pref_optimize_downloaded_chapters_summary)
+                    },
+                    enabled = true,
+                    onClick = {
+                        if (isOptimizerRunning) {
+                            context.toast(KMR.strings.optimize_already_running)
+                            return@TextPreference
+                        }
+                        navigator.push(BatchCompressScreen())
+                    },
+                ),
+            )
+            // 2. Auto-compress switch
+            add(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = downloadPreferences.compressDownloadedChapters(),
+                    title = stringResource(KMR.strings.pref_compress_downloaded_chapters),
+                    subtitle = stringResource(KMR.strings.pref_compress_downloaded_chapters_summary),
+                ),
+            )
+            // Sub-options only shown when auto-compress is enabled
+            if (compressEnabled) {
+                add(
+                    Preference.PreferenceItem.ListPreference(
+                        preference = downloadPreferences.downloadCompressionFormat(),
+                        entries = formatEntries,
+                        title = stringResource(KMR.strings.pref_download_compression_format),
+                        subtitleProvider = { v, _ -> if (v == "AVIF") "AVIF" else "WebP" },
+                        entryEnabled = { it != "AVIF" || isAvifSupported },
+                    ),
+                )
+                add(
+                    Preference.PreferenceItem.SliderPreference(
+                        value = quality,
+                        valueRange = 50..100,
+                        title = stringResource(KMR.strings.pref_download_compression_quality),
+                        subtitle = getQualityDescription(quality),
+                        valueString = if (quality >= 100) {
+                            stringResource(KMR.strings.pref_download_compression_quality_lossless)
+                        } else {
+                            stringResource(KMR.strings.pref_download_compression_quality_summary, quality)
+                        },
+                        onValueChanged = { downloadPreferences.downloadCompressionQuality().set(it) },
+                    ),
+                )
+                add(
+                    Preference.PreferenceItem.ListPreference(
+                        preference = downloadPreferences.downloadEncoderEffort(),
+                        entries = effortEntries,
+                        title = stringResource(KMR.strings.pref_download_encoder_effort),
+                    ),
+                )
+                add(
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = downloadPreferences.autoGrayscaleBWManga(),
+                        title = stringResource(KMR.strings.pref_auto_grayscale_bw_manga),
+                        subtitle = stringResource(KMR.strings.pref_auto_grayscale_bw_manga_summary),
+                    ),
+                )
+                add(
+                    Preference.PreferenceItem.SwitchPreference(
+                        preference = downloadPreferences.stripImageMetadata(),
+                        title = stringResource(KMR.strings.pref_strip_image_metadata),
+                        subtitle = stringResource(KMR.strings.pref_strip_image_metadata_summary),
+                    ),
+                )
+            }
+        }.toPersistentList()
+
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_download_compression_category),
+            preferenceItems = items,
+        )
+    }
+    // KMK <--
 
     @Composable
     private fun getExportGroup(): Preference.PreferenceGroup {

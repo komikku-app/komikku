@@ -257,6 +257,9 @@ class DownloadManager(
             val (mangaDir, chapterDirs) = provider.findChapterDirs(filteredChapters, manga, source)
             chapterDirs.forEach { it.delete() }
             cache.removeChapters(filteredChapters, manga)
+            // KMK -->
+            DownloadOptimizerState.clearCache()
+            // KMK <--
 
             // Delete manga directory if empty
             if (mangaDir?.listFiles()?.isEmpty() == true) {
@@ -279,6 +282,9 @@ class DownloadManager(
             }
             provider.findMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)?.delete()
             cache.removeManga(manga)
+            // KMK -->
+            DownloadOptimizerState.clearCache()
+            // KMK <--
 
             // KMK -->
             if (source.isLocal()) return@launchIO
