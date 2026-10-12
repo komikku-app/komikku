@@ -212,6 +212,7 @@ dependencies {
     debugImplementation(compose.ui.tooling)
     implementation(compose.ui.tooling.preview)
     implementation(compose.ui.util)
+    implementation(androidx.navigationevent)
 
     implementation(androidx.interpolator)
 

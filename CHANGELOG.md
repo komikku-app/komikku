@@ -46,6 +46,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Fixed entries being incorrectly marked as duplicates when tracked with some trackers ([@Secozzi](https://github.com/Secozzi)) ([#4008](https://github.com/mihonapp/mihon/pull/4008))
 - Fixed a crash on launch on some Samsung devices running Android 9 to 11 ([@AntsyLich](https://github.com/AntsyLich))
 - Fixed a crash when updating an extension while others were installing ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed a crash when a back gesture was still in progress as the reader or a dialog closed ([@AntsyLich](https://github.com/AntsyLich))
 
 ## [v0.20.0] - 2026-06-27
 ### Added
