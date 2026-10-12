@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.extension.installer
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,8 @@ import eu.kanade.tachiyomi.util.lang.use
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.getUriSize
 import exh.log.xLogE
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 
 class PackageInstallerInstaller(private val service: Service) : Installer(service) {
 
@@ -46,7 +49,16 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                         return
                     }
                     userAction.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    service.startActivity(userAction)
+                    try {
+                        service.startActivity(userAction)
+                    } catch (e: ActivityNotFoundException) {
+                        // Some devices have the system installer's confirmation screen disabled or removed
+                        logcat(LogPriority.WARN, e) { "Nothing can confirm the install" }
+                        activeSession?.let { (_, sessionId) ->
+                            runCatching { packageInstaller.abandonSession(sessionId) }
+                        }
+                        continueQueue(InstallStep.Error)
+                    }
                 }
                 PackageInstaller.STATUS_FAILURE_ABORTED -> {
                     continueQueue(InstallStep.Idle)
