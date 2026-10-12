@@ -11,9 +11,11 @@ import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.webkit.JavascriptInterface
 import android.webkit.JsResult
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebStorage
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -84,6 +86,17 @@ class DiscordLoginScreen : Screen() {
 
         val webViewClient = remember {
             object : AccompanistWebViewClient() {
+                override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                    // Not handling it kills the app along with the page
+                    logcat(LogPriority.ERROR) {
+                        "Discord login WebView renderer gone: crashed=${detail.didCrash()}, " +
+                            "priority=${detail.rendererPriorityAtExit()}"
+                    }
+                    context.toast(MR.strings.information_webview_crashed, Toast.LENGTH_LONG)
+                    navigator.pop()
+                    return true
+                }
+
                 override fun onPageFinished(view: WebView, url: String?) {
                     super.onPageFinished(view, url)
                     url?.let {
