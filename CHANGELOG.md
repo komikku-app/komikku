@@ -44,6 +44,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Fixed slowdowns and running out of memory when many requests to a site hit a Cloudflare challenge at once ([@tigeryu8900](https://github.com/tigeryu8900), [@AntsyLich](https://github.com/AntsyLich))
 - Fix MyAnimeList error for list entries with partial start/finish reading dates by setting those dates to either Jan 1st or 1st of the month ([@MajorTanya](https://github.com/MajorTanya)) ([#3573](https://github.com/mihonapp/mihon/pull/3573))
 - Fixed entries being incorrectly marked as duplicates when tracked with some trackers ([@Secozzi](https://github.com/Secozzi)) ([#4008](https://github.com/mihonapp/mihon/pull/4008))
+- Fixed a crash on launch on some Samsung devices running Android 9 to 11 ([@AntsyLich](https://github.com/AntsyLich))
 
 ## [v0.20.0] - 2026-06-27
 ### Added
