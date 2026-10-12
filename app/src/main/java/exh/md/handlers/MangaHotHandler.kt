@@ -11,7 +11,9 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class MangaHotHandler(val client: OkHttpClient) {
+    // KMK -->
     private val json by injectLazy<Json>()
+    // KMK <--
     val baseUrl = "https://mangahot.jp"
     private val apiUrl = "https://api.mangahot.jp"
 
@@ -26,9 +28,11 @@ class MangaHotHandler(val client: OkHttpClient) {
     }
 
     fun pageListParse(response: Response): List<Page> {
+        // KMK -->
         return with(json) { response.parseAs<MangaHotPageList>() }
             .content
             .contentUrls
             .mapIndexed { index, url -> Page(index, url, url) }
+        // KMK <--
     }
 }

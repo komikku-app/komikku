@@ -14,16 +14,16 @@ data class AzukiPageDataDto(
 
 @Serializable
 data class AzukiPageDto(
-    val image: Image,
+    val image: AzukiImage,
 )
 
 @Serializable
-data class Image(
-    val webp: List<Webp>,
+data class AzukiImage(
+    val webp: List<AzukiWebp>,
 )
 
 @Serializable
-data class Webp(
+data class AzukiWebp(
     val url: String,
     val width: Int,
 )

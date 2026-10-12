@@ -4,8 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NamicomiPageListDto(
-    val result: String,
-    val type: String,
     val data: NamicomiPageDataDto? = null,
 )
 

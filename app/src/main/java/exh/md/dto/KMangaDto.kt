@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ViewerApiResponse(
+data class KMangaViewerResponse(
     @SerialName("page_list") val pageList: List<String>,
     @SerialName("scramble_seed") val scrambleSeed: String,
     @SerialName("title_id") val titleId: Int,
@@ -12,18 +12,18 @@ data class ViewerApiResponse(
 )
 
 @Serializable
-data class BirthdayCookie(
+data class KMangaBirthdayCookie(
     val value: String,
     val expires: Long,
 )
 
 @Serializable
-data class LocalStorageAccount(
+data class KMangaLocalStorageAccount(
     val isLoggedIn: Boolean?,
-    val checkedTicketExpiredList: List<CheckedTicketExpired>?,
+    val checkedTicketExpiredList: List<KMangaCheckedTicketExpired>?,
 )
 
 @Serializable
-data class CheckedTicketExpired(
+data class KMangaCheckedTicketExpired(
     val userId: Int,
 )

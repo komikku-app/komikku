@@ -134,15 +134,19 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val namicomiHandler by lazy {
         NamicomiHandler(networkClient)
     }
+    // KMK -->
     private val kMangaHandler by lazy {
-        KMangaHandler(network.client)
+        KMangaHandler(networkClient)
     }
     private val mangaUpHandler by lazy {
-        MangaUpHandler(network.client)
+        MangaUpHandler(networkClient)
     }
+    // KMK <--
     private val pageHandler by lazy {
         PageHandler(
+            // KMK -->
             delegate,
+            // KMK <--
             mangadexService,
             mangaPlusHandler,
             comikeyHandler,
@@ -150,8 +154,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             azukHandler,
             mangaHotHandler,
             namicomiHandler,
+            // KMK -->
             kMangaHandler,
             mangaUpHandler,
+            // KMK <--
         )
     }
 
@@ -249,11 +255,15 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     @Deprecated("Use the suspend API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
+        // KMK -->
         return runAsObservable { pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver()) }
+        // KMK <--
     }
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
+        // KMK -->
         return pageHandler.fetchPageList(chapter, usePort443Only(), dataSaver())
+        // KMK <--
     }
 
     override suspend fun getImage(page: Page): Response {

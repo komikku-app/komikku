@@ -1,22 +1,19 @@
 package exh.md.handlers
 
-import android.annotation.SuppressLint
-import android.app.Application
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.core.content.ContextCompat
+import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.network.POST
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.MangaUpViewerResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import exh.md.utils.evaluateOnSite
+import exh.md.utils.jsString
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -24,11 +21,7 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.asResponseBody
 import okio.buffer
 import okio.cipherSource
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import java.io.IOException
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -41,11 +34,11 @@ class MangaUpHandler(currentClient: OkHttpClient) {
     private val apiUrl = "https://global-api.$domain/api"
     private val imgUrl = "https://global-img.$domain"
 
-    private val context = Injekt.get<Application>()
-
-    private val executor = ContextCompat.getMainExecutor(context)
-
     private var secret: String? = null
+
+    // Set once the WebView was checked for a secret, even if none was found, so logged-out users don't
+    // spin up a WebView for every chapter
+    private var secretLoaded = false
 
     private val secretMutex = Mutex()
 
@@ -58,155 +51,95 @@ class MangaUpHandler(currentClient: OkHttpClient) {
 
     val client = currentClient.newBuilder()
         .addInterceptor(MangaUpImageInterceptor)
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
-
-            // 410: expired secret -> device got removed OR more than 3 secrets/devices active, oldest one expires
-            // 401: invalid secret -> login was aborted; UA mismatch from previous login
-            if (response.code == 410 || response.code == 401) {
-                response.close()
-
-                val failedSecret = request.url.queryParameter("secret")
-
-                if (failedSecret != null) {
-                    flushSecret(failedSecret)
-
-                    runBlocking {
-                        secretMutex.withLock {
-                            if (secret == failedSecret) {
-                                secret = null
-                            }
-                        }
-                    }
-                }
-
-                val newSecret = runBlocking { fetchSecret() }
-                val isMyPage = request.url.pathSegments.lastOrNull() == "my_page"
-                val isSecretValid = !newSecret.isNullOrEmpty() && newSecret != failedSecret
-
-                if (!isSecretValid && isMyPage) {
-                    val target = request.url.fragment
-                    throw IOException("Log in via WebView to access your $target")
-                }
-
-                val newUrl = request.url.newBuilder()
-
-                if (isSecretValid) {
-                    newUrl.setQueryParameter("secret", newSecret)
-                } else {
-                    newUrl.removeAllQueryParameters("secret")
-
-                    runBlocking {
-                        secretMutex.withLock {
-                            if (secret == newSecret) {
-                                secret = null
-                            }
-                        }
-                    }
-                }
-
-                val newRequest = request.newBuilder()
-                    .url(newUrl.build())
-                    .build()
-
-                return@addInterceptor chain.proceed(newRequest)
-            }
-            response
-        }
         .build()
 
-    @SuppressLint("SetJavaScriptEnabled")
     private suspend fun fetchSecret(): String? = secretMutex.withLock {
-        if (secret != null) return secret
-
-        val latch = CountDownLatch(1)
-        var token: String? = null
-
-        executor.execute {
-            val webView = WebView(context)
-
-            @Suppress("DEPRECATION")
-            with(webView.settings) {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                databaseEnabled = true
-                blockNetworkImage = true
-            }
-
-            webView.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView, url: String?) {
-                    view.evaluateJavascript("window.localStorage.getItem('secret')") { value ->
-                        token = value?.trim('"')
-                        if (token == "null" || token.isNullOrBlank()) token = null
-
-                        latch.countDown()
-                        view.stopLoading()
-                        view.destroy()
-                    }
-                }
-            }
-
-            webView.loadDataWithBaseURL("$baseUrl/", " ", "text/html", "utf-8", null)
+        if (!secretLoaded) {
+            secret = evaluateOnSite(baseUrl, "localStorage.getItem('secret')")?.takeUnless { it.isBlank() }
+            secretLoaded = true
         }
-
-        withContext(Dispatchers.IO) { latch.await(10, TimeUnit.SECONDS) }
-
-        secret = token
-        return secret
+        secret
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun flushSecret(target: String) = executor.execute {
-        val webView = WebView(context)
+    /**
+     * Drops [failed] from the WebView's localStorage if it's still stored there, then reads the secret again.
+     *
+     * @return the new secret, or `null` to continue logged out.
+     */
+    private suspend fun refreshSecret(failed: String?): String? = secretMutex.withLock {
+        // Another request already replaced the failed secret
+        secret?.takeIf { it != failed }?.let { return it }
 
-        @Suppress("DEPRECATION")
-        with(webView.settings) {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            databaseEnabled = true
-            blockNetworkImage = true
-        }
+        val script = """
+            (function() {
+                if (localStorage.getItem('secret') === ${jsString(failed)}) localStorage.removeItem('secret');
+                return localStorage.getItem('secret');
+            })()
+        """.trimIndent()
+        secret = evaluateOnSite(baseUrl, script)?.takeUnless { it.isBlank() || it == failed }
+        secretLoaded = true
+        secret
+    }
 
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView, url: String?) {
-                val script = "if(window.localStorage.getItem('secret')==='$target'){window.localStorage.removeItem('secret');}"
-                view.evaluateJavascript(script) {
-                    view.stopLoading()
-                    view.destroy()
-                }
+    /** Makes the next [fetchSecret] check the WebView again if no secret was found, e.g. after a login there */
+    private suspend fun recheckMissingSecret() = secretMutex.withLock {
+        if (secret == null) secretLoaded = false
+    }
+
+    private suspend fun viewerRequest(url: HttpUrl): Response {
+        val response = client.newCall(POST(url.toString(), headers)).await()
+
+        // 410: expired secret -> device got removed OR more than 3 secrets/devices active, oldest one expires
+        // 401: invalid secret -> login was aborted; UA mismatch from previous login
+        if (response.code != 410 && response.code != 401) {
+            if (!response.isSuccessful) {
+                response.close()
+                throw HttpException(response.code)
             }
+            return response
         }
+        response.close()
 
-        webView.loadDataWithBaseURL("$baseUrl/", " ", "text/html", "utf-8", null)
+        val newSecret = refreshSecret(url.queryParameter("secret"))
+        val retryUrl = url.newBuilder()
+            .apply {
+                if (newSecret != null) setQueryParameter("secret", newSecret) else removeAllQueryParameters("secret")
+            }
+            .build()
+
+        return client.newCall(POST(retryUrl.toString(), headers)).awaitSuccess()
     }
 
     suspend fun fetchPageList(externalUrl: String, lang: String): List<Page> {
-        val chapterId = externalUrl.substringAfterLast("/")
+        val chapterId = externalUrl.substringBefore("?").substringAfterLast("/").toIntOrNull()
+            ?: throw Exception("Unsupported Manga UP! chapter link: $externalUrl")
         val url = "$apiUrl/manga/viewer_v2".toHttpUrl().newBuilder()
             .apply {
                 fetchSecret()?.let { addQueryParameter("secret", it) }
             }
             .addQueryParameter("app_ver", "0")
             .addQueryParameter("os_ver", "0")
-            .addQueryParameter("chapter_id", chapterId)
+            .addQueryParameter("chapter_id", chapterId.toString())
             .addQueryParameter("quality", "high")
             .addQueryParameter("lang", lang)
             .build()
-            .toString()
 
-        val response = client.newCall(POST(url, headers)).awaitSuccess()
-        val result = response.use { ProtoBuf.decodeFromByteArray<MangaUpViewerResponse>(it.body.bytes()) }
-        val pages = result.pageBlocks.flatMap { it.pages }
-            .filter { !it.url.contains("tutorial") }
+        val result = viewerRequest(url).use { ProtoBuf.decodeFromByteArray<MangaUpViewerResponse>(it.body.bytes()) }
+        // The response also carries blocks for other chapters, keep only the requested one
+        val pages = result.pageBlocks
+            .firstOrNull { it.chapterId == chapterId }
+            ?.pages
+            ?.filterNot { it.url.contains("tutorial") }
 
-        if (pages.isEmpty()) {
+        if (pages.isNullOrEmpty()) {
+            // Check the WebView again next time in case the user logs in meanwhile
+            recheckMissingSecret()
             throw Exception("Log in via WebView and purchase this chapter")
         }
 
         return pages.mapIndexed { i, page ->
-            val img = imgUrl + page.url + "#key=${page.key}#iv=${page.iv}"
-            Page(i, imageUrl = img)
+            val encryption = if (page.key != null && page.iv != null) "#key=${page.key}#iv=${page.iv}" else ""
+            Page(i, imageUrl = imgUrl + page.url + encryption)
         }
     }
 }
@@ -229,14 +162,18 @@ private object MangaUpImageInterceptor : Interceptor {
             return chain.proceed(request)
         }
 
+        val cipher = try {
+            Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
+                init(Cipher.DECRYPT_MODE, SecretKeySpec(key.decodeHex(), "AES"), IvParameterSpec(iv.decodeHex()))
+            }
+        } catch (e: Exception) {
+            throw IOException("Invalid Manga UP! image key", e)
+        }
+
         val response = chain.proceed(request)
 
         if (!response.isSuccessful) return response
 
-        val secretKey = SecretKeySpec(key.decodeHex(), "AES")
-        val ivSpec = IvParameterSpec(iv.decodeHex())
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
         val body = response.body.source().cipherSource(cipher).buffer().asResponseBody(response.body.contentType())
 
         return response.newBuilder()

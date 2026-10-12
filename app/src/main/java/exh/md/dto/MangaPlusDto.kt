@@ -5,10 +5,13 @@ import kotlinx.serialization.protobuf.ProtoNumber
 
 @Serializable
 data class MangaPlusResponse(
+    // KMK -->
     @ProtoNumber(1) val success: SuccessResult? = null,
     @ProtoNumber(2) val error: ErrorResult? = null,
+    // KMK <--
 )
 
+// KMK -->
 @Serializable
 data class ErrorResult(
     @ProtoNumber(2) val englishPopup: Popup? = null,
@@ -24,29 +27,39 @@ data class ErrorResult(
 data class Popup(
     @ProtoNumber(2) val body: String = "",
 )
+// KMK <--
 
 @Serializable
 data class SuccessResult(
+    // KMK -->
     @ProtoNumber(10) val mangaViewer: MangaViewer? = null,
+    // KMK <--
 )
 
 @Serializable
 data class MangaViewer(
+    // KMK -->
     @ProtoNumber(1) val pages: List<MangaPlusPage> = emptyList(),
     @ProtoNumber(19) val viewToken: String? = null,
+    // KMK <--
 )
 
 @Serializable
 data class MangaPlusPage(
+    // KMK -->
     @ProtoNumber(1) val mangaPage: MangaPage? = null,
+    // KMK <--
 )
 
 @Serializable
 data class MangaPage(
+    // KMK -->
     @ProtoNumber(1) val imageUrl: String,
     @ProtoNumber(5) val encryptionKey: String? = null,
+    // KMK <--
 )
 
+// KMK -->
 enum class MangaPlusLanguage(val code: Int, val clang: String) {
     ENGLISH(0, "eng"),
     SPANISH(1, "esp"),
@@ -72,3 +85,4 @@ fun String.toMangaPlusLanguage(): MangaPlusLanguage = when (this) {
     // Default to English
     else -> MangaPlusLanguage.ENGLISH
 }
+// KMK <--

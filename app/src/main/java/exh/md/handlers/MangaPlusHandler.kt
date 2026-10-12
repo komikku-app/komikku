@@ -11,6 +11,7 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -31,17 +32,26 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .rateLimitHost(WEB_URL.toHttpUrl(), 2)
         .build()
 
+    // KMK -->
+    fun isImageUrl(url: String?): Boolean =
+        url?.toHttpUrlOrNull()?.host?.endsWith(".$IMAGE_HOST_SUFFIX", true) == true
+
     suspend fun fetchPageList(chapterId: String, dataSaver: Boolean, lang: String): List<Page> {
         val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"), dataSaver, lang)).awaitSuccess()
         return pageListParse(response, lang)
     }
+    // KMK <--
 
+    // KMK -->
     private fun pageListRequest(chapterId: String, dataSaver: Boolean, lang: String): Request {
+        // KMK <--
         val newHeaders = headers.newBuilder()
             .set("Referer", "$WEB_URL/viewer/$chapterId")
             .build()
 
+        // KMK -->
         val url = "$API_URL/manga_viewer_v3".toHttpUrl().newBuilder()
+            // KMK <--
             .addQueryParameter("chapter_id", chapterId)
             .addQueryParameter("split", "yes")
             .addQueryParameter(
@@ -52,12 +62,15 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
                     "super_high"
                 },
             )
+            // KMK -->
             .addQueryParameter("clang", lang.toMangaPlusLanguage().clang)
+            // KMK <--
             .toString()
 
         return GET(url, newHeaders)
     }
 
+    // KMK -->
     private fun pageListParse(response: Response, lang: String): List<Page> {
         val result = response.use { ProtoBuf.decodeFromByteArray<MangaPlusResponse>(it.body.bytes()) }
 
@@ -74,6 +87,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
                 Page(i, viewer.viewToken.orEmpty(), page.imageUrl + encryptionKey)
             }
     }
+    // KMK <--
 
     private fun imageIntercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -105,5 +119,9 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     companion object {
         private const val WEB_URL = "https://mangaplus.shueisha.co.jp"
         private const val API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
+
+        // KMK -->
+        private const val IMAGE_HOST_SUFFIX = "tokyo-cdn.com"
+        // KMK <--
     }
 }

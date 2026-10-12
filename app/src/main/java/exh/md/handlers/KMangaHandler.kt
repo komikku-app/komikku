@@ -1,30 +1,25 @@
 package exh.md.handlers
 
-import android.annotation.SuppressLint
-import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.dto.BirthdayCookie
-import exh.md.dto.LocalStorageAccount
-import exh.md.dto.ViewerApiResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import exh.md.dto.KMangaBirthdayCookie
+import exh.md.dto.KMangaLocalStorageAccount
+import exh.md.dto.KMangaViewerResponse
+import exh.md.utils.evaluateOnSite
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -32,14 +27,9 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.asResponseBody
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.IOException
 import java.net.URLDecoder
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import kotlin.getValue
 
 /**
  * Adapted from https://github.com/keiyoushi/extensions-source/tree/main/src/en/kmanga
@@ -47,13 +37,13 @@ import kotlin.getValue
 class KMangaHandler(currentClient: OkHttpClient) {
     private val json by injectLazy<Json>()
 
+    @Volatile
     private var userId: Int? = null
 
+    @Volatile
     private var reloadUserId = false
 
-    private val app = Injekt.get<Application>()
-
-    private val executor = ContextCompat.getMainExecutor(app)
+    private val userIdMutex = Mutex()
 
     val baseUrl = "https://kmanga.kodansha.com"
 
@@ -71,10 +61,11 @@ class KMangaHandler(currentClient: OkHttpClient) {
             val response = chain.proceed(request)
             if (response.code == 400) {
                 response.close()
+                // Read the account again on the next request, e.g. after logging in via WebView
+                reloadUserId = true
                 val error = if (request.url.pathSegments.last().contains("viewer")) {
                     "Log in via WebView and rent or purchase this chapter to read."
                 } else {
-                    reloadUserId = true
                     "Open WebView and retry"
                 }
 
@@ -84,61 +75,56 @@ class KMangaHandler(currentClient: OkHttpClient) {
         }
         .build()
 
+    /** Pages carry their scramble key as `#seed:titleId:episodeId`, whichever host serves the image */
+    fun isImageUrl(url: String?): Boolean =
+        url?.toHttpUrlOrNull()?.fragment?.matches(SCRAMBLE_KEY_REGEX) == true
+
     suspend fun fetchPageList(externalUrl: String): List<Page> {
         val episodeId = externalUrl.toHttpUrl().pathSegments.last()
         val url = "$API_URL/web/episode/viewer".toHttpUrl().newBuilder()
             .addQueryParameter("episode_id", episodeId)
             .build()
 
-        val result = with(json) { hashedReq(url).parseAs<ViewerApiResponse>() }
+        val result = with(json) { hashedReq(url).parseAs<KMangaViewerResponse>() }
         return result.pageList.mapIndexed { index, page ->
             Page(index, imageUrl = "$page#${result.scrambleSeed}:${result.titleId}:${result.episodeId}")
         }
     }
 
-    private suspend fun hashedReq(url: HttpUrl, body: FormBody? = null): Response {
-        if (reloadUserId || userId == null) setUserId()
+    private suspend fun hashedReq(url: HttpUrl): Response {
+        val clientId = getUserId()
 
         val (birthday, expires) = getBirthdayCookie(url)
-        val params = if (body != null) {
-            (0 until body.size).associate { body.name(it) to body.value(it) }
-        } else {
-            url.queryParameterNames.associateWith {
-                url.queryParameter(it)!!
-            }
+        val params = url.queryParameterNames.associateWith {
+            url.queryParameter(it)!!
         }
 
         val hash = generateHash(params, birthday, expires)
         val newHeaders = headers.newBuilder()
-            .add("x-kmanga-client-id", "0")
+            .add("x-kmanga-client-id", clientId.toString())
             .add("x-kmanga-is-crawler", "false")
             .add("X-Kmanga-Hash", hash)
             .build()
 
-        return if (body != null) {
-            client.newCall(POST(url.toString(), newHeaders, body)).awaitSuccess()
-        } else {
-            client.newCall(GET(url, newHeaders)).awaitSuccess()
-        }
+        return client.newCall(GET(url, newHeaders)).awaitSuccess()
     }
 
     private fun getBirthdayCookie(url: HttpUrl): Pair<String, String> {
         val cookies = client.cookieJar.loadForRequest(url)
         val birthdayCookie = cookies.firstOrNull { it.name == "birthday" }?.value
 
-        return if (birthdayCookie != null) {
+        val cookieData = birthdayCookie?.let {
             try {
-                val decoded = URLDecoder.decode(birthdayCookie, "UTF-8")
-                val cookieData = json.decodeFromString<BirthdayCookie>(decoded)
-                cookieData.value to cookieData.expires.toString()
+                json.decodeFromString<KMangaBirthdayCookie>(URLDecoder.decode(it, "UTF-8"))
             } catch (_: Exception) {
-                // Fallback to default if cookie is malformed
-                "2000-01" to (System.currentTimeMillis() / 1000 + 315360000).toString()
+                // Cookie is malformed
+                null
             }
-        } else {
-            // Default for logged-out users or users without the cookie to bypass age restrictions
-            "2000-01" to (System.currentTimeMillis() / 1000 + 315360000).toString()
         }
+
+        // Default for logged-out users, users without the cookie or with a malformed one to bypass age restrictions
+        return cookieData?.let { it.value to it.expires.toString() }
+            ?: ("2000-01" to (System.currentTimeMillis() / 1000 + 315360000).toString())
     }
 
     // https://kmanga.kodansha.com/_nuxt/vl9so/entry-CSwIbMdW.js
@@ -160,52 +146,26 @@ class KMangaHandler(currentClient: OkHttpClient) {
         return "${keyHash}_$valueHash"
     }
 
-    private suspend fun setUserId() {
+    private suspend fun getUserId(): Int = userIdMutex.withLock {
+        userId?.takeUnless { reloadUserId }?.let { return it }
         reloadUserId = false
-        val latch = CountDownLatch(1)
-        var webView: WebView? = null
-        var accountStr: String? = null
 
-        executor.execute {
-            val view = WebView(app)
-            webView = view
-
-            @SuppressLint("SetJavaScriptEnabled")
-            view.settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                blockNetworkImage = false
-                useWideViewPort = false
-                loadWithOverviewMode = false
-            }
-
-            view.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    view?.evaluateJavascript("localStorage.getItem('account')") {
-                        accountStr = json.decodeFromString<String?>(it)
-                        latch.countDown()
-                    }
-                }
-            }
-
-            view.loadDataWithBaseURL(baseUrl, "", "text/html", "UTF-8", null)
+        val account = evaluateOnSite(baseUrl, "localStorage.getItem('account')")?.let {
+            runCatching { json.decodeFromString<KMangaLocalStorageAccount>(it) }.getOrNull()
         }
 
-        withContext(Dispatchers.IO) { latch.await(10, TimeUnit.SECONDS) }
-
-        executor.execute { webView?.destroy() }
-
-        val account: LocalStorageAccount? = accountStr?.let(json::decodeFromString)
-
-        userId = if (account?.isLoggedIn == true) {
+        val id = if (account?.isLoggedIn == true) {
             account.checkedTicketExpiredList?.firstOrNull()?.userId ?: 0
         } else {
             0
         }
+        userId = id
+        id
     }
 
     companion object {
         private const val API_URL = "https://api.kmanga.kodansha.com"
+        private val SCRAMBLE_KEY_REGEX = Regex("""[^:]+:\d+:\d+""")
     }
 }
 
@@ -219,9 +179,18 @@ private object KMangaImageInterceptor : Interceptor {
             return response
         }
 
-        val (seed, titleId, episodeId) = fragment.split(":")
-        val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
-        val result = unscramble(bitmap, seed, titleId.toInt(), episodeId.toInt())
+        val parts = fragment.split(":")
+        val seed = parts.getOrNull(0)
+        val titleId = parts.getOrNull(1)?.toIntOrNull()
+        val episodeId = parts.getOrNull(2)?.toIntOrNull()
+        if (seed.isNullOrEmpty() || titleId == null || episodeId == null) {
+            response.close()
+            throw IOException("Invalid K Manga image key: $fragment")
+        }
+
+        val bitmap = response.body.byteStream().use(BitmapFactory::decodeStream)
+            ?: throw IOException("Failed to decode K Manga image")
+        val result = unscramble(bitmap, seed, titleId, episodeId)
 
         bitmap.recycle()
         val buffer = Buffer()
@@ -263,7 +232,7 @@ private object KMangaImageInterceptor : Interceptor {
         }
 
         // The final 32-bit seed is xor'd against the sum of titleId and episodeId
-        var seed32 = parsedInt.toUInt() xor titleId.toUInt() + episodeId.toUInt()
+        var seed32 = parsedInt.toUInt() xor (titleId.toUInt() + episodeId.toUInt())
 
         val pairs = mutableListOf<Pair<UInt, Int>>()
 
@@ -289,8 +258,8 @@ private object KMangaImageInterceptor : Interceptor {
         val result = createBitmap(width, height)
         val canvas = Canvas(result)
 
-        val blockWidth = (width and -8) / 4
-        val blockHeight = (height and -8) / 4
+        val blockWidth = (width and -8) / GRID_SIZE
+        val blockHeight = (height and -8) / GRID_SIZE
         val srcRect = Rect()
         val dstRect = Rect()
 
