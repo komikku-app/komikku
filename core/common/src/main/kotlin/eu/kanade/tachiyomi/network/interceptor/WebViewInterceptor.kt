@@ -58,15 +58,26 @@ abstract class WebViewInterceptor(
             return response
         }
 
+        if (!prepareWebView()) return response
+
+        return intercept(chain, request, response)
+    }
+
+    /**
+     * Returns whether a WebView can be used, initializing it if so.
+     */
+    // KMK -->
+    @OptIn(DelicateCoroutinesApi::class)
+    // KMK <--
+    protected fun prepareWebView(): Boolean {
         if (!WebViewUtil.supportsWebView(context)) {
             launchUI {
                 context.toast(MR.strings.information_webview_required, Toast.LENGTH_LONG)
             }
-            return response
+            return false
         }
         initWebView
-
-        return intercept(chain, request, response)
+        return true
     }
 
     fun parseHeaders(headers: Headers): Map<String, String> {
