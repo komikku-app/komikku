@@ -47,6 +47,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Fixed a crash on launch on some Samsung devices running Android 9 to 11 ([@AntsyLich](https://github.com/AntsyLich))
 - Fixed a crash when updating an extension while others were installing ([@AntsyLich](https://github.com/AntsyLich))
 - Fixed a crash when a back gesture was still in progress as the reader or a dialog closed ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed tracker start date being off by a day when adding tracking to an entry with read history in some timezones ([@hazptr](https://github.com/hazptr)) ([#4049](https://github.com/mihonapp/mihon/pull/4049))
 
 ## [v0.20.0] - 2026-06-27
 ### Added
