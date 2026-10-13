@@ -192,7 +192,7 @@
     <string name="discord_accounts">Discord অ্যাকাউন্টসমূহ</string>
     <string name="active_account">সক্রিয় অ্যাকাউন্ট</string>
     <string name="no_accounts_found">কোনো অ্যাকাউন্ট পাওয়া যায়নি</string>
-    <string name="login_failed">লগইন করতে ব্যর্থ হয়েছে</string>
+    <string name="login_failed">লগইন ব্যর্থ হয়েছে</string>
     <string name="discord_status_using">ব্যবহার করছেন</string>
     <string name="discord_status_scrolling">স্ক্রোল করছেন</string>
     <string name="discord_status_messing">ঘাঁটাঘাঁটি করছেন</string>
