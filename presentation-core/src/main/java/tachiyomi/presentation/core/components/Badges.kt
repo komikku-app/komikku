@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -39,7 +39,7 @@ fun BadgeGroup(
     Row(
         modifier = modifier.clip(shape)
             // KMK -->
-            .height(18.dp),
+            .heightIn(min = 18.dp),
         // KMK <--
     ) {
         content()
