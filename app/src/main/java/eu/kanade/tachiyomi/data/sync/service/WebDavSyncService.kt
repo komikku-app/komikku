@@ -20,6 +20,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import okio.ByteString.Companion.encodeUtf8
 import org.apache.http.HttpStatus
 import tachiyomi.core.common.i18n.stringResource
@@ -126,13 +127,25 @@ class WebDavSyncService(
         }
     }
 
-    private suspend fun pullSyncData(forceIdentityEncoding: Boolean = false): Pair<SyncData?, String> {
+    private fun isStrongETag(etag: String): Boolean = etag.startsWith('"') && etag.endsWith('"')
+
+    private suspend fun pullSyncData(): Pair<SyncData?, String> {
         if (!validateSettings()) return Pair(null, "")
 
         // The old shared cache is deliberately ignored, including validators with stripped quotes.
-        val lastETag = etagPreference.get()
-            .takeIf { it.startsWith('"') && it.endsWith('"') }
-            .orEmpty()
+        val lastETag = etagPreference.get().takeIf(::isStrongETag).orEmpty()
+        val result = downloadSyncData(lastETag)
+        if (result != null) return result
+
+        // A compression proxy may weaken ETags. Retry once with a full, uncompressed download.
+        return downloadSyncData("", forceIdentityEncoding = true)
+            ?: throw WebDavException(context.stringResource(KMR.strings.webdav_weak_etag_error))
+    }
+
+    private suspend fun downloadSyncData(
+        lastETag: String,
+        forceIdentityEncoding: Boolean = false,
+    ): Pair<SyncData?, String>? {
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
         if (forceIdentityEncoding) {
             headersBuilder.add("Accept-Encoding", "identity")
@@ -142,44 +155,43 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl()
         val request = GET(requestUrl, headers = headersBuilder.build())
-        val result = client.newCall(request).await().use { response ->
-            val responseETag = response.headers["ETag"].orEmpty()
-            if (!forceIdentityEncoding && responseETag.startsWith("W/") &&
-                (response.isSuccessful || response.code == HttpStatus.SC_NOT_MODIFIED)
-            ) {
-                // A compression proxy may weaken ETags. Close this response before retrying a full download.
-                return@use null
+        return client.newCall(request).await().use { response ->
+            if (requiresStrongETagRetry(response, forceIdentityEncoding)) {
+                null
+            } else {
+                parseSyncResponse(response, lastETag)
             }
-            if (forceIdentityEncoding &&
-                (
-                    response.code == HttpStatus.SC_NOT_MODIFIED ||
-                        (response.isSuccessful && !(responseETag.startsWith('"') && responseETag.endsWith('"')))
-                    )
-            ) {
-                throw WebDavException(context.stringResource(KMR.strings.webdav_weak_etag_error))
-            }
-            when (response.code) {
-                HttpStatus.SC_NOT_MODIFIED -> Pair(null, response.headers["ETag"] ?: lastETag)
-                HttpStatus.SC_NOT_FOUND -> Pair(null, "")
-                else -> {
-                    if (response.isSuccessful) {
-                        val newETag = response.headers["ETag"] ?: ""
-                        val bytes = response.body.byteStream().use { it.readBytes() }
-                        try {
-                            val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
-                            Pair(SyncData(backup = backup), newETag)
-                        } catch (e: Exception) {
-                            xLogE("Invalid backup format:", e)
-                            Pair(null, "")
-                        }
-                    } else {
-                        val body = response.body.string()
-                        throw WebDavException("Failed to download: $body")
-                    }
+        }
+    }
+
+    private fun requiresStrongETagRetry(response: Response, forceIdentityEncoding: Boolean): Boolean {
+        val etag = response.headers["ETag"].orEmpty()
+        if (response.code == HttpStatus.SC_NOT_MODIFIED) {
+            return forceIdentityEncoding || etag.startsWith("W/")
+        }
+        if (!response.isSuccessful) return false
+        return if (forceIdentityEncoding) !isStrongETag(etag) else etag.startsWith("W/")
+    }
+
+    private fun parseSyncResponse(response: Response, lastETag: String): Pair<SyncData?, String> {
+        return when (response.code) {
+            HttpStatus.SC_NOT_MODIFIED -> Pair(null, response.headers["ETag"] ?: lastETag)
+            HttpStatus.SC_NOT_FOUND -> Pair(null, "")
+            else -> {
+                if (!response.isSuccessful) {
+                    throw WebDavException("Failed to download: ${response.body.string()}")
+                }
+                val newETag = response.headers["ETag"] ?: ""
+                val bytes = response.body.byteStream().use { it.readBytes() }
+                try {
+                    val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
+                    Pair(SyncData(backup = backup), newETag)
+                } catch (e: Exception) {
+                    xLogE("Invalid backup format:", e)
+                    Pair(null, "")
                 }
             }
         }
-        return result ?: pullSyncData(forceIdentityEncoding = true)
     }
 
     private suspend fun pushSyncData(syncData: SyncData, eTag: String) {
@@ -204,7 +216,7 @@ class WebDavSyncService(
             when {
                 response.isSuccessful -> {
                     val newETag = response.headers["ETag"] ?: ""
-                    if (newETag.startsWith('"') && newETag.endsWith('"')) {
+                    if (isStrongETag(newETag)) {
                         etagPreference.set(newETag)
                     } else {
                         etagPreference.delete()
