@@ -24,6 +24,7 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -32,7 +33,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreference
 import tachiyomi.core.common.preference.Preference
+import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.i18n.kmk.KMR
 
 // KMK -->
 class WebDavSyncServiceTest {
@@ -41,11 +46,13 @@ class WebDavSyncServiceTest {
     private val backup = Backup(emptyList(), backupCategories = listOf(BackupCategory("Test category")))
     private val backupBytes = protoBuf.encodeToByteArray(Backup.serializer(), backup)
     private val syncData = SyncData(backup = backup)
+    private val context = mockk<Context>()
     private val notifier = mockk<SyncNotifier>(relaxed = true)
-    private val preferences = mockk<SyncPreferences>()
-    private val etagPreference = mockk<Preference<String>>()
+    private val preferenceStore = mockk<PreferenceStore>()
+    private val preferences = SyncPreferences(preferenceStore)
+    private val storedStrings = mutableMapOf<String, Preference<String>>()
     private val clients = mutableListOf<OkHttpClient>()
-    private var cachedETag = ""
+    private val weakETagError = "A strong ETag is required to safely update the remote backup."
 
     @BeforeEach
     fun setUp() {
@@ -54,14 +61,18 @@ class WebDavSyncServiceTest {
         every { any<Any>().xLogI(any<String>()) } just Runs
         every { any<Any>().xLogE(any<String>(), any<Throwable>()) } just Runs
 
-        every { preferences.webDavUrl().get() } returns "https://dav.example.test"
-        every { preferences.webDavFolder().get() } returns ""
-        every { preferences.webDavUsername().get() } returns "test-user"
-        every { preferences.webDavPassword().get() } returns "test-password"
-        every { preferences.uniqueDeviceID() } returns "test-device"
-        every { preferences.lastSyncEtag() } returns etagPreference
-        every { etagPreference.get() } answers { cachedETag }
-        every { etagPreference.set(any()) } answers { cachedETag = firstArg() }
+        mockkStatic("tachiyomi.core.common.i18n.LocalizeKt")
+        every { context.stringResource(KMR.strings.webdav_weak_etag_error) } returns weakETagError
+
+        every { preferenceStore.getString(any(), any()) } answers {
+            val key = firstArg<String>()
+            val defaultValue = secondArg<String>()
+            storedStrings.getOrPut(key) { InMemoryPreference(key, null, defaultValue) }
+        }
+        preferences.webDavUrl().set("https://dav.example.test")
+        preferences.webDavFolder().set("")
+        preferences.webDavUsername().set("test-user")
+        preferences.webDavPassword().set("test-password")
     }
 
     @AfterEach
@@ -71,6 +82,7 @@ class WebDavSyncServiceTest {
             it.connectionPool.evictAll()
         }
         unmockkStatic("exh.log.LoggingKt")
+        unmockkStatic("tachiyomi.core.common.i18n.LocalizeKt")
     }
 
     @ParameterizedTest
@@ -79,7 +91,7 @@ class WebDavSyncServiceTest {
         var serverETag = initialETag
         var uploads = 0
         val requests = mutableListOf<Request>()
-        val service = service { request ->
+        val respond: (Request) -> Response = { request ->
             requests += request
             when (request.method) {
                 "GET" -> if (request.header("If-None-Match") == serverETag) {
@@ -98,26 +110,24 @@ class WebDavSyncServiceTest {
             }
         }
 
-        assertNotNull(service.doSync(syncData))
-        assertEquals("\"uploaded-1\"", cachedETag)
-        assertNotNull(service.doSync(syncData))
+        assertNotNull(service(respond).doSync(syncData))
+        assertNotNull(service(respond).doSync(syncData))
 
         assertEquals(listOf("GET", "PUT", "GET", "PUT"), requests.map { it.method })
         assertNull(requests[0].header("If-None-Match"))
         assertEquals(initialETag, requests[1].header("If-Match"))
         assertEquals("\"uploaded-1\"", requests[2].header("If-None-Match"))
         assertEquals("\"uploaded-1\"", requests[3].header("If-Match"))
-        assertEquals("\"uploaded-2\"", cachedETag)
         assertEquals(2, uploads)
         verify(exactly = 0) { notifier.showSyncError(any()) }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["abc-123", "W/\"abc-123"])
+    @ValueSource(strings = ["abc-123", "W/\"abc-123", "\"fresh-etag\""])
     fun `fetches a fresh validator for legacy caches and accepts uploads without response ETags`(
         legacyETag: String,
     ) = runTest {
-        cachedETag = legacyETag
+        preferences.lastSyncEtag().set(legacyETag)
         val serverETag = "\"fresh-etag\""
         val requests = mutableListOf<Request>()
         val service = service { request ->
@@ -137,34 +147,185 @@ class WebDavSyncServiceTest {
 
         assertNull(requests[0].header("If-None-Match"))
         assertEquals(serverETag, requests[1].header("If-Match"))
-        verify(exactly = 0) { etagPreference.set(any()) }
+        assertEquals(legacyETag, preferences.lastSyncEtag().get())
         verify(exactly = 0) { notifier.showSyncError(any()) }
     }
 
-    @Test
-    fun `preserves weak validators for conditional downloads`() = runTest {
-        cachedETag = "W/\"weak-etag\""
+    @ParameterizedTest
+    @ValueSource(strings = ["server", "folder", "account"])
+    fun `merges the remote backup after changing the WebDAV resource even with the same ETag`(
+        changedSetting: String,
+    ) = runTest {
+        val serverETag = "\"same-etag\""
+        val remoteBackup = Backup(emptyList(), backupCategories = listOf(BackupCategory("Remote only")))
+        val remoteBytes = protoBuf.encodeToByteArray(Backup.serializer(), remoteBackup)
         val requests = mutableListOf<Request>()
-        val service = service { request ->
+        var changed = false
+        var uploadedBackup: Backup? = null
+        val respond: (Request) -> Response = { request ->
             requests += request
             when (request.method) {
-                "GET" -> response(request, 304)
-                // A weak validator cannot satisfy the strong comparison required by If-Match.
-                "PUT" -> response(request, 412)
+                "MKCOL" -> response(request, 405)
+                "GET" -> if (request.header("If-None-Match") == serverETag) {
+                    response(request, 304)
+                } else {
+                    response(request, 200, serverETag, if (changed) remoteBytes else backupBytes)
+                }
+                "PUT" -> {
+                    val buffer = Buffer()
+                    request.body!!.writeTo(buffer)
+                    uploadedBackup = protoBuf.decodeFromByteArray(Backup.serializer(), buffer.readByteArray())
+                    response(request, 204, serverETag)
+                }
                 else -> error("Unexpected method: ${request.method}")
             }
         }
 
+        assertNotNull(service(respond).doSync(syncData))
+        when (changedSetting) {
+            "server" -> preferences.webDavUrl().set("https://other.example.test")
+            "folder" -> preferences.webDavFolder().set("another-folder")
+            "account" -> preferences.webDavUsername().set("other-user")
+        }
+        changed = true
+
+        val result = service(respond).doSync(syncData)
+
+        assertEquals(listOf(null, null), requests.filter { it.method == "GET" }.map { it.header("If-None-Match") })
+        val expectedCategories = setOf("Test category", "Remote only")
+        assertEquals(expectedCategories, result?.backupCategories?.map { it.name }?.toSet())
+        assertEquals(expectedCategories, uploadedBackup?.backupCategories?.map { it.name }?.toSet())
+        verify(exactly = 0) { notifier.showSyncError(any()) }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["", "W/\"weak-etag\""])
+    fun `fetches the remote backup again when a successful upload returns no strong ETag`(
+        uploadETag: String,
+    ) = runTest {
+        val serverETag = "\"strong-etag\""
+        val requests = mutableListOf<Request>()
+        var uploads = 0
+        val respond: (Request) -> Response = { request ->
+            requests += request
+            when (request.method) {
+                "GET" -> if (request.header("If-None-Match") == serverETag) {
+                    response(request, 304)
+                } else {
+                    response(request, 200, serverETag, backupBytes)
+                }
+                "PUT" -> {
+                    uploads++
+                    response(request, 204, if (uploads == 1) serverETag else uploadETag.ifEmpty { null })
+                }
+                else -> error("Unexpected method: ${request.method}")
+            }
+        }
+
+        repeat(3) { assertNotNull(service(respond).doSync(syncData)) }
+
+        assertEquals(
+            listOf(null, serverETag, null),
+            requests.filter { it.method == "GET" }.map { it.header("If-None-Match") },
+        )
+        assertEquals(List(3) { serverETag }, requests.filter { it.method == "PUT" }.map { it.header("If-Match") })
+        verify(exactly = 0) { notifier.showSyncError(any()) }
+    }
+
+    @Test
+    fun `a weak download ETag reports the unsupported server without uploading`() = runTest {
+        val requests = mutableListOf<Request>()
+        val service = service { request ->
+            requests += request
+            response(request, 200, "W/\"weak-etag\"", backupBytes)
+        }
+
         assertNull(service.doSync(syncData))
 
-        assertEquals("W/\"weak-etag\"", requests[0].header("If-None-Match"))
-        assertEquals("W/\"weak-etag\"", requests[1].header("If-Match"))
-        verify(exactly = 1) { notifier.showSyncError(match { it.contains("Sync conflict detected") }) }
+        assertEquals(listOf("GET", "GET"), requests.map { it.method })
+        assertEquals("identity", requests.last().header("Accept-Encoding"))
+        assertNull(requests.last().header("If-None-Match"))
+        verify(exactly = 1) { notifier.showSyncError(weakETagError) }
+        verify(exactly = 0) { notifier.showSyncSuccess(any()) }
+    }
+
+    @Test
+    fun `a weak ETag on a not modified response also stops the upload`() = runTest {
+        val requests = mutableListOf<Request>()
+        var uploaded = false
+        val respond: (Request) -> Response = { request ->
+            requests += request
+            when (request.method) {
+                "GET" -> if (request.header("Accept-Encoding") == "identity") {
+                    response(request, 200, "W/\"etag\"", backupBytes)
+                } else if (uploaded) {
+                    response(request, 304, "W/\"etag\"")
+                } else {
+                    response(request, 200, "\"etag\"", backupBytes)
+                }
+                "PUT" -> {
+                    uploaded = true
+                    response(request, 204, "\"etag\"")
+                }
+                else -> error("Unexpected method: ${request.method}")
+            }
+        }
+
+        assertNotNull(service(respond).doSync(syncData))
+        assertNull(service(respond).doSync(syncData))
+
+        assertEquals(listOf("GET", "PUT", "GET", "GET"), requests.map { it.method })
+        verify(exactly = 1) { notifier.showSyncError(weakETagError) }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [200, 304])
+    fun `recovers from a weak ETag by merging a fresh uncompressed backup before uploading`(
+        weakResponseCode: Int,
+    ) = runTest {
+        val remoteBackup = Backup(emptyList(), backupCategories = listOf(BackupCategory("Remote only")))
+        val remoteBytes = protoBuf.encodeToByteArray(Backup.serializer(), remoteBackup)
+        val requests = mutableListOf<Request>()
+        var uploads = 0
+        var uploadedBackup: Backup? = null
+        val respond: (Request) -> Response = { request ->
+            requests += request
+            when (request.method) {
+                "GET" -> when {
+                    uploads == 0 -> response(request, 200, "\"original\"", backupBytes)
+                    request.header("Accept-Encoding") == "identity" -> {
+                        response(request, 200, "\"fresh\"", remoteBytes)
+                    }
+                    else -> response(request, weakResponseCode, "W/\"original\"", backupBytes)
+                }
+                "PUT" -> {
+                    val buffer = Buffer()
+                    request.body!!.writeTo(buffer)
+                    uploadedBackup = protoBuf.decodeFromByteArray(Backup.serializer(), buffer.readByteArray())
+                    uploads++
+                    response(request, 204, if (uploads == 1) "\"original\"" else "\"fresh\"")
+                }
+                else -> error("Unexpected method: ${request.method}")
+            }
+        }
+
+        assertNotNull(service(respond).doSync(syncData))
+        val result = service(respond).doSync(syncData)
+
+        assertEquals(listOf("GET", "PUT", "GET", "GET", "PUT"), requests.map { it.method })
+        assertEquals("identity", requests[3].header("Accept-Encoding"))
+        assertNull(requests[3].header("If-None-Match"))
+        assertEquals("\"fresh\"", requests[4].header("If-Match"))
+        val expectedCategories = setOf("Test category", "Remote only")
+        assertEquals(expectedCategories, result?.backupCategories?.map { it.name }?.toSet())
+        assertEquals(expectedCategories, uploadedBackup?.backupCategories?.map { it.name }?.toSet())
+        assertEquals(2, uploads)
+        verify(exactly = 0) { notifier.showSyncError(any()) }
     }
 
     @Test
     fun `a rejected upload reports failure without returning a backup to restore`() = runTest {
-        cachedETag = "\"cached-etag\""
+        preferences.lastSyncEtag().set("\"cached-etag\"")
         val service = service { request ->
             when (request.method) {
                 "GET" -> response(request, 200, "\"remote-etag\"", backupBytes)
@@ -175,8 +336,7 @@ class WebDavSyncServiceTest {
 
         assertNull(service.doSync(syncData))
 
-        assertEquals("\"cached-etag\"", cachedETag)
-        verify(exactly = 0) { etagPreference.set(any()) }
+        assertEquals("\"cached-etag\"", preferences.lastSyncEtag().get())
         verify(exactly = 1) { notifier.showSyncError(match { it.contains("Sync conflict detected") }) }
         verify(exactly = 0) { notifier.showSyncSuccess(any()) }
     }
@@ -186,7 +346,7 @@ class WebDavSyncServiceTest {
             .addInterceptor { chain -> respond(chain.request()) }
             .build()
         clients += client
-        return WebDavSyncService(mockk<Context>(), Json, preferences, notifier, protoBuf, client)
+        return WebDavSyncService(context, Json, preferences, notifier, protoBuf, client)
     }
 
     private fun response(

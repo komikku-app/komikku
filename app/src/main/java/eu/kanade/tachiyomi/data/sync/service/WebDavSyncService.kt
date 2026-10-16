@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.network.await
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.log.xLogI
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.ConnectionPool
@@ -19,9 +20,11 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.ByteString.Companion.encodeUtf8
 import org.apache.http.HttpStatus
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
@@ -48,6 +51,10 @@ class WebDavSyncService(
     private val username: String = syncPreferences.webDavUsername().get().trim()
     private val password: String = syncPreferences.webDavPassword().get()
     private val credentials: String = Credentials.basic(username, password)
+    // ETags are scoped to a resource and account, and must not share SyncYomi's cache.
+    private val etagPreference = syncPreferences.webDavLastSyncEtag(
+        json.encodeToString(listOf(buildWebDavFileUrl(), username)).encodeUtf8().sha256().hex(),
+    )
 
     private fun buildWebDavFileUrl(fileName: String = "backup.proto"): String {
         val cleanBase = url.trimEnd('/')
@@ -119,21 +126,40 @@ class WebDavSyncService(
         }
     }
 
-    private suspend fun pullSyncData(): Pair<SyncData?, String> {
+    private suspend fun pullSyncData(forceIdentityEncoding: Boolean = false): Pair<SyncData?, String> {
         if (!validateSettings()) return Pair(null, "")
 
-        // Older versions stripped ETag quotes. Fetch a fresh validator instead of reusing that cache.
-        val lastETag = syncPreferences.lastSyncEtag().get()
-            .takeIf { (it.startsWith('"') || it.startsWith("W/\"")) && it.endsWith('"') }
+        // The old shared cache is deliberately ignored, including validators with stripped quotes.
+        val lastETag = etagPreference.get()
+            .takeIf { it.startsWith('"') && it.endsWith('"') }
             .orEmpty()
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
-        if (lastETag.isNotEmpty()) headersBuilder.add("If-None-Match", lastETag)
+        if (forceIdentityEncoding) {
+            headersBuilder.add("Accept-Encoding", "identity")
+        } else if (lastETag.isNotEmpty()) {
+            headersBuilder.add("If-None-Match", lastETag)
+        }
 
         val requestUrl = buildWebDavFileUrl()
         val request = GET(requestUrl, headers = headersBuilder.build())
-        return client.newCall(request).await().use { response ->
+        val result = client.newCall(request).await().use { response ->
+            val responseETag = response.headers["ETag"].orEmpty()
+            if (!forceIdentityEncoding && responseETag.startsWith("W/") &&
+                (response.isSuccessful || response.code == HttpStatus.SC_NOT_MODIFIED)
+            ) {
+                // A compression proxy may weaken ETags. Close this response before retrying a full download.
+                return@use null
+            }
+            if (forceIdentityEncoding &&
+                (
+                    response.code == HttpStatus.SC_NOT_MODIFIED ||
+                        (response.isSuccessful && !(responseETag.startsWith('"') && responseETag.endsWith('"')))
+                    )
+            ) {
+                throw WebDavException(context.stringResource(KMR.strings.webdav_weak_etag_error))
+            }
             when (response.code) {
-                HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
+                HttpStatus.SC_NOT_MODIFIED -> Pair(null, response.headers["ETag"] ?: lastETag)
                 HttpStatus.SC_NOT_FOUND -> Pair(null, "")
                 else -> {
                     if (response.isSuccessful) {
@@ -153,12 +179,17 @@ class WebDavSyncService(
                 }
             }
         }
+        return result ?: pullSyncData(forceIdentityEncoding = true)
     }
 
     private suspend fun pushSyncData(syncData: SyncData, eTag: String) {
         val backup = syncData.backup ?: return
 
         if (!validateSettings()) return
+
+        if (eTag.startsWith("W/")) {
+            throw WebDavException(context.stringResource(KMR.strings.webdav_weak_etag_error))
+        }
 
         val byteArray = protoBuf.encodeToByteArray(Backup.serializer(), backup)
         if (byteArray.isEmpty()) throw IllegalStateException(context.stringResource(MR.strings.empty_backup_error))
@@ -173,7 +204,11 @@ class WebDavSyncService(
             when {
                 response.isSuccessful -> {
                     val newETag = response.headers["ETag"] ?: ""
-                    if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
+                    if (newETag.startsWith('"') && newETag.endsWith('"')) {
+                        etagPreference.set(newETag)
+                    } else {
+                        etagPreference.delete()
+                    }
                     xLogI("WebDAV sync completed")
                 }
                 response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
