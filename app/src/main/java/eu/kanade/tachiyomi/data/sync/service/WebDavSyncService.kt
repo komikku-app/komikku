@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.network.await
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.log.xLogI
-import exh.log.xLogW
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.ConnectionPool
@@ -27,12 +26,19 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
 
+// KMK -->
 class WebDavSyncService(
     context: Context,
     json: Json,
     syncPreferences: SyncPreferences,
     private val notifier: SyncNotifier,
     private val protoBuf: ProtoBuf = Injekt.get(),
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+        .build(),
 ) : SyncService(context, json, syncPreferences) {
 
     private class WebDavException(message: String?) : Exception(message)
@@ -46,15 +52,6 @@ class WebDavSyncService(
     private fun buildWebDavFileUrl(fileName: String = "backup.proto"): String {
         val cleanBase = url.trimEnd('/')
         return if (folder.isNotEmpty()) "$cleanBase/$folder/$fileName" else "$cleanBase/$fileName"
-    }
-
-    private val client: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
-            .build()
     }
 
     private fun validateSettings(): Boolean {
@@ -125,31 +122,34 @@ class WebDavSyncService(
     private suspend fun pullSyncData(): Pair<SyncData?, String> {
         if (!validateSettings()) return Pair(null, "")
 
+        // Older versions stripped ETag quotes. Fetch a fresh validator instead of reusing that cache.
         val lastETag = syncPreferences.lastSyncEtag().get()
+            .takeIf { (it.startsWith('"') || it.startsWith("W/\"")) && it.endsWith('"') }
+            .orEmpty()
         val headersBuilder = Headers.Builder().add("Authorization", credentials)
         if (lastETag.isNotEmpty()) headersBuilder.add("If-None-Match", lastETag)
 
         val requestUrl = buildWebDavFileUrl()
         val request = GET(requestUrl, headers = headersBuilder.build())
-        val response = client.newCall(request).await()
-
-        return when (response.code) {
-            HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
-            HttpStatus.SC_NOT_FOUND -> Pair(null, "")
-            else -> {
-                if (response.isSuccessful) {
-                    val newETag = response.headers["ETag"]?.trim('"') ?: ""
-                    val bytes = response.body.byteStream().use { it.readBytes() }
-                    try {
-                        val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
-                        Pair(SyncData(backup = backup), newETag)
-                    } catch (e: Exception) {
-                        xLogE("Invalid backup format:", e)
-                        Pair(null, "")
+        return client.newCall(request).await().use { response ->
+            when (response.code) {
+                HttpStatus.SC_NOT_MODIFIED -> Pair(null, lastETag)
+                HttpStatus.SC_NOT_FOUND -> Pair(null, "")
+                else -> {
+                    if (response.isSuccessful) {
+                        val newETag = response.headers["ETag"] ?: ""
+                        val bytes = response.body.byteStream().use { it.readBytes() }
+                        try {
+                            val backup = protoBuf.decodeFromByteArray(Backup.serializer(), bytes)
+                            Pair(SyncData(backup = backup), newETag)
+                        } catch (e: Exception) {
+                            xLogE("Invalid backup format:", e)
+                            Pair(null, "")
+                        }
+                    } else {
+                        val body = response.body.string()
+                        throw WebDavException("Failed to download: $body")
                     }
-                } else {
-                    val body = response.body.string()
-                    throw WebDavException("Failed to download: $body")
                 }
             }
         }
@@ -169,24 +169,24 @@ class WebDavSyncService(
 
         val requestUrl = buildWebDavFileUrl()
         val request = PUT(requestUrl, headers = headersBuilder.build(), body = body)
-        val response = client.newCall(request).await()
-
-        when {
-            response.isSuccessful -> {
-                val newETag = response.headers["ETag"]?.trim('"') ?: ""
-                if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
-                xLogI("WebDAV sync completed")
-            }
-            response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
-                val message = "Sync conflict detected. Another device may have updated the remote backup. " +
-                    "Please retry syncing or check your WebDAV folder."
-                xLogW(message)
-                notifier.showSyncError(message)
-            }
-            else -> {
-                val bodyStr = response.body.string()
-                throw WebDavException("Upload failed: $bodyStr")
+        client.newCall(request).await().use { response ->
+            when {
+                response.isSuccessful -> {
+                    val newETag = response.headers["ETag"] ?: ""
+                    if (newETag.isNotEmpty()) syncPreferences.lastSyncEtag().set(newETag)
+                    xLogI("WebDAV sync completed")
+                }
+                response.code == HttpStatus.SC_PRECONDITION_FAILED -> {
+                    val message = "Sync conflict detected. Another device may have updated the remote backup. " +
+                        "Please retry syncing or check your WebDAV folder."
+                    throw WebDavException(message)
+                }
+                else -> {
+                    val bodyStr = response.body.string()
+                    throw WebDavException("Upload failed: $bodyStr")
+                }
             }
         }
     }
 }
+// KMK <--
