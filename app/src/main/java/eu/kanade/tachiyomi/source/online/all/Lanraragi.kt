@@ -140,7 +140,6 @@ class Lanraragi(delegate: HttpSource, val context: Context) :
     @Serializable
     data class Archive(
         val arcid: String,
-        val isnew: String,
         val tags: String?,
         val summary: String?,
         val title: String,
