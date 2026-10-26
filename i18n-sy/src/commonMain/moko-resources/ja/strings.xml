@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">移行しない</string>
     <string name="action_search_manually">マニュアル検索</string>
     <string name="action_migrate_now">移行する</string>
@@ -21,15 +20,15 @@
     <string name="pref_category_fork">フォークの設定</string>
     <string name="pref_category_mangadex">MangaDex</string>
     <string name="pref_ehentai_summary">E/EXHentai ログイン、ギャラリー同期</string>
-    <string name="pref_mangadex_summary">MangaDex ログイン、同期に従う</string>
+    <string name="pref_mangadex_summary">MangaDex ログイン、フォロー同期</string>
     <!-- About -->
     <string name="changelog_version">バージョン %1$s</string>
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai ウェブサイトのアカウント設定</string>
     <string name="enable_exhentai">ExHentai を有効化</string>
     <string name="requires_login">ログインが必要です</string>
-    <string name="use_hentai_at_home">Hentai@Home Networkを使用</string>
-    <string name="use_hentai_at_home_summary">Hentai@Home Network が利用可能な場合、Hentai@Home Network 経由で画像を読み込みますか？ このオプションを無効にすると、\nオプション:\n- 任意のクライアント (推奨)\n- デフォルトのポートクライアントのみ (遅くなることがあります。 ファイアウォールやプロキシが標準以外のポートの発信をブロックしている場合は有効にしてください)。</string>
+    <string name="use_hentai_at_home">Hentai@Home Network を使用</string>
+    <string name="use_hentai_at_home_summary">利用可能な場合は、Hentai@Home Network 経由で画像を読み込みますか？このオプションを無効にすると、閲覧できるページ数が減ります。\nオプション:\n- 任意のクライアント（推奨）\n- デフォルトのポートクライアントのみ（速度が低下する可能性があります。ファイアウォールやプロキシによって非標準ポートからの送信がブロックされている場合は有効にしてください。）</string>
     <string name="use_hentai_at_home_option_1">任意のクライアント (推奨)</string>
     <string name="use_hentai_at_home_option_2">デフォルトのポートクライアントのみ</string>
     <string name="show_japanese_titles">検索結果に日本語タイトルを表示</string>
@@ -39,7 +38,7 @@
     <string name="use_original_images_on">現在オリジナルの画像を使用しています</string>
     <string name="use_original_images_off">現在、リサンプリングされた画像を使用しています</string>
     <string name="watched_tags">既読タグ</string>
-    <string name="watched_tags_summary">E/EXHentai の既読済みタグのページに Webビューを開きます</string>
+    <string name="watched_tags_summary">E/ExHentai の視聴済みタグページへの Webview を開きます</string>
     <string name="watched_tags_exh">ExHentai 既読タグ</string>
     <string name="tag_filtering_threshold">タグフィルターのしきい値</string>
     <string name="tag_filtering_threshhold_error">-9999〜0 の間でなければなりません！</string>
@@ -48,9 +47,9 @@
     <string name="tag_watching_threshhold_error">0〜9999 の間でなければなりません！</string>
     <string name="tag_watching_threshhold_summary">最近アップロードされたギャラリーは、少なくとも1つの既読タグに正の重みがあり、その既読タグの重みの合計がこの値以上であれば、視聴画面に含まれます。しきい値は 0〜9999 の間で設定できます。現在の設定値: %1$d</string>
     <string name="language_filtering">言語フィルター</string>
-    <string name="language_filtering_summary">特定の言語のギャラリーをギャラリーリストや検索から非表示にしたい場合は、ポップアップするダイアログで選択してください。\n検索クエリに関わらず、一致するギャラリーは表示されません。\nTldrチェックマーク付き＝除外</string>
+    <string name="language_filtering_summary">ギャラリー一覧や検索結果から特定の言語のギャラリーを非表示にしたい場合は、ポップアップ表示されるダイアログで該当のギャラリーを選択してください。\n検索クエリに関わらず、一致するギャラリーは表示されないことにご注意ください。\nチェックマーク済み = 除外</string>
     <string name="frong_page_categories">フロントページのカテゴリー</string>
-    <string name="fromt_page_categories_summary">初期設定でフロントページや検索結果にどのカテゴリーを表示しますか？フィルターを有効にすることで、それらのカテゴリも表示することができます</string>
+    <string name="fromt_page_categories_summary">トップページと検索結果にデフォルトで表示したいカテゴリーは何ですか？フィルターを有効にすることで、それらのカテゴリーも表示できます</string>
     <string name="watched_list_default">既読リストフィルターのデフォルト状態</string>
     <string name="watched_list_state_summary">ExHentai/E-Hentai を参照するとき、既読リストフィルターがデフォルトで有効になっている必要があります</string>
     <string name="eh_image_quality_summary">ダウンロードした画像の品質</string>
@@ -61,11 +60,11 @@
     <string name="eh_image_quality_1280">1280x</string>
     <string name="eh_image_quality_980">980x</string>
     <string name="eh_image_quality_780">780x</string>
-    <string name="pref_enhanced_e_hentai_view">拡張した E/EXHentai ブラウズ</string>
+    <string name="pref_enhanced_e_hentai_view">強化された E/ExHentai ブラウジング</string>
     <string name="pref_enhanced_e_hentai_view_summary">E/ExHentai のために作られた拡張ブラウズメニューを有効化/無効化します</string>
     <string name="favorites_sync">E-Hentai のお気に入りを同期</string>
     <string name="disable_favorites_uploading">お気に入りのアップロードを無効化</string>
-    <string name="disable_favorites_uploading_summary">お気に入りは ExHentai からのみダウンロードされます。アプリ内のお気に入りへの変更はアップロードされません。ExHentai でお気に入りが誤って失われるのを防ぎます。 削除してもダウンロードされることに注意してください。(ExHentai でお気に入りを削除した場合は、アプリ内でも削除されます)</string>
+    <string name="disable_favorites_uploading_summary">お気に入りは ExHentai からのみダウンロードされます。アプリ内でお気に入りを変更しても、ExHentai にはアップロードされません。これにより、ExHentai 上のお気に入りが誤って失われるのを防ぎます。なお、削除したお気に入りはダウンロードされます（ExHentai でお気に入りを削除すると、アプリ内でも削除されます）。</string>
     <string name="show_favorite_sync_notes">お気に入りの同期ノートを表示</string>
     <string name="show_favorite_sync_notes_summary">お気に入りの同期機能に関するいくつかの情報を表示</string>
     <string name="please_login">ログインしてください！</string>
@@ -78,15 +77,15 @@
     <string name="auto_update_restrictions">自動更新の制限</string>
     <string name="time_between_batches">更新バッチの間隔</string>
     <string name="time_between_batches_never">ギャラリーを更新しない</string>
-    <string name="time_between_batches_1_hour">1時間</string>
-    <string name="time_between_batches_2_hours">2時間</string>
-    <string name="time_between_batches_3_hours">3時間</string>
-    <string name="time_between_batches_6_hours">6時間</string>
-    <string name="time_between_batches_12_hours">12時間</string>
-    <string name="time_between_batches_24_hours">24時間</string>
-    <string name="time_between_batches_48_hours">48時間</string>
+    <string name="time_between_batches_1_hour">1 時間</string>
+    <string name="time_between_batches_2_hours">2 時間</string>
+    <string name="time_between_batches_3_hours">3 時間</string>
+    <string name="time_between_batches_6_hours">6 時間</string>
+    <string name="time_between_batches_12_hours">12 時間</string>
+    <string name="time_between_batches_24_hours">24 時間</string>
+    <string name="time_between_batches_48_hours">48 時間</string>
     <string name="time_between_batches_summary_1">%1$s は現在、ライブラリ内のギャラリーで更新を確認することはありません。</string>
-    <string name="time_between_batches_summary_2">%1$s のチェック/更新ギャラリーは一括で行われます。つまり、 %2$d 時間待機します。 %3$d ギャラリーをチェックし、 %2$d 時間待機します。…で %3$d をチェックします。</string>
+    <string name="time_between_batches_summary_2">%1$s はギャラリーを一括でチェック / 更新します。つまり、%2$d 時間待機し、%3$d 個のギャラリーをチェックし、%2$d 時間待機し、%3$d 個のギャラリーをチェックするという処理が繰り返されます</string>
     <string name="show_updater_statistics">更新の統計情報を表示</string>
     <string name="gallery_updater_statistics_collection">統計情報を収集中…</string>
     <string name="gallery_updater_statistics">ギャラリー更新の統計情報</string>
@@ -111,15 +110,15 @@
     <!-- Advanced Settings -->
     <string name="developer_tools">開発者ツール</string>
     <string name="toggle_hentai_features">統合されたセンシティブな機能を有効化</string>
-    <string name="toggle_hentai_features_summary">これをオフに切り替えるとすべてのセンシティブな機能を無効にする実験的な機能です。</string>
+    <string name="toggle_hentai_features_summary">これは実験的な機能です。オフにするとすべてのセンシティブな機能が無効になります</string>
     <string name="toggle_delegated_sources">委任されたソースを有効化</string>
     <string name="toggle_delegated_sources_summary">以下のソースがインストールされている場合は  %1$s の機能強化を適用します: %2$s</string>
     <string name="log_level">ログレベル</string>
-    <string name="log_level_summary">これを変更するとアプリのパフォーマンスに影響を与える可能性があります。変更後の強制再起動アプリ。現在の値: %s</string>
+    <string name="log_level_summary">この設定を変更すると、アプリのパフォーマンスに影響が出る可能性があります。変更後はアプリを強制的に再起動してください。現在の値: %s</string>
     <string name="enable_source_blacklist">ソースのブラックリストを有効化</string>
     <string name="enable_source_blacklist_summary">%1$s と互換性のない拡張機能/ソースを非表示にします。変更後にアプリを強制再起動します。</string>
     <string name="open_debug_menu">デバッグメニューを開く</string>
-    <string name="open_debug_menu_summary"><![CDATA[このメニューには触れないで下さい！操作を理解している場合のみ使用して下さい。 <font color=\'red\'>ライブラリが破損する可能性があります！</font>]]></string>
+    <string name="open_debug_menu_summary"><![CDATA[操作方法を理解していない限り、このメニューには触れないでください！<font color=\'red\'>ライブラリを破損させる可能性があります！</font>]]></string>
     <string name="starting_cleanup">クリーンアップを開始中</string>
     <string name="clean_up_downloaded_chapters">ダウンロード済みの章をクリーンアップ</string>
     <string name="delete_unused_chapters">存在しないフォルダ、部分的にダウンロードされたフォルダ、および既読の章のフォルダを削除します。</string>
@@ -133,15 +132,15 @@
     <string name="data_saver_ignore_jpeg">Jpeg 画像を除外</string>
     <string name="data_saver_ignore_gif">Gif アニメーションを除外</string>
     <string name="data_saver_image_quality">画像品質</string>
-    <string name="data_saver_image_quality_summary">値が高いほど画像の品質も高く保存されるが、ファイルサイズも大きくなります。80 パーセントはファイルサイズと画像品質のバランスが取れた中間値です。</string>
-    <string name="data_saver_image_format">Jpeg に圧縮</string>
-    <string name="data_saver_image_format_summary_on">Jpeg のファイルサイズは Webp よりかなり小さい (つまり、より多くのデータが保存される) が、その分画質も低下します。\n現在は Jpeg に圧縮</string>
-    <string name="data_saver_image_format_summary_off">Jpeg のファイルサイズは Webp よりかなり小さい (つまり、より多くのデータが保存される) が、その分画質も低下します。\n現在は Webp に圧縮</string>
+    <string name="data_saver_image_quality_summary">値が高いほど画像品質の保存率が高くなりますが、ファイルサイズも大きくなります。80% はファイルサイズと画像品質のバランスが良い中間値です</string>
+    <string name="data_saver_image_format">JPEG に圧縮</string>
+    <string name="data_saver_image_format_summary_on">JPEG ファイルのサイズは WebP よりもかなり小さい（つまり、より多くのデータが保存されている）ですが、その分、画質も低下します。\n現在は JPEG に圧縮</string>
+    <string name="data_saver_image_format_summary_off">JPEG ファイルのサイズは WebP よりもかなり小さい（つまり、より多くのデータが保存されている）ですが、その分、画質も低下します。\n現在は Webp に圧縮</string>
     <string name="data_saver_color_bw">モノクロに変換</string>
-    <string name="bandwidth_hero">Bandwidth Hero (Bandwidth Hero Proxy サーバが必要)</string>
+    <string name="bandwidth_hero">Bandwidth Hero（Bandwidth Hero Proxy サーバが必要です）</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
-    <string name="data_saver_server_summary">ここに Bandwidth Hero Proxy server のurlを入力して下さい</string>
+    <string name="data_saver_server_summary">Bandwidth Hero プロキシサーバーの URL をここに入力してください</string>
     <string name="clear_db_exclude_read">読み終えた章を含むエントリーを保持する</string>
     <!-- Log Level -->
     <string name="log_minimal">最小</string>
@@ -152,10 +151,10 @@
     <string name="log_extreme_desc">ネットワーク検査モード</string>
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">デフォルトですべての検索フィルタを展開</string>
-    <string name="put_recommends_in_overflow">3点メニューからおすすめを見る</string>
-    <string name="put_recommends_in_overflow_summary">「おすすめを見る」ボタンを作品ページの代わりに3点メニューに配置</string>
-    <string name="put_merge_in_overflow">3点メニューから合併</string>
-    <string name="put_merge_in_overflow_summary">合併ボタンを作品ページの代わりに3点メニューに配置</string>
+    <string name="put_recommends_in_overflow">オーバーフローメニューにおすすめを配置</string>
+    <string name="put_recommends_in_overflow_summary">おすすめボタンをエントリーページではなく、オーバーフローメニューに配置します</string>
+    <string name="put_merge_in_overflow">オーバーフローメニューにマージを配置</string>
+    <string name="put_merge_in_overflow_summary">マージボタンをエントリーページではなく、オーバーフローメニューに配置します</string>
     <string name="pref_previews_row_count">プレビューする行数</string>
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">ナビゲーションバー</string>
@@ -166,20 +165,20 @@
     <string name="pref_sorting_settings">並べ替え設定</string>
     <string name="pref_skip_pre_migration_summary">最後に使用した移行設定とソースを使用して、一括移行します</string>
     <string name="library_group_updates">ライブラリーで動的なカテゴリー更新</string>
-    <string name="library_group_updates_global">常にグローバル更新を開始</string>
-    <string name="library_group_updates_all_but_ungrouped">グループ化されていないカテゴリの更新に対してのみグローバル更新を開始</string>
+    <string name="library_group_updates_global">常にグローバルアップデートを実行</string>
+    <string name="library_group_updates_all_but_ungrouped">グループ化されていない項目についてはグローバルアップデートのみを、その他の項目についてはカテゴリーアップデートを実行</string>
     <string name="library_group_updates_all">カテゴリーを常時更新</string>
     <string name="pref_mark_read_dupe_chapters">重複する章に既読のマーク</string>
     <string name="pref_mark_read_dupe_chapters_summary">既読後に重複した章に既読マークをつけます</string>
     <string name="pref_library_mark_duplicate_chapters">重複した新しい章を既読</string>
     <string name="pref_library_mark_duplicate_chapters_summary">以前に読んだことがある場合、自動的に新しい章を既読としてマークします</string>
-    <string name="update_30min">30分毎</string>
-    <string name="update_1hour">毎時間</string>
-    <string name="update_3hour">3時間毎</string>
+    <string name="update_30min">30 分ごと</string>
+    <string name="update_1hour">1 時間ごと</string>
+    <string name="update_3hour">3 時間ごと</string>
     <!-- Browse settings -->
     <string name="pref_hide_feed">フィードタブを非表示</string>
     <string name="pref_feed_position">フィードタブの位置</string>
-    <string name="pref_feed_position_summery">フィードタブをブラウズの最初のタブにしますか？ これは、ブラウズを開いたときのデフォルトのタブになります。データ通信や従量制のネットワークを使用している場合はお勧めしません。</string>
+    <string name="pref_feed_position_summery">フィードタブをブラウズの最初のタブにしますか？これを選択すると、ブラウズを開いたときにフィードタブがデフォルトになります。データ通信または従量制ネットワークを使用している場合はお勧めしません</string>
     <string name="pref_source_source_filtering">カテゴリー内のソースをフィルター</string>
     <string name="pref_source_source_filtering_summery">カテゴリーに含まれるソースをフィルタリングし、カテゴリーに含まれるソースが言語の下に置かれないようにします</string>
     <string name="pref_source_navigation">ソースの表示形式を変更</string>
@@ -215,7 +214,7 @@
     <string name="google_drive_sync_data_purged">Google ドライブから消去したデータを同期</string>
     <string name="google_drive_sync_data_not_found">Google ドライブに同期データが見つかりませんでした</string>
     <string name="google_drive_sync_data_purge_error">Google ドライブから同期データの消去中にエラーが発生しました。もう一度サインインしてみてください。</string>
-    <string name="google_drive_login_success">Google Driveにログインしました</string>
+    <string name="google_drive_login_success">Google ドライブにログインしました</string>
     <string name="google_drive_login_failed">Google ドライブにログインできませんでした: %s</string>
     <string name="google_drive_not_signed_in">Google ドライブにサインインしていません</string>
     <string name="error_uploading_sync_data">Google ドライブに同期データのアップロード中にエラーが発生しました</string>
@@ -250,7 +249,7 @@
     <string name="saturday">土曜日</string>
     <string name="encrypt_database">データベースを暗号化</string>
     <string name="encrypt_database_subtitle">適用するにはアプリの再起動が必要です</string>
-    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>これを有効にすると、新しいデータベースが作成されます。 以下の手順でデータを保存してください<br>1. 設定 -> バックアップ -> 作成<br>2. システム設定 -> アプリのデータを消去<br>3. アプリを開き、この設定を有効にする<br>4. システム設定 -> 強制再起動<br>5. 設定 -> バックアップ -> 復元</font>]]></string>
+    <string name="encrypt_database_message"><![CDATA[<font color=\'red\'>これを有効にすると、新しいデータベースが作成されます。データを保持するには、以下の手順に従ってください。<br>1. 設定 -> バックアップ -> 作成<br>2. システム設定 -> アプリデータを消去<br>3. アプリを開き、この設定を有効にする<br>4. システム設定 -> 強制再起動<br>5. 設定 -> バックアップ -> 復元</font>]]></string>
     <string name="set_cbz_zip_password">CBZ アーカイブのパスワードを設定</string>
     <string name="password_protect_downloads">ダウンロードをパスワードで保護</string>
     <string name="password_protect_downloads_summary">ダウンロードした CBZ アーカイブを指定したパスワードで暗号化します。\n注意: パスワードを忘れると、アーカイブ内のデータは永久的に失われます。</string>
@@ -280,10 +279,10 @@
     <string name="reader_preload_amount_20_pages">20ページ</string>
     <string name="reader_preload_amount_summary">読み込み時にプリロードするページ数です。 値が大きいほど、キャッシュの使用量が増え、読み込みがスムーズになります。 大きい値を使用する場合は、割り当てるキャッシュの量を増やすことをお勧めします</string>
     <string name="reader_cache_size">リーダーのキャッシュサイズ</string>
-    <string name="reader_cache_size_summary">読書中にデバイスに保存する画像の量です。 値が大きいほど、よりスムーズな読書体験が得られますが、ディスクの使用量が増えます。</string>
+    <string name="reader_cache_size_summary">読書中にデバイスに保存する画像の数です。値が大きいほど読書体験はスムーズになりますが、ディスク容量の使用量が増加します</string>
     <string name="preserve_reading_position">読んだ作品の読書位置を保持</string>
-    <string name="auto_webtoon_mode">自動的にWebtoonモードを使用</string>
-    <string name="auto_webtoon_mode_summary">長いストリップ形式の可能性のある作品を検出した場合、自動的にWebtoonモードを使用します</string>
+    <string name="auto_webtoon_mode">自動的に Webtoon モードを使用</string>
+    <string name="auto_webtoon_mode_summary">長いストリップ形式の可能性のある作品を検出した場合、自動的に Webtoon モードを使用します</string>
     <string name="enable_zoom_out">ズームアウトを有効化</string>
     <string name="tap_scroll_page">ページごとにスクロールをタップ</string>
     <string name="tap_scroll_page_summary">このオプションを有効にすると、画面サイズではなくページ単位でスクロールします</string>
@@ -293,7 +292,7 @@
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">自動スクロール</string>
-    <string name="eh_retry_all">全て再試行</string>
+    <string name="eh_retry_all">すべて再試行</string>
     <string name="eh_boost_page">ブーストページ</string>
     <string name="eh_autoscroll_help">自動スクロールのヘルプ</string>
     <string name="eh_autoscroll_help_message">指定した間隔で自動的に次のページにスクロールします。 間隔は秒単位で指定する必要があります。</string>
@@ -311,21 +310,21 @@
     <string name="pref_crop_borders_pager">ページを分けるのクロップボーダー</string>
     <string name="pref_crop_borders_continuous_vertical">縦長のストリップのクロップボーダー</string>
     <string name="pref_crop_borders_webtoon">ギャップ付き縦長のストリップのクロップボーダー</string>
-    <string name="action_set_first_page_cover">1ページ目をカバーとして設定</string>
-    <string name="action_set_second_page_cover">2ページ目をカバーとして設定</string>
-    <string name="action_save_first_page">1ページ目を保存</string>
-    <string name="action_save_second_page">2ページ目を保存</string>
-    <string name="action_share_first_page">1ページ目をシェア</string>
-    <string name="action_share_second_page">2ページ目をシェア</string>
+    <string name="action_set_first_page_cover">1 ページ目を表紙として設定</string>
+    <string name="action_set_second_page_cover">2 ページ目を表紙として設定</string>
+    <string name="action_save_first_page">1 ページ目を保存</string>
+    <string name="action_save_second_page">2 ページ目を保存</string>
+    <string name="action_share_first_page">1 ページ目を共有</string>
+    <string name="action_share_second_page">2 ページ目を共有</string>
     <string name="action_save_combined_page">合併されたページを保存</string>
-    <string name="action_share_combined_page">合併されたページをシェア</string>
+    <string name="action_share_combined_page">合併されたページを共有</string>
     <!-- Reader Sharing -->
-    <string name="share_pages_info">%1$s: %2$s, ページ %3$s</string>
+    <string name="share_pages_info">%1$s: %2$s、第 %3$s ページ</string>
     <!-- Auto Webtoon Mode -->
-    <string name="eh_auto_webtoon_snack">Webtoonのスタイルを読み込み中</string>
+    <string name="eh_auto_webtoon_snack">Webtoon 形式で読む</string>
     <!-- Double page spread -->
     <string name="page_layout">ページレイアウト</string>
-    <string name="shift_double_pages">1ページずらす</string>
+    <string name="shift_double_pages">1 ページずらす</string>
     <string name="double_pages">見開きページ</string>
     <string name="single_page">単ページ</string>
     <string name="automatic_orientation">自動 (向きに基づく)</string>
@@ -389,21 +388,21 @@
     <!-- Feed Tab -->
     <string name="feed">フィード</string>
     <string name="feed_delete">フィードのアイテムを削除しますか？</string>
+    <string name="too_many_in_feed">フィードにソースが多すぎます。10 件以上は追加できません</string>
     <string name="feed_tab_empty">フィードにソースがありません。右上に移動して追加してください</string>
     <string name="feed_add">フィードに %1$s を追加しますか？</string>
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">タグの並べ替えタグ</string>
     <string name="tag_sorting">タグの並べ替え</string>
-    <string name="action_add_tags_message">これを読んでください！タグは正確でなければならず、部分一致はありません。「female:netorare」などをフィルタリングするために「netorare」を使用することはできません！\nネームスペースタグの形式は、引用符なしで「female: sole female」となります。\n同じタグの複数のバリエーションを追加することがサポートされているので、NHentai用には「tag: netorare」、E-Hentai用には「female: netorare」を自由に使用してください！</string>
+    <string name="action_add_tags_message">これを読んでください！タグは完全に一致している必要があり、部分一致は認められません。「netorare」で「female:netorare」などをフィルタリングすることはできません！\n名前空間のタグの形式は\n「female: sole female」\n引用符は不要です！\n同じタグの複数のバリエーションを追加できますので、NHentai の場合は「tag: netorare」、E-Hentai の場合は「female: netorare」のように自由に追加してください！</string>
     <string name="action_edit_tags">タグを編集</string>
-    <string name="information_empty_tags">タグがありません。プラスボタンをタップして、ライブラリをタグで並べ替えをするためのタグを作成してください。</string>
+    <string name="information_empty_tags">タグがありません。プラスボタンをタップしてタグを作成し、ライブラリをタグで並べ替えてください</string>
     <string name="error_tag_exists">このタグは既に存在します！</string>
     <string name="delete_tag">タグを削除</string>
     <string name="delete_tag_confirmation">タグ %s を削除しますか?</string>
     <!-- Extension section -->
     <string name="ext_redundant">冗長</string>
-    <string name="redundant_extension_message">この拡張機能は冗長であり、このバージョンのKomikkuでは使用されません。</string>
-    <!-- Migration -->
+    <string name="redundant_extension_message">この拡張機能は不要であり、このバージョンの Komikku では使用されません。</string>
     <string name="select_sources">ソースを選択</string>
     <string name="select_none">選択なし</string>
     <string name="migration">移行</string>
@@ -439,19 +438,19 @@
     <string name="sync_favorites">EH のお気に入りを同期</string>
     <string name="favorites_sync_error">お気に入りの同期エラー</string>
     <string name="show_gallery">ギャラリーを表示</string>
-    <string name="favorites_sync_bad_library_state">%1$s 同期は、ギャラリーが1つのカテゴリのみになるまで開始されません。</string>
+    <string name="favorites_sync_bad_library_state">%1$s 同期は、ギャラリーが 1 つのカテゴリーのみになるまで開始されません。</string>
     <string name="favorites_syncing">お気に入りの同期中</string>
     <string name="favorites_sync_error_string">同期中にエラーが発生しました: %1$s</string>
     <string name="favorites_sync_done_errors">お気に入りの同期がエラー付きで完了しました。</string>
     <string name="favorites_sync_done_errors_message">同期処理中に発生したエラーを無視しました:\n%1$s</string>
     <string name="favorites_sync_verifying_library">ローカルライブラリの確認</string>
-    <string name="favorites_sync_gallery_multiple_categories_error">ギャラリー %1$d が複数のカテゴリに登録されています！</string>
+    <string name="favorites_sync_gallery_multiple_categories_error">ギャラリー %1$d が複数のカテゴリーに登録されています！</string>
     <string name="favorites_sync_downloading">リモートサーバーからお気に入りをダウンロード中です</string>
     <string name="favorites_sync_failed_to_featch">リモートサーバーからお気に入りを取得できませんでした！</string>
     <string name="favorites_sync_could_not_fetch">お気に入りを取得できませんでした！</string>
     <string name="favorites_sync_calculating_remote_changes">リモート変更を計算中</string>
     <string name="favorites_sync_calculating_local_changes">ローカルの変更を計算中</string>
-    <string name="favorites_sync_syncing_category_names">カテゴリ名を更新中</string>
+    <string name="favorites_sync_syncing_category_names">カテゴリー名を更新中</string>
     <string name="favorites_sync_cleaning_up">クリーンアップ</string>
     <string name="favorites_sync_complete">同期が完了しました！</string>
     <string name="favorites_sync_ignoring_exception">例外を無視しました！</string>
@@ -468,26 +467,25 @@
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
     <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) は有効なギャラリーではありません！</string>
     <string name="favorites_sync_waiting_for_start">同期開始待ち</string>
-    <string name="favorites_sync_gallery_in_multiple_categories">ギャラリー: %1$s は複数のカテゴリ (%2$s ) にあります!</string>
+    <string name="favorites_sync_gallery_in_multiple_categories">ギャラリー: %1$s は複数のカテゴリー（%2$s）に属しています！</string>
     <string name="favorites_sync_initializing">同期を初期化中</string>
-    <string name="favorites_sync_processing_throttle">%1$s\n\n同期は現在(ExhentaiからのBANを避けるため)、完了までに時間がかかることがあります。</string>
+    <string name="favorites_sync_processing_throttle">%1$s\n\n同期処理は現在、（ExHentai からのアクセス禁止措置を避けるため）速度制限をかけており、完了までに時間がかかる場合があります。</string>
     <string name="favorites_sync_notes">お気に入り同期に関する重要な注意事項</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. アプリ内のカテゴリ名の変更は<b>同期されません！</b>カテゴリ名を変更する場合は、<i>ExHentaiで変更してください</i>。カテゴリ名は毎回の同期でExHentaiサーバーからコピーされます。<br><br>
-2. ExHentaiのお気に入りカテゴリは、アプリ内の<b>最初の10カテゴリ</b>（「デフォルト」カテゴリを除く）に対応しています。<i>他のカテゴリにあるギャラリーは<b>同期されません！</b></i><br><br>3. <font color=\'red\'><b>同期中は安定したインターネット接続を確保してください！</b></font> インターネットが同期中に切断されると、お気に入りが<i>部分的に同期された状態</i>になる可能性があります。<br><br>4. お気に入りを同期している間はアプリを開いたままにしてください。Androidはバックグラウンドでアプリを閉じることがあり、同期中にこれが起こると問題が発生する可能性があります。<br><br>5. <b>お気に入りを複数のカテゴリに入れないでください</b>（アプリはこれをサポートしています）。ExHentaiでは各お気に入りが1つのカテゴリにしか入れられないため、同期アルゴリズムが混乱する可能性があります。<br><br>このダイアログは一度だけ表示されます。これらの注意事項を再度確認するには、「設定 > E-Hentai > お気に入り同期の注意事項を表示」に進んでください。]]></string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. アプリ内のカテゴリー名の変更は<b>同期されません！</b>代わりに <i>ExHentai でカテゴリー名を変更</i>してください。カテゴリー名は同期のたびに ExHentai サーバーからコピーされます。<br><br>2. ExHentai のお気に入りカテゴリーは、アプリ内の<b>最初の 10 カテゴリー</b>に対応しています（「デフォルト」カテゴリーを除く）。<i>他のカテゴリーのギャラリーは<b>同期されません！</b></i><br><br>3. <font color=\'red\'><b>同期処理中は、安定したインターネット接続を確保してください！</b></font>アプリの同期中にインターネット接続が切断された場合、お気に入りは<i>部分的に同期された状態</i>のままになることがあります。<br><br>4. お気に入りを同期している間は、アプリを開いたままにしておいてください。Android はバックグラウンドで実行されているアプリを強制終了することがあり、同期中にそれが起こると問題が発生する可能性があります。<br><br>5. <b>お気に入りを複数のカテゴリーに登録しないでください</b>（アプリはこれをサポートしています）。ExHentai では各お気に入りを 1 つのカテゴリーにしか登録できないため、同期アルゴリズムが混乱する可能性があります。<br><br>このダイアログは一度しか表示されません。これらの注意事項は、「設定 > E-Hentai > お気に入り同期の注意事項を表示」から再度読むことができます。]]></string>
     <string name="favorites_sync_reset">本当によろしいですか？</string>
     <string name="favorites_sync_reset_message">同期の状態をリセットすると、次の同期が極端に遅くなることがあります。</string>
-    <string name="favorites_sync_conformation_message">お気に入りをE-Hentaiと同期してもよろしいですか？</string>
+    <string name="favorites_sync_conformation_message">お気に入りを E-Hentai と同期してもよろしいですか？</string>
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">一括追加</string>
     <string name="md_batch_add_description">例:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
-    <string name="eh_batch_add_description">例:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nE-H Visitedデータ\n もサポートしています。\n</string>
+    <string name="eh_batch_add_description">例:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nE-H Visited からエクスポートされたデータもサポートしています\n</string>
     <string name="eh_batch_add_title">追加するギャラリーを入力してください (改行区切り):</string>
     <string name="eh_batch_add_button">ギャラリーを追加</string>
     <string name="eh_batch_add_adding_galleries">ギャラリーを追加中…</string>
     <string name="eh_batch_add_finish">完了しました</string>
     <string name="batch_add_no_valid_galleries">追加できるギャラリーがありません！</string>
-    <string name="batch_add_no_valid_galleries_message">追加するには少なくとも1つのギャラリーを指定する必要があります！</string>
+    <string name="batch_add_no_valid_galleries_message">追加するギャラリーは少なくとも 1 つ指定する必要があります！</string>
     <string name="batch_add">一括追加</string>
     <string name="batch_add_ok">[OK]</string>
     <string name="batch_add_error">[ERROR]</string>
@@ -497,10 +495,10 @@
     <string name="batch_add_unknown_source_log_message">ギャラリーのソースが不明です: %1$s</string>
     <string name="batch_add_not_exist_log_message">ギャラリーが存在しません: %1$s</string>
     <string name="gallery_adder_importing_gallery">ギャラリーをインポート中 (url: %1$s, fav: %2$s, forceソース: %3$s)…</string>
-    <string name="gallery_adder_source_uri_must_match">ソースURIの一致チェックエラーが発生しました！</string>
-    <string name="gallery_adder_uri_map_to_gallery_error">ソースURIのマップからギャラリーへのエラーが発生しました!</string>
-    <string name="gallery_adder_uri_map_to_chapter_error">ソースURIのマップから章へのエラーが発生しました!</string>
-    <string name="gallery_adder_uri_clean_error">ソースURIのクリーンアップエラーが発生しました!</string>
+    <string name="gallery_adder_source_uri_must_match">ソース URI の一致チェックでエラーが発生しました！</string>
+    <string name="gallery_adder_uri_map_to_gallery_error">ソース URI のマップからギャラリーへの変換エラーが発生しました！</string>
+    <string name="gallery_adder_uri_map_to_chapter_error">ソース URI のマップから章への変換エラーが発生しました！</string>
+    <string name="gallery_adder_uri_clean_error">ソース URI のクリーンアップエラーが発生しました！</string>
     <string name="gallery_adder_chapter_fetch_error">ギャラリーの章を更新できませんでした: %1$s!</string>
     <string name="gallery_adder_could_not_add_gallery">ギャラリーを追加できませんでした (url: %1$s)!</string>
     <string name="gallery_adder_could_not_identify_chapter">章を識別できませんでした (url: %1$s)!</string>
@@ -528,7 +526,7 @@
     <string name="rating0">Disaster</string>
     <string name="no_rating">No rating</string>
     <!-- Gallery types -->
-    <string name="doujinshi">Doujinshi</string>
+    <string name="doujinshi">同人誌</string>
     <string name="artist_cg">Artist CG</string>
     <string name="game_cg">Game CG</string>
     <string name="western">Western</string>
@@ -545,10 +543,10 @@
     <string name="id">Id</string>
     <string name="token">Token</string>
     <string name="is_exhentai_gallery">is Exhentai gallery</string>
-    <string name="thumbnail_url">Thumbnail url</string>
+    <string name="thumbnail_url">サムネイルの URL</string>
     <string name="genre">Genre</string>
-    <string name="date_posted">Date posted</string>
-    <string name="page_count">Page count</string>
+    <string name="date_posted">投稿日</string>
+    <string name="page_count">ページ数</string>
     <string name="parent">Parent</string>
     <string name="visible">Visible</string>
     <string name="language">言語</string>
@@ -580,10 +578,9 @@
     <string name="anilist_id">Anilist id</string>
     <string name="kitsu_id">Kitsu id</string>
     <string name="mal_id">Mal id</string>
-    <string name="manga_updates_id">漫画の更新ID</string>
+    <string name="manga_updates_id">漫画の更新 ID</string>
     <string name="anime_planet_id">Anime planet id</string>
     <string name="translated">翻訳済み</string>
-    <!-- Extra gallery info -->
     <string name="is_visible">表示: %1$s</string>
     <string name="language_translated">%1$s TR</string>
     <!-- Merged entry -->
@@ -607,17 +604,16 @@
     <string name="dedupe_highest_chapter">章番号が最も高いソースを表示</string>
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">フォロー解除</string>
-    <string name="mangadex_sync_follows_to_library">MangaDexエントリーをライブラリに同期</string>
-    <string name="mangadex_sync_follows_to_library_summary">まだ追加されていない場合、MangaDexからエントリーをライブラリに取り込みます。</string>
-    <string name="mangadex_preffered_source">優先するMangaDexソース</string>
-    <string name="mangadex_preffered_source_summary">選択したMangaDexソースを設定します。これはアプリの周りに多くの機能を追加するために使用されます。</string>
-    <string name="mangadex_add_to_follows">フォローしているMangaDexに追加</string>
-    <string name="mangadex_follows">MangaDexをフォローする</string>
+    <string name="mangadex_sync_follows_to_library">MangaDex の項目をライブラリに同期</string>
+    <string name="mangadex_sync_follows_to_library_summary">MangaDex から、まだライブラリに追加されていない項目を取得します。</string>
+    <string name="mangadex_preffered_source">MangaDex の優先ソース</string>
+    <string name="mangadex_preffered_source_summary">お好みの MangaDex ソースを設定してください。これはフォロー機能やアプリ内のその他多くの機能に使用されます</string>
+    <string name="mangadex_add_to_follows">MangaDex の追跡に追加</string>
+    <string name="mangadex_follows">MangaDex の追跡</string>
     <string name="random">ランダム</string>
-    <string name="mangadex_push_favorites_to_mangadex">ライブラリエントリをMangaDexに同期</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">MdList以外の項目をMangaDexに同期します。</string>
+    <string name="mangadex_push_favorites_to_mangadex">ライブラリ項目を MangaDex に同期</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">MdList で追跡されていない項目をすべて MangaDex に「読書中」として同期します。</string>
     <string name="community_recommendations">コミュニティのおすすめ</string>
-    <!-- Scanlator filters -->
     <string name="select_scanlators">スキャン対象のグループを表示</string>
     <!-- Similar -->
     <string name="similar">%1$s と類義</string>
@@ -628,12 +624,12 @@
     <string name="relation_adapted_from">Adapted from</string>
     <string name="relation_based_on">Based on</string>
     <string name="relation_prequel">Prequel</string>
-    <string name="relation_side_story">Side story</string>
-    <string name="relation_doujinshi">Doujinshi</string>
+    <string name="relation_side_story">サイドストーリー</string>
+    <string name="relation_doujinshi">同人誌</string>
     <string name="relation_same_franchise">Same franchise</string>
     <string name="relation_shared_universe">Shared universe</string>
     <string name="relation_sequel">Sequel</string>
-    <string name="relation_spin_off">Spin-off</string>
+    <string name="relation_spin_off">スピンオフ</string>
     <string name="relation_alternate_story">Alternate story</string>
     <string name="relation_preserialization">Pre-serialization</string>
     <string name="relation_colored">Colored</string>
@@ -644,21 +640,35 @@
     <string name="ignore_non_library_entries">ライブラリ以外の作品を無視</string>
     <!-- Humanize time -->
     <string name="humanize_fallback">少し前</string>
-    <string name="action_copy_first_page">最初のページをコピーする</string>
-    <string name="action_copy_second_page">2ページ目をコピー</string>
-    <string name="action_copy_combined_page">コピー結合ページ</string>
+    <string name="action_copy_first_page">1 ページ目をコピー</string>
+    <string name="action_copy_second_page">2 ページ目をコピー</string>
+    <string name="action_copy_combined_page">結合されたページをコピー</string>
     <string name="add_tags">タグを追加</string>
     <string name="multi_tags_comma_separated">タグをコンマで区切って入力してください。</string>
-    <string name="alt_titles">代替タイトル</string>
+    <string name="alt_titles">別タイトル</string>
     <string name="select_tracker">トラッカーを選択</string>
-    <string name="pref_tracker_resolve_using_source_metadata">ソースのメタデータを使用してエントリを選択します</string>
-    <string name="pref_tracker_resolve_using_source_metadata_summary">ソースがトラッカーへのリンクを提供している場合、自動的に一致するタイトルを選択します。現在、MangaDexでサポートされています</string>
-    <string name="scan_qr_code">QRコードをスキャンしてください</string>
+    <string name="pref_tracker_resolve_using_source_metadata">ソースメタデータを使用して項目を選択します</string>
+    <string name="pref_tracker_resolve_using_source_metadata_summary">ソースがトラッカーへのリンクを提供している場合、一致するタイトルを自動的に選択します。現在、MangaDex でサポートされています</string>
+    <string name="scan_qr_code">QR コードをスキャン</string>
     <string name="entry_not_tracked">エントリーは追跡されていません。</string>
     <string name="fill_from_tracker">トラッカーから入力する</string>
     <string name="only_show_updated_entries">新しい章を含むエントリーのみを表示する</string>
     <string name="rec_search">共通の推奨事項を見つける</string>
     <string name="rec_hide_library_entries">ライブラリに既に存在する結果を非表示にする</string>
-    <string name="pref_include_chapter_url_hash">章のURLハッシュを含める</string>
+    <string name="pref_include_chapter_url_hash">章の URL ハッシュを含める</string>
     <string name="pref_include_chapter_url_hash_desc">章の URL の MD5 ハッシュの最初の 6 文字を章のファイル名またはフォルダ名に追加します。</string>
+    <string name="filename">ファイル名</string>
+    <string name="file_extension">ファイル拡張子</string>
+    <string name="base_url">ベース URL</string>
+    <string name="rec_common_recommendations">一般的なおすすめ</string>
+    <string name="rec_search_short">おすすめを探す</string>
+    <string name="rec_no_results">おすすめは見つかりませんでした</string>
+    <string name="rec_error_title">検索に失敗しました</string>
+    <string name="rec_error_string">検索処理中にエラーが発生しました: %1$s</string>
+    <string name="rec_processing_state">%2$d 件の項目のうち、%1$d 件目を処理中</string>
+    <string name="rec_collecting">おすすめの収集</string>
+    <string name="rec_initializing">初期化中</string>
+    <string name="favorites_sync_unable_to_add_to_remote">リモートサーバーにギャラリーを追加できませんでした: \'%1$s\' (GID: %2$s)!</string>
+    <string name="similar_titles">類似タイトル</string>
+    <string name="final_chapter">最終章</string>
 </resources>

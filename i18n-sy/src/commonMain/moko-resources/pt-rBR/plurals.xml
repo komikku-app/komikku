@@ -7,6 +7,7 @@
     </plurals>
     <plurals name="num_lock_times">
         <item quantity="one">%d tempo de bloqueio</item>
+        <item quantity="many">%d tempos de bloqueio</item>
         <item quantity="other">%d tempos de bloqueio</item>
     </plurals>
     <plurals name="pref_tag_sorting_desc">
@@ -29,41 +30,50 @@
     <!-- Extra gallery info -->
     <plurals name="num_pages">
         <item quantity="one">%1$d página</item>
+        <item quantity="many">%1$d páginas</item>
         <item quantity="other">%1$d páginas</item>
     </plurals>
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
         <item quantity="one">%2$s, %1$d página</item>
+        <item quantity="many">%2$s, %1$d páginas</item>
         <item quantity="other">%2$s, %1$d páginas</item>
     </plurals>
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="one">há %1$d ano</item>
+        <item quantity="many">há %1$d anos</item>
         <item quantity="other">há %1$d anos</item>
     </plurals>
     <plurals name="humanize_month">
         <item quantity="one">há %1$d mês</item>
+        <item quantity="many">há %1$d meses</item>
         <item quantity="other">há %1$d meses</item>
     </plurals>
     <plurals name="humanize_week">
         <item quantity="one">há %1$d semana</item>
+        <item quantity="many">há %1$d semanas</item>
         <item quantity="other">há %1$d semanas</item>
     </plurals>
     <plurals name="humanize_day">
         <item quantity="one">há %1$d dia</item>
+        <item quantity="many">há %1$d dias</item>
         <item quantity="other">há %1$d dias</item>
     </plurals>
     <plurals name="humanize_hour">
         <item quantity="one">há %1$d hora</item>
+        <item quantity="many">há %1$d horas</item>
         <item quantity="other">há %1$d horas</item>
     </plurals>
     <plurals name="humanize_minute">
         <item quantity="one">há %1$d minuto</item>
+        <item quantity="many">há %1$d minutos</item>
         <item quantity="other">há %1$d minutos</item>
     </plurals>
     <plurals name="humanize_second">
         <item quantity="one">há %1$d segundo</item>
-        <item quantity="other">há %1$d segundo</item>
+        <item quantity="many">há %1$d segundos</item>
+        <item quantity="other">há %1$d segundos</item>
     </plurals>
     <plurals name="eh_retry_toast">
         <item quantity="one">Tentando novamente %1$d página com falha…</item>

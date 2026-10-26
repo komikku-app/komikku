@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">不要遷移</string>
     <string name="action_search_manually">手動搜尋</string>
     <string name="action_migrate_now">開始遷移</string>
@@ -394,7 +393,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">廢棄</string>
     <string name="redundant_extension_message">此擴充套件已廢棄，將不會在此版本的 Komikku 上執行。</string>
-    <!-- Migration -->
     <string name="select_sources">選擇來源</string>
     <string name="select_none">未選擇</string>
     <string name="migration">遷移</string>
@@ -563,7 +561,6 @@
     <string name="follow_status">收藏狀態</string>
     <string name="manga_updates_id">Manga 更新 id</string>
     <string name="translated">已翻譯</string>
-    <!-- Extra gallery info -->
     <string name="is_visible">可見：%1$s</string>
     <string name="language_translated">%1$s 翻譯</string>
     <!-- Merged entry -->
@@ -597,7 +594,6 @@
     <string name="mangadex_push_favorites_to_mangadex">同步書櫃中的作品到 MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">將未在 MdList 上追蹤的作品同步到 MangaDex 並標記為閱讀中。</string>
     <string name="community_recommendations">社群推薦</string>
-    <!-- Scanlator filters -->
     <string name="select_scanlators">掃譯組展示</string>
     <!-- Similar -->
     <string name="similar">與 %1$s 相似</string>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="row_count">
+        <item quantity="one">%d řádek</item>
+        <item quantity="few">%d řádky</item>
+        <item quantity="many">%d řádků</item>
+        <item quantity="other">%d řádků</item>
+    </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Úklid dokončen. Odstraněna %d složka</item>
+        <item quantity="few">Úklid dokončen. Odstraněny %d složky</item>
+        <item quantity="many">Úklid dokončen. Odstraněno %d složek</item>
+        <item quantity="other">Úklid dokončen. Odstraněno %d složek</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Znovunačítání %1$d stránky…</item>
+        <item quantity="few">Znovunačítání %1$d stránek…</item>
+        <item quantity="many">Znovunačítání %1$d stránek…</item>
+        <item quantity="other">Znovunačítání %1$d stránek…</item>
+    </plurals>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="one">%1$d štítek v seznamu pro řazení. Tato funkce přidává do knihovny možnost řadit podle prioritního seznamu štítků, což znamená, že položky budou seřazeny tak, aby byly upřednostněny ty s vámi požadovanými štítky</item>
+        <item quantity="few">%1$d štítky v seznamu pro řazení. Tato funkce přidává do knihovny možnost řadit podle prioritního seznamu štítků, což znamená, že položky budou seřazeny tak, aby byly upřednostněny ty s vámi požadovanými štítky</item>
+        <item quantity="many">%1$d štítků v seznamu pro řazení. Tato funkce přidává do knihovny možnost řadit podle prioritního seznamu štítků, což znamená, že položky budou seřazeny tak, aby byly upřednostněny ty s vámi požadovanými štítky</item>
+        <item quantity="other">%1$d štítků v seznamu pro řazení. Tato funkce přidává do knihovny možnost řadit podle prioritního seznamu štítků, což znamená, že položky budou seřazeny tak, aby byly upřednostněny ty s vámi požadovanými štítky</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d stránka</item>
+        <item quantity="few">%1$d stránky</item>
+        <item quantity="many">%1$d stránek</item>
+        <item quantity="other">%1$d stránek</item>
+    </plurals>
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d stránka</item>
+        <item quantity="few">%2$s, %1$d stránky</item>
+        <item quantity="many">%2$s, %1$d stránek</item>
+        <item quantity="other">%2$s, %1$d stránek</item>
+    </plurals>
+    <plurals name="humanize_year">
+        <item quantity="one">Před rokem</item>
+        <item quantity="few">Před %1$d roky</item>
+        <item quantity="many">Před %1$d roky</item>
+        <item quantity="other">Před %1$d roky</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">Před měsícem</item>
+        <item quantity="few">Před %1$d měsíci</item>
+        <item quantity="many">Před %1$d měsíci</item>
+        <item quantity="other">Před %1$d měsíci</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">Před %1$d týdnem</item>
+        <item quantity="few">Před %1$d týdny</item>
+        <item quantity="many">Před %1$d týdny</item>
+        <item quantity="other">Před %1$d týdny</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">Včera</item>
+        <item quantity="few">Před %1$d dny</item>
+        <item quantity="many">Před %1$d dny</item>
+        <item quantity="other">Před %1$d dny</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">Před hodinou</item>
+        <item quantity="few">Před %1$d hodinami</item>
+        <item quantity="many">Před %1$d hodinami</item>
+        <item quantity="other">Před %1$d hodinami</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">Před minutou</item>
+        <item quantity="few">Před %1$d minutami</item>
+        <item quantity="many">Před %1$d minutami</item>
+        <item quantity="other">Před %1$d minutami</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">Před sekundou</item>
+        <item quantity="few">Před %1$d sekundami</item>
+        <item quantity="many">Před %1$d sekundami</item>
+        <item quantity="other">Před %1$d sekundami</item>
+    </plurals>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d časovač uzamčení</item>
+        <item quantity="few">%d časovače uzamčení</item>
+        <item quantity="many">%d časovačů uzamčení</item>
+        <item quantity="other">%d časovačů uzamčení</item>
+    </plurals>
+</resources>

@@ -22,7 +22,7 @@
         <item quantity="other">%d개 항목 이동됨</item>
     </plurals>
     <plurals name="num_pages">
-        <item quantity="other">%1$d 페이지</item>
+        <item quantity="other">%1$d페이지</item>
     </plurals>
     <plurals name="browse_language_and_pages">
         <item quantity="other">%2$s, %1$d 페이지</item>

@@ -125,7 +125,7 @@
     <string name="starting_cleanup">Reinigung wird gestartet</string>
     <string name="clean_orphaned_downloads">Verwaiste Downloads reinigen</string>
     <string name="clean_read_downloads">Gelesene Downloads reinigen</string>
-    <string name="data_saver">Daten-Sparen</string>
+    <string name="data_saver">Daten Sparen</string>
     <string name="data_saver_image_quality">Bildqualität</string>
     <string name="settings_profile_note">Settingsprofil-Hinweis</string>
     <string name="eh_settings_successfully_uploaded">Einstellungen erfolgreich hochgeladen!</string>
@@ -134,14 +134,14 @@
     <string name="toggle_delegated_sources">Delegierte Quellen aktivieren</string>
     <string name="enable_source_blacklist">Quellen-Blacklist aktivieren</string>
     <string name="open_debug_menu">Debug-Menü öffnen</string>
-    <string name="data_saver_ignore_jpeg">JPEG-Bilder ignorieren</string>
-    <string name="data_saver_ignore_gif">GIF-Animationen ignorieren</string>
+    <string name="data_saver_ignore_jpeg">Jpeg-Dateien ignorieren</string>
+    <string name="data_saver_ignore_gif">Gif Dateien ignorieren</string>
     <string name="wsrv">wsrv.nl</string>
     <string name="log_minimal">Minimal</string>
     <string name="log_extra">Extra</string>
     <string name="pref_category_navbar">Navbar</string>
     <string name="log_extra_desc">Alles protokollieren</string>
-    <string name="data_saver_image_format">Zu JPEG komprimieren</string>
+    <string name="data_saver_image_format">Zu Jpeg komprimieren</string>
     <string name="log_minimal_desc">Nur kritische Fehler</string>
     <string name="log_extreme_desc">Netzwerkinspektionsmodus</string>
     <string name="put_merge_in_overflow">Zusammenführen im Überlaufmenü</string>
@@ -419,8 +419,8 @@
     <string name="is_exhentai_gallery">ist Exhentai Galerie</string>
     <string name="last_update_check">Letzte Aktualisierungsprüfung</string>
     <string name="last_chapter_number">Letzte Kapitelnummer</string>
-    <string name="manga_updates_id">Manga Updates ID</string>
-    <string name="anime_planet_id">Anime Planet ID</string>
+    <string name="manga_updates_id">Manga Updates-ID</string>
+    <string name="anime_planet_id">Anime Planet-ID</string>
     <string name="fetch_chapter_updates">Kapitelaktualisierungen abrufen</string>
     <string name="delete_merged_entry">Bist du dir sicher?</string>
     <string name="chapter_updates_merged_entry">Kapitelaktualisierungen umschalten</string>
@@ -614,4 +614,10 @@
     <string name="rec_collecting">Sammeln von Empfehlungen</string>
     <string name="rec_initializing">Initialisierend</string>
     <string name="scan_qr_code">QR-Code scannen</string>
+    <string name="pref_include_chapter_url_hash">Kapitel URL Hash miteinbeziehen</string>
+    <string name="pref_include_chapter_url_hash_desc">Die ersten sechs Zeichen des Kapitel URL Hashs an den Kapitel Datei- oder Ordnernamen anhängen.</string>
+    <string name="filename">Dateiname</string>
+    <string name="file_extension">Dateiendung</string>
+    <string name="base_url">Basis-URL</string>
+    <string name="final_chapter">Letztes Kapitel</string>
 </resources>
