@@ -106,4 +106,22 @@
         <item quantity="many">%d рядов</item>
         <item quantity="other">%d рядов</item>
     </plurals>
+    <plurals name="num_views">
+        <item quantity="one">%1$s просмотр</item>
+        <item quantity="few">%1$s просмотра</item>
+        <item quantity="many">%1$s просмотров</item>
+        <item quantity="other">%1$s просмотров</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="one">Для %d выбранной записи</item>
+        <item quantity="few">Для %d выбранных записей</item>
+        <item quantity="many">Для %d выбранных записей</item>
+        <item quantity="other">Для %d выбранных записей</item>
+    </plurals>
+    <plurals name="num_favorites">
+        <item quantity="one">%1$s закладка</item>
+        <item quantity="few">%1$s закладки</item>
+        <item quantity="many">%1$s закладок</item>
+        <item quantity="other">%1$s закладок</item>
+    </plurals>
 </resources>

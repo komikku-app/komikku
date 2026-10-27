@@ -51,4 +51,13 @@
     <plurals name="row_count">
         <item quantity="other">%d 행</item>
     </plurals>
+    <plurals name="num_favorites">
+        <item quantity="other">즐겨찾기 %1$s</item>
+    </plurals>
+    <plurals name="num_views">
+        <item quantity="other">조회수 %1$s</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="other">선택한 항목 %d개 대상</item>
+    </plurals>
 </resources>
