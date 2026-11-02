@@ -133,8 +133,9 @@ warnings) but carries only 14 of its 21 files. So the script compares files: the
 the files changed by every target commit that cites it.
 
 - Only files outside the upstream's `exclude_only_paths` and `partial_ignore_paths`, and inside its
-  `partial_check_paths` (when set), count. Komikku sets `partial_ignore_paths` on mihon to `CHANGELOG.md` (Komikku never
-  takes mihon's changelog entries, which about 300 mihon commits since 2024 add) and
+  `partial_check_paths` (when set), count. Komikku sets `partial_ignore_paths` on mihon to `CHANGELOG.md` (about 300
+  mihon commits since 2024 add an entry; Komikku's picks keep it only sometimes, 117 of 153 so far, and a pick without
+  it leaves out no code) and
   `data/src/main/sqldelight/tachiyomi/migrations/` (Komikku numbers its migrations differently, so mihon's `9.sqm` is
   another file here and the pick adds a new migration instead).
 - A file the target branch had at the same path before the first citing commit counts as picked only when the citing
@@ -184,8 +185,8 @@ templates). Their note is `AI checked <date>: omitted - version bump only (<file
   `AI checked` note, or once you change its status (e.g. to `X`). Only the stale script note is removed then.
 - Empty and `?` rows are checked again. An empty or `?` row whose Notes contain `AI checked` keeps that AI verdict
   unless new `O` evidence appears.
-- A `?` set by hand for a partial pick, with a `Partial <YYYY-MM-DD>:` or `Folded <YYYY-MM-DD>:` note, is kept the same
-  way: unless `O` evidence appears. Use `Partial` when you picked only part of a commit, and `Folded` when you folded a
+- A `?` set by hand (or by the `cherry-pick` skill) for a partial pick, with a `Partial <YYYY-MM-DD>:` or
+  `Folded <YYYY-MM-DD>:` note, is kept the same way: unless `O` evidence appears. Use `Partial` when you picked only part of a commit, and `Folded` when you folded a
   part of it into the pick of another commit. Detection only sees whole files and the commits citing a hash, so it
   would reset such a row to empty, e.g. while the pick is still on a branch, or when nothing cites the commit. The date
   is required; other notes don't count.

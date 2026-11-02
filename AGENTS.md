@@ -232,6 +232,8 @@ Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):
 
 Rules, commands and the porting guide: `.claude/skills/cherrypick-log/README.md`.
 
+To pick an upstream commit, use the `cherry-pick` skill (`.claude/skills/cherry-pick/SKILL.md`): it checks prerequisites and what the pick could break in Komikku (extensions, database migrations, backups, preferences), adapts it (KMK markers, migration numbers, strings), marks its row `O` in the same commit and verifies the result.
+
 ---
 
 ## Common issues
