@@ -238,4 +238,5 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <string name="pref_auto_hide_bars_on_scroll">Hide navigation bars on scroll</string>
 </resources>

@@ -1,5 +1,8 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -26,6 +29,7 @@ import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -55,40 +59,51 @@ fun TabbedScreen(
 
     Scaffold(
         topBar = {
-            val tab = tabs[state.currentPage]
-            val searchEnabled = tab.searchEnabled
             // KMK -->
-            if (bulkFavoriteState.selectionMode) {
-                BulkSelectionToolbar(
-                    selectedCount = bulkFavoriteState.selection.size,
-                    isRunning = bulkFavoriteState.isRunning,
-                    onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
-                    onSelectAll = {
-                        feedState.items?.let { result ->
-                            result.mapNotNull { it.results }
-                                .flatten()
-                                .forEach { bulkFavoriteScreenModel.select(it) }
-                        }
-                    },
-                    onReverseSelection = {
-                        feedState.items?.let { result ->
-                            result.mapNotNull { it.results }
-                                .flatten()
-                                .let { bulkFavoriteScreenModel.reverseSelection(it) }
-                        }
-                    },
-                )
-            } else {
+            // Auto-hide top bar on scroll for more viewing space
+            AnimatedVisibility(
+                visible = !HomeScreen.LocalBarsScrolledDown.current,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
                 // KMK <--
-                SearchToolbar(
-                    titleContent = { AppBarTitle(stringResource(titleRes)) },
-                    searchEnabled = searchEnabled,
-                    searchQuery = if (searchEnabled) searchQuery else null,
-                    onChangeSearchQuery = onChangeSearchQuery,
-                    actions = { AppBarActions(tab.actions) },
-                )
+                val tab = tabs[state.currentPage]
+                val searchEnabled = tab.searchEnabled
+                // KMK -->
+                if (bulkFavoriteState.selectionMode) {
+                    BulkSelectionToolbar(
+                        selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
+                        onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        onSelectAll = {
+                            feedState.items?.let { result ->
+                                result.mapNotNull { it.results }
+                                    .flatten()
+                                    .forEach { bulkFavoriteScreenModel.select(it) }
+                            }
+                        },
+                        onReverseSelection = {
+                            feedState.items?.let { result ->
+                                result.mapNotNull { it.results }
+                                    .flatten()
+                                    .let { bulkFavoriteScreenModel.reverseSelection(it) }
+                            }
+                        },
+                    )
+                } else {
+                    // KMK <--
+                    SearchToolbar(
+                        titleContent = { AppBarTitle(stringResource(titleRes)) },
+                        searchEnabled = searchEnabled,
+                        searchQuery = if (searchEnabled) searchQuery else null,
+                        onChangeSearchQuery = onChangeSearchQuery,
+                        actions = { AppBarActions(tab.actions) },
+                    )
+                }
+                // KMK -->
             }
+            // KMK <--
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->
