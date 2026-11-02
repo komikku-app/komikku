@@ -82,6 +82,9 @@ class UpdateMangaFromRemote(
         fetchChapters: Boolean = false,
         manualFetch: Boolean = false,
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
+        // KMK -->
+        siblingReadChapterNumbers: Set<Double> = emptySet(),
+        // KMK <--
         // SY -->
         throttleFunc: suspend () -> Unit = {},
         // SY <--
@@ -124,6 +127,9 @@ class UpdateMangaFromRemote(
                         source = source,
                         manualFetch = manualFetch,
                         fetchWindow = fetchWindow,
+                        // KMK -->
+                        siblingReadChapterNumbers = siblingReadChapterNumbers,
+                        // KMK <--
                     )
                 }
                 val updatedManga = mangaRepository.getMangaById(manga.id)
