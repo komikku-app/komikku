@@ -25,6 +25,7 @@ import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
+import okio.Buffer
 import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
@@ -188,17 +189,16 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
-                setRatioAndColorsInScope(
-                    mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
-                )
+                // Coil and the color task read on different threads, so each gets its own copy of the body
+                val body = Buffer()
+                responseBody.source().use { it.readAll(body) }
+                setRatioAndColorsInScope(mangaCover, bufferedSource = body.copy())
                 // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
-                    source = ImageSource(source = responseBody.source(), fileSystem = FileSystem.SYSTEM),
+                    // KMK -->
+                    source = ImageSource(source = body, fileSystem = FileSystem.SYSTEM),
+                    // KMK <--
                     mimeType = "image/*",
                     dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
@@ -350,9 +350,18 @@ class MangaCoverFetcher(
         onlyFavorite: Boolean = !themeCoverBased,
         force: Boolean = false,
     ) {
-        if (!preloadLibraryColor) return
+        if (!preloadLibraryColor) {
+            bufferedSource?.close()
+            return
+        }
         scope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
+            try {
+                MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e) { "Failed to set cover colors for manga ${mangaCover.mangaId}" }
+            } finally {
+                bufferedSource?.close()
+            }
         }
     }
     // KMK <--
