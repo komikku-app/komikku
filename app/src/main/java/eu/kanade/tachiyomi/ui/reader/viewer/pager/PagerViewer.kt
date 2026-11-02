@@ -367,7 +367,11 @@ abstract class PagerViewer(
         if (pager.currentItem != adapter.count - 1) {
             val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
             if (holder != null && config.navigateToPan && holder.canPanRight()) {
-                holder.panRight()
+                if (holder.canPanDown()) {
+                    holder.panDown()
+                } else {
+                    holder.panRight()
+                }
             } else {
                 pager.setCurrentItem(pager.currentItem + 1, config.usePageTransitions)
             }
@@ -381,7 +385,11 @@ abstract class PagerViewer(
         if (pager.currentItem != 0) {
             val holder = (currentPage as? ReaderPage)?.let(::getPageHolder)
             if (holder != null && config.navigateToPan && holder.canPanLeft()) {
-                holder.panLeft()
+                if (holder.canPanUp()) {
+                    holder.panUp()
+                } else {
+                    holder.panLeft()
+                }
             } else {
                 pager.setCurrentItem(pager.currentItem - 1, config.usePageTransitions)
             }
