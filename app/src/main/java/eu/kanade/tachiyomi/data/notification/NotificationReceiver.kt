@@ -8,6 +8,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.download.DownloadOptimizerJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.updater.AppUpdateDownloadJob
@@ -85,6 +86,8 @@ class NotificationReceiver : BroadcastReceiver() {
             // KMK -->
             // Stop Discord RPC service
             ACTION_STOP_DISCORD_RPC -> stopDiscordRPC(context)
+            // Cancel download optimizer
+            ACTION_CANCEL_DOWNLOAD_OPTIMIZER -> cancelDownloadOptimizer(context)
             // <-- KMK
 
             // Open reader activity
@@ -261,6 +264,10 @@ class NotificationReceiver : BroadcastReceiver() {
         context.stopService(serviceIntent)
         context.cancelNotification(Notifications.ID_DISCORD_RPC)
     }
+
+    private fun cancelDownloadOptimizer(context: Context) {
+        DownloadOptimizerJob.stop(context)
+    }
     // <-- KMK
 
     companion object {
@@ -269,6 +276,10 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val ACTION_SHARE_IMAGE = "$ID.$NAME.SHARE_IMAGE"
 
         private const val ACTION_SHARE_BACKUP = "$ID.$NAME.SEND_BACKUP"
+
+        // KMK -->
+        private const val ACTION_CANCEL_DOWNLOAD_OPTIMIZER = "$ID.$NAME.CANCEL_DOWNLOAD_OPTIMIZER"
+        // KMK <--
 
         private const val ACTION_CANCEL_RESTORE = "$ID.$NAME.CANCEL_RESTORE"
 
@@ -724,6 +735,18 @@ class NotificationReceiver : BroadcastReceiver() {
         internal fun stopDiscordRPCService(context: Context): PendingIntent {
             val intent = Intent(context, NotificationReceiver::class.java).apply {
                 action = ACTION_STOP_DISCORD_RPC
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        internal fun cancelDownloadOptimizerPendingBroadcast(context: Context): PendingIntent {
+            val intent = Intent(context, NotificationReceiver::class.java).apply {
+                action = ACTION_CANCEL_DOWNLOAD_OPTIMIZER
             }
             return PendingIntent.getBroadcast(
                 context,

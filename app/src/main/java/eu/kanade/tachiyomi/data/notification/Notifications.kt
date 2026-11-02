@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.util.system.buildNotificationChannel
 import eu.kanade.tachiyomi.util.system.buildNotificationChannelGroup
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 /**
  * Class to manage the basic information of all the notifications used in the app.
@@ -44,6 +45,10 @@ object Notifications {
     const val ID_DOWNLOAD_CHAPTER_PROGRESS = -201
     // KMK -->
     const val ID_DOWNLOAD_CHAPTER_PAUSED = -203
+    const val CHANNEL_STORAGE_OPTIMIZER_PROGRESS = "storage_optimizer_progress_channel"
+    const val ID_STORAGE_OPTIMIZER_PROGRESS = -204
+    const val CHANNEL_STORAGE_OPTIMIZER_COMPLETE = "storage_optimizer_complete_channel"
+    const val ID_STORAGE_OPTIMIZER_COMPLETE = -205
     // KMK <--
     const val CHANNEL_DOWNLOADER_ERROR = "downloader_error_channel"
     const val ID_DOWNLOAD_CHAPTER_ERROR = -202
@@ -170,6 +175,18 @@ object Notifications {
                     setGroup(GROUP_DOWNLOADER)
                     setShowBadge(false)
                 },
+                // KMK -->
+                buildNotificationChannel(CHANNEL_STORAGE_OPTIMIZER_PROGRESS, IMPORTANCE_LOW) {
+                    setName(context.stringResource(KMR.strings.optimize_notification_channel))
+                    setGroup(GROUP_DOWNLOADER)
+                    setShowBadge(false)
+                },
+                buildNotificationChannel(CHANNEL_STORAGE_OPTIMIZER_COMPLETE, IMPORTANCE_DEFAULT) {
+                    setName(context.stringResource(KMR.strings.optimize_notification_channel))
+                    setGroup(GROUP_DOWNLOADER)
+                    setShowBadge(true)
+                },
+                // KMK <--
                 buildNotificationChannel(CHANNEL_BACKUP_RESTORE_PROGRESS, IMPORTANCE_LOW) {
                     setName(context.stringResource(MR.strings.channel_progress))
                     setGroup(GROUP_BACKUP_RESTORE)
