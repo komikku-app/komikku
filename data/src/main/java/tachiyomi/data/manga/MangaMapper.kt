@@ -38,6 +38,9 @@ object MangaMapper {
         @Suppress("UNUSED_PARAMETER")
         isSyncing: Long,
         notes: String,
+        // KMK -->
+        bannerUrl: String?,
+        // KMK <--
         memo: JsonObject,
     ): Manga = Manga(
         id = id,
@@ -66,6 +69,9 @@ object MangaMapper {
         favoriteModifiedAt = favoriteModifiedAt,
         version = version,
         notes = notes,
+        // KMK -->
+        ogBannerUrl = bannerUrl,
+        // KMK <--
         memo = memo,
     )
 
@@ -98,6 +104,9 @@ object MangaMapper {
         version: Long,
         isSyncing: Long,
         notes: String,
+        // KMK -->
+        bannerUrl: String?,
+        // KMK <--
         memo: JsonObject,
         totalCount: Long,
         readCount: Double,
@@ -139,6 +148,9 @@ object MangaMapper {
             version,
             isSyncing,
             notes,
+            // KMK -->
+            bannerUrl,
+            // KMK <--
             memo,
         ),
         categories = categories.split(",").map { it.toLong() },
@@ -183,6 +195,9 @@ object MangaMapper {
         version: Long,
         isSyncing: Long,
         notes: String,
+        // KMK -->
+        bannerUrl: String?,
+        // KMK <--
         memo: JsonObject,
         totalCount: Long,
     ): MangaWithChapterCount = MangaWithChapterCount(
@@ -215,6 +230,9 @@ object MangaMapper {
             version,
             isSyncing,
             notes,
+            // KMK -->
+            bannerUrl,
+            // KMK <--
             memo,
         ),
         chapterCount = totalCount,
