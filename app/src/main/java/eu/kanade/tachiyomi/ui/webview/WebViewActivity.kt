@@ -76,6 +76,7 @@ class WebViewActivity : BaseActivity() {
                 initialTitle = intent.extras?.getString(TITLE_KEY),
                 url = url,
                 headers = headers,
+                defaultUserAgentProvider = network::defaultUserAgentProvider,
                 onUrlChange = { assistUrl = it },
                 onShare = this::shareWebpage,
                 onOpenInBrowser = this::openInBrowser,

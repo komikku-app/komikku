@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.os.Looper
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -326,7 +325,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     override fun getPackageName(): String {
         try {
             // Override the value passed as X-Requested-With in WebView requests
-            val stackTrace = Looper.getMainLooper().thread.stackTrace
+            val stackTrace = Thread.currentThread().stackTrace
             // KMK -->
             val chromiumClasses = setOf("org.chromium.base.buildinfo", "org.chromium.base.apkinfo")
             val chromiumMethods = setOf("getall", "getpackagename", "<init>")
