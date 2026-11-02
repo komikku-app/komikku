@@ -55,6 +55,7 @@ fun MangaToolbar(
     onClickSourceSettings: (() -> Unit)?,
     onClearManga: () -> Unit,
     onOpenMangaFolder: (() -> Unit)?,
+    onReindexDownloads: () -> Unit,
     // KMK <--
     onClickRecommend: (() -> Unit)?,
     onClickMerge: (() -> Unit)?,
@@ -235,6 +236,12 @@ fun MangaToolbar(
                     }
                     // SY <--
                     // KMK -->
+                    add(
+                        AppBar.OverflowAction(
+                            title = stringResource(MR.strings.pref_invalidate_download_cache),
+                            onClick = onReindexDownloads,
+                        ),
+                    )
                     if (onOpenMangaFolder != null) {
                         add(
                             AppBar.OverflowAction(
