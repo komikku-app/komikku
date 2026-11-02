@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,7 +71,16 @@ class MangaCoverFetcher(
 ) : Fetcher {
 
     // KMK -->
-    private val scope by lazy { CoroutineScope(Dispatchers.IO) }
+    // A CoroutineExceptionHandler is required here: this scope is detached from the worker/UI
+    // coroutine hierarchy, so any exception escaping `launch { ... }` would fall through to the
+    // default uncaught-exception handler and kill the whole process (observed on some MediaTek
+    // devices where BitmapFactory throws `IllegalStateException: Unbalanced enter/exit`). Cover
+    // colour/ratio is purely cosmetic and must never take the library update down with it.
+    private val scope by lazy {
+        CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            logcat(LogPriority.ERROR, throwable) { "Failed to preload library cover color" }
+        })
+    }
     private val uiPreferences = Injekt.get<UiPreferences>()
     private val themeCoverBased = uiPreferences.themeCoverBased().get()
     private val preloadLibraryColor = uiPreferences.preloadLibraryColor().get()
@@ -188,13 +198,13 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
-                setRatioAndColorsInScope(
-                    mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
-                )
+                // NOTE: don't hand `responseBody.source()` to the color-preload coroutine. The
+                // same source is returned to Coil below, and two readers on one OkHttp body
+                // corrupt okio's AsyncTimeout bookkeeping (IllegalStateException: Unbalanced
+                // enter/exit), which used to crash the process. The cache-write paths above
+                // already preload from a file; on this rare fallback path just skip, the color
+                // will be computed next time the cover is loaded from cache.
+                setRatioAndColorsInScope(mangaCover)
                 // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(

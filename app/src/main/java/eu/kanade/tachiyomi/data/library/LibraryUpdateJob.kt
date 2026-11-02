@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withTimeout
 import logcat.LogPriority
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -156,50 +157,65 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         // KMK -->
         libraryUpdateStatus.start()
-
-        deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
         // KMK <--
 
-        setForegroundSafely()
+        // Everything below can fail before the per-manga progress loop ever runs (bad input data,
+        // a DB error while pruning stale errors, a throw while building the queue...). The
+        // status/notification cleanup therefore has to live in an outer finally: without it the
+        // library banner stays pinned at "Updating library… 0%" for the whole process lifetime and
+        // the progress notification is never cancelled.
+        return try {
+            deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
 
-        val target = inputData.getString(KEY_TARGET)?.let { Target.valueOf(it) } ?: Target.CHAPTERS
+            setForegroundSafely()
 
-        // If this is a chapter update, set the last update time to now
-        if (target == Target.CHAPTERS) {
-            libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
-        }
+            val target = inputData.getString(KEY_TARGET)?.let { Target.valueOf(it) } ?: Target.CHAPTERS
 
-        val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
-        // SY -->
-        val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
-        val groupExtra = inputData.getString(KEY_GROUP_EXTRA)
-        // SY <--
-        addMangaToQueue(categoryId, group, groupExtra)
-
-        return withIOContext {
-            try {
-                when (target) {
-                    Target.CHAPTERS -> updateChapterList()
-                    // SY -->
-                    Target.SYNC_FOLLOWS -> syncFollows()
-                    Target.PUSH_FAVORITES -> pushFavorites()
-                    // SY <--
-                }
-                Result.success()
-            } catch (e: Exception) {
-                if (e is CancellationException) {
-                    // Assume success although cancelled
-                    Result.success()
-                } else {
-                    logcat(LogPriority.ERROR, e)
-                    Result.failure()
-                }
-            } finally {
-                notifier.cancelProgressNotification()
-                // KMK -->
-                libraryUpdateStatus.stop()
-                // KMK <--
+            // If this is a chapter update, set the last update time to now
+            if (target == Target.CHAPTERS) {
+                libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
             }
+
+            val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
+            // SY -->
+            val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
+            val groupExtra = inputData.getString(KEY_GROUP_EXTRA)
+            // SY <--
+            addMangaToQueue(categoryId, group, groupExtra)
+
+            withIOContext {
+                try {
+                    when (target) {
+                        Target.CHAPTERS -> updateChapterList()
+                        // SY -->
+                        Target.SYNC_FOLLOWS -> syncFollows()
+                        Target.PUSH_FAVORITES -> pushFavorites()
+                        // SY <--
+                    }
+                    Result.success()
+                } catch (e: Exception) {
+                    if (e is CancellationException) {
+                        // Assume success although cancelled
+                        Result.success()
+                    } else {
+                        logcat(LogPriority.ERROR, e)
+                        Result.failure()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                // Assume success although cancelled
+                Result.success()
+            } else {
+                logcat(LogPriority.ERROR, e)
+                Result.failure()
+            }
+        } finally {
+            notifier.cancelProgressNotification()
+            // KMK -->
+            libraryUpdateStatus.stop()
+            // KMK <--
         }
     }
 
@@ -532,14 +548,21 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private suspend fun updateManga(manga: Manga, fetchWindow: Pair<Long, Long>): List<Chapter> {
         val source = sourceManager.getOrStub(manga.source)
 
-        val update = updateMangaFromRemote(
-            source = source,
-            manga = manga,
-            fetchDetails = libraryPreferences.autoUpdateMetadata().get(),
-            fetchChapters = true,
-            fetchWindow = fetchWindow,
-        )
-            .getOrThrow()
+        // A source/extension that never returns (paginating forever, sleeping inside a rate
+        // limiter, stuck on a socket that ignores its own timeout) would otherwise hold one of
+        // the 5 permits indefinitely, so no manga ever completes and the progress banner stays
+        // at "Updating library… 0%". Time-box each single-manga fetch so the queue always moves
+        // on; the cancelled call is reported as a failed update instead.
+        val update = withTimeout(PER_MANGA_UPDATE_TIMEOUT_MS) {
+            updateMangaFromRemote(
+                source = source,
+                manga = manga,
+                fetchDetails = libraryPreferences.autoUpdateMetadata().get(),
+                fetchChapters = true,
+                fetchWindow = fetchWindow,
+            )
+                .getOrThrow()
+        }
 
         return if (update.manga.favorite) update.newChapters else emptyList()
     }
@@ -716,6 +739,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         private const val TAG = "LibraryUpdate"
         private const val WORK_NAME_AUTO = "LibraryUpdate-auto"
         private const val WORK_NAME_MANUAL = "LibraryUpdate-manual"
+
+        // KMK -->
+        // Upper bound for fetching a single manga from its source during a library update.
+        private const val PER_MANGA_UPDATE_TIMEOUT_MS = 5 * 60 * 1000L
+        // KMK <--
 
         private const val ERROR_LOG_HELP_URL = "https://komikku-app.github.io/docs/guides/troubleshooting/"
 
