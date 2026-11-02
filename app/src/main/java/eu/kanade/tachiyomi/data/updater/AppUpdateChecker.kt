@@ -15,7 +15,7 @@ import uy.kohesive.injekt.injectLazy
 
 class AppUpdateChecker(
     // KMK -->
-    private val peekIntoPreview: Boolean = false,
+    private val peekIntoPreview: Boolean = true,
     // KMK <--
 ) {
 

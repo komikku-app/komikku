@@ -20,13 +20,19 @@ class GetPagePreviews(
         val source = source.getMainSource<PagePreviewSource>() ?: return Result.Unused
         val chapters = getChaptersByMangaId.await(manga.id).sortedByDescending { it.sourceOrder }
         val chapterIds = chapters.map { it.id }
+        suspend fun fetchAndCache() = source
+            .getPagePreviewList(manga.toSManga(), chapters.map { it.toSChapter() }, page)
+            .also { pagePreviewCache.putPageListToCache(manga, chapterIds, it) }
+
         return try {
             val pagePreviews = try {
-                pagePreviewCache.getPageListFromCache(manga, chapterIds, page)
-            } catch (_: Exception) {
-                source.getPagePreviewList(manga.toSManga(), chapters.map { it.toSChapter() }, page).also {
-                    pagePreviewCache.putPageListToCache(manga, chapterIds, it)
+                pagePreviewCache.getPageListFromCache(manga, chapterIds, page).let { cached ->
+                    // Old buggy versions could cache an empty preview list permanently.
+                    // If cache is empty, re-fetch once from source and overwrite cache.
+                    if (cached.pagePreviews.isEmpty()) fetchAndCache() else cached
                 }
+            } catch (_: Exception) {
+                fetchAndCache()
             }
             Result.Success(
                 pagePreviews.pagePreviews.map {
