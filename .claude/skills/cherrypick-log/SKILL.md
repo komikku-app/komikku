@@ -11,7 +11,7 @@ Everything for this tool lives in this folder (`.claude/skills/cherrypick-log/`)
 |------|------|
 | `SKILL.md` | This file: the procedure an AI agent follows |
 | `update_cherrypick_log.py` | Deterministic generator: fetch, filter, pair, order, detect, keep manual marks |
-| `config.json` | Main upstream + additional upstreams, target branch, start date (`since`, per repo), output path, excluded identities |
+| `config.json` | Main upstream + additional upstreams, target branch, start date (`since`, per repo), output path, excluded identities, and per upstream the optional path keys (in Komikku only `partial_ignore_paths` on mihon) |
 | `README.md` | Human documentation: rules, columns, commands, porting to another project |
 
 The output is `cherrypick_log.md` in the repo root. **The script is the source of truth** for
@@ -25,9 +25,15 @@ an `AI checked` note or a status set by hand (see README "Revert chains"). The A
 ## 1. Update the list
 
 ```bash
-python3 .claude/skills/cherrypick-log/update_cherrypick_log.py          # fetch + regenerate
-python3 .claude/skills/cherrypick-log/update_cherrypick_log.py update --no-fetch   # offline
+P=.claude/skills/cherrypick-log/update_cherrypick_log.py
+python3 $P                     # fetch + regenerate
+python3 $P update --no-fetch   # offline
+python3 $P --target my-branch update   # check against another branch than config.json's target_branch (master)
 ```
+
+When the user names a branch (e.g. "on branch my-branch"), pass `--target <branch>` to every `update` of the run. The
+header line `checked against` shows which branch the statuses came from. `O` and `X` stay when a later run checks
+`master` again.
 
 Report the summary line (commits / new / status changes / gone) and the summary table at the top
 of `cherrypick_log.md`. If the user only asked to update, stop here.
@@ -35,10 +41,10 @@ of `cherrypick_log.md`. If the user only asked to update, stop here.
 ## 2. Get the rows to review
 
 ```bash
-P=.claude/skills/cherrypick-log/update_cherrypick_log.py
 python3 $P uncertain --json                      # '?' rows not yet AI-reviewed
 python3 $P uncertain --json --repo mihon --limit 20
 python3 $P uncertain --json --include-empty --repo mihon --limit 30   # only when the user asks
+python3 $P uncertain --json --details 'partial:'  # only the partial picks (README "Partial picks")
 ```
 
 Rows whose Notes already contain `AI checked` are skipped (use `--include-reviewed` to redo them).
@@ -56,6 +62,13 @@ For upstream commit `H` (already fetched locally):
 1. `git show --stat --format=fuller H` and then the diff (`git show H -- <path>`) for the main files.
 2. If Details names target commits (``master `abc` [title]``, `[pr only …]`), inspect them:
    `git show --stat abc`, then compare the hunks with the upstream change.
+   - `hash of … (partial: N of M files not picked)`: commits here cite `H`, but left out some of its files (README
+     "Partial picks"). Compare `git show --name-status --format= H` with the files of every commit citing it
+     (`git log master --format=%h -i --grep=<first 7 characters of H>`: a citation can use a short hash, and the
+     prefix can also match another commit, so check each hit), then check each left-out file as in step 3. **O**
+     when the left-out changes reached `master` another way (often a Komikku rework in another file), or don't apply
+     here (code Komikku dropped, a dependency it doesn't use; say which in the note). Otherwise keep **?** with a note
+     naming what is missing.
 3. Otherwise, search `master` for the change itself:
    - `git grep -n -F '<distinctive added line>' master -- <path>` (Komikku keeps most upstream paths;
      changes may be wrapped in `// KMK` / `// SY` markers or be in a renamed file).
@@ -80,6 +93,9 @@ python3 $P mark <hash> --status none --note "AI checked YYYY-MM-DD: not found - 
   "not found" verdict and to leave reviewed rows out of `uncertain`.
 - `mark` refuses to change `O` / `X` rows. Do not pass `--force` unless the user explicitly asks.
 - Keep notes to one line. Mention the evidence (target commit hash, file, or search done).
+- When the user (not the AI review) picked only part of a commit, or folded part of it into the pick of another
+  commit, record it as `--status '?' --note "Partial YYYY-MM-DD: picked without <what>"` or
+  `--note "Folded YYYY-MM-DD: <what> into the pick of <hash>"`. `update` keeps such a `?` (README "Rerunning").
 
 ## 5. Clean the log: omit version-bump-only commits
 
@@ -106,11 +122,11 @@ to 33`, `Update version code`) are only for that fork's releases, so the fork ne
 
 ## 6. Finish
 
-1. `python3 $P update --no-fetch` to make sure the file still parses and to refresh the summary. This also
-   applies the script's revert-chain omission.
+1. `python3 $P update --no-fetch` (with the same `--target` as before, if any) to make sure the file still parses
+   and to refresh the summary. This also applies the script's revert-chain flags.
 2. Report to the user how many rows you reviewed, how many became O / stayed ? / empty / X, and any rows
    that need a human decision (big reworks, likely X candidates).
-3. Do not commit unless asked. If asked, follow `AGENTS.md` git rules (feature branch, never `master`).
+3. Do not commit unless asked. If asked, follow the git rules in `AGENTS.md` (feature branch, never `master`).
 
 ## Large batches
 
@@ -121,5 +137,6 @@ to a subagent, which only *reports* `hash → verdict + one-line evidence`. The 
 ## Changing the rules
 
 Matching and ordering rules are in `update_cherrypick_log.py`: the module docstring, the constants at
-the top, and `Builder.pair` / `Builder.detect`. They are explained in `README.md`. Update both when
-you change behavior.
+the top, `Builder.path_excluded` (optional path filters), `checked_paths` / `unpicked_files` (partial picks),
+`module_of`, and `Builder.pair` / `Builder.build` / `Builder.detect`. They are explained in `README.md`. Update both
+when you change behavior.

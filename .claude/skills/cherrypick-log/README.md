@@ -35,11 +35,13 @@ unless you pass `--no-fetch`.
 | Command | What it does |
 |---------|--------------|
 | `update` (default) | Fetch upstreams, rebuild the list, keep manual marks and Notes. Options: `--no-fetch`, `--dry-run`, `--verbose` |
-| `uncertain` | Print `?` rows that haven't been AI-reviewed yet. Options: `--include-empty`, `--include-reviewed`, `--repo NAME`, `--grep REGEX` (title), `--limit N`, `--json` |
+| `uncertain` | Print `?` rows that haven't been AI-reviewed yet. Options: `--include-empty`, `--include-reviewed`, `--repo NAME`, `--grep REGEX` (title), `--details REGEX` (Details, e.g. `'partial:'`), `--limit N`, `--json` |
 | `mark HASH` | Set one row's status (`--status O\|?\|X\|none`) and/or append a note (`--note`, `--replace-note`). Refuses to change `O`/`X` rows unless you pass `--force` |
 
-All commands accept `--config PATH` (default: `config.json` next to the script) and `--since YYYY-MM-DD`
-(overrides the config's start date for this run, e.g. `... --since 2024-01-01 update`). Quote `?` in zsh (`--status '?'`).
+All commands accept `--config PATH` (default: `config.json` next to the script), `--since YYYY-MM-DD`
+(overrides the config's start date for this run, e.g. `... --since 2024-01-01 update`) and `--target BRANCH` (overrides
+`target_branch` for this run, e.g. `... --target my-feature update` to check a branch that is not merged into `master` yet).
+They go before the command. Quote `?` in zsh (`--status '?'`).
 
 ## Columns and statuses
 
@@ -50,7 +52,7 @@ All commands accept `--config PATH` (default: `config.json` next to the script) 
 | Upstream | `mihon`, `tachiyomiSY`, or `↳ tachiyomiSY` for SY's copy of the mihon commit directly below it |
 | Date | Committer date, i.e. when the commit landed on that upstream branch (ISO) |
 | Title / Author | First line of the commit message and its author |
-| Details | Generated on every run: how the row was paired and how its status was found (see below) |
+| Details | Generated on every run: why the row is listed (`repo-wide: …`, only with [path filters](#path-filters-optional)), how it was paired and how its status was found (see below) |
 | Notes | Yours. Kept across runs. AI notes start with `AI checked <date>:` |
 
 Only **Status** and **Notes** are yours to edit. Every other cell, the order of the rows and the header are rewritten on each run.
@@ -63,6 +65,21 @@ Only **Status** and **Notes** are yours to edit. Every other cell, the order of 
 - A commit is excluded if its author, committer or any `Co-authored-by` matches `exclude_identity_regex` (Renovate).
   An SY copy of an excluded mihon commit is excluded too.
 - Weblate translation commits are included. Mark them `X` if you don't want them.
+- Optionally, an upstream's commits that only change some paths are left out (see [Path filters](#path-filters-optional)).
+  Komikku doesn't use this.
+
+### Path filters (optional)
+
+These per-upstream keys are off in Komikku. They exist for forks that take only part of an upstream, e.g. an extensions
+repo that takes the shared code but not the upstream's own sources.
+
+- `exclude_only_paths`: a commit is excluded if every file it changes is under one of these paths. Renames count as a
+  delete plus an add, so a file moved out of those paths keeps the commit. A commit that changes no files is kept. A
+  secondary copy of an excluded primary commit is judged by its own files and its own upstream's setting.
+- `repo_wide_min_modules`: such a commit is kept anyway, as *repo-wide*, when it touches at least this many modules.
+  Its Details start with `repo-wide: N modules, only under <paths>`. A file's module is the directory before its first
+  nested `src/`, `res/` or `assets/` folder (Gradle / Android layout), else the file's directory. The AI review sorts
+  these rows and marks the ones that don't apply `X`.
 
 ### Pairing SY commits with mihon commits
 
@@ -77,6 +94,8 @@ A secondary commit is a copy of a primary commit if one of these applies, checke
    the PR before upstream merges it).
 
 If an SY commit copies a mihon commit dated before `since`, it is listed as an SY-only commit, with `(before <since>)` in Details.
+If it copies a mihon commit dropped by `exclude_only_paths` (and is not dropped itself), Details say
+`(not listed: only changes under <paths>)` instead.
 
 ### Order (newest first)
 
@@ -95,7 +114,8 @@ A mihon commit and its SY copies share one status, and evidence for any of them 
 | Method | Status | Meaning |
 |--------|--------|---------|
 | `in history as …` | O | The upstream commit is reachable from the target branch |
-| `hash of …` | O | A target commit's message has `cherry picked from commit <hash>` (or a `github.com/…/commit/<hash>` link) |
+| `hash of …` | O | A target commit's message has `cherry picked from commit <hash>` (or a `github.com/…/commit/<hash>` link), and the commits that cite it carry all of its files (see [Partial picks](#partial-picks)) |
+| `hash of … (partial: N of M files not picked)` | ? | They cite it, but left out N of the M files that apply here. Title and PR matches on those same commits become `?` too |
 | `pr+title owner/repo#N` | O | A target commit line has `owner/repo#N` (or `…/pull/N`) and a similar title. Refs right after `Fixes`, `Closes`, `See` and similar words are ignored |
 | `title+author` | O | A target commit line has the same normalized title and the same author |
 | `pr only owner/repo#N` | ? | The PR is referenced but the title differs |
@@ -104,6 +124,32 @@ A mihon commit and its SY copies share one status, and evidence for any of them 
 Title matches only count if the title is unique among the listed upstream commits, has at least 3 words,
 and the target commit is at most 180 days older than the upstream commit.
 The title is normalized before comparing: lowercased, conventional-commit prefix removed, `(#N)` refs and quotes removed.
+
+### Partial picks
+
+`git cherry-pick -x` adds `cherry picked from commit <hash>` even when the pick keeps only part of the commit (a
+conflict resolved by dropping a file). For example, `34102027d1` cites mihon `b543bc089a` (Clean up some build
+warnings) but carries only 14 of its 21 files. So the script compares files: the files of the upstream commit against
+the files changed by every target commit that cites it.
+
+- Only files outside the upstream's `exclude_only_paths` and `partial_ignore_paths`, and inside its
+  `partial_check_paths` (when set), count. Komikku sets `partial_ignore_paths` on mihon to `CHANGELOG.md` (Komikku never
+  takes mihon's changelog entries, which about 300 mihon commits since 2024 add) and
+  `data/src/main/sqldelight/tachiyomi/migrations/` (Komikku numbers its migrations differently, so mihon's `9.sqm` is
+  another file here and the pick adds a new migration instead).
+- A file the target branch had at the same path before the first citing commit counts as picked only when the citing
+  commits changed that path.
+- A file it had only in another package (a file of the same name in the same module) counts as picked when they
+  changed a file of that name in that module.
+- A new file applies when its module was there, or when the citing commits change files in it.
+- Anything else doesn't apply here, and doesn't count: a changed or deleted file the target branch didn't have in any
+  package (code Komikku dropped or never had), or a new file in a module that neither the target branch nor the
+  citing commits have.
+
+When files that apply are left out, the row gets `?` instead of `O`. It turns `O` by itself once later picks that cite
+the same hash carry the rest. If the rest will never be picked, mark the row `O` (or `X`) by hand.
+Rows already marked `O`, by the script or by hand, skip this check: they stay `O`, and their Details never show
+`partial: …`. So the check only affects rows the script hasn't marked `O` yet.
 
 ### Revert chains (flagged `?`)
 
@@ -114,7 +160,7 @@ e.g. mark both `X`.
 - They are found by following `This reverts commit <hash>` links between listed commits. A mihon commit and its SY copies
   count as one.
 - A chain is only flagged when it is linear, every row in it is still empty or `?` (the fork has none of them), and no
-  row has an AI verdict.
+  row has an AI verdict or is a `?` with a `Partial <date>:` / `Folded <date>:` note (part of it is here).
 - An even-length chain cancels out completely, so every commit in it is flagged. In an odd-length chain (`C`,
   `Revert C`, `Revert "Revert C"`) the oldest commit carries the net change and is not flagged.
 - If the fork already has one side of a revert pair, the pair is not flagged, because the other side may still matter.
@@ -125,7 +171,9 @@ Older versions marked these rows `X` with an `Omitted (script):` note. Those row
 
 `X` means "won't pick". Apart from your own marks, the AI skill marks one kind of commit `X` when asked to clean the log:
 commits whose whole diff is release bookkeeping for that fork (version code/name, release notes, version numbers in issue
-templates). Their note is `AI checked <date>: omitted - version bump only (<files>)`. See SKILL.md section 5.
+templates). Their note is `AI checked <date>: omitted - version bump only (<files>)`. See SKILL.md section 5. With
+[path filters](#path-filters-optional), it also marks `X` the `repo-wide:` rows that turn out not to apply
+(`AI checked <date>: omitted - not repo-wide (<what it changes>)`).
 
 ### Rerunning
 
@@ -136,6 +184,11 @@ templates). Their note is `AI checked <date>: omitted - version bump only (<file
   `AI checked` note, or once you change its status (e.g. to `X`). Only the stale script note is removed then.
 - Empty and `?` rows are checked again. An empty or `?` row whose Notes contain `AI checked` keeps that AI verdict
   unless new `O` evidence appears.
+- A `?` set by hand for a partial pick, with a `Partial <YYYY-MM-DD>:` or `Folded <YYYY-MM-DD>:` note, is kept the same
+  way: unless `O` evidence appears. Use `Partial` when you picked only part of a commit, and `Folded` when you folded a
+  part of it into the pick of another commit. Detection only sees whole files and the commits citing a hash, so it
+  would reset such a row to empty, e.g. while the pick is still on a branch, or when nothing cites the commit. The date
+  is required; other notes don't count.
 - Notes are always kept, and new upstream commits are added in their place in the order.
 - If a commit is no longer reachable from its upstream branch (force-push), it moves to a **Gone from upstream** section
   and keeps its status and notes. Delete it by hand once you no longer need it.
@@ -145,26 +198,32 @@ templates). Their note is `AI checked <date>: omitted - version bump only (<file
   evidence appears. You may delete such rows by hand; they are not re-added, and the summary simply counts the rows
   that are in the file.
 - If a commit is still upstream and dated on or after `since`, but no longer matches the filters (e.g. you changed
-  `exclude_identity_regex`), it is dropped.
+  `exclude_identity_regex`, `exclude_only_paths` or `repo_wide_min_modules`), it is dropped. That run checks each
+  dropped row with one `git` call, so it can take a minute when thousands of rows go.
 
 ## Config (`config.json`)
 
 | Key | Meaning |
 |-----|---------|
-| `target_branch` | Branch to check for already-picked commits (`master`) |
+| `target_branch` | Branch to check for already-picked commits (`master`). The local branch is read, so keep it up to date; `--target` overrides it |
 | `since` | First commit date to include, `YYYY-MM-DD` (committer date). Required, and specific to each repo (Komikku: `2024-01-01`); `--since` overrides it |
 | `output` | Output Markdown path, relative to the repo root (or absolute) |
 | `exclude_identity_regex` | Case-insensitive regex matched against author, committer and co-authors (Komikku: `renovate`). Empty = exclude nothing |
-| `main_upstream` | `{name, remote, branch, github}` of the main upstream. Its commits set the order of the list. Required |
-| `additional_upstreams` | List of one or more `{name, remote, branch, github}`. Their commits are paired with, and interleaved into, the main upstream's. Names must be unique |
+| `main_upstream` | `{name, remote, branch, github}` of the main upstream, plus the optional keys below. Its commits set the order of the list. Required |
+| `additional_upstreams` | List of one or more `{name, remote, branch, github}`, each with the optional keys below. Their commits are paired with, and interleaved into, the main upstream's. Names must be unique |
+| `exclude_only_paths` | Per upstream, optional. List of repo-relative directories or files (leading / trailing `/` ignored). That upstream's commits that only change files under them are not listed ([Path filters](#path-filters-optional)). Komikku: not set |
+| `repo_wide_min_modules` | Per upstream, optional, whole number. A commit dropped by `exclude_only_paths` is kept as repo-wide when it touches at least this many modules. `0` or absent = off. Komikku: not set |
+| `partial_check_paths` | Per upstream, optional. List of repo-relative directories or files. A pick of that upstream's commits must carry its files under them to count as `O` ([Partial picks](#partial-picks)). Absent = all files. Komikku: not set |
+| `partial_ignore_paths` | Per upstream, optional. List of repo-relative directories or files that a pick needn't carry. Komikku: `CHANGELOG.md` and the SQLDelight `migrations/` folder on mihon |
 
-Tuning constants (similarity threshold, date limits, minimum title words) are at the top of the script.
+Tuning constants (similarity threshold, date limits, minimum title words, module folders) are at the top of the script.
 
 ## Using this in another project
 
 1. Copy the whole `.claude/skills/cherrypick-log/` folder.
 2. Edit `config.json`: the `main_upstream`, one or more `additional_upstreams` (remote, branch, GitHub `owner/repo`),
-   target branch, start date (`since`, specific to that repo), excluded identities and output.
+   target branch, start date (`since`, specific to that repo), excluded identities, output, and the optional path
+   keys (excluded paths, repo-wide threshold, partial-pick paths).
 3. Add the remotes (`git remote add <name> <url>`) and run the script.
 4. Search `README.md` and `SKILL.md` for project-specific wording (mihon, SY, `// KMK` markers, `AGENTS.md`) and adjust it.
 
@@ -178,12 +237,21 @@ python3 -m unittest discover -s .claude/skills/cherrypick-log -p 'test_*.py'
 ```
 
 The tests in `test_update_cherrypick_log.py` cover revert-chain flags (including when a chain gets longer and the older `X` omissions), releasing
-the script's own flags (including notes with escaped characters and user text), manual `X` pins, and the rerun status rules
-(`carry_over`: manual status kept, AI verdict kept unless `O` evidence appears). They need no git repository.
+the script's own flags (including notes with escaped characters and user text), manual `X` pins, the rerun status rules
+(`carry_over`: manual status kept, AI verdict and a `Partial`/`Folded` `?` kept unless `O` evidence appears), the path
+filters (path matching, modules, config checks, and `Builder.build` dropping path-only commits, keeping repo-wide ones
+and keeping a copy of a dropped one), the order (copies above their originals, secondary-only commits above older
+copies or at the bottom), and partial picks (which files count, ignored paths, a package moved for this repo, a file
+kept at the same path, a module the picks add, reading the files a root commit's parent doesn't have, a partial pick
+staying `?` even with a matching title until a later pick carries the rest, and rows already `O` skipping the check).
+They need no git repository.
 
 ## Limitations
 
 - These are heuristics. A reworded, split or hand-ported change can show as empty or `?`. That's what the AI review is for.
+- The [partial-pick](#partial-picks) check compares file names, not contents. A citing commit that changes a file
+  counts as carrying all of that file's change. A file left out on purpose (a change Komikku reworked in another file)
+  still makes the row `?`, and the rest of a pick made by a commit that doesn't cite the hash isn't seen.
 - Reverts are only linked through git's default `This reverts commit <hash>` message, and only to commits that are in
   the list. A reworded revert, or a revert of a commit outside the list (before `since`, excluded, or deleted by hand),
   stays an ordinary row.
