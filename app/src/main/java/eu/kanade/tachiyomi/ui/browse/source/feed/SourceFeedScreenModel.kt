@@ -66,6 +66,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.concurrent.Executors
+import kotlin.time.Duration.Companion.milliseconds
 import tachiyomi.domain.manga.model.Manga as DomainManga
 
 open class SourceFeedScreenModel(
