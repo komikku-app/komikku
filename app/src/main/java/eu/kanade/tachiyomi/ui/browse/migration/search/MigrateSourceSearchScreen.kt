@@ -99,6 +99,9 @@ data class MigrateSourceSearchScreen(
                         isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
                         onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
+                        // KMK -->
+                        onBlacklistClick = bulkFavoriteScreenModel::massBlacklist,
+                        // KMK <--
                         onSelectAll = {
                             mangaList.itemSnapshotList.items
                                 .map { it.value.first }
