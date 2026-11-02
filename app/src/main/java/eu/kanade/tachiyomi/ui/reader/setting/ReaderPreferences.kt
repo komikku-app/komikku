@@ -35,6 +35,10 @@ class ReaderPreferences(
 
     fun showPageNumber() = preferenceStore.getBoolean("pref_show_page_number_key", true)
 
+    // KMK -->
+    fun showPersistentInfoOverlay() = preferenceStore.getBoolean("pref_show_persistent_info_overlay_key", false)
+    // KMK <--
+
     fun showReadingMode() = preferenceStore.getBoolean("pref_show_reading_mode", true)
 
     fun fullscreen() = preferenceStore.getBoolean("fullscreen", true)
