@@ -179,7 +179,7 @@ abstract class ParsedHttpSource : HttpSource() {
     }
 
     /**
-     * Returns the Jsoup selector that returns a list of [Element] corresponding to each related mangas.
+     * Returns the Jsoup selector that returns a list of [Element] corresponding to each related manga.
      *
      * @since komikku/extensions-lib 1.6
      */
