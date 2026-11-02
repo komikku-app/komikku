@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.ui.libraryUpdateError
 
+import android.app.Application
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.presentation.libraryUpdateError.components.LibraryUpdateErrorUiModel
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -162,6 +164,22 @@ class LibraryUpdateErrorScreenModel(
             withUIContext {
                 selectedErrorIds.remove(errorId)
             }
+        }
+    }
+
+    fun updateManga() {
+        val selectedMangaIds = mutableState.value.selected.map { it.error.mangaId }
+        val idsToUpdate = selectedMangaIds
+            .ifEmpty { mutableState.value.items.map { it.error.mangaId } }
+            .distinct()
+
+        if (idsToUpdate.isNotEmpty()) {
+            LibraryUpdateJob.startNow(
+                context = Injekt.get<Application>(),
+                mangaIds = idsToUpdate,
+                target = LibraryUpdateJob.Target.CHAPTERS,
+                forceUpdate = true,
+            )
         }
     }
 }
