@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.dto.AtHomeDto
 import exh.md.service.MangaDexService
 import exh.md.utils.MdApi
@@ -13,10 +14,14 @@ import exh.md.utils.MdUtil
 import okhttp3.Call
 import rx.Observable
 import tachiyomi.core.common.util.lang.withIOContext
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 
 class PageHandler(
+    // KMK -->
+    private val mangadex: Source,
+    // KMK <--
     private val service: MangaDexService,
     private val mangaPlusHandler: MangaPlusHandler,
     private val comikeyHandler: ComikeyHandler,
@@ -24,9 +29,15 @@ class PageHandler(
     private val azukiHandler: AzukiHandler,
     private val mangaHotHandler: MangaHotHandler,
     private val namicomiHandler: NamicomiHandler,
+    // KMK -->
+    private val kMangaHandler: KMangaHandler,
+    private val mangaUpHandler: MangaUpHandler,
+    // KMK <--
 ) {
 
-    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
+    // KMK -->
+    suspend fun fetchPageList(chapter: SChapter, usePort443Only: Boolean, dataSaver: Boolean): List<Page> {
+        // KMK <--
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
@@ -35,6 +46,9 @@ class PageHandler(
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                         dataSaver = dataSaver,
+                        // KMK -->
+                        mangadex.lang,
+                        // KMK <--
                     )
                     /*chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
@@ -43,9 +57,13 @@ class PageHandler(
                         chapterResponse.data.attributes.externalUrl,
                         chapterResponse.data.attributes.chapter.toString(),
                     )
-                    chapter.scanlator.equals("azuki manga", true) -> azukiHandler.fetchPageList(
-                        chapterResponse.data.attributes.externalUrl,
-                    )
+                    // KMK -->
+                    chapter.scanlator.equals("azuki manga", true) ||
+                        azukiHandler.isChapterUrl(chapterResponse.data.attributes.externalUrl) ->
+                        // KMK <--
+                        azukiHandler.fetchPageList(
+                            chapterResponse.data.attributes.externalUrl,
+                        )
                     chapter.scanlator.equals("mangahot", true) -> mangaHotHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                     )
@@ -53,6 +71,15 @@ class PageHandler(
                         chapterResponse.data.attributes.externalUrl,
                         dataSaver = dataSaver,
                     )
+                    // KMK -->
+                    chapter.scanlator.equals("K Manga", true) -> kMangaHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                    )
+                    chapter.scanlator.equals("Manga UP!", true) -> mangaUpHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                        mangadex.lang,
+                    )
+                    // KMK <--
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
             } else {
@@ -62,7 +89,9 @@ class PageHandler(
                     "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}"
                 }
 
-                updateExtensionVariable(mangadex, atHomeRequestUrl)
+                // KMK -->
+                updateExtensionVariable(atHomeRequestUrl)
+                // KMK <--
 
                 val atHomeResponse = service.getAtHomeServer(atHomeRequestUrl)
 
@@ -71,19 +100,31 @@ class PageHandler(
         }
     }
 
+    // KMK -->
     @Suppress("UNCHECKED_CAST")
-    private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
-        val mangadexSuperclass = mangadex::class.superclasses.first()
+    private val tokenTracker: HashMap<String, Long>? by lazy {
+        // Best effort: changed extension internals must not break loading chapters
+        runCatching {
+            // The helper property now appears in the current class
+            val helperProperty = mangadex::class.declaredMemberProperties.find { it.name == "helper" }
+                ?: mangadex::class.superclasses.first().declaredMemberProperties.find { it.name == "helper" }
+                ?: return@lazy null
+            helperProperty.isAccessible = true
+            val helper = helperProperty.call(mangadex) ?: return@lazy null
 
-        val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
-        helperCallable.isAccessible = true
-        val helper = helperCallable.call(mangadex) ?: return
-
-        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return
-        tokenTrackerCallable.isAccessible = true
-        val tokenTracker = tokenTrackerCallable.call(helper) as? HashMap<String, Long> ?: return
-        tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
+            val tokenTrackerProperty = helper::class.declaredMemberProperties.find { it.name == "tokenTracker" }
+                ?: return@lazy null
+            tokenTrackerProperty.isAccessible = true
+            tokenTrackerProperty.call(helper) as? HashMap<String, Long>
+        }
+            .onFailure { xLogE("Unable to access the MangaDex extension token tracker", it) }
+            .getOrNull()
     }
+
+    private fun updateExtensionVariable(atHomeRequestUrl: String) {
+        tokenTracker?.set(atHomeRequestUrl, System.currentTimeMillis())
+    }
+    // KMK <--
 
     private fun pageListParse(
         atHomeRequestUrl: String,
@@ -106,9 +147,21 @@ class PageHandler(
     fun getImageCall(page: Page): Call? {
         xLogD(page.imageUrl)
         return when {
-            page.imageUrl?.contains("mangaplus", true) == true -> {
-                mangaPlusHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaPlusHandler.headers), page)
+            // KMK -->
+            mangaPlusHandler.isImageUrl(page.imageUrl) -> {
+                mangaPlusHandler.client.newCachelessCallWithProgress(
+                    GET(
+                        page.imageUrl!!,
+                        if (page.url.isEmpty()) {
+                            mangaPlusHandler.headers
+                        } else {
+                            mangaPlusHandler.headers.newBuilder().add("Plus-Vw-Token", page.url).build()
+                        },
+                    ),
+                    page,
+                )
             }
+            // KMK <--
             page.imageUrl?.contains("comikey", true) == true -> {
                 comikeyHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!), page)
             }
@@ -124,6 +177,14 @@ class PageHandler(
             page.imageUrl?.contains("namicomi", true) == true -> {
                 namicomiHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!), page)
             }
+            // KMK -->
+            kMangaHandler.isImageUrl(page.imageUrl) -> {
+                kMangaHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, kMangaHandler.headers), page)
+            }
+            page.imageUrl?.contains("manga-up", true) == true -> {
+                mangaUpHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, mangaUpHandler.headers), page)
+            }
+            // KMK <--
             else -> null
         }
     }
