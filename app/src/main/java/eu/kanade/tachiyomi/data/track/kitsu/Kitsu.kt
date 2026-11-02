@@ -9,11 +9,9 @@ import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
-import java.text.DecimalFormat
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
@@ -24,6 +22,12 @@ class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
         const val ON_HOLD = 3L
         const val DROPPED = 4L
         const val PLAN_TO_READ = 5L
+
+        // KMK -->
+        const val SIMPLE = "simple"
+        const val REGULAR = "regular"
+        const val ADVANCED = "advanced"
+        // KMK <--
     }
 
     override val supportsReadingDates: Boolean = true
@@ -35,6 +39,10 @@ class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
     private val interceptor by lazy { KitsuInterceptor(this) }
 
     private val api by lazy { KitsuApi(client, interceptor) }
+
+    // KMK -->
+    private val scorePreference = trackPreferences.kitsuScoreType()
+    // KMK <--
 
     override fun getLogo() = R.drawable.brand_kitsu
 
@@ -57,19 +65,14 @@ class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
 
     override fun getCompletionStatus(): Long = COMPLETED
 
-    override fun getScoreList(): ImmutableList<String> {
-        val df = DecimalFormat("0.#")
-        return (listOf("0") + IntRange(2, 20).map { df.format(it / 2f) }).toImmutableList()
-    }
+    // KMK -->
+    override fun getScoreList(): ImmutableList<String> = kitsuScoreList(scorePreference.get())
 
-    override fun indexToScore(index: Int): Double {
-        return if (index > 0) (index + 1) / 2.0 else 0.0
-    }
+    override fun indexToScore(index: Int): Double = kitsuIndexToScore(scorePreference.get(), index)
 
-    override fun displayScore(track: DomainTrack): String {
-        val df = DecimalFormat("0.#")
-        return df.format(track.score)
-    }
+    override fun displayScore(track: DomainTrack): String =
+        kitsuDisplayScore(scorePreference.get(), track.score)
+    // KMK <--
 
     private suspend fun add(track: Track): Track {
         return api.addLibManga(track, getUserId())
@@ -130,7 +133,10 @@ class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
     override suspend fun login(username: String, password: String) {
         val token = api.login(username, password)
         interceptor.newAuth(token)
-        val userId = api.getCurrentUser()
+        // KMK -->
+        val (userId, ratingSystem) = api.getCurrentUser()
+        scorePreference.set(ratingSystem)
+        // KMK <--
         saveCredentials(username, userId)
     }
 

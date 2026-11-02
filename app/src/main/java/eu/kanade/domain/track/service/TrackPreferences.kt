@@ -3,6 +3,7 @@ package eu.kanade.domain.track.service
 import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
+import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
@@ -35,6 +36,10 @@ class TrackPreferences(
     fun trackToken(tracker: Tracker) = preferenceStore.getString(Preference.privateKey("track_token_${tracker.id}"), "")
 
     fun anilistScoreType() = preferenceStore.getString("anilist_score_type", Anilist.POINT_10)
+
+    // KMK -->
+    fun kitsuScoreType() = preferenceStore.getString("kitsu_score_type", Kitsu.ADVANCED)
+    // KMK <--
 
     fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)
 
