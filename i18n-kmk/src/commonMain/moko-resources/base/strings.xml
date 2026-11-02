@@ -152,6 +152,8 @@
     <string name="action_skip_all_duplicate_manga">Skip all</string>
     <string name="downloaded_data">Downloaded data</string>
     <string name="chapters_from_database">Chapters &amp; History from Database</string>
+    <string name="label_merged_entry">Merged</string>
+    <string name="label_merged_entry_with_sources">Merged (%1$s)</string>
     <!--UpdateCheck-->
     <string name="update_check_try_now">Try now</string>
     <string name="update_completed">Update completed</string>
