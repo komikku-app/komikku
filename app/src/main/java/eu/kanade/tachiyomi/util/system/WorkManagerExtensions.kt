@@ -29,7 +29,13 @@ suspend fun CoroutineWorker.setForegroundSafely() {
     try {
         setForeground(getForegroundInfo())
         delay(500)
-    } catch (e: IllegalStateException) {
+    } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        // Not only IllegalStateException: on older Android (Oreo) the foreground notification is
+        // delivered to the system through a Binder transaction, which can fail with
+        // TransactionTooLargeException (wrapped in RuntimeException) when the notification holds a
+        // large icon bitmap. Failing to go foreground must not abort the whole job.
         logcat(LogPriority.ERROR, e) { "Not allowed to set foreground job" }
     }
 }
