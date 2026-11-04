@@ -98,6 +98,7 @@ import eu.kanade.presentation.browse.RelatedMangaTitle
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
+import eu.kanade.presentation.manga.components.CommentsCtaButton
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
@@ -139,6 +140,9 @@ import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.HBrowseDescription
 import exh.ui.metadata.adapters.LanraragiDescription
 import exh.ui.metadata.adapters.MangaDexDescription
+import exh.ui.metadata.adapters.MangaFireDescription
+import exh.ui.metadata.adapters.hasVisibleStats
+import exh.ui.metadata.adapters.rememberMangaFireDescriptionExtras
 import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.TsuminoDescription
@@ -257,6 +261,9 @@ fun MangaScreen(
     onMoveChaptersToTop: ((List<ChapterList.Item>) -> Unit)? = null,
     onMoveChaptersToBottom: ((List<ChapterList.Item>) -> Unit)? = null,
     onResetCustomOrder: () -> Unit = {},
+    // Comments CTA (variant A); null onClick hides the button
+    onCommentsClicked: (() -> Unit)? = null,
+    commentsBadgeCount: Int? = null,
     // KMK <--
 ) {
     val context = LocalContext.current
@@ -340,6 +347,8 @@ fun MangaScreen(
             onMoveChaptersToTop = onMoveChaptersToTop,
             onMoveChaptersToBottom = onMoveChaptersToBottom,
             onResetCustomOrder = onResetCustomOrder,
+            onCommentsClicked = onCommentsClicked,
+            commentsBadgeCount = commentsBadgeCount,
             // KMK <--
         )
     } else {
@@ -416,6 +425,8 @@ fun MangaScreen(
             onMoveChaptersToTop = onMoveChaptersToTop,
             onMoveChaptersToBottom = onMoveChaptersToBottom,
             onResetCustomOrder = onResetCustomOrder,
+            onCommentsClicked = onCommentsClicked,
+            commentsBadgeCount = commentsBadgeCount,
             // KMK <--
         )
     }
@@ -509,6 +520,8 @@ private fun MangaScreenSmallImpl(
     onMoveChaptersToTop: ((List<ChapterList.Item>) -> Unit)? = null,
     onMoveChaptersToBottom: ((List<ChapterList.Item>) -> Unit)? = null,
     onResetCustomOrder: () -> Unit = {},
+    onCommentsClicked: (() -> Unit)? = null,
+    commentsBadgeCount: Int? = null,
     // KMK <--
 ) {
     val chapterListState = rememberLazyListState()
@@ -884,6 +897,15 @@ private fun MangaScreenSmallImpl(
                                 onSearch(it, false)
                             }
                         }
+                    } else if (state.mangaFireOverlay?.hasVisibleStats() == true) {
+                        // KMK -->
+                        item(
+                            key = MangaScreenItem.METADATA_INFO,
+                            contentType = MangaScreenItem.METADATA_INFO,
+                        ) {
+                            MangaFireDescription(state)
+                        }
+                        // KMK <--
                     }
                     // SY <--
 
@@ -891,24 +913,43 @@ private fun MangaScreenSmallImpl(
                         key = MangaScreenItem.DESCRIPTION_WITH_TAG,
                         contentType = MangaScreenItem.DESCRIPTION_WITH_TAG,
                     ) {
+                        // KMK -->
+                        val mangaFireExtras = rememberMangaFireDescriptionExtras(state)
+                        // KMK <--
                         ExpandableMangaDescription(
                             defaultExpandState = state.isFromSource && !state.manga.favorite,
-                            description = state.manga.description,
-                            tagsProvider = { state.manga.genre },
+                            description = mangaFireExtras.description,
+                            tagsProvider = { mangaFireExtras.genres },
                             notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
                             onEditNotes = onEditNotesClicked,
                             // SY -->
                             doSearch = onSearch,
-                            searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
+                            searchMetadataChips = remember(
+                                state.meta,
+                                state.source.id,
+                                mangaFireExtras.genres,
+                            ) {
+                                SearchMetadataChips(state.meta, state.source.id, mangaFireExtras.genres)
                             },
                             // SY <--
                         )
                     }
 
                     // KMK -->
+                    onCommentsClicked?.let { openComments ->
+                        item(
+                            key = MangaScreenItem.COMMENTS_CTA,
+                            contentType = MangaScreenItem.COMMENTS_CTA,
+                        ) {
+                            CommentsCtaButton(
+                                onClick = openComments,
+                                badgeCount = commentsBadgeCount,
+                            )
+                        }
+                    }
+
                     if (state.source !is StubSource &&
                         relatedMangasEnabled &&
                         state.manga.source != MERGED_SOURCE_ID
@@ -1154,6 +1195,8 @@ private fun MangaScreenLargeImpl(
     onMoveChaptersToTop: ((List<ChapterList.Item>) -> Unit)? = null,
     onMoveChaptersToBottom: ((List<ChapterList.Item>) -> Unit)? = null,
     onResetCustomOrder: () -> Unit = {},
+    onCommentsClicked: (() -> Unit)? = null,
+    commentsBadgeCount: Int? = null,
     // KMK <--
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -1510,22 +1553,40 @@ private fun MangaScreenLargeImpl(
                         ) {
                             onSearch(it, false)
                         }
+                        // KMK -->
+                        if (metadataDescription == null) {
+                            MangaFireDescription(state)
+                        }
+                        val mangaFireExtras = rememberMangaFireDescriptionExtras(state)
+                        // KMK <--
                         // SY <--
                         ExpandableMangaDescription(
                             defaultExpandState = true,
-                            description = state.manga.description,
-                            tagsProvider = { state.manga.genre },
+                            description = mangaFireExtras.description,
+                            tagsProvider = { mangaFireExtras.genres },
                             notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
                             onEditNotes = onEditNotesClicked,
                             // SY -->
                             doSearch = onSearch,
-                            searchMetadataChips = remember(state.meta, state.source.id, state.manga.genre) {
-                                SearchMetadataChips(state.meta, state.source.id, state.manga.genre)
+                            searchMetadataChips = remember(
+                                state.meta,
+                                state.source.id,
+                                mangaFireExtras.genres,
+                            ) {
+                                SearchMetadataChips(state.meta, state.source.id, mangaFireExtras.genres)
                             },
                             // SY <--
                         )
+                        // KMK -->
+                        onCommentsClicked?.let { openComments ->
+                            CommentsCtaButton(
+                                onClick = openComments,
+                                badgeCount = commentsBadgeCount,
+                            )
+                        }
+                        // KMK <--
                         // SY -->
                         if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
                             MangaInfoButtons(

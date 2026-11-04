@@ -52,6 +52,7 @@ import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
 import eu.kanade.presentation.manga.components.ClearMangaDialog
+import eu.kanade.presentation.manga.components.CommentsSheet
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
@@ -386,6 +387,9 @@ class MangaScreen(
             onRecommendClicked = {
                 openRecommends(navigator, screenModel.source?.getMainSource(), successState.manga)
             },
+            onCommentsClicked = screenModel::showCommentsSheet
+                .takeIf { screenModel.isCommentsSupported() },
+            commentsBadgeCount = screenModel.commentsBadgeCount(),
             onMergedSettingsClicked = screenModel::showEditMergedSettingsDialog,
             onMergeClicked = { openSmartSearch(navigator, successState.manga) },
             onMergeWithAnotherClicked = {
@@ -662,6 +666,14 @@ class MangaScreen(
                 ClearMangaDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = screenModel::clearManga,
+                )
+            }
+            MangaScreenModel.Dialog.CommentsSheet -> {
+                CommentsSheet(
+                    state = successState.commentsState,
+                    onDismissRequest = onDismissRequest,
+                    onRetry = screenModel::showCommentsSheet,
+                    onLoadMore = screenModel::loadMoreComments,
                 )
             }
             // KMK <--

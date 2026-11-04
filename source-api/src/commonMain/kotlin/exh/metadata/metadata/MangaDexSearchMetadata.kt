@@ -30,7 +30,10 @@ class MangaDexSearchMetadata : RaisedSearchMetadata(), TrackerIdMetadata {
 
     var lastChapterNumber: Int? = null
     var rating: Float? = null
-    // var users: String? = null
+    var follows: Int? = null
+    var year: Int? = null
+    var commentCount: Int? = null
+    var commentThreadId: Long? = null
 
     override var anilistId: String? = null
     override var kitsuId: String? = null
@@ -93,7 +96,8 @@ class MangaDexSearchMetadata : RaisedSearchMetadata(), TrackerIdMetadata {
                 getItem(langFlag) { stringResource(SYMR.strings.language) },
                 getItem(lastChapterNumber) { stringResource(SYMR.strings.last_chapter_number) },
                 getItem(rating) { stringResource(SYMR.strings.average_rating) },
-                // getItem(users) { stringResource(SYMR.strings.total_ratings) },
+                getItem(follows) { stringResource(SYMR.strings.follows) },
+                getItem(year) { stringResource(SYMR.strings.year) },
                 getItem(status) { stringResource(MR.strings.status) },
                 // getItem(missing_chapters) { stringResource(SYMR.strings.missing_chapters) },
                 getItem(followStatus) { stringResource(SYMR.strings.follow_status) },

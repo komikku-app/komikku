@@ -57,17 +57,27 @@ fun MangaDexDescription(state: State.Success, openMetadataViewer: () -> Unit) {
             binding.ratingBar.supportSecondaryProgressTintList = ColorStateList.valueOf(ratingBarSecondaryColor)
             binding.rating.setTextColor(textColor)
 
+            val followsCount = meta.follows
+            binding.follows.text = followsCount?.toString().orEmpty()
+            binding.follows.isVisible = followsCount != null
+            if (followsCount != null) {
+                binding.follows.bindDrawable(context, R.drawable.ic_book_24dp, iconColor)
+                binding.follows.setTextColor(textColor)
+            }
+
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp, iconColor)
             binding.moreInfo.text = context.stringResource(SYMR.strings.more_info)
             binding.moreInfo.setTextColor(iconColor)
             // KMK <--
 
-            binding.rating.setOnLongClickListener {
-                context.copyToClipboard(
-                    binding.rating.text.toString(),
-                    binding.rating.text.toString(),
-                )
-                true
+            listOf(binding.rating, binding.follows).forEach { textView ->
+                textView.setOnLongClickListener {
+                    context.copyToClipboard(
+                        textView.text.toString(),
+                        textView.text.toString(),
+                    )
+                    true
+                }
             }
 
             binding.moreInfo.setOnClickListener {

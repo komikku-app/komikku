@@ -23,6 +23,10 @@ enum class MangaScreenItem {
     // SY <--
     DESCRIPTION_WITH_TAG,
 
+    // KMK -->
+    COMMENTS_CTA,
+    // KMK <--
+
     // SY -->
     INFO_BUTTONS,
     CHAPTER_PREVIEW_LOADING,

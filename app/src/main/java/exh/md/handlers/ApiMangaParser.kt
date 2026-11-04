@@ -143,8 +143,11 @@ class ApiMangaParser(
 
                 statistics?.rating?.let {
                     rating = it.bayesian?.toFloat()
-                    // manga.users = it.users
                 }
+                follows = statistics?.follows
+                commentCount = statistics?.comments?.repliesCount
+                commentThreadId = statistics?.comments?.threadId
+                year = mangaAttributesDto.year
 
                 mangaAttributesDto.links?.asMdMap<String>()?.let { links ->
                     links["al"]?.let { anilistId = it }
@@ -182,6 +185,10 @@ class ApiMangaParser(
                                 it.capitalize(Locale.US),
                                 MangaDexSearchMetadata.TAG_TYPE_DEFAULT,
                             )
+                        },
+                    mangaAttributesDto.year
+                        ?.let {
+                            RaisedTag("Year", it.toString(), MangaDexSearchMetadata.TAG_TYPE_DEFAULT)
                         },
                 )
 

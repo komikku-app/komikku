@@ -165,6 +165,16 @@
     <string name="action_manual_install">Manual install</string>
     <string name="manual_download">Manual download</string>
     <!-- Browse settings -->
+    <string name="action_comments">Comments</string>
+    <string name="information_no_comments">No comments yet</string>
+    <string name="action_load_more">Load more</string>
+    <string name="comments_for_chapter">Comments for %1$s</string>
+    <string name="information_comments_unavailable">Comments are unavailable for this source</string>
+    <string name="information_spoiler_tap_to_reveal">Spoiler. Tap to reveal</string>
+    <string name="error_comments_no_chapter">No chapter available to load comments for</string>
+    <string name="error_comments_rate_limited">Rate limited by the source. Try again in a moment</string>
+    <string name="error_comments_unsupported_url">Cannot resolve where this entry\'s comments live</string>
+    <string name="error_comments_mirror_unavailable">Comments could not be loaded from the current mirror</string>
     <string name="pref_source_related_mangas">Suggestions</string>
     <string name="pref_source_related_mangas_summary">Show source-website's Suggestions while viewing entry</string>
     <string name="related_mangas_website_suggestions">Website Suggestions</string>

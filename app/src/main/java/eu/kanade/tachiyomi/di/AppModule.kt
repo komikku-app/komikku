@@ -26,6 +26,10 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.AndroidSourceManager
+import eu.kanade.tachiyomi.source.comment.CommentProviderRegistry
+import eu.kanade.tachiyomi.source.comment.copymanga.CopyMangaCommentProvider
+import eu.kanade.tachiyomi.source.comment.jinman.JinmanCommentProvider
+import eu.kanade.tachiyomi.source.comment.mangadex.MangaDexCommentProvider
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import exh.eh.EHentaiUpdateHelper
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
@@ -180,6 +184,16 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { BackupRestoreStatus() }
         addSingletonFactory { SyncStatus() }
         addSingletonFactory { LibraryUpdateStatus() }
+        // App-side comment providers (no extension changes); first match wins
+        addSingletonFactory {
+            CommentProviderRegistry(
+                providers = listOf(
+                    MangaDexCommentProvider(),
+                    CopyMangaCommentProvider(),
+                    JinmanCommentProvider(),
+                ),
+            )
+        }
         // KMK <--
 
         // AM (CONNECTIONS) -->

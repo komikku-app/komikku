@@ -28,6 +28,7 @@ import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.chapter.interactor.GetAvailableScanlators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
+import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.SetExcludedScanlators
@@ -56,10 +57,17 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
+import eu.kanade.tachiyomi.source.comment.CommentProviderRegistry
+import eu.kanade.tachiyomi.source.comment.CommentRequest
+import eu.kanade.tachiyomi.source.comment.SourceComment
+import eu.kanade.tachiyomi.source.mangafire.MangaFireMetadataOverlay
+import eu.kanade.tachiyomi.source.mangafire.MangaFireOverlayMetadata
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.RelatedManga.Companion.isLoading
@@ -80,8 +88,10 @@ import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.log.xLogD
 import exh.md.utils.FollowStatus
+import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.metadata.metadata.base.FlatMetadata
+import exh.source.MANGAFIRE_PACKAGE
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedManga
@@ -93,6 +103,7 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -210,6 +221,8 @@ class MangaScreenModel(
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     // KMK -->
     private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
+    private val extensionManager: ExtensionManager = Injekt.get(),
+    private val commentProviderRegistry: CommentProviderRegistry = Injekt.get(),
     // KMK <--
     private val updateMergedSettings: UpdateMergedSettings = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
@@ -253,6 +266,7 @@ class MangaScreenModel(
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
     val themeCoverBased = uiPreferences.themeCoverBased().get()
     private var savedChapterOrder: List<Pair<Long, Long?>>? = null
+    private var commentsJob: Job? = null
     // KMK <--
 
     val manga: Manga?
@@ -539,6 +553,7 @@ class MangaScreenModel(
                 )
                 fetchFromSourceTasks.awaitAll()
                 launch { fetchRelatedMangasFromSource() }
+                launchIO { enrichMangaFireOverlay() }
                 // KMK <--
             }
 
@@ -673,6 +688,9 @@ class MangaScreenModel(
                     downloadNewChapters(update.newChapters)
                 }
             }
+            if (fetchDetails) {
+                enrichMangaFireOverlay()
+            }
         } catch (_: CancellationException) {
             // ignore
         } catch (e: Exception) {
@@ -693,6 +711,154 @@ class MangaScreenModel(
     }
 
     // KMK -->
+    /**
+     * Soft-fail MangaFire stats overlay. Prefer extension [HttpSource.client] for VRF/CF.
+     * Does not block manga details; row hides when overlay is null/empty.
+     */
+    private suspend fun enrichMangaFireOverlay() {
+        val state = successState ?: return
+        if (extensionManager.getExtensionPackage(state.source.id) != MANGAFIRE_PACKAGE) return
+        val httpSource = state.source.getMainSource<HttpSource>() ?: return
+        val overlay = withIOContext {
+            runCatching {
+                MangaFireMetadataOverlay.enrich(
+                    mangaId = state.manga.id,
+                    mangaUrl = state.manga.url,
+                    baseUrl = httpSource.baseUrl,
+                    client = httpSource.client,
+                    headers = httpSource.headers.newBuilder()
+                        .set("Accept", "application/json")
+                        .build(),
+                )
+            }.getOrNull()?.takeUnless { it.isEmpty }
+        } ?: return
+        updateSuccessState { it.copy(mangaFireOverlay = overlay) }
+    }
+
+    /** True when a [CommentProvider] is registered for this source (CTA visibility for 1.4b). */
+    fun isCommentsSupported(): Boolean {
+        val state = successState ?: return false
+        val packageName = extensionManager.getExtensionPackage(state.source.id)
+        return commentProviderRegistry.exists(state.source.id, packageName)
+    }
+
+    /**
+     * Badge count when known: last loaded total, else MangaDex meta. Null hides the badge but the
+     * CTA may still show (count 0 with an existing thread opens the empty state).
+     */
+    fun commentsBadgeCount(): Int? {
+        val state = successState ?: return null
+        state.commentsTotalCount?.let { return it }
+        (state.meta as? MangaDexSearchMetadata)?.commentCount?.let { return it }
+        return null
+    }
+
+    /** Providers never touch the DB; everything they may need is resolved here. */
+    private fun buildCommentRequest(state: State.Success): CommentRequest {
+        val mangaDexMeta = state.meta as? MangaDexSearchMetadata
+        return CommentRequest(
+            mangaId = state.manga.id,
+            sourceId = state.source.id,
+            manga = state.manga.toSManga(),
+            latestChapter = latestChapter(state.chapters.map { it.chapter })?.toSChapter(),
+            threadId = mangaDexMeta?.commentThreadId,
+            knownCount = mangaDexMeta?.commentCount,
+        )
+    }
+
+    /** Newest chapter: highest recognized number, else first in source order. */
+    private fun latestChapter(chapters: List<Chapter>): Chapter? =
+        chapters.filter { it.isRecognizedNumber }.maxByOrNull { it.chapterNumber }
+            ?: chapters.minByOrNull { it.sourceOrder }
+
+    fun showCommentsSheet() {
+        if (!isCommentsSupported()) return
+        updateSuccessState {
+            it.copy(dialog = Dialog.CommentsSheet, commentsState = CommentsState.Loading)
+        }
+        fetchComments(page = 1, append = false)
+    }
+
+    fun loadMoreComments() {
+        val loaded = successState?.commentsState as? CommentsState.Loaded ?: return
+        if (!loaded.hasNextPage || loaded.isLoadingMore) return
+        updateSuccessState {
+            val current = it.commentsState as? CommentsState.Loaded ?: return@updateSuccessState it
+            it.copy(commentsState = current.copy(isLoadingMore = true))
+        }
+        fetchComments(page = loaded.page + 1, append = true)
+    }
+
+    private fun fetchComments(page: Int, append: Boolean) {
+        commentsJob?.cancel()
+        commentsJob = screenModelScope.launchIO {
+            val state = successState ?: return@launchIO
+            val packageName = extensionManager.getExtensionPackage(state.source.id)
+            val provider = commentProviderRegistry.get(state.source.id, packageName)
+            if (provider == null) {
+                updateSuccessState {
+                    it.copy(
+                        commentsState = CommentsState.Error(
+                            message = context.stringResource(KMR.strings.information_comments_unavailable),
+                        ),
+                    )
+                }
+                return@launchIO
+            }
+            try {
+                val result = provider.loadPage(buildCommentRequest(state), page)
+                updateSuccessState { success ->
+                    val previous = if (append) {
+                        (success.commentsState as? CommentsState.Loaded)?.comments.orEmpty()
+                    } else {
+                        emptyList()
+                    }
+                    // Offset-based sources can repeat an item when new comments shift pages
+                    val merged = (previous + result.comments).distinctBy { it.id }
+                    success.copy(
+                        commentsTotalCount = result.totalCount ?: success.commentsTotalCount,
+                        commentsState = if (merged.isEmpty() && !result.hasNextPage) {
+                            CommentsState.Empty(subtitle = result.subtitle, totalCount = result.totalCount)
+                        } else {
+                            CommentsState.Loaded(
+                                comments = merged,
+                                page = result.page,
+                                hasNextPage = result.hasNextPage,
+                                totalCount = result.totalCount,
+                                subtitle = result.subtitle,
+                                isLoadingMore = false,
+                            )
+                        },
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (append) {
+                    updateSuccessState {
+                        val current = it.commentsState as? CommentsState.Loaded ?: return@updateSuccessState it
+                        it.copy(commentsState = current.copy(isLoadingMore = false))
+                    }
+                } else {
+                    updateSuccessState {
+                        it.copy(
+                            commentsState = CommentsState.Error(
+                                message = e.message?.takeIf { msg -> msg.isNotBlank() }
+                                    ?: context.stringResource(MR.strings.unknown_error),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun cancelCommentsFetch() {
+        commentsJob?.cancel()
+        commentsJob = null
+        updateSuccessState { it.copy(commentsState = CommentsState.Idle) }
+    }
+
     private suspend fun clearErrorFromDB(mangaId: Long) {
         deleteLibraryUpdateErrors.deleteMangaError(mangaIds = listOf(mangaId))
     }
@@ -2117,6 +2283,7 @@ class MangaScreenModel(
 
         // KMK -->
         data object ClearManga : Dialog
+        data object CommentsSheet : Dialog
         // KMK <--
 
         data object SettingsSheet : Dialog
@@ -2124,8 +2291,33 @@ class MangaScreenModel(
         data object FullCover : Dialog
     }
 
+    // KMK -->
+    /** In-sheet comments load state. Fetch starts only when [Dialog.CommentsSheet] opens. */
+    sealed interface CommentsState {
+        data object Idle : CommentsState
+        data object Loading : CommentsState
+        data class Empty(
+            val subtitle: String? = null,
+            val totalCount: Int? = null,
+        ) : CommentsState
+        data class Loaded(
+            val comments: List<SourceComment>,
+            val page: Int,
+            val hasNextPage: Boolean,
+            val totalCount: Int? = null,
+            val subtitle: String? = null,
+            val isLoadingMore: Boolean = false,
+        ) : CommentsState
+        data class Error(val message: String) : CommentsState
+    }
+    // KMK <--
+
     fun dismissDialog() {
+        val closingComments = successState?.dialog is Dialog.CommentsSheet
         updateSuccessState { it.copy(dialog = null) }
+        if (closingComments) {
+            cancelCommentsFetch()
+        }
     }
 
     fun showDeleteChapterDialog(chapters: List<Chapter>) {
@@ -2216,6 +2408,12 @@ class MangaScreenModel(
             val previewsRowCount: Int,
             // SY <--
             // KMK -->
+            /** App-side MangaFire rating/follows overlay; null while loading or unsupported. */
+            val mangaFireOverlay: MangaFireOverlayMetadata? = null,
+            /** Comments sheet payload; Idle until sheet opens (1.4a+). */
+            val commentsState: CommentsState = CommentsState.Idle,
+            /** Last total reported by the provider; feeds the CTA badge after the first load. */
+            val commentsTotalCount: Int? = null,
             /**
              * status of fetching related mangas
              * - null: not started
