@@ -67,18 +67,26 @@ class ExtensionStoreRepositoryImpl(
                             return@mapCatching
                         }
                         // KMK <--
-                        handler.await {
+                        // KMK -->
+                        val applied = handler.await(inTransaction = true) {
+                            // The user may have removed the store while it was being fetched:
+                            // don't bring it back
+                            if (extension_storeQueries.get(store.indexUrl).executeAsOneOrNull() == null) {
+                                return@await false
+                            }
+                            // KMK <--
                             upsert(it)
                             // KMK -->
                             if (store.indexUrl != it.indexUrl) {
                                 extension_storeQueries.delete(store.indexUrl)
                                 renamed[store.indexUrl] = it.indexUrl
                             }
+                            true
                             // KMK <--
                         }
                         // KMK -->
                         savedStores.remove(store.indexUrl)
-                        savedStores[it.indexUrl] = it
+                        if (applied) savedStores[it.indexUrl] = it
                         // KMK <--
                     }
                     .onFailure {
