@@ -5,6 +5,7 @@ import android.app.SearchManager
 import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -83,7 +85,9 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
+import eu.kanade.tachiyomi.extension.util.InstalledAppsPermission
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -192,6 +196,44 @@ class MainActivity : BaseActivity() {
     private var runExhConfigureDialog by mutableStateOf(false)
     // SY <--
 
+    // KMK -->
+    private var installedAppsPermissionRequested = false
+    private var hadInstalledAppsPermission = false
+    private val installedAppsPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {
+        refreshInstalledAppsPermission()
+    }
+
+    private fun refreshInstalledAppsPermission() {
+        val granted = checkSelfPermission(InstalledAppsPermission.NAME) == PackageManager.PERMISSION_GRANTED
+        val newlyGranted = granted && !hadInstalledAppsPermission
+        hadInstalledAppsPermission = granted
+        if (newlyGranted) {
+            lifecycleScope.launchIO {
+                Injekt.get<ExtensionManager>().reloadInstalledExtensions()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!InstalledAppsPermission.isRuntimePermission(this)) return
+
+        refreshInstalledAppsPermission()
+        if (!hadInstalledAppsPermission && !installedAppsPermissionRequested) {
+            installedAppsPermissionRequested = true
+            installedAppsPermissionLauncher.launch(InstalledAppsPermission.NAME)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean("installed_apps_permission_requested", installedAppsPermissionRequested)
+        outState.putBoolean("had_installed_apps_permission", hadInstalledAppsPermission)
+        super.onSaveInstanceState(outState)
+    }
+    // KMK <--
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val isLaunch = savedInstanceState == null
 
@@ -199,6 +241,12 @@ class MainActivity : BaseActivity() {
         val splashScreen = if (isLaunch) installSplashScreen() else null
 
         super.onCreate(savedInstanceState)
+
+        // KMK -->
+        installedAppsPermissionRequested = savedInstanceState?.getBoolean("installed_apps_permission_requested") ?: false
+        hadInstalledAppsPermission = savedInstanceState?.getBoolean("had_installed_apps_permission")
+            ?: (checkSelfPermission(InstalledAppsPermission.NAME) == PackageManager.PERMISSION_GRANTED)
+        // KMK <--
 
         val didMigration = if (isLaunch) {
             Migrator.awaitAndRelease()
