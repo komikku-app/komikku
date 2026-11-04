@@ -169,6 +169,7 @@
     <string name="information_no_comments">No comments yet</string>
     <string name="action_load_more">Load more</string>
     <string name="comments_for_chapter">Comments for %1$s</string>
+    <string name="comments_recent_chapters">Comments from recent chapters</string>
     <string name="information_comments_unavailable">Comments are unavailable for this source</string>
     <string name="information_spoiler_tap_to_reveal">Spoiler. Tap to reveal</string>
     <string name="error_comments_no_chapter">No chapter available to load comments for</string>

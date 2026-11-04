@@ -78,7 +78,8 @@ internal object JinmanCommentParser {
         }
     }
 
-    fun parseDate(raw: String?): Long? = CommentHtml.parseLocalDate(raw, SHANGHAI)
+    fun parseDate(raw: String?, nowMs: Long = System.currentTimeMillis()): Long? =
+        CommentHtml.parseFlexibleDate(raw, SHANGHAI, nowMs)
 
     private fun parseComment(element: Element, fallbackId: String, withReplies: Boolean): SourceComment? {
         val replyNodes = if (withReplies) {
@@ -91,7 +92,7 @@ internal object JinmanCommentParser {
             select(REPLY_CONTAINER_SELECTOR).remove()
         }
         val username = firstText(own, USERNAME_SELECTORS) ?: "anonymous"
-        val date = firstMatch(own, DATE_SELECTORS)?.let { it.attr("datetime").ifBlank { it.text() } }
+        val dateEpoch = extractDateEpoch(element, own)
         val bodyElement = (firstMatch(own, BODY_SELECTORS)
             ?: own.clone().apply { select(HEADER_SELECTOR).remove() })
             .clone()
@@ -112,10 +113,28 @@ internal object JinmanCommentParser {
             id = id,
             username = username,
             body = body,
-            dateEpochMillis = parseDate(date),
+            dateEpochMillis = dateEpoch,
             isSpoiler = isSpoiler,
             replies = replies,
         )
+    }
+
+    /** data-* attrs first (unix), then visible date / relative text. */
+    private fun extractDateEpoch(root: Element, own: Element): Long? {
+        val attrKeys = listOf("data-addtime", "data-time", "data-timestamp", "data-date", "datetime")
+        sequenceOf(root, own).forEach { scope ->
+            attrKeys.forEach { key ->
+                scope.attr(key).takeIf { it.isNotBlank() }?.let { parseDate(it) }?.let { return it }
+            }
+        }
+        val dateNode = firstMatch(own, DATE_SELECTORS)
+        if (dateNode != null) {
+            attrKeys.forEach { key ->
+                dateNode.attr(key).takeIf { it.isNotBlank() }?.let { parseDate(it) }?.let { return it }
+            }
+            parseDate(dateNode.text())?.let { return it }
+        }
+        return null
     }
 
     /** First selector (in priority order) that yields an element with non-blank text. */

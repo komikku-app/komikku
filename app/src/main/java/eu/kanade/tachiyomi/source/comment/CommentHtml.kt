@@ -50,8 +50,84 @@ internal object CommentHtml {
             runCatching { LocalDateTime.parse(value, pattern) }.getOrNull()
                 ?.let { return it.atZone(zone).toInstant().toEpochMilli() }
         }
-        return listOf(DATE_ONLY, SLASH_DATE_ONLY).firstNotNullOfOrNull { pattern ->
+        listOf(DATE_ONLY, SLASH_DATE_ONLY).firstNotNullOfOrNull { pattern ->
             runCatching { LocalDate.parse(value, pattern) }.getOrNull()
-        }?.atStartOfDay(zone)?.toInstant()?.toEpochMilli()
+        }?.atStartOfDay(zone)?.toInstant()?.toEpochMilli()?.let { return it }
+
+        // Unpadded `2024-5-1` / `2024/5/1`
+        UNPADDED_DATE.find(value)?.let { match ->
+            val y = match.groupValues[1].toIntOrNull() ?: return@let
+            val m = match.groupValues[2].toIntOrNull() ?: return@let
+            val d = match.groupValues[3].toIntOrNull() ?: return@let
+            return runCatching {
+                LocalDate.of(y, m, d).atStartOfDay(zone).toInstant().toEpochMilli()
+            }.getOrNull()
+        }
+        return null
     }
+
+    /**
+     * Best-effort date parse: unix seconds/millis, absolute local/offset, then relative
+     * Chinese/English phrases used by Jinman mirrors (`3天前`, `5分鐘前`, …).
+     */
+    fun parseFlexibleDate(
+        raw: String?,
+        zone: ZoneId,
+        nowMs: Long = System.currentTimeMillis(),
+    ): Long? {
+        val value = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        parseUnixEpoch(value)?.let { return it }
+        parseOffsetDate(value)?.let { return it }
+        parseLocalDate(value, zone)?.let { return it }
+        return parseRelativeDate(value, nowMs)
+    }
+
+    /** Digits-only unix seconds (10) or millis (13). */
+    fun parseUnixEpoch(raw: String): Long? {
+        if (!raw.all { it.isDigit() }) return null
+        return when (raw.length) {
+            10 -> raw.toLongOrNull()?.times(1000)
+            13 -> raw.toLongOrNull()
+            else -> null
+        }
+    }
+
+    /**
+     * Relative phrases: 剛剛 / N秒前 / N分鐘前 / N小時前 / N天前 / N週前 / N個月前 / N年前
+     * (simplified + traditional), plus common English forms.
+     */
+    fun parseRelativeDate(raw: String, nowMs: Long = System.currentTimeMillis()): Long? {
+        val value = raw.trim()
+        if (value in JUST_NOW) return nowMs
+        RELATIVE.find(value)?.let { match ->
+            val amount = match.groupValues[1].toLongOrNull() ?: return null
+            val unit = match.groupValues[2]
+            val deltaMs = when {
+                unit.startsWith("秒") || unit.startsWith("sec") -> amount * 1_000L
+                unit.startsWith("分") || unit.startsWith("min") -> amount * 60_000L
+                unit.startsWith("時") || unit.startsWith("时") || unit.startsWith("hour") ->
+                    amount * 3_600_000L
+                unit.startsWith("天") || unit.startsWith("day") -> amount * 86_400_000L
+                unit.startsWith("週") || unit.startsWith("周") || unit.startsWith("week") ->
+                    amount * 604_800_000L
+                unit.startsWith("個") || unit.startsWith("个") || unit.startsWith("月") ||
+                    unit.startsWith("month") -> amount * 2_592_000_000L // 30d
+                unit.startsWith("年") || unit.startsWith("year") -> amount * 31_536_000_000L
+                else -> return null
+            }
+            return nowMs - deltaMs
+        }
+        return null
+    }
+
+    private val UNPADDED_DATE = Regex("""^((?:19|20)\d{2})[-/](\d{1,2})[-/](\d{1,2})$""")
+    private val JUST_NOW = setOf("剛剛", "刚刚", "剛才", "刚才", "just now")
+    private val RELATIVE = Regex(
+        "^(\\d+)\\s*(" +
+            "秒前|分鐘前|分钟前|小時前|小时前|天前|週前|周前|個月前|个月前|月前|年前|" +
+            "seconds?\\s*ago|mins?\\s*ago|minutes?\\s*ago|hours?\\s*ago|days?\\s*ago|" +
+            "weeks?\\s*ago|months?\\s*ago|years?\\s*ago" +
+            ")$",
+        RegexOption.IGNORE_CASE,
+    )
 }

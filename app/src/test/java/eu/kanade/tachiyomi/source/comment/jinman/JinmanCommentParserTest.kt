@@ -101,6 +101,30 @@ class JinmanCommentParserTest {
     }
 
     @Test
+    fun `parses relative date and data-addtime`() {
+        val relative = """
+            <div class="timeline" data-id="1">
+              <div class="timeline-username">a</div>
+              <span class="timeline-date">3天前</span>
+              <div class="timeline-content-comment">hi</div>
+            </div>
+        """.trimIndent()
+        val withAttr = """
+            <div class="timeline" data-id="2" data-addtime="1714492800">
+              <div class="timeline-username">b</div>
+              <div class="timeline-content-comment">yo</div>
+            </div>
+        """.trimIndent()
+
+        val rel = JinmanCommentParser.parse(relative).single()
+        assertTrue(rel.dateEpochMillis != null)
+        assertTrue(System.currentTimeMillis() - rel.dateEpochMillis!! in (2 * 86_400_000L)..(4 * 86_400_000L))
+
+        val abs = JinmanCommentParser.parse(withAttr).single()
+        assertEquals(1_714_492_800_000L, abs.dateEpochMillis)
+    }
+
+    @Test
     fun `extractHtml unwraps JSON pagination payloads`() {
         val html = """<div class="timeline"><div class="timeline-content-comment">hi</div></div>"""
         val escaped = html.replace("\"", "\\\"")

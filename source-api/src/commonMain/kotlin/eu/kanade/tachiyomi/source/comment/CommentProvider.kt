@@ -40,6 +40,10 @@ data class CommentRequest(
     val manga: SManga,
     /** Newest known chapter, for chapter-scoped comment systems (e.g. CopyManga). */
     val latestChapter: SChapter? = null,
+    /**
+     * Recent chapters newest-first (CopyManga aggregates roasts across these; empty = latest only).
+     */
+    val recentChapters: List<SChapter> = emptyList(),
     /** Forum thread id already known from metadata (e.g. MangaDex statistics). */
     val threadId: Long? = null,
     /** Comment count already known from metadata; null means unknown. */

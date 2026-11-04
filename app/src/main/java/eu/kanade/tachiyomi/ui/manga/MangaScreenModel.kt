@@ -756,11 +756,13 @@ class MangaScreenModel(
     /** Providers never touch the DB; everything they may need is resolved here. */
     private fun buildCommentRequest(state: State.Success): CommentRequest {
         val mangaDexMeta = state.meta as? MangaDexSearchMetadata
+        val chapters = state.chapters.map { it.chapter }
         return CommentRequest(
             mangaId = state.manga.id,
             sourceId = state.source.id,
             manga = state.manga.toSManga(),
-            latestChapter = latestChapter(state.chapters.map { it.chapter })?.toSChapter(),
+            latestChapter = latestChapter(chapters)?.toSChapter(),
+            recentChapters = recentChaptersForComments(chapters).map { it.toSChapter() },
             threadId = mangaDexMeta?.commentThreadId,
             knownCount = mangaDexMeta?.commentCount,
         )
@@ -770,6 +772,16 @@ class MangaScreenModel(
     private fun latestChapter(chapters: List<Chapter>): Chapter? =
         chapters.filter { it.isRecognizedNumber }.maxByOrNull { it.chapterNumber }
             ?: chapters.minByOrNull { it.sourceOrder }
+
+    /**
+     * Newest-first chapters for CopyManga roast aggregation.
+     * Provider loads a small batch first; Load more walks further down this list.
+     */
+    private fun recentChaptersForComments(chapters: List<Chapter>): List<Chapter> {
+        val recognized = chapters.filter { it.isRecognizedNumber }.sortedByDescending { it.chapterNumber }
+        val ordered = recognized.ifEmpty { chapters.sortedByDescending { it.sourceOrder } }
+        return ordered.take(60)
+    }
 
     fun showCommentsSheet() {
         if (!isCommentsSupported()) return
