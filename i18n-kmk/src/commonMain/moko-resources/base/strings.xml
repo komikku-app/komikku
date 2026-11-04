@@ -175,6 +175,7 @@
     <string name="error_comments_rate_limited">Rate limited by the source. Try again in a moment</string>
     <string name="error_comments_unsupported_url">Cannot resolve where this entry\'s comments live</string>
     <string name="error_comments_mirror_unavailable">Comments could not be loaded from the current mirror</string>
+    <string name="error_comments_blocked">Comments could not be loaded (source blocked the request). Try again later</string>
     <string name="pref_source_related_mangas">Suggestions</string>
     <string name="pref_source_related_mangas_summary">Show source-website's Suggestions while viewing entry</string>
     <string name="related_mangas_website_suggestions">Website Suggestions</string>

@@ -128,4 +128,19 @@ class MangaDexForumParserTest {
 
         assertEquals(3, page.totalPages)
     }
+
+    @Test
+    fun `detects MangaDex edge challenge pages`() {
+        assertTrue(
+            MangaDexForumParser.looksLikeChallenge(
+                "Redirecting to bot challenge page... (if this isn't a browser, don't send a browser UA)",
+            ),
+        )
+        assertTrue(
+            MangaDexForumParser.looksLikeChallenge(
+                """<html><link rel="stylesheet" href="challenge-assets/challenge.css"><body>wait</body></html>""",
+            ),
+        )
+        assertFalse(MangaDexForumParser.looksLikeChallenge(threadPage(post(1, "a", "hello"))))
+    }
 }

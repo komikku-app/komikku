@@ -39,7 +39,13 @@ internal object JinmanCommentParser {
         ".timeline-header, .timeline-left, .timeline-avatar, .timeline-date, .timeline-username, " +
             ".timeline-like, .timeline-reply-btn, .timeline-reply, .comment-header, .comment-actions, " +
             "button, script, style"
+    /** Chrome that often sits inside / beside the body node (reply CTA, chapter index). */
+    private const val BODY_CHROME_SELECTOR =
+        ".timeline-reply-btn, .timeline-like, .timeline-footer, .comment-actions, .comment-reply, " +
+            ".reply-btn, .timeline-chapter, .comment-chapter, button, " +
+            "[class*=reply-btn], [class*=comic-index]"
     private const val SPOILER_SELECTOR = "[class*=spoiler], [data-spoiler], .text-spoiler"
+    private val BODY_CHROME_LINES = setOf("回覆", "回复", "reply", "評論", "评论")
 
     /** `/album/{id}/`, `/album/{id}/{slug}` or absolute mirror URLs. */
     fun extractAlbumId(mangaUrl: String): String? =
@@ -86,10 +92,12 @@ internal object JinmanCommentParser {
         }
         val username = firstText(own, USERNAME_SELECTORS) ?: "anonymous"
         val date = firstMatch(own, DATE_SELECTORS)?.let { it.attr("datetime").ifBlank { it.text() } }
-        val bodyElement = firstMatch(own, BODY_SELECTORS)
-            ?: own.clone().apply { select(HEADER_SELECTOR).remove() }
+        val bodyElement = (firstMatch(own, BODY_SELECTORS)
+            ?: own.clone().apply { select(HEADER_SELECTOR).remove() })
+            .clone()
+            .apply { select(BODY_CHROME_SELECTOR).remove() }
         val isSpoiler = bodyElement.selectFirst(SPOILER_SELECTOR) != null || own.hasAttr("data-spoiler")
-        val body = CommentHtml.toPlainText(bodyElement)
+        val body = scrubBodyChrome(CommentHtml.toPlainText(bodyElement))
         if (body.isBlank()) return null
 
         val id = listOf("data-id", "data-cid", "data-comment-id", "id")
@@ -118,4 +126,18 @@ internal object JinmanCommentParser {
 
     private fun firstText(scope: Element, selectors: List<String>): String? =
         firstMatch(scope, selectors)?.text()?.trim()?.takeIf { it.isNotEmpty() }
+
+    /** Drops leftover reply CTAs and chapter index lines (e.g. `回覆`, `第1話 1`). */
+    private fun scrubBodyChrome(text: String): String {
+        val chapterIndex = Regex("""^第\s*\d+\s*[话話章]\s*\d*\s*$""")
+        return text.lines()
+            .map { it.trim() }
+            .filter { line ->
+                line.isNotEmpty() &&
+                    line.lowercase() !in BODY_CHROME_LINES &&
+                    !chapterIndex.matches(line)
+            }
+            .joinToString("\n")
+            .trim()
+    }
 }

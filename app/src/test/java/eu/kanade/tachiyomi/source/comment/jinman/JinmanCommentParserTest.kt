@@ -81,6 +81,26 @@ class JinmanCommentParserTest {
     }
 
     @Test
+    fun `strips reply CTA and chapter index chrome from body`() {
+        val html = """
+            <div class="timeline" data-id="9">
+              <div class="timeline-username">bosszs</div>
+              <div class="timeline-content-comment">
+                这个谁知道有没有小说啊？
+                <div class="timeline-reply-btn"><a>回覆</a></div>
+                <span class="timeline-chapter">第1話 1</span>
+              </div>
+            </div>
+        """.trimIndent()
+
+        val comment = JinmanCommentParser.parse(html).single()
+
+        assertEquals("这个谁知道有没有小说啊？", comment.body)
+        assertFalse(comment.body.contains("回覆"))
+        assertFalse(comment.body.contains("第1話"))
+    }
+
+    @Test
     fun `extractHtml unwraps JSON pagination payloads`() {
         val html = """<div class="timeline"><div class="timeline-content-comment">hi</div></div>"""
         val escaped = html.replace("\"", "\\\"")

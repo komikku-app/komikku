@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.comment.mangadex
 
+import android.app.Application
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
@@ -11,13 +12,18 @@ import exh.md.dto.StatisticsDto
 import exh.md.utils.MdApi
 import exh.md.utils.MdUtil
 import exh.source.MANGADEX_IDS
-import okhttp3.Headers.Companion.headersOf
+import okhttp3.Headers
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * MangaDex comments: thread id from the statistics API, posts scraped from the XenForo forum.
  * Logical page 1 is the newest forum page; posts are returned newest-first.
+ *
+ * Forum fetches use a non-browser User-Agent: a browser UA is redirected to MangaDex's edge
+ * challenge page, which parses as zero posts.
  */
 class MangaDexCommentProvider(
     private val forumBaseUrl: String = FORUM_BASE_URL,
@@ -26,6 +32,7 @@ class MangaDexCommentProvider(
 ) : CommentProvider {
 
     private val networkHelper: NetworkHelper by injectLazy()
+    private val context: Application by injectLazy()
 
     private data class ThreadInfo(val threadId: Long?, val repliesCount: Int?, val expiresAtMs: Long)
 
@@ -66,6 +73,12 @@ class MangaDexCommentProvider(
             forumPage = fetchForumPage(threadId, target)
         }
 
+        // Stats said there are replies, but HTML had no posts → challenge / blocked page, not empty thread
+        val expected = thread.repliesCount ?: request.knownCount
+        if (safePage == 1 && forumPage.posts.isEmpty() && expected != null && expected > 0) {
+            throw IllegalStateException(context.stringResource(KMR.strings.error_comments_blocked))
+        }
+
         val forumIndex = totalPages - (safePage - 1)
         return CommentPage(
             page = safePage,
@@ -83,7 +96,7 @@ class MangaDexCommentProvider(
 
         val stats = with(MdUtil.jsonParser) {
             networkHelper.client
-                .newCall(GET("${MdApi.statistics}/$uuid", headersOf("Accept", "application/json")))
+                .newCall(GET("${MdApi.statistics}/$uuid", Headers.headersOf("Accept", "application/json")))
                 .awaitSuccess()
                 .parseAs<StatisticsDto>()
         }.statistics[uuid]
@@ -102,16 +115,26 @@ class MangaDexCommentProvider(
         } else {
             "$forumBaseUrl/threads/$threadId/page-$page"
         }
+        // Explicit non-browser UA: browser UAs are sent to mangadex.org/edge/challenge
+        val headers = Headers.Builder()
+            .set("Accept", "text/html,application/xhtml+xml")
+            .set("User-Agent", FORUM_USER_AGENT)
+            .build()
         val html = networkHelper.client
-            .newCall(GET(url, headersOf("Accept", "text/html,application/xhtml+xml")))
+            .newCall(GET(url, headers))
             .awaitSuccess()
             .body
             .string()
+        if (MangaDexForumParser.looksLikeChallenge(html)) {
+            throw IllegalStateException(context.stringResource(KMR.strings.error_comments_blocked))
+        }
         return MangaDexForumParser.parseThreadPage(html)
     }
 
     companion object {
         const val FORUM_BASE_URL = "https://forums.mangadex.org"
+        /** Non-browser UA avoids MangaDex edge challenge that strips forum posts. */
+        const val FORUM_USER_AGENT = "okhttp/4.12.0"
         private const val DEFAULT_TTL_MS = 5L * 60L * 1000L
     }
 }

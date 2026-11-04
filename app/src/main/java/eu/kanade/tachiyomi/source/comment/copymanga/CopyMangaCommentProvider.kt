@@ -22,6 +22,9 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * CopyManga chapter comments ("roasts"). The manga page is scoped to the newest chapter
  * (from stored chapters, else `comic2` detail `last_chapter`); the sheet subtitle says which.
+ *
+ * Uses [NetworkHelper.client] (not the extension client) so encrypt/decrypt interceptors cannot
+ * turn a plaintext roast/comic2 body into a JSON string root.
  */
 class CopyMangaCommentProvider : CommentProvider {
 
@@ -37,7 +40,8 @@ class CopyMangaCommentProvider : CommentProvider {
     override suspend fun loadPage(request: CommentRequest, page: Int): CommentPage {
         val safePage = page.coerceAtLeast(1)
         val source = sourceManager.get(request.sourceId)?.getMainSource<HttpSource>()
-        val client = source?.client ?: networkHelper.client
+        // Plain client: roast/comic2 are public JSON; extension decrypt can break the body shape
+        val client = networkHelper.client
         val headers = buildHeaders(source?.headers)
         val hosts = CopyMangaRoastParser.apiHosts(source?.baseUrl)
 
@@ -103,12 +107,13 @@ class CopyMangaCommentProvider : CommentProvider {
     }
 
     private fun buildHeaders(sourceHeaders: Headers?): Headers {
-        val builder = sourceHeaders?.newBuilder() ?: Headers.Builder().add("User-Agent", DEFAULT_USER_AGENT)
-        builder.set("platform", "1")
+        val builder = Headers.Builder()
+            .set("User-Agent", sourceHeaders?.get("User-Agent") ?: DEFAULT_USER_AGENT)
+            .set("platform", "1")
             .set("region", "1")
             .set("webp", "1")
+            .set("version", sourceHeaders?.get("version") ?: DEFAULT_API_VERSION)
             .set("Accept", "application/json")
-        if (sourceHeaders?.get("version") == null) builder.set("version", DEFAULT_API_VERSION)
         return builder.build()
     }
 

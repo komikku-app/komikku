@@ -23,6 +23,15 @@ internal object MangaDexForumParser {
     private const val NOISE_SELECTOR =
         ".bbCodeSpoiler-button, .bbCodeBlock-expandLink, .bbCodeBlock-title, script, style, .js-expandLink"
 
+    /** True when the body is MangaDex edge challenge / bot interstitial instead of a thread. */
+    fun looksLikeChallenge(html: String): Boolean {
+        val lower = html.lowercase()
+        return "edge/challenge" in lower ||
+            "bot challenge" in lower ||
+            "redirecting to bot challenge" in lower ||
+            ("challenge-assets" in lower && "message--post" !in lower)
+    }
+
     fun parseThreadPage(html: String): ForumThreadPage {
         val doc = Jsoup.parse(html)
         val posts = doc.select("article.message--post, article.message[data-author]")

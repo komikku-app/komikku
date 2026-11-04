@@ -31,9 +31,10 @@ internal object CopyMangaRoastParser {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val SHANGHAI: ZoneId = ZoneId.of("Asia/Shanghai")
-    private val UUID_REGEX = Regex("""[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""")
+    private val UUID_REGEX =
+        Regex("""[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""")
 
-    /** Known API hosts; the one derived from the extension's base URL is tried first. */
+    /** Prefer known-good hosts first; derived extension host is tried after. */
     private val FALLBACK_API_HOSTS = listOf("https://api.mangacopy.com", "https://api.2025copy.com")
 
     fun extractChapterUuid(chapterUrl: String?): String? =
@@ -48,12 +49,13 @@ internal object CopyMangaRoastParser {
             ?.takeIf { it.startsWith("http") }
             ?.replaceFirst("://www.", "://api.")
             ?.takeIf { it.contains("://api.") }
-        return (listOfNotNull(derived) + FALLBACK_API_HOSTS).distinct()
+        // Known hosts first so a flaky derived mirror does not win on a bad body
+        return (FALLBACK_API_HOSTS + listOfNotNull(derived)).distinct()
     }
 
     /** Throws [IllegalStateException] with the API message when `code != 200`. */
     fun parse(body: String): RoastPage {
-        val root = json.parseToJsonElement(body).jsonObject
+        val root = parseObjectRoot(body)
         checkCode(root)
         val results = root["results"]?.asObjectOrNull()
             ?: return RoastPage(emptyList(), total = 0, limit = null, offset = null)
@@ -69,7 +71,7 @@ internal object CopyMangaRoastParser {
 
     /** `GET /api/v3/comic2/{path_word}` → `results.comic.last_chapter`. */
     fun parseLastChapter(body: String): CopyMangaChapterRef? {
-        val root = json.parseToJsonElement(body).jsonObject
+        val root = parseObjectRoot(body)
         checkCode(root)
         val last = root["results"]?.asObjectOrNull()
             ?.get("comic")?.asObjectOrNull()
@@ -80,6 +82,30 @@ internal object CopyMangaRoastParser {
     }
 
     fun parseDate(raw: String?): Long? = CommentHtml.parseLocalDate(raw, SHANGHAI)
+
+    /**
+     * Accepts a JSON object, or a JSON string whose content is the object
+     * (extension decrypt can leave a string root).
+     */
+    internal fun parseObjectRoot(body: String): JsonObject {
+        val element = runCatching { json.parseToJsonElement(body.trim()) }.getOrElse {
+            throw IllegalStateException("CopyManga response was not JSON", it)
+        }
+        return when (element) {
+            is JsonObject -> element
+            is JsonPrimitive -> {
+                val inner = element.contentOrNull?.trim().orEmpty()
+                if (inner.startsWith("{")) {
+                    runCatching { json.parseToJsonElement(inner).jsonObject }.getOrElse {
+                        throw IllegalStateException("CopyManga response string was not a JSON object", it)
+                    }
+                } else {
+                    throw IllegalStateException("CopyManga response was a JSON string, not an object")
+                }
+            }
+            else -> throw IllegalStateException("CopyManga response was not a JSON object")
+        }
+    }
 
     private fun parseRoast(obj: JsonObject): SourceComment? {
         val id = obj.string("id") ?: return null

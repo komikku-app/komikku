@@ -99,9 +99,9 @@ class CopyMangaRoastParserTest {
     }
 
     @Test
-    fun `api hosts derive from extension base url then fall back`() {
+    fun `api hosts prefer known-good then derived extension host`() {
         assertEquals(
-            listOf("https://api.copy20.com", "https://api.mangacopy.com", "https://api.2025copy.com"),
+            listOf("https://api.mangacopy.com", "https://api.2025copy.com", "https://api.copy20.com"),
             CopyMangaRoastParser.apiHosts("https://www.copy20.com/"),
         )
         assertEquals(
@@ -112,6 +112,33 @@ class CopyMangaRoastParserTest {
             listOf("https://api.mangacopy.com", "https://api.2025copy.com"),
             CopyMangaRoastParser.apiHosts(null),
         )
+    }
+
+    @Test
+    fun `parses JSON string root left by decrypt mishaps`() {
+        val inner = """
+            {"code":200,"message":"ok","results":{"total":1,"list":[
+              {"id":1,"user_name":"a","comment":"hi","create_at":null}
+            ],"limit":10,"offset":0}}
+        """.trimIndent().replace("\n", "")
+        // Whole body is a JSON string whose content is the object (decrypt mishap shape)
+        val quoted = "\"" + inner.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+        val page = CopyMangaRoastParser.parse(quoted)
+
+        assertEquals(1, page.total)
+        assertEquals("hi", page.comments.single().body)
+        assertEquals("a", page.comments.single().username)
+    }
+
+    @Test
+    fun `rejects non-object JSON roots`() {
+        assertThrows(IllegalStateException::class.java) {
+            CopyMangaRoastParser.parse("\"not-an-object\"")
+        }
+        assertThrows(IllegalStateException::class.java) {
+            CopyMangaRoastParser.parse("[1,2,3]")
+        }
     }
 
     @Test
