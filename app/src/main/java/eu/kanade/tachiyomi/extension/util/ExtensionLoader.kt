@@ -127,11 +127,19 @@ internal object ExtensionLoader {
     fun loadExtensions(context: Context): List<LoadResult> {
         val pkgManager = context.packageManager
 
-        val installedPkgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pkgManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong()))
-        } else {
-            pkgManager.getInstalledPackages(PACKAGE_FLAGS)
+        // KMK -->
+        // A denied package-list permission must not prevent loading private extensions.
+        val installedPkgs = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pkgManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong()))
+            } else {
+                pkgManager.getInstalledPackages(PACKAGE_FLAGS)
+            }
+        } catch (e: SecurityException) {
+            logcat(LogPriority.WARN, e) { "Package visibility permission has not been granted." }
+            emptyList()
         }
+        // KMK <--
 
         val sharedExtPkgs = installedPkgs
             .asSequence()
