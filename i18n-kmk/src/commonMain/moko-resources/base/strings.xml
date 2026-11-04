@@ -103,6 +103,7 @@
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
+    <string name="ext_update_signature_mismatch">%1$s was not updated: the update is signed by a different key than the installed extension</string>
     <!-- Extension repos -->
       <!-- Downloads section -->
     <string name="download_cache_renew_interval">Download cache renew interval</string>
