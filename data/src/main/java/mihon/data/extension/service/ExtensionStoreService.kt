@@ -98,6 +98,17 @@ class ExtensionStoreService(
                         0x7B.toByte() -> json.decodeFromBufferedSource<NetworkExtensionStore>(source)
                         else -> protoBuf.decodeFromByteArray<NetworkExtensionStore>(source.readByteArray())
                     }
+                        // KMK -->
+                        // The extensions are listed under the saved store's signing key, so only accept
+                        // them if the index is still signed by that key. Otherwise the URL serves another
+                        // store now, and a refresh of the store decides what to do with it.
+                        .also { fetched ->
+                            check(fetched.signingKey == store.signingKey) {
+                                "Extension store '${store.name} (${store.indexUrl})' now serves '${fetched.name}' " +
+                                    "signed by ${fetched.signingKey} instead of ${store.signingKey}"
+                            }
+                        }
+                        // KMK <--
                         .extensionList!!
                         .toAvailableExtensions(store)
                 }

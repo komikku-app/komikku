@@ -21,6 +21,7 @@ import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import mihon.domain.extension.interactor.GetExtensionStores
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.label
 import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -114,6 +115,23 @@ internal object ExtensionLoader {
             false
         }
     }
+
+    // KMK -->
+    /**
+     * Returns false if the extension apk in [file] would replace an installed extension that is signed by
+     * another key. Both Android and [installPrivateExtensionFile] refuse such an update, so callers can stop
+     * early and tell the user why.
+     */
+    fun isSignedLikeInstalled(context: Context, file: File): Boolean {
+        val extension = context.packageManager.getPackageArchiveInfo(file.absolutePath, PACKAGE_FLAGS)
+            ?: return true
+        val currentExtension = getExtensionPackageInfoFromPkgName(context, extension.packageName)
+            ?: return true
+        val extensionSignatures = getSignatures(extension) ?: return true
+        val currentSignatures = getSignatures(currentExtension) ?: return true
+        return extensionSignatures.containsAll(currentSignatures)
+    }
+    // KMK <--
 
     fun uninstallPrivateExtension(context: Context, pkgName: String) {
         File(getPrivateExtensionDir(context), "$pkgName.$PRIVATE_EXTENSION_EXTENSION").delete()
@@ -297,9 +315,7 @@ internal object ExtensionLoader {
                 // KMK -->
                 storeName = stores.firstOrNull { store ->
                     signatures.all { it == store.signingKey }
-                }?.let { store ->
-                    store.badgeLabel.takeIf(String::isNotBlank) ?: store.name
-                },
+                }?.label,
                 // KMK <--
             )
             logcat(LogPriority.WARN) { "Extension $pkgName isn't trusted" }
@@ -366,9 +382,7 @@ internal object ExtensionLoader {
             signatureHash = signatures.last(),
             storeName = stores.firstOrNull { store ->
                 signatures.all { it == store.signingKey }
-            }?.let { store ->
-                store.badgeLabel.takeIf(String::isNotBlank) ?: store.name
-            },
+            }?.label,
             // KMK <--
         )
         return LoadResult.Success(extension)

@@ -8,6 +8,8 @@ import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import mihon.data.extension.service.ExtensionStoreService
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.NO_SIGNING_KEY
+import mihon.domain.extension.model.canBeRefreshedTo
 import mihon.domain.extension.repository.ExtensionStoreRepository
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
@@ -26,7 +28,9 @@ class ExtensionStoreRepositoryImpl(
                 indexUrl = indexUrl,
                 name = name,
                 badgeLabel = name,
-                signingKey = "NO_SIGNING_KEY",
+                // KMK -->
+                signingKey = NO_SIGNING_KEY,
+                // KMK <--
                 contactWebsite = indexUrl,
                 contactDiscord = null,
                 isLegacy = false,
@@ -35,29 +39,62 @@ class ExtensionStoreRepositoryImpl(
         }
     }
 
-    override suspend fun refreshAll() {
+    // KMK -->
+    override suspend fun refreshAll(): Map<String, String> {
+        val renamed = mutableMapOf<String, String>()
+        // KMK <--
         try {
-            handler.awaitList {
-                extension_storeQueries.getAll()
-            }.forEach { store ->
-                service.fetch(store.index_url)
+            // KMK -->
+            val savedStores = handler.awaitList {
+                extension_storeQueries.getAll(::extensionStoreMapper)
+            }
+                .associateBy { it.indexUrl }
+                .toMutableMap()
+            savedStores.values.toList().forEach { store ->
+                service.fetch(store.indexUrl)
+                    // KMK <--
                     .mapCatching {
+                        // KMK -->
+                        // A refresh must not turn a saved store into another store (e.g. a repo that now
+                        // points to another store's index), or that store's extensions would be listed
+                        // under this store's signing key and name.
+                        if (!store.canBeRefreshedTo(it, savedStores.values)) {
+                            logcat(LogPriority.WARN) {
+                                "Not refreshing extension store '${store.name} (${store.indexUrl})': it now serves " +
+                                    "'${it.name} (${it.indexUrl})' signed by ${it.signingKey} " +
+                                    "instead of ${store.signingKey}"
+                            }
+                            return@mapCatching
+                        }
+                        // KMK <--
                         handler.await {
                             upsert(it)
-                            if (store.index_url != it.indexUrl) {
-                                extension_storeQueries.delete(store.index_url)
+                            // KMK -->
+                            if (store.indexUrl != it.indexUrl) {
+                                extension_storeQueries.delete(store.indexUrl)
+                                renamed[store.indexUrl] = it.indexUrl
                             }
+                            // KMK <--
                         }
+                        // KMK -->
+                        savedStores.remove(store.indexUrl)
+                        savedStores[it.indexUrl] = it
+                        // KMK <--
                     }
                     .onFailure {
                         logcat(LogPriority.ERROR, it) {
-                            "Failed to refresh extension store '${store.name} (${store.index_url})'"
+                            // KMK -->
+                            "Failed to refresh extension store '${store.name} (${store.indexUrl})'"
+                            // KMK <--
                         }
                     }
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
         }
+        // KMK -->
+        return renamed
+        // KMK <--
     }
 
     private suspend fun upsert(store: ExtensionStore) {
