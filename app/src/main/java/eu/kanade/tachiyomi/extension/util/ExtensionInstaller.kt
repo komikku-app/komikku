@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension.util
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import eu.kanade.domain.base.BasePreferences
@@ -11,6 +12,7 @@ import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +25,10 @@ import kotlinx.coroutines.launch
 import logcat.LogPriority
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -86,6 +91,23 @@ internal class ExtensionInstaller(
                             }
                         }
                     }
+
+                // KMK -->
+                if (!ExtensionLoader.isSignedLikeInstalled(context, tmpFile)) {
+                    logcat(LogPriority.ERROR) {
+                        "Downloaded ${extension.pkgName} is signed by another key than the installed extension"
+                    }
+                    withUIContext {
+                        context.toast(
+                            context.stringResource(KMR.strings.ext_update_signature_mismatch, extension.name),
+                            Toast.LENGTH_LONG,
+                        )
+                    }
+                    step.value = InstallStep.Error
+                    tmpFile.delete()
+                    return@launch
+                }
+                // KMK <--
 
                 step.value = InstallStep.Installing
                 installApk(downloadId, tmpFile)

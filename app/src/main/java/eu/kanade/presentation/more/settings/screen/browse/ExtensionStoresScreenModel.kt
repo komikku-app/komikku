@@ -3,6 +3,7 @@ package eu.kanade.presentation.more.settings.screen.browse
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.extension.interactor.RefreshExtensionStores
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import kotlinx.coroutines.flow.collectLatest
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.update
 import mihon.domain.extension.interactor.AddExtensionStore
 import mihon.domain.extension.interactor.GetExtensionStores
 import mihon.domain.extension.interactor.RemoveExtensionStore
-import mihon.domain.extension.interactor.UpdateExtensionStores
 import mihon.domain.extension.model.ExtensionStore
 import tachiyomi.core.common.util.lang.launchIO
 import uy.kohesive.injekt.Injekt
@@ -22,7 +22,9 @@ class ExtensionStoresScreenModel(
     private val getExtensionStores: GetExtensionStores = Injekt.get(),
     private val addExtensionStore: AddExtensionStore = Injekt.get(),
     private val removeExtensionStore: RemoveExtensionStore = Injekt.get(),
-    private val updateExtensionStores: UpdateExtensionStores = Injekt.get(),
+    // KMK -->
+    private val refreshExtensionStores: RefreshExtensionStores = Injekt.get(),
+    // KMK <--
     private val extensionManager: ExtensionManager = Injekt.get(),
     // KMK -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
@@ -123,7 +125,9 @@ class ExtensionStoresScreenModel(
 
         if (status is ExtensionStoreScreenState.Success) {
             screenModelScope.launchIO {
-                updateExtensionStores()
+                // KMK -->
+                refreshExtensionStores()
+                // KMK <--
             }
         }
     }

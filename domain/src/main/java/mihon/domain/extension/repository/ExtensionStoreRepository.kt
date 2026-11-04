@@ -9,7 +9,14 @@ interface ExtensionStoreRepository {
 
     suspend fun insertFromPreference(indexUrl: String, name: String)
 
-    suspend fun refreshAll()
+    // KMK -->
+    /**
+     * Refreshes the metadata of every saved store.
+     *
+     * @return the index URLs that changed, old URL to new URL.
+     */
+    suspend fun refreshAll(): Map<String, String>
+    // KMK <--
 
     suspend fun fetchExtensions(
         // KMK -->

@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import kotlinx.collections.immutable.persistentListOf
 import mihon.domain.extension.model.ExtensionStore
 import mihon.domain.extension.model.KOMIKKU_SIGNATURE
+import mihon.domain.extension.model.label
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -405,7 +406,19 @@ private fun ExtensionItemContent(
                 }
 
                 // KMK -->
-                Text(text = extension.storeName?.let { "@$it" } ?: "(?)")
+                val installedStore = extension.storeName?.let { "@$it" } ?: "(?)"
+                // For an update, name the store it comes from, which is not always the installed one's
+                val updateStore = (extension as? Extension.Installed)
+                    ?.takeIf { it.hasUpdate }
+                    ?.store
+                    ?.label
+                Text(
+                    text = when (updateStore) {
+                        null -> installedStore
+                        extension.storeName -> "@$updateStore"
+                        else -> "$installedStore → @$updateStore"
+                    },
+                )
                 // KMK <--
 
                 val warning = when {
