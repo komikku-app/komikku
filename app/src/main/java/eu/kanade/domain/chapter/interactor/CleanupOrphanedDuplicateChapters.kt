@@ -81,7 +81,7 @@ class CleanupOrphanedDuplicateChapters(
                 removed += 1
                 continue
             }
-            if (decision is Decision.Retarget) continue
+            // A failed retarget still gets the ComicInfo <Web> fallback (pre-retarget behavior).
 
             if (removeByComicInfoWeb(entry, orphan, dbChapters)) {
                 removed += 1
@@ -150,6 +150,11 @@ class CleanupOrphanedDuplicateChapters(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
+                // Undo the rename so the orphan row still matches the on-disk name on the next run.
+                if (finalName != entryName && entry.renameTo(entryName)) {
+                    downloadCache.removeFolders(listOf(finalName), manga)
+                    downloadCache.addChapter(entryName, mangaDir, manga)
+                }
                 return false
             }
         } else {

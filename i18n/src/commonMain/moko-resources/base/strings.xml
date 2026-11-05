@@ -594,6 +594,8 @@
     <string name="reconcile_chapter_downloads_success">Linked %1$d downloaded chapter(s) to the library</string>
     <string name="cleanup_duplicate_orphan_chapters_success">Removed %1$d duplicate orphan chapter(s)</string>
     <string name="restore_orphaned_chapters_none">No missing downloaded chapters found</string>
+    <string name="reindex_downloads_in_progress">Reindex is already running</string>
+    <string name="reindex_downloads_complete">Reindex downloads finished</string>
     <string name="export">Export</string>
     <string name="library_list">Library List</string>
     <string name="library_exported">Library Exported</string>
