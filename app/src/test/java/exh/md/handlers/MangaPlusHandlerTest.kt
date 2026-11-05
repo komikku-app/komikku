@@ -1,5 +1,6 @@
 package exh.md.handlers
 
+import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.MangaPlusDecodedViewer
 import exh.md.dto.MangaPlusViewer
 import exh.md.dto.MangaPlusViewerError
@@ -14,6 +15,7 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -87,6 +89,39 @@ class MangaPlusHandlerTest {
         val decoded: MangaPlusDecodedViewer = MangaPlusViewerPages.decode(ProtoBuf, bytes)
         assertEquals("This chapter is no longer available", decoded.errorMessage)
         assertTrue(decoded.pages.isEmpty())
+    }
+
+    @Test
+    fun `image url detection covers tokyo-cdn and legacy mangaplus hosts`() {
+        assertTrue(
+            MangaPlusHandler.isMangaPlusImageUrl(
+                "https://jumpg-assets3.tokyo-cdn.com/secure/title/1/chapter/2/manga_page/high/1.webp#abcd",
+            ),
+        )
+        assertTrue(
+            MangaPlusHandler.isMangaPlusImageUrl(
+                "https://manga-jp.mangaplus.shueisha.co.jp/page.jpg#00ff",
+            ),
+        )
+        assertFalse(MangaPlusHandler.isMangaPlusImageUrl("https://uploads.mangadex.org/data/hash/1.jpg"))
+        assertFalse(MangaPlusHandler.isMangaPlusImageUrl(null))
+    }
+
+    @Test
+    fun `image request sends the view token and keeps the encryption key fragment`() {
+        val handler = MangaPlusHandler(OkHttpClient())
+        val page = Page(
+            index = 0,
+            url = "view-token",
+            imageUrl = "https://jumpg-assets3.tokyo-cdn.com/page.webp#abcd",
+        )
+
+        val request = handler.imageRequest(page)
+
+        assertEquals("view-token", request.header("Plus-Vw-Token"))
+        assertEquals("abcd", request.url.fragment)
+        assertTrue(request.url.host.contains("tokyo-cdn.com"))
+        assertTrue(request.header("SESSION-TOKEN")!!.isNotBlank())
     }
 
     private fun fieldNumbers(bytes: ByteArray): Set<Int> {

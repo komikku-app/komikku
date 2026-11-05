@@ -55,7 +55,8 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
             throw Exception(errorMessage)
         }
 
-        val referer = response.request.header("Referer")!!
+        // Keep the view token on Page.url (Keiyoushi does the same) so image requests can send
+        // Plus-Vw-Token without relying only on the in-memory URL map.
         val token = decoded.viewToken.orEmpty()
 
         return decoded.pages.mapIndexed { i, page ->
@@ -63,8 +64,16 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
                 rememberViewToken(page.imageUrl, token)
             }
             val encryptionKey = if (page.encryptionKey.isNullOrEmpty()) "" else "#${page.encryptionKey}"
-            Page(i, referer, page.imageUrl + encryptionKey)
+            Page(i, token, page.imageUrl + encryptionKey)
         }
+    }
+
+    internal fun imageRequest(page: Page): Request {
+        val imageUrl = page.imageUrl ?: error("MangaPlus page is missing imageUrl")
+        val imageHeaders = headers.newBuilder()
+            .set("Plus-Vw-Token", page.url)
+            .build()
+        return GET(imageUrl, imageHeaders)
     }
 
     private fun rememberViewToken(imageUrl: String, token: String) {
@@ -77,15 +86,23 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
 
     private fun imageIntercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
-        val token = viewTokens[original.url.newBuilder().fragment(null).build().toString()]
-        val request = if (token.isNullOrEmpty()) {
+        val request = if (!original.header("Plus-Vw-Token").isNullOrEmpty()) {
             original
         } else {
-            original.newBuilder().header("Plus-Vw-Token", token).build()
+            val lookupUrl = original.url.newBuilder().fragment(null).build().toString()
+            val token = viewTokens[lookupUrl]
+            if (token.isNullOrEmpty()) {
+                original
+            } else {
+                original.newBuilder().header("Plus-Vw-Token", token).build()
+            }
         }
         val response = chain.proceed(request)
-        val encryptionKey = request.url.fragment
+        if (!response.isSuccessful) {
+            return response
+        }
 
+        val encryptionKey = request.url.fragment
         if (encryptionKey.isNullOrEmpty()) {
             return response
         }
@@ -100,8 +117,10 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     }
 
     private fun ByteArray.decodeXorCipher(key: String): ByteArray {
-        val keyStream = key.chunked(2)
-            .map { it.toInt(16) }
+        val keyStream = key.chunked(2).mapNotNull { chunk -> chunk.toIntOrNull(16) }
+        if (keyStream.isEmpty()) {
+            return this
+        }
 
         return mapIndexed { i, byte -> byte.toInt() xor keyStream[i % keyStream.size] }
             .map(Int::toByte)
@@ -113,5 +132,15 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
         private const val API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
+
+        /**
+         * Live CDN hosts are `*.tokyo-cdn.com` (for example `jumpg-assets3.tokyo-cdn.com`).
+         * Older paths may still contain `mangaplus`.
+         */
+        fun isMangaPlusImageUrl(imageUrl: String?): Boolean {
+            if (imageUrl.isNullOrEmpty()) return false
+            return imageUrl.contains("tokyo-cdn.com", ignoreCase = true) ||
+                imageUrl.contains("mangaplus", ignoreCase = true)
+        }
     }
 }

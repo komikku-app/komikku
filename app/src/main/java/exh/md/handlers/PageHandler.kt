@@ -108,8 +108,11 @@ class PageHandler(
     fun getImageCall(page: Page): Call? {
         xLogD(page.imageUrl)
         return when {
-            page.imageUrl?.contains("mangaplus", true) == true -> {
-                mangaPlusHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, headers), page)
+            MangaPlusHandler.isMangaPlusImageUrl(page.imageUrl) -> {
+                mangaPlusHandler.client.newCachelessCallWithProgress(
+                    mangaPlusHandler.imageRequest(page),
+                    page,
+                )
             }
             page.imageUrl?.contains("comikey", true) == true -> {
                 comikeyHandler.client.newCachelessCallWithProgress(GET(page.imageUrl!!, comikeyHandler.headers), page)
