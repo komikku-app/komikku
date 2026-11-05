@@ -85,7 +85,9 @@ fun MigrationConfigScreenSheet(
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
                     MigrationFlag.entries
-                        .fastFilterNot { it == MigrationFlag.REMOVE_DOWNLOAD }
+                        .fastFilterNot {
+                            it == MigrationFlag.REMOVE_DOWNLOAD || it == MigrationFlag.MOVE_DOWNLOADS
+                        }
                         .fastForEach { flag ->
                             val selected = flag in migrationFlags
                             FilterChip(
@@ -123,7 +125,22 @@ fun MigrationConfigScreenSheet(
                                 // KMK <--
                                 it - MigrationFlag.REMOVE_DOWNLOAD
                             } else {
-                                it + MigrationFlag.REMOVE_DOWNLOAD
+                                it + MigrationFlag.REMOVE_DOWNLOAD - MigrationFlag.MOVE_DOWNLOADS
+                            }
+                        }
+                    },
+                )
+                val moveDownloads = MigrationFlag.MOVE_DOWNLOADS in migrationFlags
+                MigrationSheetSwitchItem(
+                    title = stringResource(KMR.strings.migrationConfigScreen_moveDownloadsTitle),
+                    subtitle = stringResource(KMR.strings.migrationConfigScreen_moveDownloadsSubtitle),
+                    checked = moveDownloads,
+                    onClick = {
+                        preferences.migrationFlags().getAndSet { currentFlags ->
+                            if (MigrationFlag.MOVE_DOWNLOADS in currentFlags) {
+                                currentFlags - MigrationFlag.MOVE_DOWNLOADS
+                            } else {
+                                currentFlags + MigrationFlag.MOVE_DOWNLOADS - MigrationFlag.REMOVE_DOWNLOAD
                             }
                         }
                     },

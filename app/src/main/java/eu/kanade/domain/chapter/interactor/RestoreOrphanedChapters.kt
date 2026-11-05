@@ -7,7 +7,6 @@ import tachiyomi.core.metadata.comicinfo.ComicInfo
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.repository.ChapterRepository
-import tachiyomi.domain.chapter.service.ChapterRecognition
 import tachiyomi.domain.manga.interactor.GetAllManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
@@ -102,11 +101,12 @@ class RestoreOrphanedChapters(
                 resolved.chapterName
             }
 
-            val chapterNumber = ChapterRecognition.parseChapterNumber(
+            val chapterNumber = DownloadFolderMatcher.parseChapterNumberFromFolder(
                 manga.title,
-                chapterName,
-                -1.0,
+                fileName,
             )
+            // A folder that re-parses to a number the catalog already has must not become
+            // orphaned://, including when several scanlators share that number.
             if (chapterNumber >= 0 && chapterNumber in knownChapterNumbers) continue
 
             when (OrphanChapterComicInfoLink.matchCatalogChapterFromComicInfo(comicInfo, dbChapters)) {

@@ -147,6 +147,7 @@ private class MigrateDialogScreenModel(
                     MigrationFlag.REMOVE_DOWNLOAD -> downloadManager.getDownloadCount(current) > 0
                     // KMK -->
                     MigrationFlag.EXTRA -> true
+                    MigrationFlag.MOVE_DOWNLOADS -> downloadManager.getDownloadCount(current) > 0
                     // KMK <--
                 }
                 if (applicable) add(it)
@@ -166,9 +167,17 @@ private class MigrateDialogScreenModel(
 
     fun toggleSelection(flag: MigrationFlag) {
         mutableState.update {
-            val selectedFlags = it.selectedFlags.toMutableSet()
-                .apply { if (contains(flag)) remove(flag) else add(flag) }
-                .toSet()
+            val turningOn = flag !in it.selectedFlags
+            val selectedFlags = if (!turningOn) {
+                it.selectedFlags - flag
+            } else {
+                val withFlag = it.selectedFlags + flag
+                when (flag) {
+                    MigrationFlag.MOVE_DOWNLOADS -> withFlag - MigrationFlag.REMOVE_DOWNLOAD
+                    MigrationFlag.REMOVE_DOWNLOAD -> withFlag - MigrationFlag.MOVE_DOWNLOADS
+                    else -> withFlag
+                }
+            }
             it.copy(selectedFlags = selectedFlags)
         }
     }

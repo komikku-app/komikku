@@ -199,6 +199,8 @@
     <string name="current_">Current: %1$s</string>
     <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Use smart search</string>
     <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">If enabled, automatically picks the best match result. Otherwise, shows all search results for manual selection.</string>
+    <string name="migrationConfigScreen_moveDownloadsTitle">Move downloads to the new source</string>
+    <string name="migrationConfigScreen_moveDownloadsSubtitle">Moved chapters are renamed to the new source\'s chapter names. Chapters that do not match are left on the old entry.</string>
     <!-- Misc -->
     <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
     <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>

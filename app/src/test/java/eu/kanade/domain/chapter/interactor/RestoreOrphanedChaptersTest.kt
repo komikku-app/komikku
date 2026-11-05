@@ -3,10 +3,13 @@ package eu.kanade.domain.chapter.interactor
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.Source
+import io.mockk.CapturingSlot
+import io.mockk.capture
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -67,10 +70,60 @@ class RestoreOrphanedChaptersTest {
         coVerify(exactly = 1) { restore.chapterRepository.addAll(any()) }
     }
 
+    @Test
+    fun `restore skips Fallguy folder when catalog already has that chapter number`() = runBlocking {
+        val manga = Manga.create().copy(
+            id = 3607L,
+            source = 99L,
+            title = mangaTitle,
+            ogTitle = mangaTitle,
+        )
+        val catalog = listOf(
+            catalogChapter(id = 1L, number = 10.0, name = "Chapter 10", scanlator = "Group A"),
+            catalogChapter(id = 2L, number = 10.0, name = "Chapter 10", scanlator = "Group B"),
+        )
+
+        val restore = createRestore(
+            manga = manga,
+            catalog = catalog,
+            folderNames = listOf("Fallguy69420_Chapter 10"),
+        )
+
+        val restored = restore.await(mangaIds = listOf(manga.id))
+
+        assertEquals(0, restored)
+        coVerify(exactly = 0) { restore.chapterRepository.addAll(any()) }
+    }
+
+    @Test
+    fun `restore inserts orphan when parsed Fallguy number is absent from the catalog`() = runBlocking {
+        val manga = Manga.create().copy(
+            id = 3607L,
+            source = 99L,
+            title = mangaTitle,
+            ogTitle = mangaTitle,
+        )
+        val inserted = slot<List<Chapter>>()
+        val restore = createRestore(
+            manga = manga,
+            catalog = listOf(
+                catalogChapter(id = 1L, number = 10.0, name = "Chapter 10", scanlator = null),
+            ),
+            folderNames = listOf("Fallguy69420_Chapter 99"),
+            inserted = inserted,
+        )
+
+        val restored = restore.await(mangaIds = listOf(manga.id))
+
+        assertEquals(1, restored)
+        assertEquals(99.0, inserted.captured.single().chapterNumber)
+    }
+
     private fun createRestore(
         manga: Manga,
         catalog: List<Chapter>,
         folderNames: List<String>,
+        inserted: CapturingSlot<List<Chapter>>? = null,
     ): TestRestoreHarness {
         val getAllManga = mockk<GetAllManga>()
         val getManga = mockk<GetManga>()
@@ -83,7 +136,11 @@ class RestoreOrphanedChaptersTest {
 
         coEvery { getManga.await(manga.id) } returns manga
         coEvery { getChaptersByMangaId.await(manga.id) } returns catalog
-        coEvery { chapterRepository.addAll(any()) } answers { firstArg() }
+        if (inserted != null) {
+            coEvery { chapterRepository.addAll(capture(inserted)) } answers { firstArg() }
+        } else {
+            coEvery { chapterRepository.addAll(any()) } answers { firstArg() }
+        }
         coEvery { sourceManager.getOrStub(manga.source) } returns source
         every { source.id } returns manga.source
 

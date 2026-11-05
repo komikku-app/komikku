@@ -4,11 +4,11 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.dto.MangaPlusPage
-import exh.md.dto.MangaPlusResponse
-import kotlinx.serialization.json.Json
+import exh.md.dto.MangaPlusViewerPages
+import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -17,9 +17,11 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class MangaPlusHandler(currentClient: OkHttpClient) {
-    val json: Json by injectLazy()
+    private val protoBuf: ProtoBuf by injectLazy()
+    private val viewTokens = ConcurrentHashMap<String, String>()
 
     val headers = Headers.Builder()
         .add("Origin", WEB_URL)
@@ -38,47 +40,49 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         return pageListParse(response)
     }
 
-    private fun pageListRequest(chapterId: String, dataSaver: Boolean): Request {
+    internal fun pageListRequest(chapterId: String, dataSaver: Boolean): Request {
         val newHeaders = headers.newBuilder()
             .set("Referer", "$WEB_URL/viewer/$chapterId")
             .build()
 
-        val url = "$API_URL/manga_viewer".toHttpUrl().newBuilder()
-            .addQueryParameter("chapter_id", chapterId)
-            .addQueryParameter("split", "yes")
-            .addQueryParameter(
-                "img_quality",
-                if (dataSaver) {
-                    "low"
-                } else {
-                    "super_high"
-                },
-            )
-            .addQueryParameter("format", "json")
-            .toString()
-
-        return GET(url, newHeaders)
+        return GET(MangaPlusViewerPages.viewerUrl(chapterId, dataSaver), newHeaders)
     }
 
     private fun pageListParse(response: Response): List<Page> {
-        val result = json.decodeFromString<MangaPlusResponse>(response.body.string())
-
-        if (result.success == null) {
-            throw Exception("error getting images")
+        val decoded = MangaPlusViewerPages.decode(protoBuf, response.body.bytes())
+        val errorMessage = decoded.errorMessage
+        if (errorMessage != null) {
+            throw Exception(errorMessage)
         }
 
         val referer = response.request.header("Referer")!!
+        val token = decoded.viewToken.orEmpty()
 
-        return result.success.mangaViewer!!.pages
-            .mapNotNull(MangaPlusPage::mangaPage)
-            .mapIndexed { i, page ->
-                val encryptionKey = if (page.encryptionKey == null) "" else "#${page.encryptionKey}"
-                Page(i, referer, page.imageUrl + encryptionKey)
+        return decoded.pages.mapIndexed { i, page ->
+            if (token.isNotEmpty()) {
+                rememberViewToken(page.imageUrl, token)
             }
+            val encryptionKey = if (page.encryptionKey.isNullOrEmpty()) "" else "#${page.encryptionKey}"
+            Page(i, referer, page.imageUrl + encryptionKey)
+        }
+    }
+
+    private fun rememberViewToken(imageUrl: String, token: String) {
+        viewTokens[imageUrl] = token
+        val normalized = imageUrl.toHttpUrlOrNull()?.newBuilder()?.fragment(null)?.build()?.toString()
+        if (normalized != null) {
+            viewTokens[normalized] = token
+        }
     }
 
     private fun imageIntercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
+        val original = chain.request()
+        val token = viewTokens[original.url.newBuilder().fragment(null).build().toString()]
+        val request = if (token.isNullOrEmpty()) {
+            original
+        } else {
+            original.newBuilder().header("Plus-Vw-Token", token).build()
+        }
         val response = chain.proceed(request)
         val encryptionKey = request.url.fragment
 

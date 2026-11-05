@@ -291,18 +291,22 @@ class DownloadProvider(
         chapterName: String,
         chapterScanlator: String?,
         chapterUrl: String,
-        disallowNonAsciiFilenames: Boolean = libraryPreferences.disallowNonAsciiFilenames().get(),
+        disallowNonAsciiFilenames: Boolean? = null,
         // SY -->
-        includeChapterUrlHash: Boolean = downloadPreferences.includeChapterUrlHash().get(),
+        includeChapterUrlHash: Boolean? = null,
         // SY <--
     ): String {
+        val disallowNonAscii = disallowNonAsciiFilenames
+            ?: libraryPreferences.disallowNonAsciiFilenames().get()
+        val includeHash = includeChapterUrlHash
+            ?: downloadPreferences.includeChapterUrlHash().get()
         var dirName = sanitizeChapterName(chapterName)
         if (!chapterScanlator.isNullOrBlank()) {
             dirName = chapterScanlator + "_" + dirName
         }
         // Subtract 7 bytes for hash and underscore, 4 bytes for .cbz
-        dirName = DiskUtil.buildValidFilename(dirName, DiskUtil.MAX_FILE_NAME_BYTES - 11, disallowNonAsciiFilenames)
-        /* SY --> */ if (includeChapterUrlHash) /* SY <-- */ dirName += "_" + md5(chapterUrl).take(6)
+        dirName = DiskUtil.buildValidFilename(dirName, DiskUtil.MAX_FILE_NAME_BYTES - 11, disallowNonAscii)
+        /* SY --> */ if (includeHash) /* SY <-- */ dirName += "_" + md5(chapterUrl).take(6)
         return dirName
     }
 

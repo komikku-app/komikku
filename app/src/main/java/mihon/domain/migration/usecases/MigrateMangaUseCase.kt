@@ -8,8 +8,10 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import kotlinx.coroutines.CancellationException
+import logcat.LogPriority
 import mihon.domain.migration.models.MigrationFlag
 import mihon.domain.source.interactor.UpdateMangaFromRemote
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -42,6 +44,7 @@ class MigrateMangaUseCase(
     // KMK -->
     private val getHistory: GetHistory,
     private val upsertHistory: UpsertHistory,
+    private val moveMigratedDownloads: MoveMigratedDownloads,
     // KMK <--
 ) {
     private val enhancedServices by lazy { trackerManager.trackers.filterIsInstance<EnhancedTracker>() }
@@ -157,8 +160,46 @@ class MigrateMangaUseCase(
                     ?.let { insertTrack.awaitAll(it) }
             }
 
+            // Move downloaded chapters onto the target. Never also delete the old folder:
+            // a failed copy must leave the files on the source that still has them.
+            if (MigrationFlag.MOVE_DOWNLOADS in flags && currentSource != null) {
+                try {
+                    val oldChapters = getChaptersByMangaId.await(current.id)
+                    val targetChapters = getChaptersByMangaId.await(target.id)
+                    val downloadedIds = oldChapters
+                        .filter { chapter ->
+                            downloadManager.isChapterDownloaded(
+                                chapter,
+                                current.ogTitle,
+                                current.source,
+                            )
+                        }
+                        .map { it.id }
+                        .toSet()
+                    val downloadPlan = PlanDownloadMigration.plan(
+                        oldChapters = oldChapters,
+                        targetChapters = targetChapters,
+                        downloadedChapterIds = downloadedIds,
+                    )
+                    moveMigratedDownloads.move(
+                        moves = downloadPlan.moves,
+                        current = current,
+                        target = target,
+                        currentSource = currentSource,
+                        targetSource = targetSource,
+                    )
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    logcat(LogPriority.ERROR, e) { "Failed to move downloads during migration" }
+                }
+            }
+
             // Delete downloaded
-            if (MigrationFlag.REMOVE_DOWNLOAD in flags && currentSource != null) {
+            if (MigrationFlag.REMOVE_DOWNLOAD in flags &&
+                MigrationFlag.MOVE_DOWNLOADS !in flags &&
+                currentSource != null
+            ) {
                 downloadManager.deleteManga(current, currentSource)
             }
 

@@ -2,6 +2,10 @@ package exh.md.dto
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Retired JSON viewer models. The live MangaPlus viewer is protobuf; see [MangaPlusViewerResponse].
+ * Do not copy these JSON properties onto protobuf field numbers.
+ */
 @Serializable
 data class MangaPlusResponse(
     val success: SuccessResult? = null,

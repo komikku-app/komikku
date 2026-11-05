@@ -39,6 +39,7 @@ import mihon.domain.extension.interactor.RemoveExtensionStore
 import mihon.domain.extension.interactor.UpdateExtensionStores
 import mihon.domain.extension.repository.ExtensionStoreRepository
 import mihon.domain.migration.usecases.MigrateMangaUseCase
+import mihon.domain.migration.usecases.MoveMigratedDownloads
 import mihon.domain.source.interactor.UpdateMangaFromRemote
 import mihon.domain.upcoming.interactor.GetUpcomingManga
 import tachiyomi.data.category.CategoryRepositoryImpl
@@ -150,6 +151,7 @@ class DomainModule : InjektModule {
         addFactory {
             MigrateMangaUseCase(
                 get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(),
             )
         }
 
@@ -184,7 +186,8 @@ class DomainModule : InjektModule {
         addSingletonFactory<ChapterDownloadComicInfoReader> { ChapterDownloadComicInfoReader(get(), get()) }
         addFactory { ReconcileChapterDownloads(get(), get(), get(), get(), get(), get(), get()) }
         addFactory { RestoreOrphanedChapters(get(), get(), get(), get(), get(), get(), get()) }
-        addFactory { CleanupOrphanedDuplicateChapters(get(), get(), get(), get(), get(), get(), get()) }
+        addFactory { CleanupOrphanedDuplicateChapters(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        addFactory { MoveMigratedDownloads(get(), get(), get()) }
 
         addSingletonFactory<HistoryRepository> { HistoryRepositoryImpl(get()) }
         addFactory { GetHistory(get()) }

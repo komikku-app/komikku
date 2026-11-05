@@ -14,9 +14,10 @@ import tachiyomi.domain.chapter.service.ChapterRecognition
  *    hash suffix is ignored for this comparison.
  * 2. **ComicInfo** — `<Number>` parses to a single catalog chapter number; when `<Translator>` is
  *    present, [Chapter.scanlator] must match (case-insensitive).
- * 3. **Folder basename** — chapter number parsed via [ChapterRecognition] after hash strip;
+ * 3. **Folder basename** — chapter number parsed via [parseChapterNumberFromFolder];
  *    when a scanlator prefix is detected, [Chapter.scanlator] must match. Multiple catalog hits
- *    without a disambiguating scanlator yield `null`.
+ *    without a disambiguating scanlator yield `null`. A digit-bearing `{prefix}_Chapter N`
+ *    folder is numbered from `Chapter N` only. That prefix is not a scanlator.
  *
  * Orphan rows (`url` starting with `orphaned://`) are never returned.
  *
@@ -49,12 +50,35 @@ object DownloadFolderMatcher {
     }
 
     /**
-     * Parses a chapter number from a download folder basename using [ChapterRecognition].
+     * Parses a chapter number from a download folder basename.
+     *
+     * When the name is `{prefix}_{body}` and [prefix] contains a digit while [body] starts with
+     * `ch.` or `chapter`, only [body] is parsed. `Fallguy69420_Chapter 10` is chapter 10.
+     * Every other name is parsed in full, so global [ChapterRecognition] behavior is unchanged.
      */
     fun parseChapterNumberFromFolder(mangaTitle: String, folderName: String): Double {
         val withoutCbz = folderName.removeSuffix(".cbz")
         val withoutHash = stripUrlHashSuffix(withoutCbz)
-        return ChapterRecognition.parseChapterNumber(mangaTitle, withoutHash, -1.0)
+        val nameToParse = chapterBodyAfterDigitPrefix(withoutHash) ?: withoutHash
+        return ChapterRecognition.parseChapterNumber(mangaTitle, nameToParse, -1.0)
+    }
+
+    /**
+     * Returns the chapter-title body when [basename] is `{digit-bearing prefix}_{ch.|chapter ...}`.
+     * The prefix is not a scanlator. See [parseScanlatorPrefix].
+     */
+    private fun chapterBodyAfterDigitPrefix(basename: String): String? {
+        val separator = basename.indexOf('_')
+        if (separator <= 0 || separator >= basename.lastIndex) return null
+
+        val prefix = basename.substring(0, separator)
+        if (!prefix.any { it.isDigit() }) return null
+
+        val body = basename.substring(separator + 1)
+        val isChapterBody = body.startsWith("ch.", ignoreCase = true) ||
+            body.startsWith("chapter", ignoreCase = true)
+        if (!isChapterBody) return null
+        return body
     }
 
     /**

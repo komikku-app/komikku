@@ -73,7 +73,7 @@ class SourcePreferences(
 
     fun migrationFlags() = preferenceStore.getObjectFromInt(
         key = "migration_flags",
-        defaultValue = MigrationFlag.entries.toSet(),
+        defaultValue = MigrationFlag.entries.toSet() - MigrationFlag.MOVE_DOWNLOADS,
         serializer = { MigrationFlag.toBit(it) },
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )

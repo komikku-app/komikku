@@ -39,6 +39,70 @@ class DownloadFolderMatcherTest {
     }
 
     @Test
+    fun `parseChapterNumberFromFolder reads chapter after a digit-bearing prefix`() {
+        assertEquals(
+            10.0,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(mangaTitle, "Fallguy69420_Chapter 10"),
+        )
+        assertEquals(
+            10.0,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(mangaTitle, "Fallguy69420_Ch. 10"),
+        )
+        assertEquals(
+            10.5,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(mangaTitle, "Fallguy69420_Chapter 10.5"),
+        )
+        assertEquals(
+            61.0,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(mangaTitle, "unofficial_Ch. 61_c7c283"),
+        )
+        assertEquals(
+            58.0,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(mangaTitle, "Chapter 58_82c355"),
+        )
+        assertEquals(
+            27.0,
+            DownloadFolderMatcher.parseChapterNumberFromFolder(
+                "Tokyo ESP",
+                "Tokyo ESP 027: Part 002: Chapter 001",
+            ),
+        )
+        assertNull(DownloadFolderMatcher.parseScanlatorPrefix("Fallguy69420_Chapter 10"))
+    }
+
+    @Test
+    fun `matchCatalogChapter links Fallguy folder to the only catalog chapter 10`() {
+        val catalog = listOf(
+            catalogChapter(id = 10L, number = 10.0, name = "Chapter 10", scanlator = "Official"),
+        )
+
+        assertEquals(
+            10L,
+            DownloadFolderMatcher.matchCatalogChapter(
+                catalogChapters = catalog,
+                folderName = "Fallguy69420_Chapter 10",
+                mangaTitle = mangaTitle,
+            )?.id,
+        )
+    }
+
+    @Test
+    fun `matchCatalogChapter returns null when Fallguy folder matches two chapter 10 rows`() {
+        val catalog = listOf(
+            catalogChapter(id = 1L, number = 10.0, name = "Chapter 10", scanlator = "Group A"),
+            catalogChapter(id = 2L, number = 10.0, name = "Chapter 10", scanlator = "Group B"),
+        )
+
+        assertNull(
+            DownloadFolderMatcher.matchCatalogChapter(
+                catalogChapters = catalog,
+                folderName = "Fallguy69420_Chapter 10",
+                mangaTitle = mangaTitle,
+            ),
+        )
+    }
+
+    @Test
     fun `parseScanlatorPrefix extracts scanlator group`() {
         assertEquals(
             "unofficial",

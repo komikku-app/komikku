@@ -15,6 +15,8 @@ enum class MigrationFlag(val flag: Int) {
 
     // KMK -->
     EXTRA(0b1000000),
+    /** Copies downloaded chapter files onto the target source. Default off. Mutually exclusive with [REMOVE_DOWNLOAD]. */
+    MOVE_DOWNLOADS(0b10000000),
     // KMK <--
     ;
 
