@@ -20,11 +20,11 @@ class PlanDownloadMigrationTest {
 
         assertEquals(1L, plan.moves.single().oldChapter.id)
         assertEquals(2L, plan.moves.single().targetChapter.id)
-        assertTrue(plan.skippedChapterIds.isEmpty())
+        assertTrue(plan.orphanOldChapters.isEmpty())
     }
 
     @Test
-    fun `missing number skips`() {
+    fun `missing number becomes an orphan candidate`() {
         val oldChapter = chapter(id = 1L, number = 4.0)
 
         val plan = PlanDownloadMigration.plan(
@@ -34,7 +34,22 @@ class PlanDownloadMigrationTest {
         )
 
         assertTrue(plan.moves.isEmpty())
-        assertEquals(listOf(1L), plan.skippedChapterIds)
+        assertEquals(listOf(1L), plan.orphanOldChapters.map { it.id })
+    }
+
+    @Test
+    fun `partial overlap moves matches and orphans the rest`() {
+        val oldChapters = (1L..8L).map { chapter(id = it, number = it.toDouble()) }
+        val targetChapters = (4L..8L).map { chapter(id = 100L + it, number = it.toDouble()) }
+
+        val plan = PlanDownloadMigration.plan(
+            oldChapters = oldChapters,
+            targetChapters = targetChapters,
+            downloadedChapterIds = (1L..8L).toSet(),
+        )
+
+        assertEquals((4L..8L).toList(), plan.moves.map { it.oldChapter.id })
+        assertEquals((1L..3L).toList(), plan.orphanOldChapters.map { it.id })
     }
 
     @Test
@@ -50,6 +65,7 @@ class PlanDownloadMigrationTest {
         )
 
         assertEquals(3L, plan.moves.single().targetChapter.id)
+        assertTrue(plan.orphanOldChapters.isEmpty())
     }
 
     @Test
@@ -78,14 +94,14 @@ class PlanDownloadMigrationTest {
         )
 
         assertTrue(plan.moves.isEmpty())
-        assertEquals(listOf(1L), plan.skippedChapterIds)
+        assertEquals(listOf(1L), plan.orphanOldChapters.map { it.id })
     }
 
     @Test
-    fun `undownloaded and unrecognized chapters are not candidates`() {
+    fun `undownloaded chapters are ignored and unrecognized downloads become orphans`() {
         val downloaded = chapter(id = 1L, number = 10.0)
         val notDownloaded = chapter(id = 2L, number = 11.0)
-        val unrecognized = chapter(id = 3L, number = -1.0)
+        val unrecognized = chapter(id = 3L, number = -1.0, name = "Bonus Story")
 
         val plan = PlanDownloadMigration.plan(
             oldChapters = listOf(downloaded, notDownloaded, unrecognized),
@@ -97,7 +113,7 @@ class PlanDownloadMigrationTest {
         )
 
         assertEquals(listOf(1L), plan.moves.map { it.oldChapter.id })
-        assertTrue(plan.skippedChapterIds.isEmpty())
+        assertEquals(listOf(3L), plan.orphanOldChapters.map { it.id })
     }
 
     private fun chapter(
@@ -105,11 +121,12 @@ class PlanDownloadMigrationTest {
         number: Double,
         sourceOrder: Long = id,
         scanlator: String? = null,
+        name: String = "Chapter $number",
     ): Chapter = Chapter.create().copy(
         id = id,
         chapterNumber = number,
         sourceOrder = sourceOrder,
-        name = "Chapter $number",
+        name = name,
         scanlator = scanlator,
         url = "/chapter/$id/",
     )

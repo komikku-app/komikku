@@ -40,9 +40,9 @@ class MigrateMangaUseCaseTest {
         coEvery { harness.getChaptersByMangaId.await(harness.current.id) } returns listOf(oldChapter)
         coEvery { harness.getChaptersByMangaId.await(harness.target.id) } returns listOf(targetChapter)
         every { harness.downloadManager.isChapterDownloaded(any(), any(), any(), any()) } returns true
-        val moves = slot<List<PlanDownloadMigration.Move>>()
+        val plan = slot<PlanDownloadMigration.Plan>()
         coEvery {
-            harness.mover.move(capture(moves), any(), any(), any(), any())
+            harness.mover.move(capture(plan), any(), any(), any(), any())
         } returns MoveMigratedDownloads.Counts(moved = 1, skipped = 0)
 
         harness.useCase(
@@ -52,8 +52,9 @@ class MigrateMangaUseCaseTest {
             presetFlags = setOf(MigrationFlag.MOVE_DOWNLOADS, MigrationFlag.REMOVE_DOWNLOAD),
         )
 
-        assertEquals(1L, moves.captured.single().oldChapter.id)
-        assertEquals(2L, moves.captured.single().targetChapter.id)
+        assertEquals(1L, plan.captured.moves.single().oldChapter.id)
+        assertEquals(2L, plan.captured.moves.single().targetChapter.id)
+        assertEquals(emptyList(), plan.captured.orphanOldChapters)
         verify(exactly = 0) { harness.downloadManager.deleteManga(any(), any(), any()) }
     }
 
@@ -69,7 +70,7 @@ class MigrateMangaUseCaseTest {
         )
 
         verify(exactly = 1) { harness.downloadManager.deleteManga(harness.current, harness.currentSource, any()) }
-        coVerify(exactly = 0) { harness.mover.move(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { harness.mover.move(plan = any(), current = any(), target = any(), currentSource = any(), targetSource = any()) }
     }
 
     private fun harness(): Harness {

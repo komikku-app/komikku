@@ -182,7 +182,7 @@ class MigrateMangaUseCase(
                         downloadedChapterIds = downloadedIds,
                     )
                     moveMigratedDownloads.move(
-                        moves = downloadPlan.moves,
+                        plan = downloadPlan,
                         current = current,
                         target = target,
                         currentSource = currentSource,

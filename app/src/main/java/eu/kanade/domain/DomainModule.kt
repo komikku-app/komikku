@@ -187,7 +187,7 @@ class DomainModule : InjektModule {
         addFactory { ReconcileChapterDownloads(get(), get(), get(), get(), get(), get(), get()) }
         addFactory { RestoreOrphanedChapters(get(), get(), get(), get(), get(), get(), get()) }
         addFactory { CleanupOrphanedDuplicateChapters(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-        addFactory { MoveMigratedDownloads(get(), get(), get()) }
+        addFactory { MoveMigratedDownloads(get(), get(), get(), get()) }
 
         addSingletonFactory<HistoryRepository> { HistoryRepositoryImpl(get()) }
         addFactory { GetHistory(get()) }
