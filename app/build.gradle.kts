@@ -76,7 +76,9 @@ android {
         create("preview") {
             initWith(release)
 
-            applicationIdSuffix = ".beta"
+            // KMK -->
+            applicationIdSuffix = ".beta.local"
+            // KMK <--
 
             versionNameSuffix = debug.versionNameSuffix
             signingConfig = debug.signingConfig
