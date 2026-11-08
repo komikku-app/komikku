@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.setting.track
 
 import android.net.Uri
 import androidx.lifecycle.lifecycleScope
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.launch
 
 class TrackLoginActivity : BaseOAuthLoginActivity() {
@@ -23,6 +24,9 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
         lifecycleScope.launch {
             try {
                 when (uri.host) {
+                    // KMK -->
+                    "comick-auth" -> handleComick(data["code"], data["state"])
+                    // KMK <--
                     "anilist-auth" -> handleAniList(data["access_token"])
                     "bangumi-auth" -> handleBangumi(data["code"])
                     "myanimelist-auth" -> handleMyAnimeList(data["code"])
@@ -33,6 +37,21 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
             }
         }
     }
+
+    // KMK -->
+    private suspend fun handleComick(code: String?, state: String?) {
+        val tracker = trackerManager.comick
+        if (code != null && state != null && tracker.verifyOAuthState(state)) {
+            try {
+                tracker.login(code)
+            } catch (e: Exception) {
+                toast(e.message)
+            }
+        } else {
+            tracker.logout()
+        }
+    }
+    // KMK <--
 
     private suspend fun handleAniList(accessToken: String?) {
         if (accessToken != null) {
