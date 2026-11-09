@@ -473,6 +473,10 @@ class MangaRestorer(
                     lastChapterRead = max(dbTrack.lastChapterRead, track.lastChapterRead),
                 )
             }
+            // KMK --> Backups contain both Comick aliases for Mihon and Houri.
+            // Their IDs normalize to Komikku's ID 12 above; retain one row.
+            .distinctBy { it.trackerId }
+            // KMK <--
             .partition { it.id > 0 }
 
         if (newTracks.isNotEmpty()) {

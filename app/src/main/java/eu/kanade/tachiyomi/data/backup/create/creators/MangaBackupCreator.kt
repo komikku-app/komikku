@@ -99,6 +99,22 @@ class MangaBackupCreator(
 
         if (options.tracking) {
             val tracks = handler.awaitList { manga_syncQueries.getTracksByMangaId(manga.id, backupTrackMapper) }
+                // KMK --> Include both stable Comick IDs: Mihon uses 12 and
+                // Houri uses 63. Houri also numbers the final two statuses
+                // in the opposite order.
+                .flatMap { track ->
+                    if (track.syncId != 12) {
+                        listOf(track)
+                    } else {
+                        val houriStatus = when (track.status) {
+                            4 -> 5
+                            5 -> 4
+                            else -> track.status
+                        }
+                        listOf(track, track.copy(syncId = 63, status = houriStatus))
+                    }
+                }
+            // KMK <--
             if (tracks.isNotEmpty()) {
                 mangaObject.tracking = tracks
             }
