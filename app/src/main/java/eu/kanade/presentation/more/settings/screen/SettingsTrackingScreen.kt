@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.anilist.AnilistApi
 import eu.kanade.tachiyomi.data.track.bangumi.BangumiApi
 import eu.kanade.tachiyomi.data.track.comick.ComickApi
+import eu.kanade.tachiyomi.data.track.mangabaka.MangaBakaApi
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeListApi
 import eu.kanade.tachiyomi.data.track.shikimori.ShikimoriApi
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -197,6 +198,13 @@ object SettingsTrackingScreen : SearchableSettings {
                         tracker = trackerManager.comick,
                         login = { context.openInBrowser(ComickApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.comick) },
+                    ),
+                    // KMK <--
+                    // KMK -->
+                    Preference.PreferenceItem.TrackerPreference(
+                        tracker = trackerManager.mangaBaka,
+                        login = { context.openInBrowser(MangaBakaApi.authUrl(), forceDefaultBrowser = true) },
+                        logout = { dialog = LogoutDialog(trackerManager.mangaBaka) },
                     ),
                     // KMK <--
                     Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.tracking_info)),
