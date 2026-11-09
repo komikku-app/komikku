@@ -23,6 +23,9 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
         lifecycleScope.launch {
             try {
                 when (uri.host) {
+                    // KMK -->
+                    "mangabaka-auth" -> handleMangaBaka(data["code"], data["state"])
+                    // KMK <--
                     "anilist-auth" -> handleAniList(data["access_token"])
                     "bangumi-auth" -> handleBangumi(data["code"])
                     "myanimelist-auth" -> handleMyAnimeList(data["code"])
@@ -33,6 +36,21 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
             }
         }
     }
+
+    // KMK -->
+    private suspend fun handleMangaBaka(code: String?, state: String?) {
+        val tracker = trackerManager.mangaBaka
+        if (code != null && state != null && tracker.verifyOAuthState(state)) {
+            try {
+                tracker.login(code)
+            } catch (e: Exception) {
+                toast(e.message)
+            }
+        } else {
+            tracker.logout()
+        }
+    }
+    // KMK <--
 
     private suspend fun handleAniList(accessToken: String?) {
         if (accessToken != null) {
