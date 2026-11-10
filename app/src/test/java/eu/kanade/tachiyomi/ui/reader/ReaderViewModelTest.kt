@@ -263,6 +263,7 @@ class ReaderViewModelTest {
 
             assertEquals(storedManga, viewModel.state.value.manga)
             assertTrue(events.isEmpty())
+            coVerify(exactly = 1) { repository.update(any()) }
         } finally {
             viewModel.viewModelScope.cancel()
             runCurrent()
