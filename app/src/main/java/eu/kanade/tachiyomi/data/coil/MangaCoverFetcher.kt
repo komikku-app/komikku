@@ -77,9 +77,11 @@ class MangaCoverFetcher(
     // devices where BitmapFactory throws `IllegalStateException: Unbalanced enter/exit`). Cover
     // colour/ratio is purely cosmetic and must never take the library update down with it.
     private val scope by lazy {
-        CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
-            logcat(LogPriority.ERROR, throwable) { "Failed to preload library cover color" }
-        })
+        CoroutineScope(
+            Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+                logcat(LogPriority.ERROR, throwable) { "Failed to preload library cover color" }
+            },
+        )
     }
     private val uiPreferences = Injekt.get<UiPreferences>()
     private val themeCoverBased = uiPreferences.themeCoverBased().get()

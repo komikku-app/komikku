@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import logcat.LogPriority
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -167,7 +167,20 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         return try {
             deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
 
-            setForegroundSafely()
+            // KMK -->
+            // Keep the shared setForegroundSafely() strict for every other worker, but make the
+            // library update resilient even if promotion to foreground fails with a non-
+            // IllegalStateException (e.g. TransactionTooLargeException from the notification
+            // parcel on API 26): the update is more useful running in the background than
+            // aborting before the first manga is processed.
+            try {
+                setForegroundSafely()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e) { "Library update could not switch to foreground; continuing in background" }
+            }
+            // KMK <--
 
             val target = inputData.getString(KEY_TARGET)?.let { Target.valueOf(it) } ?: Target.CHAPTERS
 
@@ -203,14 +216,15 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
                 }
             }
+        } catch (e: CancellationException) {
+            // WorkManager cancelled this job before any manga was processed (preflight phase).
+            // Propagate instead of returning success, so the work item is recorded as CANCELLED
+            // rather than FINISHED and pending manga are not silently treated as up to date; the
+            // finally below still clears the banner and the progress notification.
+            throw e
         } catch (e: Exception) {
-            if (e is CancellationException) {
-                // Assume success although cancelled
-                Result.success()
-            } else {
-                logcat(LogPriority.ERROR, e)
-                Result.failure()
-            }
+            logcat(LogPriority.ERROR, e)
+            Result.failure()
         } finally {
             notifier.cancelProgressNotification()
             // KMK -->
@@ -552,8 +566,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         // limiter, stuck on a socket that ignores its own timeout) would otherwise hold one of
         // the 5 permits indefinitely, so no manga ever completes and the progress banner stays
         // at "Updating library… 0%". Time-box each single-manga fetch so the queue always moves
-        // on; the cancelled call is reported as a failed update instead.
-        val update = withTimeout(PER_MANGA_UPDATE_TIMEOUT_MS) {
+        // on. Use withTimeoutOrNull rather than withTimeout: TimeoutCancellationException is a
+        // CancellationException subclass, and the per-manga handler below treats plain
+        // cancellations as "worker is being stopped" (skipping error recording and progress
+        // accounting, which would stall the final progress wait). A timeout therefore returns
+        // null here and becomes a regular failed update, while a genuine worker cancellation
+        // still propagates normally.
+        val update = withTimeoutOrNull(PER_MANGA_UPDATE_TIMEOUT_MS) {
             updateMangaFromRemote(
                 source = source,
                 manga = manga,
@@ -562,7 +581,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 fetchWindow = fetchWindow,
             )
                 .getOrThrow()
-        }
+        } ?: throw Exception(TIMEOUT_ERROR_MESSAGE)
 
         return if (update.manga.favorite) update.newChapters else emptyList()
     }
@@ -743,6 +762,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         // KMK -->
         // Upper bound for fetching a single manga from its source during a library update.
         private const val PER_MANGA_UPDATE_TIMEOUT_MS = 5 * 60 * 1000L
+
+        // Error message recorded when a single manga fetch exceeds the timeout above.
+        private const val TIMEOUT_ERROR_MESSAGE = "Timed out while fetching updates from the source"
         // KMK <--
 
         private const val ERROR_LOG_HELP_URL = "https://komikku-app.github.io/docs/guides/troubleshooting/"
