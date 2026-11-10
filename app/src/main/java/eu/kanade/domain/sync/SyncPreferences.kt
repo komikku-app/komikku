@@ -16,6 +16,15 @@ class SyncPreferences(
 
     fun lastSyncEtag() = preferenceStore.getString("sync_etag", "")
 
+    // KMK -->
+    fun syncCursor() = preferenceStore.getLong(Preference.appStateKey("sync_cursor"), 0L)
+    fun lastPushedAt() = preferenceStore.getLong(Preference.appStateKey("sync_last_pushed_at"), 0L)
+    fun lastFullSync() = preferenceStore.getLong(Preference.appStateKey("sync_last_full_sync"), 0L)
+    fun fullSyncRequested() = preferenceStore.getBoolean(Preference.appStateKey("sync_full_requested"), false)
+    fun serverSupportsV2() = preferenceStore.getBoolean(Preference.appStateKey("sync_server_supports_v2"), false)
+    fun v2ProbedHost() = preferenceStore.getString(Preference.appStateKey("sync_v2_probed_host"), "")
+    // KMK <--
+
     fun syncInterval() = preferenceStore.getInt("sync_interval", 0)
     fun syncService() = preferenceStore.getInt("sync_service", 0)
 

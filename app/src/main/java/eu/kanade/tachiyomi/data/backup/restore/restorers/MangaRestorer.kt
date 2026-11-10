@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.MemoColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
@@ -73,6 +75,31 @@ class MangaRestorer(
                     .then(compareByDescending { it.lastModifiedAt }),
             )
     }
+
+    // KMK -->
+    /**
+     * Restore a bounded batch under one outer database transaction. Per-entry failures are collected so one bad
+     * manga does not prevent the rest of the batch from being restored.
+     */
+    suspend fun restore(
+        backupMangas: List<BackupManga>,
+        backupCategories: List<BackupCategory>,
+    ): List<Pair<BackupManga, Exception>> {
+        val failures = mutableListOf<Pair<BackupManga, Exception>>()
+        handler.await(inTransaction = true) {
+            backupMangas.forEach { backupManga ->
+                currentCoroutineContext().ensureActive()
+                try {
+                    restore(backupManga, backupCategories)
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    failures += backupManga to e
+                }
+            }
+        }
+        return failures
+    }
+    // KMK <--
 
     /**
      * Restore a single manga

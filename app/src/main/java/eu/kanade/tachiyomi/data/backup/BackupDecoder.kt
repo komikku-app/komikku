@@ -3,8 +3,13 @@ package eu.kanade.tachiyomi.data.backup
 import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.protobuf.ProtoBuf
+import okio.BufferedSource
 import okio.buffer
 import okio.gzip
 import okio.source
@@ -44,6 +49,63 @@ class BackupDecoder(
             }
         }
     }
+
+    // KMK -->
+    /**
+     * Reads backup metadata while skipping manga entries, keeping the entry count for restore progress.
+     */
+    fun decodeMetadata(uri: Uri): Metadata = withReader(uri) { reader ->
+        var entryCount = 0
+        while (reader.nextEntry()) {
+            reader.skipEntry()
+            entryCount++
+        }
+        Metadata(entryCount, reader.readMetadata())
+    }
+
+    /**
+     * Decodes entries with a smaller deserializer during the metadata scan.
+     */
+    fun <T> decodeMetadata(
+        uri: Uri,
+        entry: DeserializationStrategy<T>,
+        onEntry: (T) -> Unit,
+    ): Metadata = withReader(uri) { reader ->
+        var entryCount = 0
+        while (reader.nextEntry()) {
+            onEntry(reader.readEntry(entry))
+            entryCount++
+        }
+        Metadata(entryCount, reader.readMetadata())
+    }
+
+    /**
+     * Streams backup manga entries one at a time.
+     */
+    fun decodeEntries(uri: Uri): Flow<BackupManga> = flow {
+        withReader(uri) { reader ->
+            while (reader.nextEntry()) emit(reader.readEntry())
+        }
+    }
+
+    data class Metadata(val entryCount: Int, val backup: Backup)
+
+    private inline fun <T> withReader(uri: Uri, block: (BackupReader) -> T): T {
+        return context.contentResolver.openInputStream(uri)!!.use { inputStream ->
+            val source = inputStream.source().buffer()
+            val peeked = source.peek().apply { require(2) }
+            val id1id2 = peeked.readShort()
+            val backupSource: BufferedSource = when (id1id2.toInt()) {
+                0x1f8b -> source.gzip().buffer()
+                MAGIC_JSON_SIGNATURE1, MAGIC_JSON_SIGNATURE2, MAGIC_JSON_SIGNATURE3 -> {
+                    throw IOException(context.stringResource(MR.strings.invalid_backup_file_json))
+                }
+                else -> source
+            }
+            backupSource.use { block(BackupReader(it, parser)) }
+        }
+    }
+    // KMK <--
 
     companion object {
         private const val MAGIC_JSON_SIGNATURE1 = 0x7b7d // `{}`

@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.PreferenceRestorer
 import eu.kanade.tachiyomi.data.backup.restore.restorers.SavedSearchRestorer
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -76,14 +77,20 @@ class BackupRestorer(
     }
 
     private suspend fun restoreFromFile(uri: Uri, options: RestoreOptions) {
-        val backup = BackupDecoder(context).decode(uri)
+        // KMK -->
+        val backupDecoder = BackupDecoder(context)
+        val metadata = backupDecoder.decodeMetadata(uri)
+        val backup = metadata.backup
 
         // Store source mapping for error messages
         val backupMaps = backup.backupSources
         sourceMapping = backupMaps.associate { it.sourceId to it.name }
+        // KMK <--
 
         if (options.libraryEntries) {
-            restoreAmount += backup.backupManga.size
+            // KMK -->
+            restoreAmount += metadata.entryCount
+            // KMK <--
         }
         if (options.categories) {
             restoreAmount += 1
@@ -124,7 +131,9 @@ class BackupRestorer(
                 restoreSourcePreferences(backup.backupSourcePreferences)
             }
             if (options.libraryEntries) {
-                restoreManga(backup.backupManga, if (options.categories) backup.backupCategories else emptyList())
+                // KMK -->
+                restoreManga(uri, if (options.categories) backup.backupCategories else emptyList())
+                // KMK <--
             }
             if (options.extensionStores) {
                 restoreExtensionStores(backup.backupExtensionStores)
@@ -181,30 +190,53 @@ class BackupRestorer(
     }
     // SY <--
 
+    // KMK -->
     private fun CoroutineScope.restoreManga(
-        backupMangas: List<BackupManga>,
+        uri: Uri,
         backupCategories: List<BackupCategory>,
     ) = launch {
-        mangaRestorer.sortByNew(backupMangas)
-            .forEach {
+        val decoder = BackupDecoder(context)
+        val batch = mutableListOf<BackupManga>()
+        val mergedManga = mutableListOf<BackupManga>()
+
+        suspend fun restoreBatch(entries: List<BackupManga>) {
+            if (entries.isEmpty()) return
+            ensureActive()
+            val failures = try {
+                mangaRestorer.restore(entries, backupCategories).toMap()
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                entries.associateWith { e }
+            }
+            entries.forEach { manga ->
                 ensureActive()
-
-                try {
-                    mangaRestorer.restore(it, backupCategories)
-                } catch (e: Exception) {
-                    val sourceName = sourceMapping[it.source] ?: it.source.toString()
-                    errors.add(Date() to "${it.title} [$sourceName]: ${e.message}")
+                failures[manga]?.let { error ->
+                    val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
+                    errors.add(Date() to "${manga.title} [$sourceName]: ${error.message}")
                 }
-
                 restoreProgress += 1
-                with(notifier) {
-                    showRestoreProgress(it.title, restoreProgress, restoreAmount, isSync)
-                        // KMK -->
-                        .show(Notifications.ID_RESTORE_PROGRESS)
-                    // KMK <--
+            }
+            with(notifier) {
+                showRestoreProgress(entries.last().title, restoreProgress, restoreAmount, isSync)
+                    .show(Notifications.ID_RESTORE_PROGRESS)
+            }
+        }
+
+        decoder.decodeEntries(uri).collect { manga ->
+            if (manga.source == MERGED_SOURCE_ID) {
+                mergedManga += manga
+            } else {
+                batch += manga
+                if (batch.size == 100) {
+                    restoreBatch(batch.toList())
+                    batch.clear()
                 }
             }
+        }
+        restoreBatch(batch)
+        mergedManga.chunked(100).forEach { restoreBatch(it) }
     }
+    // KMK <--
 
     private fun CoroutineScope.restoreAppPreferences(
         preferences: List<BackupPreference>,

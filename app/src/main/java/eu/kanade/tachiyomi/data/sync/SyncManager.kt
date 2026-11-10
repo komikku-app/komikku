@@ -73,6 +73,10 @@ class SyncManager(
      * from the database using the BackupManager, then synchronizes the data with a sync service.
      */
     suspend fun syncData() {
+        // KMK -->
+        val syncStartedAt = System.currentTimeMillis() / 1000
+        // KMK <--
+
         // Reset isSyncing in case it was left over or failed syncing during restore.
         handler.await(inTransaction = true) {
             mangasQueries.resetIsSyncing()
@@ -124,6 +128,9 @@ class SyncManager(
         val syncData = SyncData(
             deviceId = syncPreferences.uniqueDeviceID(),
             backup = backup,
+            // KMK -->
+            syncStartedAt = syncStartedAt,
+            // KMK <--
         )
 
         // Handle sync based on the selected service
@@ -153,15 +160,18 @@ class SyncManager(
             }
         }
 
-        val remoteBackup = syncService?.doSync(syncData)
-
-        if (remoteBackup == null) {
+        // KMK -->
+        val syncResult = syncService?.doSync(syncData)
+        if (syncResult == null) {
             logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
-            // should we call showSyncError?
             return
         }
+        val remoteBackup = syncResult.backup ?: return
+        // KMK <--
 
-        if (remoteBackup === syncData.backup) {
+        // KMK -->
+        if (remoteBackup === syncData.backup || (syncResult.protocolV2 && !syncResult.changed)) {
+            // KMK <--
             // nothing changed
             logcat(LogPriority.DEBUG) { "Skip restore due to remote was overwrite from local" }
             syncPreferences.lastSyncTimestamp().set(Date().time)
@@ -169,33 +179,49 @@ class SyncManager(
             return
         }
 
-        // Stop the sync early if the remote backup is null or empty
-        if (remoteBackup.backupManga.isEmpty()) {
+        // KMK -->
+        // V2 may return only changed non-manga sections.
+        if (!syncResult.protocolV2 && remoteBackup.backupManga.isEmpty()) {
             notifier.showSyncError("No data found on remote server.")
             return
         }
+        // KMK <--
 
         // Check if it's first sync based on lastSyncTimestamp
-        if (syncPreferences.lastSyncTimestamp().get() == 0L && databaseManga.isNotEmpty()) {
+        // KMK -->
+        if (!syncResult.protocolV2 &&
+            syncPreferences.lastSyncTimestamp().get() == 0L && databaseManga.isNotEmpty()
+        ) {
+            // KMK <--
             // It's first sync no need to restore data. (just update remote data)
             syncPreferences.lastSyncTimestamp().set(Date().time)
             notifier.showSyncSuccess("Updated remote data successfully")
             return
         }
 
-        val (filteredFavorites, nonFavorites) = filterFavoritesAndNonFavorites(remoteBackup)
-        updateNonFavorites(nonFavorites)
+        // KMK -->
+        val (filteredFavorites, nonFavorites) = if (syncResult.protocolV2) {
+            filterChangedManga(remoteBackup) to emptyList()
+        } else {
+            filterFavoritesAndNonFavorites(remoteBackup)
+        }
+        if (!syncResult.protocolV2) updateNonFavorites(nonFavorites)
+        // KMK <--
 
         val newSyncData = backup.copy(
             backupManga = filteredFavorites,
-            backupCategories = remoteBackup.backupCategories,
-            backupSources = remoteBackup.backupSources,
+            // KMK -->
+            backupCategories = remoteBackup.backupCategories.ifEmpty { backup.backupCategories },
+            backupSources = remoteBackup.backupSources.ifEmpty { backup.backupSources },
+            // KMK <--
             backupPreferences = remoteBackup.backupPreferences,
             backupSourcePreferences = remoteBackup.backupSourcePreferences,
             backupExtensionStores = remoteBackup.backupExtensionStores,
 
             // SY -->
+            // KMK -->
             backupSavedSearches = remoteBackup.backupSavedSearches,
+            // KMK <--
             // SY <--
 
             // KMK -->
@@ -204,7 +230,18 @@ class SyncManager(
         )
 
         // It's local sync no need to restore data. (just update remote data)
-        if (filteredFavorites.isEmpty()) {
+        // KMK -->
+        val hasNonMangaChanges = syncResult.protocolV2 && (
+            remoteBackup.backupCategories.isNotEmpty() ||
+                remoteBackup.backupSources.isNotEmpty() ||
+                remoteBackup.backupPreferences.isNotEmpty() ||
+                remoteBackup.backupSourcePreferences.isNotEmpty() ||
+                remoteBackup.backupExtensionStores.isNotEmpty() ||
+                remoteBackup.backupSavedSearches.isNotEmpty() ||
+                remoteBackup.backupFeeds.isNotEmpty()
+            )
+        if (filteredFavorites.isEmpty() && !hasNonMangaChanges) {
+            // KMK <--
             // update the sync timestamp
             syncPreferences.lastSyncTimestamp().set(Date().time)
             notifier.showSyncSuccess("Sync completed successfully")
@@ -358,6 +395,16 @@ class SyncManager(
 
         return Pair(favorites, nonFavorites)
     }
+
+    // KMK -->
+    private suspend fun filterChangedManga(backup: Backup): List<BackupManga> {
+        val localManga = getAllMangaFromDB().associateBy { Triple(it.source, it.url, it.title) }
+        return backup.backupManga.filter { remote ->
+            val local = localManga[Triple(remote.source, remote.url, remote.title)]
+            if (local == null) remote.favorite else isMangaDifferent(local, remote)
+        }
+    }
+    // KMK <--
 
     /**
      * Updates the non-favorite manga in the local database with their favorite status from the backup.

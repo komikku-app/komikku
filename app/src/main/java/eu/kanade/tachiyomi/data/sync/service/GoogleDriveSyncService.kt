@@ -65,7 +65,8 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
 
     private val protoBuf: ProtoBuf = Injekt.get()
 
-    override suspend fun doSync(syncData: SyncData): Backup? {
+    // KMK -->
+    override suspend fun doSync(syncData: SyncData): SyncResult {
         beforeSync()
 
         try {
@@ -84,22 +85,23 @@ class GoogleDriveSyncService(context: Context, json: Json, syncPreferences: Sync
                 // check if the last sync was done by the same device if so overwrite the remote data with the local data
                 return if (lastSyncDeviceId == localDeviceId) {
                     pushSyncData(syncData)
-                    syncData.backup
+                    SyncResult(syncData.backup, changed = false, protocolV2 = false)
                 } else {
                     // Merge the local and remote sync data
                     val mergedSyncData = mergeSyncData(syncData, remoteSData)
                     pushSyncData(mergedSyncData)
-                    mergedSyncData.backup
+                    SyncResult(mergedSyncData.backup, changed = true, protocolV2 = false)
                 }
             }
 
             pushSyncData(syncData)
-            return syncData.backup
+            return SyncResult(syncData.backup, changed = false, protocolV2 = false)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, "SyncService") { "Error syncing: ${e.message}" }
-            return null
+            return SyncResult(null, changed = false, protocolV2 = false)
         }
     }
+    // KMK <--
 
     private suspend fun beforeSync() {
         googleDriveService.refreshToken()

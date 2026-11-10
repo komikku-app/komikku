@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi.data.sync.service
 
 import android.content.Context
+import android.os.Build
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
@@ -19,14 +21,20 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import logcat.logcat
 import okhttp3.Headers
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.BufferedSink
+import okio.GzipSink
+import okio.buffer
 import org.apache.http.HttpStatus
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.concurrent.TimeUnit
 
 class SyncYomiSyncService(
     context: Context,
@@ -45,6 +53,25 @@ class SyncYomiSyncService(
 
     private class SyncYomiException(message: String?) : Exception(message)
 
+    // KMK -->
+    private class GzippedBackupRequestBody(
+        private val backup: Backup,
+        private val protoBuf: ProtoBuf,
+    ) : RequestBody() {
+        override fun contentType(): MediaType = "application/octet-stream".toMediaType()
+
+        override fun contentLength(): Long = -1L
+
+        override fun writeTo(sink: BufferedSink) {
+            GzipSink(sink).buffer().use { compressed ->
+                val writer = eu.kanade.tachiyomi.data.backup.BackupWriter(compressed, protoBuf)
+                backup.backupManga.forEach(writer::writeEntry)
+                writer.writeMetadata(backup.copy(backupManga = emptyList()))
+            }
+        }
+    }
+    // KMK <--
+
     @Serializable
     private data class SyncEvent(
         val event: SyncEventStatus,
@@ -62,38 +89,16 @@ class SyncYomiSyncService(
         SYNC_CANCELLED,
     }
 
-    override suspend fun doSync(syncData: SyncData): Backup? {
+    // KMK -->
+    override suspend fun doSync(syncData: SyncData): SyncResult {
         reportSyncEvent(SyncEventStatus.SYNC_STARTED)
 
-        try {
-            val (remoteData, etag) = pullSyncData()
-
-            val finalSyncData = if (remoteData != null) {
-                assert(etag.isNotEmpty()) { "ETag should never be empty if remote data is not null" }
-                logcat(LogPriority.DEBUG, "SyncService") {
-                    "Try update remote data with ETag($etag)"
-                }
-                mergeSyncData(syncData, remoteData)
+        return try {
+            if (supportsV2()) {
+                doSyncV2(syncData)
             } else {
-                // init or overwrite remote data
-                logcat(LogPriority.DEBUG) {
-                    "Try overwrite remote data with ETag($etag)"
-                }
-                syncData
+                doSyncV1(syncData)
             }
-
-            val success = pushSyncData(finalSyncData, etag)
-
-            if (success) {
-                reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
-            } else {
-                reportSyncEvent(SyncEventStatus.SYNC_FAILED, "Failed to push sync data")
-                // KMK -->
-                return null
-                // KMK <--
-            }
-
-            return finalSyncData.backup
         } catch (e: Exception) {
             if (e is CancellationException) {
                 reportSyncEvent(SyncEventStatus.SYNC_CANCELLED, e.message)
@@ -102,9 +107,111 @@ class SyncYomiSyncService(
             logcat(LogPriority.ERROR) { "Error syncing: ${e.message}" }
             notifier.showSyncError(e.message)
             reportSyncEvent(SyncEventStatus.SYNC_ERROR, e.message)
-            return null
+            SyncResult(null, changed = false, protocolV2 = false)
         }
     }
+    // KMK <--
+
+    // KMK -->
+    private suspend fun doSyncV1(syncData: SyncData): SyncResult {
+        val (remoteData, etag) = pullSyncData()
+        val finalSyncData = if (remoteData != null) {
+            mergeSyncData(syncData, remoteData)
+        } else {
+            syncData
+        }
+        val success = pushSyncData(finalSyncData, etag)
+        if (success) {
+            reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
+        } else {
+            reportSyncEvent(SyncEventStatus.SYNC_FAILED, "Failed to push sync data")
+            return SyncResult(null, changed = false, protocolV2 = false)
+        }
+        return SyncResult(finalSyncData.backup, changed = remoteData != null, protocolV2 = false)
+    }
+
+    private suspend fun doSyncV2(syncData: SyncData): SyncResult {
+        val backup = syncData.backup ?: return SyncResult(null, changed = false, protocolV2 = true)
+        val host = syncPreferences.clientHost().get()
+        val apiKey = syncPreferences.clientAPIKey().get()
+        val full = needsFullSync()
+        val upload = if (full) {
+            backup
+        } else {
+            backup.copy(backupManga = changedSince(backup.backupManga, syncPreferences.lastPushedAt().get()))
+        }
+        val headers = Headers.Builder()
+            .add("X-API-Token", apiKey)
+            .add("X-Device-ID", syncPreferences.uniqueDeviceID())
+            .add("X-Device-Name", Build.MODEL)
+            .add("X-Sync-Cursor", syncPreferences.syncCursor().get().toString())
+            .add("X-Sync-Full", full.toString())
+            .add("Content-Encoding", "gzip")
+            .build()
+        val body = GzippedBackupRequestBody(upload, protoBuf)
+        val request = POST("$host/api/sync/v2/merge", headers = headers, body = body)
+        val response = client.newCall(request).await()
+        response.use {
+            if (!it.isSuccessful) {
+                val error = it.body.string()
+                throw SyncYomiException("Failed to sync: ${it.code} $error")
+            }
+            val remote = protoBuf.decodeFromByteArray(Backup.serializer(), it.body.bytes())
+            val cursor = it.headers["X-Sync-Cursor"]?.toLongOrNull()
+                ?: throw SyncYomiException("Missing X-Sync-Cursor")
+            val changed = it.headers["X-Sync-Changed"]?.toBoolean() ?: true
+            val fullRequested = it.headers["X-Sync-Full-Requested"]?.toBoolean() ?: false
+            syncPreferences.syncCursor().set(cursor)
+            syncPreferences.fullSyncRequested().set(fullRequested)
+            syncPreferences.lastPushedAt().set(syncData.syncStartedAt)
+            if (full) syncPreferences.lastFullSync().set(System.currentTimeMillis())
+            logcat(LogPriority.DEBUG) {
+                "SyncYomi v2 merge completed: cursor=$cursor changed=$changed full=$full"
+            }
+            reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
+            return SyncResult(remote, changed = changed, protocolV2 = true)
+        }
+    }
+
+    private suspend fun supportsV2(): Boolean {
+        val host = syncPreferences.clientHost().get()
+        if (syncPreferences.v2ProbedHost().get() == host) {
+            return syncPreferences.serverSupportsV2().get()
+        }
+        val request = GET(
+            "$host/api/sync/v2/capabilities",
+            headers = Headers.Builder()
+                .add("X-API-Token", syncPreferences.clientAPIKey().get())
+                .add("X-Device-ID", syncPreferences.uniqueDeviceID())
+                .add("X-Device-Name", Build.MODEL)
+                .build(),
+        )
+        val response = client.newCall(request).await()
+        val supported = response.use {
+            when (it.code) {
+                HttpStatus.SC_OK -> true
+                HttpStatus.SC_NOT_FOUND -> false
+                else -> throw SyncYomiException("Failed to probe SyncYomi capabilities: ${it.code}")
+            }
+        }
+        syncPreferences.v2ProbedHost().set(host)
+        syncPreferences.serverSupportsV2().set(supported)
+        return supported
+    }
+
+    private fun needsFullSync(): Boolean {
+        val now = System.currentTimeMillis()
+        val lastFull = syncPreferences.lastFullSync().get()
+        return syncPreferences.syncCursor().get() == 0L ||
+            syncPreferences.fullSyncRequested().get() ||
+            lastFull == 0L ||
+            now - lastFull >= TimeUnit.DAYS.toMillis(1)
+    }
+
+    private fun changedSince(manga: List<BackupManga>, since: Long): List<BackupManga> =
+        manga.filter { it.lastModifiedAt >= since || it.chapters.any { chapter -> chapter.lastModifiedAt >= since } }
+            .onEach { it.chapters = it.chapters.filter { chapter -> chapter.lastModifiedAt >= since } }
+    // KMK <--
 
     private suspend fun pullSyncData(): Pair<SyncData?, String> {
         val host = syncPreferences.clientHost().get()

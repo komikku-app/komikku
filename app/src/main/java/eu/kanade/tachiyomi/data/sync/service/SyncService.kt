@@ -19,14 +19,27 @@ import logcat.logcat
 data class SyncData(
     val deviceId: String = "",
     val backup: Backup? = null,
+    // KMK -->
+    val syncStartedAt: Long = 0L,
+    // KMK <--
 )
+
+// KMK -->
+data class SyncResult(
+    val backup: Backup?,
+    val changed: Boolean,
+    val protocolV2: Boolean,
+)
+// KMK <--
 
 abstract class SyncService(
     val context: Context,
     val json: Json,
     val syncPreferences: SyncPreferences,
 ) {
-    abstract suspend fun doSync(syncData: SyncData): Backup?
+    // KMK -->
+    abstract suspend fun doSync(syncData: SyncData): SyncResult
+    // KMK <--
 
     /**
      * Merges the local and remote sync data into a single JSON string.

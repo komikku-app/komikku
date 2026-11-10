@@ -99,7 +99,8 @@ class WebDavSyncService(
         return success
     }
 
-    override suspend fun doSync(syncData: SyncData): Backup? {
+    // KMK -->
+    override suspend fun doSync(syncData: SyncData): SyncResult {
         ensureFolderExists()
         try {
             val (remoteData, etag) = pullSyncData()
@@ -114,13 +115,14 @@ class WebDavSyncService(
             }
 
             pushSyncData(finalSyncData, etag)
-            return finalSyncData.backup
+            return SyncResult(finalSyncData.backup, changed = remoteData != null, protocolV2 = false)
         } catch (e: Exception) {
             xLogE("WebDAV sync error:", e)
             notifier.showSyncError(e.message)
-            return null
+            return SyncResult(null, changed = false, protocolV2 = false)
         }
     }
+    // KMK <--
 
     private suspend fun pullSyncData(): Pair<SyncData?, String> {
         if (!validateSettings()) return Pair(null, "")
