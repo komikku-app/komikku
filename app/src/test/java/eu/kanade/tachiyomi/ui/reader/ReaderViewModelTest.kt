@@ -241,6 +241,67 @@ class ReaderViewModelTest {
         }
     }
 
+    @ParameterizedTest(name = "successful write preserves reader metadata with orientation = {0}")
+    @ValueSource(booleans = [true, false])
+    fun `successful flag write preserves newer reader metadata`(orientationChange: Boolean) = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val allowWrite = CompletableDeferred<Unit>()
+        val writeStarted = CompletableDeferred<Unit>()
+        var storedManga = Manga.create().copy(id = 1L, ogTitle = "Original title", notes = "Original notes")
+        val repository = mockk<MangaRepository>()
+        coEvery { repository.getMangaById(1L) } answers { storedManga }
+        coEvery { repository.update(any()) } coAnswers {
+            val update = firstArg<MangaUpdate>()
+            writeStarted.complete(Unit)
+            allowWrite.await()
+            storedManga = storedManga.copy(viewerFlags = update.viewerFlags!!)
+            true
+        }
+        val viewModel = createViewModel(repository)
+        val chapters = createChapters()
+        seedState(viewModel, storedManga, chapters)
+        val events = mutableListOf<ReaderViewModel.Event>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.eventFlow.toList(events) }
+        try {
+            if (orientationChange) {
+                viewModel.setMangaOrientationType(ReaderOrientation.LANDSCAPE)
+            } else {
+                viewModel.setMangaReadingMode(ReadingMode.WEBTOON)
+            }
+            runCurrent()
+            assertTrue(writeStarted.isCompleted)
+
+            // Model a newer reader snapshot while the flag write is suspended.
+            storedManga = storedManga.copy(ogTitle = "Updated title", notes = "Updated notes")
+            seedState(viewModel, storedManga, chapters)
+            viewModel.showMenus(true)
+            val stateBeforeCompletion = viewModel.state.value
+            val expectedFlags = if (orientationChange) {
+                ReaderOrientation.LANDSCAPE.flagValue.toLong()
+            } else {
+                ReadingMode.WEBTOON.flagValue.toLong()
+            }
+            val expectedManga = storedManga.copy(viewerFlags = expectedFlags)
+            allowWrite.complete(Unit)
+            runCurrent()
+
+            assertEquals(expectedManga, storedManga)
+            assertEquals(stateBeforeCompletion.copy(manga = expectedManga), viewModel.state.value)
+            assertSame(chapters, viewModel.state.value.viewerChapters)
+            val expectedEvents = buildList {
+                if (orientationChange) add(ReaderViewModel.Event.SetOrientation(ReaderOrientation.LANDSCAPE.flagValue))
+                add(ReaderViewModel.Event.ReloadViewerChapters)
+            }
+            assertEquals(expectedEvents, events)
+            coVerify(exactly = 1) { repository.update(any()) }
+        } finally {
+            allowWrite.complete(Unit)
+            viewModel.viewModelScope.cancel()
+            runCurrent()
+            Dispatchers.resetMain()
+        }
+    }
+
     @ParameterizedTest(name = "failed write leaves unchanged flags with orientation = {0}")
     @ValueSource(booleans = [true, false])
     fun `failed flag write does not publish a successful change`(orientationChange: Boolean) = runTest {

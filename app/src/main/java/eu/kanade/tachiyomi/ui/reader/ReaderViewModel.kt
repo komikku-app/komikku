@@ -1042,7 +1042,7 @@ class ReaderViewModel @JvmOverloads constructor(
                 // Repository calls may catch cancellation before returning a value.
                 ensureActive()
                 if (state.value.viewerChapters == null) return@launch
-                mutableState.update { it.copy(manga = updatedManga) }
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = updatedManga.viewerFlags)) }
             }
             eventChannel.send(Event.ReloadViewerChapters)
         }
@@ -1073,7 +1073,7 @@ class ReaderViewModel @JvmOverloads constructor(
                     ?: return@launch
                 ensureActive()
                 if (state.value.viewerChapters == null) return@launch
-                mutableState.update { it.copy(manga = updatedManga) }
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = updatedManga.viewerFlags)) }
             }
             eventChannel.send(Event.SetOrientation(getMangaOrientation()))
             eventChannel.send(Event.ReloadViewerChapters)
