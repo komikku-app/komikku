@@ -991,16 +991,23 @@ class ReaderActivity : BaseActivity() {
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
-        loadingIndicator = ReaderProgressIndicator(
-            context = this,
-            // KMK -->
-            seedColor = seedColorStatic()?.toArgb(),
-            // KMK <--
-        )
-        binding.readerContainer.addView(loadingIndicator)
+        // KMK -->
+        showLoadingIndicator()
+        viewModel.state.value.viewerChapters?.let(::setChapters)
+        // KMK <--
 
         startPostponedEnterTransition()
     }
+
+    // KMK -->
+    private fun showLoadingIndicator() {
+        loadingIndicator = ReaderProgressIndicator(
+            context = this,
+            seedColor = seedColorStatic()?.toArgb(),
+        )
+        binding.readerContainer.addView(loadingIndicator)
+    }
+    // KMK <--
 
     private fun openMangaScreen() {
         viewModel.manga?.id?.let { id ->

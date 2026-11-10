@@ -310,7 +310,7 @@ class ReaderViewModelTest {
         }
     }
 
-    private fun createChapters() = ViewerChapters(
+    internal fun createChapters() = ViewerChapters(
         ReaderChapter(
             ChapterImpl().apply {
                 id = 10L
@@ -323,7 +323,7 @@ class ReaderViewModelTest {
         null,
     )
 
-    private fun seedState(viewModel: ReaderViewModel, manga: Manga, chapters: ViewerChapters) {
+    internal fun seedState(viewModel: ReaderViewModel, manga: Manga, chapters: ViewerChapters) {
         // Seed an already opened chapter without invoking the Android/network chapter loader.
         val stateField = ReaderViewModel::class.java.getDeclaredField("mutableState").apply { isAccessible = true }
 
@@ -332,7 +332,7 @@ class ReaderViewModelTest {
         state.value = ReaderViewModel.State(manga = manga, viewerChapters = chapters)
     }
 
-    private fun createViewModel(repository: MangaRepository, getManga: GetManga = GetManga(repository)) = ReaderViewModel(
+    internal fun createViewModel(repository: MangaRepository, getManga: GetManga = GetManga(repository)) = ReaderViewModel(
         savedState = SavedStateHandle(),
         sourceManager = mockk(),
         downloadManager = mockk(),
