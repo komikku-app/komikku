@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
@@ -302,15 +303,21 @@ class ReaderViewModelTest {
         }
     }
 
-    @ParameterizedTest(name = "failed write leaves unchanged flags with orientation = {0}")
-    @ValueSource(booleans = [true, false])
-    fun `failed flag write does not publish a successful change`(orientationChange: Boolean) = runTest {
+    @ParameterizedTest(name = "failed write leaves unchanged flags with orientation = {0}, lookup available = {1}")
+    @CsvSource("false, true", "false, false", "true, true", "true, false")
+    fun `failed flag write does not publish a successful change`(
+        orientationChange: Boolean,
+        lookupAvailable: Boolean,
+    ) = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val storedManga = Manga.create().copy(id = 1L)
         val repository = mockk<MangaRepository>()
         coEvery { repository.getMangaById(1L) } returns storedManga
         coEvery { repository.update(any()) } returns false
-        val viewModel = createViewModel(repository)
+        val getManga = mockk<GetManga> {
+            coEvery { await(1L) } returns storedManga.takeIf { lookupAvailable }
+        }
+        val viewModel = createViewModel(repository, getManga)
         seedState(viewModel, storedManga, createChapters())
         val events = mutableListOf<ReaderViewModel.Event>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.eventFlow.toList(events) }
@@ -325,7 +332,168 @@ class ReaderViewModelTest {
             assertEquals(storedManga, viewModel.state.value.manga)
             assertTrue(events.isEmpty())
             coVerify(exactly = 1) { repository.update(any()) }
+            coVerify(exactly = 1) { getManga.await(1L) }
         } finally {
+            viewModel.viewModelScope.cancel()
+            runCurrent()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `failed latest mode write recovers an earlier cancelled write that committed`() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val allowFirstWrite = CompletableDeferred<Unit>()
+        var writes = 0
+        var storedManga = Manga.create().copy(id = 1L)
+        val repository = mockk<MangaRepository>()
+        coEvery { repository.getMangaById(1L) } answers { storedManga }
+        coEvery { repository.update(any()) } coAnswers {
+            val update = firstArg<MangaUpdate>()
+            writes++
+            if (writes == 1) {
+                // Cancellation cannot undo a native write that has already started.
+                withContext(NonCancellable) { allowFirstWrite.await() }
+                storedManga = storedManga.copy(viewerFlags = update.viewerFlags!!)
+                true
+            } else {
+                false
+            }
+        }
+        val viewModel = createViewModel(repository)
+        val chapters = createChapters()
+        seedState(viewModel, storedManga, chapters)
+        val events = mutableListOf<ReaderViewModel.Event>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.eventFlow.toList(events) }
+        try {
+            viewModel.setMangaReadingMode(ReadingMode.WEBTOON)
+            runCurrent()
+            assertEquals(1, writes)
+            viewModel.setMangaReadingMode(ReadingMode.RIGHT_TO_LEFT)
+            runCurrent()
+            assertEquals(1, writes)
+            chapters.currChapter.requestedPage = 11
+            allowFirstWrite.complete(Unit)
+            runCurrent()
+
+            assertEquals(2, writes)
+            assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), storedManga.readingMode)
+            assertEquals(storedManga.viewerFlags, viewModel.state.value.manga?.viewerFlags)
+            assertEquals(listOf(ReaderViewModel.Event.ReloadViewerChapters), events)
+            assertSame(chapters, viewModel.state.value.viewerChapters)
+            assertEquals(11, chapters.currChapter.requestedPage)
+        } finally {
+            allowFirstWrite.complete(Unit)
+            viewModel.viewModelScope.cancel()
+            runCurrent()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @ParameterizedTest(name = "failed write restores flags and preserves reader metadata with orientation = {0}")
+    @ValueSource(booleans = [true, false])
+    fun `failed flag write restores persisted flags without replacing newer reader metadata`(
+        orientationChange: Boolean,
+    ) = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val allowLookup = CompletableDeferred<Unit>()
+        val lookupStarted = CompletableDeferred<Unit>()
+        val initialManga = Manga.create().copy(id = 1L, ogTitle = "Original title", notes = "Original notes")
+        // The UI has not observed a previously saved mode and orientation.
+        val storedManga = initialManga.copy(
+            viewerFlags = ReadingMode.WEBTOON.flagValue.toLong() or ReaderOrientation.PORTRAIT.flagValue.toLong(),
+        )
+        val repository = mockk<MangaRepository>()
+        coEvery { repository.getMangaById(1L) } returns storedManga
+        coEvery { repository.update(any()) } returns false
+        val getManga = mockk<GetManga> {
+            coEvery { await(1L) } coAnswers {
+                lookupStarted.complete(Unit)
+                allowLookup.await()
+                storedManga
+            }
+        }
+        val viewModel = createViewModel(repository, getManga)
+        val chapters = createChapters()
+        seedState(viewModel, initialManga, chapters)
+        val events = mutableListOf<ReaderViewModel.Event>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.eventFlow.toList(events) }
+        try {
+            if (orientationChange) {
+                viewModel.setMangaOrientationType(ReaderOrientation.LANDSCAPE)
+            } else {
+                viewModel.setMangaReadingMode(ReadingMode.RIGHT_TO_LEFT)
+            }
+            runCurrent()
+            assertTrue(lookupStarted.isCompleted)
+
+            // Model a newer reader snapshot while recovery still holds the older database snapshot.
+            val currentManga = initialManga.copy(ogTitle = "Updated title", notes = "Updated notes")
+            seedState(viewModel, currentManga, chapters)
+            viewModel.showMenus(true)
+            chapters.currChapter.requestedPage = 11
+            val stateBeforeCompletion = viewModel.state.value
+            allowLookup.complete(Unit)
+            runCurrent()
+
+            val expectedManga = currentManga.copy(viewerFlags = storedManga.viewerFlags)
+            assertEquals(stateBeforeCompletion.copy(manga = expectedManga), viewModel.state.value)
+            assertSame(chapters, viewModel.state.value.viewerChapters)
+            assertEquals(11, chapters.currChapter.requestedPage)
+            val expectedEvents = buildList {
+                if (orientationChange) add(ReaderViewModel.Event.SetOrientation(ReaderOrientation.PORTRAIT.flagValue))
+                add(ReaderViewModel.Event.ReloadViewerChapters)
+            }
+            assertEquals(expectedEvents, events)
+            coVerify(exactly = 1) { repository.update(any()) }
+            coVerify(exactly = 1) { getManga.await(1L) }
+        } finally {
+            allowLookup.complete(Unit)
+            viewModel.viewModelScope.cancel()
+            runCurrent()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @ParameterizedTest(name = "cancelled recovery leaves the UI unchanged with orientation = {0}")
+    @ValueSource(booleans = [true, false])
+    fun `cancelled recovery lookup cannot apply its returned flags`(orientationChange: Boolean) = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val allowLookup = CompletableDeferred<Unit>()
+        val lookupStarted = CompletableDeferred<Unit>()
+        val initialManga = Manga.create().copy(id = 1L)
+        val storedManga = initialManga.copy(viewerFlags = ReadingMode.WEBTOON.flagValue.toLong())
+        val repository = mockk<MangaRepository>()
+        coEvery { repository.getMangaById(1L) } returns storedManga
+        coEvery { repository.update(any()) } returns false
+        val getManga = mockk<GetManga> {
+            coEvery { await(1L) } coAnswers {
+                lookupStarted.complete(Unit)
+                // Model a lookup that returns despite cancellation of its caller.
+                withContext(NonCancellable) { allowLookup.await() }
+                storedManga
+            }
+        }
+        val viewModel = createViewModel(repository, getManga)
+        seedState(viewModel, initialManga, createChapters())
+        val events = mutableListOf<ReaderViewModel.Event>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.eventFlow.toList(events) }
+        try {
+            if (orientationChange) {
+                viewModel.setMangaOrientationType(ReaderOrientation.LANDSCAPE)
+            } else {
+                viewModel.setMangaReadingMode(ReadingMode.RIGHT_TO_LEFT)
+            }
+            runCurrent()
+            assertTrue(lookupStarted.isCompleted)
+            viewModel.viewModelScope.cancel()
+            allowLookup.complete(Unit)
+            runCurrent()
+
+            assertEquals(initialManga, viewModel.state.value.manga)
+            assertTrue(events.isEmpty())
+        } finally {
+            allowLookup.complete(Unit)
             viewModel.viewModelScope.cancel()
             runCurrent()
             Dispatchers.resetMain()

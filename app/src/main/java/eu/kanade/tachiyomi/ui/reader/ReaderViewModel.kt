@@ -61,6 +61,7 @@ import exh.util.mangaType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -1038,14 +1039,21 @@ class ReaderViewModel @JvmOverloads constructor(
         readingModeJob = viewModelScope.launch {
             viewerFlagsMutex.withLock {
                 val updatedManga = setMangaViewerFlags.awaitSetReadingMode(manga.id, readingMode.flagValue.toLong())
-                    ?: return@launch
                 // Repository calls may catch cancellation before returning a value.
                 ensureActive()
+                val mangaToApply = updatedManga ?: getMangaWithChangedViewerFlags(manga.id) ?: return@launch
                 if (state.value.viewerChapters == null) return@launch
-                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = updatedManga.viewerFlags)) }
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
             eventChannel.send(Event.ReloadViewerChapters)
         }
+    }
+
+    private suspend fun getMangaWithChangedViewerFlags(mangaId: Long): Manga? {
+        // A cancelled write may have committed before the latest write failed.
+        val persistedManga = getManga.await(mangaId)
+        currentCoroutineContext().ensureActive()
+        return persistedManga?.takeIf { it.viewerFlags != manga?.viewerFlags }
     }
     // KMK <--
 
@@ -1070,10 +1078,10 @@ class ReaderViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             viewerFlagsMutex.withLock {
                 val updatedManga = setMangaViewerFlags.awaitSetOrientation(manga.id, orientation.flagValue.toLong())
-                    ?: return@launch
                 ensureActive()
+                val mangaToApply = updatedManga ?: getMangaWithChangedViewerFlags(manga.id) ?: return@launch
                 if (state.value.viewerChapters == null) return@launch
-                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = updatedManga.viewerFlags)) }
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
             eventChannel.send(Event.SetOrientation(getMangaOrientation()))
             eventChannel.send(Event.ReloadViewerChapters)
