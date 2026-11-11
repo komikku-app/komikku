@@ -128,7 +128,7 @@ private fun BufferedSource.readVarint(): Long {
     for (shift in 0 until Long.SIZE_BITS step 7) {
         val byte = readByte().toInt()
         result = result or ((byte and 0x7F).toLong() shl shift)
-        if ((byte and 0x80) == 0) return result
+        if (byte and 0x80 == 0) return result
     }
     throw IOException("Malformed varint")
 }
@@ -141,7 +141,7 @@ private fun BufferedSource.readLength(): Long {
 
 private fun BufferedSink.writeVarint(value: Long) {
     var remaining = value
-    while ((remaining and 0x7FL.inv()) != 0L) {
+    while (remaining and 0x7FL.inv() != 0L) {
         writeByte((remaining and 0x7F).toInt() or 0x80)
         remaining = remaining ushr 7
     }

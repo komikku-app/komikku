@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncData
+import eu.kanade.tachiyomi.data.sync.service.SyncResult
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
 import eu.kanade.tachiyomi.data.sync.service.WebDavSyncService
 import kotlinx.serialization.json.Json
@@ -77,6 +78,18 @@ class SyncManager(
         val syncStartedAt = System.currentTimeMillis() / 1000
         // KMK <--
 
+        val (syncData, databaseManga) = createSyncData(syncStartedAt)
+        val syncService = createSyncService()
+        val syncResult = syncService?.doSync(syncData)
+        if (syncResult == null) {
+            logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
+            return
+        }
+        handleSyncResult(syncData, databaseManga, syncResult)
+    }
+
+    // KMK -->
+    private suspend fun createSyncData(syncStartedAt: Long): Pair<SyncData, List<Manga>> {
         // Reset isSyncing in case it was left over or failed syncing during restore.
         handler.await(inTransaction = true) {
             mangasQueries.resetIsSyncing()
@@ -128,46 +141,45 @@ class SyncManager(
         val syncData = SyncData(
             deviceId = syncPreferences.uniqueDeviceID(),
             backup = backup,
-            // KMK -->
             syncStartedAt = syncStartedAt,
-            // KMK <--
         )
 
-        // Handle sync based on the selected service
-        val syncService = when (val syncService = SyncService.fromInt(syncPreferences.syncService().get())) {
-            SyncService.SYNCYOMI -> {
-                SyncYomiSyncService(
-                    context,
-                    json,
-                    syncPreferences,
-                    notifier,
-                )
-            }
+        return syncData to databaseManga
+    }
 
-            SyncService.GOOGLE_DRIVE -> {
-                GoogleDriveSyncService(context, json, syncPreferences)
-            }
+    private fun createSyncService() = when (val syncService = SyncService.fromInt(syncPreferences.syncService().get())) {
+        SyncService.SYNCYOMI -> {
+            SyncYomiSyncService(
+                context,
+                json,
+                syncPreferences,
+                notifier,
+            )
+        }
 
-            // KMK -->
-            SyncService.WEB_DAV -> {
-                WebDavSyncService(context, json, syncPreferences, notifier)
-            }
-            // KMK <--
-
-            else -> {
-                logcat(LogPriority.ERROR) { "Invalid sync service type: $syncService" }
-                null
-            }
+        SyncService.GOOGLE_DRIVE -> {
+            GoogleDriveSyncService(context, json, syncPreferences)
         }
 
         // KMK -->
-        val syncResult = syncService?.doSync(syncData)
-        if (syncResult == null) {
-            logcat(LogPriority.DEBUG) { "Skip restore due to network issues" }
-            return
+        SyncService.WEB_DAV -> {
+            WebDavSyncService(context, json, syncPreferences, notifier)
         }
-        val remoteBackup = syncResult.backup ?: return
         // KMK <--
+
+        else -> {
+            logcat(LogPriority.ERROR) { "Invalid sync service type: $syncService" }
+            null
+        }
+    }
+
+    private suspend fun handleSyncResult(
+        syncData: SyncData,
+        databaseManga: List<Manga>,
+        syncResult: SyncResult,
+    ) {
+        val backup = syncData.backup ?: return
+        val remoteBackup = syncResult.backup ?: return
 
         // KMK -->
         if (remoteBackup === syncData.backup || (syncResult.protocolV2 && !syncResult.changed)) {
@@ -199,6 +211,14 @@ class SyncManager(
             return
         }
 
+        restoreRemoteChanges(backup, remoteBackup, syncResult)
+    }
+
+    private suspend fun restoreRemoteChanges(
+        backup: Backup,
+        remoteBackup: Backup,
+        syncResult: SyncResult,
+    ) {
         // KMK -->
         val (filteredFavorites, nonFavorites) = if (syncResult.protocolV2) {
             filterChangedManga(remoteBackup) to emptyList()
@@ -231,15 +251,7 @@ class SyncManager(
 
         // It's local sync no need to restore data. (just update remote data)
         // KMK -->
-        val hasNonMangaChanges = syncResult.protocolV2 && (
-            remoteBackup.backupCategories.isNotEmpty() ||
-                remoteBackup.backupSources.isNotEmpty() ||
-                remoteBackup.backupPreferences.isNotEmpty() ||
-                remoteBackup.backupSourcePreferences.isNotEmpty() ||
-                remoteBackup.backupExtensionStores.isNotEmpty() ||
-                remoteBackup.backupSavedSearches.isNotEmpty() ||
-                remoteBackup.backupFeeds.isNotEmpty()
-            )
+        val hasNonMangaChanges = syncResult.protocolV2 && remoteBackup.hasNonMangaChanges()
         if (filteredFavorites.isEmpty() && !hasNonMangaChanges) {
             // KMK <--
             // update the sync timestamp
@@ -269,6 +281,18 @@ class SyncManager(
             logcat(LogPriority.ERROR) { "Failed to write sync data to file" }
         }
     }
+    // KMK <--
+
+    // KMK -->
+    private fun Backup.hasNonMangaChanges(): Boolean =
+        backupCategories.isNotEmpty() ||
+            backupSources.isNotEmpty() ||
+            backupPreferences.isNotEmpty() ||
+            backupSourcePreferences.isNotEmpty() ||
+            backupExtensionStores.isNotEmpty() ||
+            backupSavedSearches.isNotEmpty() ||
+            backupFeeds.isNotEmpty()
+    // KMK <--
 
     private fun writeSyncDataToCache(context: Context, backup: Backup): Uri? {
         val cacheFile = File(context.cacheDir, "tachiyomi_sync_data.proto.gz")
