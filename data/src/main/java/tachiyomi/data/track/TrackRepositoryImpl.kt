@@ -46,11 +46,14 @@ class TrackRepositoryImpl(
     }
 
     override suspend fun delete(mangaId: Long, trackerId: Long) {
-        handler.await {
+        handler.await(inTransaction = true) {
             manga_syncQueries.delete(
                 mangaId = mangaId,
                 syncId = trackerId,
             )
+            // KMK --> Keep tracking edits visible to incremental backup sync.
+            mangasQueries.touchLastModifiedAt(mangaId)
+            // KMK <--
         }
     }
 
@@ -80,6 +83,9 @@ class TrackRepositoryImpl(
                     finishDate = mangaTrack.finishDate,
                     private = mangaTrack.private,
                 )
+                // KMK -->
+                mangasQueries.touchLastModifiedAt(mangaTrack.mangaId)
+                // KMK <--
             }
         }
     }

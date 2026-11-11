@@ -80,10 +80,12 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
         track.title = remote.title
         return track
     }
-    override suspend fun login(username: String, password: String) = login(password)
-    suspend fun login(code: String) {
+    override suspend fun login(username: String, password: String) {
+        throw IllegalStateException("MangaBaka sign-in must use OAuth")
+    }
+    suspend fun loginWithOAuth(code: String, state: String) {
         try {
-            val token = api.exchange(code)
+            val token = api.exchange(code, state)
             interceptor.setAuth(token)
             val profile = api.profile()
             scorePreference.set(
@@ -98,7 +100,6 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
             )
             saveCredentials(profile.nickname ?: profile.preferredUsername ?: profile.id, token.accessToken)
         } catch (e: Exception) {
-            logout()
             throw e
         }
     }

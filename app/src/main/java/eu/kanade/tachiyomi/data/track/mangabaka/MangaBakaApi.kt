@@ -34,6 +34,7 @@ import java.security.SecureRandom
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Base64
+import java.util.concurrent.ConcurrentHashMap
 
 // KMK -->
 class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interceptor: MangaBakaInterceptor) {
@@ -106,12 +107,13 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         authClient.newCall(DELETE("$LIBRARY/$id")).awaitSuccess().close()
     }
     suspend fun profile(): MangaBakaUserProfile = withIOContext { with(json) { authClient.newCall(GET("$API/v1/my/profile")).awaitSuccess().parseAs<MangaBakaUserProfileResponse>().data } }
-    suspend fun exchange(code: String): MangaBakaOAuth = withIOContext {
+    suspend fun exchange(code: String, state: String): MangaBakaOAuth = withIOContext {
+        val verifier = pendingVerifiers.remove(state)
+            ?: throw IllegalStateException("Invalid or expired MangaBaka OAuth state")
         val form = FormBody.Builder().add("client_id", CLIENT_ID).add("code", code).add("code_verifier", verifier)
             .add("code_challenge_method", "S256").add("grant_type", "authorization_code").add("redirect_uri", REDIRECT).add("scope", SCOPES).build()
         with(json) { client.newCall(POST("$OAUTH/token", body = form)).awaitSuccess().parseAs<MangaBakaOAuth>() }
     }
-    fun verifyState(state: String) = state == oauthState
 
     private fun Long.toLocalDateString() = java.time.Instant.ofEpochMilli(this).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
     private fun String?.toLocalEpoch(): Long = this?.substringBefore('T')?.let { LocalDate.parse(it).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() } ?: 0L
@@ -143,19 +145,19 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         private const val CLIENT_ID = "zEZYMHXLWsLsafgbvJHXqzGvqQNOdkpo"
         private const val REDIRECT = "mihon://mangabaka-auth"
         private const val SCOPES = "library.read library.write offline_access openid"
-        private var verifier = ""
-        private var oauthState = ""
+        private val pendingVerifiers = ConcurrentHashMap<String, String>()
         fun authUrl(): Uri {
             val random = ByteArray(32).also(SecureRandom()::nextBytes)
-            verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
+            val verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
             val challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray()))
-            oauthState = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(16).also(SecureRandom()::nextBytes))
+            val state = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(16).also(SecureRandom()::nextBytes))
+            pendingVerifiers[state] = verifier
             return "$OAUTH/authorize".toUri().buildUpon().appendQueryParameter("client_id", CLIENT_ID).appendQueryParameter("code_challenge", challenge)
                 .appendQueryParameter("code_challenge_method", "S256").appendQueryParameter("response_type", "code").appendQueryParameter("scope", SCOPES)
-                .appendQueryParameter("redirect_uri", REDIRECT).appendQueryParameter("state", oauthState).build()
+                .appendQueryParameter("redirect_uri", REDIRECT).appendQueryParameter("state", state).build()
         }
         fun refreshTokenRequest(token: String) = POST("$OAUTH/token", body = FormBody.Builder().add("grant_type", "refresh_token").add("client_id", CLIENT_ID).add("refresh_token", token).add("redirect_uri", REDIRECT).build())
-        fun verifyOAuthState(state: String) = state == oauthState
+        fun verifyOAuthState(state: String) = pendingVerifiers.containsKey(state)
     }
 }
 // KMK <--

@@ -23,6 +23,7 @@ class SyncPreferences(
     fun fullSyncRequested() = preferenceStore.getBoolean(Preference.appStateKey("sync_full_requested"), false)
     fun serverSupportsV2() = preferenceStore.getBoolean(Preference.appStateKey("sync_server_supports_v2"), false)
     fun v2ProbedHost() = preferenceStore.getString(Preference.appStateKey("sync_v2_probed_host"), "")
+    fun v2ProbedAt() = preferenceStore.getLong(Preference.appStateKey("sync_v2_probed_at"), 0L)
     // KMK <--
 
     fun syncInterval() = preferenceStore.getInt("sync_interval", 0)

@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncData
 import eu.kanade.tachiyomi.data.sync.service.SyncResult
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
+import eu.kanade.tachiyomi.data.sync.service.SyncYomiV2State
 import eu.kanade.tachiyomi.data.sync.service.WebDavSyncService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -97,7 +98,8 @@ class SyncManager(
         }
 
         val syncOptions = syncPreferences.getSyncSettings()
-        val databaseManga = getAllMangaThatNeedsSync()
+        // Full snapshots include every stored manga; v2 incrementals filter by modification timestamps.
+        val databaseManga = getAllMangaFromDB()
 
         val backupOptions = BackupOptions(
             libraryEntries = syncOptions.libraryEntries,
@@ -187,6 +189,7 @@ class SyncManager(
             // nothing changed
             logcat(LogPriority.DEBUG) { "Skip restore due to remote was overwrite from local" }
             syncPreferences.lastSyncTimestamp().set(Date().time)
+            commitV2State(syncResult.v2State)
             notifier.showSyncSuccess("Sync completed successfully")
             return
         }
@@ -221,11 +224,11 @@ class SyncManager(
     ) {
         // KMK -->
         val (filteredFavorites, nonFavorites) = if (syncResult.protocolV2) {
-            filterChangedManga(remoteBackup) to emptyList()
+            filterChangedManga(remoteBackup) to remoteBackup.backupManga.filter { !it.favorite }
         } else {
             filterFavoritesAndNonFavorites(remoteBackup)
         }
-        if (!syncResult.protocolV2) updateNonFavorites(nonFavorites)
+        updateNonFavorites(nonFavorites)
         // KMK <--
 
         val newSyncData = backup.copy(
@@ -256,6 +259,7 @@ class SyncManager(
             // KMK <--
             // update the sync timestamp
             syncPreferences.lastSyncTimestamp().set(Date().time)
+            commitV2State(syncResult.v2State)
             notifier.showSyncSuccess("Sync completed successfully")
             return
         }
@@ -273,6 +277,7 @@ class SyncManager(
                     libraryEntries = true,
                     extensionStores = true,
                 ),
+                v2State = syncResult.v2State,
             )
 
             // update the sync timestamp
@@ -292,6 +297,14 @@ class SyncManager(
             backupExtensionStores.isNotEmpty() ||
             backupSavedSearches.isNotEmpty() ||
             backupFeeds.isNotEmpty()
+
+    private fun commitV2State(state: SyncYomiV2State?) {
+        if (state == null) return
+        syncPreferences.syncCursor().set(state.cursor)
+        syncPreferences.fullSyncRequested().set(state.fullSyncRequested)
+        syncPreferences.lastPushedAt().set(state.lastPushedAt)
+        state.lastFullSync?.let(syncPreferences.lastFullSync()::set)
+    }
     // KMK <--
 
     private fun writeSyncDataToCache(context: Context, backup: Backup): Uri? {
@@ -314,10 +327,6 @@ class SyncManager(
      */
     private suspend fun getAllMangaFromDB(): List<Manga> {
         return handler.awaitList { mangasQueries.getAllManga(::mapManga) }
-    }
-
-    private suspend fun getAllMangaThatNeedsSync(): List<Manga> {
-        return handler.awaitList { mangasQueries.getMangasWithFavoriteTimestamp(::mapManga) }
     }
 
     private suspend fun isMangaDifferent(localManga: Manga, remoteManga: BackupManga): Boolean {
@@ -425,7 +434,11 @@ class SyncManager(
         val localManga = getAllMangaFromDB().associateBy { Triple(it.source, it.url, it.title) }
         return backup.backupManga.filter { remote ->
             val local = localManga[Triple(remote.source, remote.url, remote.title)]
-            if (local == null) remote.favorite else isMangaDifferent(local, remote)
+            if (local == null) {
+                remote.favorite
+            } else {
+                local.favorite != remote.favorite || isMangaDifferent(local, remote)
+            }
         }
     }
     // KMK <--

@@ -58,7 +58,8 @@ class BackupRestorer(
      */
     private var sourceMapping: Map<Long, String> = emptyMap()
 
-    suspend fun restore(uri: Uri, options: RestoreOptions) {
+    // KMK --> Return false for per-entry failures so sync cursors can be retried.
+    suspend fun restore(uri: Uri, options: RestoreOptions): Boolean {
         val startTime = System.currentTimeMillis()
 
         restoreFromFile(uri, options)
@@ -74,13 +75,19 @@ class BackupRestorer(
             logFile.name,
             isSync,
         )
+        return errors.isEmpty()
     }
+    // KMK <--
 
     private suspend fun restoreFromFile(uri: Uri, options: RestoreOptions) {
         // KMK -->
         val backupDecoder = BackupDecoder(context)
         val metadata = backupDecoder.decodeMetadata(uri)
         val backup = metadata.backup
+
+        // KMK --> Validate all entries before any restore coroutine can mutate the database.
+        backupDecoder.decodeMetadata(uri, BackupManga.serializer()) { }
+        // KMK <--
 
         // Store source mapping for error messages
         val backupMaps = backup.backupSources

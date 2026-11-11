@@ -29,6 +29,14 @@ data class SyncResult(
     val backup: Backup?,
     val changed: Boolean,
     val protocolV2: Boolean,
+    val v2State: SyncYomiV2State? = null,
+)
+
+data class SyncYomiV2State(
+    val cursor: Long,
+    val fullSyncRequested: Boolean,
+    val lastPushedAt: Long,
+    val lastFullSync: Long?,
 )
 // KMK <--
 

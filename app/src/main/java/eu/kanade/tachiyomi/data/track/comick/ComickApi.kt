@@ -32,6 +32,7 @@ import java.math.RoundingMode
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
+import java.util.concurrent.ConcurrentHashMap
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 // KMK -->
@@ -122,7 +123,9 @@ class ComickApi(
         }
     }
 
-    suspend fun getAccessToken(code: String): ComickOAuth {
+    suspend fun getAccessToken(code: String, state: String): ComickOAuth {
+        val codeVerifier = pendingVerifiers.remove(state)
+            ?: throw IllegalStateException("Invalid or expired Comick OAuth state")
         val form = FormBody.Builder()
             .add("grant_type", "authorization_code")
             .add("client_id", CLIENT_ID)
@@ -140,20 +143,19 @@ class ComickApi(
     }
 
     companion object {
-        fun verifyOAuthState(state: String): Boolean = state == oauthState
+        fun verifyOAuthState(state: String): Boolean = pendingVerifiers.containsKey(state)
         private const val CLIENT_ID = "SGrUojDvbgqfhSCQbwfCjUPIccYMJdBH"
         private const val REDIRECT_URI = "app.mihon://comick-auth"
         private const val SCOPES = "library:read library:write offline_access"
         private const val OAUTH_URL = "https://comick.dev/api/auth/oauth2"
         private const val RESOURCE_URL = "https://api.comick.dev/integrations/v1"
-        private var codeVerifier = ""
-        private var oauthState = ""
+        private val pendingVerifiers = ConcurrentHashMap<String, String>()
 
         fun authUrl(): Uri {
             val random = ByteArray(16).also(SecureRandom()::nextBytes)
-            oauthState = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
+            val state = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
             val verifier = eu.kanade.tachiyomi.util.PkceUtil.generateCodeVerifier()
-            codeVerifier = verifier
+            pendingVerifiers[state] = verifier
             val challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray()),
             )
@@ -163,7 +165,7 @@ class ComickApi(
                 .appendQueryParameter("redirect_uri", REDIRECT_URI)
                 .appendQueryParameter("scope", SCOPES)
                 .appendQueryParameter("resource", RESOURCE_URL)
-                .appendQueryParameter("state", oauthState)
+                .appendQueryParameter("state", state)
                 .appendQueryParameter("code_challenge", challenge)
                 .appendQueryParameter("code_challenge_method", "S256")
                 .build()

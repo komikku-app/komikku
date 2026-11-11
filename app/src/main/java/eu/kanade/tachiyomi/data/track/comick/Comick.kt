@@ -69,15 +69,16 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
         return track
     }
 
-    override suspend fun login(username: String, password: String) = login(password)
+    override suspend fun login(username: String, password: String) {
+        throw IllegalStateException("Comick sign-in must use OAuth")
+    }
 
-    suspend fun login(code: String) {
+    suspend fun loginWithOAuth(code: String, state: String) {
         try {
-            val oauth = api.getAccessToken(code)
+            val oauth = api.getAccessToken(code, state)
             interceptor.setAuth(oauth)
             saveCredentials("Comick", oauth.accessToken)
         } catch (e: Exception) {
-            logout()
             throw e
         }
     }

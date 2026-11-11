@@ -100,10 +100,12 @@ getAllMangaSourceAndUrl:
 SELECT source, url
 FROM mangas;
 
-getMangasWithFavoriteTimestamp:
-SELECT *
-FROM mangas
-WHERE favorite_modified_at IS NOT NULL;
+-- KMK -->
+touchLastModifiedAt:
+UPDATE mangas
+SET last_modified_at = strftime('%s', 'now')
+WHERE _id = :mangaId AND is_syncing = 0;
+-- KMK <--
 
 getSourceIdWithFavoriteCount:
 SELECT
@@ -200,7 +202,9 @@ AND (
 
 insert:
 INSERT INTO mangas(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, notes, memo)
-VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :notes, :memo);
+-- KMK --> Initialize added manga with a usable incremental sync timestamp.
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, strftime('%s', 'now'), :version, :notes, :memo);
+-- KMK <--
 
 update:
 UPDATE mangas SET
@@ -242,7 +246,9 @@ insertNetworkManga {
     SELECT
         :source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite,
         :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :chapterFlags, :coverLastModified, :dateAdded,
-        :updateStrategy, :calculateInterval, 0, :version, :memo
+        -- KMK -->
+        :updateStrategy, :calculateInterval, strftime('%s', 'now'), :version, :memo
+        -- KMK <--
     WHERE NOT EXISTS(SELECT 0 FROM mangas WHERE source = :source AND url = :url);
 
     -- Update the relevant details if applicable and not favorite

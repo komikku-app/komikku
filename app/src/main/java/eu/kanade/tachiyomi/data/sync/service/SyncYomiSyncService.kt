@@ -48,6 +48,7 @@ class SyncYomiSyncService(
     // KMK -->
     companion object {
         private val client by lazy { OkHttpClient() }
+        private const val V2_CAPABILITY_CACHE_MS = 24 * 60 * 60 * 1000L
     }
     // KMK <--
 
@@ -161,22 +162,25 @@ class SyncYomiSyncService(
                 ?: throw SyncYomiException("Missing X-Sync-Cursor")
             val changed = it.headers["X-Sync-Changed"]?.toBoolean() ?: true
             val fullRequested = it.headers["X-Sync-Full-Requested"]?.toBoolean() ?: false
-            syncPreferences.syncCursor().set(cursor)
-            syncPreferences.fullSyncRequested().set(fullRequested)
-            syncPreferences.lastPushedAt().set(syncData.syncStartedAt)
-            if (full) syncPreferences.lastFullSync().set(System.currentTimeMillis())
+            val v2State = SyncYomiV2State(
+                cursor = cursor,
+                fullSyncRequested = fullRequested,
+                lastPushedAt = syncData.syncStartedAt,
+                lastFullSync = System.currentTimeMillis().takeIf { full },
+            )
             logcat(LogPriority.DEBUG) {
                 "SyncYomi v2 merge completed: cursor=$cursor changed=$changed full=$full"
             }
             reportSyncEvent(SyncEventStatus.SYNC_SUCCESS)
-            return SyncResult(remote, changed = changed, protocolV2 = true)
+            return SyncResult(remote, changed = changed, protocolV2 = true, v2State = v2State)
         }
     }
 
     private suspend fun supportsV2(): Boolean {
         val host = syncPreferences.clientHost().get()
         val probedHost = syncPreferences.v2ProbedHost().get()
-        if (probedHost == host) {
+        val now = System.currentTimeMillis()
+        if (probedHost == host && now - syncPreferences.v2ProbedAt().get() < V2_CAPABILITY_CACHE_MS) {
             return syncPreferences.serverSupportsV2().get()
         }
         val request = GET(
@@ -197,13 +201,16 @@ class SyncYomiSyncService(
         }
         // KMK --> Cursor and push timestamps belong to the configured server.
         // Start with a full sync when the server changes.
-        syncPreferences.syncCursor().set(0L)
-        syncPreferences.lastPushedAt().set(0L)
-        syncPreferences.lastFullSync().set(0L)
-        syncPreferences.fullSyncRequested().set(false)
+        if (probedHost != host) {
+            syncPreferences.syncCursor().set(0L)
+            syncPreferences.lastPushedAt().set(0L)
+            syncPreferences.lastFullSync().set(0L)
+            syncPreferences.fullSyncRequested().set(false)
+        }
         // KMK <--
         syncPreferences.v2ProbedHost().set(host)
         syncPreferences.serverSupportsV2().set(supported)
+        syncPreferences.v2ProbedAt().set(now)
         return supported
     }
 

@@ -44,12 +44,10 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
         val tracker = trackerManager.mangaBaka
         if (code != null && state != null && tracker.verifyOAuthState(state)) {
             try {
-                tracker.login(code)
+                tracker.loginWithOAuth(code, state)
             } catch (e: Exception) {
                 toast(e.message)
             }
-        } else {
-            tracker.logout()
         }
     }
 
@@ -57,12 +55,10 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
         val tracker = trackerManager.comick
         if (code != null && state != null && tracker.verifyOAuthState(state)) {
             try {
-                tracker.login(code)
+                tracker.loginWithOAuth(code, state)
             } catch (e: Exception) {
                 toast(e.message)
             }
-        } else {
-            tracker.logout()
         }
     }
     // KMK <--

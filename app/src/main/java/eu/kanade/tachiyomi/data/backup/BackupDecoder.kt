@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.protobuf.ProtoBuf
+import okio.Buffer
 import okio.BufferedSource
+import okio.ForwardingSource
+import okio.Source
 import okio.buffer
 import okio.gzip
 import okio.source
@@ -34,13 +37,14 @@ class BackupDecoder(
                 require(2)
             }
             val id1id2 = peeked.readShort()
-            val backupString = when (id1id2.toInt()) {
-                0x1f8b -> source.gzip().buffer() // 0x1f8b is gzip magic bytes
+            val backupSource = when (id1id2.toInt()) {
+                0x1f8b -> source.gzip() // 0x1f8b is gzip magic bytes
                 MAGIC_JSON_SIGNATURE1, MAGIC_JSON_SIGNATURE2, MAGIC_JSON_SIGNATURE3 -> {
                     throw IOException(context.stringResource(MR.strings.invalid_backup_file_json))
                 }
                 else -> source
-            }.use { it.readByteArray() }
+            }
+            val backupString = limited(backupSource).use { it.readByteArray() }
 
             try {
                 parser.decodeFromByteArray(Backup.serializer(), backupString)
@@ -102,9 +106,23 @@ class BackupDecoder(
                 }
                 else -> source
             }
-            backupSource.use { block(BackupReader(it, parser)) }
+            limited(backupSource).use { block(BackupReader(it, parser)) }
         }
     }
+
+    private fun limited(source: Source): BufferedSource =
+        object : ForwardingSource(source) {
+            private var bytesRead = 0L
+
+            override fun read(sink: Buffer, byteCount: Long): Long {
+                if (byteCount == 0L) return 0L
+                val remaining = MAX_DECOMPRESSED_BACKUP_BYTES - bytesRead
+                val read = super.read(sink, minOf(byteCount, remaining + 1))
+                if (read > remaining) throw IOException("Backup exceeds the maximum decompressed size")
+                if (read > 0) bytesRead += read
+                return read
+            }
+        }.buffer()
     // KMK <--
 
     companion object {
@@ -113,3 +131,7 @@ class BackupDecoder(
         private const val MAGIC_JSON_SIGNATURE3 = 0x7b0a // `{\n`
     }
 }
+
+// KMK -->
+private const val MAX_DECOMPRESSED_BACKUP_BYTES = 128L * 1024 * 1024
+// KMK <--
