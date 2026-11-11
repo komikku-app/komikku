@@ -10,6 +10,7 @@ import okio.BufferedSink
 import okio.BufferedSource
 import java.io.IOException
 
+// KMK -->
 /**
  * Writes the same bytes as encoding a whole [Backup], without holding all of its entries at once.
  */

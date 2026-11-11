@@ -175,7 +175,8 @@ class SyncYomiSyncService(
 
     private suspend fun supportsV2(): Boolean {
         val host = syncPreferences.clientHost().get()
-        if (syncPreferences.v2ProbedHost().get() == host) {
+        val probedHost = syncPreferences.v2ProbedHost().get()
+        if (probedHost == host) {
             return syncPreferences.serverSupportsV2().get()
         }
         val request = GET(
@@ -194,6 +195,13 @@ class SyncYomiSyncService(
                 else -> throw SyncYomiException("Failed to probe SyncYomi capabilities: ${it.code}")
             }
         }
+        // KMK --> Cursor and push timestamps belong to the configured server.
+        // Start with a full sync when the server changes.
+        syncPreferences.syncCursor().set(0L)
+        syncPreferences.lastPushedAt().set(0L)
+        syncPreferences.lastFullSync().set(0L)
+        syncPreferences.fullSyncRequested().set(false)
+        // KMK <--
         syncPreferences.v2ProbedHost().set(host)
         syncPreferences.serverSupportsV2().set(supported)
         return supported
