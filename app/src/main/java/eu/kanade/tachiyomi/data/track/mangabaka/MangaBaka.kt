@@ -116,11 +116,11 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
     override suspend fun delete(track: DomainTrack) = api.delete(track.remoteId)
 
     private fun scoreRange() = when (scorePreference.get()) {
-        STEP_5 -> (0..100 step 5)
-        STEP_10 -> (0..100 step 10)
-        STEP_20 -> (0..100 step 20)
-        STEP_25 -> (0..100 step 25)
-        else -> (0..100)
+        STEP_5 -> 0..100 step 5
+        STEP_10 -> 0..100 step 10
+        STEP_20 -> 0..100 step 20
+        STEP_25 -> 0..100 step 25
+        else -> 0..100
     }
     companion object {
         const val READING = 1L
