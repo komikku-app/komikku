@@ -206,7 +206,7 @@
                 <data android:host="myanimelist-auth" />
                 <data android:host="shikimori-auth" />
             </intent-filter>
-            <!-- KMK -->
+            <!-- KMK -> -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -214,7 +214,7 @@
                 <data android:scheme="app.mihon" />
                 <data android:host="comick-auth" />
             </intent-filter>
-            <!-- KMK -->
+            <!-- KMK <- -->
         </activity>
         <activity
             android:name=".ui.setting.track.GoogleDriveLoginActivity"
