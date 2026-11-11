@@ -31,10 +31,26 @@ data class BackupTracking(
 
     @Suppress("DEPRECATION")
     fun getTrackImpl(): Track {
+        // KMK --> Houri assigns Comick tracker ID 63 and uses the opposite
+        // ordering for its dropped and plan-to-read statuses. Normalize those
+        // backup values back to Komikku's internal representation on restore.
+        val restoredTrackerId = if (syncId == 63) 12L else syncId.toLong()
+        val restoredStatus = if (syncId == 63) {
+            when (status) {
+                4 -> 5
+                5 -> 4
+                else -> status
+            }
+        } else {
+            status
+        }
+        // KMK <--
         return Track(
             id = -1,
             mangaId = -1,
-            trackerId = this@BackupTracking.syncId.toLong(),
+            // KMK -->
+            trackerId = restoredTrackerId,
+            // KMK <--
             remoteId = if (this@BackupTracking.mediaIdInt != 0) {
                 this@BackupTracking.mediaIdInt.toLong()
             } else {
@@ -45,7 +61,9 @@ data class BackupTracking(
             lastChapterRead = this@BackupTracking.lastChapterRead.toDouble(),
             totalChapters = this@BackupTracking.totalChapters.toLong(),
             score = this@BackupTracking.score.toDouble(),
-            status = this@BackupTracking.status.toLong(),
+            // KMK -->
+            status = restoredStatus.toLong(),
+            // KMK <--
             startDate = this@BackupTracking.startedReadingDate,
             finishDate = this@BackupTracking.finishedReadingDate,
             remoteUrl = this@BackupTracking.trackingUrl,

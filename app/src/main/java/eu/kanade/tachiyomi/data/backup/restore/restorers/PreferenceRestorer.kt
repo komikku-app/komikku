@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.source.sourcePreferences
 import exh.EXHMigrations
 import exh.log.xLogE
 import tachiyomi.core.common.preference.AndroidPreferenceStore
+import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.plusAssign
 import tachiyomi.domain.category.interactor.GetCategories
@@ -65,74 +66,93 @@ class PreferenceRestorer(
         val categoriesByName = allCategories.associateBy { it.name }
         val backupCategoriesById = backupCategories?.associateBy { it.id.toString() }.orEmpty()
         val prefs = preferenceStore.getAll()
-        toRestore.forEach { (key, value) ->
-            try {
-                when (value) {
-                    is IntPreferenceValue -> {
-                        if (prefs[key] is Int?) {
-                            val newValue = if (key == LibraryPreferences.DEFAULT_CATEGORY_PREF_KEY) {
-                                backupCategoriesById[value.value.toString()]
-                                    ?.let { categoriesByName[it.name]?.id?.toInt() }
-                            } else {
-                                value.value
-                            }
+        toRestore
+            // KMK --> Houri uses Comick tracker ID 63, while Komikku stores
+            // the same private preferences under ID 12.
+            .map { it.withComickTrackerId(from = 63, to = 12) }
+            // KMK <--
+            .forEach { (key, value) ->
+                try {
+                    when (value) {
+                        is IntPreferenceValue -> {
+                            if (prefs[key] is Int?) {
+                                val newValue = if (key == LibraryPreferences.DEFAULT_CATEGORY_PREF_KEY) {
+                                    backupCategoriesById[value.value.toString()]
+                                        ?.let { categoriesByName[it.name]?.id?.toInt() }
+                                } else {
+                                    value.value
+                                }
 
-                            newValue?.let { preferenceStore.getInt(key).set(it) }
+                                newValue?.let { preferenceStore.getInt(key).set(it) }
+                            }
                         }
-                    }
-                    is LongPreferenceValue -> {
-                        if (prefs[key] is Long?) {
-                            preferenceStore.getLong(key).set(value.value)
+                        is LongPreferenceValue -> {
+                            if (prefs[key] is Long?) {
+                                preferenceStore.getLong(key).set(value.value)
+                            }
                         }
-                    }
-                    is FloatPreferenceValue -> {
-                        if (prefs[key] is Float?) {
-                            preferenceStore.getFloat(key).set(value.value)
+                        is FloatPreferenceValue -> {
+                            if (prefs[key] is Float?) {
+                                preferenceStore.getFloat(key).set(value.value)
+                            }
                         }
-                    }
-                    is StringPreferenceValue -> {
-                        if (prefs[key] is String?) {
-                            preferenceStore.getString(key).set(value.value)
+                        is StringPreferenceValue -> {
+                            if (prefs[key] is String?) {
+                                preferenceStore.getString(key).set(value.value)
+                            }
                         }
-                    }
-                    is BooleanPreferenceValue -> {
-                        if (prefs[key] is Boolean?) {
-                            preferenceStore.getBoolean(key).set(value.value)
+                        is BooleanPreferenceValue -> {
+                            if (prefs[key] is Boolean?) {
+                                preferenceStore.getBoolean(key).set(value.value)
+                            }
                         }
-                    }
-                    is StringSetPreferenceValue -> {
-                        if (prefs[key] is Set<*>?) {
-                            val restored = restoreCategoriesPreference(
-                                key,
-                                value.value,
-                                preferenceStore,
-                                backupCategoriesById,
-                                categoriesByName,
-                            )
-                            if (!restored) {
-                                // KMK -->
-                                when (key) {
-                                    SourcePreferences.PINNED_SOURCES_PREF_KEY ->
-                                        restorePinnedSourcesPreference(
-                                            key,
-                                            value.value,
-                                            preferenceStore,
-                                        )
-                                    else ->
-                                        // KMK <--
-                                        preferenceStore.getStringSet(key).set(value.value)
+                        is StringSetPreferenceValue -> {
+                            if (prefs[key] is Set<*>?) {
+                                val restored = restoreCategoriesPreference(
+                                    key,
+                                    value.value,
+                                    preferenceStore,
+                                    backupCategoriesById,
+                                    categoriesByName,
+                                )
+                                if (!restored) {
+                                    // KMK -->
+                                    when (key) {
+                                        SourcePreferences.PINNED_SOURCES_PREF_KEY ->
+                                            restorePinnedSourcesPreference(
+                                                key,
+                                                value.value,
+                                                preferenceStore,
+                                            )
+                                        else ->
+                                            // KMK <--
+                                            preferenceStore.getStringSet(key).set(value.value)
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    // KMK -->
+                    xLogE("Failed to restore preference <$key>", e)
+                    // KMK <--
                 }
-            } catch (e: Exception) {
-                // KMK -->
-                xLogE("Failed to restore preference <$key>", e)
-                // KMK <--
             }
-        }
     }
+
+    // KMK -->
+    private fun BackupPreference.withComickTrackerId(from: Int, to: Int): BackupPreference {
+        val comickPreferencePrefixes = listOf(
+            "pref_mangasync_username_",
+            "pref_mangasync_password_",
+            "pref_tracker_auth_expired_",
+            "track_token_",
+        ).map { Preference.privateKey(it) }
+        val prefix = comickPreferencePrefixes.firstOrNull { key.startsWith(it) } ?: return this
+        if (key != "$prefix$from") return this
+        return copy(key = "$prefix$to")
+    }
+    // KMK <--
 
     private fun restoreCategoriesPreference(
         key: String,
