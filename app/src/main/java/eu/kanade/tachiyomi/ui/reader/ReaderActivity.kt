@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
+// KMK -->
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.assist.AssistContent
@@ -124,6 +125,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -136,6 +138,7 @@ import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.UrlUtils
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
@@ -148,6 +151,7 @@ import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.graphics.Color as ComposeColor
+// KMK <--
 
 class ReaderActivity : BaseActivity() {
 
@@ -271,20 +275,30 @@ class ReaderActivity : BaseActivity() {
             .onEach(::setProgressDialog)
             .launchIn(lifecycleScope)
 
-        viewModel.state
-            .map { it.manga }
-            .distinctUntilChanged()
-            .filterNotNull()
-            .onEach { updateViewer() }
-            .launchIn(lifecycleScope)
+        // KMK -->
+        observeViewerState()
+        observeReaderEvents()
+        // KMK <--
+    }
 
+    // KMK -->
+    private fun observeViewerState() {
+        var previousManga: Manga? = null
         viewModel.state
-            .map { it.viewerChapters }
+            .mapNotNull { state -> state.manga?.let { it to state.viewerChapters } }
             .distinctUntilChanged()
-            .filterNotNull()
-            .onEach(::setChapters)
+            .onEach { (manga, chapters) ->
+                if (manga != previousManga) {
+                    previousManga = manga
+                    updateViewer()
+                } else {
+                    chapters?.let(::setChapters)
+                }
+            }
             .launchIn(lifecycleScope)
+    }
 
+    private fun observeReaderEvents() {
         viewModel.eventFlow
             .onEach { event ->
                 when (event) {
@@ -313,6 +327,7 @@ class ReaderActivity : BaseActivity() {
             }
             .launchIn(lifecycleScope)
     }
+    // KMK <--
 
     private fun ReaderActivityBinding.setComposeOverlay(): Unit = composeOverlay.setComposeContent {
         // KMK -->
@@ -935,9 +950,11 @@ class ReaderActivity : BaseActivity() {
         }
     }
 
+    // KMK -->
     /**
-     * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer.
+     * Replaces the viewer and binds available chapters before starting the enter transition.
      */
+    // KMK <--
     private fun updateViewer() {
         val prevViewer = viewModel.state.value.viewer
         val newViewer = ReadingMode.toViewer(
@@ -991,16 +1008,23 @@ class ReaderActivity : BaseActivity() {
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
 
-        loadingIndicator = ReaderProgressIndicator(
-            context = this,
-            // KMK -->
-            seedColor = seedColorStatic()?.toArgb(),
-            // KMK <--
-        )
-        binding.readerContainer.addView(loadingIndicator)
+        // KMK -->
+        showLoadingIndicator()
+        viewModel.state.value.viewerChapters?.let(::setChapters)
+        // KMK <--
 
         startPostponedEnterTransition()
     }
+
+    // KMK -->
+    private fun showLoadingIndicator() {
+        loadingIndicator = ReaderProgressIndicator(
+            context = this,
+            seedColor = seedColorStatic()?.toArgb(),
+        )
+        binding.readerContainer.addView(loadingIndicator)
+    }
+    // KMK <--
 
     private fun openMangaScreen() {
         viewModel.manga?.id?.let { id ->

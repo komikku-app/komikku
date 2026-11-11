@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
+// KMK -->
 import android.app.Application
 import android.net.Uri
 import androidx.annotation.ColorInt
@@ -58,8 +59,10 @@ import exh.source.isEhBasedManga
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -74,6 +77,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import logcat.LogPriority
 import tachiyomi.core.common.preference.toggle
 import tachiyomi.core.common.storage.UniFileTempFileManager
@@ -106,6 +111,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.util.Date
+
+// KMK <--
 
 /**
  * Presenter used by the activity to perform background operations.
@@ -1017,29 +1024,37 @@ class ReaderViewModel @JvmOverloads constructor(
         // SY <--
     }
 
+    // KMK -->
+    // Keep flag reads, writes, and state updates ordered even when an old write ignores cancellation.
+    private val viewerFlagsMutex = Mutex()
+    private var readingModeJob: Job? = null
+
     /**
      * Updates the viewer position for the open manga.
      */
     fun setMangaReadingMode(readingMode: ReadingMode) {
         val manga = manga ?: return
-        runBlocking(Dispatchers.IO) {
-            setMangaViewerFlags.awaitSetReadingMode(manga.id, readingMode.flagValue.toLong())
-            val currChapters = state.value.viewerChapters
-            if (currChapters != null) {
-                // Save current page
-                val currChapter = currChapters.currChapter
-                currChapter.requestedPage = currChapter.chapter.last_page_read
-
-                mutableState.update {
-                    it.copy(
-                        manga = getManga.await(manga.id),
-                        viewerChapters = currChapters,
-                    )
-                }
-                eventChannel.send(Event.ReloadViewerChapters)
+        // Only the latest selection may update the viewer.
+        readingModeJob?.cancel()
+        readingModeJob = viewModelScope.launch {
+            viewerFlagsMutex.withLock {
+                val updatedManga = setMangaViewerFlags.awaitSetReadingMode(manga.id, readingMode.flagValue.toLong())
+                // Repository calls may catch cancellation before returning a value.
+                ensureActive()
+                val mangaToApply = updatedManga ?: getMangaWithChangedViewerFlags(manga.id) ?: return@launch
+                if (state.value.viewerChapters == null) return@launch
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
         }
     }
+
+    private suspend fun getMangaWithChangedViewerFlags(mangaId: Long): Manga? {
+        // A cancelled write may have committed before the latest write failed.
+        val persistedManga = getManga.await(mangaId)
+        currentCoroutineContext().ensureActive()
+        return persistedManga?.takeIf { it.viewerFlags != manga?.viewerFlags }
+    }
+    // KMK <--
 
     /**
      * Returns the orientation type used by this manga or the default one.
@@ -1053,30 +1068,24 @@ class ReaderViewModel @JvmOverloads constructor(
         }
     }
 
+    // KMK -->
     /**
      * Updates the orientation type for the open manga.
      */
     fun setMangaOrientationType(orientation: ReaderOrientation) {
         val manga = manga ?: return
-        viewModelScope.launchIO {
-            setMangaViewerFlags.awaitSetOrientation(manga.id, orientation.flagValue.toLong())
-            val currChapters = state.value.viewerChapters
-            if (currChapters != null) {
-                // Save current page
-                val currChapter = currChapters.currChapter
-                currChapter.requestedPage = currChapter.chapter.last_page_read
-
-                mutableState.update {
-                    it.copy(
-                        manga = getManga.await(manga.id),
-                        viewerChapters = currChapters,
-                    )
-                }
-                eventChannel.send(Event.SetOrientation(getMangaOrientation()))
-                eventChannel.send(Event.ReloadViewerChapters)
+        viewModelScope.launch {
+            viewerFlagsMutex.withLock {
+                val updatedManga = setMangaViewerFlags.awaitSetOrientation(manga.id, orientation.flagValue.toLong())
+                ensureActive()
+                val mangaToApply = updatedManga ?: getMangaWithChangedViewerFlags(manga.id) ?: return@launch
+                if (state.value.viewerChapters == null) return@launch
+                mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
+            eventChannel.send(Event.SetOrientation(getMangaOrientation()))
         }
     }
+    // KMK <--
 
     // SY -->
     fun toggleCropBorders(): Boolean {
