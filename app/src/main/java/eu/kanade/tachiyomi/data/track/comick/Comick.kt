@@ -10,9 +10,12 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.map // KMK --> // KMK <--
+import kotlinx.coroutines.sync.Mutex // KMK --> // KMK <--
+import kotlinx.coroutines.sync.withLock // KMK --> // KMK <--
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.kmk.KMR // KMK --> // KMK <--
 import uy.kohesive.injekt.injectLazy
+import java.util.concurrent.ConcurrentHashMap // KMK --> // KMK <--
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 // KMK -->
@@ -28,6 +31,9 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
     override val isLoggedInFlow by lazy {
         trackPreferences.trackToken(this).changes().map { it.isNotBlank() }
     }
+    // KMK -->
+    private val updateLocks = ConcurrentHashMap<Long, Mutex>()
+    // KMK <--
 
     override fun getLogo() = R.drawable.brand_comick
     override fun getStatusList() = listOf(READING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_READ)
@@ -48,7 +54,10 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
 
     override suspend fun update(track: Track, didReadChapter: Boolean): Track {
         if (track.status != COMPLETED && track.status != READING && didReadChapter) track.status = READING
-        return api.updateLibManga(track)
+        // KMK -->
+        val lock = updateLocks.getOrPut(track.remote_id) { Mutex() }
+        return lock.withLock { api.updateLibManga(track) }
+        // KMK <--
     }
 
     override suspend fun bind(track: Track, hasReadChapters: Boolean): Track {
