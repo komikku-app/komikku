@@ -96,14 +96,13 @@ class ReaderViewModelTest {
             assertTrue(writeStarted.await(2, TimeUnit.SECONDS), "The reading mode update must reach the repository")
             assertDoesNotThrow(
                 { invocation.get(2, TimeUnit.SECONDS) },
-                "The UI callback must return while database work or event delivery is pending",
+                "The UI callback must return while database work is pending",
             )
             allowWrite.complete(Unit)
-            // No receiver is registered until the UI callback has returned.
-            assertEquals(
-                ReaderViewModel.Event.ReloadViewerChapters,
-                withTimeout(2_000.milliseconds) { viewModel.eventFlow.first() },
-            )
+            // Publishing the saved selection must not need an event receiver.
+            withTimeout(2_000.milliseconds) {
+                viewModel.state.first { it.manga?.readingMode == ReadingMode.WEBTOON.flagValue.toLong() }
+            }
             assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), viewModel.state.value.manga?.readingMode)
             assertSame(chapters, viewModel.state.value.viewerChapters)
             assertEquals(7, chapter.requestedPage)
@@ -156,7 +155,7 @@ class ReaderViewModelTest {
             assertEquals(ReadingMode.RIGHT_TO_LEFT.flagValue.toLong(), viewModel.state.value.manga?.readingMode)
             assertEquals(ReadingMode.RIGHT_TO_LEFT.flagValue.toLong(), storedManga.readingMode)
             assertSame(chapters, viewModel.state.value.viewerChapters)
-            assertEquals(listOf(ReaderViewModel.Event.ReloadViewerChapters), events)
+            assertTrue(events.isEmpty())
         } finally {
             allowFirstWrite.complete(Unit)
             viewModel.viewModelScope.cancel()
@@ -198,13 +197,12 @@ class ReaderViewModelTest {
             allowFirstWrite.complete(Unit)
             // Neither write may depend on the UI receiving the other change's events.
             allWritesFinished.await()
-            val events = viewModel.eventFlow.take(3).toList()
+            val events = viewModel.eventFlow.take(1).toList()
 
             assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), storedManga.readingMode)
             assertEquals(ReaderOrientation.LANDSCAPE.flagValue.toLong(), storedManga.readerOrientation)
             assertEquals(storedManga.viewerFlags, viewModel.state.value.manga?.viewerFlags)
-            assertEquals(2, events.count { it == ReaderViewModel.Event.ReloadViewerChapters })
-            assertTrue(events.contains(ReaderViewModel.Event.SetOrientation(ReaderOrientation.LANDSCAPE.flagValue)))
+            assertEquals(listOf(ReaderViewModel.Event.SetOrientation(ReaderOrientation.LANDSCAPE.flagValue)), events)
         } finally {
             allowFirstWrite.complete(Unit)
             viewModel.viewModelScope.cancel()
@@ -214,7 +212,7 @@ class ReaderViewModelTest {
     }
 
     @Test
-    fun `successful mode change reloads when a follow-up manga lookup is unavailable`() = runTest {
+    fun `successful mode change updates state when a follow-up manga lookup is unavailable`() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         var storedManga = Manga.create().copy(id = 1L)
         val repository = mockk<MangaRepository>()
@@ -234,7 +232,7 @@ class ReaderViewModelTest {
 
             assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), storedManga.readingMode)
             assertEquals(storedManga.readingMode, viewModel.state.value.manga?.readingMode)
-            assertEquals(listOf(ReaderViewModel.Event.ReloadViewerChapters), events)
+            assertTrue(events.isEmpty())
         } finally {
             viewModel.viewModelScope.cancel()
             runCurrent()
@@ -291,7 +289,6 @@ class ReaderViewModelTest {
             assertSame(chapters, viewModel.state.value.viewerChapters)
             val expectedEvents = buildList {
                 if (orientationChange) add(ReaderViewModel.Event.SetOrientation(ReaderOrientation.LANDSCAPE.flagValue))
-                add(ReaderViewModel.Event.ReloadViewerChapters)
             }
             assertEquals(expectedEvents, events)
             coVerify(exactly = 1) { repository.update(any()) }
@@ -379,7 +376,7 @@ class ReaderViewModelTest {
             assertEquals(2, writes)
             assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), storedManga.readingMode)
             assertEquals(storedManga.viewerFlags, viewModel.state.value.manga?.viewerFlags)
-            assertEquals(listOf(ReaderViewModel.Event.ReloadViewerChapters), events)
+            assertTrue(events.isEmpty())
             assertSame(chapters, viewModel.state.value.viewerChapters)
             assertEquals(11, chapters.currChapter.requestedPage)
         } finally {
@@ -442,7 +439,6 @@ class ReaderViewModelTest {
             assertEquals(11, chapters.currChapter.requestedPage)
             val expectedEvents = buildList {
                 if (orientationChange) add(ReaderViewModel.Event.SetOrientation(ReaderOrientation.PORTRAIT.flagValue))
-                add(ReaderViewModel.Event.ReloadViewerChapters)
             }
             assertEquals(expectedEvents, events)
             coVerify(exactly = 1) { repository.update(any()) }
@@ -527,7 +523,7 @@ class ReaderViewModelTest {
             allowWrite.complete(Unit)
             runCurrent()
 
-            assertEquals(ReaderViewModel.Event.ReloadViewerChapters, viewModel.eventFlow.first())
+            assertEquals(ReadingMode.WEBTOON.flagValue.toLong(), viewModel.state.value.manga?.readingMode)
             assertEquals(11, chapters.currChapter.requestedPage)
             assertEquals(7, chapters.currChapter.chapter.last_page_read)
             assertSame(chapters, viewModel.state.value.viewerChapters)

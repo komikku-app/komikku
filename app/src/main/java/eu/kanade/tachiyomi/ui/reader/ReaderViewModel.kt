@@ -1045,7 +1045,6 @@ class ReaderViewModel @JvmOverloads constructor(
                 if (state.value.viewerChapters == null) return@launch
                 mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
-            eventChannel.send(Event.ReloadViewerChapters)
         }
     }
 
@@ -1084,7 +1083,6 @@ class ReaderViewModel @JvmOverloads constructor(
                 mutableState.update { it.copy(manga = it.manga?.copy(viewerFlags = mangaToApply.viewerFlags)) }
             }
             eventChannel.send(Event.SetOrientation(getMangaOrientation()))
-            eventChannel.send(Event.ReloadViewerChapters)
         }
     }
     // KMK <--
