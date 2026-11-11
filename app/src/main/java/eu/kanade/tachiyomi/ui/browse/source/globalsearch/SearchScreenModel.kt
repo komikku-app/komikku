@@ -6,15 +6,14 @@ import androidx.compose.runtime.produceState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.presentation.util.ioCoroutineScope
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.Source
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
@@ -25,15 +24,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.preference.toggle
-import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.concurrent.Executors
 
 abstract class SearchScreenModel(
     initialState: State = State(),
@@ -45,7 +43,9 @@ abstract class SearchScreenModel(
     private val preferences: SourcePreferences = Injekt.get(),
 ) : StateScreenModel<SearchScreenModel.State>(initialState) {
 
-    private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
+    // KMK --> Use Mihon's shared IO dispatcher with the same five-search limit.
+    private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
+    // KMK <--
     private var searchJob: Job? = null
 
     private val enabledLanguages = sourcePreferences.enabledLanguages().get()
@@ -66,6 +66,10 @@ abstract class SearchScreenModel(
     }
 
     init {
+        // KMK --> Read the persisted source filter before a screen can start
+        // its initial search; the preference flow collector below is async.
+        mutableState.update { it.copy(sourceFilter = preferences.globalSearchPinnedState().get()) }
+        // KMK <--
         screenModelScope.launch {
             preferences.globalSearchFilterState().changes().collectLatest { state ->
                 mutableState.update { it.copy(onlyShowHasResults = state) }
@@ -92,22 +96,25 @@ abstract class SearchScreenModel(
     }
 
     open fun getEnabledSources(): List<Source> {
-        return sourceManager.getVisibleSources()
-            .filter { it.lang in enabledLanguages && "${it.id}" !in disabledSources }
+        // KMK --> Match Mihon's global-search source set, including local
+        // sources and sources hidden from the regular source list.
+        return sourceManager.getAll()
+            .filter { (it.lang in enabledLanguages || it.isLocal()) && "${it.id}" !in disabledSources }
             .sortedWith(
                 compareBy(
                     { "${it.id}" !in pinnedSources },
                     { "${it.name.lowercase()} (${it.lang})" },
                 ),
             )
+        // KMK <--
     }
 
     // KMK -->
     fun hasPinnedSources(): Boolean = getEnabledSources().any { "${it.id}" in pinnedSources }
 
     fun shouldPinnedSourcesHidden() {
-        if (!hasPinnedSources()) {
-            preferences.globalSearchPinnedState().set(SourceFilter.All)
+        if (!hasPinnedSources() && state.value.sourceFilter != SourceFilter.All) {
+            setSourceFilter(SourceFilter.All)
         }
     }
     // KMK <--
@@ -134,6 +141,9 @@ abstract class SearchScreenModel(
     }
 
     fun setSourceFilter(filter: SourceFilter) {
+        // KMK --> Update state synchronously so search() uses the new filter.
+        mutableState.update { it.copy(sourceFilter = filter) }
+        // KMK <--
         preferences.globalSearchPinnedState().set(filter)
         search()
     }
@@ -156,25 +166,26 @@ abstract class SearchScreenModel(
 
         searchJob?.cancel()
 
-        val sources = getSelectedSources()
-
-        // Reuse previous results if possible
-        if (sameQuery) {
-            val existingResults = state.value.items
-            updateItems(
-                sources
-                    .associateWith { existingResults[it] ?: SearchItemResult.Loading }
-                    .toPersistentMap(),
-            )
-        } else {
-            updateItems(
-                sources
-                    .associateWith { SearchItemResult.Loading }
-                    .toPersistentMap(),
-            )
-        }
-
-        searchJob = ioCoroutineScope.launch {
+        // KMK --> Keep search jobs attached to this screen model's lifecycle.
+        searchJob = screenModelScope.launch(Dispatchers.IO) {
+            // KMK --> Source selection and initial row setup can touch many
+            // sources, so do that work off the UI thread as Mihon does.
+            val sources = getSelectedSources()
+            if (sameQuery) {
+                val existingResults = state.value.items
+                updateItems(
+                    sources
+                        .associateWith { existingResults[it] ?: SearchItemResult.Loading }
+                        .toPersistentMap(),
+                )
+            } else {
+                updateItems(
+                    sources
+                        .associateWith { SearchItemResult.Loading }
+                        .toPersistentMap(),
+                )
+            }
+            // KMK <--
             sources.map { source ->
                 async {
                     if (state.value.items[source] !is SearchItemResult.Loading) {
@@ -183,7 +194,9 @@ abstract class SearchScreenModel(
 
                     try {
                         val page = withContext(coroutineDispatcher) {
-                            source.getSearchManga(1, query.sanitize(), source.getFilterList())
+                            // KMK --> Mihon passes the entered query directly to each source.
+                            source.getSearchManga(1, query, source.getFilterList())
+                            // KMK <--
                         }
 
                         val titles = page.mangas
@@ -203,6 +216,7 @@ abstract class SearchScreenModel(
             }
                 .awaitAll()
         }
+        // KMK <--
     }
 
     private fun updateItems(items: Map<Source, SearchItemResult>) {
@@ -216,7 +230,18 @@ abstract class SearchScreenModel(
     }
 
     private fun updateItem(source: Source, result: SearchItemResult) {
-        updateItems(state.value.items + (source to result))
+        // KMK --> Merge each completion into the latest state atomically.
+        // Reading state.value before updateItems() allowed simultaneous source
+        // completions to overwrite each other's results.
+        mutableState.update { currentState ->
+            val newItems = currentState.items + (source to result)
+            currentState.copy(
+                items = newItems
+                    .toSortedMap(sortComparator(newItems))
+                    .toPersistentMap(),
+            )
+        }
+        // KMK <--
     }
 
     fun setMigrateDialog(currentId: Long, target: Manga) {
