@@ -14,6 +14,9 @@ data class ComickLibraryEntry(val data: ComickLibraryEntryItem) {
         status = data.status.toLong().fromApiListStatus()
         last_chapter_read = data.progress?.number?.toDoubleOrNull() ?: 0.0
         score = data.rating?.toDouble() ?: 0.0
+        // KMK --> Avoid treating a current release number as a final total.
+        total_chapters = if (data.publicationStatus == 2) data.totalUnits?.toLong() ?: 0L else 0L
+        // KMK <--
     }
 }
 
@@ -24,6 +27,8 @@ data class ComickLibraryEntryItem(
     val status: Int,
     val progress: ComickLibraryEntryProgress? = null,
     val rating: Int? = null,
+    @kotlinx.serialization.SerialName("publication_status") val publicationStatus: Int? = null,
+    @kotlinx.serialization.SerialName("total_units") val totalUnits: Int? = null,
 )
 
 @Serializable

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- KMK -> -->
+    <string name="comick_status_reading">Reading</string>
+    <string name="comick_status_completed">Completed</string>
+    <string name="comick_status_on_hold">On hold</string>
+    <string name="comick_status_dropped">Dropped</string>
+    <string name="comick_status_plan_to_read">Plan to read</string>
+    <!-- KMK <- -->
     <!-- Actions -->
     <string name="action_search_for_source">Search for sources</string>
     <string name="action_source_search">Search in source</string>

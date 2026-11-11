@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.data.track
 
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
-import eu.kanade.tachiyomi.data.track.comick.Comick
 import eu.kanade.tachiyomi.data.track.kavita.Kavita
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
 import eu.kanade.tachiyomi.data.track.komga.Komga
@@ -37,7 +36,7 @@ class TrackerManager {
     val kavita = Kavita(KAVITA)
     val suwayomi = Suwayomi(9L)
     // KMK -->
-    val comick = Comick(12L)
+    val comick = eu.kanade.tachiyomi.data.track.comick.Comick(12L)
     // KMK <--
 
     val trackers = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi) +

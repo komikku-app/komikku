@@ -19,6 +19,7 @@ data class ComickSearchItem(
     val year: Int? = null,
     val description: String? = null,
     val status: Int? = null,
+    @SerialName("total_units") val totalUnits: Int? = null,
     @SerialName("bayesian_rating") val bayesianRating: Double? = null,
     @SerialName("cover_url") val coverUrl: String? = null,
     val country: String? = null,
@@ -32,6 +33,9 @@ data class ComickSearchItem(
         start_date = year?.toString().orEmpty()
         score = bayesianRating ?: -1.0
         cover_url = coverUrl.orEmpty()
+        // KMK --> Only completed manga have an authoritative final chapter total.
+        total_chapters = if (this@ComickSearchItem.status == 2) totalUnits?.toLong() ?: 0L else 0L
+        // KMK <--
         publishing_status = when (this@ComickSearchItem.status) {
             null -> ""
             1 -> "Ongoing"
