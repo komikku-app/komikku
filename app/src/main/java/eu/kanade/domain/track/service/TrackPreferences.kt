@@ -54,5 +54,10 @@ class TrackPreferences(
 
     // KMK -->
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
+
+    fun comickOAuthPending() = preferenceStore.getString(
+        Preference.privateKey("comick_oauth_pending"),
+        "",
+    )
     // KMK <--
 }

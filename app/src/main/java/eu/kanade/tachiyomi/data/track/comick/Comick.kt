@@ -9,8 +9,9 @@ import eu.kanade.tachiyomi.data.track.comick.dto.ComickOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.map // KMK --> // KMK <--
 import kotlinx.serialization.json.Json
-import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR // KMK --> // KMK <--
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -19,16 +20,23 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
     private val json: Json by injectLazy()
     private val interceptorDelegate = lazy { ComickInterceptor(this) }
     private val interceptor by interceptorDelegate
-    private val api by lazy { ComickApi(id, client, interceptor) }
+    private val api by lazy { ComickApi(id, client, interceptor, trackPreferences) }
+
+    override val isLoggedIn: Boolean
+        get() = restoreToken() != null
+
+    override val isLoggedInFlow by lazy {
+        trackPreferences.trackToken(this).changes().map { it.isNotBlank() }
+    }
 
     override fun getLogo() = R.drawable.brand_comick
     override fun getStatusList() = listOf(READING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_READ)
     override fun getStatus(status: Long): StringResource? = when (status) {
-        READING -> MR.strings.reading
-        COMPLETED -> MR.strings.completed
-        ON_HOLD -> MR.strings.on_hold
-        DROPPED -> MR.strings.dropped
-        PLAN_TO_READ -> MR.strings.plan_to_read
+        READING -> KMR.strings.comick_status_reading
+        COMPLETED -> KMR.strings.comick_status_completed
+        ON_HOLD -> KMR.strings.comick_status_on_hold
+        DROPPED -> KMR.strings.comick_status_dropped
+        PLAN_TO_READ -> KMR.strings.comick_status_plan_to_read
         else -> null
     }
     override fun getReadingStatus() = READING
@@ -69,18 +77,16 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
         return track
     }
 
-    override suspend fun login(username: String, password: String) = login(password)
-
-    suspend fun login(code: String) {
-        try {
-            val oauth = api.getAccessToken(code)
-            interceptor.setAuth(oauth)
-            saveCredentials("Comick", oauth.accessToken)
-        } catch (e: Exception) {
-            logout()
-            throw e
-        }
+    override suspend fun login(username: String, password: String) {
+        throw IllegalStateException("Comick requires OAuth sign-in")
     }
+
+    suspend fun loginWithOAuth(code: String, state: String) {
+        val oauth = api.getAccessToken(code, state)
+        interceptor.setAuth(oauth)
+    }
+
+    fun authUrl() = api.authUrl()
 
     fun saveToken(oauth: ComickOAuth?) {
         val pref = trackPreferences.trackToken(this)
@@ -91,12 +97,12 @@ class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
         json.decodeFromString<ComickOAuth>(trackPreferences.trackToken(this).get())
     }.getOrNull()
 
-    fun verifyOAuthState(state: String) = ComickApi.verifyOAuthState(state)
+    fun verifyOAuthState(state: String) = api.verifyOAuthState(state)
 
     override fun logout() {
+        if (interceptorDelegate.isInitialized()) interceptor.setAuth(null)
         super.logout()
         trackPreferences.trackToken(this).delete()
-        if (interceptorDelegate.isInitialized()) interceptor.setAuth(null)
     }
 
     override suspend fun delete(track: DomainTrack) = api.deleteLibManga(track)

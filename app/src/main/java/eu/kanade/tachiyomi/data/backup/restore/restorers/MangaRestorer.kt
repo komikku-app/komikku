@@ -471,6 +471,16 @@ class MangaRestorer(
                     remoteId = track.remoteId,
                     libraryId = track.libraryId,
                     lastChapterRead = max(dbTrack.lastChapterRead, track.lastChapterRead),
+                    // KMK --> Preserve all restored Comick metadata and personal state.
+                    title = track.title,
+                    totalChapters = track.totalChapters,
+                    status = track.status,
+                    score = track.score,
+                    remoteUrl = track.remoteUrl,
+                    startDate = track.startDate,
+                    finishDate = track.finishDate,
+                    private = track.private,
+                    // KMK <--
                 )
             }
             // KMK --> Backups contain both Comick aliases for Mihon and Houri.
