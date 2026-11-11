@@ -2,10 +2,12 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.net.Uri
+import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.WebtoonLayoutManager
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
@@ -16,6 +18,10 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonAdapter
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonConfig
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonRecyclerView
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -52,6 +58,65 @@ import tachiyomi.domain.source.service.SourceManager
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReaderActivityTest {
     private val fixture = ReaderViewModelTest()
+
+    @ParameterizedTest(name = "webtoon binding selects the live page with replacement = {0}")
+    @ValueSource(booleans = [true, false])
+    fun `webtoon chapter binding scrolls to the live page instead of saved progress`(replacement: Boolean) = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val initialMode = if (replacement) ReadingMode.RIGHT_TO_LEFT else ReadingMode.WEBTOON
+        var storedManga = Manga.create().copy(id = 1L, viewerFlags = initialMode.flagValue.toLong())
+        val repository = mockk<MangaRepository>()
+        coEvery { repository.getMangaById(1L) } answers { storedManga }
+        coEvery { repository.update(any()) } answers {
+            storedManga = storedManga.copy(viewerFlags = firstArg<MangaUpdate>().viewerFlags!!)
+            true
+        }
+        val viewModel = fixture.createViewModel(repository)
+        val chapters = fixture.createChapters().apply {
+            currChapter.chapter.name = "Chapter 10"
+            currChapter.requestedPage = 11
+        }
+        val pages = List(15) { index -> ReaderPage(index).apply { chapter = chapters.currChapter } }
+        chapters.currChapter.state = ReaderChapter.State.Loaded(pages)
+        fixture.seedState(viewModel, storedManga, chapters)
+        val sourceManager = ReaderViewModel::class.java.getDeclaredField("sourceManager")
+            .apply { isAccessible = true }.get(viewModel) as SourceManager
+        every { sourceManager.getOrStub(any()) } returns mockk()
+        val viewers = mutableListOf<Viewer>()
+        mockkObject(ReadingMode.Companion)
+        val activity = createActivity(viewModel, viewers)
+        val layoutManager = mockk<WebtoonLayoutManager>(relaxed = true)
+        val (webtoon, adapter) = createWebtoonViewer(layoutManager)
+        every { ReadingMode.toViewer(ReadingMode.WEBTOON.flagValue, activity, any()) } answers {
+            webtoon.also(viewers::add)
+        }
+        every { activity["setChapters"](any<ViewerChapters>()) } answers { callOriginal() }
+        every { activity["updateDiscordRPC"](any<Boolean>()) } returns Unit
+        try {
+            observeReader(activity)
+            runCurrent()
+            if (replacement) {
+                viewModel.setMangaReadingMode(ReadingMode.WEBTOON)
+                runCurrent()
+            }
+
+            assertEquals(if (replacement) 2 else 1, viewers.size)
+            assertSame(webtoon, viewModel.state.value.viewer)
+            verify(exactly = 1) { webtoon.setChapters(chapters) }
+            verify(exactly = 1) { adapter.setChapters(chapters, false) }
+            verify(exactly = 1) { webtoon.moveToPage(pages[11]) }
+            // The real adapter inserts a previous-chapter transition before the chapter's pages.
+            verify(exactly = 1) { layoutManager.scrollToPositionWithOffset(12, 0) }
+            assertSame(pages[11], adapter.items[12])
+            assertEquals(7, chapters.currChapter.chapter.last_page_read)
+        } finally {
+            activity.lifecycleScope.cancel()
+            viewModel.viewModelScope.cancel()
+            runCurrent()
+            unmockkObject(ReadingMode.Companion)
+            Dispatchers.resetMain()
+        }
+    }
 
     @Test
     fun `initial reader state binds chapters to the new viewer once`() = runTest {
@@ -289,6 +354,38 @@ class ReaderActivityTest {
             unmockkObject(ReadingMode.Companion)
             Dispatchers.resetMain()
         }
+    }
+
+    private fun createWebtoonViewer(layoutManager: WebtoonLayoutManager): Pair<WebtoonViewer, WebtoonAdapter> {
+        // Skip Android view construction while running the production binding and page-selection methods.
+        val viewer = mockk<WebtoonViewer>(relaxed = true)
+        val adapter = mockk<WebtoonAdapter>(relaxed = true)
+        WebtoonAdapter::class.java.getDeclaredField("items").apply { isAccessible = true }
+            .set(adapter, emptyList<Any>())
+        every { adapter.items } answers { callOriginal() }
+        every { adapter.setChapters(any(), any()) } answers { callOriginal() }
+        every { adapter["updateItems"](any<List<Any>>()) } answers { callOriginal() }
+        val recycler = mockk<WebtoonRecyclerView>(relaxed = true)
+        var visibility = View.GONE
+        every { recycler.visibility } answers { visibility }
+        every { recycler.visibility = any() } answers { visibility = firstArg() }
+        val config = mockk<WebtoonConfig> {
+            every { alwaysShowChapterTransition } returns false
+        }
+        for ((name, value) in listOf(
+            "adapter" to adapter,
+            "config" to config,
+            "recycler" to recycler,
+            "layoutManager" to layoutManager,
+        )) {
+            WebtoonViewer::class.java.getDeclaredField(name).apply { isAccessible = true }.set(viewer, value)
+        }
+        every { viewer.getView() } returns recycler
+        every { viewer.setChapters(any()) } answers { callOriginal() }
+        every { viewer.moveToPage(any()) } answers { callOriginal() }
+        // Scroll callbacks and drawing belong to the RecyclerView, outside this binding test.
+        every { layoutManager.findLastEndVisibleItemPosition() } returns 0
+        return viewer to adapter
     }
 
     private fun updateState(viewModel: ReaderViewModel, update: (ReaderViewModel.State) -> ReaderViewModel.State) {
