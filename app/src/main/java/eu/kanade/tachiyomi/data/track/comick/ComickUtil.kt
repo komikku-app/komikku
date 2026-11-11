@@ -13,7 +13,7 @@ internal fun String.asHidToLong(): Long {
 internal fun Long.toHid(): String {
     require(this in 0 until (1L shl 48)) { "Invalid Comick title ID" }
     return Base64.getUrlEncoder().withoutPadding().encodeToString(
-        ByteArray(6) { index -> (this shr (8 * (5 - index))).toByte() },
+        ByteArray(6) { index -> (this shr 8 * (5 - index)).toByte() },
     )
 }
 
