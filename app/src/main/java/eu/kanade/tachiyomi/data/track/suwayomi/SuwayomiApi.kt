@@ -182,6 +182,72 @@ class SuwayomiApi(private val trackId: Long) {
         return getTrackSearch(track.remote_id)
     }
 
+    // KMK -->
+    /**
+     * Adds chapters to the Suwayomi server's download queue; the server keeps downloading on its own.
+     * [chapterUrls] are the extension's chapter urls, "<mangaId> <sourceOrder>".
+     * Returns how many chapters the server accepted.
+     */
+    suspend fun enqueueChapterDownloads(chapterUrls: List<String>): Int = withIOContext {
+        val wanted = chapterUrls.map { url ->
+            val (mangaId, sourceOrder) = url.trim().split(' ')
+            mangaId.toInt() to sourceOrder.toInt()
+        }.toSet()
+        val idsQuery = $$"""
+        |query GetChapterIds($mangaIds: [Int!]!) {
+        |  chapters(filter: {mangaId: {in: $mangaIds}}) {
+        |    nodes {
+        |      id
+        |      mangaId
+        |      sourceOrder
+        |    }
+        |  }
+        |}
+        """.trimMargin()
+        val idsPayload = buildJsonObject {
+            put("query", idsQuery)
+            putJsonObject("variables") {
+                putJsonArray("mangaIds") { addAll(wanted.map { it.first }.distinct()) }
+            }
+        }
+        val chapterIds = with(json) {
+            client.newCall(POST(apiUrl, body = idsPayload.toString().toRequestBody(jsonMime)))
+                .awaitSuccess()
+                .parseAs<GetChapterIdsResult>()
+                .data
+                .chapters
+                .nodes
+                .filter { it.mangaId to it.sourceOrder in wanted }
+                .map { it.id }
+        }
+        check(chapterIds.size == wanted.size) {
+            "${wanted.size - chapterIds.size} chapter(s) not found on the Suwayomi server"
+        }
+
+        val enqueueQuery = $$"""
+        |mutation EnqueueChapterDownloads($ids: [Int!]!) {
+        |  enqueueChapterDownloads(input: {ids: $ids}) {
+        |    __typename
+        |  }
+        |}
+        """.trimMargin()
+        val enqueuePayload = buildJsonObject {
+            put("query", enqueueQuery)
+            putJsonObject("variables") {
+                putJsonArray("ids") { addAll(chapterIds) }
+            }
+        }
+        val response = with(json) {
+            client.newCall(POST(apiUrl, body = enqueuePayload.toString().toRequestBody(jsonMime)))
+                .awaitSuccess()
+                .parseAs<GraphQLErrorsResult>()
+        }
+        // GraphQL reports failures with HTTP 200, so check the errors field
+        response.errors?.firstOrNull()?.let { error(it.message) }
+        chapterIds.size
+    }
+    // KMK <--
+
     private val sourceId by lazy {
         val key = "tachidesk/en/1"
         val bytes = MessageDigest.getInstance("MD5").digest(key.toByteArray())

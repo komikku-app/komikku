@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
@@ -83,6 +84,9 @@ fun MangaBottomActionMenu(
     onMarkPreviousAsReadClicked: (() -> Unit)? = null,
     onDownloadClicked: (() -> Unit)? = null,
     onDeleteClicked: (() -> Unit)? = null,
+    // KMK -->
+    onDownloadOnServerClicked: (() -> Unit)? = null,
+    // KMK <--
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -96,7 +100,9 @@ fun MangaBottomActionMenu(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             val haptic = LocalHapticFeedback.current
-            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false) }
+            // KMK -->
+            val confirm = remember { mutableStateListOf(false, false, false, false, false, false, false, false) }
+            // KMK <--
             var resetJob by remember { mutableStateOf<Job?>(null) }
             val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -170,6 +176,17 @@ fun MangaBottomActionMenu(
                         onClick = onDownloadClicked,
                     )
                 }
+                // KMK -->
+                if (onDownloadOnServerClicked != null) {
+                    Button(
+                        title = stringResource(KMR.strings.action_download_on_server),
+                        icon = Icons.Outlined.CloudDownload,
+                        toConfirm = confirm[7],
+                        onLongClick = { onLongClickItem(7) },
+                        onClick = onDownloadOnServerClicked,
+                    )
+                }
+                // KMK <--
                 if (onDeleteClicked != null) {
                     Button(
                         title = stringResource(MR.strings.action_delete),
