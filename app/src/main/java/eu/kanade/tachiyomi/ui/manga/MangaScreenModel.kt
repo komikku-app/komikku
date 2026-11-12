@@ -1468,6 +1468,26 @@ class MangaScreenModel(
         toggleAllSelection(false)
     }
 
+    // KMK -->
+    val isSuwayomiSource: Boolean
+        get() = source?.let { trackerManager.suwayomi.accept(it) } == true
+
+    /** Queues the chapters on the Suwayomi server; unlike [downloadChapters] nothing is stored on this device. */
+    fun downloadChaptersOnServer(chapters: List<Chapter>) {
+        toggleAllSelection(false)
+        screenModelScope.launchIO {
+            val message = try {
+                val count = trackerManager.suwayomi.api.enqueueChapterDownloads(chapters.map { it.url })
+                context.stringResource(KMR.strings.download_on_server_queued, count)
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                with(context) { e.formattedMessage }
+            }
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+    // KMK <--
+
     /**
      * Deletes the given list of chapter.
      *

@@ -396,6 +396,9 @@ class MangaScreen(
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
+            // KMK -->
+            onDownloadOnServerClicked = screenModel::downloadChaptersOnServer.takeIf { screenModel.isSuwayomiSource },
+            // KMK <--
             onChapterSwipe = screenModel::chapterSwipe,
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
