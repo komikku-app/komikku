@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.Source
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -28,7 +29,6 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
-import exh.source.MERGED_SOURCE_ID
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -48,6 +48,10 @@ abstract class SearchScreenModel(
     private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
     // KMK <--
     private var searchJob: Job? = null
+    // KMK --> Incremented each time search() starts a new job; guards
+    // updateItems/updateItem against publishing from a canceled generation.
+    private var searchGeneration = 0
+    // KMK <--
 
     private val enabledLanguages = sourcePreferences.enabledLanguages().get()
     private val disabledSources = sourcePreferences.disabledSources().get()
@@ -170,6 +174,8 @@ abstract class SearchScreenModel(
         searchJob?.cancel()
 
         // KMK --> Keep search jobs attached to this screen model's lifecycle.
+        // Capture the generation so updateItems/updateItem can reject stale updates.
+        val generation = ++searchGeneration
         searchJob = screenModelScope.launch(Dispatchers.IO) {
             // KMK --> Source selection and initial row setup can touch many
             // sources, so do that work off the UI thread as Mihon does.
@@ -181,12 +187,14 @@ abstract class SearchScreenModel(
                     sources
                         .associateWith { existingResults[it] ?: SearchItemResult.Loading }
                         .toPersistentMap(),
+                    generation,
                 )
             } else {
                 updateItems(
                     sources
                         .associateWith { SearchItemResult.Loading }
                         .toPersistentMap(),
+                    generation,
                 )
             }
             // KMK <--
@@ -209,11 +217,11 @@ abstract class SearchScreenModel(
                             .let { networkToLocalManga(it) }
 
                         if (isActive) {
-                            updateItem(source, SearchItemResult.Success(titles))
+                            updateItem(source, SearchItemResult.Success(titles), generation)
                         }
                     } catch (e: Exception) {
                         if (isActive) {
-                            updateItem(source, SearchItemResult.Error(e))
+                            updateItem(source, SearchItemResult.Error(e), generation)
                         }
                     }
                 }
@@ -223,13 +231,15 @@ abstract class SearchScreenModel(
         // KMK <--
     }
 
-    private fun updateItems(items: Map<Source, SearchItemResult>) {
+    // KMK --> Guard both update functions against stale generations so a
+    // canceled search cannot overwrite rows or results from a newer search.
+    private fun updateItems(items: Map<Source, SearchItemResult>, generation: Int) {
         mutableState.update {
+            if (generation != searchGeneration) return@update it
             it.copy(
-                // KMK --> Mark the search as initialized so the single-result
-                // loading effect on the screen side knows rows are populated.
+                // Mark the search as initialized so the single-result loading
+                // effect on the screen side knows rows are populated.
                 searchInitialized = true,
-                // KMK <--
                 items = items
                     .toSortedMap(sortComparator(items))
                     .toPersistentMap(),
@@ -237,11 +247,10 @@ abstract class SearchScreenModel(
         }
     }
 
-    private fun updateItem(source: Source, result: SearchItemResult) {
-        // KMK --> Merge each completion into the latest state atomically.
-        // Reading state.value before updateItems() allowed simultaneous source
-        // completions to overwrite each other's results.
+    private fun updateItem(source: Source, result: SearchItemResult, generation: Int) {
+        // Merge each completion into the latest state atomically.
         mutableState.update { currentState ->
+            if (generation != searchGeneration) return@update currentState
             val newItems = currentState.items + (source to result)
             currentState.copy(
                 items = newItems
@@ -249,8 +258,8 @@ abstract class SearchScreenModel(
                     .toPersistentMap(),
             )
         }
-        // KMK <--
     }
+    // KMK <--
 
     fun setMigrateDialog(currentId: Long, target: Manga) {
         screenModelScope.launchIO {
