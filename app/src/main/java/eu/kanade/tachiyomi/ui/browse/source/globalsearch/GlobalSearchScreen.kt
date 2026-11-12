@@ -43,8 +43,21 @@ class GlobalSearchScreen(
         }
         val state by screenModel.state.collectAsState()
         var showSingleLoadingScreen by remember {
-            mutableStateOf(searchQuery.isNotEmpty() && !extensionFilter.isNullOrEmpty() && state.total == 1)
+            // KMK --> Use isNotBlank so a whitespace-only query (which search()
+            // rejects early, never flipping searchInitialized) does not leave
+            // the loading screen stuck.
+            mutableStateOf(searchQuery.isNotBlank() && !extensionFilter.isNullOrEmpty())
+            // KMK <--
         }
+
+        // KMK --> Keep the single-result loading screen active until the search
+        // job has populated its initial rows; before that, items is empty and
+        // singleOrNull() would return null, exiting the effect too early.
+        LaunchedEffect(state.searchInitialized) {
+            if (!state.searchInitialized) return@LaunchedEffect
+            if (state.total != 1) showSingleLoadingScreen = false
+        }
+        // KMK <--
 
         // KMK -->
         val bulkFavoriteScreenModel = rememberScreenModel { BulkFavoriteScreenModel() }
@@ -61,6 +74,11 @@ class GlobalSearchScreen(
             LoadingScreen()
 
             LaunchedEffect(state.items) {
+                // KMK --> Do not act on the initial empty map before the search
+                // job has populated rows; singleOrNull() on an empty map returns
+                // null and would clear showSingleLoadingScreen prematurely.
+                if (!state.searchInitialized) return@LaunchedEffect
+                // KMK <--
                 when (val result = state.items.values.singleOrNull()) {
                     SearchItemResult.Loading -> return@LaunchedEffect
                     is SearchItemResult.Success -> {

@@ -9,6 +9,9 @@ class GlobalSearchScreenModel(
 
     init {
         extensionFilter = initialExtensionFilter
+        // KMK --> Resolve the pinned-source default before the first search.
+        shouldPinnedSourcesHidden()
+        // KMK <--
         if (initialQuery.isNotBlank() || !initialExtensionFilter.isNullOrBlank()) {
             if (extensionFilter != null) {
                 // we're going to use custom extension filter instead
@@ -16,10 +19,6 @@ class GlobalSearchScreenModel(
             }
             search()
         }
-
-        // KMK -->
-        shouldPinnedSourcesHidden()
-        // KMK <--
     }
 
     override fun getEnabledSources(): List<Source> {
