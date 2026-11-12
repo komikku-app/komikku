@@ -217,10 +217,12 @@ class SuwayomiApi(private val trackId: Long) {
                 .data
                 .chapters
                 .nodes
-                .filter { (it.mangaId to it.sourceOrder) in wanted }
+                .filter { it.mangaId to it.sourceOrder in wanted }
                 .map { it.id }
         }
-        check(chapterIds.isNotEmpty()) { "Chapters not found on the Suwayomi server" }
+        check(chapterIds.size == wanted.size) {
+            "${wanted.size - chapterIds.size} chapter(s) not found on the Suwayomi server"
+        }
 
         val enqueueQuery = $$"""
         |mutation EnqueueChapterDownloads($ids: [Int!]!) {

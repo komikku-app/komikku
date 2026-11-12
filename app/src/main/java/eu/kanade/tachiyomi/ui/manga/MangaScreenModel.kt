@@ -1480,7 +1480,7 @@ class MangaScreenModel(
                 val count = trackerManager.suwayomi.api.enqueueChapterDownloads(chapters.map { it.url })
                 context.stringResource(KMR.strings.download_on_server_queued, count)
             } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e)
+                xLogE("Failed to queue chapters on Suwayomi", e)
                 with(context) { e.formattedMessage }
             }
             snackbarHostState.showSnackbar(message)

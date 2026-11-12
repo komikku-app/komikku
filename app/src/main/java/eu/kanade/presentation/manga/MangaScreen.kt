@@ -262,7 +262,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            // KMK -->
             onDownloadOnServerClicked = onDownloadOnServerClicked,
+            // KMK <--
             onChapterSwipe = onChapterSwipe,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
@@ -325,7 +327,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            // KMK -->
             onDownloadOnServerClicked = onDownloadOnServerClicked,
+            // KMK <--
             onChapterSwipe = onChapterSwipe,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
@@ -529,7 +533,9 @@ private fun MangaScreenSmallImpl(
                 onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
                 onDownloadChapter = onDownloadChapter,
                 onMultiDeleteClicked = onMultiDeleteClicked,
+                // KMK -->
                 onDownloadOnServerClicked = onDownloadOnServerClicked,
+                // KMK <--
                 fillFraction = 1f,
             )
         },
@@ -988,7 +994,9 @@ private fun MangaScreenLargeImpl(
                     onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
                     onDownloadChapter = onDownloadChapter,
                     onMultiDeleteClicked = onMultiDeleteClicked,
+                    // KMK -->
                     onDownloadOnServerClicked = onDownloadOnServerClicked,
+                    // KMK <--
                     fillFraction = 0.5f,
                 )
             }
