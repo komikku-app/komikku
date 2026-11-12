@@ -28,6 +28,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
+import exh.source.MERGED_SOURCE_ID
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -99,7 +100,9 @@ abstract class SearchScreenModel(
         // KMK --> Match Mihon's global-search source set, including local
         // sources and sources hidden from the regular source list.
         return sourceManager.getAll()
-            .filter { (it.lang in enabledLanguages || it.isLocal()) && "${it.id}" !in disabledSources }
+            // KMK --> Exclude the merged source — it has no real search implementation.
+            .filter { it.id != MERGED_SOURCE_ID && (it.lang in enabledLanguages || it.isLocal()) && "${it.id}" !in disabledSources }
+            // KMK <--
             .sortedWith(
                 compareBy(
                     { "${it.id}" !in pinnedSources },
@@ -171,6 +174,7 @@ abstract class SearchScreenModel(
             // KMK --> Source selection and initial row setup can touch many
             // sources, so do that work off the UI thread as Mihon does.
             val sources = getSelectedSources()
+            if (!isActive) return@launch
             if (sameQuery) {
                 val existingResults = state.value.items
                 updateItems(
@@ -222,6 +226,10 @@ abstract class SearchScreenModel(
     private fun updateItems(items: Map<Source, SearchItemResult>) {
         mutableState.update {
             it.copy(
+                // KMK --> Mark the search as initialized so the single-result
+                // loading effect on the screen side knows rows are populated.
+                searchInitialized = true,
+                // KMK <--
                 items = items
                     .toSortedMap(sortComparator(items))
                     .toPersistentMap(),
@@ -263,6 +271,10 @@ abstract class SearchScreenModel(
         val onlyShowHasResults: Boolean = false,
         val items: PersistentMap<Source, SearchItemResult> = persistentMapOf(),
         val dialog: Dialog? = null,
+        // KMK --> True once the first updateItems() call has populated rows;
+        // used by the single-result loading effect to avoid a false-empty exit.
+        val searchInitialized: Boolean = false,
+        // KMK <--
     ) {
         val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
