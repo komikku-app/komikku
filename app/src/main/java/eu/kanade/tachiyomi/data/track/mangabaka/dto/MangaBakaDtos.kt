@@ -21,6 +21,7 @@ private val TITLE_PRIORITIES = listOf("en", "ja-Latn", "ja", "ko-Latn", "ko", "z
     val type: String,
     val rating: Double? = null,
     val titles: List<MangaBakaTitle>? = null,
+    @SerialName("total_chapters") val totalChapters: String? = null,
 ) {
     fun bestTitle(): String = titles.orEmpty().let { all ->
         TITLE_PRIORITIES.firstNotNullOfOrNull { language ->
@@ -67,8 +68,21 @@ private val TITLE_PRIORITIES = listOf("en", "ja-Latn", "ja", "ko-Latn", "ko", "z
 @Serializable data class MangaBakaOAuth(
     @SerialName("access_token") val accessToken: String,
     @SerialName("refresh_token") val refreshToken: String,
-    @SerialName("expires_at") val expiresAt: Long,
+    @SerialName("expires_in") val expiresIn: Long? = null,
+    @SerialName("expires_at") val expiresAt: Long? = null,
 ) {
-    fun isExpired() = System.currentTimeMillis() / 1000 >= expiresAt - 60
+    fun withAbsoluteExpiry(): MangaBakaOAuth = if (expiresAt != null) {
+        this
+    } else {
+        copy(
+            expiresAt = System.currentTimeMillis() / 1000 + (expiresIn ?: DEFAULT_LIFETIME_SECONDS),
+            expiresIn = null,
+        )
+    }
+    fun isExpired() = System.currentTimeMillis() / 1000 >= (expiresAt ?: 0L) - 60
+
+    companion object {
+        private const val DEFAULT_LIFETIME_SECONDS = 3600L
+    }
 }
 // KMK <--

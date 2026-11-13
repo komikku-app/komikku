@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.setting.track
 
 import android.net.Uri
 import androidx.lifecycle.lifecycleScope
-import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.toast // KMK --> // KMK <--
 import kotlinx.coroutines.launch
 
 class TrackLoginActivity : BaseOAuthLoginActivity() {
@@ -40,15 +40,12 @@ class TrackLoginActivity : BaseOAuthLoginActivity() {
 
     // KMK -->
     private suspend fun handleMangaBaka(code: String?, state: String?) {
-        val tracker = trackerManager.mangaBaka
-        if (code != null && state != null && tracker.verifyOAuthState(state)) {
-            try {
-                tracker.login(code)
-            } catch (e: Exception) {
-                toast(e.message)
-            }
-        } else {
-            tracker.logout()
+        // Ignore malformed or unsolicited callbacks instead of signing the user out.
+        if (code.isNullOrBlank() || state.isNullOrBlank()) return
+        try {
+            trackerManager.mangaBaka.loginWithOAuth(code, state)
+        } catch (e: Exception) {
+            toast(e.message)
         }
     }
     // KMK <--
