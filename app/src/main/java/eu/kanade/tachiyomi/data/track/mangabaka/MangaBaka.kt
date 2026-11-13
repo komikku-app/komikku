@@ -60,7 +60,8 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
     override suspend fun bind(track: Track, hasReadChapters: Boolean): Track {
         val remote = api.find(track)
         if (remote != null) {
-            track.copyPersonalFrom(remote, copyRemotePrivate = false)
+            // Keep the remote privacy flag: the update below would otherwise publish a private entry.
+            track.copyPersonalFrom(remote)
             track.title = remote.title
             track.remote_id = remote.remote_id
             if (track.status != COMPLETED && track.status != REREADING && hasReadChapters) track.status = READING
@@ -80,12 +81,17 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
         track.title = remote.title
         return track
     }
-    override suspend fun login(username: String, password: String) = login(password)
-    suspend fun login(code: String) {
-        try {
-            val token = api.exchange(code)
-            interceptor.setAuth(token)
-            val profile = api.profile()
+    override suspend fun login(username: String, password: String) {
+        throw IllegalStateException("MangaBaka requires OAuth sign-in")
+    }
+    suspend fun loginWithOAuth(code: String, state: String) {
+        val verifier = MangaBakaApi.consumeVerifier(state)
+            ?: throw IllegalStateException("MangaBaka sign-in expired; try again")
+        val token = api.exchange(code, verifier)
+        interceptor.setAuth(token)
+        // The token is already valid at this point, so a failing profile request must not log out.
+        val profile = runCatching { api.profile() }.getOrNull()
+        if (profile != null) {
             scorePreference.set(
                 when (profile.ratingSteps) {
                     1 -> STEP_1
@@ -96,18 +102,16 @@ class MangaBaka(id: Long) : BaseTracker(id, "MangaBaka"), DeletableTracker {
                     else -> STEP_1
                 },
             )
-            saveCredentials(profile.nickname ?: profile.preferredUsername ?: profile.id, token.accessToken)
-        } catch (e: Exception) {
-            logout()
-            throw e
         }
+        saveCredentials(profile?.nickname ?: profile?.preferredUsername ?: profile?.id ?: name, token.accessToken)
     }
     fun saveToken(token: MangaBakaOAuth?) {
         val pref = trackPreferences.trackToken(this)
         if (token == null) pref.delete() else pref.set(json.encodeToString(token))
     }
-    fun restoreToken(): MangaBakaOAuth? = runCatching { json.decodeFromString<MangaBakaOAuth>(trackPreferences.trackToken(this).get()) }.getOrNull()
-    fun verifyOAuthState(state: String) = MangaBakaApi.verifyOAuthState(state)
+    fun restoreToken(): MangaBakaOAuth? = runCatching {
+        json.decodeFromString<MangaBakaOAuth>(trackPreferences.trackToken(this).get()).withAbsoluteExpiry()
+    }.getOrNull()
     override fun logout() {
         super.logout()
         trackPreferences.trackToken(this).delete()

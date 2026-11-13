@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.track.mangabaka
 
 import android.net.Uri
 import androidx.core.net.toUri
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.mangabaka.dto.MangaBakaItem
@@ -21,6 +22,8 @@ import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.toLocalDate
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -34,6 +37,7 @@ import java.security.SecureRandom
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Base64
+import java.util.concurrent.ConcurrentHashMap
 
 // KMK -->
 class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interceptor: MangaBakaInterceptor) {
@@ -42,16 +46,23 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         chain.proceed(chain.request().newBuilder().header("User-Agent", "Komikku/${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})").build())
     }.build()
     private val authClient = client.newBuilder().addInterceptor(interceptor).build()
+    private val libraryLocks = ConcurrentHashMap<Long, Mutex>()
 
     suspend fun add(track: Track): Track = withIOContext {
-        val body = trackBody(track).toRequestBody(jsonMime)
-        authClient.newCall(POST("$LIBRARY/${track.remote_id}", body = body)).awaitSuccess().close()
+        withLibraryLock(track.remote_id) {
+            val body = trackBody(track).toRequestBody(jsonMime)
+            authClient.newCall(POST("$LIBRARY/${track.remote_id}", body = body)).awaitSuccess().close()
+        }
         track
     }
     suspend fun update(track: Track): Track = withIOContext {
-        authClient.newCall(PUT("$LIBRARY/${track.remote_id}", body = trackBody(track).toRequestBody(jsonMime))).awaitSuccess().close()
+        withLibraryLock(track.remote_id) {
+            authClient.newCall(PUT("$LIBRARY/${track.remote_id}", body = trackBody(track).toRequestBody(jsonMime))).awaitSuccess().close()
+        }
         track
     }
+    private suspend fun <T> withLibraryLock(id: Long, block: suspend () -> T): T =
+        libraryLocks.computeIfAbsent(id) { Mutex() }.withLock { block() }
     private fun trackBody(track: Track) = buildJsonObject {
         put("state", track.status.toApiState())
         put("is_private", track.private)
@@ -70,6 +81,7 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
                 status = entry.state.toTrackStatus()
                 score = entry.rating?.toDouble() ?: 0.0
                 last_chapter_read = entry.progressChapter ?: 0.0
+                total_chapters = item.totalChapters?.toLongOrNull() ?: 0L
                 private = entry.isPrivate
                 started_reading_date = entry.startDate.toLocalEpoch()
                 finished_reading_date = entry.finishDate.toLocalEpoch()
@@ -94,6 +106,7 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         title = item.bestTitle()
         summary = item.description.orEmpty()
         score = item.rating ?: -1.0
+        total_chapters = item.totalChapters?.toLongOrNull() ?: 0L
         cover_url = item.cover.x250.x1.orEmpty()
         tracking_url = "$BASE/${item.id}"
         start_date = item.published.startDate.orEmpty()
@@ -106,12 +119,11 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         authClient.newCall(DELETE("$LIBRARY/$id")).awaitSuccess().close()
     }
     suspend fun profile(): MangaBakaUserProfile = withIOContext { with(json) { authClient.newCall(GET("$API/v1/my/profile")).awaitSuccess().parseAs<MangaBakaUserProfileResponse>().data } }
-    suspend fun exchange(code: String): MangaBakaOAuth = withIOContext {
+    suspend fun exchange(code: String, verifier: String): MangaBakaOAuth = withIOContext {
         val form = FormBody.Builder().add("client_id", CLIENT_ID).add("code", code).add("code_verifier", verifier)
             .add("code_challenge_method", "S256").add("grant_type", "authorization_code").add("redirect_uri", REDIRECT).add("scope", SCOPES).build()
-        with(json) { client.newCall(POST("$OAUTH/token", body = form)).awaitSuccess().parseAs<MangaBakaOAuth>() }
+        with(json) { client.newCall(POST("$OAUTH/token", body = form)).awaitSuccess().parseAs<MangaBakaOAuth>() }.withAbsoluteExpiry()
     }
-    fun verifyState(state: String) = state == oauthState
 
     private fun Long.toLocalDateString() = java.time.Instant.ofEpochMilli(this).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
     private fun String?.toLocalEpoch(): Long = this?.substringBefore('T')?.let { LocalDate.parse(it).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() } ?: 0L
@@ -143,19 +155,56 @@ class MangaBakaApi(private val trackerId: Long, baseClient: OkHttpClient, interc
         private const val CLIENT_ID = "zEZYMHXLWsLsafgbvJHXqzGvqQNOdkpo"
         private const val REDIRECT = "mihon://mangabaka-auth"
         private const val SCOPES = "library.read library.write offline_access openid"
-        private var verifier = ""
-        private var oauthState = ""
+        private const val PENDING_TTL_MS = 10 * 60 * 1000L
+        private val trackPreferences: TrackPreferences by injectLazy()
+
+        // Pending PKCE flows are persisted so they survive process death, and keyed by state so a
+        // second sign-in attempt cannot invalidate the first one.
+        private fun readPending(): MutableMap<String, Pair<String, Long>> = runCatching {
+            trackPreferences.mangabakaOAuthPending().get()
+                .split(';')
+                .filter { it.isNotBlank() }
+                .mapNotNull { entry ->
+                    val parts = entry.split(':')
+                    if (parts.size != 3) return@mapNotNull null
+                    val createdAt = parts[2].toLongOrNull() ?: return@mapNotNull null
+                    parts[0].takeIf { it.isNotBlank() }?.let { it to (parts[1] to createdAt) }
+                }
+                .toMap()
+                .toMutableMap()
+        }.getOrDefault(mutableMapOf<String, Pair<String, Long>>())
+
+        private fun writePending(pending: Map<String, Pair<String, Long>>) {
+            trackPreferences.mangabakaOAuthPending().set(
+                pending.entries.joinToString(";") { (state, value) -> "$state:${value.first}:${value.second}" },
+            )
+        }
+
+        @Synchronized
         fun authUrl(): Uri {
             val random = ByteArray(32).also(SecureRandom()::nextBytes)
-            verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
+            val verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(random)
             val challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray()))
-            oauthState = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(16).also(SecureRandom()::nextBytes))
+            val state = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(16).also(SecureRandom()::nextBytes))
+            val now = System.currentTimeMillis()
+            val pending = readPending()
+            pending.entries.removeAll { now - it.value.second > PENDING_TTL_MS }
+            pending[state] = verifier to now
+            writePending(pending)
             return "$OAUTH/authorize".toUri().buildUpon().appendQueryParameter("client_id", CLIENT_ID).appendQueryParameter("code_challenge", challenge)
                 .appendQueryParameter("code_challenge_method", "S256").appendQueryParameter("response_type", "code").appendQueryParameter("scope", SCOPES)
-                .appendQueryParameter("redirect_uri", REDIRECT).appendQueryParameter("state", oauthState).build()
+                .appendQueryParameter("redirect_uri", REDIRECT).appendQueryParameter("state", state).build()
         }
+
+        @Synchronized
+        fun consumeVerifier(state: String): String? {
+            val pending = readPending()
+            val entry = pending.remove(state) ?: return null
+            writePending(pending)
+            return entry.first.takeIf { System.currentTimeMillis() - entry.second <= PENDING_TTL_MS }
+        }
+
         fun refreshTokenRequest(token: String) = POST("$OAUTH/token", body = FormBody.Builder().add("grant_type", "refresh_token").add("client_id", CLIENT_ID).add("refresh_token", token).add("redirect_uri", REDIRECT).build())
-        fun verifyOAuthState(state: String) = state == oauthState
     }
 }
 // KMK <--
