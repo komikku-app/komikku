@@ -708,10 +708,11 @@
     <string name="merge_dedupe_priority">Приоритет</string>
     <string name="merge_dedupe_most">Большинство</string>
     <string name="merge_dedupe_highest">Наивысший</string>
-    <string name="merge_dedupe_keep_all_summary">Показывать все главы из всех серий.</string>
+    <string name="merge_dedupe_keep_all_summary">Показывать все главы из всех серий, отсортировав по приоритету серий.</string>
     <string name="merge_dedupe_priority_summary">Показывать каждую главу один раз, используя самую верхнюю запись, в которой она встречается.</string>
     <string name="merge_dedupe_most_summary">Показывать только главы из серии с наибольшим количеством глав.</string>
     <string name="merge_dedupe_highest_summary">Показывать только главы из серии с самым высоким номером главы.</string>
     <string name="merge_info_source">Информация об источнике</string>
     <string name="merge_drag_to_set_priority">Перетащить, чтобы задать приоритет</string>
+    <string name="collate_tags">Объединить тэги</string>
 </resources>

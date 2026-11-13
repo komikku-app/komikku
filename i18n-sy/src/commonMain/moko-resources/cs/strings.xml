@@ -128,4 +128,5 @@
     <string name="wsrv">wsrv.nl</string>
     <string name="bandwidth_data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Zadejte sem adresu proxy serveru Bandwidth Hero</string>
+    <string name="invert_double_pages">Invertovat dvojité strany</string>
 </resources>

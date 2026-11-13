@@ -85,4 +85,14 @@
         <item quantity="many">%d linhas</item>
         <item quantity="other">%d linhas</item>
     </plurals>
+    <plurals name="num_favorites">
+        <item quantity="one">%1$s favorito</item>
+        <item quantity="many">%1$s favoritos</item>
+        <item quantity="other">%1$s favoritos</item>
+    </plurals>
+    <plurals name="num_views">
+        <item quantity="one">%1$s visualização</item>
+        <item quantity="many">%1$s visualizações</item>
+        <item quantity="other">%1$s visualizações</item>
+    </plurals>
 </resources>

@@ -297,7 +297,6 @@
     <string name="save_search_delete">Kaydedilmiş arama sorgusunu sil?</string>
     <string name="no_source_categories">Kaynak kategori mavcut değil</string>
     <string name="favorites_sync_failed_to_featch">Uzak sunucudan favoriler getirilemedi!</string>
-    <string name="action_stop">Durdur</string>
     <string name="favorites_syncing">Favoriler eşitleniyor</string>
     <string name="favorites_sync_sync_error">Eşitleme hatası!</string>
     <string name="select_tracker">Bir izleyici seçin</string>
@@ -634,10 +633,20 @@
     <string name="merge_dedupe_priority">Öncelik</string>
     <string name="merge_dedupe_most">Çoğunluğu</string>
     <string name="merge_dedupe_highest">En yüksek</string>
-    <string name="merge_dedupe_keep_all_summary">Tüm girdilerin bölümlerini göster.</string>
+    <string name="merge_dedupe_keep_all_summary">Tüm girdilerin bölümlerini girdi önceliğine göre sıralayarak göster.</string>
     <string name="merge_dedupe_priority_summary">Alt girdilerden en yüksektekini kullanarak her girdiyi bir kere göster.</string>
     <string name="merge_dedupe_most_summary">Sadece en çok bölüm içeren girdinin bölümlerini göster.</string>
     <string name="merge_dedupe_highest_summary">Sadece bölüm numarası en yüksek olan girdinin bölümlerini göster.</string>
     <string name="merge_info_source">Bilgi kaynağı</string>
     <string name="merge_drag_to_set_priority">Öncelik ayarlamak için sürükleyin</string>
+    <string name="action_stop">Durdur</string>
+    <string name="eh_autoscroll_gestures">Otomatik kaydırma hareketleri</string>
+    <string name="eh_autoscroll_gestures_help">Otomatik kaydırma hareketleri yardımı</string>
+    <string name="eh_autoscroll_gestures_help_message">Otomatik kaydırma açık:\n- Duraklatmak ya da devam ettirmek için dokunun\n- Yukarı ya da aşağı kaydırarak hızı ayarlayın\n- Elle kaydırmak için iki parmağınızı kullanın\n- Durdurmak için yana kaydırın\n\nOtomatik kaydırma kapalı:\n- Başlatmak için yana kaydırın\n\nHareketleri kullanmak için okuyucu menüsünü kapatın.</string>
+    <string name="eh_autoscroll_gesture_toasts">Hareket bildirimleri</string>
+    <string name="eh_autoscroll_gesture_toasts_help">Hareket bildirimleri yardımı</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Bu seçenek etkin olduğunda başlatma, duraklatma, devam etme, durdurma, hız değiştirme veya bölüm değiştirme gibi otomatik kaydırma eylemlerinden sonra okuyucu tarafından bir bilgi mesajı gösterilir. Bu seçenek devre dışı olduğunda tüm hareketler aynı şekilde çalışır ancak bilgi mesajları gösterilmez.</string>
+    <string name="remove_merged_entries">Girdileri kitaplıktan kaldır</string>
+    <string name="collate_tags">Etiketleri birleştir</string>
+    <string name="action_sort_feed">Akışı sırala</string>
 </resources>

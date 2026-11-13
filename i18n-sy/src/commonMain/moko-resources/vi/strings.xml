@@ -222,4 +222,6 @@
     <string name="center_margin_none">Không</string>
     <string name="custom_igneous_cookie">Cookie igneous tùy chỉnh</string>
     <string name="manga_updates_id">ID MangaUpdates</string>
+    <string name="action_stop">Tạm dừng</string>
+    <string name="toggle_hentai_features">Bật những chức năng hentai được tích hợp</string>
 </resources>

@@ -84,4 +84,22 @@
         <item quantity="many">%d časovačů uzamčení</item>
         <item quantity="other">%d časovačů uzamčení</item>
     </plurals>
+    <plurals name="num_favorites">
+        <item quantity="one">%1$s oblíbený</item>
+        <item quantity="few">%1$s oblíbené</item>
+        <item quantity="many">%1$s oblíbených</item>
+        <item quantity="other">%1$s oblíbených</item>
+    </plurals>
+    <plurals name="num_views">
+        <item quantity="one">%1$s zobrazení</item>
+        <item quantity="few">%1$s zobrazení</item>
+        <item quantity="many">%1$s zobrazení</item>
+        <item quantity="other">%1$s zobrazení</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="one">Pro %d vybranou položku</item>
+        <item quantity="few">Pro %d vybrané položky</item>
+        <item quantity="many">Pro %d vybraných položek</item>
+        <item quantity="other">Pro %d vybraných položek</item>
+    </plurals>
 </resources>

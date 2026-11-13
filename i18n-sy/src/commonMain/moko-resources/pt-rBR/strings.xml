@@ -623,7 +623,6 @@
     <string name="feed_delete">Excluir item do feed?</string>
     <string name="feed_add">Adicionar %1$s ao feed?</string>
     <string name="delete_tag">Excluir tag</string>
-    <string name="action_stop">Parar</string>
     <string name="rec_services_to_search">Serviços de recomendação para busca</string>
     <string name="too_many_in_feed">Muitas fontes no seu feed, não é possível adicionar mais de 10</string>
     <string name="rec_hide_library_entries">Ocultar resultados já existentes em sua biblioteca</string>
@@ -665,4 +664,18 @@
     <string name="data_saver_stop_exclude">Parar de excluir da economia de dados</string>
     <string name="rec_processing_state">Processando entrada %1$d de %2$d</string>
     <string name="base_url">Url base</string>
+    <string name="action_stop">Pare</string>
+    <string name="eh_autoscroll_gestures_help_message">Rolagem automática ativada:\n• Toque para pausar ou retomar\n• Deslize para cima ou para baixo para ajustar a velocidade\n• Arraste com dois dedos para rolar manualmente\n• Deslize para os lados para parar\n\nRolagem automática desativada:\n• Deslize para os lados para iniciar\n\nFeche o menu de leitura para usar gestos.</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Quando esta opção está ativada, o leitor exibe mensagens flutuantes (toast) após os gestos de rolagem automática executarem ações como iniciar, pausar, retomar, parar, alterar a velocidade ou navegar pelo capítulo. Quando esta opção está desativada, os gestos continuam funcionando da mesma forma, mas essas mensagens informativas não são exibidas.</string>
+    <string name="entry_description">Descrição</string>
+    <string name="entry_tags">Tags</string>
+    <string name="total_views">Visualizações totais</string>
+    <string name="total_downloads">Downloads totais</string>
+    <string name="merge_duplicate_chapters">Capítulos duplicados</string>
+    <string name="merge_dedupe_keep_all">Manter tudo</string>
+    <string name="merge_dedupe_priority">Prioridade</string>
+    <string name="merge_dedupe_most">Mais</string>
+    <string name="merge_dedupe_highest">Mais alto</string>
+    <string name="merge_dedupe_keep_all_summary">Mostre todos os capítulos de cada entrada, ordenados pela prioridade da entrada.</string>
+    <string name="merge_drag_to_set_priority">Segure para definir prioridade</string>
 </resources>
