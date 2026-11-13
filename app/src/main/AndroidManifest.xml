@@ -203,6 +203,9 @@
 
                 <data android:host="anilist-auth" />
                 <data android:host="bangumi-auth" />
+                <!-- KMK -> -->
+                <data android:host="mangabaka-auth" />
+                <!-- KMK <- -->
                 <data android:host="myanimelist-auth" />
                 <data android:host="shikimori-auth" />
             </intent-filter>
