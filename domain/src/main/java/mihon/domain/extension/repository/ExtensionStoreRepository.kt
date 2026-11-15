@@ -1,21 +1,25 @@
 package mihon.domain.extension.repository
 
-import eu.kanade.tachiyomi.extension.model.Extension
 import kotlinx.coroutines.flow.Flow
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.ExtensionStoresRefresh
+import mihon.domain.extension.model.FetchedExtensions
 
 interface ExtensionStoreRepository {
     suspend fun insert(indexUrl: String): Result<Unit>
 
     suspend fun insertFromPreference(indexUrl: String, name: String)
 
-    suspend fun refreshAll()
+    // KMK -->
+    /** Refreshes the metadata of every saved store. */
+    suspend fun refreshAll(): ExtensionStoresRefresh
+    // KMK <--
 
     suspend fun fetchExtensions(
         // KMK -->
         disabledRepos: Set<String>,
-        // KMK <--
-    ): List<Extension.Available>
+    ): FetchedExtensions
+    // KMK <--
 
     suspend fun getAll(): List<ExtensionStore>
 

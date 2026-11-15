@@ -1,13 +1,18 @@
 package mihon.data.extension.repository
 
-import eu.kanade.tachiyomi.extension.model.Extension
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import mihon.data.extension.service.ExtensionStoreService
+import mihon.domain.extension.model.ChangedExtensionStore
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.ExtensionStoreChangedException
+import mihon.domain.extension.model.ExtensionStoresRefresh
+import mihon.domain.extension.model.FetchedExtensions
+import mihon.domain.extension.model.NO_SIGNING_KEY
+import mihon.domain.extension.model.canBeRefreshedTo
 import mihon.domain.extension.repository.ExtensionStoreRepository
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
@@ -26,7 +31,9 @@ class ExtensionStoreRepositoryImpl(
                 indexUrl = indexUrl,
                 name = name,
                 badgeLabel = name,
-                signingKey = "NO_SIGNING_KEY",
+                // KMK -->
+                signingKey = NO_SIGNING_KEY,
+                // KMK <--
                 contactWebsite = indexUrl,
                 contactDiscord = null,
                 isLegacy = false,
@@ -35,29 +42,72 @@ class ExtensionStoreRepositoryImpl(
         }
     }
 
-    override suspend fun refreshAll() {
+    // KMK -->
+    override suspend fun refreshAll(): ExtensionStoresRefresh {
+        val renamed = mutableMapOf<String, String>()
+        val changed = mutableListOf<ChangedExtensionStore>()
+        // KMK <--
         try {
-            handler.awaitList {
-                extension_storeQueries.getAll()
-            }.forEach { store ->
-                service.fetch(store.index_url)
+            // KMK -->
+            val savedStores = handler.awaitList {
+                extension_storeQueries.getAll(::extensionStoreMapper)
+            }
+                .associateBy { it.indexUrl }
+                .toMutableMap()
+            savedStores.values.toList().forEach { store ->
+                service.fetch(store.indexUrl)
+                    // KMK <--
                     .mapCatching {
-                        handler.await {
-                            upsert(it)
-                            if (store.index_url != it.indexUrl) {
-                                extension_storeQueries.delete(store.index_url)
+                        // KMK -->
+                        // A refresh must not turn a saved store into another store (e.g. a repo that now
+                        // points to another store's index), or that store's extensions would be listed
+                        // under this store's signing key and name.
+                        if (!store.canBeRefreshedTo(it, savedStores.values)) {
+                            logcat(LogPriority.WARN) {
+                                "Not refreshing extension store '${store.name} (${store.indexUrl})': it now serves " +
+                                    "'${it.name} (${it.indexUrl})' signed by ${it.signingKey} " +
+                                    "instead of ${store.signingKey}"
                             }
+                            changed += ChangedExtensionStore(store, servedName = it.name)
+                            return@mapCatching
                         }
+                        // KMK <--
+                        // KMK -->
+                        val applied = handler.await(inTransaction = true) {
+                            // The user may have removed the store while it was being fetched:
+                            // don't bring it back
+                            if (extension_storeQueries.get(store.indexUrl).executeAsOneOrNull() == null) {
+                                return@await false
+                            }
+                            // KMK <--
+                            upsert(it)
+                            // KMK -->
+                            if (store.indexUrl != it.indexUrl) {
+                                extension_storeQueries.delete(store.indexUrl)
+                                renamed[store.indexUrl] = it.indexUrl
+                            }
+                            true
+                            // KMK <--
+                        }
+                        // KMK -->
+                        savedStores.remove(store.indexUrl)
+                        if (applied) savedStores[it.indexUrl] = it
+                        // KMK <--
                     }
                     .onFailure {
                         logcat(LogPriority.ERROR, it) {
-                            "Failed to refresh extension store '${store.name} (${store.index_url})'"
+                            // KMK -->
+                            "Failed to refresh extension store '${store.name} (${store.indexUrl})'"
+                            // KMK <--
                         }
                     }
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
         }
+        // KMK -->
+        return ExtensionStoresRefresh(renamed = renamed, changed = changed)
+        // KMK <--
     }
 
     private suspend fun upsert(store: ExtensionStore) {
@@ -78,11 +128,13 @@ class ExtensionStoreRepositoryImpl(
     override suspend fun fetchExtensions(
         // KMK -->
         disabledRepos: Set<String>,
+    ): FetchedExtensions {
         // KMK <--
-    ): List<Extension.Available> {
         return try {
             supervisorScope {
-                handler.awaitList {
+                // KMK -->
+                val results = handler.awaitList {
+                    // KMK <--
                     extension_storeQueries.getAll(::extensionStoreMapper)
                 }
                     // KMK -->
@@ -98,11 +150,20 @@ class ExtensionStoreRepositoryImpl(
                         }
                     }
                     .awaitAll()
-                    .flatMap { it.getOrDefault(emptyList()) }
+                // KMK -->
+                FetchedExtensions(
+                    extensions = results.flatMap { it.getOrDefault(emptyList()) },
+                    changedStores = results.mapNotNull {
+                        (it.exceptionOrNull() as? ExtensionStoreChangedException)?.changed
+                    },
+                )
+                // KMK <--
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
-            emptyList()
+            // KMK -->
+            FetchedExtensions()
+            // KMK <--
         }
     }
 

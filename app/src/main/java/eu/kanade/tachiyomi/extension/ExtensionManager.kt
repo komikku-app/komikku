@@ -2,15 +2,20 @@ package eu.kanade.tachiyomi.extension
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.extension.api.ExtensionUpdateNotifier
+import eu.kanade.tachiyomi.extension.model.AvailableExtensionVersionComparator
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.extension.model.LoadResult
+import eu.kanade.tachiyomi.extension.model.findAvailable
+import eu.kanade.tachiyomi.extension.model.identityKey
+import eu.kanade.tachiyomi.extension.model.isOutdatedComparedTo
 import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
@@ -32,10 +37,14 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
+import mihon.domain.extension.model.ChangedExtensionStore
+import mihon.domain.extension.model.label
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -189,6 +198,10 @@ class ExtensionManager(
     suspend fun findAvailableExtensions() {
         val extensions: List<Extension.Available> = try {
             api.findExtensions()
+                // KMK -->
+                .also { warnAboutChangedStores(it.changedStores) }
+                .extensions
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             withUIContext { context.toast(MR.strings.extension_api_error) }
@@ -197,15 +210,38 @@ class ExtensionManager(
 
         enableAdditionalSubLanguages(extensions)
 
-        availableExtensionMapFlow.value = extensions.associateBy {
-            it.pkgName +
-                // KMK -->
-                "_${it.signatureHash}"
-            // KMK <--
-        }
+        // KMK -->
+        // Several stores can list the same package signed by the same key: keep the newest one, which is
+        // also the one updatedInstalledExtensionsStatuses picks as the update.
+        availableExtensionMapFlow.value = extensions
+            .groupBy { it.identityKey }
+            .mapValues { (_, sameExtensions) -> sameExtensions.maxWith(AvailableExtensionVersionComparator) }
+        // KMK <--
         updatedInstalledExtensionsStatuses(extensions)
         setupAvailableExtensionsSourcesDataMap(extensions)
     }
+
+    // KMK -->
+    /**
+     * Tells the user about saved stores whose URL now serves another store, signed by another key. Their
+     * extensions aren't listed until the user removes the store and adds it again.
+     */
+    suspend fun warnAboutChangedStores(stores: List<ChangedExtensionStore>) {
+        if (stores.isEmpty()) return
+        withUIContext {
+            stores.distinctBy { it.store.indexUrl }.forEach {
+                context.toast(
+                    context.stringResource(
+                        KMR.strings.ext_store_signing_key_changed,
+                        it.store.name,
+                        it.servedName,
+                    ),
+                    Toast.LENGTH_LONG,
+                )
+            }
+        }
+    }
+    // KMK <--
 
     /**
      * Enables the additional sub-languages in the app first run. This addresses
@@ -246,12 +282,9 @@ class ExtensionManager(
         val installedExtensionsMap = installedExtensionMapFlow.value.toMutableMap()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
-            val availableExt = availableExtensions.find {
-                // KMK -->
-                it.signatureHash == extension.signatureHash &&
-                    // KMK <--
-                    it.pkgName == pkgName
-            }
+            // KMK -->
+            val availableExt = extension.findAvailable(availableExtensions)
+            // KMK <--
 
             if (availableExt == null &&
                 (!extension.isObsolete || /* KMK --> */ extension.hasUpdate /* KMK <-- */)
@@ -278,7 +311,7 @@ class ExtensionManager(
                     hasUpdate = hasUpdate,
                     store = availableExt.store,
                     isObsolete = false,
-                    storeName = extension.storeName ?: availableExt.storeName,
+                    storeName = extension.storeName ?: availableExt.store.label,
                 )
                 // KMK <--
                 changed = true
@@ -309,12 +342,9 @@ class ExtensionManager(
      * @param extension The extension to be updated.
      */
     fun updateExtension(extension: Extension.Installed): Flow<InstallStep> {
-        val availableExt = availableExtensionMapFlow.value[
-            extension.pkgName +
-                // KMK -->
-                "_${extension.signatureHash}",
-            // KMK <--
-        ] ?: return emptyFlow()
+        // KMK -->
+        val availableExt = availableExtensionMapFlow.value[extension.identityKey] ?: return emptyFlow()
+        // KMK <--
         return installExtension(availableExt)
     }
 
@@ -452,10 +482,14 @@ class ExtensionManager(
 
     private fun Extension.Installed.updateExists(availableExtension: Extension.Available? = null): Boolean {
         val availableExt = availableExtension
-            ?: availableExtensionMapFlow.value[pkgName]
+            // KMK -->
+            ?: availableExtensionMapFlow.value[identityKey]
+            // KMK <--
             ?: return false
 
-        return (availableExt.versionCode > versionCode || availableExt.libVersion > libVersion)
+        // KMK -->
+        return isOutdatedComparedTo(availableExt)
+        // KMK <--
     }
 
     private fun updatePendingUpdatesCount() {

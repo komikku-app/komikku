@@ -13,7 +13,10 @@ import mihon.data.extension.model.NetworkExtensionStore
 import mihon.data.extension.model.NetworkLegacyExtension
 import mihon.data.extension.model.NetworkLegacyExtensionRepo
 import mihon.data.extension.model.toAvailableExtensions
+import mihon.domain.extension.model.ChangedExtensionStore
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.ExtensionStoreChangedException
+import mihon.domain.extension.model.NO_SIGNING_KEY
 import okio.BufferedSource
 import okio.buffer
 import okio.gzip
@@ -98,6 +101,18 @@ class ExtensionStoreService(
                         0x7B.toByte() -> json.decodeFromBufferedSource<NetworkExtensionStore>(source)
                         else -> protoBuf.decodeFromByteArray<NetworkExtensionStore>(source.readByteArray())
                     }
+                        // KMK -->
+                        // The extensions are listed under the saved store's signing key, so only accept
+                        // them if the index is still signed by that key. Otherwise the URL serves another
+                        // store now, and a refresh of the store decides what to do with it.
+                        .also { fetched ->
+                            if (store.signingKey != NO_SIGNING_KEY && fetched.signingKey != store.signingKey) {
+                                throw ExtensionStoreChangedException(
+                                    ChangedExtensionStore(store, servedName = fetched.name),
+                                )
+                            }
+                        }
+                        // KMK <--
                         .extensionList!!
                         .toAvailableExtensions(store)
                 }

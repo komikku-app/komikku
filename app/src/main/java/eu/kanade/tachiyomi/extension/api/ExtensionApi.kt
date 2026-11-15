@@ -1,14 +1,17 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
+import eu.kanade.domain.extension.interactor.RefreshExtensionStores
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
+import eu.kanade.tachiyomi.extension.model.findAvailable
+import eu.kanade.tachiyomi.extension.model.isOutdatedComparedTo
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import exh.source.BlacklistedSources
 import exh.source.ExhPreferences
-import mihon.domain.extension.interactor.UpdateExtensionStores
+import mihon.domain.extension.model.FetchedExtensions
 import mihon.domain.extension.repository.ExtensionStoreRepository
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -24,7 +27,9 @@ internal class ExtensionApi {
     private val repository: ExtensionStoreRepository by injectLazy()
 
     private val preferenceStore: PreferenceStore by injectLazy()
-    private val updateExtensionStores: UpdateExtensionStores by injectLazy()
+    // KMK -->
+    private val refreshExtensionStores: RefreshExtensionStores by injectLazy()
+    // KMK <--
     private val extensionManager: ExtensionManager by injectLazy()
 
     // SY -->
@@ -35,7 +40,9 @@ internal class ExtensionApi {
         preferenceStore.getLong(Preference.appStateKey("last_ext_check"), 0)
     }
 
-    suspend fun findExtensions(): List<Extension.Available> {
+    // KMK -->
+    suspend fun findExtensions(): FetchedExtensions {
+        // KMK <--
         // KMK -->
         val disabledRepos = sourcePreferences.disabledRepos().get()
         // KMK <--
@@ -59,13 +66,22 @@ internal class ExtensionApi {
             return null
         }
 
-        updateExtensionStores()
+        // KMK -->
+        val changedStores = refreshExtensionStores().toMutableList()
+        // KMK <--
 
         val extensions = if (fromAvailableExtensionList) {
             extensionManager.availableExtensionsFlow.value
         } else {
             findExtensions().also { lastExtCheck.set(Instant.now().toEpochMilli()) }
+                // KMK -->
+                .also { changedStores += it.changedStores }
+                .extensions
+            // KMK <--
         }
+        // KMK -->
+        extensionManager.warnAboutChangedStores(changedStores)
+        // KMK <--
 
         // SY -->
         val blacklistEnabled = sourcePreferences.enableSourceBlacklist().get()
@@ -80,11 +96,11 @@ internal class ExtensionApi {
 
         val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {
-            val pkgName = installedExt.pkgName
-            val availableExt = extensions.find { it.pkgName == pkgName } ?: continue
-            val hasUpdatedVer = availableExt.versionCode > installedExt.versionCode
-            val hasUpdatedLib = availableExt.libVersion > installedExt.libVersion
-            val hasUpdate = hasUpdatedVer || hasUpdatedLib
+            // KMK -->
+            // Match on package name and signing key: other stores can publish the same package name
+            val availableExt = installedExt.findAvailable(extensions) ?: continue
+            val hasUpdate = installedExt.isOutdatedComparedTo(availableExt)
+            // KMK <--
             if (hasUpdate) {
                 extensionsWithUpdate.add(installedExt)
             }
