@@ -128,10 +128,20 @@ open class RecommendsScreenModel(
     }
 
     private fun updateItem(source: RecommendationPagingSource, result: RecommendationItemResult) {
-        val newItems = state.value.items.mutate {
-            it[source] = result
+        // KMK -->
+        // Read the items inside update {} so results finishing at the same time don't overwrite
+        // each other and leave a source loading forever (mihonapp/mihon#4037)
+        mutableState.update { currentState ->
+            val newItems = currentState.items.mutate {
+                it[source] = result
+            }
+            currentState.copy(
+                items = newItems
+                    .toSortedMap(sortComparator(newItems))
+                    .toPersistentMap(),
+            )
         }
-        updateItems(newItems)
+        // KMK <--
     }
 
     @Immutable

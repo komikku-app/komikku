@@ -61,6 +61,10 @@ abstract class SearchScreenModel(
             { (map[it] as? SearchItemResult.Success)?.isEmpty ?: true },
             { "${it.id}" !in pinnedSources },
             { "${it.name.lowercase()} (${it.lang})" },
+            // KMK -->
+            // toSortedMap() drops keys that compare equal, so sources sharing a name and language need a unique tie-breaker
+            { it.id },
+            // KMK <--
         )
     }
 
