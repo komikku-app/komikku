@@ -1,8 +1,9 @@
 package mihon.domain.extension.repository
 
-import eu.kanade.tachiyomi.extension.model.Extension
 import kotlinx.coroutines.flow.Flow
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.ExtensionStoresRefresh
+import mihon.domain.extension.model.FetchedExtensions
 
 interface ExtensionStoreRepository {
     suspend fun insert(indexUrl: String): Result<Unit>
@@ -10,19 +11,15 @@ interface ExtensionStoreRepository {
     suspend fun insertFromPreference(indexUrl: String, name: String)
 
     // KMK -->
-    /**
-     * Refreshes the metadata of every saved store.
-     *
-     * @return the index URLs that changed, old URL to new URL.
-     */
-    suspend fun refreshAll(): Map<String, String>
+    /** Refreshes the metadata of every saved store. */
+    suspend fun refreshAll(): ExtensionStoresRefresh
     // KMK <--
 
     suspend fun fetchExtensions(
         // KMK -->
         disabledRepos: Set<String>,
-        // KMK <--
-    ): List<Extension.Available>
+    ): FetchedExtensions
+    // KMK <--
 
     suspend fun getAll(): List<ExtensionStore>
 

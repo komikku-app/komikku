@@ -1,13 +1,16 @@
 package mihon.data.extension.repository
 
-import eu.kanade.tachiyomi.extension.model.Extension
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
 import mihon.data.extension.service.ExtensionStoreService
+import mihon.domain.extension.model.ChangedExtensionStore
 import mihon.domain.extension.model.ExtensionStore
+import mihon.domain.extension.model.ExtensionStoreChangedException
+import mihon.domain.extension.model.ExtensionStoresRefresh
+import mihon.domain.extension.model.FetchedExtensions
 import mihon.domain.extension.model.NO_SIGNING_KEY
 import mihon.domain.extension.model.canBeRefreshedTo
 import mihon.domain.extension.repository.ExtensionStoreRepository
@@ -40,8 +43,9 @@ class ExtensionStoreRepositoryImpl(
     }
 
     // KMK -->
-    override suspend fun refreshAll(): Map<String, String> {
+    override suspend fun refreshAll(): ExtensionStoresRefresh {
         val renamed = mutableMapOf<String, String>()
+        val changed = mutableListOf<ChangedExtensionStore>()
         // KMK <--
         try {
             // KMK -->
@@ -64,6 +68,7 @@ class ExtensionStoreRepositoryImpl(
                                     "'${it.name} (${it.indexUrl})' signed by ${it.signingKey} " +
                                     "instead of ${store.signingKey}"
                             }
+                            changed += ChangedExtensionStore(store, servedName = it.name)
                             return@mapCatching
                         }
                         // KMK <--
@@ -101,7 +106,7 @@ class ExtensionStoreRepositoryImpl(
             logcat(LogPriority.ERROR, e)
         }
         // KMK -->
-        return renamed
+        return ExtensionStoresRefresh(renamed = renamed, changed = changed)
         // KMK <--
     }
 
@@ -123,11 +128,13 @@ class ExtensionStoreRepositoryImpl(
     override suspend fun fetchExtensions(
         // KMK -->
         disabledRepos: Set<String>,
+    ): FetchedExtensions {
         // KMK <--
-    ): List<Extension.Available> {
         return try {
             supervisorScope {
-                handler.awaitList {
+                // KMK -->
+                val results = handler.awaitList {
+                    // KMK <--
                     extension_storeQueries.getAll(::extensionStoreMapper)
                 }
                     // KMK -->
@@ -143,11 +150,20 @@ class ExtensionStoreRepositoryImpl(
                         }
                     }
                     .awaitAll()
-                    .flatMap { it.getOrDefault(emptyList()) }
+                // KMK -->
+                FetchedExtensions(
+                    extensions = results.flatMap { it.getOrDefault(emptyList()) },
+                    changedStores = results.mapNotNull {
+                        (it.exceptionOrNull() as? ExtensionStoreChangedException)?.changed
+                    },
+                )
+                // KMK <--
             }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
-            emptyList()
+            // KMK -->
+            FetchedExtensions()
+            // KMK <--
         }
     }
 

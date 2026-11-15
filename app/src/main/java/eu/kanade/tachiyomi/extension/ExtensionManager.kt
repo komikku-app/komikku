@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
@@ -36,11 +37,14 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
+import mihon.domain.extension.model.ChangedExtensionStore
 import mihon.domain.extension.model.label
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -194,6 +198,10 @@ class ExtensionManager(
     suspend fun findAvailableExtensions() {
         val extensions: List<Extension.Available> = try {
             api.findExtensions()
+                // KMK -->
+                .also { warnAboutChangedStores(it.changedStores) }
+                .extensions
+            // KMK <--
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             withUIContext { context.toast(MR.strings.extension_api_error) }
@@ -212,6 +220,28 @@ class ExtensionManager(
         updatedInstalledExtensionsStatuses(extensions)
         setupAvailableExtensionsSourcesDataMap(extensions)
     }
+
+    // KMK -->
+    /**
+     * Tells the user about saved stores whose URL now serves another store, signed by another key. Their
+     * extensions aren't listed until the user removes the store and adds it again.
+     */
+    suspend fun warnAboutChangedStores(stores: List<ChangedExtensionStore>) {
+        if (stores.isEmpty()) return
+        withUIContext {
+            stores.distinctBy { it.store.indexUrl }.forEach {
+                context.toast(
+                    context.stringResource(
+                        KMR.strings.ext_store_signing_key_changed,
+                        it.store.name,
+                        it.servedName,
+                    ),
+                    Toast.LENGTH_LONG,
+                )
+            }
+        }
+    }
+    // KMK <--
 
     /**
      * Enables the additional sub-languages in the app first run. This addresses

@@ -126,7 +126,7 @@ class ExtensionStoresScreenModel(
         if (status is ExtensionStoreScreenState.Success) {
             screenModelScope.launchIO {
                 // KMK -->
-                refreshExtensionStores()
+                extensionManager.warnAboutChangedStores(refreshExtensionStores())
                 // KMK <--
             }
         }
