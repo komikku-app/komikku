@@ -34,6 +34,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ExtensionsScreenModel(
@@ -65,12 +66,12 @@ class ExtensionsScreenModel(
             combine(
                 state.map { it.searchQuery }
                     .distinctUntilChanged()
-                    .debounce(SEARCH_DEBOUNCE_MILLIS)
+                    .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
                     .map { searchQueryPredicate(it ?: "") },
                 // KMK -->
                 state.map { it.nsfwOnly }
                     .distinctUntilChanged()
-                    .debounce(SEARCH_DEBOUNCE_MILLIS),
+                    .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds),
                 // KMK <--
                 currentDownloads,
                 getExtensions.subscribe(),

@@ -41,6 +41,7 @@ import tachiyomi.domain.source.model.Source
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.TreeMap
+import kotlin.time.Duration.Companion.milliseconds
 
 class SourcesScreenModel(
     private val getEnabledSources: GetEnabledSources = Injekt.get(),
@@ -67,7 +68,7 @@ class SourcesScreenModel(
         combine(
             // KMK -->
             state.map { Pair(it.searchQuery, it.nsfwOnly) }
-                .distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                .distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds),
             // KMK <--
             getEnabledSources.subscribe(),
             getSourceCategories.subscribe(),

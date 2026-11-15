@@ -127,6 +127,7 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 import tachiyomi.domain.source.model.Source as DomainSource
 
 class LibraryScreenModel(
@@ -178,7 +179,7 @@ class LibraryScreenModel(
         screenModelScope.launchIO {
             combine(
                 combine(
-                    state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
+                    state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds),
                     getCategories.subscribe(),
                     getFavoritesFlow(),
                     ::Triple,

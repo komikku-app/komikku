@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
+import kotlin.time.Duration.Companion.seconds
 
 open class BannerProgressStatus {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -13,7 +14,7 @@ open class BannerProgressStatus {
     private val _isRunning = MutableStateFlow(false)
 
     val isRunning = _isRunning
-        .debounce(1000L) // Don't notify if it finishes quickly enough
+        .debounce(1.seconds) // Don't notify if it finishes quickly enough
         .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     suspend fun start() {

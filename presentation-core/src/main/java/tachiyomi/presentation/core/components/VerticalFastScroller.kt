@@ -56,6 +56,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Draws vertical fast scroller to a lazy list
@@ -174,11 +175,11 @@ fun VerticalFastScroller(
             val isThumbVisible = alpha.value > 0f
             LaunchedEffect(scrolled, alpha) {
                 scrolled
-                    .sample(100)
+                    .sample(100.milliseconds)
                     .collectLatest {
                         if (thumbAllowed()) {
                             alpha.snapTo(1f)
-                            delay(ScrollBarVisibilityDurationMillis)
+                            delay(ScrollBarVisibilityDurationMillis.milliseconds)
                             alpha.animateTo(0f, animationSpec = ImmediateFadeOutAnimationSpec)
                         } else {
                             alpha.animateTo(0f, animationSpec = ImmediateFadeOutAnimationSpec)
@@ -364,11 +365,11 @@ fun VerticalGridFastScroller(
             val isThumbVisible = alpha.value > 0f
             LaunchedEffect(scrolled, alpha) {
                 scrolled
-                    .sample(100)
+                    .sample(100.milliseconds)
                     .collectLatest {
                         if (thumbAllowed()) {
                             alpha.snapTo(1f)
-                            delay(ScrollBarVisibilityDurationMillis)
+                            delay(ScrollBarVisibilityDurationMillis.milliseconds)
                             alpha.animateTo(0f, animationSpec = ImmediateFadeOutAnimationSpec)
                         } else {
                             alpha.animateTo(0f, animationSpec = ImmediateFadeOutAnimationSpec)
