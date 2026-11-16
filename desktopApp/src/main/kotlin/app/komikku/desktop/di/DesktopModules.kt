@@ -10,6 +10,7 @@ import app.komikku.desktop.library.desktopLibraryUpdateRunner
 import app.komikku.desktop.platform.AwtFileDialogs
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.source.DesktopSourceManager
+import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.download.DesktopDownloadEvents
@@ -30,6 +31,12 @@ import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.RefreshTracks
+import eu.kanade.domain.track.interactor.SyncChapterProgressWithTrack
+import eu.kanade.domain.track.interactor.TrackChapter
+import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.domain.track.store.DelayedTrackingStore
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -123,6 +130,7 @@ class DesktopPreferenceModule(
         // Borrowed (desktopCopy) app preference classes (6L.1, 7.x)
         addSingletonFactory { BasePreferences(app, get()) }
         addSingletonFactory { ReaderPreferences(get()) }
+        addSingletonFactory { TrackPreferences(get()) }
     }
 }
 
@@ -263,18 +271,26 @@ class DesktopDomainModule(
         // Backup (8.2): borrowed Android creator / restorer
         addSingletonFactory { DesktopBackupService(app, get()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
+
+        // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart
         addSingletonFactory { TrackerManager() }
+        addSingletonFactory { DelayedTrackingStore(app) }
+        addFactory { TrackChapter(get(), get(), get(), get()) }
+        addFactory { AddTracks(get(), get(), get(), get()) }
+        addFactory { RefreshTracks(get(), get(), get(), get()) }
+        addFactory { SyncChapterProgressWithTrack(get(), get(), get()) }
 
         // Reader (7.x)
         addSingletonFactory { ChapterCache(app, get(), get()) }
         addSingletonFactory { ReaderLauncher() }
+        addSingletonFactory<ReaderTrackerHook> { DesktopReaderTrackerHook(app, get(), get()) }
         addFactory {
             ReaderProgressSaver(
                 updateChapter = get(),
                 upsertHistory = get(),
                 getChaptersByMangaId = get(),
                 libraryPreferences = get(),
-                trackerHook = ReaderTrackerHook.None, // Phase 8: trackers
+                trackerHook = get(),
             )
         }
     }

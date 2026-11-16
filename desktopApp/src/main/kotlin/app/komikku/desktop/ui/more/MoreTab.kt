@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -107,6 +108,15 @@ data object MoreHomeScreen : Screen() {
                     subtitle = null,
                     tag = "more-data-storage",
                     onClick = { navigator.push(DataStorageScreen()) },
+                )
+            }
+            item {
+                LinkRow(
+                    icon = Icons.Outlined.Sync,
+                    title = stringResource(MR.strings.pref_category_tracking),
+                    subtitle = null,
+                    tag = "more-tracking",
+                    onClick = { navigator.push(TrackingSettingsScreen()) },
                 )
             }
         }

@@ -27,7 +27,7 @@ class ReaderProgressChapter(
 
 /**
  * KMK: tracker side effect of finishing a chapter in the reader (Android: `ReaderViewModel.updateTrackChapterRead`
- * → `TrackChapter`). **Phase 8 hook:** desktop has no trackers yet and registers [None].
+ * → `TrackChapter`). Desktop registers `DesktopReaderTrackerHook` (8.3); [None] for callers without trackers.
  */
 fun interface ReaderTrackerHook {
     suspend fun onChapterRead(manga: Manga, chapterNumber: Double)

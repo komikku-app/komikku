@@ -88,6 +88,7 @@ class MangaDetailsScreenModel(
 
     sealed interface Dialog {
         data class ChangeCategories(val categories: List<Category>, val selected: Set<Long>) : Dialog
+        data object Tracking : Dialog
     }
 
     private var fetchedOnOpen = false
@@ -313,6 +314,10 @@ class MangaDetailsScreenModel(
                 if (!manga.favorite) updateManga.awaitUpdateFavorite(manga.id, true)
             }
         }
+    }
+
+    fun showTrackingDialog() {
+        mutableState.update { it.copy(dialog = Dialog.Tracking) }
     }
 
     fun dismissDialog() {

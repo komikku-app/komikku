@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -109,6 +110,10 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
         }
         when (val dialog = state.dialog) {
             is MangaDetailsScreenModel.Dialog.ChangeCategories -> CategoryDialog(dialog, model)
+            MangaDetailsScreenModel.Dialog.Tracking -> {
+                val trackingModel = rememberScreenModel(tag = "tracking") { TrackingScreenModel(mangaId) }
+                TrackingDialog(trackingModel, manga?.title.orEmpty(), onDismiss = model::dismissDialog)
+            }
             null -> {}
         }
     }
@@ -237,6 +242,10 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
                                 Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                                 Text(stringResource(MR.strings.add_to_library))
                             }
+                        }
+                        OutlinedButton(onClick = model::showTrackingDialog, modifier = Modifier.testTag("details-tracking")) {
+                            Icon(Icons.Outlined.Sync, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(MR.strings.manga_tracking_tab))
                         }
                         state.nextChapter?.let { next ->
                             val resume = state.chapters.any { it.read || it.lastPageRead > 0 }
