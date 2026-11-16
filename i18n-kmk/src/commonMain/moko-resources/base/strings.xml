@@ -252,4 +252,5 @@
     <string name="desktop_pref_not_set">Not set</string>
     <string name="desktop_source_error">Could not load: %1$s</string>
     <string name="desktop_source_not_installed">This source is not installed</string>
+    <string name="desktop_refresh">Refresh</string>
 </resources>

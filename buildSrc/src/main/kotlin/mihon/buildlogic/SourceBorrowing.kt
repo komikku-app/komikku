@@ -32,6 +32,7 @@ class BorrowedSources internal constructor() {
     internal val shared = sortedSetOf<String>()
     internal val androidOnly = sortedSetOf<String>()
     internal val perPlatform = sortedSetOf<String>()
+    internal val desktopCopy = sortedSetOf<String>()
 
     /** Compiled once in `jvmSharedMain`, i.e. for Android and desktop. The common case. */
     fun shared(vararg paths: String) = add(shared, paths)
@@ -49,7 +50,20 @@ class BorrowedSources internal constructor() {
      */
     fun perPlatform(vararg paths: String) = add(perPlatform, paths)
 
-    internal val all: Set<String> get() = shared + androidOnly + perPlatform
+    /**
+     * Compiled by `app` for Android exactly as before (not excluded) **and**, as a copy, by
+     * `:app-shared`'s `desktopMain`: for files whose Android dependencies are too entangled to move
+     * them out of `app` yet (download manager, reader activity, Android-only sources). Desktop
+     * counterparts of the symbols they need that are not otherwise available live in
+     * `app-shared/src/desktopMain/kotlin`. Android behaviour and compilation are unaffected; the
+     * desktop build follows upstream edits to the file automatically.
+     */
+    fun desktopCopy(vararg paths: String) = add(desktopCopy, paths)
+
+    internal val all: Set<String> get() = shared + androidOnly + perPlatform + desktopCopy
+
+    /** Files that `app` must not compile (all kinds except [desktopCopy]). */
+    internal val excludedFromApp: Set<String> get() = shared + androidOnly + perPlatform
 
     private fun add(set: MutableSet<String>, paths: Array<out String>) {
         paths.forEach { path ->
@@ -79,6 +93,7 @@ fun Project.applyAppSourceBorrowing() {
         shared(*list("shared").toTypedArray())
         androidOnly(*list("androidOnly").toTypedArray())
         perPlatform(*list("perPlatform").toTypedArray())
+        desktopCopy(*list("desktopCopy").toTypedArray())
     }
 }
 
@@ -91,7 +106,7 @@ fun Project.applyAppSourceBorrowing() {
  *   (perPlatform). Copies (instead of pointing the source sets at `app/src/main/java` with include
  *   filters) keep the IDE from treating the whole app source root as part of `:app-shared`.
  *   A sync fails if an allowlisted file is missing.
- * - in `:app`: every Kotlin compile task excludes the allowlisted paths, and
+ * - in `:app`: every Kotlin compile task excludes the allowlisted paths (except `desktopCopy` ones), and
  *   [VERIFY_BORROWED_SOURCES_TASK] (wired into `check`) checks, against the real compile task
  *   inputs, that every allowlisted file exists and is compiled by exactly one module: not by `app`'s
  *   `compileDebugKotlin`, and by `:app-shared`'s Android and/or desktop compilation as its kind says.
@@ -109,15 +124,18 @@ private enum class BorrowKind(val dirName: String) {
     Shared("shared"),
     AndroidOnly("androidOnly"),
     PerPlatform("perPlatform"),
+    DesktopCopy("desktopCopy"),
     ;
 
     fun paths(borrowed: BorrowedSources): Set<String> = when (this) {
         Shared -> borrowed.shared
         AndroidOnly -> borrowed.androidOnly
         PerPlatform -> borrowed.perPlatform
+        DesktopCopy -> borrowed.desktopCopy
     }
 
-    val compiledForAndroid: Boolean get() = true
+    /** Compiled by `:app-shared` for Android (otherwise `app` compiles it, for [DesktopCopy]). */
+    val compiledForAndroid: Boolean get() = this != DesktopCopy
     val compiledForDesktop: Boolean get() = this != AndroidOnly
 
     val syncTaskName: String get() = "syncBorrowed${dirName.replaceFirstChar(Char::uppercase)}Sources"
@@ -151,14 +169,18 @@ private fun Project.addBorrowedSources(borrowed: BorrowedSources) {
         kotlin.srcDir(syncTasks.getValue(BorrowKind.AndroidOnly).output())
         kotlin.srcDir(syncTasks.getValue(BorrowKind.PerPlatform).output())
     }
-    kmp.sourceSets.named("${DESKTOP_TARGET}Main") { kotlin.srcDir(syncTasks.getValue(BorrowKind.PerPlatform).output()) }
+    kmp.sourceSets.named("${DESKTOP_TARGET}Main") {
+        kotlin.srcDir(syncTasks.getValue(BorrowKind.PerPlatform).output())
+        kotlin.srcDir(syncTasks.getValue(BorrowKind.DesktopCopy).output())
+    }
     // `srcDir(provider)` does not carry the producing task for every consumer; make it explicit.
     tasks.withType<KotlinCompile>().configureEach { dependsOn(syncTasks.values) }
 }
 
 private fun Project.excludeBorrowedSources(borrowed: BorrowedSources) {
     val all = borrowed.all.toList()
-    tasks.withType<KotlinCompile>().configureEach { exclude(all) }
+    val excluded = borrowed.excludedFromApp.toList()
+    tasks.withType<KotlinCompile>().configureEach { exclude(excluded) }
 
     evaluationDependsOn(BORROWING_TARGET_PROJECT)
     val verify = tasks.register(VERIFY_BORROWED_SOURCES_TASK) {
@@ -179,8 +201,10 @@ private fun Project.excludeBorrowedSources(borrowed: BorrowedSources) {
             if (appCompiled.none { it.startsWith(appSourceDir.canonicalFile) }) {
                 errors += "cannot inspect app's compileDebugKotlin sources (no file from $BORROWING_SOURCE_DIR)"
             }
-            all.filter { appSourceDir.resolve(it).canonicalFile in appCompiled }
+            excluded.filter { appSourceDir.resolve(it).canonicalFile in appCompiled }
                 .forEach { errors += "compiled by both modules (not excluded from app): $it" }
+            borrowed.desktopCopy.filterNot { appSourceDir.resolve(it).canonicalFile in appCompiled }
+                .forEach { errors += "desktop copy no longer compiled by app for Android: $it" }
 
             val targetCompile = target.tasks.withType<KotlinCompile>()
             val androidCompiled = targetCompile.getByName("compileDebugKotlinAndroid").sourceFiles()
@@ -189,6 +213,9 @@ private fun Project.excludeBorrowedSources(borrowed: BorrowedSources) {
                 val dir = target.borrowedDir(kind)
                 kind.paths(borrowed).forEach { path ->
                     val copy = dir.resolve(path).canonicalFile
+                    if (!kind.compiledForAndroid && copy in androidCompiled) {
+                        errors += "desktop copy also compiled by ${target.path} for Android: $path"
+                    }
                     if (kind.compiledForAndroid && copy !in androidCompiled) {
                         errors += "not compiled by ${target.path} for Android (${kind.dirName}): $path"
                     }
@@ -203,7 +230,10 @@ private fun Project.excludeBorrowedSources(borrowed: BorrowedSources) {
             if (errors.isNotEmpty()) {
                 throw GradleException("Source borrowing check failed:\n  " + errors.joinToString("\n  "))
             }
-            logger.lifecycle("Source borrowing: ${all.size} app files compiled by ${target.path} only")
+            logger.lifecycle(
+                "Source borrowing: ${excluded.size} app files compiled by ${target.path} only, " +
+                    "${borrowed.desktopCopy.size} also copied for its desktop target",
+            )
         }
     }
     tasks.named("check") { dependsOn(verify) }

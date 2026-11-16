@@ -17,7 +17,7 @@ object DesktopInjekt {
 
     fun init(dataDir: File = DesktopDirs.dataDir): Application {
         val app = Application(dataDir)
-        Injekt.importModule(DesktopPreferenceModule(dataDir))
+        Injekt.importModule(DesktopPreferenceModule(app, dataDir))
         Injekt.importModule(DesktopAppModule(app, DesktopDatabase.defaultFile(dataDir)))
         Injekt.importModule(DesktopDomainModule(app, dataDir))
         return app

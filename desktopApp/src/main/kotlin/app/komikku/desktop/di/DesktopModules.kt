@@ -6,19 +6,34 @@ import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.source.DesktopSourceManager
+import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
+import app.komikku.shared.reader.ReaderProgressSaver
+import app.komikku.shared.reader.ReaderTrackerHook
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.chapter.interactor.SetReadStatus
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.download.interactor.DeleteDownload
 import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.extension.interactor.RefreshExtensionStores
+import eu.kanade.domain.manga.interactor.GetExcludedScanlators
+import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
+import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -30,6 +45,7 @@ import mihon.domain.extension.interactor.GetExtensionStores
 import mihon.domain.extension.interactor.RemoveExtensionStore
 import mihon.domain.extension.interactor.UpdateExtensionStores
 import mihon.domain.extension.repository.ExtensionStoreRepository
+import mihon.domain.source.interactor.UpdateMangaFromRemote
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
@@ -69,6 +85,7 @@ import java.io.File
  * available on desktop yet. [DesktopWindowPreferences] is desktop-only.
  */
 class DesktopPreferenceModule(
+    private val app: Application,
     private val dataDir: File,
 ) : InjektModule {
 
@@ -93,6 +110,9 @@ class DesktopPreferenceModule(
         addSingletonFactory { UiPreferences(get()) }
         addSingletonFactory { SourcePreferences(get()) }
         addSingletonFactory { DesktopWindowPreferences(get()) }
+        // Borrowed (desktopCopy) app preference classes (6L.1, 7.x)
+        addSingletonFactory { BasePreferences(app, get()) }
+        addSingletonFactory { ReaderPreferences(get()) }
     }
 }
 
@@ -199,5 +219,31 @@ class DesktopDomainModule(
         addFactory { GetRemoteManga(get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
         addFactory { UpdateManga(get(), get()) }
+
+        // Manga details / chapters (6L.1): the Android interactors, borrowed as desktopCopy, over the
+        // desktop DownloadManager counterpart (no download queue yet; on-disk lookups only).
+        addSingletonFactory { CoverCache(app) }
+        addSingletonFactory { DownloadProvider(app) }
+        addSingletonFactory { DownloadManager(app) }
+        addFactory { GetExcludedScanlators(get()) }
+        addFactory { SyncChaptersWithSource(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        addFactory { DeleteDownload(get(), get()) }
+        addFactory { SetReadStatus(get(), get(), get(), get(), get()) }
+        addFactory { SetMangaViewerFlags(get()) }
+        addFactory { GetIncognitoState(get(), get(), get()) }
+        addFactory { UpdateMangaFromRemote(get(), get(), get(), get(), get(), get(), get()) }
+
+        // Reader (7.x)
+        addSingletonFactory { ChapterCache(app, get(), get()) }
+        addSingletonFactory { ReaderLauncher() }
+        addFactory {
+            ReaderProgressSaver(
+                updateChapter = get(),
+                upsertHistory = get(),
+                getChaptersByMangaId = get(),
+                libraryPreferences = get(),
+                trackerHook = ReaderTrackerHook.None, // Phase 8: trackers
+            )
+        }
     }
 }

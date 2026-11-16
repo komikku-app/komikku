@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.tabs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -30,9 +31,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.shared.navigation.AppNavigatorHost
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import coil3.compose.AsyncImage
+import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.asMangaCover
@@ -41,7 +47,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-/** Library destination: categories as tabs, a cover grid per category (real data, read-only). */
+/** Library destination: categories as tabs, a cover grid per category; manga open their details. */
 data object LibraryTab : Tab {
 
     override val options: TabOptions
@@ -53,6 +59,16 @@ data object LibraryTab : Tab {
 
     @Composable
     override fun Content() {
+        AppNavigatorHost(screen = LibraryHomeScreen)
+    }
+}
+
+/** The library grid; manga open the details screen in the library tab's own navigator. */
+data object LibraryHomeScreen : Screen() {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { LibraryScreenModel() }
         val state by screenModel.state.collectAsState()
         when (val current = state) {
@@ -60,14 +76,14 @@ data object LibraryTab : Tab {
             is LibraryScreenModel.State.Success -> if (current.isEmpty) {
                 EmptyScreen(stringRes = MR.strings.information_empty_library)
             } else {
-                LibraryPages(current.pages)
+                LibraryPages(current.pages, onOpen = { navigator.push(MangaDetailsScreen(it)) })
             }
         }
     }
 }
 
 @Composable
-private fun LibraryPages(pages: List<LibraryPage>) {
+private fun LibraryPages(pages: List<LibraryPage>, onOpen: (Long) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     val index = selected.coerceIn(0, pages.lastIndex)
     Column(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +102,7 @@ private fun LibraryPages(pages: List<LibraryPage>) {
         if (page.manga.isEmpty()) {
             EmptyScreen(stringRes = MR.strings.information_empty_category)
         } else {
-            LibraryGrid(page.manga)
+            LibraryGrid(page.manga, onOpen)
         }
     }
 }
@@ -96,22 +112,22 @@ private fun LibraryPage.title(): String =
     if (category.isSystemCategory) stringResource(MR.strings.label_default) else category.name
 
 @Composable
-private fun LibraryGrid(manga: List<LibraryManga>) {
+private fun LibraryGrid(manga: List<LibraryManga>, onOpen: (Long) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 140.dp),
         contentPadding = PaddingValues(12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(items = manga, key = { it.manga.id }) { item ->
-            LibraryGridItem(item)
+            LibraryGridItem(item, onClick = { onOpen(item.manga.id) })
         }
     }
 }
 
 @Composable
-private fun LibraryGridItem(item: LibraryManga) {
+private fun LibraryGridItem(item: LibraryManga, onClick: () -> Unit) {
     val cover = remember(item.manga) { item.manga.asMangaCover() }
-    Column(modifier = Modifier.padding(6.dp)) {
+    Column(modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onClick).padding(6.dp)) {
         Surface(
             shape = RoundedCornerShape(6.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,

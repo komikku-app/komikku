@@ -66,6 +66,15 @@ kotlin {
                 api(libs.coil.core)
                 api(libs.coil.compose)
                 implementation(libs.coil.network.okhttp)
+
+                // Borrowed ChapterCache (desktopCopy, reader page cache)
+                implementation(libs.disklrucache)
+
+                // What the desktopCopy borrowed files reference (Android: `app` has these itself)
+                api(projects.data)
+                api(projects.sourceLocal)
+                api(projects.core.archive)
+                api(projects.coreMetadata)
             }
         }
     }

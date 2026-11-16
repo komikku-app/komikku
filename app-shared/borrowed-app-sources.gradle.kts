@@ -12,16 +12,21 @@
  *
  * Kinds: `shared` = compiled once for Android and desktop (`jvmSharedMain`); `androidOnly` = Android
  * only (`androidMain`; desktop counterparts live in app-shared/src/desktopMain); `perPlatform` =
- * compiled separately for each platform because it calls `androidOnly` declarations.
+ * compiled separately for each platform because it calls `androidOnly` declarations; `desktopCopy` =
+ * still compiled by `app` for Android (unchanged) and additionally by `:app-shared`'s `desktopMain`
+ * (Android-entangled files the desktop app needs; desktop counterparts of what they reference live in
+ * app-shared/src/desktopMain/kotlin).
  * The build files apply this script through `applyAppSourceBorrowing()` (buildSrc
  * mihon/buildlogic/SourceBorrowing.kt), which reads the lists below.
  */
 val shared = mutableListOf<String>()
 val androidOnly = mutableListOf<String>()
 val perPlatform = mutableListOf<String>()
+val desktopCopy = mutableListOf<String>()
 fun shared(vararg paths: String) = shared.addAll(paths)
 fun androidOnly(vararg paths: String) = androidOnly.addAll(paths)
 fun perPlatform(vararg paths: String) = perPlatform.addAll(paths)
+fun desktopCopy(vararg paths: String) = desktopCopy.addAll(paths)
 
 run {
     // UI preferences and their models (4.2; theme)
@@ -95,8 +100,62 @@ run {
     shared(
         "eu/kanade/domain/manga/interactor/UpdateManga.kt",
     )
+
+    // Platform-neutral helpers used by app-shared's own reader / chapter code (6L.1, 7.1)
+    shared(
+        "eu/kanade/tachiyomi/util/chapter/ChapterRemoveDuplicates.kt",
+        "exh/util/DataSaver.kt",
+        "eu/kanade/tachiyomi/util/storage/OkioExtensions.kt",
+    )
+
+    // Manga / chapter interactors and what they reference (6L.1). Desktop counterparts in
+    // app-shared/src/desktopMain: DownloadManager (no queue yet; on-disk lookups through the borrowed
+    // DownloadProvider), GLUtil, Context.hasMiuiPackageInstaller / isShizukuInstalled,
+    // Source.isIncognitoModeEnabled, placeholders for the SY EHentai / MergedSource types.
+    desktopCopy(
+        "eu/kanade/domain/base/BasePreferences.kt",
+        "eu/kanade/domain/base/ExtensionInstallerPreference.kt",
+        "eu/kanade/domain/chapter/interactor/SetReadStatus.kt",
+        "eu/kanade/domain/chapter/interactor/SyncChaptersWithSource.kt",
+        "eu/kanade/domain/chapter/model/Chapter.kt",
+        "eu/kanade/domain/download/interactor/DeleteDownload.kt",
+        "eu/kanade/domain/manga/interactor/GetExcludedScanlators.kt",
+        "eu/kanade/domain/manga/interactor/SetMangaViewerFlags.kt",
+        "eu/kanade/domain/manga/model/Manga.kt",
+        "eu/kanade/domain/source/interactor/GetIncognitoState.kt",
+        "eu/kanade/tachiyomi/data/cache/CoverCache.kt",
+        "eu/kanade/tachiyomi/data/database/models/Chapter.kt",
+        "eu/kanade/tachiyomi/data/database/models/ChapterImpl.kt",
+        "eu/kanade/tachiyomi/data/download/DownloadProvider.kt",
+        "mihon/domain/source/interactor/UpdateMangaFromRemote.kt",
+        "mihon/domain/source/models/RemoteMangaUpdate.kt",
+    )
+
+    // Reader models, page loaders, chapter cache and reader preferences (7.1). Desktop counterparts in
+    // app-shared/src/desktopMain: ReadingMode (no Android viewers / icons), PagerConfig and
+    // SubsamplingScaleImageView (constants only). ReaderOrientation uses the compat ActivityInfo.
+    desktopCopy(
+        "eu/kanade/tachiyomi/data/cache/ChapterCache.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/ArchivePageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/ChapterLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/DirectoryPageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/DownloadPageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/EpubPageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/HttpPageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/loader/PageLoader.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/ChapterTransition.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/InsertPage.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/ReaderChapter.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/ReaderItem.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/ReaderPage.kt",
+        "eu/kanade/tachiyomi/ui/reader/model/ViewerChapters.kt",
+        "eu/kanade/tachiyomi/ui/reader/setting/ReaderBottomButton.kt",
+        "eu/kanade/tachiyomi/ui/reader/setting/ReaderOrientation.kt",
+        "eu/kanade/tachiyomi/ui/reader/setting/ReaderPreferences.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
 extra["borrowedAppSources.androidOnly"] = androidOnly.toList()
 extra["borrowedAppSources.perPlatform"] = perPlatform.toList()
+extra["borrowedAppSources.desktopCopy"] = desktopCopy.toList()
