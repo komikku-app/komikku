@@ -13,7 +13,11 @@ class DesktopStorageFolderProvider(
     private val baseDir: File = DesktopDirs.dataDir,
 ) : FolderProvider {
 
-    override fun directory(): File = File(baseDir, STORAGE_DIR)
+    /**
+     * Created on first use: `StorageManager` only accepts an existing directory as the base, so a fresh
+     * data dir would otherwise have no downloads / local source folder until the user picks one.
+     */
+    override fun directory(): File = File(baseDir, STORAGE_DIR).also { it.mkdirs() }
 
     /** `file:` URI of [directory], like the Android provider. */
     override fun path(): String = Uri.fromFile(directory()).toString()

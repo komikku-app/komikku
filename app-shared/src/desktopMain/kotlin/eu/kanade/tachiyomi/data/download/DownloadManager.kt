@@ -12,6 +12,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -47,7 +48,11 @@ class DownloadManager(
             }
     }
 
-    /** Checks the file system (no cache on desktop, so [skipCache] has no effect). */
+    /**
+     * Checks the file system (no cache on desktop, so [skipCache] has no effect). Local-source chapters
+     * are never "downloaded" (Android's `DownloadCache` only indexes the downloads folder; the borrowed
+     * `DownloadProvider` resolves local manga to the local folder itself).
+     */
     @Suppress("UNUSED_PARAMETER")
     fun isChapterDownloaded(
         chapterName: String,
@@ -57,12 +62,12 @@ class DownloadManager(
         sourceId: Long,
         skipCache: Boolean = false,
     ): Boolean {
-        val source = sourceManager.get(sourceId) ?: return false
+        val source = sourceManager.get(sourceId)?.takeIf { !it.isLocal() } ?: return false
         return provider.findChapterDir(chapterName, chapterScanlator, chapterUrl, mangaTitle, source) != null
     }
 
     fun getDownloadCount(manga: Manga): Int {
-        val source = sourceManager.get(manga.source) ?: return 0
+        val source = sourceManager.get(manga.source)?.takeIf { !it.isLocal() } ?: return 0
         return provider.findMangaDir(manga.ogTitle, source)?.listFiles()?.size ?: 0
     }
 

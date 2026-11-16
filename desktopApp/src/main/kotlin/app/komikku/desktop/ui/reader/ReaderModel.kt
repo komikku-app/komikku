@@ -23,11 +23,12 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -105,6 +107,31 @@ class ReaderModel(
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * Database writes (progress, bookmarks): one at a time and in order, and not cancelled by [close]
+     * (Android: `launchNonCancellable` on the view model scope).
+     */
+    private val progressScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val writes = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        progressScope.launch {
+            for (write in writes) {
+                try {
+                    write()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    logcat(LogPriority.ERROR, e) { "Could not save reading progress" }
+                }
+            }
+        }
+    }
+
+    private fun enqueueWrite(block: suspend () -> Unit) {
+        writes.trySend(block)
+    }
     private val mutex = Mutex()
 
     private val _state = MutableStateFlow(State())
@@ -301,8 +328,8 @@ class ReaderModel(
         readerChapter.requestedPage = page.index
         val progressChapter = progressOf(readerChapter)
         val manga = _state.value.manga ?: return
-        scope.launch(NonCancellable) {
-            try {
+        enqueueWrite {
+            run {
                 progressSaver.onPageSelected(
                     manga = manga,
                     chapter = progressChapter,
@@ -313,8 +340,6 @@ class ReaderModel(
                 )
                 readerChapter.chapter.read = progressChapter.read
                 readerChapter.chapter.last_page_read = progressChapter.lastPageRead.toInt()
-            } catch (e: Throwable) {
-                logcat(LogPriority.ERROR, e) { "Could not save reading progress" }
             }
         }
     }
@@ -340,7 +365,7 @@ class ReaderModel(
         val bookmarked = !progressChapter.bookmark
         chapter.chapter.bookmark = bookmarked
         _state.update { it.copy(bookmarked = bookmarked) }
-        scope.launch(NonCancellable) { progressSaver.setBookmark(progressChapter, bookmarked) }
+        enqueueWrite { progressSaver.setBookmark(progressChapter, bookmarked) }
     }
 
     /** Stores the manga's reading mode in its viewer flags (Android: `setMangaReadingMode`). */
@@ -372,6 +397,10 @@ class ReaderModel(
         val state = _state.value
         val chapterId = state.currentChapter?.chapter?.id
         runBlocking(Dispatchers.IO) {
+            // Let pending progress writes finish first (they run in order).
+            val done = CompletableDeferred<Unit>()
+            writes.trySend { done.complete(Unit) }
+            withTimeoutOrNull(10_000) { done.await() }
             if (chapterId != null) {
                 try {
                     progressSaver.saveHistory(chapterId, state.incognito)
@@ -382,6 +411,7 @@ class ReaderModel(
         }
         state.viewerChapters?.unref()
         scope.cancel()
+        writes.close()
     }
 
     /** The domain chapter of the current item (for titles). */
