@@ -36,6 +36,9 @@ dependencies {
     implementation(libs.jsoup)
     // Cookie persistence.
     implementation(kotlinx.serialization.json)
+    // `app.cash.quickjs.QuickJs` runs on QuickJS through a JVM binding with bundled natives.
+    implementation(libs.quickjs.kt)
+    implementation(kotlinx.coroutines.core)
 
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)
