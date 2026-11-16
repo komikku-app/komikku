@@ -29,11 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +48,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import coil3.compose.AsyncImage
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
-import tachiyomi.domain.library.model.LibraryManga
+import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.MR
@@ -87,27 +83,32 @@ data object LibraryHomeScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { LibraryScreenModel() }
         val state by screenModel.state.collectAsState()
-        when (val current = state) {
-            LibraryScreenModel.State.Loading -> LoadingScreen()
-            is LibraryScreenModel.State.Success -> if (current.isEmpty) {
+        when {
+            state.isLoading -> LoadingScreen()
+            state.query.isEmpty() && !state.hasActiveFilters && state.isLibraryEmpty ->
                 EmptyScreen(stringRes = MR.strings.information_empty_library)
-            } else {
-                LibraryPages(current.pages, onOpen = { navigator.push(MangaDetailsScreen(it)) })
-            }
+            else -> LibraryPages(
+                state = state,
+                onQueryChange = screenModel::search,
+                onSelectCategory = screenModel::selectCategory,
+                onOpen = { navigator.push(MangaDetailsScreen(it)) },
+            )
         }
     }
 }
 
 @Composable
-private fun LibraryPages(allPages: List<LibraryPage>, onOpen: (Long) -> Unit) {
-    var selected by rememberSaveable { mutableIntStateOf(0) }
-    var query by rememberSaveable { mutableStateOf("") }
-    val pages = remember(allPages, query) { allPages.search(query) }
-    val index = selected.coerceIn(0, pages.lastIndex)
+private fun LibraryPages(
+    state: LibraryScreenModel.State,
+    onQueryChange: (String) -> Unit,
+    onSelectCategory: (Long) -> Unit,
+    onOpen: (Long) -> Unit,
+) {
+    val pages = state.pages
+    val index = state.selectedIndex
     val runner = remember { Injekt.get<LibraryUpdateRunner>() }
     val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
     val showCounts by libraryPreferences.categoryNumberOfItems().collectAsState()
-    val unreadBadge by libraryPreferences.unreadBadge().collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         // Library refresh (6L.2): the shown category, or the whole library; search (8.5)
         Row(
@@ -116,8 +117,8 @@ private fun LibraryPages(allPages: List<LibraryPage>, onOpen: (Long) -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
         ) {
             OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
+                value = state.query,
+                onValueChange = onQueryChange,
                 placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
@@ -138,23 +139,33 @@ private fun LibraryPages(allPages: List<LibraryPage>, onOpen: (Long) -> Unit) {
                 pages.forEachIndexed { i, page ->
                     Tab(
                         selected = i == index,
-                        onClick = { selected = i },
+                        onClick = { onSelectCategory(page.category.id) },
                         text = {
                             Text(
-                                text = page.title() + if (showCounts) " (${page.manga.size})" else "",
+                                // Android shows counts when the preference is on or a search is active.
+                                text = page.title() +
+                                    if (showCounts || state.query.isNotEmpty()) " (${page.items.size})" else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                         },
+                        modifier = Modifier.testTag("library-tab-${page.category.id}"),
                     )
                 }
             }
         }
         val page = pages[index]
-        if (page.manga.isEmpty()) {
-            EmptyScreen(stringRes = MR.strings.information_empty_category)
+        if (page.items.isEmpty()) {
+            // Android's LibraryPagerEmptyScreen
+            EmptyScreen(
+                stringRes = when {
+                    state.query.isNotEmpty() -> MR.strings.no_results_found
+                    state.hasActiveFilters -> MR.strings.error_no_match
+                    else -> MR.strings.information_no_manga_category
+                },
+            )
         } else {
-            LibraryGrid(page.manga, unreadBadge, onOpen)
+            LibraryGrid(page.items, onOpen)
         }
     }
 }
@@ -164,20 +175,21 @@ private fun LibraryPage.title(): String =
     if (category.isSystemCategory) stringResource(MR.strings.label_default) else category.name
 
 @Composable
-private fun LibraryGrid(manga: List<LibraryManga>, unreadBadge: Boolean, onOpen: (Long) -> Unit) {
+private fun LibraryGrid(items: List<LibraryItem>, onOpen: (Long) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 140.dp),
         contentPadding = PaddingValues(12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(items = manga, key = { it.manga.id }) { item ->
-            LibraryGridItem(item, unreadBadge, onClick = { onOpen(item.manga.id) })
+        items(items = items, key = { it.id }) { item ->
+            LibraryGridItem(item, onClick = { onOpen(item.id) })
         }
     }
 }
 
 @Composable
-private fun LibraryGridItem(item: LibraryManga, unreadBadge: Boolean, onClick: () -> Unit) {
+private fun LibraryGridItem(libraryItem: LibraryItem, onClick: () -> Unit) {
+    val item = libraryItem.libraryManga
     val cover = remember(item.manga) { item.manga.asMangaCover() }
     Column(modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onClick).padding(6.dp)) {
         Surface(
@@ -195,10 +207,11 @@ private fun LibraryGridItem(item: LibraryManga, unreadBadge: Boolean, onClick: (
                     .fillMaxSize()
                     .clip(RoundedCornerShape(6.dp)),
             )
-            if (unreadBadge && item.unreadCount > 0) {
+            // LibraryItem.unreadCount is 0 when the unread badge preference is off (Android).
+            if (libraryItem.unreadCount > 0) {
                 Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(4.dp)) {
                     Text(
-                        text = item.unreadCount.toString(),
+                        text = libraryItem.unreadCount.toString(),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onTertiary,
                         modifier = Modifier

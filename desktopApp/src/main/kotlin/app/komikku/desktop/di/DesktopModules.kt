@@ -53,6 +53,7 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.toast
 import exh.pref.DelegateSourcePreferences
+import exh.search.SearchEngine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import mihon.data.extension.repository.ExtensionStoreRepositoryImpl
@@ -238,6 +239,8 @@ class DesktopDomainModule(
         addFactory { GetRemoteManga(get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
         addFactory { UpdateManga(get(), get()) }
+        // Library text search (8.5): the SY query parser used by the borrowed LibraryFilterSort.kt
+        addFactory { SearchEngine() }
 
         // Manga details / chapters (6L.1): the Android interactors, borrowed as desktopCopy.
         // Downloads (8.1): the Android download stack, borrowed as desktopCopy (coroutine DownloadJob,

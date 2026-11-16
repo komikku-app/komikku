@@ -347,6 +347,27 @@ run {
         "eu/kanade/presentation/more/settings/widget/TrackingPreferenceWidget.kt",
         "eu/kanade/presentation/more/settings/widget/TriStateListDialog.kt",
     )
+
+    // Library filter / sort / text search (8.5): LibraryFilterSort.kt holds the logic moved out of
+    // LibraryScreenModel, the SY query parser it uses, the library settings model (filter toggles, sort,
+    // display mode) and their helpers. No desktop counterparts needed.
+    desktopCopy(
+        "eu/kanade/core/preference/PreferenceMutableState.kt",
+        "eu/kanade/core/util/CollectionUtils.kt",
+        "eu/kanade/tachiyomi/ui/library/LibraryFilterSort.kt",
+        "eu/kanade/tachiyomi/ui/library/LibraryItem.kt",
+        "eu/kanade/tachiyomi/ui/library/LibrarySettingsScreenModel.kt",
+        "exh/search/MultiWildcard.kt",
+        "exh/search/Namespace.kt",
+        "exh/search/QueryComponent.kt",
+        "exh/search/SearchEngine.kt",
+        "exh/search/SingleWildcard.kt",
+        "exh/search/StringTextComponent.kt",
+        "exh/search/Text.kt",
+        "exh/search/TextComponent.kt",
+        "exh/util/CoroutineUtil.kt",
+        "exh/util/LewdMangaChecker.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
