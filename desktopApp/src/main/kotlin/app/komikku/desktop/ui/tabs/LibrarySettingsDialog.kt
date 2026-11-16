@@ -88,7 +88,13 @@ fun LibrarySettingsDialog(
                             )
                         }
                 }
-                Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+                // weight(fill = false): long pages scroll instead of pushing the Close row out of the dialog
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 8.dp),
+                ) {
                     when (page) {
                         0 -> FilterPage(screenModel, categories)
                         1 -> SortPage(screenModel, category)
@@ -155,15 +161,16 @@ private fun CategoriesFilter(prefs: LibraryPreferences, categories: List<Categor
     val included by prefs.filterCategoriesInclude().collectAsState()
     val excluded by prefs.filterCategoriesExclude().collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    val defaultName = stringResource(MR.strings.label_default)
     if (showDialog) {
+        // Like Android: user categories only (the filter ignores the default category, id 0).
+        val userCategories = remember(categories) { categories.filterNot(Category::isSystemCategory) }
         TriStateListDialog(
             title = stringResource(MR.strings.categories),
             message = stringResource(KMR.strings.pref_library_filter_categories_details),
-            items = categories,
-            initialChecked = categories.filter { it.id.toString() in included },
-            initialInversed = categories.filter { it.id.toString() in excluded },
-            itemLabel = { if (it.isSystemCategory) defaultName else it.name },
+            items = userCategories,
+            initialChecked = userCategories.filter { it.id.toString() in included },
+            initialInversed = userCategories.filter { it.id.toString() in excluded },
+            itemLabel = { it.name },
             onDismissRequest = { showDialog = false },
             onValueChanged = { newIncluded, newExcluded ->
                 prefs.filterCategoriesInclude().set(newIncluded.map { it.id.toString() }.toSet())
