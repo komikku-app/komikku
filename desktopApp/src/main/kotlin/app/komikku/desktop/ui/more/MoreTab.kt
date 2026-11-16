@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -16,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
@@ -98,6 +100,15 @@ data object MoreHomeScreen : Screen() {
                     onClick = { navigator.push(DownloadQueueScreen()) },
                 )
             }
+            item {
+                LinkRow(
+                    icon = Icons.Outlined.Storage,
+                    title = stringResource(MR.strings.label_data_storage),
+                    subtitle = null,
+                    tag = "more-data-storage",
+                    onClick = { navigator.push(DataStorageScreen()) },
+                )
+            }
         }
     }
 }
@@ -114,9 +125,16 @@ fun SwitchRow(icon: ImageVector?, title: String, subtitle: String?, checked: Boo
 }
 
 @Composable
-fun LinkRow(icon: ImageVector?, title: String, subtitle: String?, tag: String, onClick: () -> Unit) {
+fun LinkRow(
+    icon: ImageVector?,
+    title: String,
+    subtitle: String?,
+    tag: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick).testTag(tag),
+        modifier = Modifier.clickable(enabled = enabled, onClick = onClick).alpha(if (enabled) 1f else 0.5f).testTag(tag),
         leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
         headlineContent = { Text(title) },
         supportingContent = subtitle?.let { { Text(it) } },

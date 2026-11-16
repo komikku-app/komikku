@@ -49,6 +49,8 @@ dependencies {
     // Extensions: APK reading, dex2jar conversion, class loading (Phase 5).
     implementation(projects.desktop.extensionRuntime)
     implementation(kotlinx.serialization.json)
+    // Borrowed backup / restore option lists (PersistentList)
+    implementation(kotlinx.immutables)
     implementation(kotlinx.serialization.protobuf)
     implementation(kotlinx.serialization.xml)
     implementation(kotlinx.serialization.xml.core.jvm)

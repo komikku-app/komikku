@@ -12,3 +12,13 @@ val Context.hasMiuiPackageInstaller: Boolean get() = false
 
 /** Desktop: no Shizuku. */
 val Context.isShizukuInstalled: Boolean get() = false
+
+/** Same as Android: a new empty file in the external cache dir (the cache dir when there is none). */
+fun Context.createFileInCacheDir(name: String): java.io.File {
+    val file = java.io.File(externalCacheDir ?: cacheDir, name)
+    if (file.exists()) {
+        file.delete()
+    }
+    file.createNewFile()
+    return file
+}

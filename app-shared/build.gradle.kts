@@ -72,13 +72,11 @@ kotlin {
                 // Borrowed ChapterCache (desktopCopy, reader page cache)
                 implementation(libs.disklrucache)
 
-                // Borrowed DownloadCache (protobuf index) and Downloader (ComicInfo.xml) (8.1)
-                implementation(kotlinx.serialization.protobuf)
+                // Borrowed Downloader (ComicInfo.xml) (8.1)
                 implementation(kotlinx.serialization.xml)
                 implementation(kotlinx.serialization.xml.core.jvm)
 
                 // What the desktopCopy borrowed files reference (Android: `app` has these itself)
-                api(projects.data)
                 api(projects.sourceLocal)
                 api(projects.core.archive)
                 api(projects.coreMetadata)
@@ -94,6 +92,7 @@ dependencies {
     api(projects.core.common)
     api(projects.sourceApi)
     api(projects.domain)
+    api(projects.data)
     api(projects.presentationCore)
 
     api(libs.injekt)
@@ -101,6 +100,8 @@ dependencies {
     api(libs.bundles.voyager)
     api(libs.compose.materialmotion)
     implementation(kotlinx.immutables)
+    // Borrowed backup models / decoder (8.2, shared) and DownloadCache index (8.1)
+    implementation(kotlinx.serialization.protobuf)
 
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)

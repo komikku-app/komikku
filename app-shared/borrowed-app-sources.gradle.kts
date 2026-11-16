@@ -171,6 +171,54 @@ run {
         "eu/kanade/tachiyomi/data/download/Downloader.kt",
         "eu/kanade/tachiyomi/data/download/model/Download.kt",
     )
+
+    // Backup format, options, decoder, platform-neutral creators / restorers and the SY / EXH backup
+    // migrations (8.2). They use `:data` (column adapters, DatabaseHandler), now an `:app-shared`
+    // dependency on both targets.
+    shared(
+        "eu/kanade/tachiyomi/data/backup/models/Backup.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupCategory.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupChapter.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupExtensionStore.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupFeed.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupFlatMetadata.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupHistory.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupManga.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupMergedMangaReference.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupPreference.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupSavedSearch.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupSource.kt",
+        "eu/kanade/tachiyomi/data/backup/models/BackupTracking.kt",
+        "eu/kanade/tachiyomi/data/backup/models/metadata/BackupSearchMetadata.kt",
+        "eu/kanade/tachiyomi/data/backup/models/metadata/BackupSearchTag.kt",
+        "eu/kanade/tachiyomi/data/backup/models/metadata/BackupSearchTitle.kt",
+        "exh/EXHMigrations.kt",
+        "eu/kanade/tachiyomi/data/backup/BackupDecoder.kt",
+        "eu/kanade/tachiyomi/data/backup/create/BackupOptions.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/RestoreOptions.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/CategoriesBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/ExtensionStoresBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/FeedBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/PreferenceBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/SavedSearchBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/SourcesBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/CategoriesRestorer.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/ExtensionStoreRestorer.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/FeedRestorer.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/MangaRestorer.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/SavedSearchRestorer.kt",
+    )
+
+    // Backup create / restore entry points and what references Android-only code (8.2): BuildConfig,
+    // BackupNotifier / Notifications, TrackerManager, LibraryUpdateJob / BackupCreateJob / AppUpdateJob,
+    // AndroidPreferenceStore, ReadingMode. Desktop counterparts in app-shared/src/desktopMain.
+    desktopCopy(
+        "eu/kanade/tachiyomi/data/backup/BackupFileValidator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/BackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/create/creators/MangaBackupCreator.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/BackupRestorer.kt",
+        "eu/kanade/tachiyomi/data/backup/restore/restorers/PreferenceRestorer.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

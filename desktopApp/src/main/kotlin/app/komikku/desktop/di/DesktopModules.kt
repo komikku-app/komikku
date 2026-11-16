@@ -2,10 +2,13 @@ package app.komikku.desktop.di
 
 import android.app.Application
 import app.cash.sqldelight.db.SqlDriver
+import app.komikku.desktop.backup.DesktopBackupService
 import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.library.desktopLibraryUpdateRunner
+import app.komikku.desktop.platform.AwtFileDialogs
+import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopWindowPreferences
@@ -35,6 +38,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
@@ -255,6 +259,11 @@ class DesktopDomainModule(
                 insertErrorMessages = get(),
             )
         }
+
+        // Backup (8.2): borrowed Android creator / restorer
+        addSingletonFactory { DesktopBackupService(app, get()) }
+        addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
+        addSingletonFactory { TrackerManager() }
 
         // Reader (7.x)
         addSingletonFactory { ChapterCache(app, get(), get()) }
