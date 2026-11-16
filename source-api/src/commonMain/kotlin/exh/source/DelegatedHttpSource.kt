@@ -287,6 +287,8 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     override fun getFilterList() = delegate.getFilterList()
 
     // KMK -->
+    // getRelatedMangaList and its helpers aren't forwarded, so they still go through a subclass's
+    // overrides of these; subclasses customise related mangas by overriding fetchRelatedMangaList.
     override val supportsRelatedMangas get() = delegate.supportsRelatedMangas
 
     override val disableRelatedMangasBySearch get() = delegate.disableRelatedMangasBySearch
