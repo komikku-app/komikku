@@ -63,8 +63,15 @@ in this order of preference:
 
 1. Compile unchanged against the compat layer (D3).
 2. Small interface in `jvmShared` + per-platform implementation registered in DI.
-3. Same-package file in `androidMain` + `desktopMain` (top-level functions / classes).
-4. `expect`/`actual` — only if 1–3 are impossible.
+3. Same-package file in `androidMain` + `desktopMain` — only for symbols whose callers are in
+   *other* modules. Shared code cannot see its own module's `androidMain` / `desktopMain`
+   declarations (verified in step 0.6).
+4. `expect` in the shared source set + `actual` per platform, for symbols called from shared code
+   in the same module. Keep the `expect` file at the original path.
+
+The shared source sets are named `jvmSharedMain` / `jvmSharedTest` (hierarchy-template group
+`jvmShared`); "`jvmShared`" in this document refers to them. Android-only AAR dependencies of a
+converted module move to `androidMain.dependencies {}`.
 
 ### D3 — `:desktop:android-compat`: Android API surface for desktop
 
