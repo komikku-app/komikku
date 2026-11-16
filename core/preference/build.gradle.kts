@@ -20,6 +20,18 @@ kotlin {
                 api(kotlinx.coroutines.core)
             }
         }
+        val desktopMain by getting {
+            dependencies {
+                implementation(kotlinx.serialization.json)
+            }
+        }
+        val desktopTest by getting {
+            dependencies {
+                implementation(libs.bundles.test)
+                implementation(kotlinx.coroutines.test)
+                runtimeOnly(libs.junit.platform.launcher)
+            }
+        }
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
