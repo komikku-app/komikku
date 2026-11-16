@@ -268,6 +268,19 @@ implementations: `CoverCache`, `ChapterCache`, `DownloadManager`/`DownloadProvid
 `SourceManager`, library update runner (WorkManager on Android, coroutine scheduler on desktop),
 notifications (system tray on desktop).
 
+**Gate outcome (after Phase 5):** the upstream ViewModel and Metro DI migrations are not in this
+repo. Sharing the Android screens now would mean reworking ~49 Voyager `ScreenModel`s that the
+upstream sync will rewrite again. Decision: **Phase 6 is deferred until after that sync.** Until
+then the desktop app gets its own compact screens in `:desktopApp`, built on the shared
+interactors and the `:app-shared` services, and work continues with:
+
+- **Phase 6-lite** — desktop manga details that stores chapters (`SyncChaptersWithSource`),
+  read/bookmark state, Updates and History tabs, library refresh for one manga / all.
+- **Phase 7** — reader.
+- **Phase 8** — parity features, in the order downloads → backup restore/create → trackers.
+
+Android's `ExtensionManager` should implement `PlatformExtensionManager` when Phase 6 resumes.
+
 ### Phase 7 — Reader
 
 7.1 Page loaders shared (HTTP, download, archive, directory) → 7.2 Skia image decoding, split of
