@@ -122,7 +122,8 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
         }
     }
 
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    // Keep keyboard focus on the reader (chrome buttons take it when clicked and lose it when hidden).
+    LaunchedEffect(menuVisible, settingsVisible, state.bookmarked) { focusRequester.requestFocus() }
     Box(
         modifier = Modifier
             .fillMaxSize()
