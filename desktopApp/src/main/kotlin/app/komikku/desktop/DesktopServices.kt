@@ -8,9 +8,9 @@ import tachiyomi.core.common.preference.DesktopPreferenceStore
 import tachiyomi.core.common.preference.PreferenceStore
 
 /**
- * The shared non-UI services the desktop app runs on, wired by hand until the Injekt bootstrap
- * (docs/kmp-desktop/PLAN.md, step 3.4): the compat [Application] context, the main preference store
- * (the same instance `SharedPreferences` users get) and the shared `NetworkHelper`.
+ * Hand-wired network services (the compat [Application] context, the main preference store and the
+ * shared `NetworkHelper`) for tests that do not need the whole graph (`DesktopNetworkTest`).
+ * The app itself resolves everything through Injekt (`app.komikku.desktop.di.DesktopInjekt`).
  */
 class DesktopServices(
     val application: Application = Application(),

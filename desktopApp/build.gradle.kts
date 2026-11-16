@@ -35,9 +35,19 @@ dependencies {
     implementation(projects.core.preference)
     // Shared non-UI stack: network, logging, i18n helpers (desktop variant + :desktop:android-compat).
     implementation(projects.core.common)
+    // Domain + data layer (SQLDelight over the bundled SQLite driver), sources, local source.
+    implementation(projects.sourceApi)
+    implementation(projects.domain)
+    implementation(projects.data)
+    implementation(projects.sourceLocal)
+    implementation(kotlinx.serialization.json)
+    implementation(kotlinx.serialization.protobuf)
+    implementation(kotlinx.serialization.xml)
+    implementation(kotlinx.serialization.xml.core.jvm)
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(kotlinx.coroutines.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

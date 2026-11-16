@@ -12,48 +12,52 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import app.komikku.desktop.di.DesktopInjekt
 import tachiyomi.core.common.util.system.DesktopLogcatLogger
+import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
-import tachiyomi.i18n.sy.SYMR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
- * Komikku desktop entry point (Phase 0 scaffolding).
+ * Komikku desktop entry point.
  *
- * Demonstrates the shared foundation compiled for desktop:
- * - Compose Multiplatform (Material 3) desktop toolchain + the shared i18n modules (MR, SYMR, KMR).
- * - The shared `PreferenceStore` abstraction persisting data on desktop.
- * - `core:common` (network stack, logging) running on the `:desktop:android-compat` layer.
+ * Boots the shared non-UI stack through Injekt ([DesktopInjekt]: preferences, network, database,
+ * repositories, domain interactors) and shows a smoke screen with the library read through the real
+ * interactors. The navigation shell replaces it in Phase 4.
  */
 fun main() {
     DesktopLogcatLogger.install()
-    val services = DesktopServices()
-
-    // Persist + read back a launch counter through the shared PreferenceStore.
-    val launchCountPref = services.preferenceStore.getInt("desktop_launch_count", 0)
-    val launchCount = launchCountPref.get() + 1
-    launchCountPref.set(launchCount)
-    // Builds the shared OkHttp client (cookie jar, cache, interceptors); no request is made here.
-    val userAgent = services.network.defaultUserAgentProvider()
-    val httpCache = services.network.client.cache?.directory?.path.orEmpty()
+    DesktopInjekt.init()
 
     application {
         Window(
             onCloseRequest = ::exitApplication,
             title = MR.strings.app_name.localized(),
         ) {
-            App(launchCount = launchCount, userAgent = userAgent, httpCache = httpCache)
+            App()
         }
     }
 }
 
 @Composable
-fun App(launchCount: Int, userAgent: String, httpCache: String) {
+fun App(
+    getLibraryManga: GetLibraryManga = remember { Injekt.get() },
+    getCategories: GetCategories = remember { Injekt.get() },
+) {
+    val libraryManga by remember(getLibraryManga) { getLibraryManga.subscribe() }.collectAsState(initial = null)
+    val categories by remember(getCategories) { getCategories.subscribe() }.collectAsState(initial = null)
+
     MaterialTheme(
         colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
     ) {
@@ -67,7 +71,7 @@ fun App(launchCount: Int, userAgent: String, httpCache: String) {
                 verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
             ) {
                 Text(
-                    text = "Komikku desktop",
+                    text = MR.strings.app_name.localized(),
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Card {
@@ -75,18 +79,24 @@ fun App(launchCount: Int, userAgent: String, httpCache: String) {
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        StatusLine("MR (Mihon strings)", MR.strings.label_library.localized())
-                        StatusLine("SYMR (SY strings)", SYMR.strings.action_migrate_now.localized())
-                        StatusLine("KMR (Komikku strings)", KMR.strings.action_library_search.localized())
-                        StatusLine("Launches (shared PreferenceStore)", "$launchCount")
-                        StatusLine("User agent (shared NetworkHelper)", userAgent)
-                        StatusLine("HTTP cache (shared NetworkHelper)", httpCache)
+                        StatusLine(
+                            label = MR.strings.label_library.localized(),
+                            value = libraryManga?.size?.toString() ?: MR.strings.loading.localized(),
+                        )
+                        StatusLine(
+                            label = MR.strings.categories.localized(),
+                            value = categories?.joinToString { it.displayName() } ?: MR.strings.loading.localized(),
+                        )
                     }
                 }
             }
         }
     }
 }
+
+/** System category ("Default") has an empty name in the database, like on Android. */
+private fun Category.displayName(): String =
+    if (isSystemCategory) MR.strings.label_default.localized() else name
 
 @Composable
 private fun StatusLine(label: String, value: String) {
