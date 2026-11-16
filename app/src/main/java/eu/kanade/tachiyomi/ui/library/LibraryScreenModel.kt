@@ -80,7 +80,6 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
 import tachiyomi.domain.chapter.interactor.GetBookmarkedChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
@@ -317,21 +316,9 @@ class LibraryScreenModel(
             getLibraryItemPreferencesFlow(),
             getTrackingFiltersFlow(),
         ) { prefs, trackFilters ->
-            listOf(
-                prefs.filterDownloaded,
-                prefs.filterUnread,
-                prefs.filterStarted,
-                prefs.filterBookmarked,
-                prefs.filterCompleted,
-                prefs.filterIntervalCustom,
-                // SY -->
-                prefs.filterLewd,
-                // SY <--
-                *trackFilters.values.toTypedArray(),
-            )
-                .fastAny { it != TriState.DISABLED } ||
-                // KMK -->
-                prefs.filterCategories
+            // KMK -->
+            // Body moved to LibraryFilterSort.kt (shared with the desktop app)
+            hasActiveLibraryFilters(prefs, trackFilters)
             // KMK <--
         }
             .distinctUntilChanged()
@@ -439,33 +426,10 @@ class LibraryScreenModel(
         // KMK -->
         when (groupType) {
             LibraryGroup.BY_DEFAULT -> {
-                var showSystemCategory = false
-                // KMK <--
-                val groupCache = mutableMapOf</* Category.id */ Long, MutableList</* LibraryItem */ Long>>()
-                forEach { item ->
-                    item.libraryManga.categories.forEach { categoryId ->
-                        // KMK -->
-                        if (categoryId == UNCATEGORIZED_ID) {
-                            showSystemCategory = true
-                        }
-                        // KMK <--
-                        groupCache.getOrPut(categoryId) { mutableListOf() }.add(item.id)
-                    }
-                }
-                return categories.fastFilter {
-                    (showSystemCategory || !it.isSystemCategory) &&
-                        // KMK -->
-                        (showHiddenCategories || !it.hidden)
-                    // KMK <--
-                }
-                    .associateWith {
-                        groupCache[it.id]?.toList()
-                            // KMK -->
-                            ?.distinct()
-                            // KMK <--
-                            .orEmpty()
-                    }
+                // Body moved to LibraryFilterSort.kt (shared with the desktop app)
+                return groupByDefaultCategory(categories, showHiddenCategories)
             }
+            // KMK <--
             // KMK -->
             LibraryGroup.UNGROUPED -> {
                 return mapOf(

@@ -35,6 +35,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.util.lang.compareToWithCollator
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
@@ -56,10 +57,11 @@ import kotlin.random.Random
 import tachiyomi.domain.source.model.Source as DomainSource
 
 /*
- * KMK: the library's filter, sort and text-search logic, moved out of `LibraryScreenModel` with unchanged
- * bodies so the desktop app runs the same code (borrowed as `desktopCopy`, see
- * app-shared/borrowed-app-sources.gradle.kts and docs/kmp-desktop/PROGRESS.md). `LibraryScreenModel` calls
- * these functions with its own dependencies.
+ * KMK: the library's filter, grouping, sort and text-search logic, moved out of `LibraryScreenModel` so the
+ * desktop app runs the same code (borrowed as `desktopCopy`, see app-shared/borrowed-app-sources.gradle.kts and
+ * docs/kmp-desktop/PROGRESS.md). Function bodies are the original ones, with their SY / KMK markers; only the
+ * signatures changed (screen model members became parameters, marked `KMK`). `LibraryScreenModel` calls these
+ * functions with its own dependencies. Upstream changes to the moved code must be applied here.
  */
 
 /** Display / filter preferences of library items (formerly `LibraryScreenModel.ItemPreferences`). */
@@ -69,8 +71,10 @@ data class LibraryItemPreferences(
     val unreadBadge: Boolean,
     val localBadge: Boolean,
     val languageBadge: Boolean,
+    // KMK -->
     val useLangIcon: Boolean,
     val sourceBadge: Boolean,
+    // KMK <--
     val skipOutsideReleasePeriod: Boolean,
 
     val globalFilterDownloaded: Boolean,
@@ -80,14 +84,20 @@ data class LibraryItemPreferences(
     val filterBookmarked: TriState,
     val filterCompleted: TriState,
     val filterIntervalCustom: TriState,
+    // SY -->
     val filterLewd: TriState,
+    // SY <--
+    // KMK -->
     val filterCategories: Boolean,
+    // KMK <--
 )
 
-/** [LibraryItemPreferences] from the library / base preferences (formerly `getLibraryItemPreferencesFlow`). */
+/** Formerly `LibraryScreenModel.getLibraryItemPreferencesFlow`. */
 fun libraryItemPreferencesFlow(
+    // KMK -->
     libraryPreferences: LibraryPreferences,
     preferences: BasePreferences,
+    // KMK <--
 ): Flow<LibraryItemPreferences> {
     return combine(
         libraryPreferences.downloadBadge().changes(),
@@ -103,10 +113,14 @@ fun libraryItemPreferencesFlow(
         libraryPreferences.filterBookmarked().changes(),
         libraryPreferences.filterCompleted().changes(),
         libraryPreferences.filterIntervalCustom().changes(),
+        // SY -->
         libraryPreferences.filterLewd().changes(),
+        // SY <--
+        // KMK -->
         libraryPreferences.sourceBadge().changes(),
         libraryPreferences.useLangIcon().changes(),
         libraryPreferences.filterCategories().changes(),
+        // KMK <--
     ) {
         LibraryItemPreferences(
             downloadBadge = it[0] as Boolean,
@@ -121,7 +135,10 @@ fun libraryItemPreferencesFlow(
             filterBookmarked = it[9] as TriState,
             filterCompleted = it[10] as TriState,
             filterIntervalCustom = it[11] as TriState,
+            // SY -->
             filterLewd = it[12] as TriState,
+            // SY <--
+            // KMK -->
             sourceBadge = it[13] as Boolean,
             useLangIcon = it[14] as Boolean,
             filterCategories = it[15] as Boolean,
@@ -129,46 +146,31 @@ fun libraryItemPreferencesFlow(
     }
 }
 
-/**
- * Flow of tracking filter preferences (formerly `getTrackingFiltersFlow`)
- *
- * @return map of track id with the filter value
- */
-fun libraryTrackingFiltersFlow(
-    trackerManager: TrackerManager,
-    libraryPreferences: LibraryPreferences,
-): Flow<Map<Long, TriState>> {
-    return trackerManager.loggedInTrackersFlow().flatMapLatest { loggedInTrackers ->
-        if (loggedInTrackers.isEmpty()) {
-            flowOf(emptyMap())
-        } else {
-            val filterFlows = loggedInTrackers.map { tracker ->
-                libraryPreferences.filterTracking(tracker.id.toInt()).changes().map { tracker.id to it }
-            }
-            combine(filterFlows) { it.toMap() }
-        }
-    }
-}
-
-/** The library item of [this] with the badges [preferences] enable (formerly in `getFavoritesFlow`). */
+/** One library item with the badges [preferences] enable (formerly the mapping in `LibraryScreenModel.getFavoritesFlow`). */
 suspend fun LibraryManga.toLibraryItem(
     preferences: LibraryItemPreferences,
+    // KMK -->
     sourceManager: SourceManager,
     downloadManager: DownloadManager,
     getMergedMangaById: GetMergedMangaById,
+    // KMK <--
 ): LibraryItem {
     val manga = this
     // Display mode based on user preference: take it from global library setting or category
+    // KMK -->
     val source = sourceManager.getOrStub(manga.manga.source)
+    // KMK <--
     return LibraryItem(
         libraryManga = manga,
         downloadCount = if (preferences.downloadBadge) {
+            // SY -->
             if (manga.manga.source == MERGED_SOURCE_ID) {
                 // FIXME: N+1 performance issues.
                 //  Should include all the merged references in library query instead.
                 getMergedMangaById.await(manga.manga.id)
                     .sumOf { downloadManager.getDownloadCount(it) }.toLong()
             } else {
+                // SY <--
                 downloadManager.getDownloadCount(manga.manga).toLong()
             }
         } else {
@@ -189,6 +191,7 @@ suspend fun LibraryManga.toLibraryItem(
         } else {
             ""
         },
+        // KMK -->
         useLangIcon = preferences.useLangIcon,
         source = if (preferences.sourceBadge) {
             DomainSource(
@@ -201,18 +204,64 @@ suspend fun LibraryManga.toLibraryItem(
         } else {
             null
         },
+        // KMK <--
     )
 }
 
-/** Applies the library filters (downloaded, unread, started, bookmarked, completed, ..., trackers, categories). */
+/**
+ * Flow of tracking filter preferences
+ *
+ * @return map of track id with the filter value
+ */
+fun libraryTrackingFiltersFlow(
+    // KMK -->
+    trackerManager: TrackerManager,
+    libraryPreferences: LibraryPreferences,
+    // KMK <--
+): Flow<Map<Long, TriState>> {
+    return trackerManager.loggedInTrackersFlow().flatMapLatest { loggedInTrackers ->
+        if (loggedInTrackers.isEmpty()) {
+            flowOf(emptyMap())
+        } else {
+            val filterFlows = loggedInTrackers.map { tracker ->
+                libraryPreferences.filterTracking(tracker.id.toInt()).changes().map { tracker.id to it }
+            }
+            combine(filterFlows) { it.toMap() }
+        }
+    }
+}
+
+/** Whether a library filter is active (formerly inline in `LibraryScreenModel`'s init). */
+fun hasActiveLibraryFilters(prefs: LibraryItemPreferences, trackFilters: Map<Long, TriState>): Boolean {
+    return listOf(
+        prefs.filterDownloaded,
+        prefs.filterUnread,
+        prefs.filterStarted,
+        prefs.filterBookmarked,
+        prefs.filterCompleted,
+        prefs.filterIntervalCustom,
+        // SY -->
+        prefs.filterLewd,
+        // SY <--
+        *trackFilters.values.toTypedArray(),
+    )
+        .fastAny { it != TriState.DISABLED } ||
+        // KMK -->
+        prefs.filterCategories
+    // KMK <--
+}
+
+/** Formerly `LibraryScreenModel.applyFilters`. */
 suspend fun List<LibraryItem>.applyLibraryFilters(
     trackMap: Map<Long, List<Track>>,
     trackingFilter: Map<Long, TriState>,
     preferences: LibraryItemPreferences,
+    // KMK -->
     includedCategories: Set<Long>,
     excludedCategories: Set<Long>,
     downloadManager: DownloadManager,
     getMergedMangaById: GetMergedMangaById,
+    // KMK <--
 ): List<LibraryItem> {
     val downloadedOnly = preferences.globalFilterDownloaded
     val skipOutsideReleasePeriod = preferences.skipOutsideReleasePeriod
@@ -230,18 +279,22 @@ suspend fun List<LibraryItem>.applyLibraryFilters(
     val includedTracks = trackingFilter.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
     val trackFiltersIsIgnored = includedTracks.isEmpty() && excludedTracks.isEmpty()
 
+    // SY -->
     val filterLewd = preferences.filterLewd
+    // SY <--
 
     val filterFnDownloaded: suspend (LibraryItem) -> Boolean = {
         applyFilter(filterDownloaded) {
             it.libraryManga.manga.isLocal() ||
                 it.downloadCount > 0 ||
+                // KMK -->
                 if (it.libraryManga.manga.source == MERGED_SOURCE_ID) {
                     // FIXME: Calling await in filter could lead to N+1 performance issues.
                     //  Should include all the merged references in library query instead.
                     getMergedMangaById.await(it.libraryManga.manga.id)
                         .sumOf { manga -> downloadManager.getDownloadCount(manga) } > 0
                 } else {
+                    // KMK <--
                     downloadManager.getDownloadCount(it.libraryManga.manga) > 0
                 }
         }
@@ -271,21 +324,26 @@ suspend fun List<LibraryItem>.applyLibraryFilters(
         }
     }
 
+    // SY -->
     val filterFnLewd: (LibraryItem) -> Boolean = {
         applyFilter(filterLewd) { it.libraryManga.manga.isLewd() }
     }
+    // SY <--
 
     val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
         if (isNotLoggedInAnyTrack || trackFiltersIsIgnored) return@tracking true
 
+        // KMK -->
         val mangaTracks = trackMap[item.id].orEmpty()
 
         val isExcluded = excludedTracks.isNotEmpty() && mangaTracks.fastAny { it.trackerId in excludedTracks }
         val isIncluded = includedTracks.isEmpty() || mangaTracks.fastAny { it.trackerId in includedTracks }
+        // KMK <--
 
         !isExcluded && isIncluded
     }
 
+    // KMK -->
     val filterFnCategories: (LibraryItem) -> Boolean = categories@{ item ->
         if (!filterCategories) return@categories true
 
@@ -301,6 +359,7 @@ suspend fun List<LibraryItem>.applyLibraryFilters(
 
         !isExcluded && isIncluded
     }
+    // KMK <--
 
     return fastFilter {
         filterFnDownloaded(it) &&
@@ -310,23 +369,65 @@ suspend fun List<LibraryItem>.applyLibraryFilters(
             filterFnCompleted(it) &&
             filterFnIntervalCustom(it) &&
             filterFnTracking(it) &&
+            // SY -->
             filterFnLewd(it) &&
+            // SY <--
+            // KMK -->
             filterFnCategories(it)
+        // KMK <--
     }
 }
 
-/**
- * Sorts each category's items by the category's sort ([groupSort] when grouping is not by category), then
- * alphabetically.
- */
+/** Grouping by category (formerly the `LibraryGroup.BY_DEFAULT` branch of `LibraryScreenModel.applyGrouping`). */
+fun List<LibraryItem>.groupByDefaultCategory(
+    categories: List<Category>,
+    // KMK -->
+    showHiddenCategories: Boolean,
+    // KMK <--
+): Map<Category, List</* LibraryItem */ Long>> {
+    // KMK -->
+    var showSystemCategory = false
+    // KMK <--
+    val groupCache = mutableMapOf</* Category.id */ Long, MutableList</* LibraryItem */ Long>>()
+    forEach { item ->
+        item.libraryManga.categories.forEach { categoryId ->
+            // KMK -->
+            if (categoryId == UNCATEGORIZED_ID) {
+                showSystemCategory = true
+            }
+            // KMK <--
+            groupCache.getOrPut(categoryId) { mutableListOf() }.add(item.id)
+        }
+    }
+    return categories.fastFilter {
+        (showSystemCategory || !it.isSystemCategory) &&
+            // KMK -->
+            (showHiddenCategories || !it.hidden)
+        // KMK <--
+    }
+        .associateWith {
+            groupCache[it.id]?.toList()
+                // KMK -->
+                ?.distinct()
+                // KMK <--
+                .orEmpty()
+        }
+}
+
+/** Formerly `LibraryScreenModel.applySort`. */
 fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
     favoritesById: Map<Long, LibraryItem>,
     trackMap: Map<Long, List<Track>>,
     loggedInTrackerIds: Set<Long>,
-    groupSort: LibrarySort?,
+    // SY -->
+    groupSort: LibrarySort? = null,
+    // SY <--
+    // KMK -->
     libraryPreferences: LibraryPreferences,
     trackerManager: TrackerManager,
+    // KMK <--
 ): Map<Category, List</* LibraryItem */ Long>> {
+    // SY -->
     val listOfTags by lazy {
         libraryPreferences.sortTagsForLibrary().get()
             .asSequence()
@@ -339,6 +440,7 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
             .map { it.second }
             .toList()
     }
+    // SY <--
 
     val sortAlphabetically: (LibraryItem, LibraryItem) -> Int = { manga1, manga2 ->
         val title1 = manga1.libraryManga.manga.title.lowercase()
@@ -361,7 +463,9 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
     }
 
     fun LibrarySort.comparator(): Comparator<LibraryItem> = Comparator { manga1, manga2 ->
+        // SY -->
         val sort = groupSort ?: this
+        // SY <--
         when (sort.type) {
             LibrarySort.Type.Alphabetical -> {
                 sortAlphabetically(manga1, manga2)
@@ -399,6 +503,7 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
             LibrarySort.Type.Random -> {
                 error("Why Are We Still Here? Just To Suffer?")
             }
+            // SY -->
             LibrarySort.Type.TagList -> {
                 val manga1IndexOfTag = listOfTags.indexOfFirst {
                     manga1.libraryManga.manga.genre?.contains(it) ?: false
@@ -408,35 +513,40 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
                 }
                 manga1IndexOfTag.compareTo(manga2IndexOfTag)
             }
+            // SY <--
         }
     }
 
     return mapValues { (key, value) ->
+        // SY -->
         val sort = groupSort ?: key.sort
         if (sort.type == LibrarySort.Type.Random) {
+            // SY <--
             return@mapValues value.shuffled(Random(libraryPreferences.randomSortSeed().get()))
         }
 
         val manga = value.mapNotNull { favoritesById[it] }
 
+        // SY -->
         val comparator = sort.comparator()
-            .let { if (sort.isAscending) it else it.reversed() }
+            // SY <--
+            .let { if (/* SY --> */ sort.isAscending /* SY <-- */) it else it.reversed() }
             .thenComparator(sortAlphabetically)
 
         manga.sortedWith(comparator).map { it.id }
     }
 }
 
+// SY -->
 /**
- * Library text search (SY): `id:<manga id>`, `src:<source id | local>`, else the query parsed by
- * [SearchEngine] (terms, quoted phrases, `-` exclusions, `namespace:tag`) matched against title, author,
- * artist, description, source name / id, tracker name / status, genres and the SY search tags / titles of
- * metadata sources.
+ * Formerly the query part of `LibraryScreenModel.filterLibrary` (the AZ `mangadex-dmca` easter egg stays there):
+ * `id:` / `src:` queries, else the [SearchEngine]-parsed query matched by [filterManga].
  */
 suspend fun filterLibraryByQuery(
     unfiltered: List<LibraryItem>,
     query: String?,
     loggedInTrackServices: Map<Long, TriState>,
+    // KMK -->
     searchEngine: SearchEngine,
     getIdsOfFavoriteMangaWithMetadata: GetIdsOfFavoriteMangaWithMetadata,
     getTracks: GetTracks,
@@ -444,8 +554,11 @@ suspend fun filterLibraryByQuery(
     getSearchTags: GetSearchTags,
     getSearchTitles: GetSearchTitles,
     trackerManager: TrackerManager,
+    // KMK <--
 ): List<LibraryItem> {
+    // KMK -->
     if (unfiltered.isEmpty() || query.isNullOrBlank()) return unfiltered
+    // KMK <--
     // Prepare filter object
     val parsedQuery = searchEngine.parseQuery(query)
     val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
@@ -475,7 +588,7 @@ suspend fun filterLibraryByQuery(
         if (isMetadataSource(sourceId) && mangaWithMetaIds.binarySearch(mangaId) >= 0) {
             val tags = getSearchTags.await(mangaId)
             val titles = getSearchTitles.await(mangaId)
-            libraryMangaMatches(
+            filterManga(
                 queries = parsedQuery,
                 libraryManga = item.libraryManga,
                 tracks = tracks[mangaId],
@@ -484,24 +597,28 @@ suspend fun filterLibraryByQuery(
                 searchTags = tags,
                 searchTitles = titles,
                 loggedInTrackServices = loggedInTrackServices,
+                // KMK -->
                 trackerManager = trackerManager,
+                // KMK <--
             )
         } else {
             // No meta? Filter using title
-            libraryMangaMatches(
+            filterManga(
                 queries = parsedQuery,
                 libraryManga = item.libraryManga,
                 tracks = tracks[mangaId],
                 source = sources[sourceId],
                 loggedInTrackServices = loggedInTrackServices,
+                // KMK -->
                 trackerManager = trackerManager,
+                // KMK <--
             )
         }
     }.toList()
 }
 
-/** Whether [libraryManga] matches every parsed query component (formerly `LibraryScreenModel.filterManga`). */
-fun libraryMangaMatches(
+/** Whether [libraryManga] matches every query component (formerly `LibraryScreenModel.filterManga`). */
+fun filterManga(
     queries: List<QueryComponent>,
     libraryManga: LibraryManga,
     tracks: List<Track>?,
@@ -510,7 +627,9 @@ fun libraryMangaMatches(
     searchTags: List<SearchTag>? = null,
     searchTitles: List<SearchTitle>? = null,
     loggedInTrackServices: Map<Long, TriState>,
+    // KMK -->
     trackerManager: TrackerManager,
+    // KMK <--
 ): Boolean {
     val manga = libraryManga.manga
     val sourceIdString = manga.source.takeUnless { it == LocalSource.ID }?.toString()
@@ -530,7 +649,7 @@ fun libraryMangaMatches(
                         (
                             loggedInTrackServices.isNotEmpty() &&
                                 tracks != null &&
-                                filterTracks(query, tracks, context, trackerManager)
+                                filterTracks(query, tracks, context, /* KMK --> */ trackerManager /* KMK <-- */)
                             ) ||
                         (genre.fastAny { it.contains(query, true) }) ||
                         (searchTags?.fastAny { it.name.contains(query, true) } == true) ||
@@ -563,7 +682,7 @@ fun libraryMangaMatches(
                                 (
                                     loggedInTrackServices.isEmpty() ||
                                         tracks == null ||
-                                        !filterTracks(query, tracks, context, trackerManager)
+                                        !filterTracks(query, tracks, context, /* KMK --> */ trackerManager /* KMK <-- */)
                                     ) &&
                                 (!genre.fastAny { it.contains(query, true) }) &&
                                 (searchTags?.fastAny { it.name.contains(query, true) } != true) &&
@@ -598,7 +717,9 @@ private fun filterTracks(
     constraint: String,
     tracks: List<Track>,
     context: Context,
+    // KMK -->
     trackerManager: TrackerManager,
+    // KMK <--
 ): Boolean {
     return tracks.fastAny { track ->
         val trackService = trackerManager.get(track.trackerId)
@@ -613,3 +734,4 @@ private fun filterTracks(
         }
     }
 }
+// SY <--
