@@ -7,23 +7,29 @@ import me.zhanghai.android.libarchive.ArchiveException
 import java.io.Closeable
 import java.io.InputStream
 
-class ArchiveReader(pfd: ParcelFileDescriptor) : Closeable {
+// KMK --> `actual` of the shared expect class (src/jvmSharedMain); the desktop actual is in desktopMain.
+actual class ArchiveReader(pfd: ParcelFileDescriptor) : Closeable {
+    // KMK <--
     val size = pfd.statSize
     val address = Os.mmap(0, size, OsConstants.PROT_READ, OsConstants.MAP_PRIVATE, pfd.fileDescriptor, 0)
 
     // SY -->
-    var encrypted: Boolean = false
+    // KMK -->
+    actual var encrypted: Boolean = false
         private set
-    var wrongPassword: Boolean? = null
+    actual var wrongPassword: Boolean? = null
         private set
-    val archiveHashCode = pfd.hashCode()
+    actual val archiveHashCode = pfd.hashCode()
+    // KMK <--
 
     init {
         checkEncryptionStatus()
     }
     // SY <--
 
-    inline fun <T> useEntries(block: (Sequence<ArchiveEntry>) -> T): T = ArchiveInputStream(
+    // KMK -->
+    actual inline fun <T> useEntries(block: (Sequence<ArchiveEntry>) -> T): T = ArchiveInputStream(
+        // KMK <--
         address,
         size,
         // SY -->
@@ -31,7 +37,9 @@ class ArchiveReader(pfd: ParcelFileDescriptor) : Closeable {
         // SY <--
     ).use { block(generateSequence { it.getNextEntry() }) }
 
-    fun getInputStream(entryName: String): InputStream? {
+    // KMK -->
+    actual fun getInputStream(entryName: String): InputStream? {
+        // KMK <--
         val archive = ArchiveInputStream(address, size, /* SY --> */ encrypted /* SY <-- */)
         try {
             while (true) {
@@ -83,7 +91,9 @@ class ArchiveReader(pfd: ParcelFileDescriptor) : Closeable {
     }
     // SY <--
 
-    override fun close() {
+    // KMK -->
+    actual override fun close() {
+        // KMK <--
         Os.munmap(address, size)
     }
 }

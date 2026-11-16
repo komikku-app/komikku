@@ -2,7 +2,6 @@
 
 package mihon.core.archive
 
-import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -18,10 +17,8 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.nio.CharBuffer
-import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
@@ -35,9 +32,13 @@ object CbzCrypto {
     const val DATABASE_NAME = "tachiyomiEncrypted.db"
     private const val DEFAULT_COVER_NAME = "cover.jpg"
     private val securityPreferences: SecurityPreferences by injectLazy()
-    private val keyStore = KeyStore.getInstance(Keystore).apply {
-        load(null)
-    }
+    // KMK --> key storage is platform specific: Android Keystore on Android, a key file on desktop
+    // (CbzKeyStore in src/androidMain / src/desktopMain). The KeyGenParameterSpec, KeyStore and
+    // KeyGenerator imports moved there too (ktlint does not allow comments in the import list).
+    // private val keyStore = KeyStore.getInstance(Keystore).apply {
+    //     load(null)
+    // }
+    // KMK <--
 
     private val encryptionCipherCbz
         get() = Cipher.getInstance(CryptoSettings).apply {
@@ -66,22 +67,28 @@ object CbzCrypto {
     }
 
     private fun getKey(alias: String): SecretKey {
-        val loadedKey = keyStore.getEntry(alias, null) as? KeyStore.SecretKeyEntry
-        return loadedKey?.secretKey ?: generateKey(alias)
+        // KMK -->
+        return CbzKeyStore.getKey(alias)
+        // val loadedKey = keyStore.getEntry(alias, null) as? KeyStore.SecretKeyEntry
+        // return loadedKey?.secretKey ?: generateKey(alias)
+        // KMK <--
     }
 
     private fun generateKey(alias: String): SecretKey {
-        return KeyGenerator.getInstance(Algorithm).apply {
-            init(
-                KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                    .setKeySize(KeySize)
-                    .setBlockModes(BlockMode)
-                    .setEncryptionPaddings(Padding)
-                    .setRandomizedEncryptionRequired(true)
-                    .setUserAuthenticationRequired(false)
-                    .build(),
-            )
-        }.generateKey()
+        // KMK -->
+        return CbzKeyStore.generateKey(alias)
+        // return KeyGenerator.getInstance(Algorithm).apply {
+        //     init(
+        //         KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+        //             .setKeySize(KeySize)
+        //             .setBlockModes(BlockMode)
+        //             .setEncryptionPaddings(Padding)
+        //             .setRandomizedEncryptionRequired(true)
+        //             .setUserAuthenticationRequired(false)
+        //             .build(),
+        //     )
+        // }.generateKey()
+        // KMK <--
     }
 
     private fun encrypt(password: ByteArray, cipher: Cipher): String {
@@ -121,7 +128,10 @@ object CbzCrypto {
     }
 
     fun deleteKeyCbz() {
-        keyStore.deleteEntry(AliasCbz)
+        // KMK -->
+        CbzKeyStore.deleteKey(AliasCbz)
+        // keyStore.deleteEntry(AliasCbz)
+        // KMK <--
         generateKey(AliasCbz)
     }
 
@@ -210,7 +220,9 @@ object CbzCrypto {
 }
 
 private const val BufferSize = 2048
-private const val KeySize = 256
+// KMK --> used by the Android CbzKeyStore
+// private const val KeySize = 256
+// KMK <--
 private const val IvSize = 16
 
 private const val Algorithm = KeyProperties.KEY_ALGORITHM_AES
@@ -218,7 +230,9 @@ private const val BlockMode = KeyProperties.BLOCK_MODE_CBC
 private const val Padding = KeyProperties.ENCRYPTION_PADDING_PKCS7
 private const val CryptoSettings = "$Algorithm/$BlockMode/$Padding"
 
-private const val Keystore = "AndroidKeyStore"
+// KMK --> used by the Android CbzKeyStore
+// private const val Keystore = "AndroidKeyStore"
+// KMK <--
 private const val AliasCbz = "cbzPw"
 private const val AliasSql = "sqlPw"
 

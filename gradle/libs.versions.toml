@@ -49,6 +49,14 @@ jsoup = "org.jsoup:jsoup:1.23.2"
 disklrucache = "com.jakewharton:disklrucache:2.0.2"
 unifile = "com.github.komikku-app:UniFile:084a54140a"
 libarchive = "me.zhanghai.android.libarchive:library:1.1.6"
+# KMK --> desktop archive support in :core:archive (Android keeps libarchive): zip / cbz / epub
+# incl. AES and ZipCrypto passwords (zip4j), RAR 4 (junrar), 7z (commons-compress + xz),
+# tar / cpio / ar and compressed tarballs (commons-compress).
+zip4j = "net.lingala.zip4j:zip4j:2.11.6"
+junrar = "com.github.junrar:junrar:8.1.2"
+commons-compress = "org.apache.commons:commons-compress:1.28.0"
+xz = "org.tukaani:xz:1.12"
+# KMK <--
 
 preferencektx = "androidx.preference:preference-ktx:1.2.1"
 
@@ -145,3 +153,6 @@ sqldelight = ["sqldelight-androidx-driver", "sqldelight-coroutines", "sqldelight
 voyager = ["voyager-navigator", "voyager-screenmodel", "voyager-tab-navigator", "voyager-transitions"]
 test = ["junit-jupiter", "kotest-assertions", "mockk"]
 markdown = ["markdown-core", "markdown-coil"]
+# KMK -->
+archive-desktop = ["zip4j", "junrar", "commons-compress", "xz"]
+# KMK <--
