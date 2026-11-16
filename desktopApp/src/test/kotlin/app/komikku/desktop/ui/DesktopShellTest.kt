@@ -72,7 +72,7 @@ class DesktopShellTest {
         waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Desktop manga").fetchSemanticsNodes().isNotEmpty() }
 
         // Placeholder destination through the rail
-        onNodeWithText(MR.strings.label_recent_updates.text()).performClick()
+        onNodeWithText(MR.strings.label_more.text()).performClick()
         waitUntil(timeoutMillis = 5_000) {
             onAllNodesWithText(KMR.strings.desktop_not_available_yet.text()).fetchSemanticsNodes().isNotEmpty()
         }

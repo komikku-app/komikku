@@ -5,11 +5,13 @@ import app.cash.sqldelight.db.SqlDriver
 import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extensions.DesktopExtensionManager
+import app.komikku.desktop.library.desktopLibraryUpdateRunner
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
+import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.reader.ReaderProgressSaver
 import app.komikku.shared.reader.ReaderTrackerHook
 import eu.kanade.domain.base.BasePreferences
@@ -232,6 +234,19 @@ class DesktopDomainModule(
         addFactory { SetMangaViewerFlags(get()) }
         addFactory { GetIncognitoState(get(), get(), get()) }
         addFactory { UpdateMangaFromRemote(get(), get(), get(), get(), get(), get(), get()) }
+
+        // Library update (6L.2): shared coroutine runner, one per process
+        addSingletonFactory<LibraryUpdateRunner> {
+            desktopLibraryUpdateRunner(
+                getLibraryManga = get(),
+                libraryPreferences = get(),
+                fetchInterval = get(),
+                sourceManager = get(),
+                updateMangaFromRemote = get(),
+                insertErrors = get(),
+                insertErrorMessages = get(),
+            )
+        }
 
         // Reader (7.x)
         addSingletonFactory { ChapterCache(app, get(), get()) }

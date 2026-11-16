@@ -1,8 +1,10 @@
 package app.komikku.desktop.ui.tabs
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +20,7 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,9 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.navigation.AppNavigatorHost
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -46,6 +51,8 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /** Library destination: categories as tabs, a cover grid per category; manga open their details. */
 data object LibraryTab : Tab {
@@ -86,7 +93,20 @@ data object LibraryHomeScreen : Screen() {
 private fun LibraryPages(pages: List<LibraryPage>, onOpen: (Long) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     val index = selected.coerceIn(0, pages.lastIndex)
+    val runner = remember { Injekt.get<LibraryUpdateRunner>() }
     Column(modifier = Modifier.fillMaxSize()) {
+        // Library refresh (6L.2): the shown category, or the whole library
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            TextButton(
+                onClick = { runner.start(LibraryUpdateRunner.Target.Category(pages[index].category.id)) },
+                modifier = Modifier.testTag("update-category"),
+            ) { Text(stringResource(MR.strings.action_update_category)) }
+            TextButton(
+                onClick = { runner.start(LibraryUpdateRunner.Target.All) },
+                modifier = Modifier.testTag("update-library-all"),
+            ) { Text(stringResource(MR.strings.action_update_library)) }
+        }
+        LibraryUpdateBanner(runner)
         if (pages.size > 1) {
             PrimaryScrollableTabRow(selectedTabIndex = index, edgePadding = 0.dp) {
                 pages.forEachIndexed { i, page ->

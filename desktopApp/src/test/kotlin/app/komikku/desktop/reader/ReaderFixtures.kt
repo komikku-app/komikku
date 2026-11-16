@@ -127,7 +127,7 @@ class FakeHttpSource(override val baseUrl: String, private val chapterCount: Int
                 url = "/chapter/$n"
                 name = "Chapter $n"
                 chapter_number = n.toFloat()
-                date_upload = 1_700_000_000_000L + n
+                date_upload = System.currentTimeMillis() - (chapterCount - n) * 60_000L
             }
         }
         return SMangaUpdate(details, list)

@@ -1,9 +1,7 @@
 package app.komikku.desktop.ui.tabs
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -37,9 +35,5 @@ abstract class PlaceholderTab(
         EmptyScreen(stringRes = KMR.strings.desktop_not_available_yet)
     }
 }
-
-data object UpdatesTab : PlaceholderTab(1u, MR.strings.label_recent_updates, Icons.Outlined.NewReleases)
-
-data object HistoryTab : PlaceholderTab(2u, MR.strings.label_recent_manga, Icons.Outlined.History)
 
 data object MoreTab : PlaceholderTab(4u, MR.strings.label_more, Icons.Outlined.MoreHoriz)
