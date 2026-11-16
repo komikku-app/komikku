@@ -147,9 +147,10 @@ extensions.configure<ComposeExtension> {
                 linux {
                     packageName = "komikku"
                     iconFile.set(project.file("icons/komikku.png"))
-                    menuGroup = "Graphics"
-                    // freedesktop.org main + additional categories
-                    appCategory = "Graphics;Viewer;"
+                    // jpackage: the menu group becomes the `.desktop` file's Categories (freedesktop.org main +
+                    // additional categories); the app category is the DEB Section / RPM Group.
+                    menuGroup = "Graphics;Viewer;"
+                    appCategory = "graphics"
                     shortcut = true
                     debPackageVersion = packageVersionName
                     rpmPackageVersion = packageVersionName
