@@ -1,0 +1,113 @@
+package app.komikku.desktop.ui.browse
+
+import android.app.Application
+import app.komikku.shared.extension.GetPlatformExtensionsByType
+import app.komikku.shared.extension.PlatformExtensionManager
+import cafe.adriel.voyager.core.model.StateScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.extension.model.Extensions
+import eu.kanade.tachiyomi.extension.model.Extension
+import eu.kanade.tachiyomi.extension.model.InstallStep
+import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import mihon.domain.extension.interactor.AddExtensionStore
+import mihon.domain.extension.interactor.GetExtensionStores
+import mihon.domain.extension.interactor.RemoveExtensionStore
+import mihon.domain.extension.model.ExtensionStore
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.kmk.KMR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+
+/**
+ * State of the desktop Extensions tab: extensions grouped like Android (updates / installed /
+ * untrusted / available, through [GetPlatformExtensionsByType]), install progress per entry, the
+ * saved extension stores; actions go to [PlatformExtensionManager] and the store interactors.
+ */
+class ExtensionsScreenModel(
+    private val manager: PlatformExtensionManager = Injekt.get(),
+    private val getExtensions: GetPlatformExtensionsByType = Injekt.get(),
+    private val getStores: GetExtensionStores = Injekt.get(),
+    private val addExtensionStore: AddExtensionStore = Injekt.get(),
+    private val removeExtensionStore: RemoveExtensionStore = Injekt.get(),
+    private val context: Application = Injekt.get(),
+) : StateScreenModel<ExtensionsScreenModel.State>(State()) {
+
+    data class State(
+        val extensions: Extensions? = null,
+        /** Install / update progress by [Extension.pkgName] of the listed entry. */
+        val steps: Map<String, InstallStep> = emptyMap(),
+        val stores: List<ExtensionStore> = emptyList(),
+        val isRefreshing: Boolean = false,
+    )
+
+    init {
+        screenModelScope.launch {
+            getExtensions.subscribe().collectLatest { extensions -> mutableState.update { it.copy(extensions = extensions) } }
+        }
+        screenModelScope.launch {
+            getStores.subscribe().collectLatest { stores -> mutableState.update { it.copy(stores = stores) } }
+        }
+        refresh()
+    }
+
+    fun refresh() {
+        if (state.value.isRefreshing) return
+        mutableState.update { it.copy(isRefreshing = true) }
+        screenModelScope.launch {
+            try {
+                manager.findAvailableExtensions()
+            } finally {
+                mutableState.update { it.copy(isRefreshing = false) }
+            }
+        }
+    }
+
+    fun install(extension: Extension.Available) = track(extension, manager.installExtension(extension))
+
+    fun update(extension: Extension.Installed) = track(extension, manager.updateExtension(extension))
+
+    fun updateAll() = state.value.extensions?.updates.orEmpty().forEach(::update)
+
+    fun cancel(extension: Extension) {
+        manager.cancelInstallUpdateExtension(extension)
+        mutableState.update { it.copy(steps = it.steps - extension.pkgName) }
+    }
+
+    fun uninstall(extension: Extension) = manager.uninstallExtension(extension)
+
+    fun trust(extension: Extension.Untrusted) {
+        screenModelScope.launch { manager.trust(extension) }
+    }
+
+    /** Adds the store at [indexUrl]; returns false when it could not be fetched or parsed. */
+    suspend fun addStore(indexUrl: String): Boolean {
+        val added = addExtensionStore(indexUrl.trim()).isSuccess
+        if (added) refresh()
+        return added
+    }
+
+    fun removeStore(store: ExtensionStore) {
+        screenModelScope.launch {
+            removeExtensionStore(store.indexUrl)
+            refresh()
+        }
+    }
+
+    private fun track(extension: Extension, steps: Flow<InstallStep>) {
+        screenModelScope.launch {
+            var last = InstallStep.Idle
+            steps.collect { step ->
+                last = step
+                mutableState.update { it.copy(steps = it.steps + (extension.pkgName to step)) }
+            }
+            mutableState.update { it.copy(steps = it.steps - extension.pkgName) }
+            if (last == InstallStep.Error) {
+                context.toast(context.stringResource(KMR.strings.desktop_ext_install_failed, extension.name))
+            }
+        }
+    }
+}

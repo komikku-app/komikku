@@ -11,6 +11,7 @@ import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.extension.interactor.RefreshExtensionStores
+import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
@@ -197,5 +198,6 @@ class DesktopDomainModule(
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetRemoteManga(get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
+        addFactory { UpdateManga(get(), get()) }
     }
 }

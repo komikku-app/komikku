@@ -244,4 +244,12 @@
     <!-- Desktop app -->
     <string name="desktop_not_available_yet">Not available in the desktop app yet</string>
     <string name="desktop_no_sources">No sources installed</string>
+    <string name="desktop_ext_available">Available</string>
+    <string name="desktop_ext_refresh">Check for extensions</string>
+    <string name="desktop_ext_install_failed">Could not install %1$s</string>
+    <string name="desktop_ext_store_add_failed">Could not add the extension store</string>
+    <string name="desktop_load_more">Load more</string>
+    <string name="desktop_pref_not_set">Not set</string>
+    <string name="desktop_source_error">Could not load: %1$s</string>
+    <string name="desktop_source_not_installed">This source is not installed</string>
 </resources>

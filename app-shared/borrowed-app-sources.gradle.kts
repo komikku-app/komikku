@@ -90,6 +90,11 @@ run {
         "eu/kanade/domain/extension/interactor/RefreshExtensionStores.kt",
         "exh/source/BlacklistedSources.kt",
     )
+
+    // Manga updates (5.4; desktop manga details: add to library)
+    shared(
+        "eu/kanade/domain/manga/interactor/UpdateManga.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

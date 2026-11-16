@@ -11,6 +11,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.DesktopTheme
+import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
 import app.komikku.desktop.window.DesktopShortcuts
 import app.komikku.desktop.window.DesktopWindowPreferences
@@ -62,7 +63,7 @@ fun ApplicationScope.KomikkuWindow(
 
 /**
  * Window content: compat [LocalContext] (for `stringResource` & co.), the desktop Coil image loader,
- * the app theme and the navigation shell.
+ * the app theme, the snackbar host behind compat toasts and the navigation shell.
  */
 @Composable
 fun KomikkuApp(
@@ -79,7 +80,9 @@ fun KomikkuApp(
     }
     CompositionLocalProvider(LocalContext provides context) {
         DesktopTheme {
-            HomeShell(shortcuts = shortcuts)
+            DesktopToastHost {
+                HomeShell(shortcuts = shortcuts)
+            }
         }
     }
 }
