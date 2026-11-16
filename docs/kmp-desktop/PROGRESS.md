@@ -12,14 +12,29 @@ See [`PLAN.md`](PLAN.md). Update this file in the same commit as each step.
 | 0.4 File-backed desktop preference store | done | `b04aa953a0` | `DesktopPreferenceStore(file)` / `DesktopPreferenceStore(name)` → `<dataDir>/preferences/<name>.json`; typed JSON (`{"version":1,"values":{key:{"type","value"}}}`), `getAll()` returns Android-like typed values, batch `edit {}` for the future `SharedPreferences` shim, `changes()` from an in-memory `StateFlow` snapshot, writes serialized + temp file/fsync/atomic rename, corrupt file moved aside. `DesktopDirs` (D7, `komikku.dataDir` override). 22 unit tests in `:core:preference:desktopTest` |
 | 0.5 Desktop target for `i18n-sy`, `i18n-kmk` | done | `24f65d1b10` | `jvm("desktop")` in both; desktop jars contain the moko bundles (`localization/tachiyomii18n{sy,kmk}_mokoBundle*.properties`). `:desktopApp` depends on all three i18n modules and shows one MR / SYMR / KMR string each via `StringResource.localized()` |
 | 0.6 `mihon.library.kmp` convention plugin | done | `d4ffd9fb45` | `buildSrc/src/main/kotlin/mihon.library.kmp.gradle.kts` + `mihon/buildlogic/KmpLibrary.kt`; `:core:preference` converted (sources stay in `src/commonMain/kotlin`, compiled through `jvmSharedMain`). Adoption mechanism verified with a throwaway (uncommitted) trial, see below |
-| 1.1 `:desktop:android-compat` | done | see log | Desktop-only `kotlin("jvm")` module, written from scratch (Apache-2.0). First batch of Android / AndroidX / UniFile FQNs for `core:common` (table below). 24 unit tests (`:desktop:android-compat:test`): Uri, Base64, SharedPreferences, CookieManager, Html, UniFile |
+| 1.1 `:desktop:android-compat` | done | `beac8001db` | Desktop-only `kotlin("jvm")` module, written from scratch (Apache-2.0). First batch of Android / AndroidX / UniFile FQNs for `core:common` (table below). 24 unit tests (`:desktop:android-compat:test`): Uri, Base64, SharedPreferences, CookieManager, Html, UniFile |
+| 1.2 Convert `:core:common` | done | see log | `mihon.library.kmp`; Android-only AARs (preference-ktx, image-decoder, UniFile, libarchive, quickjs-android, xlog, exifinterface) → `androidMain.dependencies`; desktop: `api(:desktop:android-compat)`. Includes the file moves listed below (needed for the desktop target to compile at all) and the minimal `expect`/`actual` pairs (`CloudflareInterceptor`, `StringDesc.toString(Context)`). Logging: `logcat` is multiplatform (0.4, `logcat-jvm`), desktop backend `DesktopLogcatLogger`; `exh.log` unchanged on both platforms through an xLog shim in compat. Android ABI of `core:common` unchanged (javap diff, see below). Catalog: `serialization-xml-core-jvm` |
 
 ## Files moved out of upstream paths
 
 Record every file moved to `src/androidMain` (old path → new path) so upstream cherry-picks can be
-remapped.
+remapped. All moves are pure `git mv` (same package, same file name, so the same JVM class names on
+Android); content edits are listed in the last column.
 
-_None yet._
+| Old path (upstream) | New path | Step | Edits / desktop counterpart |
+|---------------------|----------|------|-----------------------------|
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | 1.2 | `actual class … actual constructor` (KMK-marked). `expect` in `src/jvmSharedMain/kotlin/…/CloudflareInterceptor.kt`; desktop `actual` (pass-through, logs challenges) in `src/desktopMain` |
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/WebViewInterceptor.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/WebViewInterceptor.kt` | 1.2 | none; no desktop counterpart (only used by the Android `CloudflareInterceptor`) |
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt` | 1.2 | none; callers are Android-only (`app`, `WebViewInterceptor`) |
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/DeviceUtil.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/util/system/DeviceUtil.kt` | 1.2 | none; callers are Android-only |
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/GLUtil.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/util/system/GLUtil.kt` | 1.2 | none (EGL is part of `android.jar`); callers are `ImageUtil` (Android) and `app` |
+| `core/common/src/main/kotlin/tachiyomi/core/common/util/system/ImageUtil.kt` | `core/common/src/androidMain/kotlin/tachiyomi/core/common/util/system/ImageUtil.kt` | 1.2 | none; desktop subset in 1.3 |
+| `core/common/src/main/kotlin/tachiyomi/core/common/preference/AndroidPreference.kt` | `core/common/src/androidMain/kotlin/tachiyomi/core/common/preference/AndroidPreference.kt` | 1.2 | none; desktop uses `DesktopPreferenceStore` (`:core:preference`) |
+| `core/common/src/main/kotlin/tachiyomi/core/common/preference/AndroidPreferenceStore.kt` | `core/common/src/androidMain/kotlin/tachiyomi/core/common/preference/AndroidPreferenceStore.kt` | 1.2 | none; same |
+| `core/common/src/main/kotlin/tachiyomi/core/common/storage/AndroidStorageFolderProvider.kt` | `core/common/src/androidMain/kotlin/tachiyomi/core/common/storage/AndroidStorageFolderProvider.kt` | 1.2 | none; `DesktopStorageFolderProvider` in 1.3 |
+
+New KMK-owned shared files (no upstream counterpart) live in `core/common/src/jvmSharedMain/kotlin`
+so `src/main/kotlin` keeps upstream's file list.
 
 ## Android compat classes
 
@@ -47,6 +62,8 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `android.text.Html`, `Spanned`, `androidx.core.text.parseAsHtml` | 1.1 | `StringExtensions.htmlDecode`, extensions | jsoup-based HTML → plain text (legacy/compact block separation), no spans |
 | `androidx.core.content.ContextCompat` | 1.1 | `DiskUtil` | `getExternalFilesDirs`, `getExternalCacheDirs`, `getDataDir`, `getMainExecutor` |
 | `androidx.preference.PreferenceManager` | 1.1 | `EHLogLevel` | `getDefaultSharedPreferences` = the main store (`preferences.json`) |
+| `com.elvishew.xlog.XLog`, `Logger`, `LogLevel` | 1.2 | `exh.log` (`Logging.kt`, `ResettableLogger`, `EHNetworkLogging`) — public API exposes `Logger` | Prints through `DesktopLog` with the logger tag; no `init()` needed; borders / JSON formatting not reproduced |
+| `app.cash.quickjs.QuickJs`, `QuickJsException` | 1.2 | `JavaScriptEngine`, extensions | Placeholder whose `create()` throws (engine in 1.4) |
 | `com.hippo.unifile.UniFile`, `FilenameFilter`, `UniRandomAccessFile`, `UriHandler` | 1.1 | `core:common` storage helpers, later `source-local`, downloads, backups | `java.io.File`-backed (`FileUniFile`); same nullability as the komikku-app fork; `fromUri` handles `file:` (+ registered handlers) |
 
 ## Deviations from the plan and open issues
@@ -63,7 +80,31 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
   `SharedPreferences` backing store). All of them are on the desktop runtime classpath anyway.
 - **1.1 — UniFile `parentFile`.** Mirrors the library: only files reached through a parent
   (`createFile`, `listFiles`, `findFile`, …) know their parent; `fromFile` / `fromUri` give `null`.
-
+- **1.2 — moves done in 1.2, not 1.3.** The desktop target cannot compile while the WebView /
+  Bitmap / EGL / AndroidX-preference files are shared, so the moves (and the two `expect`/`actual`
+  pairs shared code needs) landed with the conversion to keep every commit green on both targets.
+  1.3 adds the functional desktop counterparts.
+- **1.2 — `Localize.kt` unchanged.** Instead of splitting it, `src/jvmSharedMain` declares
+  `internal expect fun StringDesc.toString(context: Context)`. On Android moko's `StringDesc` member
+  of the same signature always wins, so `Localize.kt` compiles to exactly the same bytecode as
+  before; on desktop the extension resolves to `localized()`.
+- **1.2 — `api` instead of `compileOnly` for the compat module.** D3 suggested `compileOnly` +
+  runtime from `:desktopApp`, like `android.jar`. `core:common`'s public API exposes compat types
+  (`Context` in `NetworkHelper`, `UniFile`, xLog `Logger`), so every desktop consumer needs them at
+  compile time anyway; `desktopMain` uses `api(projects.desktop.androidCompat)`, which never reaches
+  Android.
+- **1.2 — Android ABI check.** `javap -protected` of every class in
+  `core/common/build/tmp/kotlin-classes/debug` before and after the conversion: identical except
+  one added class, `tachiyomi.core.common.i18n.StringDescContext_androidKt` (the unused Android
+  `actual` of the internal helper). No class was renamed or lost; moved files keep their file
+  names, so file facades (`WebViewUtilKt`, …) keep their JVM names and no `@file:JvmName` was needed.
+- **1.2 — `-Xexpect-actual-classes`** is enabled for `core:common` (expect/actual classes are Beta).
+- **1.2 — xmlutil.** `xmlutil:core-android` only has an Android variant (it adds Android's parser on
+  top of `core`), so switching the existing alias to `core` would silently drop Android's parser.
+  The alias is kept; `serialization-xml-core-jvm` (`xmlutil:core`, JVM variant `core-jvmcommon`) is
+  added for desktop source sets. Modules that use `kotlinx.bundles.serialization` (domain,
+  core-metadata, source-local, app) must put `serialization-xml-core` in `androidMain` and
+  `serialization-xml-core-jvm` in `desktopMain` when they are converted.
 - **0.2 — compose name clash.** Renaming only the `Project.compose` accessor in buildSrc is not
   enough: Gradle registers every version catalog as a project extension with the catalog's name, so
   `org.jetbrains.compose` fails with "Cannot add extension with name 'compose'". Fix: the catalog is

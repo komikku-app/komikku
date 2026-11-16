@@ -23,6 +23,11 @@ serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization
 
 serialization-xml-core = { module = "io.github.pdvrieze.xmlutil:core-android", version.ref = "xml_serialization_version" }
 serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xml_serialization_version" }
+# KMK --> `core-android` only publishes an Android variant (it adds Android's XML parser on top of
+# `core`). Desktop (JVM) targets of KMP modules use the multiplatform `core` module instead, whose
+# JVM variant is `core-jvmcommon`; Android keeps `serialization-xml-core` (androidMain).
+serialization-xml-core-jvm = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xml_serialization_version" }
+# KMK <--
 
 [bundles]
 coroutines = ["coroutines-core", "coroutines-android", "coroutines-guava"]

@@ -6,11 +6,11 @@ import java.io.File
  * android-compat: `android.os.StatFs` over `java.io.File` space queries. Sizes are reported with a
  * block size of 1 byte, so `blockCount * blockSize` etc. give the same totals as on Android.
  */
-class StatFs(path: String) {
+class StatFs(path: String?) {
 
     private var file = resolve(path)
 
-    fun restat(path: String) {
+    fun restat(path: String?) {
         file = resolve(path)
     }
 
@@ -22,7 +22,8 @@ class StatFs(path: String) {
     val availableBytes: Long get() = file.usableSpace
     val freeBytes: Long get() = file.freeSpace
 
-    private fun resolve(path: String): File {
+    private fun resolve(path: String?): File {
+        requireNotNull(path) { "Invalid path: null" }
         val file = File(path)
         require(file.exists()) { "Invalid path: $path" }
         return file

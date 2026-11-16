@@ -21,7 +21,9 @@ import tachiyomi.i18n.MR
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 
-class CloudflareInterceptor(
+// KMK --> `actual` of the shared expect class (src/jvmSharedMain); the desktop actual is in desktopMain.
+actual class CloudflareInterceptor actual constructor(
+    // KMK <--
     private val context: Context,
     private val cookieManager: AndroidCookieJar,
     defaultUserAgentProvider: () -> String,
