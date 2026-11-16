@@ -1,0 +1,50 @@
+package android.text
+
+/** android-compat: `android.text.InputType` constants (same values as the Android SDK). */
+interface InputType {
+    companion object {
+        const val TYPE_NULL = 0
+        const val TYPE_MASK_CLASS = 0x0000000f
+        const val TYPE_MASK_VARIATION = 0x00000ff0
+        const val TYPE_MASK_FLAGS = 0x00fff000
+
+        const val TYPE_CLASS_TEXT = 0x00000001
+        const val TYPE_CLASS_NUMBER = 0x00000002
+        const val TYPE_CLASS_PHONE = 0x00000003
+        const val TYPE_CLASS_DATETIME = 0x00000004
+
+        const val TYPE_TEXT_FLAG_CAP_CHARACTERS = 0x00001000
+        const val TYPE_TEXT_FLAG_CAP_WORDS = 0x00002000
+        const val TYPE_TEXT_FLAG_CAP_SENTENCES = 0x00004000
+        const val TYPE_TEXT_FLAG_AUTO_CORRECT = 0x00008000
+        const val TYPE_TEXT_FLAG_AUTO_COMPLETE = 0x00010000
+        const val TYPE_TEXT_FLAG_MULTI_LINE = 0x00020000
+        const val TYPE_TEXT_FLAG_IME_MULTI_LINE = 0x00040000
+        const val TYPE_TEXT_FLAG_NO_SUGGESTIONS = 0x00080000
+
+        const val TYPE_TEXT_VARIATION_NORMAL = 0x00000000
+        const val TYPE_TEXT_VARIATION_URI = 0x00000010
+        const val TYPE_TEXT_VARIATION_EMAIL_ADDRESS = 0x00000020
+        const val TYPE_TEXT_VARIATION_EMAIL_SUBJECT = 0x00000030
+        const val TYPE_TEXT_VARIATION_SHORT_MESSAGE = 0x00000040
+        const val TYPE_TEXT_VARIATION_LONG_MESSAGE = 0x00000050
+        const val TYPE_TEXT_VARIATION_PERSON_NAME = 0x00000060
+        const val TYPE_TEXT_VARIATION_POSTAL_ADDRESS = 0x00000070
+        const val TYPE_TEXT_VARIATION_PASSWORD = 0x00000080
+        const val TYPE_TEXT_VARIATION_VISIBLE_PASSWORD = 0x00000090
+        const val TYPE_TEXT_VARIATION_WEB_EDIT_TEXT = 0x000000a0
+        const val TYPE_TEXT_VARIATION_FILTER = 0x000000b0
+        const val TYPE_TEXT_VARIATION_PHONETIC = 0x000000c0
+        const val TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS = 0x000000d0
+        const val TYPE_TEXT_VARIATION_WEB_PASSWORD = 0x000000e0
+
+        const val TYPE_NUMBER_FLAG_SIGNED = 0x00001000
+        const val TYPE_NUMBER_FLAG_DECIMAL = 0x00002000
+        const val TYPE_NUMBER_VARIATION_NORMAL = 0x00000000
+        const val TYPE_NUMBER_VARIATION_PASSWORD = 0x00000010
+
+        const val TYPE_DATETIME_VARIATION_NORMAL = 0x00000000
+        const val TYPE_DATETIME_VARIATION_DATE = 0x00000010
+        const val TYPE_DATETIME_VARIATION_TIME = 0x00000020
+    }
+}

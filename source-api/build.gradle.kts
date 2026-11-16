@@ -1,14 +1,20 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
-    id("mihon.library")
-    kotlin("multiplatform")
+    // KMK --> Android + desktop (JVM), path preserving: shared sources stay in src/commonMain/kotlin
+    // (compiled through `jvmSharedMain`), see buildSrc mihon/buildlogic/KmpLibrary.kt.
+    id("mihon.library.kmp")
+    // id("mihon.library")
+    // kotlin("multiplatform")
+    // KMK <--
     kotlin("plugin.serialization")
     id("com.github.ben-manes.versions")
 }
 
 kotlin {
-    androidTarget()
+    // KMK -->
+    // androidTarget()
+    // KMK <--
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -27,9 +33,19 @@ kotlin {
                 implementation(compose.runtime)
             }
         }
+        // KMK --> core:common is shared (network, Context helpers, logging); on desktop it also
+        // re-exports :desktop:android-compat (Application, SharedPreferences, Uri, androidx.preference).
+        named("jvmSharedMain") {
+            dependencies {
+                api(projects.core.common)
+            }
+        }
+        // KMK <--
         val androidMain by getting {
             dependencies {
-                implementation(projects.core.common)
+                // KMK -->
+                // implementation(projects.core.common)
+                // KMK <--
                 api(libs.preferencektx)
 
                 // Workaround for https://youtrack.jetbrains.com/issue/KT-57605

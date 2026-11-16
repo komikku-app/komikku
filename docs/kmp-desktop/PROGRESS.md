@@ -18,6 +18,7 @@ See [`PLAN.md`](PLAN.md). Update this file in the same commit as each step.
 | 1.4 Desktop JavaScript engine | done | `d41ac22579` | `app.cash.quickjs.QuickJs` in compat backed by QuickJS through `io.github.dokar3:quickjs-kt` 1.0.15 (Maven Central, bundled natives); `JavaScriptEngine` unchanged. Tests: `QuickJsTest` (compat) and `JavaScriptEngineTest` (`:core:common:desktopTest`) |
 | 1.5 Desktop string helpers | done | `459f032743` | `Localize.kt` unchanged and working on desktop (1.2 `StringDesc.toString(Context)` expect → moko `localized()`); new context-free `stringResource` / `pluralStringResource` (same package, `desktopMain/…/DesktopLocalize.kt`) for desktop code. `LocalizeTest` (`:core:common:desktopTest`): plain, formatted (`\"` workaround), plurals, locale switch through `StringDesc.localeType` |
 | 1.x `:desktopApp` on the real stack | done | `de72348514` | `:desktopApp` depends on `:core:common`; `DesktopServices` builds the compat `Application`, the main preference store (via `DesktopPreferenceStores`, shared with `SharedPreferences`) and `NetworkHelper`; `main()` installs `DesktopLogcatLogger` and shows the default user agent / HTTP cache dir. `DesktopNetworkTest` (`:desktopApp:test`, OkHttp `mockwebserver3`, no real network): `GET` + `awaitSuccess` through `NetworkHelper.client`, cookie round trip through `AndroidCookieJar` → desktop `CookieManager`, default user agent, cache dir, `HttpException`, Cloudflare pass-through. Test JVMs get `komikku.dataDir` = `desktopApp/build/tmp/test-data` |
+| 2.1 `:source-api` desktop target | done | (this commit; hash recorded in 2.2) | `mihon.library.kmp` (sources stay in `src/commonMain/kotlin`, compiled through `jvmSharedMain`; the existing `androidMain` actuals stay). `core:common` is now a shared `api` dependency (was Android `implementation`). Desktop `actual`s in `src/desktopMain`: `PreferenceScreen` = compat `androidx.preference.PreferenceScreen`, `awaitSingle` = same body as Android. Compat: `androidx.preference` data holders, `androidx.core.net.toUri`, minimal `View`/`TextView`/`EditText`/`TextWatcher`/`Editable`/`InputType` (table below); 8 new tests in `PreferenceTest`. **Android ABI: `javap -protected` of all 199 classes in `source-api/build/tmp/kotlin-classes/debug` before/after: identical (empty diff)** |
 
 ## Files moved out of upstream paths
 
@@ -69,6 +70,10 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `com.elvishew.xlog.XLog`, `Logger`, `LogLevel` | 1.2 | `exh.log` (`Logging.kt`, `ResettableLogger`, `EHNetworkLogging`) — public API exposes `Logger` | Prints through `DesktopLog` with the logger tag; no `init()` needed; borders / JSON formatting not reproduced |
 | `app.cash.quickjs.QuickJs`, `QuickJsException` | 1.2, 1.4 | `JavaScriptEngine`, extensions | QuickJS via quickjs-kt: `create`, `evaluate(script[, fileName])`, `compile` / `execute`, `close`; results converted like quickjs-android (`Int` / `Double` / `String` / `Boolean` / `null` / `Array`); engine errors → `QuickJsException`. `set` / `get` (Java interface bindings) unsupported |
 | `com.hippo.unifile.UniFile`, `FilenameFilter`, `UniRandomAccessFile`, `UriHandler` | 1.1 | `core:common` storage helpers, later `source-local`, downloads, backups | `java.io.File`-backed (`FileUniFile`); same nullability as the komikku-app fork; `fromUri` handles `file:` (+ registered handlers) |
+| `androidx.preference.Preference` (+ `OnPreferenceChangeListener`, `OnPreferenceClickListener`, `SummaryProvider`), `PreferenceGroup`, `PreferenceScreen`, `PreferenceCategory`, `DialogPreference`, `EditTextPreference` (+ `OnBindEditTextListener`, `SimpleSummaryProvider`), `ListPreference` (+ `SimpleSummaryProvider`), `DropDownPreference`, `MultiSelectListPreference`, `TwoStatePreference`, `CheckBoxPreference`, `SwitchPreferenceCompat`, `SwitchPreference`, `PreferenceDataStore`; `PreferenceManager` instances | 2.1 | `source-api` (`expect class PreferenceScreen`, `ConfigurableSource.setupPreferenceScreen`), extensions; later the desktop source settings screen (5.4) | Plain data holders with the AndroidX public members (key, title, summary + `%s` formatting, summary providers, enabled / visible / order, `dependency`, default value, change / click listeners, `callChangeListener`, `performClick`, entries / entryValues / value / values / text / isChecked, summaryOn/Off, dialog texts, `addPreference` / `findPreference` / `removePreference`). `PreferenceManager(context)` + `sharedPreferencesName` (or `preferenceDataStore`) + `createPreferenceScreen`: attached preferences load the persisted value or persist their default, and every setter persists through the compat `SharedPreferences`. Additions for the renderer: `defaultValue` getter, public `getOnBindEditTextListener()`, `PreferenceManager.addPreferenceChangeObserver`. No resources: `setTitle(@StringRes)` / `setSummary(@StringRes)` throw |
+| `androidx.preference.PreferenceGroupKt` (preference-ktx: `get`, `contains`, `plusAssign`, `minusAssign`, `size`, `isEmpty`, `forEach`, `forEachIndexed`, `iterator`, `children`) | 2.1 | extensions that call the non-inline preference-ktx helpers | Same semantics as preference-ktx |
+| `android.view.View`, `android.widget.TextView`, `EditText`, `android.text.TextWatcher`, `Editable`, `SpannableStringBuilder`, `InputType` | 2.1 | `EditTextPreference.OnBindEditTextListener` (extensions set input types and validate with text watchers) | Holders only: enabled / visibility / tag, text, hint, `inputType`, `error`, single line, selection; `setText` runs the watchers (the renderer calls it as the user types). No view tree or drawing; `SpannableStringBuilder` has no spans |
+| `androidx.core.net.UriKt` (`String.toUri`, `File.toUri`, `Uri.toFile`) | 2.1 | `source-api` (`EHentaiSearchMetadata`), extensions | Same as core-ktx |
 
 ## Deviations from the plan and open issues
 
@@ -140,6 +145,29 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
   `:desktopApp`); plain JVM tests that hit such code must provide a main dispatcher.
 - **Open — Android toasts from shared code on desktop** go to `Toast.presenter` (logs). The desktop
   UI should replace it with a snackbar host in Phase 4.
+- **2.1 — `expect class PreferenceScreen` kept.** `source-api` already had `expect`/`actual` for
+  `PreferenceScreen` and `awaitSingle`; the files stay where they are (`src/commonMain` is compiled
+  through `jvmSharedMain`, `src/androidMain` unchanged) and only desktop `actual`s were added, rather
+  than replacing the `expect` with a direct `androidx.preference` import (which now would compile on
+  both targets, but would touch an upstream file).
+- **2.1 — compat preferences are Kotlin classes.** JVM shapes match AndroidX for extension
+  bytecode (`getTitle`/`setTitle`, `isChecked`/`setChecked`, `getEntries(): CharSequence[]`,
+  `setOnPreferenceChangeListener(...)`, nested listener interfaces, `SimpleSummaryProvider.getInstance()`).
+  Kotlin *source* written against AndroidX may need small changes on desktop where AndroidX has a
+  Java getter/setter pair that is a function here (listeners) or a property here (`title`); no
+  shared Komikku code builds preferences, so nothing is affected today.
+- **2.1 — lenient group attachment.** A `PreferenceCategory` filled before it is added to the screen
+  attaches (and persists) its children when it is added; AndroidX would leave them unpersisted.
+  Dependency state (`dependency`, parent groups) is computed on read instead of AndroidX's
+  listener bookkeeping. Sorting: children keep insertion order (stable by `order`), not by title.
+- **2.1 — "Not set" summary** of the simple summary providers is an English constant
+  (`app.komikku.desktop.compat.NOT_SET`); the compat module has no string resources. The desktop
+  renderer (5.4) should show a localized text instead.
+- **2.1 — not provided yet:** `SeekBarPreference`, icons, intents / extras, `Preference(Context, AttributeSet)`
+  constructors, `TypedArray`-based `onGetDefaultValue`. Add them in 5.3 if real extensions need them.
+- **Open — compat test noise.** `:desktop:android-compat:test` prints a `NoSuchFileException` for
+  `cookies.json.tmp` from the cookie store's shutdown-hook flush after JUnit deleted the temp dir;
+  tests pass. Pre-existing (1.1).
 - **0.2 — compose name clash.** Renaming only the `Project.compose` accessor in buildSrc is not
   enough: Gradle registers every version catalog as a project extension with the catalog's name, so
   `org.jetbrains.compose` fails with "Cannot add extension with name 'compose'". Fix: the catalog is
