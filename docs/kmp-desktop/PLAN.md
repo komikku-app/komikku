@@ -82,8 +82,9 @@ Android SDK that shared code and extensions touch: `android.app.Application`,
 `android.webkit.CookieManager` / `MimeTypeMap`, `androidx.preference.*` data holders,
 `android.graphics.Bitmap` / `BitmapFactory` / `Canvas` / `Rect` (Skia-backed), and so on.
 
-- Desktop targets of shared modules depend on it with `compileOnly` + runtime from `:desktopApp`,
-  the same way Android modules see `android.jar`.
+- Desktop targets of shared modules get it through `core:common`'s `desktopMain`
+  `api(projects.desktop.androidCompat)` (the shared public API exposes its types, so a
+  `compileOnly` + runtime-from-`:desktopApp` split would only add boilerplate; decided in 1.2).
 - It grows on demand: add a class when a shared module or a real extension needs it. Unsupported
   members throw `UnsupportedOperationException("android-compat: …")` so gaps are loud.
 - Written fresh for Komikku (Apache-2.0). Suwayomi-Server's `AndroidCompat` (MPL-2.0) is the

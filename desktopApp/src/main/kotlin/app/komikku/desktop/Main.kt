@@ -17,8 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import tachiyomi.core.common.preference.DesktopPreferenceStore
-import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.core.common.util.system.DesktopLogcatLogger
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -29,26 +28,32 @@ import tachiyomi.i18n.sy.SYMR
  * Demonstrates the shared foundation compiled for desktop:
  * - Compose Multiplatform (Material 3) desktop toolchain + the shared i18n modules (MR, SYMR, KMR).
  * - The shared `PreferenceStore` abstraction persisting data on desktop.
+ * - `core:common` (network stack, logging) running on the `:desktop:android-compat` layer.
  */
 fun main() {
+    DesktopLogcatLogger.install()
+    val services = DesktopServices()
+
     // Persist + read back a launch counter through the shared PreferenceStore.
-    val preferenceStore: PreferenceStore = DesktopPreferenceStore()
-    val launchCountPref = preferenceStore.getInt("desktop_launch_count", 0)
+    val launchCountPref = services.preferenceStore.getInt("desktop_launch_count", 0)
     val launchCount = launchCountPref.get() + 1
     launchCountPref.set(launchCount)
+    // Builds the shared OkHttp client (cookie jar, cache, interceptors); no request is made here.
+    val userAgent = services.network.defaultUserAgentProvider()
+    val httpCache = services.network.client.cache?.directory?.path.orEmpty()
 
     application {
         Window(
             onCloseRequest = ::exitApplication,
             title = MR.strings.app_name.localized(),
         ) {
-            App(launchCount = launchCount)
+            App(launchCount = launchCount, userAgent = userAgent, httpCache = httpCache)
         }
     }
 }
 
 @Composable
-fun App(launchCount: Int) {
+fun App(launchCount: Int, userAgent: String, httpCache: String) {
     MaterialTheme(
         colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
     ) {
@@ -74,6 +79,8 @@ fun App(launchCount: Int) {
                         StatusLine("SYMR (SY strings)", SYMR.strings.action_migrate_now.localized())
                         StatusLine("KMR (Komikku strings)", KMR.strings.action_library_search.localized())
                         StatusLine("Launches (shared PreferenceStore)", "$launchCount")
+                        StatusLine("User agent (shared NetworkHelper)", userAgent)
+                        StatusLine("HTTP cache (shared NetworkHelper)", httpCache)
                     }
                 }
             }

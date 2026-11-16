@@ -33,6 +33,20 @@ dependencies {
     implementation(projects.i18nSy)
     implementation(projects.i18nKmk)
     implementation(projects.core.preference)
+    // Shared non-UI stack: network, logging, i18n helpers (desktop variant + :desktop:android-compat).
+    implementation(projects.core.common)
+
+    testImplementation(libs.bundles.test)
+    testImplementation(libs.okhttp.mockwebserver)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    // Keep tests out of the user's real data dir (preferences, cookies, caches).
+    val testDataDir = layout.buildDirectory.dir("tmp/test-data").get().asFile
+    systemProperty("komikku.dataDir", testDataDir.absolutePath)
+    doFirst { testDataDir.deleteRecursively() }
 }
 
 // `compose` in build scripts resolves to the version catalog (see buildSrc ComposeCatalogAccessor.kt),
