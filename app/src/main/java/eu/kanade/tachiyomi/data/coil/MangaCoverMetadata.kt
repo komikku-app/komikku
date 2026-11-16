@@ -83,19 +83,11 @@ object MangaCoverMetadata {
     ) {
         if (!mangaCover.isMangaFavorite) {
             mangaCover.remove()
-            if (mangaCover.vibrantCoverColor != null) return
         }
-
-        if (mangaCover.isMangaFavorite && onlyDominantColor && mangaCover.dominantCoverColors != null) return
 
         val options = BitmapFactory.Options()
 
-        val updateColors =
-            (mangaCover.isMangaFavorite && mangaCover.dominantCoverColors == null) ||
-                (!onlyDominantColor && mangaCover.vibrantCoverColor == null) ||
-                force
-
-        if (updateColors) {
+        if (needsColorUpdate(mangaCover, onlyDominantColor, force)) {
             /*
              * + Manga is Favorite & doesn't have dominant color
              *   For non-favorite, it doesn't care if dominant is there or not, if it has vibrant color then it will
@@ -118,21 +110,21 @@ object MangaCoverMetadata {
             return
         }
 
-        val file = ogFile
-            ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
-            ?: coverCache.getCoverFile(mangaCover.url)
-
-        if (bufferedSource == null && (file == null || !file.exists())) return
-        val bitmap = when {
-            bufferedSource != null -> bufferedSource.inputStream().use { inputStream ->
+        val bitmap = if (bufferedSource != null) {
+            bufferedSource.inputStream().use { inputStream ->
                 BitmapFactory.decodeStream(
                     inputStream,
                     null,
                     options,
                 )
             }
-            // if the file exists and the there was still an error then the file is corrupted
-            else -> BitmapFactory.decodeFile(file!!.path, options)
+        } else {
+            val file = ogFile
+                ?: coverCache.getCustomCoverFile(mangaCover.mangaId).takeIf { it.exists() }
+                ?: coverCache.getCoverFile(mangaCover.url)
+            if (file == null || !file.exists()) return
+            // if the file exists and there was still an error then the file is corrupted
+            BitmapFactory.decodeFile(file.path, options)
         }
 
         bitmap?.let {
@@ -150,6 +142,22 @@ object MangaCoverMetadata {
         if (mangaCover.isMangaFavorite && options.outWidth != -1 && options.outHeight != -1) {
             mangaCover.ratio = options.outWidth / options.outHeight.toFloat()
         }
+    }
+
+    /**
+     * Whether [setRatioAndColors] would actually decode the cover's bitmap to extract colors.
+     * Callers can use this to avoid opening or buffering a source which would never be read.
+     */
+    fun needsColorUpdate(
+        mangaCover: MangaCover,
+        onlyDominantColor: Boolean = true,
+        force: Boolean = false,
+    ): Boolean {
+        if (!mangaCover.isMangaFavorite && mangaCover.vibrantCoverColor != null) return false
+        if (mangaCover.isMangaFavorite && onlyDominantColor && mangaCover.dominantCoverColors != null) return false
+        return (mangaCover.isMangaFavorite && mangaCover.dominantCoverColors == null) ||
+            (!onlyDominantColor && mangaCover.vibrantCoverColor == null) ||
+            force
     }
 
     fun MangaCover.remove() {
