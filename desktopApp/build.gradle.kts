@@ -31,7 +31,6 @@ dependencies {
     // Shared Kotlin Multiplatform modules that also target Android.
     implementation(projects.i18n)
     implementation(projects.core.preference)
-    implementation(projects.core.network)
 }
 
 // `compose` in build scripts resolves to the version catalog (see buildSrc ComposeCatalogAccessor.kt),

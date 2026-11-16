@@ -17,10 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.preference.DesktopPreferenceStore
 import tachiyomi.core.common.preference.PreferenceStore
-import tachiyomi.core.network.httpClient
 import tachiyomi.i18n.MR
 
 /**
@@ -29,7 +27,6 @@ import tachiyomi.i18n.MR
  * Demonstrates the shared foundation compiled for desktop:
  * - Compose Multiplatform (Material 3) desktop toolchain + the shared :i18n module.
  * - The shared `PreferenceStore` abstraction persisting data on desktop.
- * - The shared `NetworkClient` performing a real HTTP request.
  */
 fun main() {
     // Persist + read back a launch counter through the shared PreferenceStore.
@@ -38,25 +35,18 @@ fun main() {
     val launchCount = launchCountPref.get() + 1
     launchCountPref.set(launchCount)
 
-    val networkStatus = runCatching {
-        runBlocking {
-            val response = httpClient().get("https://example.com")
-            "HTTP ${response.statusCode} (${response.body.length} bytes)"
-        }
-    }.getOrElse { "failed: ${it.message}" }
-
     application {
         Window(
             onCloseRequest = ::exitApplication,
             title = "Komikku",
         ) {
-            App(launchCount = launchCount, networkStatus = networkStatus)
+            App(launchCount = launchCount)
         }
     }
 }
 
 @Composable
-fun App(launchCount: Int, networkStatus: String) {
+fun App(launchCount: Int) {
     MaterialTheme(
         colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
     ) {
@@ -80,7 +70,6 @@ fun App(launchCount: Int, networkStatus: String) {
                     ) {
                         StatusLine("Shared i18n resources", "${MR.strings::class.simpleName != null}")
                         StatusLine("Launches (shared PreferenceStore)", "$launchCount")
-                        StatusLine("NetworkClient GET example.com", networkStatus)
                     }
                 }
             }
