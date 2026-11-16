@@ -6,6 +6,8 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.browse.FixedSourceManager
+import app.komikku.desktop.ui.manga.TrackingScreenModel
+import app.komikku.desktop.ui.more.TrackingSettingsScreenModel
 import app.komikku.shared.reader.ReaderTrackerHook
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.service.DelayedTrackingUpdateJob
@@ -19,6 +21,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -28,12 +31,14 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestMethodOrder
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
@@ -52,6 +57,7 @@ class TrackingTest {
     private lateinit var app: Application
     private lateinit var dir: File
     private val tracker = FakeTracker()
+    private val enhanced = FakeEnhancedTracker()
     private lateinit var manga: Manga
 
     @BeforeAll
@@ -59,7 +65,7 @@ class TrackingTest {
         dir = File(System.getProperty("komikku.dataDir"), "tracking").apply { mkdirs() }
         app = DesktopInjekt.init(dir)
         Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(FakeHttpSource("http://localhost:1"))) }
-        Injekt.addSingletonFactory { TrackerManager(extraTrackers = listOf(tracker)) }
+        Injekt.addSingletonFactory { TrackerManager(extraTrackers = listOf(tracker, enhanced)) }
         manga = TestLibrary.insertManga(FakeHttpSource.ID, "/manga/tracked", "Tracked manga")
         val chapters = TestLibrary.insertChapters(manga, "/chapter/1" to "Chapter 1", "/chapter/2" to "Chapter 2")
         // Chapter 1 (number 2.0 in TestLibrary's numbering: first inserted = highest) — mark the lowest read
@@ -175,5 +181,54 @@ class TrackingTest {
 
         Injekt.get<DeleteTrack>().await(manga.id, FakeTracker.ID)
         track() shouldBe null
+    }
+
+    @Test
+    @Order(7)
+    fun `add tracking with an enhanced tracker binds its match without searching`() = runBlocking<Unit> {
+        enhanced.loginNoop()
+        val model = TrackingScreenModel(manga.id)
+        model.startSearch(enhanced, manga.title)
+        awaitCondition("enhanced track bound") {
+            Injekt.get<GetTracks>().await(manga.id).any { it.trackerId == enhanced.id && it.remoteId == 77L }
+        }
+        model.state.value.search shouldBe null
+        enhanced.searches shouldBe emptyList()
+    }
+
+    @Test
+    @Order(8)
+    fun `a slow search of another tracker does not land in the open search`() = runBlocking<Unit> {
+        val other = FakeTracker(id = 903L, name = "Other tracker")
+        val gate = CompletableDeferred<Unit>()
+        tracker.beforeSearch = { if (it == "slow") gate.await() }
+        try {
+            val model = TrackingScreenModel(manga.id)
+            model.startSearch(tracker, "slow")
+            awaitCondition("slow search started") { "slow" in tracker.searches }
+            model.closeSearch()
+            model.startSearch(other, "fast")
+            awaitCondition("fast search done") { model.state.value.search?.results != null }
+            gate.complete(Unit)
+            delay(300)
+            val search = model.state.value.search!!
+            search.tracker.id shouldBe other.id
+            search.results!!.map { it.title } shouldBe listOf("fast (manga)", "fast (novel)")
+        } finally {
+            gate.complete(Unit)
+            tracker.beforeSearch = {}
+        }
+    }
+
+    @Test
+    @Order(9)
+    fun `a login that ends logged out shows the login failed message`() = runBlocking<Unit> {
+        val silent = object : FakeTracker(id = 904L, name = "Silent tracker") {
+            override suspend fun login(username: String, password: String) {}
+        }
+        val model = TrackingSettingsScreenModel()
+        model.loginWithCredentials(silent, "user", "pass")
+        awaitCondition("login finished") { !model.state.value.busy && model.state.value.error != null }
+        model.state.value.error shouldBe app.stringResource(KMR.strings.login_failed)
     }
 }

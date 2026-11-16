@@ -11,12 +11,18 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
@@ -71,20 +77,54 @@ class TrackingScreenModel(
         }
     }
 
+    private var searchJob: Job? = null
+
+    /**
+     * "Add tracking": enhanced trackers (Komga, Kavita, Suwayomi) cannot search, they bind the matching
+     * entry directly (Android `registerEnhancedTracking`); the others open the search.
+     */
     fun startSearch(tracker: Tracker, query: String) {
+        if (tracker is EnhancedTracker) {
+            registerEnhanced(tracker)
+            return
+        }
         mutableState.update { it.copy(search = Search(tracker, query)) }
         search(query)
     }
 
+    /** Android `registerEnhancedTracking`: `match` + `register`, "no match" when nothing is found. */
+    private fun registerEnhanced(tracker: Tracker) {
+        tracker as EnhancedTracker
+        screenModelScope.launch {
+            withContext(NonCancellable + Dispatchers.IO) {
+                val manga = getManga.await(mangaId) ?: return@withContext
+                try {
+                    val match = tracker.match(manga) ?: throw Exception()
+                    tracker.register(match, mangaId)
+                } catch (e: Exception) {
+                    logcat(LogPriority.WARN, e) { "No ${tracker.name} match for manga $mangaId" }
+                    app.toast(MR.strings.error_no_match)
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs [query] on the open search's tracker. An earlier search still running is cancelled, and a result
+     * is only applied while the same tracker and query are open (a slow answer can't land in another search).
+     */
     fun search(query: String) {
         val search = state.value.search ?: return
+        searchJob?.cancel()
         mutableState.update { it.copy(search = search.copy(query = query, loading = true, error = null)) }
-        screenModelScope.launch {
+        searchJob = screenModelScope.launch {
             val result = withIOContext { runCatching { search.tracker.search(query) } }
             result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
             mutableState.update { state ->
+                val current = state.search
+                if (current == null || current.tracker.id != search.tracker.id || current.query != query) return@update state
                 state.copy(
-                    search = state.search?.copy(
+                    search = current.copy(
                         loading = false,
                         results = result.getOrNull(),
                         error = result.exceptionOrNull()?.let { it.message ?: it::class.simpleName },
@@ -94,7 +134,11 @@ class TrackingScreenModel(
         }
     }
 
-    fun closeSearch() = mutableState.update { it.copy(search = null) }
+    fun closeSearch() {
+        searchJob?.cancel()
+        searchJob = null
+        mutableState.update { it.copy(search = null) }
+    }
 
     /** Android `registerTracking`: the tracker binds the entry (`AddTracks.bind`) and stores it. */
     fun register(item: TrackSearch) {

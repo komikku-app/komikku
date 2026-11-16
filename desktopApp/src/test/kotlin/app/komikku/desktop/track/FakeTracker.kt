@@ -1,21 +1,27 @@
 package app.komikku.desktop.track
 
+import app.komikku.desktop.reader.FakeHttpSource
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
+import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.source.Source
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 /**
  * An in-test tracker on the borrowed `BaseTracker`: credentials login, a fixed search index and an in-memory
- * "remote" list keyed by remote id. [failUpdates] makes `update` / `refresh` throw (offline service).
+ * "remote" list keyed by remote id. [failUpdates] makes `update` / `refresh` throw (offline service);
+ * [beforeSearch] runs before each search (to hold one back), [searches] records the queries.
  */
-class FakeTracker(id: Long = ID) : BaseTracker(id, "Fake tracker") {
+open class FakeTracker(id: Long = ID, name: String = "Fake tracker") : BaseTracker(id, name) {
 
     data class Remote(var lastChapterRead: Double = 0.0, var status: Long = READING, var score: Double = 0.0)
 
@@ -23,6 +29,11 @@ class FakeTracker(id: Long = ID) : BaseTracker(id, "Fake tracker") {
 
     @Volatile
     var failUpdates = false
+
+    @Volatile
+    var beforeSearch: suspend (String) -> Unit = {}
+
+    val searches = CopyOnWriteArrayList<String>()
 
     override val supportsReadingDates: Boolean = true
 
@@ -51,7 +62,13 @@ class FakeTracker(id: Long = ID) : BaseTracker(id, "Fake tracker") {
         saveCredentials(username, password)
     }
 
-    override suspend fun search(query: String): List<TrackSearch> =
+    override suspend fun search(query: String): List<TrackSearch> {
+        searches += query
+        beforeSearch(query)
+        return results(query)
+    }
+
+    private fun results(query: String): List<TrackSearch> =
         listOf(1L to "$query (manga)", 2L to "$query (novel)").map { (remoteId, title) ->
             TrackSearch.create(id).apply {
                 remote_id = remoteId
@@ -90,5 +107,32 @@ class FakeTracker(id: Long = ID) : BaseTracker(id, "Fake tracker") {
         const val READING = 1L
         const val COMPLETED = 2L
         const val PLAN_TO_READ = 3L
+    }
+}
+
+/**
+ * An in-test enhanced tracker (like Komga / Kavita / Suwayomi): accepts [FakeHttpSource], cannot search
+ * (Android's enhanced trackers implement `search` as `TODO()`), binds through [match].
+ */
+class FakeEnhancedTracker : FakeTracker(id = 901L, name = "Fake enhanced tracker"), EnhancedTracker {
+
+    override suspend fun search(query: String): List<TrackSearch> = TODO("Enhanced trackers cannot search")
+
+    override fun getAcceptedSources(): List<String> = listOf(FakeHttpSource::class.qualifiedName!!)
+
+    override fun loginNoop() = saveCredentials("enhanced", "noop")
+
+    override suspend fun match(manga: Manga): TrackSearch? = TrackSearch.create(id).apply {
+        remote_id = 77
+        title = manga.title
+        tracking_url = "https://enhanced.invalid/${manga.id}"
+    }
+
+    override fun isTrackFrom(track: DomainTrack, manga: Manga, source: Source?): Boolean = track.remoteUrl.startsWith("https://enhanced.invalid/")
+
+    override fun migrateTrack(track: DomainTrack, manga: Manga, newSource: Source): DomainTrack? = null
+
+    companion object {
+        const val ID = 901L
     }
 }

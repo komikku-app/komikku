@@ -1,6 +1,6 @@
 package app.komikku.shared.track
 
-import java.net.URLDecoder
+import java.io.ByteArrayOutputStream
 
 /**
  * KMK: parses what an OAuth tracker login hands back, for platforms that cannot receive the app-scheme
@@ -14,7 +14,10 @@ data class OAuthRedirect(
     /** Redirect host (`anilist-auth`, …) or `null` when only parameters / a bare value were pasted. */
     val host: String?,
     val parameters: Map<String, String?>,
-    /** The pasted text when it is a bare value (no URL, no `key=value`), e.g. just an authorization code. */
+    /**
+     * The pasted text when it is a bare value (no URL, not a `key=value` list), e.g. just an authorization
+     * code, which may end with base64 `=` padding.
+     */
     val bareValue: String?,
 ) {
 
@@ -22,10 +25,14 @@ data class OAuthRedirect(
     fun value(key: String): String? = parameters[key]?.takeIf { it.isNotBlank() } ?: bareValue
 
     companion object {
+        /** A `key=value` parameter name (`code`, `access_token`, `state`, …). */
+        private val PARAMETER_NAME = Regex("[A-Za-z0-9_.~-]+")
+
+        /** Never throws: malformed input gives an empty result or a bare value. */
         fun parse(input: String): OAuthRedirect {
             val text = input.trim()
             val schemeEnd = text.indexOf("://")
-            if (schemeEnd < 0 && '=' !in text) {
+            if (schemeEnd < 0 && !isParameterList(text)) {
                 return OAuthRedirect(host = null, parameters = emptyMap(), bareValue = text.takeIf { it.isNotEmpty() })
             }
             val host = if (schemeEnd >= 0) {
@@ -51,7 +58,42 @@ data class OAuthRedirect(
             return OAuthRedirect(host, parameters, bareValue = null)
         }
 
-        /** Percent-decoding like `android.net.Uri.decode` (`+` stays `+`). */
-        private fun decode(value: String): String = URLDecoder.decode(value.replace("+", "%2B"), Charsets.UTF_8)
+        /**
+         * Whether [text] (no URL) is a `key=value[&…]` list rather than a bare code / token. A bare value may
+         * contain `=` (base64 padding: `abc==`, `YWJj=`), so a single segment whose value is empty or only `=`
+         * is a bare value, and every key must look like a parameter name.
+         */
+        private fun isParameterList(text: String): Boolean {
+            if ('=' !in text) return false
+            val segments = text.split("&").filter { it.isNotBlank() }
+            if (segments.isEmpty()) return false
+            if (segments.size == 1 && segments[0].substringAfter('=').all { it == '=' }) return false
+            return segments.all { '=' in it && PARAMETER_NAME.matches(it.substringBefore('=')) }
+        }
+
+        /**
+         * Percent-decoding like `android.net.Uri.decode` (`+` stays `+`), but lenient: a malformed escape
+         * (`%zz`, a trailing `%`) is kept as is and invalid UTF-8 becomes U+FFFD instead of throwing.
+         */
+        private fun decode(value: String): String {
+            if ('%' !in value) return value
+            val bytes = ByteArrayOutputStream(value.length)
+            var i = 0
+            while (i < value.length) {
+                val c = value[i]
+                val high = if (c == '%' && i + 2 <= value.lastIndex) Character.digit(value[i + 1], 16) else -1
+                val low = if (high >= 0) Character.digit(value[i + 2], 16) else -1
+                if (high >= 0 && low >= 0) {
+                    bytes.write(high * 16 + low)
+                    i += 3
+                } else {
+                    // Copy one code point (surrogate pairs together) as UTF-8
+                    val end = i + Character.charCount(value.codePointAt(i))
+                    bytes.write(value.substring(i, end).toByteArray(Charsets.UTF_8))
+                    i = end
+                }
+            }
+            return bytes.toByteArray().toString(Charsets.UTF_8)
+        }
     }
 }

@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.more
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import tachiyomi.core.common.i18n.stringResource as contextString
 
 /**
  * Desktop tracking settings (Android `SettingsTrackingScreen`): log in / out of each tracker with the
@@ -66,6 +68,7 @@ class TrackingSettingsScreenModel(
     val trackerManager: TrackerManager = Injekt.get(),
     val trackPreferences: TrackPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    private val app: Application = Injekt.get(),
 ) : StateScreenModel<TrackingSettingsScreenModel.State>(State()) {
 
     @Immutable
@@ -123,11 +126,12 @@ class TrackingSettingsScreenModel(
         mutableState.update { it.copy(busy = true, error = null) }
         screenModelScope.launch {
             val error = try {
-                if (withIOContext { block() }) null else "?"
+                // A login that ends without an exception but still logged out
+                if (withIOContext { block() }) null else app.contextString(KMR.strings.login_failed)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                e.message ?: e::class.simpleName
+                e.message?.takeIf { it.isNotBlank() } ?: app.contextString(MR.strings.unknown_error)
             }
             mutableState.update { it.copy(busy = false, error = error, dialog = if (error == null) null else it.dialog) }
         }
