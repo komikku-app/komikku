@@ -1,8 +1,6 @@
 package app.komikku.desktop.ui
 
 import app.komikku.desktop.di.DesktopInjekt
-import app.komikku.desktop.ui.tabs.groupByCategory
-import app.komikku.desktop.ui.tabs.hasActiveFilters
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.model.SManga
@@ -10,6 +8,8 @@ import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibraryItemPreferences
 import eu.kanade.tachiyomi.ui.library.applyLibraryFilters
 import eu.kanade.tachiyomi.ui.library.applyLibrarySort
+import eu.kanade.tachiyomi.ui.library.groupByDefaultCategory
+import eu.kanade.tachiyomi.ui.library.hasActiveLibraryFilters
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -66,9 +66,11 @@ class LibraryFilterSortTest {
         filter(prefs(globalFilterDownloaded = true, filterDownloaded = TriState.ENABLED_NOT)) shouldContainExactly listOf(3L)
         // Combined
         filter(prefs(filterUnread = TriState.ENABLED_IS, filterStarted = TriState.ENABLED_IS)) shouldContainExactly listOf(2L)
-        prefs().hasActiveFilters(emptyMap()) shouldBe false
-        prefs(filterUnread = TriState.ENABLED_NOT).hasActiveFilters(emptyMap()) shouldBe true
-        prefs().hasActiveFilters(mapOf(1L to TriState.ENABLED_IS)) shouldBe true
+        hasActiveLibraryFilters(prefs(), emptyMap()) shouldBe false
+        hasActiveLibraryFilters(prefs(filterUnread = TriState.ENABLED_NOT), emptyMap()) shouldBe true
+        hasActiveLibraryFilters(prefs(), mapOf(1L to TriState.ENABLED_IS)) shouldBe true
+        // Android: the global "downloaded only" is not a library filter (desktop adds it for the empty state)
+        hasActiveLibraryFilters(prefs(globalFilterDownloaded = true), emptyMap()) shouldBe false
     }
 
     @Test
@@ -109,7 +111,7 @@ class LibraryFilterSortTest {
     fun `per-category sort flags and the global sort`() {
         val byTotal = Category(1, "By total", 1, LibrarySort(LibrarySort.Type.TotalChapters, LibrarySort.Direction.Descending).flag, false)
         val byTitle = Category(2, "By title", 2, LibrarySort.default.flag, false)
-        val grouped = groupByCategory(listOf(byTotal, byTitle), items, showHiddenCategories = false)
+        val grouped = items.groupByDefaultCategory(listOf(byTotal, byTitle), showHiddenCategories = false)
             .let { map -> map.mapValues { (_, ids) -> ids.reversed() } }
         val sorted = grouped.applyLibrarySort(
             favoritesById = items.associateBy { it.id },

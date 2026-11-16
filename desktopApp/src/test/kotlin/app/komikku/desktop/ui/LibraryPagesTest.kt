@@ -1,10 +1,10 @@
 package app.komikku.desktop.ui
 
 import app.komikku.desktop.di.DesktopInjekt
-import app.komikku.desktop.ui.tabs.groupByCategory
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.filterLibraryByQuery
+import eu.kanade.tachiyomi.ui.library.groupByDefaultCategory
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -37,25 +37,29 @@ class LibraryPagesTest {
     }
 
     @Test
-    fun `categories in user order, hidden ones only when shown`() {
+    fun `Android grouping by category - categories in database order, hidden ones only when shown`() {
         val items = listOf(
             item(1, "beta", listOf(1)),
             item(2, "Alpha", listOf(1, 2)),
             item(3, "Gamma", listOf(3)),
         )
-        groupByCategory(listOf(default, reading, later, hidden), items, showHiddenCategories = false)
+        // GetCategories returns categories sorted by their order, as here
+        val categories = listOf(default, later, reading, hidden)
+        items.groupByDefaultCategory(categories, showHiddenCategories = false)
             .map { (category, ids) -> category.name to ids } shouldContainExactly
             listOf("Later" to listOf(2L), "Reading" to listOf(1L, 2L))
-        groupByCategory(listOf(default, reading, later, hidden), items, showHiddenCategories = true)
+        items.groupByDefaultCategory(categories, showHiddenCategories = true)
             .keys.map { it.name } shouldContainExactly listOf("Later", "Reading", "Hidden")
     }
 
     @Test
-    fun `default category only when it has manga or is the only one`() {
-        groupByCategory(listOf(default), emptyList(), false).keys.map { it.id } shouldContainExactly listOf(0L)
-        groupByCategory(listOf(default, reading), emptyList(), false).keys.map { it.id } shouldContainExactly listOf(1L)
-        groupByCategory(listOf(default, reading), listOf(item(1, "A", emptyList())), false)
-            .keys.map { it.id } shouldContainExactly listOf(0L, 1L)
+    fun `Android grouping by category - default category only when it has manga`() {
+        // Nothing to show: the desktop pages fall back to an empty default page, like Android
+        emptyList<LibraryItem>().groupByDefaultCategory(listOf(default), false).keys shouldContainExactly emptyList()
+        emptyList<LibraryItem>().groupByDefaultCategory(listOf(default, reading), false).keys.map { it.id } shouldContainExactly listOf(1L)
+        // The library view reports uncategorized entries in category 0
+        listOf(item(1, "A", listOf(Category.UNCATEGORIZED_ID))).groupByDefaultCategory(listOf(default, reading), false)
+            .map { (category, ids) -> category.id to ids } shouldContainExactly listOf(0L to listOf(1L), 1L to emptyList())
     }
 
     @Test

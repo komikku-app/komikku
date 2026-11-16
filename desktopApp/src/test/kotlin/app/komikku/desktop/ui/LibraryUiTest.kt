@@ -18,6 +18,7 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.window.DesktopShortcuts
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.base.BasePreferences
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -99,6 +100,15 @@ class LibraryUiTest {
         onNodeWithTag("library-search").performTextInput("zzz")
         waitForText(MR.strings.no_results_found.text())
         onAllNodesWithText(MR.strings.information_no_manga_category.text()).assertCountEquals(0)
+
+        // Global "downloaded only" with nothing downloaded: "no match" with the search field, not the
+        // empty-library screen (the library itself is not empty)
+        onNodeWithTag("library-search").performTextClearance()
+        runOnIdle { Injekt.get<BasePreferences>().downloadedOnly().set(true) }
+        waitForText(MR.strings.error_no_match.text())
+        onAllNodesWithText(MR.strings.information_empty_library.text()).assertCountEquals(0)
+        onNodeWithTag("library-search").assertExists()
+        runOnIdle { Injekt.get<BasePreferences>().downloadedOnly().set(false) }
 
         // Cleared search shows everything again; badges follow the unread badge preference
         onNodeWithTag("library-search").performTextClearance()

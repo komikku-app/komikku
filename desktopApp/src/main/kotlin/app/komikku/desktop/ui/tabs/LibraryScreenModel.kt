@@ -12,24 +12,27 @@ import eu.kanade.tachiyomi.ui.library.LibraryItemPreferences
 import eu.kanade.tachiyomi.ui.library.applyLibraryFilters
 import eu.kanade.tachiyomi.ui.library.applyLibrarySort
 import eu.kanade.tachiyomi.ui.library.filterLibraryByQuery
+import eu.kanade.tachiyomi.ui.library.groupByDefaultCategory
+import eu.kanade.tachiyomi.ui.library.hasActiveLibraryFilters
 import eu.kanade.tachiyomi.ui.library.libraryItemPreferencesFlow
 import eu.kanade.tachiyomi.ui.library.libraryTrackingFiltersFlow
 import eu.kanade.tachiyomi.ui.library.toLibraryItem
+import exh.log.xLogE
 import exh.search.SearchEngine
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import logcat.LogPriority
 import tachiyomi.core.common.preference.TriState
-import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryGroup
@@ -44,6 +47,7 @@ import tachiyomi.domain.manga.interactor.GetSearchTitles
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerManga
+import tachiyomi.domain.track.model.Track
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -80,9 +84,13 @@ class LibraryScreenModel(
 
     init {
         screenModelScope.launch {
-            val itemPreferences = libraryItemPreferencesFlow(libraryPreferences, basePreferences)
-            val favorites = combine(getLibraryManga.subscribe(), itemPreferences, downloadCache.changes) { manga, prefs, _ ->
-                manga.map { it.toLibraryItem(prefs, sourceManager, downloadManager, getMergedMangaById) }
+            // One preferences flow: items and filters see the same values in one pass.
+            val favorites = combine(
+                getLibraryManga.subscribe(),
+                libraryItemPreferencesFlow(libraryPreferences, basePreferences),
+                downloadCache.changes,
+            ) { manga, prefs, _ ->
+                prefs to manga.map { it.toLibraryItem(prefs, sourceManager, downloadManager, getMergedMangaById) }
             }
             val query = state.map { it.query.trim() }
                 .distinctUntilChanged()
@@ -90,58 +98,19 @@ class LibraryScreenModel(
             combine(
                 combine(query, getCategories.subscribe(), favorites, ::Triple),
                 combine(getTracksPerManga.subscribe(), libraryTrackingFiltersFlow(trackerManager, libraryPreferences), ::Pair),
-                itemPreferences,
                 displayPreferencesFlow(),
-            ) { (query, categories, items), (tracks, trackingFilters), prefs, display ->
-                val filtered = items
-                    .applyLibraryFilters(
-                        trackMap = tracks,
-                        trackingFilter = trackingFilters,
-                        preferences = prefs,
-                        includedCategories = display.includedCategories,
-                        excludedCategories = display.excludedCategories,
-                        downloadManager = downloadManager,
-                        getMergedMangaById = getMergedMangaById,
-                    )
-                    .let {
-                        filterLibraryByQuery(
-                            unfiltered = it,
-                            query = query.ifEmpty { null },
-                            loggedInTrackServices = trackingFilters,
-                            searchEngine = searchEngine,
-                            getIdsOfFavoriteMangaWithMetadata = getIdsOfFavoriteMangaWithMetadata,
-                            getTracks = getTracks,
-                            sourceManager = sourceManager,
-                            getSearchTags = getSearchTags,
-                            getSearchTitles = getSearchTitles,
-                            trackerManager = trackerManager,
-                        )
-                    }
-                val hasActiveFilters = prefs.hasActiveFilters(trackingFilters)
-                val grouped = groupByCategory(categories, filtered, display.showHiddenCategories)
-                    .applyLibrarySort(
-                        favoritesById = filtered.associateBy { it.id },
-                        trackMap = tracks,
-                        loggedInTrackerIds = trackingFilters.keys,
-                        groupSort = display.globalSort,
-                        libraryPreferences = libraryPreferences,
-                        trackerManager = trackerManager,
-                    )
-                Result(
-                    categories = categories,
-                    pages = libraryPagesOf(
-                        grouped = grouped,
-                        itemsById = filtered.associateBy { it.id },
-                        hideEmpty = !display.showEmptyCategoriesSearch && (query.isNotEmpty() || hasActiveFilters),
-                    ),
-                    isLibraryEmpty = filtered.isEmpty(),
-                    hasActiveFilters = hasActiveFilters,
-                )
+            ) { (query, categories, favoritesWithPrefs), (tracks, trackingFilters), display ->
+                val (prefs, items) = favoritesWithPrefs
+                buildResult(query, categories, prefs, items, tracks, trackingFilters, display)
             }
                 .flowOn(Dispatchers.Default)
-                .catch { e ->
-                    logcat(LogPriority.ERROR, e) { "Failed to load the library" }
-                    emit(Result(emptyList(), emptyList(), isLibraryEmpty = true, hasActiveFilters = false))
+                // A failure (database, a source / tracker lookup) must not end library updates: log it, keep
+                // the last good state and subscribe again.
+                .retryWhen { cause, attempt ->
+                    if (cause is CancellationException) return@retryWhen false
+                    xLogE("Failed to load the library, retrying", cause)
+                    delay((attempt + 1).coerceAtMost(5) * 1_000L)
+                    true
                 }
                 .collectLatest { result ->
                     mutableState.update {
@@ -155,6 +124,66 @@ class LibraryScreenModel(
                     }
                 }
         }
+    }
+
+    private suspend fun buildResult(
+        query: String,
+        categories: List<Category>,
+        prefs: LibraryItemPreferences,
+        items: List<LibraryItem>,
+        tracks: Map<Long, List<Track>>,
+        trackingFilters: Map<Long, TriState>,
+        display: DisplayPreferences,
+    ): Result {
+        val filtered = items
+            .applyLibraryFilters(
+                trackMap = tracks,
+                trackingFilter = trackingFilters,
+                preferences = prefs,
+                includedCategories = display.includedCategories,
+                excludedCategories = display.excludedCategories,
+                downloadManager = downloadManager,
+                getMergedMangaById = getMergedMangaById,
+            )
+            .let {
+                filterLibraryByQuery(
+                    unfiltered = it,
+                    query = query.ifEmpty { null },
+                    loggedInTrackServices = trackingFilters,
+                    searchEngine = searchEngine,
+                    getIdsOfFavoriteMangaWithMetadata = getIdsOfFavoriteMangaWithMetadata,
+                    getTracks = getTracks,
+                    sourceManager = sourceManager,
+                    getSearchTags = getSearchTags,
+                    getSearchTitles = getSearchTitles,
+                    trackerManager = trackerManager,
+                )
+            }
+        // Android's filter-icon state; the global "downloaded only" also counts here so that an empty result
+        // shows "no match" (with the search / filter controls) instead of the empty-library screen.
+        val hasActiveFilters = hasActiveLibraryFilters(prefs, trackingFilters) || prefs.globalFilterDownloaded
+        val filteredById = filtered.associateBy { it.id }
+        val grouped = filtered.groupByDefaultCategory(categories, display.showHiddenCategories)
+            .applyLibrarySort(
+                favoritesById = filteredById,
+                trackMap = tracks,
+                loggedInTrackerIds = trackingFilters.keys,
+                groupSort = display.globalSort,
+                libraryPreferences = libraryPreferences,
+                trackerManager = trackerManager,
+            )
+        return Result(
+            categories = categories,
+            pages = libraryPagesOf(
+                grouped = grouped,
+                itemsById = filteredById,
+                hideEmpty = !display.showEmptyCategoriesSearch && (query.isNotEmpty() || hasActiveFilters),
+            ),
+            // The whole library, before filters and search: an empty filter / search result is not an empty
+            // library (no flash of the empty-library screen while a query is cleared).
+            isLibraryEmpty = items.isEmpty(),
+            hasActiveFilters = hasActiveFilters,
+        )
     }
 
     fun search(query: String) {
@@ -232,42 +261,6 @@ data class LibraryPage(
     val items: List<LibraryItem>,
 ) {
     val manga: List<LibraryManga> get() = items.map { it.libraryManga }
-}
-
-/** Android's `hasActiveFilters` (the library filter icon is highlighted). */
-fun LibraryItemPreferences.hasActiveFilters(trackingFilters: Map<Long, TriState>): Boolean =
-    listOf(
-        filterDownloaded,
-        filterUnread,
-        filterStarted,
-        filterBookmarked,
-        filterCompleted,
-        filterIntervalCustom,
-        filterLewd,
-        *trackingFilters.values.toTypedArray(),
-    ).any { it != TriState.DISABLED } || filterCategories
-
-/**
- * Groups [items] by category like Android's "by category" grouping: categories in user order, hidden ones
- * only with [showHiddenCategories]; the default (system) category only when it has items or is the only
- * category. Items keep their order (sorting is done by [applyLibrarySort]).
- */
-fun groupByCategory(
-    categories: List<Category>,
-    items: List<LibraryItem>,
-    showHiddenCategories: Boolean,
-): Map<Category, List<Long>> {
-    val idsByCategory = items
-        .flatMap { item -> item.libraryManga.categories.ifEmpty { listOf(Category.UNCATEGORIZED_ID) }.map { it to item.id } }
-        .groupBy({ it.first }, { it.second })
-    val visible = categories.filter { showHiddenCategories || !it.hidden }.sortedBy { it.order }
-    return visible
-        .filter { category ->
-            !category.isSystemCategory ||
-                idsByCategory[category.id].orEmpty().isNotEmpty() ||
-                visible.none { !it.isSystemCategory }
-        }
-        .associateWith { idsByCategory[it.id].orEmpty().distinct() }
 }
 
 private fun libraryPagesOf(
