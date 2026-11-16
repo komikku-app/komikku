@@ -1,4 +1,5 @@
 import mihon.buildlogic.Config
+import mihon.buildlogic.applyAppSourceBorrowing
 import mihon.buildlogic.getBuildTime
 import mihon.buildlogic.getCommitCount
 import mihon.buildlogic.getGitSha
@@ -21,6 +22,11 @@ if (Config.includeTelemetry) {
 }
 
 shortcutHelper.setFilePath("./shortcuts.xml")
+
+// KMK --> Files listed in app-shared/borrowed-app-sources.gradle.kts are compiled by :app-shared (Android + desktop)
+// instead of here (docs/kmp-desktop/PLAN.md, D5); `:app:verifyBorrowedSources` (part of `check`) guards it.
+applyAppSourceBorrowing()
+// KMK <--
 
 android {
     namespace = "eu.kanade.tachiyomi"
@@ -200,6 +206,9 @@ dependencies {
     implementation(projects.domain)
     implementation(projects.presentationCore)
     implementation(projects.presentationWidget)
+    // KMK -->
+    implementation(projects.appShared)
+    // KMK <--
     implementation(projects.telemetry)
 
     // Compose

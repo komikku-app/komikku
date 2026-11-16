@@ -1,0 +1,58 @@
+package app.komikku.shared.coil
+
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.crossfade
+import eu.kanade.tachiyomi.network.NetworkHelper
+import kotlinx.coroutines.Dispatchers
+import okhttp3.Call
+import tachiyomi.domain.source.service.SourceManager
+import java.io.File
+
+/**
+ * KMK: Coil 3 image loader for desktop, the counterpart of `App.newImageLoader` on Android.
+ *
+ * - network: OkHttp through [NetworkHelper.client] (cookies, DoH, user agent, cache);
+ * - covers: [DesktopMangaCoverFetcher] / [DesktopMangaCoverKeyer] for `MangaCover`, using the
+ *   source's client and headers when [sourceManager] knows the source;
+ * - disk cache in [cacheDir] (`<dataDir>/cache/image_cache`), 2 % of the free space like Android.
+ *
+ * Not yet ported from Android: `CoverCache` (library covers / custom covers outside the disk cache),
+ * the `TachiyomiImageDecoder` (AVIF / JXL / HEIF), page previews and cover-based colors.
+ */
+object DesktopImageLoader {
+
+    fun create(
+        context: PlatformContext,
+        networkHelper: NetworkHelper,
+        sourceManager: SourceManager?,
+        cacheDir: File,
+    ): ImageLoader {
+        val callFactoryLazy: Lazy<Call.Factory> = lazy { networkHelper.client }
+        return ImageLoader.Builder(context)
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = { callFactoryLazy.value }))
+                add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager))
+                add(DesktopMangaCoverKeyer())
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizePercent(0.02)
+                    .build()
+            }
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .crossfade(300)
+            .fetcherCoroutineContext(Dispatchers.IO.limitedParallelism(8))
+            .decoderCoroutineContext(Dispatchers.IO.limitedParallelism(3))
+            .build()
+    }
+}

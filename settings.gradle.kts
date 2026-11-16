@@ -46,6 +46,9 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "Komikku"
 include(":app")
+// KMK --> Android + desktop app services and UI shared with the desktop app (docs/kmp-desktop/PLAN.md, D5)
+include(":app-shared")
+// KMK <--
 // KMK --> Compose Multiplatform desktop application (Phase 0 KMP scaffolding)
 include(":desktopApp")
 // Desktop-only Android API surface (docs/kmp-desktop/PLAN.md, D3)
