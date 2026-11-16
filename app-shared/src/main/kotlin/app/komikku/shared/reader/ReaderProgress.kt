@@ -63,7 +63,8 @@ class ReaderProgressSaver(
 
     /**
      * Saves the position after [pageIndex] (0-based) of [pageCount] pages became the current page.
-     * @return `true` if this call marked the chapter read.
+     * @return `true` when the last page was reached and saved (Android runs `updateChapterProgressOnComplete`
+     *   every time, also for a chapter that was already read, e.g. for "delete after reading").
      */
     suspend fun onPageSelected(
         manga: Manga,
@@ -78,11 +79,8 @@ class ReaderProgressSaver(
         chapter.lastPageRead = pageIndex.toLong()
 
         val lastIndex = pageCount - 1
-        var completed = false
-        if (lastIndex == pageIndex || (hasExtraPage && lastIndex - 1 == pageIndex)) {
-            completed = !chapter.read
-            onComplete(manga, chapter)
-        }
+        val completed = lastIndex == pageIndex || (hasExtraPage && lastIndex - 1 == pageIndex)
+        if (completed) onComplete(manga, chapter)
 
         updateChapter.await(
             ChapterUpdate(

@@ -14,9 +14,11 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -38,6 +40,7 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Desktop manga details: the stored manga and chapter list, kept in sync with the source through the
@@ -118,18 +121,40 @@ class MangaDetailsScreenModel(
     }
 
     init {
-        // Android: `MangaScreenModel` observes the queue, status / progress flows and the download cache.
+        // Android: `MangaScreenModel` observes the status / progress flows and updates only the chapter of
+        // each download. Sampled, not debounced: a steady stream of progress events would starve a debounce.
         screenModelScope.launch {
-            merge(
-                downloadManager.queueState.map { },
-                downloadManager.statusFlow().map { },
-                downloadManager.progressFlow().map { },
-                downloadCache.changes,
-            )
-                .debounce(100)
+            val pending = ConcurrentHashMap<Long, Download>()
+            merge(downloadManager.statusFlow(), downloadManager.progressFlow())
+                .filter { it.manga.id == mangaId }
+                .onEach { pending[it.chapter.id] = it }
+                .sample(DOWNLOAD_STATE_SAMPLE_MILLIS)
+                .collect {
+                    val updates = pending.keys.toList().mapNotNull { id -> pending.remove(id) }
+                    if (updates.isNotEmpty()) mutableState.update { it.copy(downloads = it.downloads.withDownloads(updates)) }
+                }
+        }
+        // Queue changes (added / removed downloads) and the download cache (finished / deleted chapters):
+        // recompute every chapter's state.
+        screenModelScope.launch {
+            merge(downloadManager.queueState.map { }, downloadCache.changes)
+                .sample(DOWNLOAD_STATE_SAMPLE_MILLIS)
                 .collectLatest { refreshDownloads() }
         }
     }
+
+    /** Android `updateDownloadState`: [updates]' chapters take their download's current state. */
+    private fun Map<Long, ChapterDownload>.withDownloads(updates: List<Download>): Map<Long, ChapterDownload> =
+        toMutableMap().apply {
+            updates.forEach { download ->
+                val status = download.status
+                if (status == Download.State.NOT_DOWNLOADED) {
+                    remove(download.chapter.id)
+                } else {
+                    put(download.chapter.id, ChapterDownload(status, download.progress))
+                }
+            }
+        }
 
     private suspend fun refreshDownloads() {
         val manga = state.value.manga ?: return
@@ -336,5 +361,8 @@ class MangaDetailsScreenModel(
     companion object {
         /** Marker for [State.error]: the source returned no chapters (shown with MR `no_chapters_error`). */
         const val NO_CHAPTERS = "\u0000no_chapters"
+
+        /** Download indicators update at most this often (like the download queue screen). */
+        private const val DOWNLOAD_STATE_SAMPLE_MILLIS = 100L
     }
 }

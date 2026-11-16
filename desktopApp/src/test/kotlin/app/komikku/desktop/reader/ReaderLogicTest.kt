@@ -133,6 +133,10 @@ class ReaderLogicTest {
         repo.getChapterById(c1.id)!!.read shouldBe false
         tracked shouldBe listOf(c2.chapterNumber)
 
+        // The last page of an already read chapter completes it again (Android: delete after reading, trackers)
+        saver.onPageSelected(stored, progress, pageIndex = 2, pageCount = 3, incognito = false) shouldBe true
+        tracked shouldBe listOf(c2.chapterNumber, c2.chapterNumber)
+
         saver.setBookmark(progress, true)
         repo.getChapterById(c2.id)!!.bookmark shouldBe true
 

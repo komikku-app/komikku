@@ -27,6 +27,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -349,6 +350,7 @@ class ReaderModel(
                 )
                 readerChapter.chapter.read = progressChapter.read
                 readerChapter.chapter.last_page_read = progressChapter.lastPageRead.toInt()
+                // Android `updateChapterProgressOnComplete`: every time the last page is reached
                 if (completed) deleteChapterIfNeeded(manga, readerChapter)
             }
         }
@@ -364,17 +366,24 @@ class ReaderModel(
         downloadManager.enqueueChaptersToDelete(listOf(chapterToDelete.chapter.toDomainChapter()!!), manga)
     }
 
+    /** Next chapter whose download-ahead was requested (Android re-requests on every page; this skips repeats). */
+    @Volatile
     private var downloadAheadRequestedFor: Long? = null
 
-    /** Android `ReaderViewModel.downloadNextChapters`. */
+    @Volatile
+    private var downloadAheadJob: Job? = null
+
+    /**
+     * Android `ReaderViewModel.downloadNextChapters`. Re-evaluated on each page past 25 % until the request
+     * was made: a check that fails (current / next chapter not downloaded yet) is retried on the next page.
+     */
     private fun downloadNextChapters(manga: Manga) {
         val amount = downloadPreferences.autoDownloadWhileReading().get()
         if (amount == 0 || manga.isLocal()) return
         val current = _state.value.currentChapter ?: return
         val nextChapter = _state.value.viewerChapters?.nextChapter?.chapter ?: return
-        if (downloadAheadRequestedFor == nextChapter.id) return
-        downloadAheadRequestedFor = nextChapter.id
-        scope.launch(Dispatchers.IO) {
+        if (downloadAheadRequestedFor == nextChapter.id || downloadAheadJob?.isActive == true) return
+        downloadAheadJob = scope.launch(Dispatchers.IO) {
             // Only download ahead if current + next chapter is already downloaded too to avoid jank
             // (Android: the current chapter's loader is a `DownloadPageLoader`, internal to its file).
             val currentChapter = current.chapter
@@ -398,6 +407,7 @@ class ReaderModel(
                 if (readerPreferences.skipDupe().get()) removeDuplicates(nextChapter.toDomainChapter()!!) else this
             }.take(amount)
             downloadManager.downloadChapters(manga, chapters)
+            downloadAheadRequestedFor = nextChapter.id
         }
     }
 
