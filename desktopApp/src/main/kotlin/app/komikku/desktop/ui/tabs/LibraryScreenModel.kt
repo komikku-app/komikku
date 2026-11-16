@@ -128,6 +128,7 @@ class LibraryScreenModel(
                         trackerManager = trackerManager,
                     )
                 Result(
+                    categories = categories,
                     pages = libraryPagesOf(
                         grouped = grouped,
                         itemsById = filtered.associateBy { it.id },
@@ -140,12 +141,13 @@ class LibraryScreenModel(
                 .flowOn(Dispatchers.Default)
                 .catch { e ->
                     logcat(LogPriority.ERROR, e) { "Failed to load the library" }
-                    emit(Result(emptyList(), isLibraryEmpty = true, hasActiveFilters = false))
+                    emit(Result(emptyList(), emptyList(), isLibraryEmpty = true, hasActiveFilters = false))
                 }
                 .collectLatest { result ->
                     mutableState.update {
                         it.copy(
                             isLoading = false,
+                            categories = result.categories,
                             pages = result.pages,
                             isLibraryEmpty = result.isLibraryEmpty,
                             hasActiveFilters = result.hasActiveFilters,
@@ -195,13 +197,20 @@ class LibraryScreenModel(
         val excludedCategories: Set<Long>,
     )
 
-    private data class Result(val pages: List<LibraryPage>, val isLibraryEmpty: Boolean, val hasActiveFilters: Boolean)
+    private data class Result(
+        val categories: List<Category>,
+        val pages: List<LibraryPage>,
+        val isLibraryEmpty: Boolean,
+        val hasActiveFilters: Boolean,
+    )
 
     @Immutable
     data class State(
         val isLoading: Boolean = true,
         val query: String = "",
         val selectedCategoryId: Long? = null,
+        /** All categories (filter dialog). */
+        val categories: List<Category> = emptyList(),
         val pages: List<LibraryPage> = emptyList(),
         val isLibraryEmpty: Boolean = true,
         val hasActiveFilters: Boolean = false,
