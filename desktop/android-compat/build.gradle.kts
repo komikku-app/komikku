@@ -39,6 +39,8 @@ dependencies {
     // `app.cash.quickjs.QuickJs` runs on QuickJS through a JVM binding with bundled natives.
     implementation(libs.quickjs.kt)
     implementation(kotlinx.coroutines.core)
+    // `nl.adaptivity.xmlutil.core.AndroidXmlReader` (xmlutil `core-android`) over the JVM xmlutil core.
+    api(kotlinx.serialization.xml.core.jvm)
 
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform.launcher)
