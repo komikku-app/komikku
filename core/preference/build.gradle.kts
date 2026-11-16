@@ -1,45 +1,36 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
-    id("mihon.library")
-    kotlin("multiplatform")
-}
-
-kotlin {
-    androidTarget()
-    // KMK --> Desktop (JVM) target so the preference abstraction is usable from Compose Desktop
-    jvm("desktop")
-    // KMK <--
-
-    applyDefaultHierarchyTemplate()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                api(project.dependencies.platform(kotlinx.coroutines.bom))
-                api(kotlinx.coroutines.core)
-            }
-        }
-        val desktopMain by getting {
-            dependencies {
-                implementation(kotlinx.serialization.json)
-            }
-        }
-        val desktopTest by getting {
-            dependencies {
-                implementation(libs.bundles.test)
-                implementation(kotlinx.coroutines.test)
-                runtimeOnly(libs.junit.platform.launcher)
-            }
-        }
-    }
-
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    compilerOptions {
-        freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
-    }
+    // Android + desktop (JVM), see buildSrc mihon/buildlogic/KmpLibrary.kt.
+    // Shared sources stay in src/commonMain/kotlin (compiled through `jvmSharedMain`).
+    id("mihon.library.kmp")
 }
 
 android {
     namespace = "tachiyomi.core.preference"
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
+    }
+
+    sourceSets {
+        named("desktopMain") {
+            dependencies {
+                implementation(kotlinx.serialization.json)
+            }
+        }
+        named("desktopTest") {
+            dependencies {
+                implementation(kotlinx.coroutines.test)
+            }
+        }
+    }
+}
+
+dependencies {
+    api(platform(kotlinx.coroutines.bom))
+    api(kotlinx.coroutines.core)
+
+    testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
