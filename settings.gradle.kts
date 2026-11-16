@@ -50,6 +50,8 @@ include(":app")
 include(":desktopApp")
 // Desktop-only Android API surface (docs/kmp-desktop/PLAN.md, D3)
 include(":desktop:android-compat")
+// Desktop-only Android Compose API surface (LocalContext, BackHandler, …) for shared UI code
+include(":desktop:compose-compat")
 // KMK <--
 include(":core-metadata")
 include(":core:archive")

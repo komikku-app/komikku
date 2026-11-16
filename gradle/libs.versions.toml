@@ -15,9 +15,12 @@ junit = "6.1.3"
 materialKolor = "5.0.0-alpha07"
 # KMK --> Compose Multiplatform (desktop/iOS) - aligned with Kotlin 2.4.20
 compose-multiplatform = "1.12.2"
-# Material 3 for Compose Multiplatform is versioned separately; 1.9.0 is what CMP 1.12.2's
-# `compose.material3` alias resolves to (ComposeBuildConfig.composeMaterial3Version).
-compose-multiplatform-material3 = "1.9.0"
+# Material 3 for Compose Multiplatform is versioned separately. 1.11.0-alpha03 is the JetBrains
+# build of androidx material3 1.5.0-alpha14, the version the androidx Compose BOM gives Android, so
+# shared UI code sees the same Material 3 API on both targets (docs/kmp-desktop/PROGRESS.md, 4.0).
+compose-multiplatform-material3 = "1.11.0-alpha03"
+# material-icons-extended is frozen in Compose Multiplatform (last release 1.7.3).
+compose-multiplatform-material-icons = "1.7.3"
 # KMK <--
 
 [libraries]
@@ -130,8 +133,19 @@ stringSimilarity = { module = "com.aallam.similarity:string-similarity-kotlin", 
 
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 
-# KMK --> Compose Multiplatform libraries (desktop)
+# KMK --> Compose Multiplatform libraries (desktop). KMP modules use these in `desktopMain` only; their
+# `androidMain` keeps the androidx coordinates of the `compose` catalog under the Compose BOM ("BOM wins", PLAN.md D6).
 compose-multiplatform-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-multiplatform-material3" }
+compose-multiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-multiplatform-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+compose-multiplatform-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "compose-multiplatform" }
+compose-multiplatform-animation-graphics = { module = "org.jetbrains.compose.animation:animation-graphics", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui-util = { module = "org.jetbrains.compose.ui:ui-util", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui-test-junit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose-multiplatform" }
+compose-multiplatform-material-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-multiplatform-material-icons" }
 # KMK <--
 
 [plugins]
@@ -155,4 +169,6 @@ test = ["junit-jupiter", "kotest-assertions", "mockk"]
 markdown = ["markdown-core", "markdown-coil"]
 # KMK -->
 archive-desktop = ["zip4j", "junrar", "commons-compress", "xz"]
+# Desktop counterpart of the androidx Compose libraries most UI modules use (foundation, material3, icons, animation, ui).
+compose-multiplatform = ["compose-multiplatform-runtime", "compose-multiplatform-foundation", "compose-multiplatform-animation", "compose-multiplatform-animation-graphics", "compose-multiplatform-ui", "compose-multiplatform-ui-util", "compose-multiplatform-ui-tooling-preview", "compose-multiplatform-material3", "compose-multiplatform-material-icons"]
 # KMK <--

@@ -1,7 +1,12 @@
 plugins {
-    id("mihon.library")
-    id("mihon.library.compose")
-    kotlin("android")
+    // KMK --> Android + desktop (JVM), path preserving: sources stay in src/main/java (compiled through
+    // `jvmSharedMain`); Compose resolved per target (androidx + BOM on Android, JetBrains on desktop), see
+    // buildSrc mihon/buildlogic/KmpLibrary.kt and KmpCompose.kt.
+    id("mihon.library.kmp.compose")
+    // id("mihon.library")
+    // id("mihon.library.compose")
+    // kotlin("android")
+    // KMK <--
 }
 
 android {
@@ -25,6 +30,32 @@ kotlin {
             "-opt-in=kotlinx.coroutines.FlowPreview",
         )
     }
+
+    // KMK --> Compose per target ("BOM wins", PLAN.md D6): androidx coordinates under the Compose BOM on
+    // Android, JetBrains Compose Multiplatform on desktop. Android-only APIs used by shared files
+    // (`LocalContext`, `BackHandler`, `systemGestureExclusion`, `ViewConfiguration`) come from
+    // :desktop:compose-compat / :desktop:android-compat on desktop.
+    sourceSets {
+        androidMain.dependencies {
+            implementation(compose.activity)
+            implementation(compose.foundation)
+            implementation(compose.material3.core)
+            implementation(compose.material.icons)
+            implementation(compose.animation)
+            implementation(compose.animation.graphics)
+            implementation(compose.ui.tooling.preview)
+            implementation(compose.ui.util)
+
+            implementation(androidx.paging.runtime)
+        }
+        named("desktopMain") {
+            dependencies {
+                implementation(libs.bundles.compose.multiplatform)
+                implementation(projects.desktop.composeCompat)
+            }
+        }
+    }
+    // KMK <--
 }
 
 dependencies {
@@ -34,18 +65,22 @@ dependencies {
     api(projects.i18nSy)
     // SY <--
 
+    // KMK --> Compose libraries moved to kotlin.sourceSets (androidMain / desktopMain) above
     // Compose
-    implementation(compose.activity)
-    implementation(compose.foundation)
-    implementation(compose.material3.core)
-    implementation(compose.material.icons)
-    implementation(compose.animation)
-    implementation(compose.animation.graphics)
+    // implementation(compose.activity)
+    // implementation(compose.foundation)
+    // implementation(compose.material3.core)
+    // implementation(compose.material.icons)
+    // implementation(compose.animation)
+    // implementation(compose.animation.graphics)
+    // KMK <--
     debugImplementation(compose.ui.tooling)
-    implementation(compose.ui.tooling.preview)
-    implementation(compose.ui.util)
+    // KMK -->
+    // implementation(compose.ui.tooling.preview)
+    // implementation(compose.ui.util)
 
-    implementation(androidx.paging.runtime)
+    // implementation(androidx.paging.runtime)
+    // KMK <--
     implementation(androidx.paging.compose)
     implementation(kotlinx.immutables)
 }
