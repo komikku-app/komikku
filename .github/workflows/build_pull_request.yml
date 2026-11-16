@@ -24,6 +24,44 @@ permissions:
   contents: read
 
 jobs:
+  # KMK -->
+  # Early warning for the Compose Multiplatform desktop app (docs/kmp-desktop/BUILDING.md): compiles and
+  # tests :desktopApp, which also compiles the shared modules' desktop targets and the `app` files it borrows.
+  # A separate job, so it never gates the Android build / APK signing in `build`; `continue-on-error` keeps a
+  # desktop failure from failing the PR check while the port is experimental (remove it once it is stable).
+  desktop:
+    name: Desktop app (compile + tests)
+    runs-on: 'ubuntu-24.04'
+    continue-on-error: true
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+
+      - name: Compile desktop app
+        run: ./gradlew :desktopApp:compileKotlin --max-workers=2
+
+      - name: Run desktop tests
+        id: desktop_tests
+        run: ./gradlew :desktopApp:test --max-workers=2
+
+      - name: Upload desktop test report
+        if: failure() && steps.desktop_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-test-report-${{ github.sha }}
+          path: desktopApp/build/reports/tests/test
+  # KMK <--
+
   build:
     name: Build app
     runs-on: 'ubuntu-24.04'

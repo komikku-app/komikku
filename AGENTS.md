@@ -164,6 +164,8 @@ Reference: `domain/src/main/java/tachiyomi/domain/category/interactor/HideCatego
 
 ## Build & CI
 
+Desktop app (`:desktopApp`, Compose Multiplatform): run, test, package and its CI in `docs/kmp-desktop/BUILDING.md`.
+
 Build types (`applicationIdSuffix`): `debug` (`.dev`), `release`, `releaseTest` (`.rt`), `foss` (`.foss`), `preview` (`.beta`, CI default), `benchmark` (`.benchmark`).
 
 Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):

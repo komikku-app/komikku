@@ -301,7 +301,8 @@ redirect), app updater, E-Hentai / MangaDex delegated sources, sync, WebDAV, Dis
 `compose.desktop.nativeDistributions` (msi/exe, dmg, deb/rpm/AppImage), ProGuard off at first,
 app icons, a `build_desktop.yml` workflow (compile + package per OS), a desktop job in the PR
 workflow limited to `:desktopApp:compileKotlin` so Android PRs get early warning of desktop
-breakage. Kotlin-Native / iOS stays out of scope.
+breakage. Kotlin-Native / iOS stays out of scope. Configured in 9.1 (not executed yet); how to run,
+test and package: [`BUILDING.md`](BUILDING.md).
 
 ## 6. Risks
 
