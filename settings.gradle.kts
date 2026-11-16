@@ -55,6 +55,8 @@ include(":desktopApp")
 include(":desktop:android-compat")
 // Desktop-only Android Compose API surface (LocalContext, BackHandler, …) for shared UI code
 include(":desktop:compose-compat")
+// Desktop extension runtime: APK reader, dex2jar conversion, extension class loader (Phase 5)
+include(":desktop:extension-runtime")
 // KMK <--
 include(":core-metadata")
 include(":core:archive")

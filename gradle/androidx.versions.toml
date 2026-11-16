@@ -7,6 +7,9 @@ sqlite = "2.6.2"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "agp_version" }
+# KMK --> tests of the desktop extension runtime only: signs fixture APKs (v1 / v2 / v3), same version as AGP's.
+apksig = { module = "com.android.tools.build:apksig", version.ref = "agp_version" }
+# KMK <--
 
 annotation = "androidx.annotation:annotation:1.10.0"
 appcompat = "androidx.appcompat:appcompat:1.7.1"

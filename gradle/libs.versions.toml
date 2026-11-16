@@ -60,6 +60,13 @@ junrar = "com.github.junrar:junrar:8.1.2"
 commons-compress = "org.apache.commons:commons-compress:1.28.0"
 xz = "org.tukaani:xz:1.12"
 # KMK <--
+# KMK --> desktop extension runtime (:desktop:extension-runtime): dex → JVM bytecode for extension APKs.
+# Maintained dex2jar fork on Maven Central (Apache-2.0); brings dex-reader / dex-ir, asm-tree / asm-util /
+# asm-commons 9.11.1 and `d2j-external` (its patched ASM core + AOSP dx/dex, all Apache-2.0 / BSD-3).
+dex2jar-translator = "de.femtopedia.dex2jar:dex-translator:2.4.39"
+# Tests only: X.509 certificates for APK signing fixtures.
+bouncycastle-pkix = "org.bouncycastle:bcpkix-jdk18on:1.79"
+# KMK <--
 
 preferencektx = "androidx.preference:preference-ktx:1.2.1"
 
