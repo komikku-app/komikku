@@ -327,6 +327,26 @@ run {
         "eu/kanade/domain/track/service/TrackPreferences.kt",
         "eu/kanade/domain/track/store/DelayedTrackingStore.kt",
     )
+
+    // Data-driven settings model and its widgets (8.4; desktop settings screens are built from the same
+    // `Preference` items). Desktop counterparts in app-shared/src/desktopMain: ConnectionsService (type
+    // only, no connections on desktop), ConnectionLogoIcon and TrackLogoIcon (name initials, no logos).
+    desktopCopy(
+        "eu/kanade/presentation/more/settings/Preference.kt",
+        "eu/kanade/presentation/more/settings/PreferenceItem.kt",
+        "eu/kanade/presentation/more/settings/widget/AppThemeModePreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/BasePreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/ConnectionPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/EditTextPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/InfoWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/ListPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/MultiSelectListPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/PreferenceGroupHeader.kt",
+        "eu/kanade/presentation/more/settings/widget/SwitchPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/TextPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/TrackingPreferenceWidget.kt",
+        "eu/kanade/presentation/more/settings/widget/TriStateListDialog.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

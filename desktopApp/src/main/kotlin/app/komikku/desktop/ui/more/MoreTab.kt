@@ -4,9 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -30,6 +33,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -41,8 +45,8 @@ import androidx.compose.runtime.collectAsState as collectFlowAsState
 
 /**
  * More destination (Android `MoreTab`): its own navigator starting at [MoreHomeScreen] — the
- * "downloaded only" and incognito toggles (same `BasePreferences` as Android), the download queue and
- * the desktop settings.
+ * "downloaded only" and incognito toggles (same `BasePreferences` as Android), the download queue, data and
+ * storage (backups), tracking, categories, settings and about.
  */
 data object MoreTab : Tab {
 
@@ -117,6 +121,34 @@ data object MoreHomeScreen : Screen() {
                     subtitle = null,
                     tag = "more-tracking",
                     onClick = { navigator.push(TrackingSettingsScreen()) },
+                )
+            }
+            item {
+                LinkRow(
+                    icon = Icons.AutoMirrored.Outlined.Label,
+                    title = stringResource(MR.strings.categories),
+                    subtitle = null,
+                    tag = "more-categories",
+                    onClick = { navigator.push(CategoriesScreen()) },
+                )
+            }
+            item { HorizontalDivider() }
+            item {
+                LinkRow(
+                    icon = Icons.Outlined.Settings,
+                    title = stringResource(MR.strings.label_settings),
+                    subtitle = null,
+                    tag = "more-settings",
+                    onClick = { navigator.push(SettingsHomeScreen()) },
+                )
+            }
+            item {
+                LinkRow(
+                    icon = Icons.Outlined.Info,
+                    title = stringResource(MR.strings.pref_category_about),
+                    subtitle = BuildConfig.VERSION_NAME,
+                    tag = "more-about",
+                    onClick = { navigator.push(SettingsCategoryScreen(SettingsCategory.About)) },
                 )
             }
         }
