@@ -28,6 +28,9 @@ dependencies {
     // by `nativeDistributions` below.
     implementation(ComposePlugin.DesktopDependencies.currentOs)
     implementation(libs.compose.multiplatform.material3)
+    // Swing `Dispatchers.Main` (Compose Desktop brings it transitively; declared explicitly because shared
+    // code relies on it: `launchUI`, `withUIContext`, Voyager `screenModelScope`).
+    implementation(kotlinx.coroutines.swing)
     // Shared Kotlin Multiplatform modules that also target Android.
     implementation(projects.i18n)
     implementation(projects.i18nSy)
@@ -40,6 +43,9 @@ dependencies {
     implementation(projects.domain)
     implementation(projects.data)
     implementation(projects.sourceLocal)
+    // Shared UI: presentation-core components, app theme, Voyager host, desktop Coil setup.
+    implementation(projects.presentationCore)
+    implementation(projects.appShared)
     implementation(kotlinx.serialization.json)
     implementation(kotlinx.serialization.protobuf)
     implementation(kotlinx.serialization.xml)
@@ -48,11 +54,14 @@ dependencies {
     testImplementation(libs.bundles.test)
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(kotlinx.coroutines.test)
+    testImplementation(libs.compose.multiplatform.ui.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // Injekt is process-global: every test class that boots `DesktopInjekt` gets its own JVM.
+    forkEvery = 1
     // Keep tests out of the user's real data dir (preferences, cookies, caches).
     val testDataDir = layout.buildDirectory.dir("tmp/test-data").get().asFile
     systemProperty("komikku.dataDir", testDataDir.absolutePath)

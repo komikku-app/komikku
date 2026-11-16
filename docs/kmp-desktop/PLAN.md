@@ -127,9 +127,12 @@ become multiplatform in one move, and moving its files would wreck upstream sync
 ### D6 — Compose and versions
 
 - Compose Multiplatform version follows the Kotlin version on `master` (currently CMP 1.12.2 for
-  Kotlin 2.4.20). KMP modules use `org.jetbrains.compose.*` coordinates, which resolve to androidx
-  artifacts on Android; the androidx Compose BOM in `app` remains the source of truth for Android
-  versions. If the two disagree on Android, the BOM wins (strict constraint in `mihon.library.kmp`).
+  Kotlin 2.4.20). The androidx Compose BOM remains the source of truth for Android versions ("BOM
+  wins"). Since CMP 1.12's Android variants require newer androidx Compose than the BOM, KMP Compose
+  modules (`mihon.library.kmp.compose`, step 4.0) resolve Compose **per target**: androidx
+  coordinates + BOM in `androidMain`, `org.jetbrains.compose.*` in `desktopMain`; shared sources are
+  compiled once per target against either. Android-only Compose APIs used by shared files
+  (`LocalContext`, `BackHandler`, …) come from `:desktop:compose-compat` on desktop.
 - `material-icons-extended` is frozen in CMP; use it as-is on desktop until upstream's generated
   icon modules are cherry-picked.
 - Catalog fixes needed for JVM: `xmlutil:core-android` → `xmlutil:core`; `coil-gif` Android-only.
@@ -174,6 +177,7 @@ data                         android + desktop   (JVM sqlite driver)
 presentation-core            android + desktop   (Compose Multiplatform)
 app-shared        (new, KMK) android + desktop   (services, borrowed + new screens)
 desktop:android-compat (new) desktop only        (Android FQN shim)
+desktop:compose-compat (new) desktop only        (Android-only Compose FQN shim, 4.1)
 desktop:extension-runtime (new) desktop only     (dex2jar, manifest parsing, loader)
 desktopApp                   desktop only        (entry point, DI bootstrap, packaging)
 app                          android only

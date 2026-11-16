@@ -144,7 +144,7 @@ compose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref
 compose-multiplatform-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
 compose-multiplatform-ui-util = { module = "org.jetbrains.compose.ui:ui-util", version.ref = "compose-multiplatform" }
 compose-multiplatform-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-compose-multiplatform-ui-test-junit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose-multiplatform" }
+compose-multiplatform-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
 compose-multiplatform-material-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-multiplatform-material-icons" }
 # KMK <--
 

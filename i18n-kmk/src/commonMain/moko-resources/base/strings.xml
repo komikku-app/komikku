@@ -240,4 +240,8 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+
+    <!-- Desktop app -->
+    <string name="desktop_not_available_yet">Not available in the desktop app yet</string>
+    <string name="desktop_no_sources">No sources installed</string>
 </resources>

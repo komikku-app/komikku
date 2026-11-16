@@ -62,7 +62,7 @@ kotlin {
                 api(projects.desktop.composeCompat)
 
                 // Image loading (covers) on desktop; Android keeps the app's Coil setup.
-                implementation(project.dependencies.platform(libs.coil.bom))
+                api(project.dependencies.platform(libs.coil.bom))
                 api(libs.coil.core)
                 api(libs.coil.compose)
                 implementation(libs.coil.network.okhttp)

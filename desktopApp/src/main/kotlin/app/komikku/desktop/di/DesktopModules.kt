@@ -3,6 +3,9 @@ package app.komikku.desktop.di
 import android.app.Application
 import app.cash.sqldelight.db.SqlDriver
 import app.komikku.desktop.compat.DesktopPreferenceStores
+import app.komikku.desktop.source.DesktopSourceManager
+import app.komikku.desktop.window.DesktopWindowPreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.network.JavaScriptEngine
@@ -21,14 +24,20 @@ import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.DesktopDatabase
 import tachiyomi.data.di.registerDatabaseRepositories
+import tachiyomi.data.source.SourceRepositoryImpl
 import tachiyomi.domain.di.registerDomainPreferences
 import tachiyomi.domain.di.registerLibraryInteractors
+import tachiyomi.domain.source.interactor.GetRemoteManga
+import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
+import tachiyomi.domain.source.repository.SourceRepository
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
+import uy.kohesive.injekt.api.addFactory
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
@@ -39,8 +48,9 @@ import java.io.File
  * [PreferenceStore] (the process-wide instance from [DesktopPreferenceStores], shared with
  * `SharedPreferences` users) and the preference classes that live in shared modules.
  *
- * App-module preference classes (`SourcePreferences`, `UiPreferences`, `ReaderPreferences`,
- * `TrackPreferences`, `BasePreferences`, …) are not available on desktop yet (`:app-shared`, Phase 4+).
+ * App-module preference classes are added as `:app-shared` borrows them: `UiPreferences` (4.2);
+ * `SourcePreferences`, `ReaderPreferences`, `TrackPreferences`, `BasePreferences`, … are not available
+ * on desktop yet. [DesktopWindowPreferences] is desktop-only.
  */
 class DesktopPreferenceModule(
     private val dataDir: File,
@@ -64,6 +74,8 @@ class DesktopPreferenceModule(
             )
         }
         registerDomainPreferences()
+        addSingletonFactory { UiPreferences(get()) }
+        addSingletonFactory { DesktopWindowPreferences(get()) }
     }
 }
 
@@ -114,9 +126,9 @@ class DesktopAppModule(
 
 /**
  * Desktop counterpart of the Android `DomainModule` / `SYDomainModule` / `KMKDomainModule`, built from
- * the shared registration functions in `:data` and `:domain`. Grows with the desktop features:
- * register platform services (source manager, extensions, downloads, trackers) and the interactors
- * that need them here.
+ * the shared registration functions in `:data` and `:domain`, plus the desktop [SourceManager]
+ * (local source only, see [DesktopSourceManager]) and what needs it. Grows with the desktop features:
+ * register platform services (extensions, downloads, trackers) and the interactors that need them here.
  */
 class DesktopDomainModule(
     private val app: Application,
@@ -125,5 +137,14 @@ class DesktopDomainModule(
     override fun InjektRegistrar.registerInjectables() {
         registerDatabaseRepositories(app)
         registerLibraryInteractors()
+
+        addSingletonFactory<SourceManager> {
+            // Same key as SourcePreferences.allowLocalSourceHiddenFolders() on Android.
+            val allowHiddenFiles = get<PreferenceStore>().getBoolean("allow_local_source_hidden_folders", false)
+            DesktopSourceManager(app, get(), get(), get(), allowHiddenFiles::get)
+        }
+        addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
+        addFactory { GetRemoteManga(get()) }
+        addFactory { GetSourcesWithNonLibraryManga(get()) }
     }
 }

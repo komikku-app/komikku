@@ -2,12 +2,16 @@ package app.komikku.desktop
 
 import android.app.Application
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.source.DesktopSourceManager
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.tachiyomi.network.NetworkHelper
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -23,9 +27,14 @@ import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.source.interactor.GetRemoteManga
+import tachiyomi.domain.source.model.StubSource
+import tachiyomi.domain.source.repository.SourceRepository
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.updates.interactor.GetUpdates
+import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -89,5 +98,17 @@ class DesktopInjektTest {
         dataDir.resolve("preferences")
             .resolve(DesktopPreferenceStore.fileNameFor(DesktopPreferenceStore.DEFAULT_STORE_NAME))
             .isFile shouldBe true
+    }
+
+    @Test
+    fun `desktop source manager serves the local source`(): Unit = runBlocking {
+        val sourceManager = Injekt.get<SourceManager>()
+        sourceManager.shouldBeInstanceOf<DesktopSourceManager>()
+        sourceManager.get(LocalSource.ID).shouldBeInstanceOf<LocalSource>()
+        sourceManager.getOrStub(12345L).shouldBeInstanceOf<StubSource>()
+
+        Injekt.get<SourceRepository>().getSources().first().map { it.id } shouldContainExactly listOf(LocalSource.ID)
+        Injekt.get<GetRemoteManga>().shouldBeInstanceOf<GetRemoteManga>()
+        Injekt.get<UiPreferences>().appTheme().get() shouldBe AppTheme.MONET
     }
 }
