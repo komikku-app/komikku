@@ -48,6 +48,7 @@ import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -257,14 +258,14 @@ private fun readerPreferences(): List<Preference> {
 @Composable
 private fun downloadPreferences(): List<Preference> {
     val downloads = remember { Injekt.get<DownloadPreferences>() }
-    val storageDir by remember { Injekt.get<StoragePreferences>().baseStorageDirectory() }.changes().collectAsState(null)
+    val storageDir by remember { Injekt.get<StoragePreferences>().baseStorageDirectory() }.collectAsState()
     return listOf(
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_general),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.InfoPreference(
                     title = stringResource(MR.strings.pref_storage_location) + ": " +
-                        (storageDir?.let { android.net.Uri.parse(it).path } ?: "") + "/downloads",
+                        (android.net.Uri.parse(storageDir).path ?: storageDir) + "/downloads",
                 ),
                 Preference.PreferenceItem.SwitchPreference(downloads.saveChaptersAsCBZ(), stringResource(MR.strings.save_chapter_as_cbz)),
                 Preference.PreferenceItem.SwitchPreference(downloads.splitTallImages(), stringResource(MR.strings.split_tall_images)),

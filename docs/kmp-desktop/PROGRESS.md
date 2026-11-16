@@ -208,6 +208,20 @@ or downloaded by hand from a repo you trust:
 
 ## Deviations from the plan and open issues
 
+- **Phase 8 review fixes.** Backup create / restore moved from the screen model's scope to the
+  app-lifetime `DesktopBackupJobs` (DI singleton; the screen observes its status, cancel is reported as
+  cancelled). "Add tracking" with an enhanced tracker (Komga / Kavita / Suwayomi) binds `match(manga)` +
+  `register` like Android instead of calling their `TODO()` search; tracker searches cancel the previous
+  one and only apply results to the same tracker + query. `DownloadJob` delegates to `DownloaderRunner`,
+  where only the current run writes "running" (a replaced run ending late no longer clears it).
+  `OAuthRedirect.parse` never throws (lenient percent-decoding) and treats base64-padded bare codes
+  (`abc==`) as bare values. Details screen download indicators: per-chapter updates from the status /
+  progress flows, sampled (100 ms) instead of debounced. Reader: "delete after reading" runs every time the
+  last page is reached (`ReaderProgressSaver.onPageSelected` returns `true` then, as Android's
+  `updateChapterProgressOnComplete`), and download-ahead is latched only after the request was made.
+  A login that ends logged out shows `KMR.login_failed`; the download settings read the storage folder
+  through `Preference.collectAsState()`. Tests: `DesktopBackupJobsTest`, `DownloaderRunnerTest`,
+  `ReaderDownloadsTest`, new cases in `OAuthRedirectTest`, `TrackingTest`, `ReaderLogicTest`.
 - **8.4 — settings scope.** Desktop settings are compact lists built from the borrowed `Preference` model,
   not the Android `Settings*Screen` objects (those are bound to activities, navigators, WorkManager and
   Android-only options). Not on desktop: theme previews (`AppThemePreferenceWidget`, list instead), custom
@@ -239,9 +253,8 @@ or downloaded by hand from a repo you trust:
   (Android: WorkManager survives restarts). No network-availability constraint.
 - **8.2 — backup, deviations / gaps.** No automatic (scheduled) backups on desktop (`BackupCreateJob.setupTask`
   is a no-op; `backupInterval` is restored but unused), no sync (`isSync` is always false), no share
-  action for a created backup. `BackupCreator` runs in the caller's coroutine (the screen model), not a
-  background job: leaving the screen cancels it. Restore cannot be cancelled from the UI yet (the
-  service supports cancellation). Restoring does not trigger a library or tracker refresh (Android
+  action for a created backup. Create / restore run in the app-lifetime `DesktopBackupJobs` (not a WorkManager job, no
+  notification): leaving the screen does not stop them, and both can be cancelled from the screen. Restoring does not trigger a library or tracker refresh (Android
   doesn't either). Missing-tracker validation works since 8.3 (logged-out trackers are listed). SY
   `MergedSource` / E-Hentai specific data in backups (merged references, flat metadata) is restored into
   the database but those sources do not exist on desktop.
