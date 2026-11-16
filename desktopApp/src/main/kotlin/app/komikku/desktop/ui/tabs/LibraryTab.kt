@@ -1,7 +1,9 @@
 package app.komikku.desktop.ui.tabs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,7 +17,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -25,9 +30,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -46,11 +53,13 @@ import coil3.compose.AsyncImage
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -90,13 +99,30 @@ data object LibraryHomeScreen : Screen() {
 }
 
 @Composable
-private fun LibraryPages(pages: List<LibraryPage>, onOpen: (Long) -> Unit) {
+private fun LibraryPages(allPages: List<LibraryPage>, onOpen: (Long) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    var query by rememberSaveable { mutableStateOf("") }
+    val pages = remember(allPages, query) { allPages.search(query) }
     val index = selected.coerceIn(0, pages.lastIndex)
     val runner = remember { Injekt.get<LibraryUpdateRunner>() }
+    val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
+    val showCounts by libraryPreferences.categoryNumberOfItems().collectAsState()
+    val unreadBadge by libraryPreferences.unreadBadge().collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
-        // Library refresh (6L.2): the shown category, or the whole library
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+        // Library refresh (6L.2): the shown category, or the whole library; search (8.5)
+        Row(
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier.weight(1f).testTag("library-search"),
+            )
             TextButton(
                 onClick = { runner.start(LibraryUpdateRunner.Target.Category(pages[index].category.id)) },
                 modifier = Modifier.testTag("update-category"),
@@ -113,7 +139,13 @@ private fun LibraryPages(pages: List<LibraryPage>, onOpen: (Long) -> Unit) {
                     Tab(
                         selected = i == index,
                         onClick = { selected = i },
-                        text = { Text(text = page.title(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        text = {
+                            Text(
+                                text = page.title() + if (showCounts) " (${page.manga.size})" else "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
                     )
                 }
             }
@@ -122,7 +154,7 @@ private fun LibraryPages(pages: List<LibraryPage>, onOpen: (Long) -> Unit) {
         if (page.manga.isEmpty()) {
             EmptyScreen(stringRes = MR.strings.information_empty_category)
         } else {
-            LibraryGrid(page.manga, onOpen)
+            LibraryGrid(page.manga, unreadBadge, onOpen)
         }
     }
 }
@@ -132,20 +164,20 @@ private fun LibraryPage.title(): String =
     if (category.isSystemCategory) stringResource(MR.strings.label_default) else category.name
 
 @Composable
-private fun LibraryGrid(manga: List<LibraryManga>, onOpen: (Long) -> Unit) {
+private fun LibraryGrid(manga: List<LibraryManga>, unreadBadge: Boolean, onOpen: (Long) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 140.dp),
         contentPadding = PaddingValues(12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(items = manga, key = { it.manga.id }) { item ->
-            LibraryGridItem(item, onClick = { onOpen(item.manga.id) })
+            LibraryGridItem(item, unreadBadge, onClick = { onOpen(item.manga.id) })
         }
     }
 }
 
 @Composable
-private fun LibraryGridItem(item: LibraryManga, onClick: () -> Unit) {
+private fun LibraryGridItem(item: LibraryManga, unreadBadge: Boolean, onClick: () -> Unit) {
     val cover = remember(item.manga) { item.manga.asMangaCover() }
     Column(modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onClick).padding(6.dp)) {
         Surface(
@@ -163,6 +195,20 @@ private fun LibraryGridItem(item: LibraryManga, onClick: () -> Unit) {
                     .fillMaxSize()
                     .clip(RoundedCornerShape(6.dp)),
             )
+            if (unreadBadge && item.unreadCount > 0) {
+                Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(4.dp)) {
+                    Text(
+                        text = item.unreadCount.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                            .testTag("unread-badge-${item.manga.id}"),
+                    )
+                }
+            }
         }
         Text(
             text = item.manga.title,

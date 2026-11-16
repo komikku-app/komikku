@@ -101,3 +101,24 @@ fun libraryPages(categories: List<Category>, libraryManga: List<LibraryManga>): 
             )
         }
 }
+
+/**
+ * Library search (8.5, Android `LibraryScreenModel` text search subset): keeps manga whose title, author,
+ * artist or one of the genres contains [query] (case-insensitive); blank = everything. Pages stay (empty
+ * pages show the "empty category" message).
+ */
+fun List<LibraryPage>.search(query: String): List<LibraryPage> {
+    val q = query.trim()
+    if (q.isEmpty()) return this
+    return map { page ->
+        page.copy(
+            manga = page.manga.filter { item ->
+                val manga = item.manga
+                manga.title.contains(q, ignoreCase = true) ||
+                    manga.author?.contains(q, ignoreCase = true) == true ||
+                    manga.artist?.contains(q, ignoreCase = true) == true ||
+                    manga.genre.orEmpty().any { it.equals(q, ignoreCase = true) }
+            },
+        )
+    }
+}
