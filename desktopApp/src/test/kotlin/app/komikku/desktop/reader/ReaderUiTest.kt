@@ -77,6 +77,7 @@ class ReaderUiTest {
 
     @Test
     fun `library to details to reader, page turns save progress and history`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        Injekt.get<app.komikku.desktop.ui.reader.ReaderLauncher>().close()
         setContent { KomikkuApp(context = app) }
 
         // Library → details: chapters are fetched from the source and stored
@@ -130,6 +131,40 @@ class ReaderUiTest {
         onNodeWithTag("details-continue").performClick()
         waitForTag("reader")
         waitForText("1 / 3")
+        Unit
+    }
+
+    @Test
+    fun `settings switch the manga to webtoon, which scrolls and saves progress`() = runDesktopComposeUiTest(width = 1000, height = 700) {
+        val manga = TestLibrary.insertManga(FakeHttpSource.ID, "/manga/webtoon", "Webtoon manga", favorite = true)
+        val chapter = TestLibrary.insertChapters(manga, "/chapter/7" to "Chapter 7").single()
+        setContent { KomikkuApp(context = app) }
+        runOnIdle { Injekt.get<app.komikku.desktop.ui.reader.ReaderLauncher>().open(manga.id, chapter.id) }
+        waitForTag("paged-viewer")
+        waitForText("1 / 3")
+
+        // Settings panel: reading mode stored in the manga's viewer flags (Android: SetMangaViewerFlags)
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.M) }
+        waitForTag("reader-settings-button")
+        onNodeWithTag("reader-settings-button").performClick()
+        waitForTag("reading-mode-WEBTOON")
+        onNodeWithTag("reading-mode-WEBTOON").performClick()
+        waitForTag("webtoon-viewer")
+        waitForDb {
+            runBlocking { Injekt.get<tachiyomi.domain.manga.interactor.GetManga>().await(manga.id)!!.viewerFlags } and 0x7L == 0x4L
+        }
+
+        // Close settings + menu, then scroll to the end with the keyboard: progress follows the list
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+        waitForTag("reader-settings", present = false)
+        waitForTag("page-tile-0")
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.MoveEnd) }
+        waitForDb {
+            runBlocking { Injekt.get<ChapterRepository>().getChapterById(chapter.id)!!.lastPageRead } >= 1L
+        }
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+        waitForTag("reader", present = false)
         Unit
     }
 }
