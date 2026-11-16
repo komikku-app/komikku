@@ -8,11 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
+import app.komikku.desktop.ui.reader.ReaderHost
+import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopShortcuts
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.desktop.window.rememberPersistedWindowState
@@ -57,18 +60,29 @@ fun ApplicationScope.KomikkuWindow(
         remember(window) {
             window.minimumSize = Dimension(DesktopWindowPreferences.MIN_WIDTH, DesktopWindowPreferences.MIN_HEIGHT)
         }
-        KomikkuApp(context = app, shortcuts = shortcuts)
+        KomikkuApp(
+            context = app,
+            shortcuts = shortcuts,
+            onToggleFullscreen = {
+                windowState.placement = if (windowState.placement == WindowPlacement.Fullscreen) {
+                    WindowPlacement.Floating
+                } else {
+                    WindowPlacement.Fullscreen
+                }
+            },
+        )
     }
 }
 
 /**
  * Window content: compat [LocalContext] (for `stringResource` & co.), the desktop Coil image loader,
- * the app theme, the snackbar host behind compat toasts and the navigation shell.
+ * the app theme, the snackbar host behind compat toasts, the navigation shell and the reader above it.
  */
 @Composable
 fun KomikkuApp(
     context: Context,
     shortcuts: DesktopShortcuts? = null,
+    onToggleFullscreen: (() -> Unit)? = null,
 ) {
     setSingletonImageLoaderFactory { platformContext ->
         DesktopImageLoader.create(
@@ -81,7 +95,9 @@ fun KomikkuApp(
     CompositionLocalProvider(LocalContext provides context) {
         DesktopTheme {
             DesktopToastHost {
-                HomeShell(shortcuts = shortcuts)
+                ReaderHost(launcher = remember { Injekt.get<ReaderLauncher>() }, onToggleFullscreen = onToggleFullscreen) {
+                    HomeShell(shortcuts = shortcuts)
+                }
             }
         }
     }

@@ -152,6 +152,7 @@ run {
         "eu/kanade/tachiyomi/ui/reader/setting/ReaderBottomButton.kt",
         "eu/kanade/tachiyomi/ui/reader/setting/ReaderOrientation.kt",
         "eu/kanade/tachiyomi/ui/reader/setting/ReaderPreferences.kt",
+        "eu/kanade/tachiyomi/ui/reader/viewer/MissingChapters.kt",
     )
 }
 
