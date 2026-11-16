@@ -15,7 +15,8 @@ See [`PLAN.md`](PLAN.md). Update this file in the same commit as each step.
 | 1.1 `:desktop:android-compat` | done | `beac8001db` | Desktop-only `kotlin("jvm")` module, written from scratch (Apache-2.0). First batch of Android / AndroidX / UniFile FQNs for `core:common` (table below). 24 unit tests (`:desktop:android-compat:test`): Uri, Base64, SharedPreferences, CookieManager, Html, UniFile |
 | 1.2 Convert `:core:common` | done | `58203c5f63` | `mihon.library.kmp`; Android-only AARs (preference-ktx, image-decoder, UniFile, libarchive, quickjs-android, xlog, exifinterface) → `androidMain.dependencies`; desktop: `api(:desktop:android-compat)`. Includes the file moves listed below (needed for the desktop target to compile at all) and the minimal `expect`/`actual` pairs (`CloudflareInterceptor`, `StringDesc.toString(Context)`). Logging: `logcat` is multiplatform (0.4, `logcat-jvm`), desktop backend `DesktopLogcatLogger`; `exh.log` unchanged on both platforms through an xLog shim in compat. Android ABI of `core:common` unchanged (javap diff, see below). Catalog: `serialization-xml-core-jvm` |
 | 1.3 Desktop counterparts in `core:common` | done | `d7d402a411` | `desktopMain`: `ImageUtil` subset (same signatures for `isImage`, `findImageType`, `getExtensionFromMimeType`, `isAnimatedAndSupported`, `ImageType`; magic-byte detection for JPEG/PNG/GIF/WebP(+animated)/JXL/AVIF/HEIF in pure Kotlin, no native decoder), `DesktopStorageFolderProvider` (`<dataDir>/storage`), pass-through `CloudflareInterceptor` (1.2). `NetworkHelper`, `AndroidCookieJar`, `Requests`, `OkHttpExtensions`, rate-limit / user-agent / uncaught-exception interceptors and DoH stay shared, unchanged. `:core:common:desktopTest` (ImageUtil) |
-| 1.4 Desktop JavaScript engine | done | see log | `app.cash.quickjs.QuickJs` in compat backed by QuickJS through `io.github.dokar3:quickjs-kt` 1.0.15 (Maven Central, bundled natives); `JavaScriptEngine` unchanged. Tests: `QuickJsTest` (compat) and `JavaScriptEngineTest` (`:core:common:desktopTest`) |
+| 1.4 Desktop JavaScript engine | done | `d41ac22579` | `app.cash.quickjs.QuickJs` in compat backed by QuickJS through `io.github.dokar3:quickjs-kt` 1.0.15 (Maven Central, bundled natives); `JavaScriptEngine` unchanged. Tests: `QuickJsTest` (compat) and `JavaScriptEngineTest` (`:core:common:desktopTest`) |
+| 1.5 Desktop string helpers | done | see log | `Localize.kt` unchanged and working on desktop (1.2 `StringDesc.toString(Context)` expect → moko `localized()`); new context-free `stringResource` / `pluralStringResource` (same package, `desktopMain/…/DesktopLocalize.kt`) for desktop code. `LocalizeTest` (`:core:common:desktopTest`): plain, formatted (`\"` workaround), plurals, locale switch through `StringDesc.localeType` |
 
 ## Files moved out of upstream paths
 
@@ -125,6 +126,11 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
   natives become a problem: Mozilla Rhino (pure JVM, any OS, but incomplete ES2015+ support and
   slower). `QuickJs.set` / `get` (binding Java interfaces) are not implemented; no known extension
   needs them.
+- **1.5 — context-free helpers are desktop-only.** Shared code keeps using
+  `Context.stringResource(...)` (a compat `Context` is always available on desktop). The top-level
+  `stringResource(...)` functions exist only in `desktopMain`; making them shared would need an
+  Android implementation that finds a `Context` on its own (e.g. through Injekt), which is not
+  needed yet. Desktop UI language = `StringDesc.localeType` (system locale by default).
 - **0.2 — compose name clash.** Renaming only the `Project.compose` accessor in buildSrc is not
   enough: Gradle registers every version catalog as a project extension with the catalog's name, so
   `org.jetbrains.compose` fails with "Cannot add extension with name 'compose'". Fix: the catalog is
