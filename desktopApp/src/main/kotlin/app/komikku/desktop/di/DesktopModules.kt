@@ -3,8 +3,15 @@ package app.komikku.desktop.di
 import android.app.Application
 import app.cash.sqldelight.db.SqlDriver
 import app.komikku.desktop.compat.DesktopPreferenceStores
+import app.komikku.desktop.extension.ExtensionRuntime
+import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.window.DesktopWindowPreferences
+import app.komikku.shared.extension.GetPlatformExtensionsByType
+import app.komikku.shared.extension.PlatformExtensionManager
+import eu.kanade.domain.extension.interactor.GetExtensionSources
+import eu.kanade.domain.extension.interactor.RefreshExtensionStores
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -14,6 +21,14 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
+import mihon.data.extension.repository.ExtensionStoreRepositoryImpl
+import mihon.data.extension.service.ExtensionStoreService
+import mihon.domain.extension.interactor.AddExtensionStore
+import mihon.domain.extension.interactor.GetExtensionStoreCountAsFlow
+import mihon.domain.extension.interactor.GetExtensionStores
+import mihon.domain.extension.interactor.RemoveExtensionStore
+import mihon.domain.extension.interactor.UpdateExtensionStores
+import mihon.domain.extension.repository.ExtensionStoreRepository
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
@@ -48,9 +63,9 @@ import java.io.File
  * [PreferenceStore] (the process-wide instance from [DesktopPreferenceStores], shared with
  * `SharedPreferences` users) and the preference classes that live in shared modules.
  *
- * App-module preference classes are added as `:app-shared` borrows them: `UiPreferences` (4.2);
- * `SourcePreferences`, `ReaderPreferences`, `TrackPreferences`, `BasePreferences`, … are not available
- * on desktop yet. [DesktopWindowPreferences] is desktop-only.
+ * App-module preference classes are added as `:app-shared` borrows them: `UiPreferences` (4.2),
+ * `SourcePreferences` (5.2); `ReaderPreferences`, `TrackPreferences`, `BasePreferences`, … are not
+ * available on desktop yet. [DesktopWindowPreferences] is desktop-only.
  */
 class DesktopPreferenceModule(
     private val dataDir: File,
@@ -75,6 +90,7 @@ class DesktopPreferenceModule(
         }
         registerDomainPreferences()
         addSingletonFactory { UiPreferences(get()) }
+        addSingletonFactory { SourcePreferences(get()) }
         addSingletonFactory { DesktopWindowPreferences(get()) }
     }
 }
@@ -126,22 +142,57 @@ class DesktopAppModule(
 
 /**
  * Desktop counterpart of the Android `DomainModule` / `SYDomainModule` / `KMKDomainModule`, built from
- * the shared registration functions in `:data` and `:domain`, plus the desktop [SourceManager]
- * (local source only, see [DesktopSourceManager]) and what needs it. Grows with the desktop features:
- * register platform services (extensions, downloads, trackers) and the interactors that need them here.
+ * the shared registration functions in `:data` and `:domain`, plus the desktop platform services:
+ * extension stores (same repository / service as Android), the extension runtime and
+ * [DesktopExtensionManager] (APKs under `<dataDir>/extensions`), the desktop [SourceManager] (local +
+ * extension sources, see [DesktopSourceManager]) and what needs them.
  */
 class DesktopDomainModule(
     private val app: Application,
+    private val dataDir: File,
 ) : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
         registerDatabaseRepositories(app)
         registerLibraryInteractors()
 
+        // Extension stores (Android: DomainModule / KMKDomainModule)
+        addSingletonFactory { ExtensionStoreService(get(), get(), get()) }
+        addSingletonFactory<ExtensionStoreRepository> { ExtensionStoreRepositoryImpl(get(), get()) }
+        addFactory { AddExtensionStore(get()) }
+        addFactory { GetExtensionStoreCountAsFlow(get()) }
+        addFactory { GetExtensionStores(get()) }
+        addFactory { RemoveExtensionStore(get()) }
+        addFactory { UpdateExtensionStores(get()) }
+        addFactory { RefreshExtensionStores(get(), get()) }
+
+        // Extensions
+        addSingletonFactory { ExtensionRuntime(File(dataDir, "extensions")) }
+        addSingletonFactory {
+            DesktopExtensionManager(
+                context = app,
+                extensionsDir = File(dataDir, "extensions"),
+                runtime = get(),
+                network = get(),
+                storeRepository = get(),
+                preferences = get(),
+                exhPreferences = get(),
+            )
+        }
+        addSingletonFactory<PlatformExtensionManager> { get<DesktopExtensionManager>() }
+        addFactory { GetPlatformExtensionsByType(get(), get()) }
+        addFactory { GetExtensionSources(get()) }
+
         addSingletonFactory<SourceManager> {
-            // Same key as SourcePreferences.allowLocalSourceHiddenFolders() on Android.
-            val allowHiddenFiles = get<PreferenceStore>().getBoolean("allow_local_source_hidden_folders", false)
-            DesktopSourceManager(app, get(), get(), get(), allowHiddenFiles::get)
+            DesktopSourceManager(
+                context = app,
+                fileSystem = get(),
+                coverManager = get(),
+                stubSourceRepository = get(),
+                allowHiddenFiles = get<SourcePreferences>().allowLocalSourceHiddenFolders()::get,
+                extensionManager = get(),
+                exhPreferences = get(),
+            )
         }
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetRemoteManga(get()) }

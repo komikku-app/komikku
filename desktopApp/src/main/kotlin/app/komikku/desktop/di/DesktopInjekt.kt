@@ -11,7 +11,7 @@ import java.io.File
  *
  * Everything lives under [dataDir]: `preferences/` (preference stores), `databases/tachiyomi.db`,
  * `files/`, `cache/` (compat `Context`), `storage/` (default storage folder: local source,
- * downloads, backups). Call [init] once per process, before anything resolves from [Injekt].
+ * downloads, backups), `extensions/` (installed extension APKs, converted jars). Call [init] once per process, before anything resolves from [Injekt].
  */
 object DesktopInjekt {
 
@@ -19,7 +19,7 @@ object DesktopInjekt {
         val app = Application(dataDir)
         Injekt.importModule(DesktopPreferenceModule(dataDir))
         Injekt.importModule(DesktopAppModule(app, DesktopDatabase.defaultFile(dataDir)))
-        Injekt.importModule(DesktopDomainModule(app))
+        Injekt.importModule(DesktopDomainModule(app, dataDir))
         return app
     }
 }

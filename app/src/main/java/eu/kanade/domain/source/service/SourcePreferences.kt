@@ -2,13 +2,13 @@ package eu.kanade.domain.source.service
 
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
-import eu.kanade.tachiyomi.util.system.LocaleHelper
 import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.core.common.preference.getLongArray
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import java.util.Locale
 
 class SourcePreferences(
     private val preferenceStore: PreferenceStore,
@@ -21,7 +21,15 @@ class SourcePreferences(
         LibraryDisplayMode.Serializer::deserialize,
     )
 
-    fun enabledLanguages() = preferenceStore.getStringSet("source_languages", LocaleHelper.getDefaultEnabledLanguages())
+    fun enabledLanguages() = preferenceStore.getStringSet(
+        "source_languages",
+        // KMK -->
+        // LocaleHelper.getDefaultEnabledLanguages(),
+        // Same value as LocaleHelper.getDefaultEnabledLanguages(); LocaleHelper (Android, app-only) is not
+        // visible from :app-shared, which compiles this file for desktop too.
+        setOf("all", "en", Locale.getDefault().language),
+        // KMK <--
+    )
 
     fun disabledSources() = preferenceStore.getStringSet("hidden_catalogues", emptySet())
 

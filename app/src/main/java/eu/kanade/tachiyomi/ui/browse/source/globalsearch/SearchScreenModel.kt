@@ -260,10 +260,14 @@ abstract class SearchScreenModel(
     }
 }
 
-enum class SourceFilter {
-    All,
-    PinnedOnly,
-}
+// KMK -->
+// `SourceFilter` moved to :app-shared (same package, app-shared/src/main/kotlin/.../SourceFilter.kt) so the
+// borrowed `SourcePreferences` compiles for desktop (docs/kmp-desktop/PROGRESS.md, 5.2).
+// enum class SourceFilter {
+//     All,
+//     PinnedOnly,
+// }
+// KMK <--
 
 sealed interface SearchItemResult {
     data object Loading : SearchItemResult

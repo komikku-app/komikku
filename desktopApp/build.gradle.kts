@@ -46,6 +46,8 @@ dependencies {
     // Shared UI: presentation-core components, app theme, Voyager host, desktop Coil setup.
     implementation(projects.presentationCore)
     implementation(projects.appShared)
+    // Extensions: APK reading, dex2jar conversion, class loading (Phase 5).
+    implementation(projects.desktop.extensionRuntime)
     implementation(kotlinx.serialization.json)
     implementation(kotlinx.serialization.protobuf)
     implementation(kotlinx.serialization.xml)
@@ -55,6 +57,8 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(kotlinx.coroutines.test)
     testImplementation(libs.compose.multiplatform.ui.test)
+    // Fixture extension APKs (generated, signed with test keys) for the extension manager tests.
+    testImplementation(testFixtures(projects.desktop.extensionRuntime))
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

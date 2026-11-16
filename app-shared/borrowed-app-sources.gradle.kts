@@ -72,6 +72,24 @@ run {
     shared(
         "eu/kanade/presentation/util/Navigator.kt",
     )
+
+    // Source preferences and what they reference (5.2; extensions on desktop). SourceFilter moved to
+    // app-shared/src/main/kotlin; SourcePreferences no longer calls the Android-only LocaleHelper.
+    shared(
+        "eu/kanade/domain/source/service/SourcePreferences.kt",
+        "eu/kanade/domain/source/interactor/SetMigrateSorting.kt",
+        "mihon/domain/migration/models/MigrationFlag.kt",
+    )
+
+    // Extension models and the platform-neutral extension interactors (5.2)
+    shared(
+        "eu/kanade/tachiyomi/extension/model/InstallStep.kt",
+        "eu/kanade/tachiyomi/extension/model/LoadResult.kt",
+        "eu/kanade/domain/extension/model/Extensions.kt",
+        "eu/kanade/domain/extension/interactor/GetExtensionSources.kt",
+        "eu/kanade/domain/extension/interactor/RefreshExtensionStores.kt",
+        "exh/source/BlacklistedSources.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
