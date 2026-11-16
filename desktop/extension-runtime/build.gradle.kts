@@ -53,3 +53,15 @@ dependencies {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+// Link check (step 5.3, docs/kmp-desktop/PROGRESS.md "Link check"): lists the classes / methods / fields
+// that extension code references but the desktop host (compat layer, source-api, network stack, JDK)
+// lacks. Takes local files only:
+//   ./gradlew :desktop:extension-runtime:linkCheck --args="path/to/extension.apk path/to/dir --output=build/linkcheck.txt"
+tasks.register<JavaExec>("linkCheck") {
+    group = "verification"
+    description = "Reports android.* / androidx.* / … symbols that extension APKs or jars use but the desktop host lacks."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("app.komikku.desktop.extension.linkcheck.LinkCheckMainKt")
+    workingDir = rootDir
+}
