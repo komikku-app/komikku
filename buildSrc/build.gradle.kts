@@ -11,7 +11,9 @@ dependencies {
 
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
     implementation(files(androidx.javaClass.superclass.protectionDomain.codeSource.location))
-    implementation(files(compose.javaClass.superclass.protectionDomain.codeSource.location))
+    // KMK -->
+    implementation(files(composeLibs.javaClass.superclass.protectionDomain.codeSource.location))
+    // KMK <--
     implementation(files(kotlinx.javaClass.superclass.protectionDomain.codeSource.location))
 }
 

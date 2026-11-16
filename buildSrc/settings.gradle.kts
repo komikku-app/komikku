@@ -6,9 +6,11 @@ dependencyResolutionManagement {
         create("androidx") {
             from(files("../gradle/androidx.versions.toml"))
         }
-        create("compose") {
+        // KMK --> Must match the catalog name in the root settings.gradle.kts
+        create("composeLibs") {
             from(files("../gradle/compose.versions.toml"))
         }
+        // KMK <--
         create("kotlinx") {
             from(files("../gradle/kotlinx.versions.toml"))
         }

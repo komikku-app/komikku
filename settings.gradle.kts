@@ -23,9 +23,13 @@ dependencyResolutionManagement {
         create("androidx") {
             from(files("gradle/androidx.versions.toml"))
         }
-        create("compose") {
+        // KMK --> Named `composeLibs` (not `compose`) so the `org.jetbrains.compose` plugin can register its
+        // own `compose` extension. Build scripts keep using `compose.*` through the `Project.compose`
+        // accessor in buildSrc (ComposeCatalogAccessor.kt).
+        create("composeLibs") {
             from(files("gradle/compose.versions.toml"))
         }
+        // KMK <--
         create("sylibs") {
             from(files("gradle/sy.versions.toml"))
         }
