@@ -3,6 +3,9 @@ package app.komikku.desktop.ui.tabs
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.tachiyomi.data.download.DownloadCache
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -16,22 +19,38 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.interactor.GetLibraryManga
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * Desktop library state: the user's categories as pages, each with its library manga, read through
- * the shared interactors. A first, read-only cut of the Android `LibraryScreenModel` (no filters,
- * sorting options, search or selection yet; Phase 6.3).
+ * the shared interactors. A first, read-only cut of the Android `LibraryScreenModel` (only the global
+ * "downloaded only" filter; no per-library filters, sorting options, search or selection yet; Phase 6.3).
  */
 class LibraryScreenModel(
     getCategories: GetCategories = Injekt.get(),
     getLibraryManga: GetLibraryManga = Injekt.get(),
+    basePreferences: BasePreferences = Injekt.get(),
+    downloadManager: DownloadManager = Injekt.get(),
+    downloadCache: DownloadCache = Injekt.get(),
 ) : StateScreenModel<LibraryScreenModel.State>(State.Loading) {
 
     init {
         screenModelScope.launch {
-            combine(getCategories.subscribe(), getLibraryManga.subscribe(), ::libraryPages)
+            // "Downloaded only" (More tab) keeps local manga and manga with downloaded chapters, like Android.
+            val library = combine(
+                getLibraryManga.subscribe(),
+                basePreferences.downloadedOnly().changes(),
+                downloadCache.changes,
+            ) { manga, downloadedOnly, _ ->
+                if (!downloadedOnly) {
+                    manga
+                } else {
+                    manga.filter { it.manga.isLocal() || downloadManager.getDownloadCount(it.manga) > 0 }
+                }
+            }
+            combine(getCategories.subscribe(), library, ::libraryPages)
                 .flowOn(Dispatchers.IO)
                 .catch { e ->
                     logcat(LogPriority.ERROR, e) { "Failed to load the library" }

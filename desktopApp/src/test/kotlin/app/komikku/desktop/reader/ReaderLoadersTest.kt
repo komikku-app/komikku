@@ -144,14 +144,17 @@ class ReaderLoadersTest {
         archivePages shouldHaveSize 4
         archivePages.all { it.status == Page.State.Ready } shouldBe true
         archivePages.map { p -> p.stream!!().use { ImageIO.read(it).height } } shouldBe listOf(61, 62, 63, 64)
-        archiveChapter.pageLoader!!::class.simpleName shouldStartWith "Archive"
+        // As on Android: the borrowed DownloadProvider resolves local manga to the local source folder, so
+        // `isChapterDownloaded(skipCache = true)` is true and ChapterLoader picks DownloadPageLoader (8.1;
+        // the pre-8.1 desktop stand-in returned false for local chapters).
+        archiveChapter.pageLoader!!::class.simpleName shouldStartWith "Download"
         archiveChapter.unref()
 
         val directoryChapter = ReaderChapter(directory).also { it.ref() }
         loader.loadChapter(directoryChapter)
         directoryChapter.pages!! shouldHaveSize 2
         directoryChapter.pages!!.first().stream!!().use { ImageIO.read(it).width } shouldBe 30
-        directoryChapter.pageLoader!!::class.simpleName shouldStartWith "Directory"
+        directoryChapter.pageLoader!!::class.simpleName shouldStartWith "Download"
         directoryChapter.unref()
     }
 }

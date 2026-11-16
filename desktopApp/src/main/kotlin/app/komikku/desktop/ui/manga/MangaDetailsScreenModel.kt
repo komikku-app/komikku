@@ -7,9 +7,16 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.downloadedFilter
+import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -52,6 +59,8 @@ class MangaDetailsScreenModel(
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
+    private val downloadCache: DownloadCache = Injekt.get(),
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val readerLauncher: ReaderLauncher = Injekt.get(),
 ) : StateScreenModel<MangaDetailsScreenModel.State>(State()) {
 
@@ -65,9 +74,17 @@ class MangaDetailsScreenModel(
         /** Next chapter to read (resume / start), `null` when everything is read. */
         val nextChapter: Chapter? = null,
         val dialog: Dialog? = null,
+        /** All chapters of the manga (unfiltered), for the download actions. */
+        val allChapters: List<Chapter> = emptyList(),
+        /** Download state + progress per chapter id (absent = not downloaded / local source). */
+        val downloads: Map<Long, ChapterDownload> = emptyMap(),
     ) {
         val selectedChapters: List<Chapter> get() = chapters.filter { it.id in selection }
+
+        fun downloadState(chapterId: Long): Download.State = downloads[chapterId]?.state ?: Download.State.NOT_DOWNLOADED
     }
+
+    data class ChapterDownload(val state: Download.State, val progress: Int = 0)
 
     sealed interface Dialog {
         data class ChangeCategories(val categories: List<Category>, val selected: Set<Long>) : Dialog
@@ -86,8 +103,10 @@ class MangaDetailsScreenModel(
                         chapters = displayed,
                         selection = state.selection.filterTo(mutableSetOf()) { id -> displayed.any { it.id == id } },
                         nextChapter = next,
+                        allChapters = chapters,
                     )
                 }
+                refreshDownloads()
                 if (!fetchedOnOpen) {
                     fetchedOnOpen = true
                     // Android fetches when the manga was never initialized or has no chapters yet.
@@ -95,6 +114,76 @@ class MangaDetailsScreenModel(
                 }
             }
         }
+    }
+
+    init {
+        // Android: `MangaScreenModel` observes the queue, status / progress flows and the download cache.
+        screenModelScope.launch {
+            merge(
+                downloadManager.queueState.map { },
+                downloadManager.statusFlow().map { },
+                downloadManager.progressFlow().map { },
+                downloadCache.changes,
+            )
+                .debounce(100)
+                .collectLatest { refreshDownloads() }
+        }
+    }
+
+    private suspend fun refreshDownloads() {
+        val manga = state.value.manga ?: return
+        if (manga.isLocal()) return
+        val chapters = state.value.allChapters
+        val downloads = withIOContext {
+            chapters.mapNotNull { chapter ->
+                val queued = downloadManager.getQueuedDownloadOrNull(chapter.id)
+                when {
+                    queued != null -> chapter.id to ChapterDownload(queued.status, queued.progress)
+                    downloadManager.isChapterDownloaded(chapter.name, chapter.scanlator, chapter.url, manga.ogTitle, manga.source) ->
+                        chapter.id to ChapterDownload(Download.State.DOWNLOADED, 100)
+                    else -> null
+                }
+            }.toMap()
+        }
+        mutableState.update { it.copy(downloads = downloads) }
+    }
+
+    /** Queues [chapters] (Android `runChapterDownloadActions(START)`); restarts the queue after errors. */
+    fun download(chapters: List<Chapter>) {
+        selectAll(false)
+        val manga = state.value.manga ?: return
+        if (manga.isLocal() || chapters.isEmpty()) return
+        val hadErrors = chapters.any { state.value.downloadState(it.id) == Download.State.ERROR }
+        downloadManager.downloadChapters(manga, chapters)
+        if (hadErrors) downloadManager.startDownloads()
+    }
+
+    fun startDownloadNow(chapter: Chapter) {
+        screenModelScope.launch { withIOContext { downloadManager.startDownloadNow(chapter.id) } }
+    }
+
+    fun cancelDownload(chapter: Chapter) {
+        val download = downloadManager.getQueuedDownloadOrNull(chapter.id) ?: return
+        downloadManager.cancelQueuedDownloads(listOf(download))
+    }
+
+    /** Deletes the downloads of [chapters] (Android `deleteChapters`: category exclusions ignored). */
+    fun deleteDownloads(chapters: List<Chapter>) {
+        selectAll(false)
+        val manga = state.value.manga ?: return
+        if (chapters.isEmpty()) return
+        downloadManager.deleteChapters(chapters, manga, sourceManager.getOrStub(manga.source), ignoreCategoryExclusion = true)
+    }
+
+    /** Download menu (Android `runDownloadAction`). */
+    fun runDownloadAction(action: DownloadAction) {
+        val state = state.value
+        val manga = state.manga ?: return
+        val source = if (readerPreferences.skipFiltered().get()) state.chapters else state.allChapters
+        val chapters = ChapterListActions.chaptersToDownload(manga, source, action) {
+            state.downloadState(it.id) == Download.State.NOT_DOWNLOADED
+        }
+        download(chapters)
     }
 
     /** Android `ChapterFilter.applyFilters` minus the sort (unread / bookmarked / downloaded filters). */

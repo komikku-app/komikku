@@ -13,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import app.komikku.desktop.ui.more.MoreTab
 import app.komikku.desktop.ui.tabs.BrowseTab
 import app.komikku.desktop.ui.tabs.HistoryTab
 import app.komikku.desktop.ui.tabs.LibraryTab
-import app.komikku.desktop.ui.tabs.MoreTab
 import app.komikku.desktop.ui.tabs.UpdatesTab
 import app.komikku.desktop.window.DesktopShortcuts
 import cafe.adriel.voyager.navigator.tab.CurrentTab

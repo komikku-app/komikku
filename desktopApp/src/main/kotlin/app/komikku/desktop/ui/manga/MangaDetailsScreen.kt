@@ -21,7 +21,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DoneAll
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
@@ -57,12 +59,16 @@ import app.komikku.desktop.ui.browse.CoverItem
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.download.model.Download
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.source.local.isLocal
 import java.text.DateFormat
 import java.util.Date
 
@@ -87,6 +93,7 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 IconButton(onClick = model::refresh, enabled = !state.isRefreshing) {
                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(KMR.strings.desktop_refresh))
                 }
+                if (manga != null && !manga.isLocal()) DownloadMenu(model::runDownloadAction)
                 if (manga != null) SortMenu(manga, model::setSorting)
             },
         ) {
@@ -135,6 +142,35 @@ private fun SortMenu(manga: Manga, onSort: (Long) -> Unit) {
 }
 
 @Composable
+private fun DownloadMenu(onAction: (DownloadAction) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }, modifier = Modifier.testTag("details-download-menu")) {
+            Icon(Icons.Outlined.Download, contentDescription = stringResource(MR.strings.manga_download))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf(
+                DownloadAction.NEXT_1_CHAPTER to pluralStringResource(MR.plurals.download_amount, 1, 1),
+                DownloadAction.NEXT_5_CHAPTERS to pluralStringResource(MR.plurals.download_amount, 5, 5),
+                DownloadAction.NEXT_10_CHAPTERS to pluralStringResource(MR.plurals.download_amount, 10, 10),
+                DownloadAction.NEXT_25_CHAPTERS to pluralStringResource(MR.plurals.download_amount, 25, 25),
+                DownloadAction.UNREAD_CHAPTERS to stringResource(MR.strings.download_unread),
+                DownloadAction.BOOKMARKED_CHAPTERS to stringResource(MR.strings.download_bookmarked),
+            ).forEach { (action, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        expanded = false
+                        onAction(action)
+                    },
+                    modifier = Modifier.testTag("download-action-${action.name}"),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SelectionBar(state: MangaDetailsScreenModel.State, model: MangaDetailsScreenModel) {
     val selected = state.selectedChapters
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
@@ -155,6 +191,14 @@ private fun SelectionBar(state: MangaDetailsScreenModel.State, model: MangaDetai
             }
             IconButton(onClick = { model.bookmark(selected, false) }) {
                 Icon(Icons.Outlined.BookmarkRemove, contentDescription = stringResource(MR.strings.action_remove_bookmark))
+            }
+            if (state.manga?.isLocal() == false) {
+                IconButton(onClick = { model.download(selected) }, modifier = Modifier.testTag("selection-download")) {
+                    Icon(Icons.Outlined.Download, contentDescription = stringResource(MR.strings.manga_download))
+                }
+                IconButton(onClick = { model.deleteDownloads(selected) }, modifier = Modifier.testTag("selection-delete")) {
+                    Icon(Icons.Outlined.Delete, contentDescription = stringResource(MR.strings.action_delete))
+                }
             }
             if (selected.size == 1) {
                 TextButton(onClick = { model.markPreviousRead(selected.single()) }) {
@@ -235,6 +279,15 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
                 selectionMode = state.selection.isNotEmpty(),
                 onClick = { if (state.selection.isNotEmpty()) model.toggleSelection(chapter) else model.openReader(chapter) },
                 onToggleSelection = { model.toggleSelection(chapter) },
+                download = if (manga.isLocal()) null else state.downloads[chapter.id] ?: NotDownloaded,
+                onDownloadAction = { action ->
+                    when (action) {
+                        ChapterDownloadAction.START -> model.download(listOf(chapter))
+                        ChapterDownloadAction.START_NOW -> model.startDownloadNow(chapter)
+                        ChapterDownloadAction.CANCEL -> model.cancelDownload(chapter)
+                        ChapterDownloadAction.DELETE -> model.deleteDownloads(listOf(chapter))
+                    }
+                },
             )
         }
     }
@@ -247,6 +300,8 @@ private fun ChapterRow(
     selectionMode: Boolean,
     onClick: () -> Unit,
     onToggleSelection: () -> Unit,
+    download: MangaDetailsScreenModel.ChapterDownload?,
+    onDownloadAction: (ChapterDownloadAction) -> Unit,
 ) {
     val details = buildList {
         if (chapter.dateUpload > 0) add(DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(chapter.dateUpload)))
@@ -279,6 +334,7 @@ private fun ChapterRow(
             }
         },
         supportingContent = details.takeIf { it.isNotEmpty() }?.let { { Text(it.joinToString(" • ")) } },
+        trailingContent = download?.let { { ChapterDownloadIndicator(chapter.id, it, onDownloadAction) } },
     )
 }
 
@@ -309,3 +365,5 @@ private fun CategoryDialog(dialog: MangaDetailsScreenModel.Dialog.ChangeCategori
         dismissButton = { TextButton(onClick = model::dismissDialog) { Text(stringResource(MR.strings.action_cancel)) } },
     )
 }
+
+private val NotDownloaded = MangaDetailsScreenModel.ChapterDownload(Download.State.NOT_DOWNLOADED)

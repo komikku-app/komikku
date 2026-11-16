@@ -41,6 +41,7 @@ See [`PLAN.md`](PLAN.md). Update this file in the same commit as each step.
 | 7.4 Webtoon viewer | done (basic) | `4c3696b1d5`, `b5ed1cf4d5` | `WebtoonViewer`: `LazyColumn` of the chapter's items, side padding from `webtoonSidePadding()`, strips stacked, stable item heights once a page's aspect is known (kept after cache eviction), native wheel scrolling, keyboard scroll (`animateScrollBy`), Ctrl+wheel zoom, reaching the next-chapter item opens the next chapter. `ReaderUiTest` (settings → webtoon, keyboard scroll to the end saves progress) |
 | 7.5 Reader chrome and input | done | `4c3696b1d5`, `c766fdd206`, `b5ed1cf4d5` | **Full-window screen, not a second window** (`ReaderHost` above the shell in the main window, opened through `ReaderLauncher`): one window to manage, shared fullscreen state (`WindowPlacement.Fullscreen` via F11 / F / toolbar), works with the single-window headless test harness, any tab can open it. Top bar (manga + chapter, bookmark, fullscreen, settings), bottom bar (previous / next chapter, page slider), page number, menu toggle (middle click zone, M, Enter), `ReaderKeyMap` (arrows by direction, PgUp/PgDn, Space/Shift+Space, Home/End, N/P, +/-/0, F11/F, Esc closes settings → menu → reader). Settings panel bound to the borrowed `ReaderPreferences` (same keys as Android): per-manga reading mode and orientation through `SetMangaViewerFlags` (orientation stored only), scale type, double pages, webtoon side padding, background (white / black / gray / auto), page number, custom brightness (dim overlay), custom colour filter (ARGB + blend mode from `ColorFilterMode`), grayscale, invert, skip read / filtered / duplicates. `ReaderKeyMapTest` |
 | 7.6 Progress and side effects | done | `4c3696b1d5`, `4380ff2e03` | Shared `ReaderChapterList` (Android `ReaderViewModel.chapterList`: skip read / filtered (selected kept), ascending in the manga's sort, skip duplicates, downloaded only) and `ReaderProgressSaver` (`updateChapterProgress` / `…OnComplete` / `updateHistory` / bookmark: incognito and failed pages skipped, read at the last page (or second-to-last with an extra page), E-Hentai "later chapters read", duplicate-read marking, history with session duration). **Tracker hook:** `ReaderTrackerHook` (desktop registers `None`; Phase 8). Delete-after-reading / download-ahead skipped (no downloads). Incognito = borrowed `GetIncognitoState`. Writes are serialized and flushed before the history write on close. `ReaderLogicTest`, `ReaderUiTest` (page turns → `last_page_read`, last page → read, bookmark, history on close) |
+| 8.1 Downloads | done | see git log (`feat(kmp): … downloads`) | **Android download stack borrowed (`desktopCopy`, unchanged):** `DownloadManager`, `Downloader`, `DownloadCache`, `DownloadStore`, `DownloadPendingDeleter`, `model/Download.kt` (the 6L stand-ins `DownloadManager` / `Downloader` are gone). Desktop counterparts (same FQNs, `app-shared/src/desktopMain`): `DownloadJob` (WorkManager worker → coroutine runner with the same companion API; `start` = REPLACE, running while the downloader runs, `isRunningFlow`), `DownloadNotifier` (notifications → `DownloadEvent`s to the KMK `DownloadNotificationSink` in DI; desktop: `DesktopDownloadEvents`, a `SharedFlow` + log), `NotificationHandler.openUrl` (returns the URL), `LibraryUpdateNotifier.HELP_WARNING_URL`, `eu.kanade.tachiyomi.extension.ExtensionManager` = `typealias` of `PlatformExtensionManager` (`DownloadCache` waits for `isInitialized`). `core:common` desktop `ImageUtil.splitTallImage` (javax.imageio region decoding, same naming / 3:1 rule / JPEG parts as Android; optimal height = 2 × tallest screen, headless 2 × 2160; WebP / AVIF / JXL / HEIF / animated left unsplit). Compat: `androidx.core.content.edit` (SharedPreferences ktx). `:app-shared`: serialization plugin + protobuf / xml deps (desktop). Shared borrowing: `presentation/manga/MangaScreenConstants.kt` (`DownloadAction`); `ChapterListActions.chaptersToDownload` (Android `runDownloadAction` rules). Same folder layout / names as Android (`<storage>/downloads/<source>/<manga>/<chapter>[.cbz]`), ComicInfo.xml, CBZ option (incl. SY password-protected CBZ via the desktop `ZipWriter`), queue persisted across restarts (`active_downloads` store), "delete after reading" / pending deleter (`chapters_to_delete` store). **UI:** details — per-chapter indicator (download / queued / progress / downloaded / error; menu: start now, cancel, delete), selection download + delete, download menu (next 1 / 5 / 10 / 25, unread, bookmarked); **More tab** (replaces the placeholder): downloaded-only + incognito toggles (`BasePreferences`), download queue entry with count; **Download queue screen** (status, page progress, start / pause, move to top / bottom, cancel one, cancel all); library honours "downloaded only" (local + manga with downloads). Reader: download-ahead (`autoDownloadWhileReading`, Android rules; current chapter checked with `isChapterDownloaded` because `DownloadPageLoader` is file-internal) and delete-after-reading (`removeAfterReadSlots` → `enqueueChaptersToDelete`, `deletePendingChapters` on close). Tests: `DownloadManagerTest` (fake `HttpSource` over `MockWebServer`: folder download with layout + ComicInfo + cache, CBZ download, reader `ChapterLoader` reads both offline, queue reorder / cancel / clear, pending delete + delete incl. empty manga folder), `DownloadUiTest` (headless: indicator download → check mark, "download unread", delete from selection, queue screen cancel one / all, downloaded-only filter), `ImageUtilTest` split case. `ReaderLoadersTest` now expects `DownloadPageLoader` for local chapters, as on Android |
 
 **Milestone B** (install an extension, browse its catalogue, open a manga's details on desktop):
 **compiles and passes fixture tests; not exercised with real extensions.** Every stage runs in tests on
@@ -97,8 +98,11 @@ of what those files reference:
 
 | Symbol (FQN) | Android original | Desktop counterpart |
 |--------------|------------------|---------------------|
-| `eu.kanade.tachiyomi.data.download.DownloadManager` | app download manager (queue, cache, notifications) | No queue; `isChapterDownloaded` / `buildPageList` / `getDownloadCount` / delete through the borrowed `DownloadProvider` on disk (local source never "downloaded"); rename = log only (Phase 8) |
-| `eu.kanade.tachiyomi.data.download.Downloader` | downloader | Companion constants only |
+| `eu.kanade.tachiyomi.data.download.DownloadJob` | WorkManager worker | 8.1: coroutine runner, same companion API (`start` / `stop` / `isRunning` / `isRunningFlow`), no network checks |
+| `eu.kanade.tachiyomi.data.download.DownloadNotifier` | download notifications | 8.1: `DownloadEvent`s to the KMK `DownloadNotificationSink` (desktop UI snackbars / log) |
+| `eu.kanade.tachiyomi.data.notification.NotificationHandler` | notification intents | 8.1: `openUrl` returns the URL |
+| `eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier` | library update notifications | 8.1: `HELP_WARNING_URL` constant only |
+| `eu.kanade.tachiyomi.extension.ExtensionManager` | Android extension manager | 8.1: `typealias` of `PlatformExtensionManager` (for `DownloadCache`) |
 | `eu.kanade.tachiyomi.util.system.GLUtil` | `core:common` androidMain (EGL) | `SAFE_TEXTURE_LIMIT` / `DEVICE_TEXTURE_LIMIT` = 2048 |
 | `Context.hasMiuiPackageInstaller`, `Context.isShizukuInstalled` | app `ContextExtensions` | `false` |
 | `Source.isIncognitoModeEnabled`, `Source.isLocalOrStub` | app `SourceExtensions.kt` | Same bodies, extension package from `PlatformExtensionManager` |
@@ -153,6 +157,7 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `androidx.appcompat.app.AppCompatDelegate` (static night-mode API) | 4.2 | borrowed `ThemeMode.kt` (`setAppCompatDelegateThemeMode`) | `setDefaultNightMode` / `getDefaultNightMode` + desktop addition `defaultNightModeFlow` (the desktop UI maps it to light / dark); constants as AndroidX |
 | `android.content.pm.ActivityInfo` | 7.1 | borrowed `ReaderOrientation` | `SCREEN_ORIENTATION_*` constants (Android values) |
 | `android.text.format.Formatter` | 7.1 | borrowed `ChapterCache.readableSize` | `formatFileSize` / `formatShortFileSize`, SI units, English unit names |
+| `androidx.core.content.SharedPreferencesKt` (`edit { }`) | 8.1 | borrowed `DownloadStore`, `DownloadPendingDeleter` | Same as core-ktx (`commit` or `apply`) |
 
 ### `:desktop:compose-compat` (4.1)
 
@@ -189,6 +194,15 @@ or downloaded by hand from a repo you trust:
 
 ## Deviations from the plan and open issues
 
+- **8.1 — downloads, deviations / gaps.** No system notifications or tray: progress is shown in the
+  details screen and the queue screen; warnings / errors are `DownloadEvent`s (logged and shown as snackbars through
+  `Context.toast` → `Toast.presenter`). `downloadOnlyOverWifi` and network-state stops are ignored (no metered
+  network notion on desktop). `DownloadJob.start` monitors an already running downloader instead of
+  failing like the WorkManager job would. No "download new chapters" after library updates (Android's
+  `LibraryUpdateJob` does it; the desktop runner does not yet), no download cache "indexing"
+  indicator, no per-source grouping / sorting in the queue screen (move to top / bottom only), no
+  download-related settings UI beyond what 8.4 adds. Split tall images: JPEG / PNG / BMP only. Local
+  chapters now go through `DownloadPageLoader` in the reader, exactly as on Android.
 - **6L / 7 — `desktopCopy` instead of `shared` for the reader and chapter stack.** The reader models,
   loaders, `ChapterCache`, `ReaderPreferences` and the manga / chapter interactors reference Android-only
   classes (download manager, `ReaderActivity` viewers, SY built-in sources, `R`), so moving them to
@@ -223,9 +237,8 @@ or downloaded by hand from a repo you trust:
 - **Fixed in 7.1 — desktop storage folder on a fresh data dir:** `DesktopStorageFolderProvider` now
   creates `<dataDir>/storage`; before, `StorageManager` rejected the missing directory, so the local
   source and downloads folder were unavailable until the user picked a folder.
-- **Phase 8 hand-off:** downloads = replace the desktop `DownloadManager` counterpart by a real queue (or
-  borrow Android's `DownloadCache` / `Downloader` once their notification / WorkManager parts are split);
-  `ChapterLoader` / `DownloadPageLoader` already read Android-layout download folders on desktop.
+- **Phase 8 hand-off (done in 8.1):** the Android `DownloadCache` / `Downloader` / `DownloadManager` are
+  borrowed; only their WorkManager / notification dependencies have desktop counterparts.
 
 - **5.4 — scope of the desktop browse screens (deliberately minimal, Phase 6 replaces them):** no
   source filters (`getFilterList()` is passed as is), no global search, no pinned / last-used sources,

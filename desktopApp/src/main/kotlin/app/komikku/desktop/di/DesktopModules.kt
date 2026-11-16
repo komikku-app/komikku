@@ -9,6 +9,8 @@ import app.komikku.desktop.library.desktopLibraryUpdateRunner
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.window.DesktopWindowPreferences
+import app.komikku.shared.download.DesktopDownloadEvents
+import app.komikku.shared.download.DownloadNotificationSink
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
 import app.komikku.shared.library.LibraryUpdateRunner
@@ -30,12 +32,14 @@ import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.system.toast
 import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -222,10 +226,14 @@ class DesktopDomainModule(
         addFactory { GetSourcesWithNonLibraryManga(get()) }
         addFactory { UpdateManga(get(), get()) }
 
-        // Manga details / chapters (6L.1): the Android interactors, borrowed as desktopCopy, over the
-        // desktop DownloadManager counterpart (no download queue yet; on-disk lookups only).
+        // Manga details / chapters (6L.1): the Android interactors, borrowed as desktopCopy.
+        // Downloads (8.1): the Android download stack, borrowed as desktopCopy (coroutine DownloadJob,
+        // events instead of notifications).
         addSingletonFactory { CoverCache(app) }
         addSingletonFactory { DownloadProvider(app) }
+        addSingletonFactory { DesktopDownloadEvents(showMessage = { app.toast(it) }) }
+        addSingletonFactory<DownloadNotificationSink> { get<DesktopDownloadEvents>() }
+        addSingletonFactory { DownloadCache(app) }
         addSingletonFactory { DownloadManager(app) }
         addFactory { GetExcludedScanlators(get()) }
         addFactory { SyncChaptersWithSource(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

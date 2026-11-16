@@ -21,7 +21,6 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.source.local.LocalSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -71,10 +70,10 @@ class DesktopShellTest {
         // Library: real data from the database
         waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Desktop manga").fetchSemanticsNodes().isNotEmpty() }
 
-        // Placeholder destination through the rail
+        // More destination through the rail
         onNodeWithText(MR.strings.label_more.text()).performClick()
         waitUntil(timeoutMillis = 5_000) {
-            onAllNodesWithText(KMR.strings.desktop_not_available_yet.text()).fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithText(MR.strings.label_download_queue.text()).fetchSemanticsNodes().isNotEmpty()
         }
 
         // Browse through the keyboard shortcut scaffold (Ctrl+4)

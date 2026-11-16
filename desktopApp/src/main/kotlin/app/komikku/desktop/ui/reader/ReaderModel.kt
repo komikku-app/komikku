@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.util.chapter.removeDuplicates
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -58,8 +61,11 @@ import uy.kohesive.injekt.api.get
  *
  * The viewer shows one chapter at a time as [State.items]: a "previous chapter" transition, the pages,
  * a "next chapter" transition. Moving past a transition loads the neighbouring chapter.
- * Not ported: download-ahead, delete after reading (no downloads yet), merged / E-Hentai specifics,
- * sync triggers, page actions (save / share / set as cover). Trackers: see [ReaderProgressSaver]'s hook.
+ * Downloads (8.1, Android rules): "download ahead" (`autoDownloadWhileReading`) once a downloaded chapter is
+ * past 25 % and the next one is downloaded too, and "delete after reading" (`removeAfterReadSlots`):
+ * completed chapters are queued with `DownloadManager.enqueueChaptersToDelete` and deleted on [close].
+ * Not ported: merged / E-Hentai specifics, sync triggers, page actions (save / share / set as cover).
+ * Trackers: see [ReaderProgressSaver]'s hook.
  */
 class ReaderModel(
     private val mangaId: Long,
@@ -76,6 +82,8 @@ class ReaderModel(
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
     private val progressSaver: ReaderProgressSaver = Injekt.get(),
+    private val downloadPreferences: DownloadPreferences = Injekt.get(),
+    private val getNextChapters: GetNextChapters = Injekt.get(),
 ) {
 
     data class State(
@@ -328,9 +336,10 @@ class ReaderModel(
         readerChapter.requestedPage = page.index
         val progressChapter = progressOf(readerChapter)
         val manga = _state.value.manga ?: return
+        if (page.number.toDouble() / pages.size > 0.25) downloadNextChapters(manga)
         enqueueWrite {
             run {
-                progressSaver.onPageSelected(
+                val completed = progressSaver.onPageSelected(
                     manga = manga,
                     chapter = progressChapter,
                     pageIndex = page.index,
@@ -340,7 +349,55 @@ class ReaderModel(
                 )
                 readerChapter.chapter.read = progressChapter.read
                 readerChapter.chapter.last_page_read = progressChapter.lastPageRead.toInt()
+                if (completed) deleteChapterIfNeeded(manga, readerChapter)
             }
+        }
+    }
+
+    /** Android `ReaderViewModel.deleteChapterIfNeeded` + `enqueueDeleteReadChapters`. */
+    private suspend fun deleteChapterIfNeeded(manga: Manga, currentChapter: ReaderChapter) {
+        val removeAfterReadSlots = downloadPreferences.removeAfterReadSlots().get()
+        if (removeAfterReadSlots == -1) return
+        val position = chapterList.indexOf(currentChapter)
+        val chapterToDelete = chapterList.getOrNull(position - removeAfterReadSlots) ?: return
+        if (!chapterToDelete.chapter.read) return
+        downloadManager.enqueueChaptersToDelete(listOf(chapterToDelete.chapter.toDomainChapter()!!), manga)
+    }
+
+    private var downloadAheadRequestedFor: Long? = null
+
+    /** Android `ReaderViewModel.downloadNextChapters`. */
+    private fun downloadNextChapters(manga: Manga) {
+        val amount = downloadPreferences.autoDownloadWhileReading().get()
+        if (amount == 0 || manga.isLocal()) return
+        val current = _state.value.currentChapter ?: return
+        val nextChapter = _state.value.viewerChapters?.nextChapter?.chapter ?: return
+        if (downloadAheadRequestedFor == nextChapter.id) return
+        downloadAheadRequestedFor = nextChapter.id
+        scope.launch(Dispatchers.IO) {
+            // Only download ahead if current + next chapter is already downloaded too to avoid jank
+            // (Android: the current chapter's loader is a `DownloadPageLoader`, internal to its file).
+            val currentChapter = current.chapter
+            val isCurrentDownloaded = downloadManager.isChapterDownloaded(
+                currentChapter.name,
+                currentChapter.scanlator,
+                currentChapter.url,
+                manga.ogTitle,
+                manga.source,
+            )
+            if (!isCurrentDownloaded) return@launch
+            val isNextChapterDownloaded = downloadManager.isChapterDownloaded(
+                nextChapter.name,
+                nextChapter.scanlator,
+                nextChapter.url,
+                manga.ogTitle,
+                manga.source,
+            )
+            if (!isNextChapterDownloaded) return@launch
+            val chapters = getNextChapters.await(manga.id, nextChapter.id!!).run {
+                if (readerPreferences.skipDupe().get()) removeDuplicates(nextChapter.toDomainChapter()!!) else this
+            }.take(amount)
+            downloadManager.downloadChapters(manga, chapters)
         }
     }
 
@@ -412,6 +469,14 @@ class ReaderModel(
         state.viewerChapters?.unref()
         scope.cancel()
         writes.close()
+        // Android `deletePendingChapters` (delete after reading)
+        progressScope.launch {
+            try {
+                downloadManager.deletePendingChapters()
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e) { "Could not delete read chapters" }
+            }
+        }
     }
 
     /** The domain chapter of the current item (for titles). */

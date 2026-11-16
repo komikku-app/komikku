@@ -8,6 +8,8 @@ import mihon.buildlogic.applyAppSourceBorrowing
  */
 plugins {
     id("mihon.library.kmp.compose")
+    // Borrowed @Serializable classes (download store / pending deleter / cache index, backups, trackers)
+    kotlin("plugin.serialization")
 }
 
 // Compiles the `app` files listed in borrowed-app-sources.gradle.kts.
@@ -69,6 +71,11 @@ kotlin {
 
                 // Borrowed ChapterCache (desktopCopy, reader page cache)
                 implementation(libs.disklrucache)
+
+                // Borrowed DownloadCache (protobuf index) and Downloader (ComicInfo.xml) (8.1)
+                implementation(kotlinx.serialization.protobuf)
+                implementation(kotlinx.serialization.xml)
+                implementation(kotlinx.serialization.xml.core.jvm)
 
                 // What the desktopCopy borrowed files reference (Android: `app` has these itself)
                 api(projects.data)

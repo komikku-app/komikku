@@ -1,8 +1,14 @@
 package tachiyomi.core.common.util.system
 
+import com.hippo.unifile.UniFile
 import io.kotest.matchers.shouldBe
 import okio.Buffer
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import java.io.File
+import javax.imageio.ImageIO
 
 class ImageUtilTest {
 
@@ -44,5 +50,26 @@ class ImageUtilTest {
         ImageUtil.isAnimatedAndSupported(Buffer().write(animatedWebp)) shouldBe true
         ImageUtil.isAnimatedAndSupported(Buffer().write(ascii("GIF89a"))) shouldBe true
         ImageUtil.isAnimatedAndSupported(Buffer().write(bytes(0xFF, 0xD8, 0xFF))) shouldBe false
+    }
+
+    @Test
+    fun `splits tall images into jpeg parts like Android and leaves other images alone`(@TempDir dir: File) {
+        fun png(width: Int, height: Int) = ByteArrayOutputStream().also {
+            ImageIO.write(BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png", it)
+        }.toByteArray()
+        val tmpDir = UniFile.fromFile(dir)!!
+
+        // 10 000 px tall: headless optimal height = 2 × 2160 → 3 parts, original deleted
+        dir.resolve("001.png").writeBytes(png(100, 10_000))
+        ImageUtil.splitTallImage(tmpDir, tmpDir.findFile("001.png")!!, "001") shouldBe true
+        val parts = dir.list()!!.sorted()
+        parts shouldBe listOf("001__001.jpg", "001__002.jpg", "001__003.jpg")
+        parts.sumOf { ImageIO.read(dir.resolve(it)).height } shouldBe 10_000
+        parts.forEach { ImageIO.read(dir.resolve(it)).width shouldBe 100 }
+
+        // Not tall: unchanged
+        dir.resolve("002.png").writeBytes(png(100, 300))
+        ImageUtil.splitTallImage(tmpDir, tmpDir.findFile("002.png")!!, "002") shouldBe true
+        dir.resolve("002.png").exists() shouldBe true
     }
 }

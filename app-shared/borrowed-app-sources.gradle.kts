@@ -101,6 +101,11 @@ run {
         "eu/kanade/domain/manga/interactor/UpdateManga.kt",
     )
 
+    // Manga screen enums (8.1; download menu actions)
+    shared(
+        "eu/kanade/presentation/manga/MangaScreenConstants.kt",
+    )
+
     // Platform-neutral helpers used by app-shared's own reader / chapter code (6L.1, 7.1)
     shared(
         "eu/kanade/tachiyomi/util/chapter/ChapterRemoveDuplicates.kt",
@@ -109,8 +114,7 @@ run {
     )
 
     // Manga / chapter interactors and what they reference (6L.1). Desktop counterparts in
-    // app-shared/src/desktopMain: DownloadManager (no queue yet; on-disk lookups through the borrowed
-    // DownloadProvider), GLUtil, Context.hasMiuiPackageInstaller / isShizukuInstalled,
+    // app-shared/src/desktopMain: GLUtil, Context.hasMiuiPackageInstaller / isShizukuInstalled,
     // Source.isIncognitoModeEnabled, placeholders for the SY EHentai / MergedSource types.
     desktopCopy(
         "eu/kanade/domain/base/BasePreferences.kt",
@@ -153,6 +157,19 @@ run {
         "eu/kanade/tachiyomi/ui/reader/setting/ReaderOrientation.kt",
         "eu/kanade/tachiyomi/ui/reader/setting/ReaderPreferences.kt",
         "eu/kanade/tachiyomi/ui/reader/viewer/MissingChapters.kt",
+    )
+
+    // Download queue, downloader, cache, store and pending deleter (8.1). Desktop counterparts in
+    // app-shared/src/desktopMain: DownloadJob (coroutine runner instead of WorkManager), DownloadNotifier
+    // (events for the desktop UI instead of notifications), NotificationHandler.openUrl,
+    // LibraryUpdateNotifier.HELP_WARNING_URL, ExtensionManager (typealias of PlatformExtensionManager).
+    desktopCopy(
+        "eu/kanade/tachiyomi/data/download/DownloadCache.kt",
+        "eu/kanade/tachiyomi/data/download/DownloadManager.kt",
+        "eu/kanade/tachiyomi/data/download/DownloadPendingDeleter.kt",
+        "eu/kanade/tachiyomi/data/download/DownloadStore.kt",
+        "eu/kanade/tachiyomi/data/download/Downloader.kt",
+        "eu/kanade/tachiyomi/data/download/model/Download.kt",
     )
 }
 

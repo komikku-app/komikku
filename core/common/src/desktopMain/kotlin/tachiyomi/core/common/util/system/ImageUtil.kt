@@ -1,14 +1,24 @@
 package tachiyomi.core.common.util.system
 
+import com.hippo.unifile.UniFile
+import logcat.LogPriority
 import okio.BufferedSource
+import java.awt.GraphicsEnvironment
+import java.awt.Rectangle
 import java.io.File
 import java.io.InputStream
+import java.util.Locale
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
+import kotlin.math.min
 
 /**
  * KMK: desktop subset of the Android `ImageUtil` (src/androidMain), with the same signatures for the
- * members shared modules call: image type detection from file names and magic bytes. Bitmap
- * transformations (split, merge, rotate, background detection) belong to the desktop reader
- * (Phase 7) and are not provided here.
+ * members shared modules call: image type detection from file names and magic bytes, and (8.1)
+ * [splitTallImage] for the borrowed downloader through `javax.imageio` region decoding (JPEG / PNG /
+ * GIF / BMP; other formats are kept unsplit). Other bitmap transformations (merge, rotate, background
+ * detection) are not provided.
  */
 object ImageUtil {
 
@@ -49,6 +59,88 @@ object ImageUtil {
         } catch (_: Exception) {
             false
         }
+    }
+
+    /**
+     * Same contract as Android's `splitTallImage`: a page more than 3 times taller than wide is cut into
+     * JPEG parts named `<prefix>__001.jpg`, … of at most [optimalImageHeight] rows, and the original is
+     * deleted; `true` when nothing had to be done or the split succeeded. Images `javax.imageio` cannot
+     * read (WebP, AVIF, JPEG XL, HEIF) and animated images are left as they are (`true`).
+     */
+    fun splitTallImage(
+        tmpDir: UniFile,
+        imageFile: UniFile,
+        filenamePrefix: String,
+    ): Boolean {
+        val bytes = imageFile.openInputStream().use { it.readBytes() }
+        val detected = detect(bytes.copyOf(min(bytes.size, HEADER_SIZE)))
+        if (detected == null || detected.isAnimated || detected.type == ImageType.GIF) return true
+
+        val input = ImageIO.createImageInputStream(bytes.inputStream()) ?: return true
+        val reader = ImageIO.getImageReaders(input).asSequence().firstOrNull() ?: return true.also { input.close() }
+        val parts = mutableListOf<String>()
+        return try {
+            reader.input = input
+            val width = reader.getWidth(0)
+            val height = reader.getHeight(0)
+            if (width <= 0 || height / width <= 3) return true
+
+            val partCount = (height - 1) / optimalImageHeight + 1
+            val partHeight = height / partCount
+            var top = 0
+            var index = 0
+            while (top < height) {
+                val bottom = if (index == partCount - 1) height else min(top + partHeight, height)
+                val param = reader.defaultReadParam.apply { sourceRegion = Rectangle(0, top, width, bottom - top) }
+                val part = reader.read(0, param)
+                val rgb = java.awt.image.BufferedImage(part.width, part.height, java.awt.image.BufferedImage.TYPE_INT_RGB)
+                rgb.createGraphics().apply {
+                    color = java.awt.Color.WHITE
+                    fillRect(0, 0, part.width, part.height)
+                    drawImage(part, 0, 0, null)
+                    dispose()
+                }
+                val name = "${filenamePrefix}__${"%03d".format(Locale.ENGLISH, index + 1)}.jpg"
+                tmpDir.findFile(name)?.delete()
+                val file = tmpDir.createFile(name) ?: error("Could not create $name")
+                parts += name
+                file.openOutputStream().use { out ->
+                    val writer = ImageIO.getImageWritersByFormatName("jpeg").next()
+                    ImageIO.createImageOutputStream(out).use { ios ->
+                        writer.output = ios
+                        val writeParam = writer.defaultWriteParam.apply {
+                            compressionMode = ImageWriteParam.MODE_EXPLICIT
+                            compressionQuality = 1f
+                        }
+                        writer.write(null, IIOImage(rgb, null, null), writeParam)
+                        writer.dispose()
+                    }
+                }
+                top = bottom
+                index++
+            }
+            imageFile.delete()
+            true
+        } catch (e: Exception) {
+            parts.forEach { tmpDir.findFile(it)?.delete() }
+            logcat(LogPriority.ERROR, e) { "Failed to split tall image" }
+            false
+        } finally {
+            reader.dispose()
+            input.close()
+        }
+    }
+
+    /** Android: twice the display's maximum height; desktop: twice the tallest screen (headless: 2 × 2160). */
+    private val optimalImageHeight: Int by lazy {
+        val screenHeight = runCatching {
+            if (GraphicsEnvironment.isHeadless()) {
+                null
+            } else {
+                GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.maxOfOrNull { it.displayMode.height }
+            }
+        }.getOrNull() ?: 2160
+        screenHeight * 2
     }
 
     enum class ImageType(val mime: String, val extension: String) {
