@@ -48,6 +48,8 @@ rootProject.name = "Komikku"
 include(":app")
 // KMK --> Compose Multiplatform desktop application (Phase 0 KMP scaffolding)
 include(":desktopApp")
+// Desktop-only Android API surface (docs/kmp-desktop/PLAN.md, D3)
+include(":desktop:android-compat")
 // KMK <--
 include(":core-metadata")
 include(":core:archive")
