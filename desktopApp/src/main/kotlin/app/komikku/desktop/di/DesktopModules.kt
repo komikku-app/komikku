@@ -2,6 +2,7 @@ package app.komikku.desktop.di
 
 import android.app.Application
 import app.cash.sqldelight.db.SqlDriver
+import app.komikku.desktop.backup.DesktopBackupJobs
 import app.komikku.desktop.backup.DesktopBackupService
 import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.extension.ExtensionRuntime
@@ -270,6 +271,7 @@ class DesktopDomainModule(
 
         // Backup (8.2): borrowed Android creator / restorer
         addSingletonFactory { DesktopBackupService(app, get()) }
+        addSingletonFactory { DesktopBackupJobs(get<DesktopBackupService>()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
 
         // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart

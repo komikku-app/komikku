@@ -31,10 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.backup.DesktopBackupJobs
 import app.komikku.desktop.backup.DesktopBackupService
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.ui.browse.BrowseScaffold
-import app.komikku.shared.backup.BackupProgressListener
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -48,7 +48,6 @@ import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -66,6 +65,8 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 class DataStorageScreenModel(
     private val backupService: DesktopBackupService = Injekt.get(),
+    /** Create / restore run here (app lifetime), not in this model's scope: see [DesktopBackupJobs]. */
+    val backupJobs: DesktopBackupJobs = Injekt.get(),
     private val fileDialogs: DesktopFileDialogs = Injekt.get(),
     val storagePreferences: StoragePreferences = Injekt.get(),
 ) : StateScreenModel<DataStorageScreenModel.State>(State()) {
@@ -73,8 +74,6 @@ class DataStorageScreenModel(
     @Immutable
     data class State(
         val dialog: Dialog? = null,
-        val working: Work? = null,
-        val message: String? = null,
     )
 
     sealed interface Dialog {
@@ -84,11 +83,8 @@ class DataStorageScreenModel(
             val results: BackupFileValidator.Results,
             val options: RestoreOptions,
         ) : Dialog
-        data class RestoreDone(val timeMillis: Long, val errors: List<String>, val log: File?) : Dialog
         data class Failure(val title: StringResource, val message: String?) : Dialog
     }
-
-    data class Work(val title: StringResource, val content: String = "", val progress: Int = 0, val max: Int = 0)
 
     fun chooseStorageLocation(title: String) {
         val current = Uri.parse(storagePreferences.baseStorageDirectory().get()).path?.let(::File)
@@ -105,17 +101,7 @@ class DataStorageScreenModel(
         dismissDialog()
         val suggested = backupService.defaultBackupFile()
         val target = fileDialogs.saveFile(dialogTitle, suggested.parentFile?.apply { mkdirs() }, suggested.name) ?: return
-        mutableState.update { it.copy(working = Work(MR.strings.creating_backup)) }
-        screenModelScope.launch {
-            try {
-                val file = backupService.create(target, options)
-                mutableState.update { it.copy(working = null, message = file.absolutePath) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                mutableState.update { it.copy(working = null, dialog = Dialog.Failure(MR.strings.creating_backup_error, e.message)) }
-            }
-        }
+        backupJobs.create(target, options)
     }
 
     fun pickRestoreFile(dialogTitle: String) {
@@ -141,31 +127,15 @@ class DataStorageScreenModel(
 
     fun restore(file: File, options: RestoreOptions) {
         dismissDialog()
-        mutableState.update { it.copy(working = Work(MR.strings.restoring_backup)) }
-        val listener = object : BackupProgressListener {
-            override fun onRestoreProgress(content: String, progress: Int, max: Int) {
-                mutableState.update { it.copy(working = Work(MR.strings.restoring_backup, content, progress, max)) }
-            }
-
-            override fun onRestoreComplete(timeMillis: Long, errorCount: Int, errorLog: File?) {
-                val errors = errorLog?.takeIf { it.isFile }?.readLines().orEmpty()
-                mutableState.update { it.copy(working = null, dialog = Dialog.RestoreDone(timeMillis, errors, errorLog)) }
-            }
-        }
-        screenModelScope.launch {
-            try {
-                backupService.restore(file, options, listener)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                mutableState.update { it.copy(working = null, dialog = Dialog.Failure(MR.strings.restoring_backup_error, e.message)) }
-            }
-        }
+        backupJobs.restore(file, options)
     }
+
+    fun cancelJob() = backupJobs.cancel()
 
     fun dismissDialog() = mutableState.update { it.copy(dialog = null) }
 
-    fun dismissMessage() = mutableState.update { it.copy(message = null) }
+    /** Dismisses the finished job's result (created path, restore summary, failure, cancellation). */
+    fun dismissJobResult() = backupJobs.acknowledge()
 }
 
 class DataStorageScreen : Screen() {
@@ -175,6 +145,8 @@ class DataStorageScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { DataStorageScreenModel() }
         val state by model.state.collectAsState()
+        val job by model.backupJobs.status.collectAsState()
+        val running = job is DesktopBackupJobs.Status.Running
         val storageDir by model.storagePreferences.baseStorageDirectory().collectAsState()
         val storageTitle = stringResource(MR.strings.pref_storage_location)
         val createTitle = stringResource(MR.strings.pref_create_backup)
@@ -200,23 +172,32 @@ class DataStorageScreen : Screen() {
                     )
                 }
                 item {
-                    LinkRow(Icons.Outlined.Save, createTitle, null, "backup-create", enabled = state.working == null) { model.showCreateDialog() }
+                    LinkRow(Icons.Outlined.Save, createTitle, null, "backup-create", enabled = !running) { model.showCreateDialog() }
                 }
                 item {
-                    LinkRow(Icons.Outlined.Restore, restoreTitle, null, "backup-restore", enabled = state.working == null) {
+                    LinkRow(Icons.Outlined.Restore, restoreTitle, null, "backup-restore", enabled = !running) {
                         model.pickRestoreFile(restoreTitle)
                     }
                 }
-                state.working?.let { work ->
-                    item { WorkProgress(work) }
-                }
-                state.message?.let { path ->
-                    item {
+                when (val status = job) {
+                    is DesktopBackupJobs.Status.Running -> item { WorkProgress(status, model::cancelJob) }
+                    is DesktopBackupJobs.Status.Created -> item {
                         Text(
-                            stringResource(MR.strings.backup_created) + ": " + path,
-                            modifier = Modifier.padding(16.dp).clickable(onClick = model::dismissMessage).testTag("backup-created"),
+                            stringResource(MR.strings.backup_created) + ": " + status.file.absolutePath,
+                            modifier = Modifier.padding(16.dp).clickable(onClick = model::dismissJobResult).testTag("backup-created"),
                         )
                     }
+                    is DesktopBackupJobs.Status.Cancelled -> item {
+                        val text = when (status.kind) {
+                            DesktopBackupJobs.Kind.Create -> stringResource(MR.strings.cancelled)
+                            DesktopBackupJobs.Kind.Restore -> stringResource(MR.strings.restoring_backup_canceled)
+                        }
+                        Text(
+                            text,
+                            modifier = Modifier.padding(16.dp).clickable(onClick = model::dismissJobResult).testTag("backup-cancelled"),
+                        )
+                    }
+                    else -> {}
                 }
             }
         }
@@ -224,7 +205,6 @@ class DataStorageScreen : Screen() {
         when (val dialog = state.dialog) {
             is DataStorageScreenModel.Dialog.CreateOptions -> CreateBackupDialog(dialog, model, createTitle)
             is DataStorageScreenModel.Dialog.RestoreOptionsDialog -> RestoreBackupDialog(dialog, model)
-            is DataStorageScreenModel.Dialog.RestoreDone -> RestoreDoneDialog(dialog, model)
             is DataStorageScreenModel.Dialog.Failure -> AlertDialog(
                 onDismissRequest = model::dismissDialog,
                 title = { Text(stringResource(dialog.title)) },
@@ -234,13 +214,39 @@ class DataStorageScreen : Screen() {
             )
             null -> {}
         }
+
+        // Results of the app-lifetime backup job (also shown when the screen is reopened later)
+        when (val status = job) {
+            is DesktopBackupJobs.Status.Restored -> RestoreDoneDialog(status, model::dismissJobResult)
+            is DesktopBackupJobs.Status.Failed -> AlertDialog(
+                onDismissRequest = model::dismissJobResult,
+                title = {
+                    val title = when (status.kind) {
+                        DesktopBackupJobs.Kind.Create -> MR.strings.creating_backup_error
+                        DesktopBackupJobs.Kind.Restore -> MR.strings.restoring_backup_error
+                    }
+                    Text(stringResource(title))
+                },
+                text = { Text(status.message.orEmpty()) },
+                confirmButton = { TextButton(onClick = model::dismissJobResult) { Text(stringResource(MR.strings.action_ok)) } },
+                modifier = Modifier.testTag("backup-failure"),
+            )
+            else -> {}
+        }
     }
 }
 
 @Composable
-private fun WorkProgress(work: DataStorageScreenModel.Work) {
+private fun WorkProgress(work: DesktopBackupJobs.Status.Running, onCancel: () -> Unit) {
+    val title = when (work.kind) {
+        DesktopBackupJobs.Kind.Create -> MR.strings.creating_backup
+        DesktopBackupJobs.Kind.Restore -> MR.strings.restoring_backup
+    }
     Column(Modifier.fillMaxWidth().padding(16.dp).testTag("backup-working"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(work.title), style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            TextButton(onClick = onCancel, modifier = Modifier.testTag("backup-cancel")) { Text(stringResource(MR.strings.action_cancel)) }
+        }
         if (work.content.isNotEmpty()) Text(work.content, style = MaterialTheme.typography.bodySmall)
         if (work.max > 0) {
             LinearProgressIndicator(progress = { work.progress.toFloat() / work.max }, modifier = Modifier.fillMaxWidth())
@@ -322,7 +328,7 @@ private fun RestoreBackupDialog(dialog: DataStorageScreenModel.Dialog.RestoreOpt
 }
 
 @Composable
-private fun RestoreDoneDialog(dialog: DataStorageScreenModel.Dialog.RestoreDone, model: DataStorageScreenModel) {
+private fun RestoreDoneDialog(dialog: DesktopBackupJobs.Status.Restored, onDismiss: () -> Unit) {
     val duration = dialog.timeMillis.milliseconds
     val time = stringResource(
         MR.strings.restore_duration,
@@ -330,7 +336,7 @@ private fun RestoreDoneDialog(dialog: DataStorageScreenModel.Dialog.RestoreDone,
         duration.inWholeSeconds % 60,
     )
     AlertDialog(
-        onDismissRequest = model::dismissDialog,
+        onDismissRequest = onDismiss,
         title = { Text(stringResource(MR.strings.restore_completed)) },
         text = {
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
@@ -339,7 +345,7 @@ private fun RestoreDoneDialog(dialog: DataStorageScreenModel.Dialog.RestoreDone,
                 dialog.errors.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             }
         },
-        confirmButton = { TextButton(onClick = model::dismissDialog) { Text(stringResource(MR.strings.action_ok)) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(MR.strings.action_ok)) } },
         modifier = Modifier.testTag("restore-done"),
     )
 }
