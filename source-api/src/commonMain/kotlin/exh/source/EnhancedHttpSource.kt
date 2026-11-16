@@ -208,6 +208,16 @@ class EnhancedHttpSource(
      */
     override fun getFilterList() = source().getFilterList()
 
+    // KMK -->
+    override val supportsRelatedMangas get() = source().supportsRelatedMangas
+
+    override val disableRelatedMangasBySearch get() = source().disableRelatedMangasBySearch
+
+    override val disableRelatedMangas get() = source().disableRelatedMangas
+
+    override suspend fun fetchRelatedMangaList(manga: SManga) = source().fetchRelatedMangaList(manga)
+    // KMK <--
+
     fun source(): HttpSource {
         return if (Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
             enhancedSource
