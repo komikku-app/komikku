@@ -169,6 +169,9 @@ fun SetIntervalDialog(
                 }
                 Spacer(Modifier.height(MaterialTheme.padding.small))
 
+                // KMK -->
+                // Custom intervals are enabled for all build types (no `isReleaseBuildType` gate)
+                // KMK <--
                 if (onValueChanged != null) {
                     Text(stringResource(MR.strings.manga_interval_custom_amount))
 
