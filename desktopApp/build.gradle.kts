@@ -30,6 +30,8 @@ dependencies {
     implementation(libs.compose.multiplatform.material3)
     // Shared Kotlin Multiplatform modules that also target Android.
     implementation(projects.i18n)
+    implementation(projects.i18nSy)
+    implementation(projects.i18nKmk)
     implementation(projects.core.preference)
 }
 

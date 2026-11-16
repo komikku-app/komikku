@@ -7,6 +7,9 @@ plugins {
 
 kotlin {
     androidTarget()
+    // KMK --> Desktop (JVM) target for Compose Multiplatform builds
+    jvm("desktop")
+    // KMK <--
 
     applyDefaultHierarchyTemplate()
 

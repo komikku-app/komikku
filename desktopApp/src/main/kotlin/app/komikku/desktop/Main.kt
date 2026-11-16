@@ -20,12 +20,14 @@ import androidx.compose.ui.window.application
 import tachiyomi.core.common.preference.DesktopPreferenceStore
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 
 /**
  * Komikku desktop entry point (Phase 0 scaffolding).
  *
  * Demonstrates the shared foundation compiled for desktop:
- * - Compose Multiplatform (Material 3) desktop toolchain + the shared :i18n module.
+ * - Compose Multiplatform (Material 3) desktop toolchain + the shared i18n modules (MR, SYMR, KMR).
  * - The shared `PreferenceStore` abstraction persisting data on desktop.
  */
 fun main() {
@@ -38,7 +40,7 @@ fun main() {
     application {
         Window(
             onCloseRequest = ::exitApplication,
-            title = "Komikku",
+            title = MR.strings.app_name.localized(),
         ) {
             App(launchCount = launchCount)
         }
@@ -68,7 +70,9 @@ fun App(launchCount: Int) {
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        StatusLine("Shared i18n resources", "${MR.strings::class.simpleName != null}")
+                        StatusLine("MR (Mihon strings)", MR.strings.label_library.localized())
+                        StatusLine("SYMR (SY strings)", SYMR.strings.action_migrate_now.localized())
+                        StatusLine("KMR (Komikku strings)", KMR.strings.action_library_search.localized())
                         StatusLine("Launches (shared PreferenceStore)", "$launchCount")
                     }
                 }
