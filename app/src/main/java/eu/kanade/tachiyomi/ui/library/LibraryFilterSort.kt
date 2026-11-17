@@ -427,9 +427,13 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
     favoritesById: Map<Long, LibraryItem>,
     trackMap: Map<Long, List<Track>>,
     loggedInTrackerIds: Set<Long>,
+    // SY -->
     // KMK -->
-    // SY's group sort: the global sort when the library is not grouped by category, else null
+    // No default (was `= null` in LibraryScreenModel): callers pass it explicitly
+    // KMK <--
     groupSort: LibrarySort?,
+    // SY <--
+    // KMK -->
     libraryPreferences: LibraryPreferences,
     trackerManager: TrackerManager,
     // KMK <--

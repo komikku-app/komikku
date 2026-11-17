@@ -218,23 +218,25 @@ or downloaded by hand from a repo you trust:
   `LibraryItem` mapping of `getFavoritesFlow`, the `LibraryGroup.BY_DEFAULT` branch of `applyGrouping`
   (`groupByDefaultCategory`), the inline active-filter check (`hasActiveLibraryFilters`) and the
   `ItemPreferences` class (now `LibraryItemPreferences`). The moved lines are the original ones **with their
-  SY / KMK markers** (generated from the pre-move file and compared line by line); the only changes are the
-  signatures (screen-model members became parameters, inside `KMK` markers), `return` in front of the former
-  expression bodies and the `trackerManager` argument to `filterManga` / `filterTracks`. The Android functions
-  are one-line delegations inside KMK markers, so Android behaviour is unchanged. Upstream syncs that touch
-  those bodies must be applied to `LibraryFilterSort.kt`. **Could it be smaller?** Not usefully: desktop needs
-  every moved piece (item mapping, filters, grouping, sort, search), the rest of the screen model (selection,
-  dialogs, downloads, sync, merge, grouping by source / status / tracker) is Android-bound and stays, and a
-  `desktopCopy` of the whole screen model is impossible (Android resources, `FavoritesSyncHelper`,
-  recommendations, `LibraryUpdateJob`). Keeping desktop copies instead would drift (it already had: the review
-  found a different system-category rule in the desktop grouping copy, now removed). Desktop inherits
-  Android's quirks on purpose, e.g. a local-source entry never passes a `-term` exclusion (its source-id
-  string is null); `LibraryPagesTest` pins that. Markers: the moved lines keep their SY / KMK markers for
-  provenance (explained in the file header); code written for the move uses KMK markers only, and the
-  original's unclosed KMK block in the `ItemPreferences` mapping is now closed. Desktop deviations: `isLibraryEmpty` is the unfiltered
-  library (no empty-library flash while a query is cleared) and the global "downloaded only" counts as an
-  active filter for the empty-state message (`error_no_match` with the search / filter controls instead of
-  "Your library is empty").
+  SY / KMK markers** (generated from the pre-move file and compared line by line). The only changes to the
+  moved code: new signatures (screen-model members became parameters, inside KMK markers); `return` in front
+  of former expression bodies; the `trackerManager` argument to `filterManga` / `filterTracks`; `filterManga`
+  and `filterTracks` are file-private; `applyLibrarySort`'s SY `groupSort` parameter lost its `= null` default
+  (callers pass it; KMK note inside the SY block); the original's unclosed KMK block in the `ItemPreferences`
+  mapping is closed. Code written for the move uses KMK markers only (explained in the file header). The
+  Android functions are one-line delegations inside KMK markers, so Android behaviour is unchanged;
+  `applyGrouping` keeps `master`'s marker lines. Upstream syncs that touch those bodies must be applied to
+  `LibraryFilterSort.kt`. **Could it be smaller?** Not usefully: desktop needs every moved piece (item
+  mapping, filters, grouping, sort, search), the rest of the screen model (selection, dialogs, downloads,
+  sync, merge, grouping by source / status / tracker) is Android-bound and stays, and a `desktopCopy` of the
+  whole screen model is impossible (Android resources, `FavoritesSyncHelper`, recommendations,
+  `LibraryUpdateJob`). Keeping desktop copies instead would drift (it already had: the review found a
+  different system-category rule in the desktop grouping copy, now removed). Desktop inherits Android's quirks
+  on purpose, e.g. a local-source entry never passes a `-term` exclusion (its source-id string is null);
+  `LibraryPagesTest` pins that. Desktop deviations: `isLibraryEmpty` is the unfiltered library (no
+  empty-library flash while a query is cleared) and the global "downloaded only" counts as an active filter
+  for the empty-state message (`error_no_match` with the search / filter controls instead of "Your library is
+  empty").
 - **Phase 8 review fixes.** Backup create / restore moved from the screen model's scope to the
   app-lifetime `DesktopBackupJobs` (DI singleton; the screen observes its status, cancel is reported as
   cancelled). "Add tracking" with an enhanced tracker (Komga / Kavita / Suwayomi) binds `match(manga)` +
