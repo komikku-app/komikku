@@ -274,6 +274,13 @@
     <string name="year_in_review_top_titles">Most read titles</string>
     <string name="year_in_review_top_genres">Favorite genres: %1$s</string>
     <string name="year_in_review_hide_titles">Hide titles and genres when sharing</string>
+    <string name="channel_release_reminder">Release reminders</string>
+    <string name="release_reminder_title">Chapters expected today</string>
+    <string name="release_reminder_more">%1$s and %2$d more</string>
+    <string name="pref_category_release_reminder">Release reminders</string>
+    <string name="pref_release_reminder">Daily release reminder</string>
+    <string name="pref_release_reminder_summary">A notification with the titles of your library that are expected to release today. Based on their past releases, nothing is downloaded or sent</string>
+    <string name="pref_release_reminder_time">Reminder time</string>
     <string name="action_auto_scroll">Auto-scroll</string>
     <string name="action_auto_scroll_start">Start auto-scroll</string>
     <string name="action_auto_scroll_stop">Stop auto-scroll</string>
