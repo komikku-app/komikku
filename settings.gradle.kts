@@ -79,4 +79,7 @@ include(":presentation-core")
 include(":presentation-widget")
 include(":source-api")
 include(":source-local")
+// KMK --> Host for Mangayomi JavaScript manga extensions (docs/kmp-desktop/PLAN.md, section 8)
+include(":source-js")
+// KMK <--
 include(":telemetry")

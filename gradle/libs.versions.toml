@@ -46,6 +46,9 @@ quickjs-android = { group = "com.github.zhanghai.quickjs-java", name = "quickjs-
 # desktop `app.cash.quickjs.QuickJs` in :desktop:android-compat.
 quickjs-kt = "io.github.dokar3:quickjs-kt:1.0.15"
 # KMK <--
+# KMK --> Multiplatform jsoup port (JVM + iOS) for the DOM bridge of :source-js (Mangayomi JavaScript sources).
+ksoup = "com.fleeksoft.ksoup:ksoup:0.2.6"
+# KMK <--
 
 jsoup = "org.jsoup:jsoup:1.23.2"
 
