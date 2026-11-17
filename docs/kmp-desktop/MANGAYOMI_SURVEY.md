@@ -79,7 +79,7 @@ with an empty list.
 |---------|---:|---:|
 | `Client.get` (`new Client()` without options) | 18 | 114 |
 | `async`/`await` | 18 | 114 |
-| `new Date(…)` / `Date.parse` (to build `dateUpload`) | 13 | 109 |
+| `new Date(…)` / `Date.parse` (mostly to build `dateUpload`) | 13 | 109 |
 | `SharedPreferences.get` | 13 | 69 |
 | `this.source.baseUrl` | 13 | 65 |
 | `Document` + `select`/`selectFirst` + `Element.text` | 12 | 24 |
@@ -207,7 +207,8 @@ before the DOM-heavy single-site sources are tested.
   version can lag the file.
 - **The needed bridge is much smaller than the contract:** no XPath, no WebView, no date parsing, no
   unpacker, no extractor, one crypto call, no `Client` options.
-- **Engine-sensitive dates:** 13 files rely on QuickJS's own `Date` parsing for chapter dates.
+- **Engine-sensitive dates:** 13 files use `new Date(…)`, mostly to parse chapter dates with QuickJS's own
+  `Date` parser.
 - **No app-version checks** (`appMinVerReq` is `0.5.0` everywhere), no Dart-only helpers and no
   anime-only API calls in manga files. `mangapill.js` (dead entry) stubs `getVideoList`.
 - **Mangayomi quirks sources depend on:** `selectFirst` never returns null; invalid selectors give an

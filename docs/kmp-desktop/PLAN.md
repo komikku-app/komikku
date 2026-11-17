@@ -330,8 +330,10 @@ test and package: [`BUILDING.md`](BUILDING.md).
 
 ## 8. iOS: JavaScript sources (Mangayomi extensions)
 
-Status: planned, not started. Facts about Mangayomi below come from reading its source
-(`kodjodevf/mangayomi` at `bc0b410`, 2026-11-16); items marked *(verify)* still need checking.
+Status: I0 done (8.9), I1 onward not started. Facts about Mangayomi below come from reading its source
+(`kodjodevf/mangayomi` at `bc0b410`, 2026-11-16); the items once marked *(verify)* were resolved in I0
+(8.9). The full contract is [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md), the usage scan
+[`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
 
 ### 8.1 Why a different source model
 
@@ -350,11 +352,13 @@ first, on Linux, before any iOS code exists. That is how the work is ordered.
 
 - **Index:** `index.json` in `kodjodevf/mangayomi-extensions`, a JSON array. Per entry: `id`,
   `name`, `baseUrl`, `lang`, `sourceCodeUrl` (raw `.js` or `.dart` file), `version`, `itemType`
-  (manga / anime / novel), `sourceCodeLanguage` (0 = Dart, otherwise JavaScript), `appMinVerReq`,
-  plus icon and flags *(verify the full field list)*.
-- **Extension shape:** a JavaScript class extending a host-defined `MProvider` base class, with
-  methods for popular, latest, search, details, page list, filters and source preferences
-  *(verify exact names and return shapes from `lib/eval/javascript/` in Mangayomi)*.
+  (0 manga / 1 anime / 2 novel), `sourceCodeLanguage` (0 Dart, 1 JavaScript, 2 Mihon, 3 LNReader,
+  4 Aidoku), `appMinVerReq`, plus `iconUrl`, `apiUrl`, `typeSource`, `isNsfw`, `hasCloudflare`,
+  `isFullData`, `dateFormat`, `dateFormatLocale`, `additionalParams`, `notes`, `isManga`. No hash.
+- **Extension shape:** a global class `DefaultExtension` extending a host-defined `MProvider` base
+  class: async `getPopular(page)`, `getLatestUpdates(page)`, `search(query, page, filters)`,
+  `getDetail(url)`, `getPageList(url)`; sync `getHeaders(url)`, `getFilterList()`,
+  `getSourcePreferences()` and the getter `supportsLatest` (shapes in the contract, section 3).
 - **Host bridge** (extensions call it through `sendMessage`): HTTP (get/post/put/delete/patch/
   head with headers and body), CSS and XPath selectors over HTML, crypto helpers (AES, CryptoJS
   subset, AES-GCM), a JS unpacker, string utilities, `evaluateJavascriptViaWebview`, and
@@ -362,8 +366,8 @@ first, on Linux, before any iOS code exists. That is how the work is ordered.
 
 **Scope:** JavaScript sources with `itemType` manga only. Out of scope: Dart sources (they need
 the `d4rt` Dart interpreter), anime and novel sources, LNReader plugins, Aidoku WASM sources.
-Of the 363 index entries a bit over 100 are JavaScript *(verify the manga-only count in I0)*; the
-rest are Dart and will not load.
+Of the 363 index entries 114 are JavaScript manga, served by 18 files (86 of them are MangaDex and
+Comick language variants); the other 249 are Dart and will not load.
 
 ### 8.3 Design decisions
 
@@ -374,9 +378,10 @@ and `iosSimulatorArm64` are declared only when the build host is macOS.
 
 **I-D2 — Engine behind an interface.** `JsEngine` (evaluate, call function, register host
 callback, close) with one implementation per platform: the existing QuickJS bindings on Android
-and desktop, and on iOS either the same QuickJS library's Native target *(verify that
-`quickjs-kt` publishes iOS targets)* or the system JavaScriptCore, which runs without JIT in
-third-party apps. One engine instance per source, created lazily, closed on idle.
+and desktop, and on iOS either the same QuickJS library's Native target (`quickjs-kt` 1.0.15
+publishes `iosArm64`, `iosSimulatorArm64` and `iosX64`) or the system JavaScriptCore, which runs
+without JIT in third-party apps. Chosen in 8.9: `quickjs-kt` on all three. One engine instance per
+source, created lazily, closed on idle.
 
 **I-D3 — Bridge services behind interfaces.** `HostHttp`, `HostDom`, `HostCrypto`,
 `HostWebView`. On Android and desktop they delegate to what exists (`NetworkHelper`'s OkHttp
@@ -392,14 +397,14 @@ Mangayomi source id plus a fixed namespace, so they are stable across devices an
 with Mihon source ids.
 
 **I-D5 — Separate store type.** A Mangayomi repository is added by URL like a Mihon one, but is a
-distinct store type: installing means downloading the `.js` text, verifying its hash against the
-index, and caching it; there is no APK, signature or trust-by-certificate. The UI labels these
+distinct store type: installing means downloading the `.js` text, recording its SHA-256 (the index
+carries no hash, 8.9), and caching it; there is no APK, signature or trust-by-certificate. The UI labels these
 sources as JavaScript sources. Each engine gets only the bridge API, no file or process access.
 
 **I-D6 — Written from scratch against the contract.** The host and bridge are new Kotlin code;
 nothing is copied from Mangayomi. The `MProvider` base class text the host injects must match
-Mangayomi's, so its licence has to be checked before reusing that text *(verify: Mangayomi and
-its extensions repo licences)*.
+Mangayomi's, so its licence has to be checked before reusing that text (both repositories are
+Apache-2.0, see 8.9).
 
 **I-D7 — iOS app is a separate, smaller app at first.** The Android/desktop shared code is
 JVM-only by design. iOS gets its own Compose Multiplatform app on a common core, reusing what is
@@ -452,6 +457,8 @@ desktop and Android. **Milestone I-B (after I6):** the same on an iPhone.
 3. **Licence** of the injected `MProvider` base class text (I-D6).
 4. **Default repository:** ship with no Mangayomi repository preconfigured (user adds the URL),
    as with Mihon repositories.
+5. **QuickJS on Android** (8.9): replace the zhanghai `quickjs-android` AAR by the `quickjs-kt`-backed
+   `app.cash.quickjs.QuickJs` compat class, or keep JavaScript sources off Android for now.
 
 ### 8.8 Later options (not planned)
 
@@ -460,3 +467,117 @@ desktop and Android. **Milestone I-B (after I6):** the same on an iPhone.
   sideload-only.
 - **Thin client mode:** the iOS app talks to a Komikku desktop instance or a Suwayomi server.
 - **Aidoku WASM sources** through a Kotlin WASM interpreter.
+
+### 8.9 I0 findings
+
+Done 2026-11-17 from `kodjodevf/mangayomi` `bc0b410`, `kodjodevf/mangayomi-extensions` `6004f1f`,
+`entityJY/mangayomi-extensions-eJ` `f21a60b` and Maven Central metadata. Details:
+[`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) (what to implement) and
+[`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md) (what the sources use). "Unverified" marks what could not be
+confirmed from source or metadata.
+
+**Numbers.** The kodjodevf index has 363 entries, all manga: 249 Dart, **114 JavaScript from 18 files**.
+MangaDex (45 languages) and Comick (41) are 86 of the 114; 14 files serve one site each. Every JS manga
+entry points at a third-party fork (`entityJY/mangayomi-extensions-eJ`, last commit 2026-01-08; the
+kodjodevf extensions repository's last commit is 2025-10-01), and 2 of the 18 files are already 404 there.
+The fork's own index lists 115 JS manga entries from 19 files. 1 entry is NSFW.
+
+**Bridge actually used.** All files: `Client.get`, `async`/`await`, JSON. Then: `SharedPreferences.get`
+13 files, CSS DOM (`Document`, `select`/`selectFirst`, `text`, `attr`, `getSrc`/`getHref`) 12, filters 15,
+preferences 13, `cryptoHandler` 1, `Client.post` 1 (fork only). **Unused by every JS manga source:**
+XPath, `parseDates`, WebView evaluation, unpackers, CryptoJS / GCM, extractors, `Client` options.
+Cumulative coverage of the 114 entries: core + filter models 37%, + preferences 78%, + CSS DOM 99%,
++ `cryptoHandler` 100%.
+
+**Contract surprises** (all in the contract): the index has **no hash**, and files change under an
+unchanged version (I-D5 corrected above: record a SHA-256 at install and show changes); ids are Dart
+`String.hashCode` values chosen by the index generator, so they must be taken from the index; Mangayomi
+creates a fresh engine for every data call and sets no time or memory limit; `selectFirst` never returns
+null and invalid selectors give empty results; `Element.text` and `:contains` include `<script>` text
+(unlike jsoup); `Element.xpath`/`xpathFirst`/`hasAttr` are broken in Mangayomi; responses' cookies are not
+stored and TLS certificates are not verified by default; sources read filters by position, so `search`
+must always get the full default list (Mangayomi's global search passes `[]`); 13 files use `new Date(…)`,
+mostly to parse chapter dates with QuickJS's own parser.
+
+**Licences** (from the LICENSE files; the final call is the maintainer's, 8.7 item 3):
+
+- `kodjodevf/mangayomi`: Apache-2.0 ("Copyright 2023 Moustapha Kodjo Amadou" in the README); no NOTICE
+  file. Its QuickJS binding `kodjodevf/flutter_qjs` is MIT.
+- `kodjodevf/mangayomi-extensions`: Apache-2.0, same copyright line; the fork that hosts the JS files,
+  `entityJY/mangayomi-extensions-eJ`: Apache-2.0. The `.js` files carry no per-file headers.
+- The prelude is JavaScript text inside Dart string literals in `lib/eval/javascript/`
+  (`service.dart` `MProvider`, `http.dart` `Client`, `dom_selector.dart` `Document`/`Element`,
+  `utils.dart` helpers, `js_common.dart` console and string helpers, `preferences.dart`,
+  `extractors.dart`): about 590 lines / 16 KB, of which the extractor, HLS and EPUB parts (about 4 KB) are
+  not needed.
+- (a) **Prelude:** Apache-2.0 permits copying and modifying with the licence text, kept copyright
+  notices and a statement of changes; Komikku is Apache-2.0, so a copied prelude would be compatible.
+  The plan keeps I-D6: write our own prelude that exposes the same names (class, method, channel and
+  field names are interface facts), which needs no attribution; if any text is copied, the file gets the
+  Apache header and attribution.
+- (b) **Installing extensions:** users add a repository URL and the app downloads the source text at run
+  time; Komikku distributes none of it. The licence permits that use; nothing has to ship with the app.
+  App Store rules on downloaded code are a separate, non-licence question (8.7 item 2).
+
+**JS engine** (verified from Maven Central Gradle metadata, the published AAR/JAR contents and the
+`quickjs-kt` README):
+
+- `io.github.dokar3:quickjs-kt` 1.0.15 (the catalog's version; latest 1.0.18, which adds tvOS) publishes
+  one KMP API for Android (`quickjs-kt-android` AAR), JVM (`quickjs-kt-jvm`, natives for Linux x64/arm64,
+  macOS x64/arm64, Windows x64), **`iosArm64`, `iosSimulatorArm64`, `iosX64`**, macOS, Linux and MinGW;
+  built against Kotlin stdlib 2.4.10 and coroutines 1.11.0; Apache-2.0. API: suspend `evaluate` (script
+  or module), sync and **async function bindings** (an async binding is a suspend function on the Kotlin
+  side and a promise in JS), object bindings, `memoryLimit`, `maxStackSize`, `evaluationTimeoutMillis`,
+  `interruptEvaluation()`, interruption on coroutine cancellation, `gc()`, bytecode `compile`. Its native
+  library embeds QuickJS **`2026-06-04`, the same version Mangayomi ships**.
+- Android today uses `com.github.zhanghai.quickjs-java:quickjs-android:547f5b1597` for
+  `app.cash.quickjs.QuickJs` (the API Mihon extensions use). Both AARs ship `jni/<abi>/libquickjs.so`
+  (different JNI symbols, same file name; `quickjs-kt` loads it by that name), so **they cannot be packaged
+  together as published** (the Gradle failure itself was not run: unverified; `pickFirst` would break one
+  of them).
+- Alternatives: *JavaScriptCore* on iOS through Kotlin/Native's `platform.JavaScriptCore` (availability
+  of the full C API there unverified) — no binary cost and no JIT needed, but a second engine with
+  different `Date` parsing and errors, no public memory or execution-time limit, separate binding code;
+  not recommended. *Zipline* (`app.cash.zipline` 1.28.0, Android/JVM/iOS) — QuickJS-based but built for
+  Kotlin/JS services; too heavy for third-party scripts. *zhanghai quickjs-android* — Android only,
+  synchronous, no async bindings. *Our own renamed QuickJS build* — possible, adds a native build.
+- **Recommendation: `quickjs-kt` on all three platforms.** Same QuickJS as Mangayomi (dates, regex,
+  error behaviour), one binding and one test suite for Android, desktop and iOS, async bindings that map
+  directly onto `Client` calls, built-in time and memory limits and interruption (8.6), already used and
+  tested here on desktop (step 1.4). On Android this means replacing the zhanghai AAR by the
+  `quickjs-kt`-backed compat `app.cash.quickjs.QuickJs` that desktop already has, moved where Android can
+  use it, after Android parity tests of `JavaScriptEngine` and a check that extensions do not need
+  `QuickJs.set`/`get` (not implemented by the compat class). Because that changes how Mihon extensions
+  run on Android, it is a maintainer decision (8.7 item 5). If it is declined, `:source-js` starts on
+  desktop only and Android JS sources wait.
+
+**iOS bridge libraries** (Maven Central metadata; all publish `iosArm64`, `iosSimulatorArm64`,
+`iosX64`):
+
+| Need | Library | Notes |
+|------|---------|-------|
+| HTTP | `io.ktor:ktor-client-darwin` 3.6.1 | Android/desktop keep `NetworkHelper`'s OkHttp (cookie jar and Cloudflare handling are a superset of Mangayomi's). |
+| HTML + CSS | `com.fleeksoft.ksoup:ksoup` 0.2.6 (MIT, jsoup port) | **No XPath** (none in the JVM jar or README). No manga source needs XPath, so it leaves I2; if needed later: jsoup `selectXpath` on JVM, a subset or libxml2 cinterop on iOS. |
+| Crypto | `dev.whyoleg.cryptography` 0.6.0: `cryptography-core`, `provider-apple` / `provider-cryptokit` (iOS), `provider-jdk` (JVM) | Only AES-CBC is needed now (one source). A hand-written AES-CBC in common code is the alternative; decide in I2. MD5 support in the Apple provider (only for CryptoJS) unverified. |
+| Dates | `org.jetbrains.kotlinx:kotlinx-datetime` 0.8.0 | Only if `parseDates` is ever ported (no source uses it); Dart `intl` month names would need CLDR data beyond this library. |
+
+These were built with Kotlin 2.1–2.4.10 stdlibs. A Kotlin 2.4.20 compiler reads klibs made by older
+compilers, but no iOS build was run here (unverified until I5 on macOS).
+
+**Go / no-go: go for I1–I4**, with two conditions. (1) The Android engine decision (8.7 item 5);
+without it, I1–I4 run on desktop only. (2) The case for the work is iOS: on Android and desktop the 18
+sites add little (several are also Mihon extension targets — overlap not counted: unverified), and the
+JS catalogue is small, concentrated and maintained in a third-party fork. Before starting I5, re-check
+the catalogue size and maintenance and confirm the iOS app is still wanted.
+
+**Refined effort and order:**
+
+| Step | Size | Scope after I0 |
+|------|------|----------------|
+| I1 | small–medium | `:source-js` (KMP, `android` + `desktop` targets); `JsEngine` on `quickjs-kt`; own prelude with Mangayomi's names; call convention and JSON marshalling; `setTimeout`, single-argument `console`, string helpers; per-call timeout, memory limit, cancellation; errors with the JS stack. Desktop first if the Android decision is pending. |
+| I2 | small (was medium) | `Client` (all verbs share one path; GET/POST tested), response object; `SharedPreferences` (`get` with default materialisation, `getString`/`setString`); CSS DOM with Mangayomi's semantics (never-null elements, `textContent`, `:contains` on it, regex `getSrc`/`getHref`, selector errors → empty); `cryptoHandler`; stubs that reject clearly for WebView, extractors, HLS, EPUB. XPath, `parseDates`, unpackers, CryptoJS, GCM deferred until a source needs them. Conformance fixtures follow the contract. |
+| I3 | medium | Filter models (8 types, full default list always sent, original JSON round-tripped) and the 4 preference types first — they gate 78% of entries; then one `getDetail` serving details and chapters, `dateUpload` parsing, per-page headers kept with each page, `getHeaders` for images, ids from the index id. |
+| I4 | medium | Index and `repo.json` parsing, `compareVersions`, SHA-256 recorded at install, one source per id across repositories, clear errors for 404 source files, NSFW flag, `notes` banner, `i18n-kmk` strings. |
+
+Order: I1, then I2 and I3's filter/preference models in parallel, then the rest of I3, then I4. Real
+websites stay out of CI; fixtures cover the contract.

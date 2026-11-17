@@ -485,8 +485,8 @@ Declared values are defaults; the user's choice is stored per source and key and
   entityJY index) `eval`s script text taken from the website to get its image list — in-engine, and
   acceptable only because the engine has no capabilities beyond the bridge. Another unpacks packed
   scripts with its own JavaScript code instead of `unpackJs`.
-- **`Date.parse` / `new Date(string)`** is used by 13 of 18 files to build `dateUpload`; its leniency is
-  QuickJS's, so the host engine should be the same QuickJS line to get the same dates.
+- **`Date.parse` / `new Date(…)`** appears in 13 of 18 files, mostly to build `dateUpload`; its leniency
+  is QuickJS's, so the host engine should be the same QuickJS line to get the same dates.
 - **Absent globals:** `atob`, `btoa`, `fetch`, `XMLHttpRequest`, `TextEncoder`/`TextDecoder`, `URL`,
   `URLSearchParams`, `structuredClone`, `queueMicrotask`, `clearTimeout`, `setInterval`, `require`,
   `module`, `window`, `document`. Sources that need base64 bring their own (Mangafire defines local

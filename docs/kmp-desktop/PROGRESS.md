@@ -69,6 +69,22 @@ panel. Not verified: a real window / GPU, real extensions or websites, local arc
 (the loader path is tested without the UI), EPUB chapters, RAR / 7z chapters in the reader, large real-world
 images, mouse gestures (only keys and clicks are driven in tests).
 
+## iOS / JavaScript sources
+
+Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
+[`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md); usage scan: [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
+
+| Step | Status | Commit | Notes |
+|------|--------|--------|-------|
+| I0 Contract and feasibility | done | see git log (`docs(kmp): … Mangayomi …`) | Docs only. 114 JS manga entries from 18 files in the kodjodevf index (86 are MangaDex / Comick variants; files hosted by the `entityJY` fork; 2 files 404). Bridge used: `Client.get`, CSS DOM, `SharedPreferences`, filters, preferences, one `cryptoHandler`; no XPath, WebView, `parseDates` or unpacker. Engine: `quickjs-kt` 1.0.15 (iOS targets verified, QuickJS 2026-06-04 like Mangayomi); on Android it clashes with the zhanghai AAR (`libquickjs.so`), maintainer decision 8.7 item 5. Licences: Apache-2.0 (app, index, fork), MIT (`flutter_qjs`). Go for I1–I4 with conditions (8.9). |
+| I1 Engine and host core | todo | | |
+| I2 Bridge | todo | | |
+| I3 Source adapter | todo | | |
+| I4 Store and UI | todo | | |
+| I5 Common core for iOS | todo | | Needs macOS. |
+| I6 iOS app | todo | | Needs macOS. |
+| I7 Distribution and CI | todo | | Needs macOS. |
+
 ## Files moved out of upstream paths
 
 Record every file moved to `src/androidMain` (old path → new path) so upstream cherry-picks can be
