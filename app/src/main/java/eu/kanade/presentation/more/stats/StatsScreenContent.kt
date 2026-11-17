@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -38,6 +39,9 @@ import kotlin.time.toDuration
 fun StatsScreenContent(
     state: StatsScreenState.Success,
     paddingValues: PaddingValues,
+    // KMK -->
+    onClickYearInReview: () -> Unit,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = paddingValues,
@@ -48,7 +52,7 @@ fun StatsScreenContent(
         }
         // KMK -->
         item {
-            ActivitySection(state.activity)
+            ActivitySection(state.activity, onClickYearInReview)
         }
         // KMK <--
         item {
@@ -101,6 +105,7 @@ private fun LazyItemScope.OverviewSection(
 @Composable
 private fun LazyItemScope.ActivitySection(
     data: StatsData.Activity,
+    onClickYearInReview: () -> Unit,
 ) {
     val streak = data.streak
     val today = remember { LocalDate.now() }
@@ -131,6 +136,9 @@ private fun LazyItemScope.ActivitySection(
             end = today,
             modifier = Modifier.padding(MaterialTheme.padding.medium),
         )
+        TextButton(onClick = onClickYearInReview) {
+            Text(stringResource(KMR.strings.year_in_review_title))
+        }
     }
 }
 // KMK <--
