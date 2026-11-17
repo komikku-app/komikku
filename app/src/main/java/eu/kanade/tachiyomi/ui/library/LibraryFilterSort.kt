@@ -59,9 +59,13 @@ import tachiyomi.domain.source.model.Source as DomainSource
 /*
  * KMK: the library's filter, grouping, sort and text-search logic, moved out of `LibraryScreenModel` so the
  * desktop app runs the same code (borrowed as `desktopCopy`, see app-shared/borrowed-app-sources.gradle.kts and
- * docs/kmp-desktop/PROGRESS.md). Function bodies are the original ones, with their SY / KMK markers; only the
- * signatures changed (screen model members became parameters, marked `KMK`). `LibraryScreenModel` calls these
- * functions with its own dependencies. Upstream changes to the moved code must be applied here.
+ * docs/kmp-desktop/PROGRESS.md). `LibraryScreenModel` calls these functions with its own dependencies.
+ *
+ * Markers: this file is KMK-owned, but the moved function bodies keep the `// SY` / `// KMK` markers they had in
+ * `LibraryScreenModel` (and the SY block around the text search), so their provenance stays visible and upstream
+ * SY / Mihon changes can still be matched and applied here. They are not new SY code. Everything written for
+ * the move (signatures, parameters, `return`s, glue such as `hasActiveLibraryFilters`) uses KMK markers only, and
+ * so must any future change. Upstream changes to the moved code must be applied here.
  */
 
 /** Display / filter preferences of library items (formerly `LibraryScreenModel.ItemPreferences`). */
@@ -142,11 +146,15 @@ fun libraryItemPreferencesFlow(
             sourceBadge = it[13] as Boolean,
             useLangIcon = it[14] as Boolean,
             filterCategories = it[15] as Boolean,
+            // KMK <--
         )
     }
 }
 
-/** One library item with the badges [preferences] enable (formerly the mapping in `LibraryScreenModel.getFavoritesFlow`). */
+/**
+ * One library item with the badges [preferences] enable (formerly the mapping in
+ * `LibraryScreenModel.getFavoritesFlow`).
+ */
 suspend fun LibraryManga.toLibraryItem(
     preferences: LibraryItemPreferences,
     // KMK -->
@@ -419,10 +427,9 @@ fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(
     favoritesById: Map<Long, LibraryItem>,
     trackMap: Map<Long, List<Track>>,
     loggedInTrackerIds: Set<Long>,
-    // SY -->
-    groupSort: LibrarySort? = null,
-    // SY <--
     // KMK -->
+    // SY's group sort: the global sort when the library is not grouped by category, else null
+    groupSort: LibrarySort?,
     libraryPreferences: LibraryPreferences,
     trackerManager: TrackerManager,
     // KMK <--
@@ -618,7 +625,7 @@ suspend fun filterLibraryByQuery(
 }
 
 /** Whether [libraryManga] matches every query component (formerly `LibraryScreenModel.filterManga`). */
-fun filterManga(
+private fun filterManga(
     queries: List<QueryComponent>,
     libraryManga: LibraryManga,
     tracks: List<Track>?,
@@ -649,7 +656,14 @@ fun filterManga(
                         (
                             loggedInTrackServices.isNotEmpty() &&
                                 tracks != null &&
-                                filterTracks(query, tracks, context, /* KMK --> */ trackerManager /* KMK <-- */)
+                                filterTracks(
+                                    query,
+                                    tracks,
+                                    context,
+                                    // KMK -->
+                                    trackerManager,
+                                    // KMK <--
+                                )
                             ) ||
                         (genre.fastAny { it.contains(query, true) }) ||
                         (searchTags?.fastAny { it.name.contains(query, true) } == true) ||
@@ -682,7 +696,14 @@ fun filterManga(
                                 (
                                     loggedInTrackServices.isEmpty() ||
                                         tracks == null ||
-                                        !filterTracks(query, tracks, context, /* KMK --> */ trackerManager /* KMK <-- */)
+                                        !filterTracks(
+                                            query,
+                                            tracks,
+                                            context,
+                                            // KMK -->
+                                            trackerManager,
+                                            // KMK <--
+                                        )
                                     ) &&
                                 (!genre.fastAny { it.contains(query, true) }) &&
                                 (searchTags?.fastAny { it.name.contains(query, true) } != true) &&

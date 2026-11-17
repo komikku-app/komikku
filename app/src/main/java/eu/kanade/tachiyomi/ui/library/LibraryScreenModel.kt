@@ -429,8 +429,6 @@ class LibraryScreenModel(
                 // Body moved to LibraryFilterSort.kt (shared with the desktop app)
                 return groupByDefaultCategory(categories, showHiddenCategories)
             }
-            // KMK <--
-            // KMK -->
             LibraryGroup.UNGROUPED -> {
                 return mapOf(
                     Category(
