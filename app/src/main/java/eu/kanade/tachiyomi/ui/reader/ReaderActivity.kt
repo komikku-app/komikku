@@ -83,6 +83,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.shortcut.ContinueReadingShortcut
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -314,6 +315,11 @@ class ReaderActivity : BaseActivity() {
                     is ReaderViewModel.Event.SetCoverResult -> {
                         onSetAsCoverResult(event.result)
                     }
+                    // KMK -->
+                    ReaderViewModel.Event.AutoScrollTimerElapsed -> {
+                        toast(KMR.strings.auto_scroll_sleep_timer_elapsed)
+                    }
+                    // KMK <--
                 }
             }
             .launchIn(lifecycleScope)
@@ -546,6 +552,9 @@ class ReaderActivity : BaseActivity() {
     override fun onPause() {
         lifecycleScope.launchNonCancellable {
             viewModel.updateHistory()
+            // KMK -->
+            ContinueReadingShortcut.update(this@ReaderActivity)
+            // KMK <--
         }
 
         // AM (DISCORD) -->

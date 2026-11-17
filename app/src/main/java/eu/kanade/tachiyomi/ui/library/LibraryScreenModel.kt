@@ -1179,7 +1179,11 @@ class LibraryScreenModel(
 
     fun getRandomLibraryItemForCurrentCategory(): LibraryItem? {
         val state = state.value
-        return state.getItemsForCategoryId(state.activeCategory?.id).randomOrNull()
+        // KMK -->
+        // Prefer titles that still have something to read, a fully read one makes a poor suggestion
+        val items = state.getItemsForCategoryId(state.activeCategory?.id)
+        return items.filter { it.libraryManga.unreadCount > 0 }.randomOrNull() ?: items.randomOrNull()
+        // KMK <--
     }
 
     fun showSettingsDialog() {

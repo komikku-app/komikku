@@ -292,6 +292,20 @@ private fun WebtoonViewerSettings(
             pref = screenModel.preferences.webtoonAutoScrollStopAtChapterEnd(),
         )
     }
+    val sleepTimer by screenModel.preferences.autoScrollSleepTimerMinutes().collectAsState()
+    SliderItem(
+        value = sleepTimer,
+        valueRange = ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_RANGE,
+        steps = ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_SLIDER_STEPS,
+        label = stringResource(KMR.strings.pref_auto_scroll_sleep_timer),
+        valueString = if (sleepTimer == 0) {
+            stringResource(KMR.strings.auto_scroll_sleep_timer_off)
+        } else {
+            stringResource(KMR.strings.auto_scroll_sleep_timer_value, sleepTimer)
+        },
+        onChange = { screenModel.preferences.autoScrollSleepTimerMinutes().set(it) },
+        pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+    )
     // KMK <--
 
     // SY -->

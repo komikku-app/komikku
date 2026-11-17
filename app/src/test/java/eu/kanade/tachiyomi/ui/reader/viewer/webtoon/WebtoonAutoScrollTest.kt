@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
+import eu.kanade.tachiyomi.data.shortcut.ContinueReadingShortcut
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -248,6 +249,35 @@ class WebtoonAutoScrollTest {
         speed.set(250)
         assertEquals(250, speed.get())
         assertEquals(ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_DEFAULT, speed.defaultValue())
+    }
+
+    // endregion
+
+    // region Sleep timer and shortcut
+
+    @Test
+    fun `sleep timer is off by default and reaches both ends of the slider`() {
+        assertEquals(0, ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_DEFAULT)
+        val values = ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_RANGE.toList()
+        assertEquals(0, values.first())
+        assertEquals(ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_MAX, values.last())
+        // the slider has the two ends plus these stops in between
+        assertEquals(values.size - 2, ReaderPreferences.AUTO_SCROLL_SLEEP_TIMER_SLIDER_STEPS)
+    }
+
+    @Test
+    fun `sleep timer and shortcut preferences have the expected defaults`() {
+        val preferences = ReaderPreferences(InMemoryPreferenceStore())
+        assertEquals(0, preferences.autoScrollSleepTimerMinutes().get())
+        assertFalse(preferences.continueReadingShortcut().get())
+    }
+
+    @Test
+    fun `shortcut label keeps short titles and shortens long ones`() {
+        assertEquals("Berserk", ContinueReadingShortcut.labelFor("Berserk"))
+        val long = ContinueReadingShortcut.labelFor("A Very Long Title That Does Not Fit On A Launcher")
+        assertEquals(25, long.length)
+        assertTrue(long.endsWith("…"))
     }
 
     // endregion
