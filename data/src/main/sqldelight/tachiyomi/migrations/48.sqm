@@ -1,0 +1,11 @@
+-- Reading log: time read per day and per title, for the streak, the heatmap and the year in review.
+-- `day` is the epoch day in the time zone of the device when the title was read.
+-- There is no foreign key on purpose, the log must not disappear when a title is removed.
+CREATE TABLE reading_log(
+    day INTEGER NOT NULL,
+    manga_id INTEGER NOT NULL,
+    read_time INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, manga_id)
+);
+
+CREATE INDEX idx_reading_log_manga_id ON reading_log(manga_id);

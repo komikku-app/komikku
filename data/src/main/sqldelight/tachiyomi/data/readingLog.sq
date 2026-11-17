@@ -1,0 +1,48 @@
+CREATE TABLE reading_log(
+    day INTEGER NOT NULL,
+    manga_id INTEGER NOT NULL,
+    read_time INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, manga_id)
+);
+
+CREATE INDEX idx_reading_log_manga_id ON reading_log(manga_id);
+
+addReadTime:
+INSERT INTO reading_log(day, manga_id, read_time)
+VALUES (:day, :mangaId, :readTime)
+ON CONFLICT(day, manga_id)
+DO UPDATE SET read_time = read_time + excluded.read_time;
+
+getDailyReadTime:
+SELECT day, SUM(read_time) AS read_time
+FROM reading_log
+WHERE day BETWEEN :from AND :to
+GROUP BY day;
+
+getReadDays:
+SELECT DISTINCT day
+FROM reading_log;
+
+getHistoryDates:
+SELECT last_read
+FROM history
+WHERE last_read > 0;
+
+getTopMangaByReadTime:
+SELECT M._id AS manga_id, M.title, M.genre, SUM(L.read_time) AS read_time
+FROM reading_log L
+JOIN mangas M ON M._id = L.manga_id
+WHERE L.day BETWEEN :from AND :to
+GROUP BY M._id
+ORDER BY read_time DESC
+LIMIT :limit;
+
+getTopMangaByChapters:
+SELECT M._id AS manga_id, M.title, M.genre, COUNT(*) AS chapter_count
+FROM history H
+JOIN chapters C ON C._id = H.chapter_id
+JOIN mangas M ON M._id = C.manga_id
+WHERE H.last_read >= :from AND H.last_read < :to
+GROUP BY M._id
+ORDER BY chapter_count DESC
+LIMIT :limit;

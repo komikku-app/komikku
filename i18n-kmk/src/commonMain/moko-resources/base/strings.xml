@@ -251,6 +251,17 @@
     <string name="auto_scroll_sleep_timer_elapsed">Sleep timer: auto-scroll stopped</string>
     <string name="pref_continue_reading_shortcut">Continue reading shortcut</string>
     <string name="pref_continue_reading_shortcut_summary">Long-press the app icon to resume the last title you read. Its name is shown on your home screen</string>
+    <string name="label_reading_activity_section">Reading activity</string>
+    <string name="label_streak_current">Current streak (days)</string>
+    <string name="label_streak_longest">Best streak (days)</string>
+    <string name="streak_read_today">You read today. Keep it up!</string>
+    <string name="streak_grace_available">A skipped day is forgiven once a week</string>
+    <string name="streak_grace_used">Yesterday was skipped. Read today to keep your streak</string>
+    <string name="streak_grace_waiting">Your skip day is used, it comes back in a few days</string>
+    <string name="heatmap_less">Less</string>
+    <string name="heatmap_more">More</string>
+    <string name="heatmap_day_empty">%1$s: nothing read</string>
+    <string name="heatmap_day_summary">%1$s: %2$s, %3$d chapters</string>
     <string name="action_auto_scroll">Auto-scroll</string>
     <string name="action_auto_scroll_start">Start auto-scroll</string>
     <string name="action_auto_scroll_stop">Stop auto-scroll</string>

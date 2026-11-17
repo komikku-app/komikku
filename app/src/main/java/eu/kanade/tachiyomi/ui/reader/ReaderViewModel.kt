@@ -102,6 +102,7 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaById
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.readinglog.interactor.LogReadTime
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -129,6 +130,9 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
+    // KMK -->
+    private val logReadTime: LogReadTime = Injekt.get(),
+    // KMK <--
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
@@ -919,6 +923,9 @@ class ReaderViewModel @JvmOverloads constructor(
             val sessionReadDuration = chapterReadStartTime?.let { endTime.time - it } ?: 0
 
             upsertHistory.await(HistoryUpdate(chapterId, endTime, sessionReadDuration))
+            // KMK -->
+            readerChapter.chapter.manga_id?.let { logReadTime.await(it, sessionReadDuration) }
+            // KMK <--
             chapterReadStartTime = null
         }
     }
