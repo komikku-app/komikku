@@ -162,7 +162,8 @@ use the index `id`. `sourceCodeUrl` is built from the generator's fixed reposito
   evaluates `JSON.stringify(extention.<call>)` synchronously and decodes the string. If the JS throws an
   error whose text contains `not implemented` and the host has a default, the default is used
   (`{}`, `true`, `[]`, `[]`); any other error is reported. If the member returns a promise, the result
-  is `{}` (a promise stringifies to an empty object), so these members must be synchronous.
+  is `{}` (a promise stringifies to an empty object), so these members must be synchronous. (Komikku's host
+  awaits such a promise instead; no surveyed source returns one.)
 - **JS → host** (bridge): see 4.1. Arguments always travel as one JSON string; results come back as
   native JS values (string, number, bool, null, array, object) or as a promise for async channels.
 
@@ -295,7 +296,7 @@ response object. Network failures reject; **HTTP error statuses do not** (the re
 |-------|------|---------|
 | `body` | string | Decoded body. With the default path, decoded by Dart's `package:http` from the `Content-Type` charset; without a charset it falls back to Latin-1 (**unverified** in detail; a special case for JSON may exist in newer `package:http`). In the JSON-request branch above the body is always decoded as UTF-8. |
 | `statusCode` | int | |
-| `headers` | object | Response headers, lower-case names, one string per name (how repeated headers are joined is **unverified**). |
+| `headers` | object | Response headers, lower-case names, one string per name (how repeated headers are joined is **unverified**; Komikku joins them with `", "`). |
 | `isRedirect` | bool | Always `false` with the default client. |
 | `persistentConnection` | bool | |
 | `reasonPhrase` | string or null | `null` with the default client. |
@@ -321,7 +322,7 @@ gives `[]`. Code such as `if (doc.selectFirst(x))` is therefore always true; sou
 | Member | Channel | Result |
 |--------|---------|--------|
 | `body`, `documentElement`, `head`, `parent` (getters) | `get_doc_element` `[html, type]` | Element (`parent` of a document is always the empty element) |
-| `text`, `outerHtml` (getters) | `get_doc_string` `[html, type]` | string (`""` if none) |
+| `text`, `outerHtml` (getters) | `get_doc_string` `[html, type]` | string (`""` if none). What `text` returns for a document is **unverified**; Komikku returns the `textContent` of the whole document |
 | `selectFirst(css)` | `doc_select_first` `[html, css]` | Element |
 | `select(css)` | `doc_select` `[html, css]` | array of Element (`[]` on no match **or on an invalid selector**) |
 | `xpathFirst(xpath)` | `doc_xpath_first` `[html, xpath]` | string: the attribute/text value of the first match, `""` if none |
@@ -340,9 +341,9 @@ gives `[]`. Code such as `if (doc.selectFirst(x))` is therefore always true; sou
 | `getSrc`, `getImg`, `getHref`, `getDataSrc` (getters) | same | First match of the regex `src="…"`, `img="…"`, `href="…"`, `data-src="…"` in the element's **serialised outer HTML** (so it can come from a descendant, `getSrc` also matches inside `data-src="…"`, and the value is still HTML-escaped, e.g. `&amp;`); `""` if none |
 | `attr(name)` | `ele_attr` `[name, key]` | attribute value or `""` |
 | `hasAttr(name)` | `ele_has_attr` | **broken**: the wrapper sends `[undefined, name]`, so it always returns `false` |
-| `selectFirst(css)`, `select(css)` | `ele_selectFirst`, `ele_select` `[css, key]` | Element / array of Element, matched within the element (whether the element itself can match is **unverified**) |
+| `selectFirst(css)`, `select(css)` | `ele_selectFirst`, `ele_select` `[css, key]` | Element / array of Element, matched within the element (whether the element itself can match is **unverified**; Komikku matches descendants only, like DOM `querySelectorAll`) |
 | `previousElementSibling`, `nextElementSibling` | `ele_element_sibling` `[type, key]` | Element |
-| `children`, `getElementsByTagName(n)`, `getElementsByClassName(n)` | `ele_get_elements_by` `[type, name, key]` | array of Element |
+| `children` (getter), `getElementsByTagName(n)`, `getElementsByClassName(n)` | `ele_get_elements_by` `[type, name, key]` | array of Element |
 | `xpath(x)`, `xpathFirst(x)` | channels `xpath` / `xpathFirst` | **broken**: those channels are not registered (the host registers `ele_xpath` / `ele_xpathFirst`), so they return `null` |
 
 **CSS support.** `:not(…)` is rewritten to a custom implementation; custom pseudo-classes:
@@ -473,7 +474,7 @@ Declared values are defaults; the user's choice is stored per source and key and
 | `getVideoList`, `getHtmlContent`, `cleanHtmlContent` | Never called. |
 | Video extractors (`sibnetExtractor`, `myTvExtractor`, `okruExtractor`, `voeExtractor`, `vidBomExtractor`, `streamlareExtractor`, `sendVidExtractor`, `yourUploadExtractor`, `gogoCdnExtractor`, `doodExtractor`, `streamTapeExtractor`, `mp4UploadExtractor`, `streamWishExtractor`, `filemoonExtractor`, `quarkVideosExtractor`, `ucVideosExtractor`, `quarkFilesExtractor`, `ucFilesExtractor`), `createHlsProxyUrl`, `parseEpub`, `parseEpubChapter` | Define the globals so a source still loads; calling one rejects with an error that names the function and says it is not supported. |
 | `evaluateJavascriptViaWebview` | Stub at first (`HostWebView`): reject with a clear "needs a WebView, not supported yet" error. No surveyed manga source uses it. |
-| `Element.xpath`/`xpathFirst`/`hasAttr` | Reproduce Mangayomi (null / null / false) or implement properly; no surveyed source calls them. Decide in I2 and record it. |
+| `Element.xpath`/`xpathFirst`/`hasAttr` | No surveyed source calls them. Komikku (I2): `hasAttr` implemented properly; `xpath` / `xpathFirst` on `Document` and `Element` throw an "unsupported" error (Ksoup has no XPath). |
 | Unknown `sendMessage` channel | Return `null` like Mangayomi, and log. |
 | Engine limits | Mangayomi sets none; the host adds a per-call timeout and memory limit (PLAN 8.6), reported as source errors. |
 
@@ -494,7 +495,11 @@ Declared values are defaults; the user's choice is stored per source and key and
   more globals; it must not remove these semantics: `setTimeout(fn, ms)` exists.
 - **Script mode:** the extension and the provider creation are one global script; top-level `const`,
   `let` and `class` declarations become global lexical bindings, so the same text cannot be evaluated
-  twice in one context.
+  twice in one context. Such a declaration also fails ("redeclaration") when the prelude made the same name a
+  non-configurable global (a global `function` or `var`); a host should install its helper functions as
+  configurable `globalThis` properties so extensions may declare their own (several define `atob`-like helpers).
+- **Out of memory:** when QuickJS cannot even allocate the `InternalError`, the pending exception is `null`
+  (seen with `quickjs-kt` at a 16 MiB limit); a host should treat a bare `null` error as out-of-memory.
 - **Strings:** values cross the bridge as JSON text, so any Unicode survives; lone surrogates do not
   (**unverified**). Response bodies are decoded before they reach JS (4.2); there is no binary body
   access from JS.

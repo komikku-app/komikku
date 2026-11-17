@@ -77,13 +77,79 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | Step | Status | Commit | Notes |
 |------|--------|--------|-------|
 | I0 Contract and feasibility | done | see git log (`docs(kmp): … Mangayomi …`) | Docs only. 114 JS manga entries from 18 files in the kodjodevf index (86 are MangaDex / Comick variants; files hosted by the `entityJY` fork; 2 files 404). Bridge used: `Client.get`, CSS DOM, `SharedPreferences`, filters, preferences, one `cryptoHandler`; no XPath, WebView, `parseDates` or unpacker. Engine: `quickjs-kt` 1.0.15 (iOS targets verified, QuickJS 2026-06-04 like Mangayomi); on Android it clashes with the zhanghai AAR (`libquickjs.so`), maintainer decision 8.7 item 5. Licences: Apache-2.0 (app, index, fork), MIT (`flutter_qjs`). Go for I1–I4 with conditions (8.9). |
-| I1 Engine and host core | todo | | |
-| I2 Bridge | todo | | |
+| I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits, policy)` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` (and `JsExtension` bound to one source); `EnginePolicy.FreshContextPerCall`; `JsHostLimits` (60 s wall clock per call, 64 MiB heap, 4 MiB JS stack); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
+| I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
 | I3 Source adapter | todo | | |
 | I4 Store and UI | todo | | |
 | I5 Common core for iOS | todo | | Needs macOS. |
 | I6 iOS app | todo | | Needs macOS. |
 | I7 Distribution and CI | todo | | Needs macOS. |
+
+### I1 / I2 decisions and deviations
+
+Specification: [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) (corrected where the implementation showed it
+vague or wrong). Decisions taken without the maintainer, as asked:
+
+- **Targets (deviation from I-D1):** desktop only. Android waits for the QuickJS AAR decision (8.7 item 5); adding
+  it is `id("mihon.library")` + `androidTarget()` + a namespace in `source-js/build.gradle.kts` (comment there).
+  iOS targets are declared on macOS hosts only and have **not been compiled** (no macOS here); the iOS
+  `newJsEngineThread` clamps the JS stack to 256 KiB for Darwin's 512 KiB secondary-thread stacks (unverified).
+- **DOM on Ksoup everywhere (deviation from I-D3, which planned jsoup on Android / desktop):** one implementation
+  with identical behaviour on every platform; no XPath (Ksoup has none).
+- **Crypto in pure Kotlin** instead of `cryptography-kotlin`: AES-CBC (PKCS#7), AES-GCM decryption and MD5 are
+  small, need no provider registration and behave the same on JVM and iOS; checked against the JDK and Python
+  `cryptography` vectors. The CryptoJS salt comes from `kotlin.random` (a salt need not be secret).
+- **Engine threads and limits:** each context has its own thread (desktop: 4 MiB JS stack + 4 MiB headroom); the
+  QuickJS runtime is created on that thread because QuickJS measures its stack limit from the creating thread.
+  Defaults per call: 60 s wall clock (including network waits; enforced on `Dispatchers.Default` so test
+  dispatchers do not fake it), 64 MiB heap, 4 MiB stack; cancelling the caller interrupts the script. When
+  QuickJS cannot allocate the error object on out-of-memory it throws `null`; the engine reports that as
+  out-of-memory.
+- **Fresh context for every call**, metadata calls included (Mangayomi keeps up to 6 metadata services alive);
+  extensions cannot observe the difference. A pooling `EnginePolicy` can come later.
+- **HTTP (deviations, as decided):** the app supplies the client (cookies from responses are stored by the app's
+  jar, rate limits and Cloudflare handling apply); TLS certificates are always verified (`verifyCertificates` is
+  ignored; Mangayomi defaults to not verifying); `reqcopyWith.timeout` and `followRedirects` are honoured, the
+  other options ignored. Body without a charset is decoded as UTF-8 (Mangayomi: Latin-1); Latin-1 / ASCII when
+  declared; other charsets as UTF-8. Repeated response headers are joined with `", "`; `reasonPhrase` is always
+  `null` and `request.maxRedirects` 5, as with Mangayomi's default client. The JSON double encoding of string
+  bodies with a JSON content type is kept.
+- **Bridge transport:** two host functions (`__kmk_host_sync` / `__kmk_host_async`, JSON text in and out)
+  instead of a global `sendMessage`, which no source calls. Host errors the script does not catch are mapped
+  back to `BridgeError` / `Unsupported` by message (QuickJS appends the Kotlin stack to it).
+- **Prelude:** written for Komikku from the contract (no Mangayomi text). Helper functions are configurable
+  `globalThis` properties, so an extension that declares its own `atob` / `unpackJs` / … still loads (a test
+  covers it); `Client`, `Document`, `Element`, `SharedPreferences` and `MProvider` are classes as in Mangayomi.
+  `Document` parses once on first use (Mangayomi re-parses per call; same results).
+- **Small leniencies:** sync members (`getFilterList`, …) are awaited if they return a promise (Mangayomi would get
+  `{}` and fall back to the default); `console.log(undefined)` logs `undefined` (Mangayomi throws); `hasAttr`
+  works (always `false` in Mangayomi); `:contains("x")` accepts quotes.
+- **DOM choices for unverified points:** `Element.select` / `selectFirst` match descendants only (DOM
+  `querySelectorAll`; jsoup alone would include the element); `Document.text` is the `textContent` of the whole
+  document; `children` is a getter; `:contains(x)` is rewritten to `:is(:contains(x), :containsData(x))` so script
+  text matches (jsoup still normalises whitespace on the text side: edge case accepted).
+- **Unsupported, with an error naming the function:** XPath (`Document` / `Element` `xpath`, `xpathFirst`),
+  `parseDates`, `unpackJs`, `unpackJsAndCombine`, `evaluateJavascriptViaWebview` (`HostWebView` stub), video
+  extractors, `createHlsProxyUrl`, `parseEpub*`. None is used by a JavaScript manga source (survey).
+- **Results:** parsed leniently (unknown keys ignored, numbers / booleans accepted as strings and numeric strings
+  as numbers, `null` entries skipped, missing `hasNextPage` = `false`, empty optional texts = `null`, chapters with
+  an empty URL dropped, `dateUpload` `"NaN"` / invalid = `null`, pages trimmed and de-duplicated); wrong container
+  types raise `MalformedResult` naming the method and field. Filters keep the source's raw JSON (extra keys
+  round-trip, Mangayomi drops them); `search(filters = null)` sends the default list with states filled in, an
+  explicit list is sent as given. An unparsable filter list becomes `[]` with a warning (Mangayomi's default).
+- **Preferences:** stored typed (`Text`, `Bool`, `TextSet`); a list preference stores its entry value (not the
+  index); the declared default is stored on first read; `get` called from the provider's constructor evaluates
+  `getSourcePreferences()` on an uninitialised instance (`extention` does not exist yet).
+- **Fixtures:** the conformance fixtures are Kotlin string constants, not `.js` resources, so the suite runs on
+  iOS without resource loading.
+
+**Real-extension smoke check** (local, not committed; offline `HostHttp` that always fails; files from the I0
+clones): 21 files (the 18 of the kodjodevf index incl. the two dead entries' copies, plus `batoto`, `baozimh`,
+`rumanhua1` from the entityJY index), 117 index entries. Every entry evaluates, instantiates and returns
+`supportsLatest`, `getFilterList`, `getSourcePreferences` and `getHeaders` without error; `getPopular` and
+`search("one piece", 1)` get as far as the HTTP bridge (offline error) for all of them, except Oduto, whose
+`getPopular` needs no network and which does not implement `search`. No host bug was found by it. Not verified:
+any real website, `getDetail` / `getPageList` against real pages, iOS.
 
 ## Files moved out of upstream paths
 

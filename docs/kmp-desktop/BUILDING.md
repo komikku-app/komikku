@@ -28,6 +28,25 @@ site, tracker or extension repository is contacted.
 When a change touches `app` files that the desktop borrows (`app-shared/borrowed-app-sources.gradle.kts`),
 also run `./gradlew :app:verifyBorrowedSources :app:compileDebugKotlin`.
 
+## `:source-js` (Mangayomi JavaScript sources)
+
+Host for Mangayomi's JavaScript manga extensions ([`PLAN.md`](PLAN.md) section 8, specification
+[`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md)). A Kotlin Multiplatform module with its code in `commonMain`;
+the only target today is `jvm("desktop")` (iOS targets are added automatically on macOS hosts, Android is not
+a target yet).
+
+```bash
+./gradlew :source-js:compileKotlinDesktop                 # compile
+./gradlew :source-js:desktopTest --max-workers=2          # all tests (JVM)
+./gradlew :source-js:desktopTest --tests '*Conformance*'  # the bridge conformance suite only
+```
+
+Tests: engine (`QuickJsEngineTest`), host core and limits (`HostCoreTest`), result models
+(`ResultModelsTest`) and the bridge conformance suite (`conformance/*`) live in `src/commonTest` with in-test
+JavaScript providers and a fake `HostHttp`, so they will run unchanged on iOS; `src/desktopTest` adds
+`OkHttpHostHttp` against `MockWebServer` and the pure Kotlin crypto checked against the JDK. No website is
+contacted and no third-party extension file is in the repository.
+
 ## Package
 
 ```bash

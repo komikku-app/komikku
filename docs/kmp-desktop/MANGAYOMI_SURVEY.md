@@ -70,8 +70,10 @@ entityJY figures differ only through the files named above.
 | `supportsLatest` (getter returning a value) | 1 | 1 |
 | `getVideoList`, `getHtmlContent`, `cleanHtmlContent` | 0 | 0 |
 
-MangaDex declares filters inside `search` but its `getFilterList` throws "not implemented", so it runs
-with an empty list.
+**Correction (I2 smoke run):** MangaDex's class declares `getFilterList` twice; the first throws "not
+implemented", but the later declaration wins in JavaScript and returns 11 filters. So `getFilterList` is
+implemented in 16 files / 112 entries, not 15 / 67, and MangaDex needs the filter models too (the coverage
+table in section 7 understates the filter step accordingly).
 
 ## 3. Bridge and language features used
 
