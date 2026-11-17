@@ -13,7 +13,9 @@ with the Android app, while the Android app and the extension ABI stay unchanged
 
 - **iOS / Kotlin-Native.** Extensions are JVM bytecode, and the network, source and database
   stacks are JVM libraries (OkHttp, jsoup, RxJava 1, Injekt). A Native target would need a
-  rewrite of exactly the parts we want to share. Everything below targets *Android + desktop JVM*.
+  rewrite of exactly the parts we want to share. Sections 1–7 target *Android + desktop JVM*.
+  iOS is planned separately in [section 8](#8-ios-javascript-sources-mangayomi-extensions), on a
+  different source model (JavaScript extensions), and does not change the desktop work.
 - Android-only surfaces on desktop: Glance widget, Shizuku installer, biometric lock, Firebase,
   LeakCanary, macrobenchmark.
 - Refactoring upstream-owned code for elegance. Every change is judged by "does it make the next
@@ -325,3 +327,136 @@ test and package: [`BUILDING.md`](BUILDING.md).
 3. **Upstream sync timing:** doing the Mihon build-logic / AGP 9 / Metro / ViewModel sync before
    Phase 6 would remove the need for the interim interfaces described in D8.
 4. **Database encryption on desktop:** none initially (SQLCipher Android library has no JVM build).
+
+## 8. iOS: JavaScript sources (Mangayomi extensions)
+
+Status: planned, not started. Facts about Mangayomi below come from reading its source
+(`kodjodevf/mangayomi` at `bc0b410`, 2026-11-16); items marked *(verify)* still need checking.
+
+### 8.1 Why a different source model
+
+Mihon extensions are Android APKs with JVM bytecode. iOS has no JVM and forbids JIT, so they can
+only run there inside an embedded no-JIT JVM interpreter (what Mangayomi's `m_extension_server`
+does): slow, memory-hungry, sideload-only. That route stays a possible later add-on (8.8).
+
+Mangayomi's own extensions are **source text** evaluated on the device by an interpreter, which
+iOS allows. The JavaScript ones run in QuickJS. Komikku on iOS will host that same extension
+format, so it gets an existing, maintained catalogue without a JVM.
+
+The JavaScript host is also useful on Android and desktop, and it can be built and tested there
+first, on Linux, before any iOS code exists. That is how the work is ordered.
+
+### 8.2 The Mangayomi extension contract (what the host must implement)
+
+- **Index:** `index.json` in `kodjodevf/mangayomi-extensions`, a JSON array. Per entry: `id`,
+  `name`, `baseUrl`, `lang`, `sourceCodeUrl` (raw `.js` or `.dart` file), `version`, `itemType`
+  (manga / anime / novel), `sourceCodeLanguage` (0 = Dart, otherwise JavaScript), `appMinVerReq`,
+  plus icon and flags *(verify the full field list)*.
+- **Extension shape:** a JavaScript class extending a host-defined `MProvider` base class, with
+  methods for popular, latest, search, details, page list, filters and source preferences
+  *(verify exact names and return shapes from `lib/eval/javascript/` in Mangayomi)*.
+- **Host bridge** (extensions call it through `sendMessage`): HTTP (get/post/put/delete/patch/
+  head with headers and body), CSS and XPath selectors over HTML, crypto helpers (AES, CryptoJS
+  subset, AES-GCM), a JS unpacker, string utilities, `evaluateJavascriptViaWebview`, and
+  video extractors (not needed for manga).
+
+**Scope:** JavaScript sources with `itemType` manga only. Out of scope: Dart sources (they need
+the `d4rt` Dart interpreter), anime and novel sources, LNReader plugins, Aidoku WASM sources.
+Of the 363 index entries a bit over 100 are JavaScript *(verify the manga-only count in I0)*; the
+rest are Dart and will not load.
+
+### 8.3 Design decisions
+
+**I-D1 — One host, three platforms.** A new KMK-owned module `:source-js` holds the host. It is a
+real multiplatform module (code in `commonMain`), unlike the path-preserving JVM modules of D1,
+because it must compile for Kotlin/Native. Targets: Android and desktop from the start; `iosArm64`
+and `iosSimulatorArm64` are declared only when the build host is macOS.
+
+**I-D2 — Engine behind an interface.** `JsEngine` (evaluate, call function, register host
+callback, close) with one implementation per platform: the existing QuickJS bindings on Android
+and desktop, and on iOS either the same QuickJS library's Native target *(verify that
+`quickjs-kt` publishes iOS targets)* or the system JavaScriptCore, which runs without JIT in
+third-party apps. One engine instance per source, created lazily, closed on idle.
+
+**I-D3 — Bridge services behind interfaces.** `HostHttp`, `HostDom`, `HostCrypto`,
+`HostWebView`. On Android and desktop they delegate to what exists (`NetworkHelper`'s OkHttp
+client with its cookie jar, rate limits and Cloudflare handling; jsoup). On iOS: Ktor with the
+Darwin engine and Ksoup. `HostWebView` is a stub at first; sources that need it report a clear
+error.
+
+**I-D4 — JS sources are ordinary sources.** An adapter class implements the existing
+`CatalogueSource` / `ConfigurableSource` contract and maps results to `SManga`, `SChapter`,
+`Page`, `FilterList` and preference models. Library, reader, downloads, tracking and backup then
+work unchanged on Android and desktop. Source ids are derived deterministically from the
+Mangayomi source id plus a fixed namespace, so they are stable across devices and never collide
+with Mihon source ids.
+
+**I-D5 — Separate store type.** A Mangayomi repository is added by URL like a Mihon one, but is a
+distinct store type: installing means downloading the `.js` text, verifying its hash against the
+index, and caching it; there is no APK, signature or trust-by-certificate. The UI labels these
+sources as JavaScript sources. Each engine gets only the bridge API, no file or process access.
+
+**I-D6 — Written from scratch against the contract.** The host and bridge are new Kotlin code;
+nothing is copied from Mangayomi. The `MProvider` base class text the host injects must match
+Mangayomi's, so its licence has to be checked before reusing that text *(verify: Mangayomi and
+its extensions repo licences)*.
+
+**I-D7 — iOS app is a separate, smaller app at first.** The Android/desktop shared code is
+JVM-only by design. iOS gets its own Compose Multiplatform app on a common core, reusing what is
+portable (strings, the SQLDelight schema, backup models, `:source-js`) and not the JVM modules.
+
+### 8.4 Phases
+
+Phases I0–I4 run on Linux and deliver value on Android and desktop. I5 onward needs macOS.
+
+| Step | Work | Verify |
+|------|------|--------|
+| **I0 Contract and feasibility** | Write `docs/kmp-desktop/MANGAYOMI_CONTRACT.md` from Mangayomi's source: index fields, `MProvider` methods and return shapes, every bridge message with arguments and results, filter and preference models. Resolve the *(verify)* items above. Count manga JS sources and list which bridge calls they use (static scan of the public extension sources), to order the bridge work. | Document reviewed; go/no-go on engine choice and licence |
+| **I1 Engine and host core** | `:source-js` module; `JsEngine` on Android and desktop; load an extension, instantiate its provider, call a method, marshal JSON both ways; timeouts, memory limit, cancellation; errors mapped to Kotlin exceptions with the JS stack. | Unit tests with in-test JS providers on `desktopTest` and Android unit tests |
+| **I2 Bridge** | `HostHttp` (through `NetworkHelper`), `HostDom` (CSS + XPath), `HostCrypto`, unpacker, string utilities; `HostWebView` stub. Ordered by the usage scan from I0. | Bridge conformance tests: fixture JS calling each message against `MockWebServer` and fixed HTML |
+| **I3 Source adapter** | `MangayomiJsSource` implementing the source contract: popular / latest / search with paging, details, chapters, pages, image headers, filters, preferences, stable ids. | Adapter tests with a fake provider; a headless desktop UI test browsing it |
+| **I4 Store and UI** | Mangayomi repository type: index fetch, install, update, uninstall, hash check, cache under the data dir; register sources in `DesktopSourceManager` and `AndroidSourceManager`; Extensions screen shows the new type on desktop and Android. New strings in `i18n-kmk`. | Store end-to-end test against `MockWebServer`; `:app:compileDebugKotlin` |
+| **I5 Common core for iOS** | New `:ios-core` multiplatform module: the portable subset needed by an app (manga / chapter / category / history models and repositories on the shared SQLDelight schema with the native driver, preferences on a multiplatform settings store, backup models moved to common code so `.tachibk` files restore). Decide per piece: move existing code to `commonMain` vs a thin common twin; record each choice. iOS implementations of `JsEngine`, `HostHttp` (Ktor Darwin), `HostDom` (Ksoup), `HostCrypto`. | `:source-js` and `:ios-core` tests on the iOS simulator; the I2 conformance suite passes on iOS |
+| **I6 iOS app** | `:iosApp` (Compose Multiplatform, Xcode project): library, browse JS sources, manga details, reader (paged and webtoon, Skia decoding), downloads within iOS background limits, history, settings, backup restore. Reuse desktop screens where they are free of JVM types; otherwise write common ones and have desktop adopt them. | Simulator UI tests; manual run on a device |
+| **I7 Distribution and CI** | macOS CI job building the framework and an unsigned IPA; sideload sources (AltStore / SideStore). App Store submission is a maintainer decision (8.7). | CI green; IPA installs |
+
+**Milestone I-A (after I4):** a Mangayomi JavaScript source can be installed, browsed and read on
+desktop and Android. **Milestone I-B (after I6):** the same on an iPhone.
+
+### 8.5 What is reused and what is not
+
+| Reused on iOS | Not reused on iOS |
+|---------------|-------------------|
+| `:source-js` host and bridge contract | Mihon APK extensions, `:desktop:extension-runtime`, `:desktop:android-compat` |
+| `i18n*` string resources (moko-resources has iOS targets) | `core:common` network stack (OkHttp), `source-api` as compiled today |
+| SQLDelight schema and migrations | Android screens in `app`, Voyager `ScreenModel`s tied to Injekt |
+| Backup format (kotlinx-serialization protobuf) | Download stack, trackers, WorkManager jobs (rewritten or added later) |
+| Compose UI written in common code | E-Hentai / MangaDex delegated sources |
+
+### 8.6 Risks
+
+| Risk | Mitigation |
+|------|------------|
+| Bridge drifts from Mangayomi as it evolves | `appMinVerReq` gate per source; conformance suite derived from the contract doc; refresh the contract on each Mangayomi release |
+| JS catalogue is the smaller part of Mangayomi's index | Measure in I0 before committing; Dart sources stay unsupported |
+| Sources that need WebView evaluation or Cloudflare solving | Stub first, report clearly; real WebView bridge per platform later |
+| Two extension ecosystems confuse users | Separate store type and labels (I-D5); source ids never collide (I-D4) |
+| Executing downloaded scripts | Interpreter only, bridge-only API surface, hash check, per-source engine, time and memory limits |
+| iOS core duplicates JVM modules | Keep `:ios-core` small; move code to common only when both sides use it |
+
+### 8.7 Decisions for the maintainer
+
+1. **Go/no-go after I0**, once the manga JS source count and bridge surface are known.
+2. **App Store or sideload only.** Apple restricts apps that run downloaded code; whether an
+   interpreter-only JS source model passes review is not established. Sideload first.
+3. **Licence** of the injected `MProvider` base class text (I-D6).
+4. **Default repository:** ship with no Mangayomi repository preconfigured (user adds the URL),
+   as with Mihon repositories.
+
+### 8.8 Later options (not planned)
+
+- **Mihon APK extensions on iOS** through an embedded no-JIT JVM (OpenJDK Zero) running the
+  desktop extension runtime: full catalogue, but slow, foreground-only, device-only and
+  sideload-only.
+- **Thin client mode:** the iOS app talks to a Komikku desktop instance or a Suwayomi server.
+- **Aidoku WASM sources** through a Kotlin WASM interpreter.
