@@ -1,0 +1,134 @@
+package app.komikku.sourcejs.bridge
+
+import app.komikku.sourcejs.JsExtensionHost
+import app.komikku.sourcejs.JsSourceDescriptor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import mockwebserver3.MockResponse
+import mockwebserver3.MockWebServer
+import okhttp3.OkHttpClient
+import okio.Buffer
+import java.io.IOException
+import java.util.concurrent.TimeUnit
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+
+/** [OkHttpHostHttp] against a real HTTP server, and the `Client` bridge on top of it. */
+class OkHttpHostHttpTest {
+    private val server = MockWebServer()
+    private val http = OkHttpHostHttp(OkHttpClient())
+
+    @BeforeTest
+    fun start() = server.start()
+
+    @AfterTest
+    fun stop() = server.close()
+
+    @Test
+    fun sendsMethodHeadersAndBody() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder().code(201).addHeader("Content-Type", "text/plain").addHeader("X-A", "1").addHeader("X-A", "2")
+                .body("created").build(),
+        )
+        val response = http.execute(
+            HostHttpRequest(
+                method = "POST",
+                url = server.url("/items?x=1").toString(),
+                headers = listOf("Content-Type" to "application/json", "X-Token" to "t"),
+                body = """{"a":1}""".encodeToByteArray(),
+            ),
+        )
+        assertEquals(201, response.statusCode)
+        assertEquals("created", response.body.decodeToString())
+        assertEquals(listOf("1", "2"), response.headers.filter { it.first.equals("X-A", true) }.map { it.second })
+        assertEquals(server.url("/items?x=1").toString(), response.finalUrl)
+
+        val recorded = server.takeRequest()
+        assertEquals("POST", recorded.method)
+        assertEquals("/items?x=1", recorded.target)
+        assertEquals("application/json", recorded.headers["Content-Type"])
+        assertEquals("t", recorded.headers["X-Token"])
+        assertEquals("""{"a":1}""", recorded.body?.utf8())
+    }
+
+    @Test
+    fun postWithoutBodySendsAnEmptyBody() = runBlocking {
+        server.enqueue(MockResponse.Builder().code(500).body("fail").build())
+        val response = http.execute(HostHttpRequest("POST", server.url("/p").toString(), emptyList(), null))
+        // Error statuses are returned, not thrown.
+        assertEquals(500, response.statusCode)
+        assertEquals(0L, server.takeRequest().bodySize)
+    }
+
+    @Test
+    fun returnsRawBytes() = runBlocking {
+        val bytes = byteArrayOf(0, 1, -1, 0x7F)
+        server.enqueue(MockResponse.Builder().body(Buffer().write(bytes)).build())
+        assertContentEquals(bytes, http.execute(HostHttpRequest("GET", server.url("/b").toString(), emptyList(), null)).body)
+    }
+
+    @Test
+    fun followsRedirectsUnlessAskedNotTo() = runBlocking {
+        server.enqueue(MockResponse.Builder().code(302).addHeader("Location", "/target").build())
+        server.enqueue(MockResponse.Builder().body("target").build())
+        val followed = http.execute(HostHttpRequest("GET", server.url("/start").toString(), emptyList(), null))
+        assertEquals(200 to "target", followed.statusCode to followed.body.decodeToString())
+        assertEquals(server.url("/target").toString(), followed.finalUrl)
+
+        server.enqueue(MockResponse.Builder().code(302).addHeader("Location", "/target").build())
+        val notFollowed = http.execute(HostHttpRequest("GET", server.url("/start").toString(), emptyList(), null, followRedirects = false))
+        assertEquals(302, notFollowed.statusCode)
+    }
+
+    @Test
+    fun honoursTheRequestTimeout() = runBlocking {
+        server.enqueue(MockResponse.Builder().headersDelay(5, TimeUnit.SECONDS).body("late").build())
+        assertFailsWith<IOException> {
+            http.execute(HostHttpRequest("GET", server.url("/slow").toString(), emptyList(), null, timeoutMillis = 200))
+        }
+        Unit
+    }
+
+    @Test
+    fun cancellationCancelsTheCall() = runBlocking(Dispatchers.Default) {
+        server.enqueue(MockResponse.Builder().headersDelay(10, TimeUnit.SECONDS).body("late").build())
+        val call = async { http.execute(HostHttpRequest("GET", server.url("/slow").toString(), emptyList(), null)) }
+        delay(200)
+        call.cancel()
+        withTimeout(2_000) { call.join() }
+        assertTrue(call.isCancelled)
+    }
+
+    @Test
+    fun extensionsUseItThroughClient() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder().addHeader("Content-Type", "application/json; charset=utf-8")
+                .body("""{"results":[{"title":"Ünïcode","id":"42"}],"more":true}""").build(),
+        )
+        val source = JsSourceDescriptor(id = 1, name = "Mock", baseUrl = server.url("").toString().trimEnd('/'))
+        val host = JsExtensionHost(JsHostServices(http, KeyValueHostPreferences.provider(InMemoryKeyValueStore())))
+        val code = """
+            class DefaultExtension extends MProvider {
+              async getPopular(page) {
+                const res = await new Client().get(this.source.baseUrl + "/popular?page=" + page, { "Accept": "application/json" });
+                const data = JSON.parse(res.body);
+                return { list: data.results.map((m) => ({ name: m.title, link: "/m/" + m.id })), hasNextPage: data.more && res.statusCode == 200 };
+              }
+            }
+        """
+        val page = host.getPopular(source, code, 3)
+        assertEquals(listOf("Ünïcode" to "/m/42"), page.list.map { it.name to it.link })
+        assertTrue(page.hasNextPage)
+        val recorded = server.takeRequest()
+        assertEquals("/popular?page=3", recorded.target)
+        assertEquals("application/json", recorded.headers["Accept"])
+    }
+}
