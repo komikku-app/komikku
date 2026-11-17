@@ -184,6 +184,19 @@ class ReaderPreferences(
 
     fun smoothAutoScroll() = preferenceStore.getBoolean("smooth_auto_scroll", true)
 
+    // KMK -->
+    /** Speed of the continuous auto-scroll of the webtoon reader, in dp per second. */
+    fun webtoonAutoScrollSpeed() = preferenceStore.getInt(
+        "webtoon_auto_scroll_speed",
+        WEBTOON_AUTO_SCROLL_SPEED_DEFAULT,
+    )
+
+    fun webtoonAutoScrollStopAtChapterEnd() = preferenceStore.getBoolean(
+        "webtoon_auto_scroll_stop_at_chapter_end",
+        false,
+    )
+    // KMK <--
+
     fun preserveReadingPosition() = preferenceStore.getBoolean("eh_preserve_reading_position", false)
 
     fun preloadSize() = preferenceStore.getInt("eh_preload_size", 10)
@@ -264,6 +277,20 @@ class ReaderPreferences(
     companion object {
         const val WEBTOON_PADDING_MIN = 0
         const val WEBTOON_PADDING_MAX = 25
+
+        // KMK -->
+        const val WEBTOON_AUTO_SCROLL_SPEED_MIN = 10
+        const val WEBTOON_AUTO_SCROLL_SPEED_MAX = 400
+        const val WEBTOON_AUTO_SCROLL_SPEED_STEP = 10
+        const val WEBTOON_AUTO_SCROLL_SPEED_DEFAULT = 80
+
+        val WEBTOON_AUTO_SCROLL_SPEED_RANGE =
+            WEBTOON_AUTO_SCROLL_SPEED_MIN..WEBTOON_AUTO_SCROLL_SPEED_MAX step WEBTOON_AUTO_SCROLL_SPEED_STEP
+
+        /** Number of stops between both ends of the slider. */
+        const val WEBTOON_AUTO_SCROLL_SPEED_SLIDER_STEPS =
+            (WEBTOON_AUTO_SCROLL_SPEED_MAX - WEBTOON_AUTO_SCROLL_SPEED_MIN) / WEBTOON_AUTO_SCROLL_SPEED_STEP - 1
+        // KMK <--
 
         const val MILLI_CONVERSION = 100
 
