@@ -240,4 +240,12 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+
+    <!-- Webtoon auto-scroll -->
+    <string name="pref_webtoon_auto_scroll_speed">Auto-scroll speed</string>
+    <string name="webtoon_auto_scroll_speed_value">%1$d dp/s</string>
+    <string name="pref_webtoon_auto_scroll_stop_at_chapter_end">Stop auto-scroll at the end of a chapter</string>
+    <string name="action_auto_scroll">Auto-scroll</string>
+    <string name="action_auto_scroll_start">Start auto-scroll</string>
+    <string name="action_auto_scroll_stop">Stop auto-scroll</string>
 </resources>

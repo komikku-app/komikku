@@ -272,7 +272,29 @@ private fun WebtoonViewerSettings(
         label = stringResource(SYMR.strings.pref_smooth_scroll),
         pref = screenModel.preferences.smoothAutoScroll(),
     )
+    // SY <--
 
+    // KMK -->
+    val smoothAutoScroll by screenModel.preferences.smoothAutoScroll().collectAsState()
+    if (smoothAutoScroll) {
+        val autoScrollSpeed by screenModel.preferences.webtoonAutoScrollSpeed().collectAsState()
+        SliderItem(
+            value = autoScrollSpeed,
+            valueRange = ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_RANGE,
+            steps = ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_SLIDER_STEPS,
+            label = stringResource(KMR.strings.pref_webtoon_auto_scroll_speed),
+            valueString = stringResource(KMR.strings.webtoon_auto_scroll_speed_value, autoScrollSpeed),
+            onChange = { screenModel.preferences.webtoonAutoScrollSpeed().set(it) },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        )
+        CheckboxItem(
+            label = stringResource(KMR.strings.pref_webtoon_auto_scroll_stop_at_chapter_end),
+            pref = screenModel.preferences.webtoonAutoScrollStopAtChapterEnd(),
+        )
+    }
+    // KMK <--
+
+    // SY -->
     CheckboxItem(
         label = stringResource(MR.strings.pref_page_transitions),
         pref = screenModel.preferences.pageTransitionsWebtoon(),
