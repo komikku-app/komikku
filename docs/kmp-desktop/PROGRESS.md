@@ -232,6 +232,53 @@ clones): 21 files (the 18 of the kodjodevf index incl. the two dead entries' cop
 `getPopular` needs no network and which does not implement `search`. No host bug was found by it. Not verified:
 any real website, `getDetail` / `getPageList` against real pages, iOS.
 
+### QuickJS parity (I2b)
+
+What the zhanghai `quickjs-android` AAR (`547f5b1597`, QuickJS `2021-03-27`, Square's `quickjs-java` code) does,
+read from its source (`quickjs/common/java` + `native`), and how Mihon extensions use it. This is the behaviour
+the `quickjs-kt`-backed `app.cash.quickjs.QuickJs` of `:core:quickjs` has to keep.
+
+- **Results of `evaluate` / `execute`** (`Context::toJavaObject`, unsupported types not thrown at top level):
+  `undefined` / `null` → `null`; booleans → `Boolean`; QuickJS int-tagged numbers → `Integer`, float-tagged →
+  `Double` (an integral double such as `2 ** 40` or `0.5 * 2` stays `Double`; `NaN` → `Double.NaN`); strings →
+  `String`; arrays → `Object[]` whose elements are converted *strictly*: a nested object / function makes the call
+  throw `QuickJsException("Cannot marshal value [object Object] to Java")`; any other object, function, symbol,
+  promise or error at top level → `null`. No pending jobs are run (promise callbacks never execute).
+- **Errors:** a JavaScript exception becomes `QuickJsException(message, stack)`: the message is the error's
+  `message` property (no `Name:` prefix, e.g. `'nope' is not defined`), or `String(value)` when it has none
+  (`throw 2` → `"2"`); the JS `stack` lines (`    at f (file.js:10)`) are parsed with a regex and spliced into the
+  Java stack trace as `JavaScript.f(file.js:10)` frames above the `QuickJs` frame. An exception thrown by a Java
+  method bound with `set` is rethrown as that same Java exception (not wrapped) with the JS frames spliced in;
+  inside JavaScript it is an `InternalError("Java Exception")`. A closed instance throws
+  `NullPointerException("Null QuickJs context - did you close your QuickJs?")`.
+- **`set(name, type, object)`:** `type` must be an interface without super-interfaces and without overloads
+  (`UnsupportedOperationException`), `object` an instance (`IllegalArgumentException`), `name` must not exist on
+  the global object (`IllegalArgumentException`). Supported parameter / return types: `void`, `boolean`, `int`,
+  `double`, their boxes, `String`, `Object` (runtime type) and arrays of these (others:
+  `IllegalArgumentException("Unsupported Java type …")` at `set` time). Arguments: exact count unless varargs
+  (`RangeError("Wrong number of arguments")`); `String` must be a string or null / undefined; primitives must be
+  of the JS type (`int` int-tagged); boxed `Double` / `Integer` / `Boolean` coerce (`ToNumber` / `ToInt32` /
+  `ToBoolean`); mismatches throw `IllegalArgumentException("Cannot convert value … to …")` into the script.
+- **`get(name, type)`:** same interface rules; at call time the global must be an object
+  (`IllegalArgumentException`) whose methods are functions (`QuickJsException`); returns a `java.lang.reflect.Proxy`
+  that looks the global up again and invokes the method on each call, converting arguments like `set`'s returns and
+  results like `set`'s arguments in boxed (coercing) mode; `Object` methods go to the invocation handler
+  (`toString()` = `QuickJsProxy{name=…, type=…}`).
+- **`compile` / `execute`:** `JS_EVAL_FLAG_COMPILE_ONLY` + `JS_WriteObject`; bytecode is only valid for the same
+  QuickJS build, so an instance created later may execute it (one extension does exactly that).
+- **Threading and limits:** "not thread safe", everything runs on the calling thread; QuickJS's default JS stack
+  limit **256 KiB**; no memory limit, no time limit, no interrupt.
+- **`close()` / finalizer:** `close()` is idempotent; `finalize()` only logs "QuickJs instance leaked!" (it does
+  not free the native context).
+
+**Extension usage** (shallow clone of `keiyoushi/extensions-source` at `f1d882a93e`, 2026-11-18, static grep):
+14 files import `app.cash.quickjs` (13 sources + `lib/synchrony`). Calls: `evaluate` 23, `compile` 1, `execute` 1
+(Mangago compiles a helper once into a lazily created byte array and executes it in later instances), `set` 0,
+`get` 0, `QuickJsException` caught by name 0. Results are used as `as String`, `as? String`, `?.toString()` /
+`.toString()`, and one `is Array<*>` (Comicabc maps the array elements). Typical scripts: deobfuscating `eval`
+packers, `JSON.stringify(...)` of a page's literal, small key / challenge solvers, the synchrony deobfuscator
+library. No extension uses `JavaScriptEngine` directly.
+
 ## Files moved out of upstream paths
 
 Record every file moved to `src/androidMain` (old path → new path) so upstream cherry-picks can be
