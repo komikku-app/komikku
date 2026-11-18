@@ -32,14 +32,20 @@ also run `./gradlew :app:verifyBorrowedSources :app:compileDebugKotlin`.
 
 Host for Mangayomi's JavaScript manga extensions ([`PLAN.md`](PLAN.md) section 8, specification
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md)). A Kotlin Multiplatform module with its code in `commonMain`;
-the only target today is `jvm("desktop")` (iOS targets are added automatically on macOS hosts, Android is not
-a target yet).
+targets: `androidTarget()` and `jvm("desktop")` (code shared by both in `src/jvmSharedMain`; iOS targets are
+added automatically on macOS hosts).
 
 ```bash
-./gradlew :source-js:compileKotlinDesktop                 # compile
+./gradlew :source-js:compileKotlinDesktop                 # compile (desktop)
+./gradlew :source-js:compileDebugKotlinAndroid            # compile (Android)
 ./gradlew :source-js:desktopTest --max-workers=2          # all tests (JVM)
 ./gradlew :source-js:desktopTest --tests '*Conformance*'  # the bridge conformance suite only
+./gradlew :source-js:testReleaseUnitTest                  # commonTest on the Android host (part of CI's testReleaseUnitTest)
 ```
+
+The Android host unit tests run on `quickjs-kt`'s JVM artifact (host natives): the build swaps it in for the
+Android AAR, whose `libquickjs.so` only exists for Android ABIs. `desktopTest`-only tests (`OkHttpHostHttp`, JDK
+crypto checks, class injection) do not run there.
 
 Tests: engine (`QuickJsEngineTest`), host core and limits (`HostCoreTest`), the error protocol
 (`ErrorProtocolTest`), Mangayomi parity details (`MangayomiParityTest`), bytecode cache and metadata
@@ -54,6 +60,20 @@ Test stack: this module uses `kotlin.test` (with `kotlinx-coroutines-test`) inst
 MockK stack that `AGENTS.md` names for the Android modules, because `commonTest` must compile for Kotlin/Native
 (iOS) too, where JUnit, Kotest's JVM assertions and MockK are not available; fakes are hand-written. On the JVM
 `kotlin.test` runs on the JUnit Platform (`useJUnitPlatform()` in `source-js/build.gradle.kts`).
+
+## `:core:quickjs` (`app.cash.quickjs.QuickJs`)
+
+The JavaScript API Mihon extensions and `JavaScriptEngine` use, on `quickjs-kt` for Android and desktop
+(replaces the zhanghai `quickjs-android` AAR; [`PROGRESS.md`](PROGRESS.md), "QuickJS parity"). Tests live in
+`src/test/kotlin` and run on both targets; the Android host run uses the same JVM-artifact swap as `:source-js`.
+
+```bash
+./gradlew :core:quickjs:desktopTest --max-workers=2
+./gradlew :core:quickjs:testReleaseUnitTest
+```
+
+`QuickJsErrorClassTest` writes only to a JUnit temporary directory; two of its tests are `@Disabled` until
+`quickjs-kt` stops instantiating Java classes named by JavaScript errors.
 
 ## Package
 

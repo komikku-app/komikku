@@ -79,6 +79,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | I0 Contract and feasibility | done | see git log (`docs(kmp): … Mangayomi …`) | Docs only. 114 JS manga entries from 18 files in the kodjodevf index (86 are MangaDex / Comick variants; files hosted by the `entityJY` fork; 2 files 404). Bridge used: `Client.get`, CSS DOM, `SharedPreferences`, filters, preferences, one `cryptoHandler`; no XPath, WebView, `parseDates` or unpacker. Engine: `quickjs-kt` 1.0.15 (iOS targets verified, QuickJS 2026-06-04 like Mangayomi); on Android it clashes with the zhanghai AAR (`libquickjs.so`), maintainer decision 8.7 item 5. Licences: Apache-2.0 (app, index, fork), MIT (`flutter_qjs`). Go for I1–I4 with conditions (8.9). |
 | I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits).extension(source, code)` gives a `JsExtension` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` and `metadata()` (API as reshaped by the review fixes below); a fresh context per call; `JsHostLimits` (180 s wall clock per call, 64 MiB heap, 4 MiB JS stack, 50 MiB response bodies); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
 | I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
+| I2b Android engine switch | done | `6485fbe496`, `21f30d5dbe`, `935c6c9710`, `8cf7a35ebd`, `f2b94425c6` | New KMK module `:core:quickjs` (`mihon.library.kmp`, namespace `app.komikku.core.quickjs`): `app.cash.quickjs.QuickJs` / `QuickJsException` on `quickjs-kt` 1.0.15 for Android and desktop, binary compatible with quickjs-android (ABI check below), rebuilt to its behaviour (parity note below; `set` / `get` implemented although no extension uses them). Moved with `git mv` from `:desktop:android-compat` (`src/main/kotlin/app/cash/quickjs/{QuickJs,QuickJsException}.kt`, test `QuickJsTest.kt`); internals in `app.komikku.quickjs` (`QuickJsRuntime`, `EngineThread`, `Marshalling`, `JsStackTrace`). `core:common` depends on it for both targets (desktop no longer gets it from the compat module; `:desktop:extension-runtime` still exposes `app.cash.quickjs.` as a host package). Catalog: `quickjs-android` + bundle `js-engine` commented out (KMK), `quickjs-kt-jvm` added for host tests. Android: `:app:dependencyInsight` finds no `quickjs-android` in `debugRuntimeClasspath`, `quickjs-kt-android` comes through `:core:quickjs`; its AAR has `jni/{arm64-v8a,armeabi-v7a,x86,x86_64}/libquickjs.so` (all four split ABIs; `keepDebugSymbols` `**/libquickjs.so` still matches) and `:app:mergeDebugNativeLibs` packages only its copy (JNI symbols `Java_com_dokar_quickjs_*`). ProGuard: the AAR's consumer rules keep `QuickJs`, `QuickJsException`, `JsProperty`, `JsFunction`, `JsObject`, `UByteArray` (name only); KMK rules added for `MemoryUsage` (JNI constructor) and `UByteArray`'s `(byte[])` constructor and `storage` field; `app.cash.quickjs.** { public protected *; }` still matches. `:source-js` gained `androidTarget()` (namespace `app.komikku.sourcejs`, `mihon.library`) and a `jvmShared` source set (`OkHttpHostHttp`, `JsEngineThread.jvm.kt`, moved from `desktopMain`). Android host unit tests of both modules run the engine: their `*UnitTestRuntimeClasspath` excludes `quickjs-kt-android` and adds `quickjs-kt-jvm` (Linux / macOS / Windows x64 natives). Tests: `:core:quickjs` 16 (13 `QuickJsTest`, 3 `QuickJsErrorClassTest`, 2 of them `@Disabled`), on desktop and the Android host; `:source-js:testReleaseUnitTest` 67 (all of `commonTest`), `desktopTest` 87 (1 skipped). Not verified: R8 / release builds, a device or emulator. |
 | I3 Source adapter | todo | | |
 | I4 Store and UI | todo | | |
 | I5 Common core for iOS | todo | | Needs macOS. |
@@ -90,7 +91,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 Specification: [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) (corrected where the implementation showed it
 vague or wrong). Decisions taken without the maintainer, as asked:
 
-- **Targets (deviation from I-D1):** desktop only. Android waits for the QuickJS AAR decision (8.7 item 5); adding
+- **Targets (deviation from I-D1):** desktop only (I2b later added Android, see its row). Android waits for the QuickJS AAR decision (8.7 item 5); adding
   it is `id("mihon.library")` + `androidTarget()` + a namespace in `source-js/build.gradle.kts` (comment there).
   iOS targets are declared on macOS hosts only and have **not been compiled** (no macOS here); the iOS
   `newJsEngineThread` clamps the JS stack to 256 KiB for Darwin's 512 KiB secondary-thread stacks (unverified).
@@ -279,6 +280,50 @@ the `quickjs-kt`-backed `app.cash.quickjs.QuickJs` of `:core:quickjs` has to kee
 packers, `JSON.stringify(...)` of a page's literal, small key / challenge solvers, the synchrony deobfuscator
 library. No extension uses `JavaScriptEngine` directly.
 
+**Komikku's implementation (`:core:quickjs`).** Same as above, checked by `QuickJsTest`: result types (int-tagged
+→ `Integer`, float-tagged → `Double`, arrays → `Object[]`, objects / functions / maps / errors / promises / symbols
+/ BigInts → `null`, nested objects → "Cannot marshal value [object Object] to Java"), messages without the
+`Name:` prefix (quickjs-kt's `Name: message\n<stack>` is cut back), `JavaScript.f(file.js:6:…)` frames spliced
+above `QuickJs.evaluate` (the runtime's own frames above it are dropped), the `set` / `get` rules and messages
+(wrong count, conversions, existing name, missing global / method, `QuickJsProxy{…}`), a Java exception from a
+binding rethrown as itself, the closed-instance `NullPointerException`, globals (`var`, `function`, `let`,
+`const`) kept across calls, bytecode from one instance executed in another, no memory or time limit.
+Threading: one engine thread per instance with a 4 MiB native stack and a **1 MiB** JS stack limit (4× the old
+256 KiB, so recursion goes about four times deeper — a simple one reaches ~2000 frames; deeper recursion is a
+JavaScript error, never a crash); calls block the caller (waiting is not interruptible, the interrupt flag is restored) and are serialized,
+so the instance is now safe to share between threads. `close()` waits for queued calls, frees the runtime and
+ends the thread; `finalize()` frees a leaked instance (the old one only logged).
+
+**Deviations that cannot be avoided without changing scripts** (quickjs-kt evaluates every script with
+`JS_EVAL_FLAG_ASYNC` and awaits it):
+- pending jobs run: promise callbacks (`then`, `async` continuations) execute before `evaluate` returns
+  (quickjs-android never ran them);
+- an unhandled promise rejection fails the call with its message (`Promise.reject(e); 5` threw nothing before);
+- `await` is reserved at the top level (`var await = 1` is a syntax error);
+- the completion value is taken from a `{ value }` object that quickjs-kt resolves as a promise, so an
+  `Object.prototype.then` defined by the script would intercept it;
+- newer QuickJS (`2026-06-04` vs `2021-03-27`): error texts differ in places (`nope is not defined` instead of
+  `'nope' is not defined`) and stack lines carry a column (`file.js:6:5`);
+- `throw {message: 'm'}` gives "[object Object]" (was "m"), `throw null` / `throw undefined` give "null";
+- for `int` / `int[]` binding parameters an integral double such as `1.0` is accepted (JavaScript cannot see
+  QuickJS's int / float tag); a promise nested in an array is reported as "[object Promise]";
+- quickjs-kt cannot evaluate from inside a binding callback, so a Java method bound with `set` that calls back
+  into the same instance (`evaluate`, `execute`, a `get` proxy) gets `UnsupportedOperationException` instead of
+  re-entering; `compile` works there; `close()` from inside a binding throws `IllegalStateException`.
+
+**Hardening and residual risk (PLAN.md 8.7 item 5).** Values a script passes to a `set` binding never reach
+quickjs-kt as JavaScript objects: generated script-side code converts them by the Java parameter type and encodes
+them into one string (operators and `typeof` only), and the raw quickjs-kt bindings (`set` and the `get` argument
+pull) live under random names that the generated code captures and deletes from the global object.
+`QuickJsErrorClassTest` passes an `Error` named `java.io.FileOutputStream` to every parameter kind of a bound
+interface and to every function reachable from the global object (the hidden `get` invoker included): no file is
+created. Evaluation semantics are untouched, so a script's own errors still reach quickjs-kt's native conversion:
+an unhandled rejection, an error thrown out of the script or one returned as (or inside) the completion value
+creates the file. Two `@Disabled` tests in `QuickJsErrorClassTest` document these paths (run once without the
+annotation: both fail, the files appear in the temporary directory); enable them once quickjs-kt checks
+`Throwable` in `js_error_to_java_error`. Any `Throwable` quickjs-kt produces that way is reported as a
+`QuickJsException`, so an instantiated `Error` or `CancellationException` class does not escape as itself.
+
 **ABI check (I2b step 6).** `javap -protected` of the Android compile output of `:core:quickjs`
 (`build/tmp/kotlin-classes/debug/app/cash/quickjs`) against the old AAR's `classes.jar`; also compared with
 `javap -s` descriptors. Every public / protected member of the old `QuickJs` and `QuickJsException` exists with
@@ -383,7 +428,7 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `androidx.core.content.ContextCompat` | 1.1 | `DiskUtil` | `getExternalFilesDirs`, `getExternalCacheDirs`, `getDataDir`, `getMainExecutor` |
 | `androidx.preference.PreferenceManager` | 1.1 | `EHLogLevel` | `getDefaultSharedPreferences` = the main store (`preferences.json`) |
 | `com.elvishew.xlog.XLog`, `Logger`, `LogLevel` | 1.2 | `exh.log` (`Logging.kt`, `ResettableLogger`, `EHNetworkLogging`) — public API exposes `Logger` | Prints through `DesktopLog` with the logger tag; no `init()` needed; borders / JSON formatting not reproduced |
-| `app.cash.quickjs.QuickJs`, `QuickJsException` | 1.2, 1.4 | `JavaScriptEngine`, extensions | QuickJS via quickjs-kt: `create`, `evaluate(script[, fileName])`, `compile` / `execute`, `close`; results converted like quickjs-android (`Int` / `Double` / `String` / `Boolean` / `null` / `Array`); engine errors → `QuickJsException`. `set` / `get` (Java interface bindings) unsupported |
+| ~~`app.cash.quickjs.QuickJs`, `QuickJsException`~~ | 1.2, 1.4 | `JavaScriptEngine`, extensions | **Moved to `:core:quickjs` in I2b** (Android + desktop, same FQNs; `set` / `get` implemented there). Was: QuickJS via quickjs-kt with `create`, `evaluate`, `compile` / `execute`, `close`, quickjs-android result types, `set` / `get` unsupported |
 | `com.hippo.unifile.UniFile`, `FilenameFilter`, `UniRandomAccessFile`, `UriHandler` | 1.1 | `core:common` storage helpers, later `source-local`, downloads, backups | `java.io.File`-backed (`FileUniFile`); same nullability as the komikku-app fork; `fromUri` handles `file:` (+ registered handlers) |
 | `androidx.preference.Preference` (+ `OnPreferenceChangeListener`, `OnPreferenceClickListener`, `SummaryProvider`), `PreferenceGroup`, `PreferenceScreen`, `PreferenceCategory`, `DialogPreference`, `EditTextPreference` (+ `OnBindEditTextListener`, `SimpleSummaryProvider`), `ListPreference` (+ `SimpleSummaryProvider`), `DropDownPreference`, `MultiSelectListPreference`, `TwoStatePreference`, `CheckBoxPreference`, `SwitchPreferenceCompat`, `SwitchPreference`, `PreferenceDataStore`; `PreferenceManager` instances | 2.1 | `source-api` (`expect class PreferenceScreen`, `ConfigurableSource.setupPreferenceScreen`), extensions; later the desktop source settings screen (5.4) | Plain data holders with the AndroidX public members (key, title, summary + `%s` formatting, summary providers, enabled / visible / order, `dependency`, default value, change / click listeners, `callChangeListener`, `performClick`, entries / entryValues / value / values / text / isChecked, summaryOn/Off, dialog texts, `addPreference` / `findPreference` / `removePreference`). `PreferenceManager(context)` + `sharedPreferencesName` (or `preferenceDataStore`) + `createPreferenceScreen`: attached preferences load the persisted value or persist their default, and every setter persists through the compat `SharedPreferences`. Additions for the renderer: `defaultValue` getter, public `getOnBindEditTextListener()`, `PreferenceManager.addPreferenceChangeObserver`. No resources: `setTitle(@StringRes)` / `setSummary(@StringRes)` throw |
 | `androidx.preference.PreferenceGroupKt` (preference-ktx: `get`, `contains`, `plusAssign`, `minusAssign`, `size`, `isEmpty`, `forEach`, `forEachIndexed`, `iterator`, `children`) | 2.1 | extensions that call the non-inline preference-ktx helpers | Same semantics as preference-ktx |
@@ -825,7 +870,7 @@ or downloaded by hand from a repo you trust:
   1.0.15 is used because 1.0.16+ require Kotlin stdlib 2.4.21 (the build is on 2.4.20). Fallback if
   natives become a problem: Mozilla Rhino (pure JVM, any OS, but incomplete ES2015+ support and
   slower). `QuickJs.set` / `get` (binding Java interfaces) are not implemented; no known extension
-  needs them.
+  needs them. (I2b: the class moved to `:core:quickjs`, runs on Android too and implements `set` / `get`.)
 - **1.5 — context-free helpers are desktop-only.** Shared code keeps using
   `Context.stringResource(...)` (a compat `Context` is always available on desktop). The top-level
   `stringResource(...)` functions exist only in `desktopMain`; making them shared would need an
