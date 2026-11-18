@@ -32,8 +32,8 @@ kotlin {
             implementation(libs.unifile)
             implementation(libs.libarchive)
 
-            // JavaScript engine
-            implementation(libs.bundles.js.engine)
+            // JavaScript engine: `app.cash.quickjs.QuickJs` comes from :core:quickjs (both targets, I2b)
+            // implementation(libs.bundles.js.engine)
 
             // SY -->
             implementation(sylibs.xlog)
@@ -45,8 +45,6 @@ kotlin {
                 // Android API surface on desktop (Context, Uri, CookieManager, UniFile, xlog, …).
                 // `api`: core:common's public API exposes these types to every desktop consumer.
                 api(projects.desktop.androidCompat)
-                // `app.cash.quickjs.QuickJs` on quickjs-kt (moved from :desktop:android-compat, I2b).
-                implementation(projects.core.quickjs)
             }
         }
     }
@@ -94,9 +92,9 @@ dependencies {
     // Sort
     implementation(libs.natural.comparator)
 
-    // KMK --> moved to androidMain (Android-only AAR)
-    // JavaScript engine
-    // implementation(libs.bundles.js.engine)
+    // KMK --> JavaScript engine: `app.cash.quickjs.QuickJs` on quickjs-kt for Android and desktop (I2b),
+    // replacing the zhanghai quickjs-android AAR (libs.bundles.js.engine)
+    implementation(projects.core.quickjs)
     // KMK <--
 
     testImplementation(libs.bundles.test)

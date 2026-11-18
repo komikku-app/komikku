@@ -15,6 +15,11 @@
 -keep,allowoptimization class org.jsoup.** { public protected *; }
 -keep,allowoptimization class rx.** { public protected *; }
 -keep,allowoptimization class app.cash.quickjs.** { public protected *; }
+# KMK --> quickjs-kt (behind app.cash.quickjs since I2b): JNI also constructs MemoryUsage and reads / creates
+# kotlin.UByteArray through its (byte[]) constructor and `storage` field, which the AAR's consumer rules don't keep.
+-keep,allowoptimization class com.dokar.quickjs.MemoryUsage { <init>(...); }
+-keep,allowoptimization class kotlin.UByteArray { <init>(byte[]); byte[] storage; }
+# KMK <--
 -keep,allowoptimization class uy.kohesive.injekt.** { public protected *; }
 -keep,allowoptimization class com.squareup.zstd.** { public protected *; }
 

@@ -41,7 +41,9 @@ okio = "com.squareup.okio:okio:3.17.0"
 
 conscrypt-android = "org.conscrypt:conscrypt-android:2.5.3"
 
-quickjs-android = { group = "com.github.zhanghai.quickjs-java", name = "quickjs-android", version = "547f5b1597" }
+# KMK --> replaced by :core:quickjs (`app.cash.quickjs.QuickJs` on quickjs-kt, docs/kmp-desktop/PLAN.md I2b)
+# quickjs-android = { group = "com.github.zhanghai.quickjs-java", name = "quickjs-android", version = "547f5b1597" }
+# KMK <--
 # KMK --> QuickJS binding (Android AAR; JVM natives for Windows x64, Linux x64/arm64, macOS x64/arm64) behind
 # `app.cash.quickjs.QuickJs` in :core:quickjs and the JavaScript source host :source-js.
 quickjs-kt = "io.github.dokar3:quickjs-kt:1.0.15"
@@ -173,7 +175,9 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-m
 
 [bundles]
 okhttp = ["okhttp-core", "okhttp-logging", "okhttp-brotli", "okhttp-dnsoverhttps", "okhttp-zstd"]
-js-engine = ["quickjs-android"]
+# KMK --> replaced by :core:quickjs (I2b)
+# js-engine = ["quickjs-android"]
+# KMK <--
 coil = ["coil-core", "coil-gif", "coil-compose", "coil-network-okhttp"]
 shizuku = ["shizuku-api", "shizuku-provider"]
 sqldelight = ["sqldelight-androidx-driver", "sqldelight-coroutines", "sqldelight-android-paging"]
