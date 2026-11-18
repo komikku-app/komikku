@@ -2,8 +2,8 @@ package app.cash.quickjs
 
 import app.komikku.quickjs.MethodSpec
 import app.komikku.quickjs.QuickJsRuntime
+import app.komikku.quickjs.interfaceMethods
 import java.io.Closeable
-import java.lang.reflect.Method
 
 /**
  * KMK: `app.cash.quickjs.QuickJs`, the JavaScript API Mihon extensions link against (Square's `quickjs-java`, as
@@ -47,7 +47,7 @@ class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeab
         if (!type.isInstance(`object`)) {
             throw IllegalArgumentException("${`object`!!.javaClass} is not an instance of $type")
         }
-        val specs = methodsOf(type).map { MethodSpec(it, boxed = false) }
+        val specs = interfaceMethods(type).map { MethodSpec(it, boxed = false) }
         runtime.set(name!!, `object`!!, specs).unwrap()
     }
 
@@ -60,7 +60,7 @@ class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeab
         type!!
         if (!type.isInterface) throw UnsupportedOperationException("Only interfaces can be proxied. Received: $type")
         if (type.interfaces.isNotEmpty()) throw UnsupportedOperationException("$type must not extend other interfaces")
-        val specs = methodsOf(type).map { MethodSpec(it, boxed = true) }
+        val specs = interfaceMethods(type).map { MethodSpec(it, boxed = true) }
         @Suppress("UNCHECKED_CAST")
         return runtime.get(name!!, type, specs).unwrap() as T
     }
@@ -96,16 +96,5 @@ class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeab
         /** Creates a new interpreter instance; [close] it when done. */
         @JvmStatic
         fun create(): QuickJs = QuickJs(QuickJsRuntime.create())
-
-        /** The interface's methods in declaration order, rejecting overloads like quickjs-java. */
-        private fun methodsOf(type: Class<*>): Collection<Method> {
-            val methods = LinkedHashMap<String, Method>()
-            for (method in type.methods) {
-                if (methods.put(method.name, method) != null) {
-                    throw UnsupportedOperationException("${method.name} is overloaded in $type")
-                }
-            }
-            return methods.values
-        }
     }
 }

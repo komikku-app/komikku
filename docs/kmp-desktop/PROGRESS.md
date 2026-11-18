@@ -279,6 +279,19 @@ the `quickjs-kt`-backed `app.cash.quickjs.QuickJs` of `:core:quickjs` has to kee
 packers, `JSON.stringify(...)` of a page's literal, small key / challenge solvers, the synchrony deobfuscator
 library. No extension uses `JavaScriptEngine` directly.
 
+**ABI check (I2b step 6).** `javap -protected` of the Android compile output of `:core:quickjs`
+(`build/tmp/kotlin-classes/debug/app/cash/quickjs`) against the old AAR's `classes.jar`; also compared with
+`javap -s` descriptors. Every public / protected member of the old `QuickJs` and `QuickJsException` exists with
+the same descriptor and generic signature (`<T> void set(String, Class<T>, T)`, `<T> T get(String, Class<T>)`,
+`static QuickJs create()`, both `QuickJsException` constructors, `protected void finalize()`, `Closeable`, both
+classes `public final`). Differences: methods are now also flagged `final` (Kotlin; no effect on linking, the
+class was already final); **added** the `Companion` field and class `QuickJs$Companion` (Kotlin's holder of the
+`@JvmStatic create()`) and an `ACC_SYNTHETIC` constructor `QuickJs(QuickJsRuntime, DefaultConstructorMarker)`
+(Kotlin's accessor for the private constructor; Java source cannot call synthetic members); **removed** only the
+package-private `QuickJs$1` (quickjs-java's anonymous `get` invocation handler) and `QuickJsNativeLoader`
+(`System.loadLibrary("quickjs")`), which code outside the library could never reference. The raw and normalized
+diffs were kept in the session scratchpad (`abi.diff`, `abi.normalized.diff`), not committed.
+
 ## Files moved out of upstream paths
 
 Record every file moved to `src/androidMain` (old path → new path) so upstream cherry-picks can be

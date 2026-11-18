@@ -64,6 +64,17 @@ internal class MethodSpec(val method: Method, boxed: Boolean) {
     }
 }
 
+/** The methods of a bound / proxied interface, rejecting overloads like quickjs-java. */
+internal fun interfaceMethods(type: Class<*>): Collection<Method> {
+    val methods = LinkedHashMap<String, Method>()
+    for (method in type.methods) {
+        if (methods.put(method.name, method) != null) {
+            throw UnsupportedOperationException("${method.name} is overloaded in $type")
+        }
+    }
+    return methods.values
+}
+
 /** Converts a decoded transport value ([TransportReader]) to the Java value of [kind]. */
 internal fun fromTransport(value: Any?, kind: Kind): Any? = when (kind.code) {
     'S' -> value as String?
