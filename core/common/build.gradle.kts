@@ -42,9 +42,11 @@ kotlin {
         }
         named("desktopMain") {
             dependencies {
-                // Android API surface on desktop (Context, Uri, CookieManager, UniFile, QuickJs, xlog, …).
+                // Android API surface on desktop (Context, Uri, CookieManager, UniFile, xlog, …).
                 // `api`: core:common's public API exposes these types to every desktop consumer.
                 api(projects.desktop.androidCompat)
+                // `app.cash.quickjs.QuickJs` on quickjs-kt (moved from :desktop:android-compat, I2b).
+                implementation(projects.core.quickjs)
             }
         }
     }

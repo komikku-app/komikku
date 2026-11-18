@@ -36,8 +36,7 @@ dependencies {
     implementation(libs.jsoup)
     // Cookie persistence.
     implementation(kotlinx.serialization.json)
-    // `app.cash.quickjs.QuickJs` runs on QuickJS through a JVM binding with bundled natives.
-    implementation(libs.quickjs.kt)
+    // `AppCompatDelegate.defaultNightModeFlow`. (`app.cash.quickjs.QuickJs` moved to :core:quickjs in I2b.)
     implementation(kotlinx.coroutines.core)
     // `nl.adaptivity.xmlutil.core.AndroidXmlReader` (xmlutil `core-android`) over the JVM xmlutil core.
     api(kotlinx.serialization.xml.core.jvm)

@@ -42,9 +42,12 @@ okio = "com.squareup.okio:okio:3.17.0"
 conscrypt-android = "org.conscrypt:conscrypt-android:2.5.3"
 
 quickjs-android = { group = "com.github.zhanghai.quickjs-java", name = "quickjs-android", version = "547f5b1597" }
-# KMK --> JVM QuickJS binding (natives for Windows x64, Linux x64/arm64, macOS x64/arm64) backing the
-# desktop `app.cash.quickjs.QuickJs` in :desktop:android-compat.
+# KMK --> QuickJS binding (Android AAR; JVM natives for Windows x64, Linux x64/arm64, macOS x64/arm64) behind
+# `app.cash.quickjs.QuickJs` in :core:quickjs and the JavaScript source host :source-js.
 quickjs-kt = "io.github.dokar3:quickjs-kt:1.0.15"
+# JVM artifact (host natives) for Android host unit tests of modules using quickjs-kt: the Android AAR's
+# native library cannot load on the build machine.
+quickjs-kt-jvm = "io.github.dokar3:quickjs-kt-jvm:1.0.15"
 # KMK <--
 # KMK --> Multiplatform jsoup port (JVM + iOS) for the DOM bridge of :source-js (Mangayomi JavaScript sources).
 ksoup = "com.fleeksoft.ksoup:ksoup:0.2.6"

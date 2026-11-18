@@ -64,6 +64,9 @@ include(":core:common")
 // KMK --> Multiplatform preference abstraction shared with desktop/iOS (Phase 1)
 include(":core:preference")
 // KMK <--
+// KMK --> `app.cash.quickjs.QuickJs` on quickjs-kt for Android and desktop (docs/kmp-desktop/PLAN.md, I2b)
+include(":core:quickjs")
+// KMK <--
 include(":data")
 include(":domain")
 include(":i18n")
