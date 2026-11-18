@@ -131,14 +131,17 @@ internal object HttpBridge {
 
     private fun JsonObject?.orEmpty(): Map<String, JsonElement> = this ?: emptyMap()
 
-    /** `application/x-www-form-urlencoded` component encoding (space → `+`), as Dart's `Uri.encodeQueryComponent`. */
+    /**
+     * Dart's `Uri.encodeQueryComponent`: the UTF-8 bytes, with `A-Z a-z 0-9 - . _ ~` kept, space as `+` and
+     * everything else percent-encoded in upper case.
+     */
     fun formEncode(text: String): String = buildString {
         text.encodeToByteArray().forEach { byte ->
             val c = byte.toInt() and 0xFF
             when {
                 c == ' '.code -> append('+')
                 c in 'a'.code..'z'.code || c in 'A'.code..'Z'.code || c in '0'.code..'9'.code ||
-                    c == '-'.code || c == '_'.code || c == '.'.code || c == '*'.code -> append(c.toChar())
+                    c == '-'.code || c == '_'.code || c == '.'.code || c == '~'.code -> append(c.toChar())
                 else -> append('%').append(HEX[c shr 4]).append(HEX[c and 0xF])
             }
         }

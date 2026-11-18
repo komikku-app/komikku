@@ -32,6 +32,28 @@ async function conformance(provider) {
     decryptAESGCM("XSEDha9nwI673MuD", "000102030405060708090a0b0c0d0e0f", "6465666768696a6b6c6d6e6f", "00ba866d8d3ba2b3181b7791e0d5590d"),
   ];
   r.deobfuscate = deobfuscateJsPassword("[!+[]+!+[]][+[]](+[])[!+[]+!+[]+!+[]][+!+[]+[]]");
+  r.deobfuscateRules = ["[+[]]", "[+[]+[]]", "[]", "x[!+[]]y", "(a)[!+[]](b)c", "(a)x[!+[]]", "[" + "!+[]+".repeat(10) + "]"].map(deobfuscateJsPassword);
+  r.deobfuscateErrors = ["[!+[]", "(+[])", "(a)[!+[]", "]["].map((input) => {
+    try { return deobfuscateJsPassword(input); } catch (e) { return "thrown"; }
+  });
+  // Mangayomi's parsing details: no "Salted__" check, passphrase = low byte of each UTF-16 code unit, Dart base64.
+  r.cryptoJsDetails = [
+    decryptAESCryptoJS("R2FyYmFnZSEBAgMEBQYHCNHZTXZHfy4taq/E4JeGSEo=", "my passphrase"),
+    decryptAESCryptoJS(encryptAESCryptoJS("low byte", "Ax"), "\u0141x"),
+  ];
+  r.base64 = [
+    cryptoHandler("jZSHXlX7DuwQ4-QAbTgOJcrGHKdLmSbOydgfNz1z05E=", "fedcba9876543210", "0123456789abcdef01234567", false),
+    cryptoHandler("jZSHXlX7DuwQ4+QAbTgOJcrGHKdLmSbOydgfNz1z05E", "fedcba9876543210", "0123456789abcdef01234567", false),
+    cryptoHandler(" NDIa3Weis9upl3OmVvd4jxumz5azW8tRnVCfL3J57mk=", "fedcba9876543210", "0123456789abcdef", false),
+  ];
+  r.malformedUtf8 = [
+    cryptoHandler("3C_U4LxjrBu5IwmhpI5AFQ==", "fedcba9876543210", "0123456789abcdef", false),
+    decryptAESGCM("W6FhFlsCARCC1w0Y+v5gLH4H", "000102030405060708090A0B0C0D0E0F", "6465666768696a6b6c6d6e6f"),
+  ];
+  r.hex = [
+    decryptAESGCM("XSEDha9nwI673MuD", "+00102030405060708090a0b0c0d0e0f", "6465666768696a6b6c6d6e6f", "40ba866d8d3ba2b3181b7791e0d5590d"),
+    decryptAESGCM("XSEDha9nwI673MuD", "000102030405060708090a0b0c0d0e0f", "6465666768696a6b6c6d6e6", "40ba866d8d3ba2b3181b7791e0d5590d"),
+  ];
   return r;
 }
 """
@@ -46,7 +68,16 @@ async function conformance(provider) {
         assertJson("""[true, "round trip"]""", r["cryptoJsRoundTrip"])
         assertJson("\"thrown\"", r["cryptoJsError"])
         assertJson("""["GCM text ✓", "GCM text ✓", "XSEDha9nwI673MuD"]""", r["gcm"])
-        assertJson("\"20.31\"", r["deobfuscate"])
+        assertJson("\"20.1\"", r["deobfuscate"])
+        assertJson("""["0", "-", "-", "1", "..", ".1", "-"]""", r["deobfuscateRules"])
+        assertJson("""["thrown", "thrown", "thrown", "thrown"]""", r["deobfuscateErrors"])
+        assertJson("""["secret message", "low byte"]""", r["cryptoJsDetails"])
+        assertJson(
+            """["Hello, 世界! cryptoHandler", "jZSHXlX7DuwQ4+QAbTgOJcrGHKdLmSbOydgfNz1z05E", " NDIa3Weis9upl3OmVvd4jxumz5azW8tRnVCfL3J57mk="]""",
+            r["base64"],
+        )
+        assertJson("""["\uFFFDA", "A\uFFFD"]""", r["malformedUtf8"])
+        assertJson("""["XSEDha9nwI673MuD", "XSEDha9nwI673MuD"]""", r["hex"])
     }
 
     private val helpersFixture = """

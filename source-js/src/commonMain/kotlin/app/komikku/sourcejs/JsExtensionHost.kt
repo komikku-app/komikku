@@ -23,8 +23,10 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -75,34 +77,56 @@ class JsExtensionHost(
     suspend fun getPageList(source: JsSourceDescriptor, code: String, url: String): List<JsPage> =
         callAsync(source, code, "getPageList", "getPageList", JsonPrimitive(url)) { JsResultParser.pages(it) }
 
-    /** `getFilterList()`; `[]` when not implemented or unparsable (Mangayomi's defaults). */
-    suspend fun getFilterList(source: JsSourceDescriptor, code: String): List<JsFilter> =
+    /**
+     * `getFilterList()`. Like Mangayomi, any failure (not implemented, an error, a result of the wrong shape) gives
+     * `[]`, logged as a warning, so [search] still runs.
+     */
+    suspend fun getFilterList(source: JsSourceDescriptor, code: String): List<JsFilter> = try {
         callSync(source, code, "getFilterList", "getFilterList", CallMode.SYNC, emptyList()) { result ->
-            try {
-                JsResultParser.filters(result)
-            } catch (e: MalformedResultFailure) {
-                services.log.log(HostLog.Level.WARN, source, "Ignoring unparsable getFilterList result: ${e.message}")
-                emptyList()
+            parse(source, "getFilterList", "getFilterList") { JsResultParser.filters(result) }
+        }
+    } catch (e: JsSourceException) {
+        services.log.log(HostLog.Level.WARN, source, "Ignoring getFilterList failure: ${e.message}")
+        emptyList()
+    }
+
+    /** `getSourcePreferences()`; `[]` when not implemented or not an array. */
+    suspend fun getSourcePreferences(source: JsSourceDescriptor, code: String): List<JsPreference> =
+        callSync(source, code, "getSourcePreferences", "getSourcePreferences", CallMode.SYNC, emptyList()) { result ->
+            if (result !is JsonArray) {
+                wrongType(source, "getSourcePreferences", result, emptyList())
+            } else {
+                parse(source, "getSourcePreferences", "getSourcePreferences") { JsResultParser.preferences(result) }
             }
         }
 
-    /** `getSourcePreferences()`; `[]` when not implemented. */
-    suspend fun getSourcePreferences(source: JsSourceDescriptor, code: String): List<JsPreference> =
-        callSync(source, code, "getSourcePreferences", "getSourcePreferences", CallMode.SYNC, emptyList()) {
-            parse(source, "getSourcePreferences", "getSourcePreferences") { JsResultParser.preferences(it) }
-        }
-
-    /** `getHeaders(url)` (always called with the base URL in Mangayomi); `{}` when not implemented. */
+    /** `getHeaders(url)` (always called with the base URL in Mangayomi); `{}` when not implemented or not an object. */
     suspend fun getHeaders(source: JsSourceDescriptor, code: String, url: String = source.baseUrl): Map<String, String> =
-        callSync(source, code, "getHeaders", "getHeaders", CallMode.SYNC, emptyMap(), JsonPrimitive(url)) {
-            parse(source, "getHeaders", "getHeaders") { JsResultParser.headers(it) }
+        callSync(source, code, "getHeaders", "getHeaders", CallMode.SYNC, emptyMap(), JsonPrimitive(url)) { result ->
+            if (result !is JsonObject) {
+                wrongType(source, "getHeaders", result, emptyMap())
+            } else {
+                parse(source, "getHeaders", "getHeaders") { JsResultParser.headers(result) }
+            }
         }
 
-    /** The `supportsLatest` getter; `true` when not implemented. */
+    /** The `supportsLatest` getter; `true` when not implemented or not a boolean. */
     suspend fun supportsLatest(source: JsSourceDescriptor, code: String): Boolean =
-        callSync(source, code, "supportsLatest", "supportsLatest", CallMode.GETTER, true) {
-            parse(source, "supportsLatest", "supportsLatest") { JsResultParser.boolean(it, true) }
+        callSync(source, code, "supportsLatest", "supportsLatest", CallMode.GETTER, true) { result ->
+            (result as? JsonPrimitive)?.takeUnless { it.isString }?.booleanOrNull ?: wrongType(source, "supportsLatest", result, true)
         }
+
+    /** Mangayomi's `_extensionCall`: a sync member's result of the wrong type means the default. */
+    private fun <T> wrongType(source: JsSourceDescriptor, member: String, result: JsonElement?, default: T): T {
+        val got = when (result) {
+            null, is JsonNull -> "nothing"
+            is JsonObject -> "an object"
+            is JsonArray -> "an array"
+            is JsonPrimitive -> if (result.isString) "a string" else result.toString()
+        }
+        services.log.log(HostLog.Level.WARN, source, "$member returned $got; using the default $default")
+        return default
+    }
 
     /** The same calls bound to one source. */
     fun extension(source: JsSourceDescriptor, code: String): JsExtension = JsExtension(this, source, code)

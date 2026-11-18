@@ -48,8 +48,6 @@ internal object JsResultParser {
 
     fun headers(result: JsonElement?): Map<String, String> = result.stringMap("(result)")
 
-    fun boolean(result: JsonElement?, default: Boolean): Boolean = result.booleanOrDefault("(result)", default)
-
     fun filters(result: JsonElement?): List<JsFilter> =
         result.arrayOrEmpty("(result)").mapIndexedNotNull { index, item -> filter(item, "[$index]") }
 

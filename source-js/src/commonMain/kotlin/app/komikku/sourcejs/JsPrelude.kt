@@ -450,12 +450,17 @@ async function run(member, argsJson, mode) {
     }
     const args = JsonParse(argsJson);
     let value;
-    if (mode === "getter") {
-      value = provider[member];
-    } else if (mode === "sync") {
-      value = provider[member](...args);
-    } else {
+    if (mode === "async") {
       value = await provider[member](...args);
+    } else {
+      // Sync members are not awaited (Mangayomi stringifies a promise to {}, the host then uses the default);
+      // a rejection of such a promise is ignored.
+      value = mode === "getter" ? provider[member] : provider[member](...args);
+      if (value !== null && typeof value === "object") {
+        try {
+          promiseThen(value, undefined, function () {});
+        } catch (e) {}
+      }
     }
     const out = JsonStringify(value);
     settle("o" + (typeof out === "string" ? out : ""));

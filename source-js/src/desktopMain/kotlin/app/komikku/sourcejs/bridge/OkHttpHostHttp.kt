@@ -67,7 +67,13 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
     }
 
     private fun HostHttpRequest.toOkHttpRequest(): Request {
-        val headers = Headers.Builder().apply { this@toOkHttpRequest.headers.forEach { (name, value) -> add(name, value) } }.build()
+        // A source-supplied Accept-Encoding would make OkHttp hand back the compressed bytes; Mangayomi's clients
+        // always decompress, so OkHttp negotiates the encoding itself.
+        val headers = Headers.Builder().apply {
+            this@toOkHttpRequest.headers.forEach { (name, value) ->
+                if (!name.equals("Accept-Encoding", ignoreCase = true)) add(name, value)
+            }
+        }.build()
         val requestBody = when {
             body != null -> body.toRequestBody()
             HttpMethod.requiresRequestBody(method) -> ByteArray(0).toRequestBody()

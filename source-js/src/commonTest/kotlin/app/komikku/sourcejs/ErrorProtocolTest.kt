@@ -23,13 +23,13 @@ class ErrorProtocolTest {
                 """
                 get supportsLatest() { return parseDates(["today"], "", ""); }
                 getHeaders(url) { return { a: unpackJs("x") }; }
-                getFilterList() { return new Document("<p>").xpathFirst("//p"); }
+                getSourcePreferences() { return new Document("<p>").xpathFirst("//p"); }
                 """,
             ),
         )
         assertEquals("parseDates", assertFailsWith<JsSourceException.Unsupported> { extension.supportsLatest() }.feature)
         assertEquals("unpackJs", assertFailsWith<JsSourceException.Unsupported> { extension.getHeaders() }.feature)
-        assertEquals("XPath (Document.xpathFirst)", assertFailsWith<JsSourceException.Unsupported> { extension.getFilterList() }.feature)
+        assertEquals("XPath (Document.xpathFirst)", assertFailsWith<JsSourceException.Unsupported> { extension.getSourcePreferences() }.feature)
     }
 
     @Test

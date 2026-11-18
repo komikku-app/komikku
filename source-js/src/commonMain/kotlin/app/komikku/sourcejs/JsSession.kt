@@ -50,6 +50,9 @@ internal class JsSession(
 
     private val failures = mutableListOf<HostFunctionFailure>()
     private val timers = mutableMapOf<Long, CompletableDeferred<Unit>>()
+
+    /** Timers cleared before their wait started (async bindings start after the current JS job). */
+    private val clearedTimers = mutableSetOf<Long>()
     private val settledSignal = CompletableDeferred<Unit>()
 
     /** The envelope the entry reported (`JsPrelude` ENTRY), `null` while the call has not settled. */
@@ -125,7 +128,7 @@ internal class JsSession(
         val cleared = CompletableDeferred<Unit>()
         timers[id] = cleared
         return try {
-            val fired = if (settledSignal.isCompleted) {
+            val fired = if (settledSignal.isCompleted || clearedTimers.remove(id)) {
                 false
             } else {
                 select {
@@ -156,7 +159,8 @@ internal class JsSession(
             NULL
         }
         "clear_timer" -> {
-            timers[parseArgs(payload).long(0)]?.complete(Unit)
+            val id = parseArgs(payload).long(0)
+            timers[id]?.complete(Unit) ?: clearedTimers.add(id)
             NULL
         }
         else -> syncValue(channel, parseArgs(payload)).toReply()

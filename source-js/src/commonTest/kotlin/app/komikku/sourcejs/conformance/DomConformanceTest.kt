@@ -118,4 +118,19 @@ async function conformance(provider) {
         assertJson("""[1, "window.chapterImages = [\"x.jpg\"];", 1, ["b"]]""", r["contains"])
         assertJson("""["1"]""", r["has"])
     }
+
+    private val regexFixture = """
+async function conformance(provider) {
+  const doc = new Document('<div id="a"><img src="" data-src="https://i.test/1.jpg"><a href="">e</a><a href="/m/\n2">n</a><b img="">x</b><b img="v">y</b></div>');
+  const div = doc.getElementById("a");
+  return { getters: [div.getSrc, div.getDataSrc, div.getHref, div.getImg] };
+}
+"""
+
+    @Test
+    fun regexGettersUseMangayomisPatterns() = runTest {
+        // `src="([^"]+)"` etc.: empty values are skipped and newlines belong to the value.
+        val r = TestHost().runConformance(regexFixture)
+        assertJson("""["https://i.test/1.jpg", "https://i.test/1.jpg", "/m/\n2", "v"]""", r["getters"])
+    }
 }

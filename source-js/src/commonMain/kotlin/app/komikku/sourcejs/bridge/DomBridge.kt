@@ -15,8 +15,9 @@ import com.fleeksoft.ksoup.nodes.TextNode
  *   data (jsoup's `text()` normalises and skips script data);
  * - `:contains(x)` also matches script / style data (rewritten to `:is(:contains(x), :containsData(x))`);
  * - an invalid selector gives an empty result instead of an error;
- * - `getSrc` / `getImg` / `getHref` / `getDataSrc` are the first regex match of `src="…"` etc. in the serialised
- *   outer HTML (so `getSrc` also matches `data-src`, and values stay HTML-escaped).
+ * - `getSrc` / `getImg` / `getHref` / `getDataSrc` are the first match of Mangayomi's regex `src="([^"]+)"` etc. in
+ *   the serialised outer HTML (so `getSrc` also matches `data-src`, empty values are skipped, newlines are part of
+ *   the value, and values stay HTML-escaped).
  * Deliberate differences: `hasAttr` works (always `false` in Mangayomi, contract 4.3), and an element's `select`
  * matches descendants only, like the DOM's `querySelectorAll` (jsoup would include the element itself).
  */
@@ -111,10 +112,11 @@ internal class DomBridge {
     companion object {
         const val EMPTY = -1
 
-        private val SRC = Regex("src=\"(.*?)\"")
-        private val IMG = Regex("img=\"(.*?)\"")
-        private val HREF = Regex("href=\"(.*?)\"")
-        private val DATA_SRC = Regex("data-src=\"(.*?)\"")
+        // Mangayomi's patterns (`reg_exp_matcher.dart`): non-empty values, newlines included.
+        private val SRC = Regex("src=\"([^\"]+)\"")
+        private val IMG = Regex("img=\"([^\"]+)\"")
+        private val HREF = Regex("href=\"([^\"]+)\"")
+        private val DATA_SRC = Regex("data-src=\"([^\"]+)\"")
 
         private fun firstMatch(regex: Regex, text: String): String = regex.find(text)?.groupValues?.get(1).orEmpty()
 

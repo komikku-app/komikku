@@ -11,6 +11,8 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
 import okio.Buffer
+import okio.GzipSink
+import okio.buffer
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.test.AfterTest
@@ -95,6 +97,20 @@ class OkHttpHostHttpTest {
             http.execute(HostHttpRequest("GET", server.url("/slow").toString(), emptyList(), null, timeoutMillis = 200))
         }
         Unit
+    }
+
+    @Test
+    fun decompressesEvenWhenTheSourceAsksForAnEncoding() = runBlocking {
+        val gzipped = Buffer().apply { GzipSink(this).buffer().use { it.writeUtf8("décompressé") } }
+        server.enqueue(MockResponse.Builder().addHeader("Content-Encoding", "gzip").body(gzipped).build())
+        val response = http.execute(
+            HostHttpRequest("GET", server.url("/gz").toString(), listOf("Accept-Encoding" to "gzip, deflate, br", "X-A" to "1"), null),
+        )
+        assertEquals("décompressé", response.body.decodeToString())
+        val recorded = server.takeRequest()
+        // OkHttp's own negotiation, not the source's header.
+        assertEquals("gzip", recorded.headers["Accept-Encoding"])
+        assertEquals("1", recorded.headers["X-A"])
     }
 
     @Test

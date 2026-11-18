@@ -20,7 +20,7 @@ async function conformance(provider) {
   const latin1 = await client.get("https://h.test/latin1");
   const noCharset = await client.get("https://h.test/nocharset");
   await client.post("https://h.test/post-text", {}, "a=b c");
-  await client.post("https://h.test/post-form", {}, { q: "one piece", page: 2, "a&b": "é" });
+  await client.post("https://h.test/post-form", {}, { q: "one piece", page: 2, "a&b": "é", "x*": "~y" });
   await client.post("https://h.test/post-json", { "Content-Type": "application/json" }, { q: "x", n: [1, 2] });
   await client.post("https://h.test/post-json-string", { "content-type": "application/json; charset=utf-8" }, '{"q":"x"}');
   await client.put("https://h.test/put", { "Content-Type": "text/xml" }, "<a/>");
@@ -97,7 +97,8 @@ async function conformance(provider) {
         assertEquals("a=b c", body("/post-text"))
         assertEquals(listOf("Content-Type" to "text/plain; charset=utf-8"), headers("/post-text"))
 
-        assertEquals("q=one+piece&page=2&a%26b=%C3%A9", body("/post-form"))
+        // Dart's Uri.encodeQueryComponent: `*` encoded, `~` kept.
+        assertEquals("q=one+piece&page=2&a%26b=%C3%A9&x%2A=~y", body("/post-form"))
         assertEquals(listOf("Content-Type" to "application/x-www-form-urlencoded; charset=utf-8"), headers("/post-form"))
 
         assertEquals("""{"q":"x","n":[1,2]}""", body("/post-json"))
