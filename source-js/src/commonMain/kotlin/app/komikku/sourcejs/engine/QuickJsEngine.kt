@@ -6,9 +6,13 @@ import com.dokar.quickjs.QuickJsInterruptedException
 import com.dokar.quickjs.binding.asyncFunction
 import com.dokar.quickjs.binding.function
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.decrementAndFetch
+import kotlin.concurrent.atomics.incrementAndFetch
 
 /**
  * [JsEngine] on QuickJS through `io.github.dokar3:quickjs-kt` (the same QuickJS release as Mangayomi, so `Date`
@@ -17,11 +21,14 @@ import kotlinx.serialization.json.JsonPrimitive
  * Each engine owns a dedicated thread ([newJsEngineThread]): the QuickJS runtime is created on it (QuickJS
  * measures its stack limit from the creating thread) and every call runs on it. Coroutine cancellation interrupts
  * a running script (`quickjs-kt` installs an interrupt handler), so `withTimeout` around a call stops even an
- * endless loop.
+ * endless loop. `quickjs-kt`'s `evaluationTimeoutMillis` is not used: it is a wall-clock deadline from the start of
+ * the evaluation that is only checked while JavaScript runs, so it would also count network waits.
  */
+@OptIn(ExperimentalAtomicApi::class)
 class QuickJsEngine private constructor(
     private val quickJs: QuickJs,
     private val thread: JsEngineThread,
+    private val memoryLimitBytes: Long,
 ) : JsEngine {
 
     override suspend fun defineFunction(name: String, function: (args: List<String?>) -> String?) = onThread {
@@ -35,14 +42,18 @@ class QuickJsEngine private constructor(
         quickJs.asyncFunction<String?>(name) { args -> function(args.map(::toArgument)) }
     }
 
+    override suspend fun compile(script: String, fileName: String): ByteArray = onThread { quickJs.compile(script, fileName) }
+
     override suspend fun evaluate(script: String, fileName: String) {
         onThread { quickJs.evaluate<Any?>(script, fileName) }
     }
 
-    override suspend fun callFunction(function: String, argsJson: String): String? {
-        val callee = Json.encodeToString(JsonPrimitive.serializer(), JsonPrimitive(function))
-        val script = "JSON.stringify(await globalThis[$callee](...$argsJson))"
-        return onThread { quickJs.evaluate<Any?>(script, "<call $function>") } as String?
+    override suspend fun evaluate(bytecode: ByteArray) {
+        onThread { quickJs.evaluate<Any?>(bytecode) }
+    }
+
+    override suspend fun memoryUsedBytes(): Long? = withContext(thread.dispatcher) {
+        if (quickJs.isClosed) null else quickJs.memoryUsage.mallocSize
     }
 
     override suspend fun close() {
@@ -50,6 +61,7 @@ class QuickJsEngine private constructor(
             try {
                 withContext(thread.dispatcher) { quickJs.close() }
             } finally {
+                liveRuntimes.decrementAndFetch()
                 thread.dispatcher.close()
             }
         }
@@ -63,20 +75,63 @@ class QuickJsEngine private constructor(
         throw e.toEngineException()
     }
 
-    companion object Factory : JsEngineFactory {
+    /**
+     * Out of memory is recognised by QuickJS's own error, or — when QuickJS could not even allocate that error and
+     * threw `null` — by the context still being at its limit. Anything else is a script error.
+     */
+    private suspend fun QuickJsException.toEngineException(): JsEngineException {
+        val text = message ?: "Unknown JavaScript error"
+        if (text.startsWith(OUT_OF_MEMORY) || isNearMemoryLimit()) return JsEngineException.OutOfMemory(text)
+        return JsEngineException.Script(text.substringBefore("\n    at "), stack?.takeIf { it.isNotBlank() })
+    }
 
-        override suspend fun create(limits: JsEngineLimits): JsEngine {
-            val thread = newJsEngineThread("komikku-js", limits.maxStackSizeBytes)
-            return try {
-                val quickJs = withContext(thread.dispatcher) {
-                    QuickJs.create(thread.dispatcher).apply {
-                        memoryLimit = limits.memoryLimitBytes
-                        maxStackSize = minOf(limits.maxStackSizeBytes, thread.maxJsStackBytes)
+    /** Whether the context's allocations are within 1/16 of the memory limit. */
+    internal suspend fun isNearMemoryLimit(): Boolean {
+        if (memoryLimitBytes <= 0) return false
+        val used = try {
+            memoryUsedBytes()
+        } catch (e: QuickJsException) {
+            null
+        } ?: return false
+        return used >= memoryLimitBytes - memoryLimitBytes / 16
+    }
+
+    companion object Factory : JsEngineFactory {
+        private const val OUT_OF_MEMORY = "InternalError: out of memory"
+
+        /** QuickJS runtimes created and not yet closed (test hook for leak checks). */
+        internal val liveRuntimes = AtomicInt(0)
+
+        override suspend fun create(limits: JsEngineLimits): JsEngine =
+            create(limits, newJsEngineThread("komikku-js", limits.maxStackSizeBytes))
+
+        /**
+         * Creates the runtime on [thread]. The creation itself is not cancellable; if the caller was cancelled
+         * meanwhile, the runtime is closed instead of being lost.
+         */
+        internal suspend fun create(limits: JsEngineLimits, thread: JsEngineThread): JsEngine {
+            var created: QuickJs? = null
+            try {
+                withContext(NonCancellable + thread.dispatcher) {
+                    val quickJs = QuickJs.create(thread.dispatcher)
+                    created = quickJs
+                    liveRuntimes.incrementAndFetch()
+                    quickJs.memoryLimit = limits.memoryLimitBytes
+                    quickJs.maxStackSize = minOf(limits.maxStackSizeBytes, thread.maxJsStackBytes)
+                }
+                currentCoroutineContext().ensureActive()
+                return QuickJsEngine(created!!, thread, limits.memoryLimitBytes)
+            } catch (e: Throwable) {
+                withContext(NonCancellable) {
+                    try {
+                        created?.let { quickJs ->
+                            withContext(thread.dispatcher) { quickJs.close() }
+                            liveRuntimes.decrementAndFetch()
+                        }
+                    } finally {
+                        thread.dispatcher.close()
                     }
                 }
-                QuickJsEngine(quickJs, thread)
-            } catch (e: Throwable) {
-                thread.dispatcher.close()
                 throw e
             }
         }
@@ -87,17 +142,6 @@ class QuickJsEngine private constructor(
             is Double -> if (value % 1.0 == 0.0 && value in -9.0E15..9.0E15) value.toLong().toString() else value.toString()
             is Float -> toArgument(value.toDouble())
             else -> value.toString()
-        }
-
-        private fun QuickJsException.toEngineException(): JsEngineException {
-            val text = message ?: "Unknown JavaScript error"
-            // When QuickJS cannot even allocate the InternalError, the pending exception is `null`.
-            val outOfMemory = text.startsWith("InternalError: out of memory") || (text == "null" && stack.isNullOrBlank())
-            return if (outOfMemory) {
-                JsEngineException.OutOfMemory(text)
-            } else {
-                JsEngineException.Script(text.substringBefore("\n    at "), stack?.takeIf { it.isNotBlank() })
-            }
         }
     }
 }

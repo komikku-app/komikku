@@ -40,7 +40,7 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
                                 HostHttpResponse(
                                     statusCode = it.code,
                                     headers = it.headers.map { header -> header.first to header.second },
-                                    body = it.body.bytes(),
+                                    body = it.readBody(request.maxBodyBytes),
                                     finalUrl = it.request.url.toString(),
                                     reasonPhrase = it.message.ifEmpty { null },
                                 )
@@ -54,6 +54,16 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
                 },
             )
         }
+    }
+
+    /** The body, failing as soon as it is known to exceed [maxBytes] (declared length or bytes read). */
+    private fun Response.readBody(maxBytes: Long?): ByteArray {
+        if (maxBytes == null) return body.bytes()
+        val declared = body.contentLength()
+        if (declared > maxBytes) throw IOException("response body larger than $maxBytes bytes")
+        val source = body.source()
+        if (source.request(maxBytes + 1)) throw IOException("response body larger than $maxBytes bytes")
+        return source.readByteArray()
     }
 
     private fun HostHttpRequest.toOkHttpRequest(): Request {

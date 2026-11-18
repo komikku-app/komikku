@@ -5,8 +5,8 @@ package app.komikku.sourcejs.engine
  * without touching the host.
  *
  * Only strings cross this interface: host functions receive their arguments as strings (`null` for JS `null` /
- * `undefined`; other values are converted with their string form) and return a string or `null`; calls return
- * JSON text. Structured values are JSON-encoded by the JS prelude, like Mangayomi's `sendMessage` channel.
+ * `undefined`; other values are converted with their string form) and return a string or `null`. Results travel
+ * back through host functions too (the prelude's `settle` channel), so evaluations return nothing.
  *
  * An engine is confined to one thread: implementations switch to it internally, so callers may use any
  * dispatcher, but must not call one engine concurrently.
@@ -19,14 +19,20 @@ interface JsEngine {
     /** Defines a global function [name] returning a promise that settles with the result of [function]. */
     suspend fun defineSuspendFunction(name: String, function: suspend (args: List<String?>) -> String?)
 
-    /** Evaluates [script] as a global (non-module) script for its side effects. */
-    suspend fun evaluate(script: String, fileName: String)
+    /** Compiles [script] as a global (non-module) script without running it; throws on a syntax error. */
+    suspend fun compile(script: String, fileName: String): ByteArray
 
     /**
-     * Calls the global function [function] with the elements of the JSON array [argsJson] as arguments, awaits the
-     * result if it is a promise, and returns `JSON.stringify` of it (`null` for `undefined`).
+     * Evaluates [script] as a global (non-module) script for its side effects, and waits until its promise jobs and
+     * pending host functions are done.
      */
-    suspend fun callFunction(function: String, argsJson: String): String?
+    suspend fun evaluate(script: String, fileName: String)
+
+    /** Evaluates bytecode from [compile] (same engine implementation and version) like [evaluate]. */
+    suspend fun evaluate(bytecode: ByteArray)
+
+    /** Bytes the context currently has allocated, `null` if unknown. */
+    suspend fun memoryUsedBytes(): Long?
 
     /** Releases the context and its thread. The engine cannot be used afterwards. */
     suspend fun close()
@@ -53,12 +59,12 @@ data class JsEngineLimits(
 /** Failures raised by a [JsEngine]. Errors thrown by host functions propagate unchanged instead. */
 sealed class JsEngineException(message: String) : Exception(message) {
 
-    /** The script threw (or a promise rejected) with [jsMessage]; [jsStack] is the JS stack when known. */
+    /** The evaluation failed with [jsMessage]; [jsStack] is the JS stack when known. */
     class Script(val jsMessage: String, val jsStack: String?) : JsEngineException(jsMessage)
 
     /** The context ran out of its memory limit. */
     class OutOfMemory(message: String) : JsEngineException(message)
 
-    /** The evaluation was interrupted (engine-side timeout). */
+    /** The evaluation was interrupted. */
     class Interrupted(message: String) : JsEngineException(message)
 }

@@ -59,7 +59,8 @@ async function conformance(provider) {
   r.jsonStringify = await jsonStringify(async () => ({ a: [1, "b"] }));
   r.globals = ["MProvider", "Client", "Document", "Element", "SharedPreferences", "console", "setTimeout", "jsonStringify",
     "cryptoHandler", "parseDates", "unpackJs", "evaluateJavascriptViaWebview", "sibnetExtractor",
-    "atob", "btoa", "fetch", "URL", "TextDecoder", "clearTimeout", "setInterval", "window", "document", "require"]
+    "atob", "btoa", "fetch", "URL", "TextDecoder", "clearTimeout", "setInterval", "window", "document", "require",
+    "__kmk_host_sync", "__kmk_host_async"]
     .map((name) => name + ":" + eval("typeof " + name));
   r.engine = [typeof BigInt, typeof Proxy, typeof WeakRef, new Date("2024-01-02").valueOf(), "x".padStart(3, "-"),
     /(?<y>\d{4})/.exec("in 2024").groups.y, null ?? "n", ({ a: { b: 1 } })?.a?.b];
@@ -91,7 +92,8 @@ async function conformance(provider) {
               "console:object", "setTimeout:function", "jsonStringify:function", "cryptoHandler:function",
               "parseDates:function", "unpackJs:function", "evaluateJavascriptViaWebview:function", "sibnetExtractor:function",
               "atob:undefined", "btoa:undefined", "fetch:undefined", "URL:undefined", "TextDecoder:undefined",
-              "clearTimeout:undefined", "setInterval:undefined", "window:undefined", "document:undefined", "require:undefined"
+              "clearTimeout:function", "setInterval:undefined", "window:undefined", "document:undefined", "require:undefined",
+              "__kmk_host_sync:undefined", "__kmk_host_async:undefined"
             ]""",
             r["globals"],
         )

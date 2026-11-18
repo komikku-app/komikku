@@ -32,6 +32,9 @@ fun interface HostHttp {
  * @property timeoutMillis overall call timeout requested by the source (`reqcopyWith.timeout`), `null` for the
  *   client's default.
  * @property followRedirects `false` when the source asked not to follow redirects.
+ * @property maxBodyBytes largest response body the host accepts, `null` for no limit. Implementations should stop
+ *   reading and throw once the body is larger, so a huge response cannot exhaust the app's heap; the bridge rejects
+ *   larger bodies in any case.
  */
 class HostHttpRequest(
     val method: String,
@@ -40,6 +43,7 @@ class HostHttpRequest(
     val body: ByteArray?,
     val timeoutMillis: Long? = null,
     val followRedirects: Boolean = true,
+    val maxBodyBytes: Long? = null,
 )
 
 /**

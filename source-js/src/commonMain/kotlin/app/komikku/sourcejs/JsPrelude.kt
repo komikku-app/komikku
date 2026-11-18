@@ -2,51 +2,158 @@ package app.komikku.sourcejs
 
 /**
  * The JavaScript prelude evaluated before every extension: Komikku's own text exposing Mangayomi's names, signatures
- * and behaviour as documented in docs/kmp-desktop/MANGAYOMI_CONTRACT.md (section numbers below). It talks to the
- * host only through `__kmk_host_sync(channel, argsJson)` and `__kmk_host_async(channel, argsJson)` (JSON text in
- * and out, see `JsSession`).
+ * and behaviour as documented in docs/kmp-desktop/MANGAYOMI_CONTRACT.md (section numbers below).
  *
- * Helper functions are installed as `globalThis` properties (configurable), so an extension that declares its own
- * function or `const` with the same name still loads; the classes are global `class` declarations like Mangayomi's.
+ * Security boundary (PROGRESS.md, "Review fixes"): `quickjs-kt` turns a JS `Error` that reaches Kotlin into an
+ * instance of the Java class named by the error's `name`. The prelude therefore keeps every JS value but strings
+ * away from Kotlin:
+ * - the two host bindings (`__kmk_host_sync` / `__kmk_host_async`, see `JsSession`) are captured in this closure and
+ *   deleted from `globalThis`; every call passes a string checked with `typeof` right before the call;
+ * - the call entry (`__kmk_entry`) loads the extension and calls the provider member inside `try` / `catch` and
+ *   reports the outcome through the binding as a string envelope; it never throws and its promises are handled
+ *   before they can reject; `Promise.prototype.constructor` / `then` and `Promise[Symbol.species]` are locked so
+ *   the host's own awaits cannot be made to throw;
+ * - `Object.prototype` is made non-extensible, so an extension cannot add the `then` / `value` accessors through which
+ *   QuickJS's own completion object of an evaluation could still reject with an extension's error.
+ *
+ * Errors are classified by brands kept in a closure `WeakMap`, never by message text: "not implemented" (the
+ * `MProvider` defaults), "unsupported" (stubs naming the feature) and "host" (a host failure the host recorded under
+ * an id).
+ *
+ * Helper functions are installed as configurable `globalThis` properties, so an extension that declares its own
+ * function or `const` with the same name still loads.
  */
 internal object JsPrelude {
 
-    /** Bridge plumbing (4.1), console (4.5), `setTimeout` (2.2), string helpers (4.5). */
+    /** Captured intrinsics, the host bindings, brands and the reply protocol of `JsSession`. */
     private const val CORE = """
-globalThis.__kmk_sync = function (channel, ...args) {
-  const result = __kmk_host_sync(channel, JSON.stringify(args));
-  return result == null ? null : JSON.parse(result);
-};
-globalThis.__kmk_async = async function (channel, ...args) {
-  const result = await __kmk_host_async(channel, JSON.stringify(args));
-  return result == null ? null : JSON.parse(result);
-};
-globalThis.__kmk_elements = function (keys) {
-  return (keys || []).map((key) => new Element(key));
-};
-globalThis.__kmk_unsupported = function (name, reason) {
-  return __kmk_sync("unsupported", name, reason);
-};
-globalThis.__kmk_unsupported_async = async function (name, reason) {
-  return __kmk_sync("unsupported", name, reason);
-};
+"use strict";
+const global = globalThis;
+const hostSync = global.__kmk_host_sync;
+const hostAsync = global.__kmk_host_async;
+delete global.__kmk_host_sync;
+delete global.__kmk_host_async;
 
+const uncurry = Function.prototype.bind.bind(Function.prototype.call);
+const JsonStringify = JSON.stringify;
+const JsonParse = JSON.parse;
+const StringCtor = String;
+const NumberCtor = Number;
+const ErrorCtor = Error;
+const PromiseCtor = Promise;
+const ObjectCreate = Object.create;
+const ObjectDefineProperty = Object.defineProperty;
+const ObjectGetPrototypeOf = Object.getPrototypeOf;
+const ObjectPreventExtensions = Object.preventExtensions;
+const ObjectPrototype = Object.prototype;
+const InternalErrorPrototype = InternalError.prototype;
+const PromisePrototype = Promise.prototype;
+const promiseThen = uncurry(Promise.prototype.then);
+const weakMapGet = uncurry(WeakMap.prototype.get);
+const weakMapSet = uncurry(WeakMap.prototype.set);
+const stringSlice = uncurry(String.prototype.slice);
+const brands = new WeakMap();
+
+// `await` reads `constructor` and resolving reads `then`: an extension must not be able to make the host's own
+// awaits throw, which in QuickJS rejects the awaiting function's promise directly (bypassing its try / catch).
+ObjectDefineProperty(PromisePrototype, "constructor", { writable: false, configurable: false });
+ObjectDefineProperty(PromisePrototype, "then", { writable: false, configurable: false });
+ObjectDefineProperty(Promise, Symbol.species, { configurable: false });
+
+function defineGlobal(name, value) {
+  ObjectDefineProperty(global, name, { value: value, writable: true, configurable: true, enumerable: false });
+}
+
+function brand(error, info) {
+  weakMapSet(brands, error, info);
+  return error;
+}
+function brandOf(value) {
+  if (value === null || (typeof value !== "object" && typeof value !== "function")) return undefined;
+  return weakMapGet(brands, value);
+}
+function unsupported(feature, reason) {
+  return brand(new ErrorCtor(feature + " is not supported: " + reason), { kind: "unsupported", feature: feature, reason: reason });
+}
+function notImplemented(member) {
+  return brand(new ErrorCtor(member + " not implemented"), { kind: "not_implemented" });
+}
+function isNotImplemented(error) {
+  const info = brandOf(error);
+  return info !== undefined && info.kind === "not_implemented";
+}
+
+// Host replies: "v" + JSON, "s" + raw string, "e" + {id, message} (host failure), "c" (dropped after the call settled).
+const CANCELLED = {};
+function decode(reply) {
+  if (typeof reply !== "string" || reply.length === 0) return null;
+  const tag = reply[0];
+  const body = stringSlice(reply, 1);
+  if (tag === "s") return body;
+  if (tag === "v") return JsonParse(body);
+  if (tag === "c") return CANCELLED;
+  if (tag === "e") {
+    const failure = JsonParse(body);
+    throw brand(new ErrorCtor(StringCtor(failure.message)), { kind: "host", id: NumberCtor(failure.id) });
+  }
+  return null;
+}
+function json(value) {
+  const out = JsonStringify(value);
+  return typeof out === "string" ? out : "null";
+}
+function sync(channel, payload) {
+  return decode(hostSync(channel, typeof payload === "string" ? payload : ""));
+}
+async function asyncCall(channel, payload) {
+  const value = decode(await hostAsync(channel, typeof payload === "string" ? payload : ""));
+  if (value === CANCELLED) return new PromiseCtor(function () {});
+  return value;
+}
+function describeShort(error) {
+  try {
+    return StringCtor(error);
+  } catch (e) {
+    return "<unprintable error>";
+  }
+}
+"""
+
+    /** Console (4.5), timers (2.2), string helpers (4.5). */
+    private const val LANGUAGE = """
 // 4.5: one argument; objects are JSON-encoded. (Mangayomi throws for console.log(undefined); Komikku logs it.)
-globalThis.__kmk_log = function (level, message) {
-  const text = message !== null && typeof message === "object" ? JSON.stringify(message) : String(message);
-  __kmk_sync("log", level, text);
-};
-globalThis.console = {
-  log(message) { __kmk_log("info", message); },
-  warn(message) { __kmk_log("warn", message); },
-  error(message) { __kmk_log("error", message); },
-};
+function log(level, message) {
+  const line = message !== null && typeof message === "object" ? JsonStringify(message) : message;
+  sync("log", json([level, typeof line === "string" ? line : StringCtor(line)]));
+}
+defineGlobal("console", {
+  log(message) { log("info", message); },
+  warn(message) { log("warn", message); },
+  error(message) { log("error", message); },
+});
 
-// 2.2: setTimeout(fn, ms) only; no clearTimeout / setInterval / extra arguments.
-globalThis.setTimeout = function (callback, ms) {
-  __kmk_async("sleep", Number(ms) || 0).then(() => callback());
-  return 0;
-};
+// 2.2: setTimeout(fn, ms); no extra arguments or setInterval. Komikku adds clearTimeout. When the provider call
+// settles the host ends pending timers without running them; a throwing callback is logged, never fails the call.
+let timerSeq = 0;
+defineGlobal("setTimeout", function (callback, ms) {
+  const id = ++timerSeq;
+  const delay = NumberCtor(ms) || 0;
+  (async function () {
+    try {
+      const fired = await asyncCall("sleep", json([id, delay]));
+      if (fired !== true || typeof callback !== "function") return;
+      callback();
+    } catch (error) {
+      try {
+        log("error", "setTimeout callback failed: " + describeShort(error));
+      } catch (e) {}
+    }
+  })();
+  return id;
+});
+defineGlobal("clearTimeout", function (id) {
+  sync("clear_timer", json([NumberCtor(id) || 0]));
+});
 
 // 4.5: Kotlin-style substring helpers; the whole string when the delimiter is absent.
 String.prototype.substringAfter = function (pattern) {
@@ -75,20 +182,21 @@ String.prototype.substringBetween = function (left, right) {
 
     /** HTTP client (4.2). Body encoding and the response object are built by the host. */
     private const val CLIENT = """
+function send(method, options, url, headers, body) {
+  return asyncCall("http", json([method, options, StringCtor(url), headers ?? null, body === undefined ? null : body]));
+}
 class Client {
   constructor(reqcopyWith) {
     this.reqcopyWith = reqcopyWith ?? null;
   }
-  async get(url, headers) { return this.__send("GET", url, headers, undefined); }
-  async head(url, headers) { return this.__send("HEAD", url, headers, undefined); }
-  async post(url, headers, body) { return this.__send("POST", url, headers, body); }
-  async put(url, headers, body) { return this.__send("PUT", url, headers, body); }
-  async delete(url, headers, body) { return this.__send("DELETE", url, headers, body); }
-  async patch(url, headers, body) { return this.__send("PATCH", url, headers, body); }
-  __send(method, url, headers, body) {
-    return __kmk_async("http", method, this.reqcopyWith, String(url), headers ?? null, body === undefined ? null : body);
-  }
+  async get(url, headers) { return send("GET", this.reqcopyWith, url, headers, undefined); }
+  async head(url, headers) { return send("HEAD", this.reqcopyWith, url, headers, undefined); }
+  async post(url, headers, body) { return send("POST", this.reqcopyWith, url, headers, body); }
+  async put(url, headers, body) { return send("PUT", this.reqcopyWith, url, headers, body); }
+  async delete(url, headers, body) { return send("DELETE", this.reqcopyWith, url, headers, body); }
+  async patch(url, headers, body) { return send("PATCH", this.reqcopyWith, url, headers, body); }
 }
+defineGlobal("Client", Client);
 """
 
     /**
@@ -97,29 +205,40 @@ class Client {
      * The document is parsed once, on first use (Mangayomi re-parses per call; the results are the same).
      */
     private const val DOM = """
+function elements(keys) {
+  const out = [];
+  if (keys) for (let i = 0; i < keys.length; i++) out[i] = new Element(keys[i]);
+  return out;
+}
+function domString(key, type) { return sync("dom_string", json([key, type])); }
+function domElement(key, type) { return new Element(sync("dom_get", json([key, type]))); }
+function domList(key, type, name) { return elements(sync("dom_list", json([key, type, name]))); }
+function domSelectFirst(key, css) { return new Element(sync("dom_select_first", json([key, StringCtor(css)]))); }
+function domSelect(key, css) { return elements(sync("dom_select", json([key, StringCtor(css)]))); }
+
 class Element {
   constructor(key) { this._key = key; }
-  get text() { return __kmk_sync("dom_string", this._key, "text"); }
-  get innerHtml() { return __kmk_sync("dom_string", this._key, "innerHtml"); }
-  get outerHtml() { return __kmk_sync("dom_string", this._key, "outerHtml"); }
-  get className() { return __kmk_sync("dom_string", this._key, "className"); }
-  get localName() { return __kmk_sync("dom_string", this._key, "localName"); }
-  get namespaceUri() { return __kmk_sync("dom_string", this._key, "namespaceUri"); }
-  get getSrc() { return __kmk_sync("dom_string", this._key, "getSrc"); }
-  get getImg() { return __kmk_sync("dom_string", this._key, "getImg"); }
-  get getHref() { return __kmk_sync("dom_string", this._key, "getHref"); }
-  get getDataSrc() { return __kmk_sync("dom_string", this._key, "getDataSrc"); }
-  get previousElementSibling() { return new Element(__kmk_sync("dom_get", this._key, "previousElementSibling")); }
-  get nextElementSibling() { return new Element(__kmk_sync("dom_get", this._key, "nextElementSibling")); }
-  get children() { return __kmk_elements(__kmk_sync("dom_list", this._key, "children", "")); }
-  attr(name) { return __kmk_sync("dom_attr", this._key, String(name)); }
-  hasAttr(name) { return __kmk_sync("dom_has_attr", this._key, String(name)); }
-  selectFirst(css) { return new Element(__kmk_sync("dom_select_first", this._key, String(css))); }
-  select(css) { return __kmk_elements(__kmk_sync("dom_select", this._key, String(css))); }
-  getElementsByTagName(name) { return __kmk_elements(__kmk_sync("dom_list", this._key, "tag", String(name))); }
-  getElementsByClassName(name) { return __kmk_elements(__kmk_sync("dom_list", this._key, "class", String(name))); }
-  xpath(xpath) { return __kmk_unsupported("XPath (Element.xpath)", "no Mangayomi JavaScript manga source uses it"); }
-  xpathFirst(xpath) { return __kmk_unsupported("XPath (Element.xpathFirst)", "no Mangayomi JavaScript manga source uses it"); }
+  get text() { return domString(this._key, "text"); }
+  get innerHtml() { return domString(this._key, "innerHtml"); }
+  get outerHtml() { return domString(this._key, "outerHtml"); }
+  get className() { return domString(this._key, "className"); }
+  get localName() { return domString(this._key, "localName"); }
+  get namespaceUri() { return domString(this._key, "namespaceUri"); }
+  get getSrc() { return domString(this._key, "getSrc"); }
+  get getImg() { return domString(this._key, "getImg"); }
+  get getHref() { return domString(this._key, "getHref"); }
+  get getDataSrc() { return domString(this._key, "getDataSrc"); }
+  get previousElementSibling() { return domElement(this._key, "previousElementSibling"); }
+  get nextElementSibling() { return domElement(this._key, "nextElementSibling"); }
+  get children() { return domList(this._key, "children", ""); }
+  attr(name) { return sync("dom_attr", json([this._key, StringCtor(name)])); }
+  hasAttr(name) { return sync("dom_has_attr", json([this._key, StringCtor(name)])); }
+  selectFirst(css) { return domSelectFirst(this._key, css); }
+  select(css) { return domSelect(this._key, css); }
+  getElementsByTagName(name) { return domList(this._key, "tag", StringCtor(name)); }
+  getElementsByClassName(name) { return domList(this._key, "class", StringCtor(name)); }
+  xpath(xpath) { throw unsupported("XPath (Element.xpath)", "no Mangayomi JavaScript manga source uses it"); }
+  xpathFirst(xpath) { throw unsupported("XPath (Element.xpathFirst)", "no Mangayomi JavaScript manga source uses it"); }
 }
 
 class Document {
@@ -128,7 +247,7 @@ class Document {
     this._key = null;
   }
   get _doc() {
-    if (this._key === null) this._key = __kmk_sync("dom_parse", this.html == null ? "" : String(this.html));
+    if (this._key === null) this._key = sync("dom_parse", json([this.html == null ? "" : StringCtor(this.html)]));
     return this._key;
   }
   get body() { return this.getElement("body"); }
@@ -138,52 +257,54 @@ class Document {
   get text() { return this.getString("text"); }
   get outerHtml() { return this.getString("outerHtml"); }
   get children() { return this.getElementsListBy("children", ""); }
-  getElement(type) { return new Element(__kmk_sync("dom_get", this._doc, String(type))); }
-  getString(type) { return __kmk_sync("dom_string", this._doc, String(type)); }
-  getElementsListBy(type, name) { return __kmk_elements(__kmk_sync("dom_list", this._doc, String(type), String(name ?? ""))); }
-  selectFirst(css) { return new Element(__kmk_sync("dom_select_first", this._doc, String(css))); }
-  select(css) { return __kmk_elements(__kmk_sync("dom_select", this._doc, String(css))); }
+  getElement(type) { return domElement(this._doc, StringCtor(type)); }
+  getString(type) { return domString(this._doc, StringCtor(type)); }
+  getElementsListBy(type, name) { return domList(this._doc, StringCtor(type), StringCtor(name ?? "")); }
+  selectFirst(css) { return domSelectFirst(this._doc, css); }
+  select(css) { return domSelect(this._doc, css); }
   getElementsByTagName(name) { return this.getElementsListBy("tag", name); }
   getElementsByClassName(name) { return this.getElementsListBy("class", name); }
-  getElementById(id) { return new Element(__kmk_sync("dom_by_id", this._doc, String(id))); }
+  getElementById(id) { return new Element(sync("dom_by_id", json([this._doc, StringCtor(id)]))); }
   attr(name) { return ""; }
   hasAttr(name) { return false; }
-  xpath(xpath) { return __kmk_unsupported("XPath (Document.xpath)", "no Mangayomi JavaScript manga source uses it"); }
-  xpathFirst(xpath) { return __kmk_unsupported("XPath (Document.xpathFirst)", "no Mangayomi JavaScript manga source uses it"); }
+  xpath(xpath) { throw unsupported("XPath (Document.xpath)", "no Mangayomi JavaScript manga source uses it"); }
+  xpathFirst(xpath) { throw unsupported("XPath (Document.xpathFirst)", "no Mangayomi JavaScript manga source uses it"); }
 }
+defineGlobal("Element", Element);
+defineGlobal("Document", Document);
 """
 
     /** Utility functions (4.4) and the out-of-scope stubs (6). */
     private const val UTILS = """
-globalThis.cryptoHandler = function (text, iv, key, encrypt) {
-  return __kmk_sync("crypto_handler", text, iv, key, !!encrypt);
-};
-globalThis.encryptAESCryptoJS = function (plainText, passphrase) {
-  return __kmk_sync("crypto_js_encrypt", plainText, passphrase);
-};
-globalThis.decryptAESCryptoJS = function (encrypted, passphrase) {
-  return __kmk_sync("crypto_js_decrypt", encrypted, passphrase);
-};
-globalThis.decryptAESGCM = function (encrypted, keyHex, ivHex, tagHex = "") {
-  return __kmk_sync("crypto_aes_gcm", encrypted, keyHex, ivHex, tagHex);
-};
-globalThis.deobfuscateJsPassword = function (input) {
-  return __kmk_sync("deobfuscate_js_password", String(input));
-};
-globalThis.unpackJs = function (packed) {
-  return __kmk_unsupported("unpackJs", "not implemented yet; no Mangayomi JavaScript manga source uses it");
-};
-globalThis.unpackJsAndCombine = function (script) {
-  return __kmk_unsupported("unpackJsAndCombine", "not implemented yet; no Mangayomi JavaScript manga source uses it");
-};
-globalThis.parseDates = function (values, dateFormat, dateFormatLocale) {
-  return __kmk_unsupported("parseDates", "not implemented yet; no Mangayomi JavaScript manga source uses it");
-};
-globalThis.evaluateJavascriptViaWebview = async function (url, headers, scripts, time = 30) {
-  return __kmk_async("webview", String(url), headers ?? {}, scripts ?? [], Number(time) || 30);
-};
+defineGlobal("cryptoHandler", function (text, iv, key, encrypt) {
+  return sync("crypto_handler", json([StringCtor(text), StringCtor(iv), StringCtor(key), !!encrypt]));
+});
+defineGlobal("encryptAESCryptoJS", function (plainText, passphrase) {
+  return sync("crypto_js_encrypt", json([StringCtor(plainText), StringCtor(passphrase)]));
+});
+defineGlobal("decryptAESCryptoJS", function (encrypted, passphrase) {
+  return sync("crypto_js_decrypt", json([StringCtor(encrypted), StringCtor(passphrase)]));
+});
+defineGlobal("decryptAESGCM", function (encrypted, keyHex, ivHex, tagHex = "") {
+  return sync("crypto_aes_gcm", json([StringCtor(encrypted), StringCtor(keyHex), StringCtor(ivHex), StringCtor(tagHex ?? "")]));
+});
+defineGlobal("deobfuscateJsPassword", function (input) {
+  return sync("deobfuscate_js_password", json([StringCtor(input)]));
+});
+defineGlobal("unpackJs", function (packed) {
+  throw unsupported("unpackJs", "not implemented yet; no Mangayomi JavaScript manga source uses it");
+});
+defineGlobal("unpackJsAndCombine", function (script) {
+  throw unsupported("unpackJsAndCombine", "not implemented yet; no Mangayomi JavaScript manga source uses it");
+});
+defineGlobal("parseDates", function (values, dateFormat, dateFormatLocale) {
+  throw unsupported("parseDates", "not implemented yet; no Mangayomi JavaScript manga source uses it");
+});
+defineGlobal("evaluateJavascriptViaWebview", async function (url, headers, scripts, time = 30) {
+  return asyncCall("webview", json([StringCtor(url), headers ?? {}, scripts ?? [], NumberCtor(time) || 30]));
+});
 for (const name of ["createHlsProxyUrl", "parseEpub", "parseEpubChapter"]) {
-  globalThis[name] = async function () { return __kmk_unsupported_async(name, "only used by anime and novel sources"); };
+  defineGlobal(name, async function () { throw unsupported(name, "only used by anime and novel sources"); });
 }
 for (const name of [
   "sibnetExtractor", "myTvExtractor", "okruExtractor", "voeExtractor", "vidBomExtractor", "streamlareExtractor",
@@ -191,59 +312,213 @@ for (const name of [
   "mp4UploadExtractor", "streamWishExtractor", "filemoonExtractor", "quarkVideosExtractor", "ucVideosExtractor",
   "quarkFilesExtractor", "ucFilesExtractor",
 ]) {
-  globalThis[name] = async function () { return __kmk_unsupported_async(name, "video extractors are only used by anime sources"); };
+  defineGlobal(name, async function () { throw unsupported(name, "video extractors are only used by anime sources"); });
 }
 """
 
     /** `SharedPreferences` (4.6): `get` materialises the declared default on first read. */
     private const val PREFERENCES = """
+// The declared preferences, from the provider (or, while it is being constructed, an uninitialised instance).
+function declaredPreferences() {
+  const target = provider !== undefined ? provider : ProviderClass !== undefined ? ObjectCreate(ProviderClass.prototype) : undefined;
+  if (target === undefined) return [];
+  try {
+    return target.getSourcePreferences();
+  } catch (error) {
+    if (isNotImplemented(error)) return [];
+    throw error;
+  }
+}
 class SharedPreferences {
   get(key) {
-    const stored = __kmk_sync("pref_get", String(key));
+    const name = StringCtor(key);
+    const stored = sync("pref_get", json([name]));
     if (stored.found) return stored.value;
-    const provider = typeof extention !== "undefined" && extention ? extention : Object.create(DefaultExtension.prototype);
-    return __kmk_sync("pref_default", String(key), provider.getSourcePreferences());
+    return sync("pref_default", json([name, declaredPreferences()]));
   }
   getString(key, defaultValue) {
-    return __kmk_sync("pref_get_string", String(key), defaultValue == null ? null : String(defaultValue));
+    return sync("pref_get_string", json([StringCtor(key), defaultValue == null ? null : StringCtor(defaultValue)]));
   }
   setString(key, value) {
-    __kmk_sync("pref_set_string", String(key), value == null ? "" : String(value));
+    sync("pref_set_string", json([StringCtor(key), value == null ? "" : StringCtor(value)]));
     return null;
   }
 }
+defineGlobal("SharedPreferences", SharedPreferences);
 """
 
-    /** `MProvider` and `jsonStringify` (2.2 step 3, 3), plus the host's call entry point. */
+    /** `MProvider` and `jsonStringify` (2.2 step 3, 3). */
     private const val PROVIDER = """
 class MProvider {
-  get source() { return __kmk_sync("source"); }
-  get supportsLatest() { throw new Error("supportsLatest not implemented"); }
-  getHeaders(url) { throw new Error("getHeaders not implemented"); }
-  async getPopular(page) { throw new Error("getPopular not implemented"); }
-  async getLatestUpdates(page) { throw new Error("getLatestUpdates not implemented"); }
-  async search(query, page, filters) { throw new Error("search not implemented"); }
-  async getDetail(url) { throw new Error("getDetail not implemented"); }
-  async getPageList() { throw new Error("getPageList not implemented"); }
-  getFilterList() { throw new Error("getFilterList not implemented"); }
-  getSourcePreferences() { throw new Error("getSourcePreferences not implemented"); }
-  async getVideoList(url) { throw new Error("getVideoList not implemented"); }
-  async getHtmlContent(name, url) { throw new Error("getHtmlContent not implemented"); }
-  async cleanHtmlContent(html) { throw new Error("cleanHtmlContent not implemented"); }
+  get source() { return sync("source", ""); }
+  get supportsLatest() { throw notImplemented("supportsLatest"); }
+  getHeaders(url) { throw notImplemented("getHeaders"); }
+  async getPopular(page) { throw notImplemented("getPopular"); }
+  async getLatestUpdates(page) { throw notImplemented("getLatestUpdates"); }
+  async search(query, page, filters) { throw notImplemented("search"); }
+  async getDetail(url) { throw notImplemented("getDetail"); }
+  async getPageList() { throw notImplemented("getPageList"); }
+  getFilterList() { throw notImplemented("getFilterList"); }
+  getSourcePreferences() { throw notImplemented("getSourcePreferences"); }
+  async getVideoList(url) { throw notImplemented("getVideoList"); }
+  async getHtmlContent(name, url) { throw notImplemented("getHtmlContent"); }
+  async cleanHtmlContent(html) { throw notImplemented("cleanHtmlContent"); }
 }
-globalThis.jsonStringify = async function (fn) {
+defineGlobal("MProvider", MProvider);
+defineGlobal("jsonStringify", async function (fn) {
   return JSON.stringify(await fn());
-};
-globalThis.__kmk_invoke = function (member, args) {
-  if (member === "supportsLatest") return extention.supportsLatest;
-  return extention[member](...args);
-};
+});
+"""
+
+    /**
+     * Loading and calling (2.2 step 4, 2.4). The extension text is compiled inside a function (`wrap`) whose
+     * definition is handed to `__kmk_define`; `__kmk_entry` runs it, creates the provider, calls the member and
+     * reports one envelope through the `settle` channel: `"o" + JSON` (the result), `"e" + JSON` (the error),
+     * `"x"` (the error could not even be described). Both globals are non-writable and non-configurable, and each
+     * runs once per context.
+     */
+    private const val ENTRY = """
+let ProviderClass = undefined;
+let provider = undefined;
+let defineExtension = null;
+let entered = false;
+let settled = false;
+
+function settle(payload) {
+  if (settled) return;
+  settled = true;
+  try {
+    hostSync("settle", payload);
+  } catch (error) {
+    try {
+      hostSync("settle", "x");
+    } catch (e) {}
+  }
+}
+
+function describeError(error, phase) {
+  try {
+    const out = ObjectCreate(null);
+    out.phase = phase;
+    out.kind = "script";
+    const info = brandOf(error);
+    if (info !== undefined) {
+      out.kind = info.kind;
+      if (info.kind === "unsupported") {
+        out.feature = StringCtor(info.feature);
+        out.reason = StringCtor(info.reason);
+      } else if (info.kind === "host") {
+        out.hostId = info.id;
+      }
+    } else if (error === null || error === undefined) {
+      out.kind = "nullish";
+    } else {
+      try {
+        if (ObjectGetPrototypeOf(error) === InternalErrorPrototype && error.message === "out of memory") out.kind = "oom";
+      } catch (e) {}
+    }
+    out.message = describeShort(error);
+    try {
+      if (error !== null && typeof error === "object") {
+        const stack = error.stack;
+        if (typeof stack === "string") out.stack = stack;
+      }
+    } catch (e) {}
+    return "e" + JsonStringify(out);
+  } catch (e) {
+    return "x";
+  }
+}
+
+let phase = "load";
+async function run(member, argsJson, mode) {
+  // Lets the entry attach its rejection handler before any extension code runs (see __kmk_entry).
+  await undefined;
+  try {
+    try {
+      const factory = defineExtension;
+      defineExtension = null;
+      if (factory === null) throw new ErrorCtor("The extension did not load");
+      ProviderClass = factory();
+      provider = new ProviderClass();
+      defineGlobal("extention", provider);
+      sync("loaded", "");
+      phase = "call";
+    } catch (error) {
+      settle(describeError(error, "load"));
+      return;
+    }
+    const args = JsonParse(argsJson);
+    let value;
+    if (mode === "getter") {
+      value = provider[member];
+    } else if (mode === "sync") {
+      value = provider[member](...args);
+    } else {
+      value = await provider[member](...args);
+    }
+    const out = JsonStringify(value);
+    settle("o" + (typeof out === "string" ? out : ""));
+  } catch (error) {
+    try {
+      settle(describeError(error, "call"));
+    } catch (e) {}
+  }
+}
+
+ObjectDefineProperty(global, "__kmk_define", {
+  value: function (factory) {
+    if (defineExtension === null && typeof factory === "function") defineExtension = factory;
+  },
+  writable: false,
+  configurable: false,
+  enumerable: false,
+});
+ObjectDefineProperty(global, "__kmk_entry", {
+  value: function (member, argsJson, mode) {
+    try {
+      if (entered) return;
+      entered = true;
+      const pending = run(StringCtor(member), StringCtor(argsJson), StringCtor(mode));
+      // Only reached when an await in run failed on an extension's value (QuickJS rejects run's promise directly).
+      promiseThen(pending, undefined, function (error) { settle(describeError(error, phase)); });
+    } catch (e) {}
+  },
+  writable: false,
+  configurable: false,
+  enumerable: false,
+});
+
+// Keeps `then` / `value` accessors off every plain object (see the class comment).
+ObjectPreventExtensions(ObjectPrototype);
 """
 
     const val FILE_NAME = "komikku-prelude.js"
 
-    /** The provider creation appended to the extension text (2.2 step 4; `extention` is Mangayomi's spelling). */
-    const val CREATE_PROVIDER = "\n;var extention = new DefaultExtension();\n"
+    val text: String = "(function () {\n$CORE$LANGUAGE$CLIENT$DOM$UTILS$PREFERENCES$PROVIDER$ENTRY})();\n"
 
-    val text: String = CORE + CLIENT + DOM + UTILS + PREFERENCES + PROVIDER
+    /**
+     * The extension text as the body of the function handed to `__kmk_define`: its top-level declarations stay
+     * visible to each other, a top-level throw happens inside the entry's `try`, and the line numbers are those of
+     * the file. The host compiles [code] alone first, so a syntax error is reported as such and the text cannot close
+     * the function early.
+     */
+    fun wrapExtension(code: String): String = "__kmk_define(function () {$code\n;return DefaultExtension;\n});\n"
+
+    /** The call script: `member` with the JSON array [argsJson], `mode` one of `async`, `sync`, `getter`. */
+    fun entryCall(member: String, argsJson: String, mode: String): String =
+        "__kmk_entry(${jsString(member)}, ${jsString(argsJson)}, ${jsString(mode)});\n"
+
+    private fun jsString(value: String): String = buildString {
+        append('"')
+        value.forEach { c ->
+            when {
+                c == '"' -> append("\\\"")
+                c == '\\' -> append("\\\\")
+                c < ' ' || c == ' ' || c == ' ' -> append("\\u").append(c.code.toString(16).padStart(4, '0'))
+                else -> append(c)
+            }
+        }
+        append('"')
+    }
 }

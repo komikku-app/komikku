@@ -26,7 +26,14 @@ internal object HttpBridge {
      * `reqcopyWith` (4.2): `timeout` (seconds) and `followRedirects` are honoured; certificate verification
      * cannot be turned off and the other options are ignored.
      */
-    fun request(method: String, options: JsonElement?, url: String, headers: JsonElement?, body: JsonElement?): HostHttpRequest {
+    fun request(
+        method: String,
+        options: JsonElement?,
+        url: String,
+        headers: JsonElement?,
+        body: JsonElement?,
+        maxBodyBytes: Long? = null,
+    ): HostHttpRequest {
         val headerList = (headers as? JsonObject).orEmpty().mapNotNull { (name, value) ->
             value.text()?.let { name to it }
         }.toMutableList()
@@ -59,8 +66,12 @@ internal object HttpBridge {
                 ?.takeIf { it > 0 }
                 ?.let { (it * 1000).toLong() },
             followRedirects = (optionObject?.get("followRedirects") as? JsonPrimitive)?.booleanOrNull ?: true,
+            maxBodyBytes = maxBodyBytes,
         )
     }
+
+    /** The failure detail for a response body over [maxBodyBytes]. */
+    fun tooLargeMessage(maxBodyBytes: Long): String = "response body larger than $maxBodyBytes bytes"
 
     /**
      * Mangayomi's response object (4.2). Header names are lower-cased, repeated headers joined with `", "`;

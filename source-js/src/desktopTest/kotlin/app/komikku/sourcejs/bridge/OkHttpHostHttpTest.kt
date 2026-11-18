@@ -98,6 +98,17 @@ class OkHttpHostHttpTest {
     }
 
     @Test
+    fun stopsReadingBodiesOverTheLimit() = runBlocking {
+        fun request() = HostHttpRequest("GET", server.url("/big").toString(), emptyList(), null, maxBodyBytes = 1024)
+        server.enqueue(MockResponse.Builder().body("x".repeat(2048)).build())
+        assertFailsWith<IOException> { http.execute(request()) }
+        server.enqueue(MockResponse.Builder().chunkedBody("x".repeat(2048), 100).build())
+        assertFailsWith<IOException> { http.execute(request()) }
+        server.enqueue(MockResponse.Builder().body("x".repeat(1024)).build())
+        assertEquals(1024, http.execute(request()).body.size)
+    }
+
+    @Test
     fun cancellationCancelsTheCall() = runBlocking(Dispatchers.Default) {
         server.enqueue(MockResponse.Builder().headersDelay(10, TimeUnit.SECONDS).body("late").build())
         val call = async { http.execute(HostHttpRequest("GET", server.url("/slow").toString(), emptyList(), null)) }

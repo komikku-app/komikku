@@ -23,7 +23,7 @@ sealed class JsSourceException(
         val jsStack: String?,
     ) : JsSourceException(sourceName, operation, jsMessage)
 
-    /** The call took longer than [timeoutMillis] (wall clock, including network waits). */
+    /** The host's own limit of [timeoutMillis] (wall clock, including network waits) was reached. */
     class Timeout(
         sourceName: String,
         operation: String,
@@ -65,12 +65,11 @@ sealed class JsSourceException(
 }
 
 /**
- * Raised inside host functions. The script sees it as an `Error` whose message is [message] (the engine uses the
- * throwable's string form, hence [toString]); if the script does not catch it the host turns it into the matching
- * [JsSourceException].
+ * A host function failure. It never crosses into the engine: the session records it under an id and the script
+ * sees an `Error` with the same message branded with that id (`JsPrelude`); if the script does not catch it the
+ * host turns it into the matching [JsSourceException].
  */
 internal sealed class HostFunctionFailure(message: String, cause: Throwable? = null) : Exception(message, cause) {
-    override fun toString(): String = message.orEmpty()
 
     class Unsupported(val feature: String, val reason: String) :
         HostFunctionFailure("$feature is not supported: $reason")

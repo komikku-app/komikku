@@ -16,14 +16,18 @@ import app.komikku.sourcejs.model.MalformedResultFailure
 import app.komikku.sourcejs.model.toJsonArray
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Runs Mangayomi JavaScript manga extensions (docs/kmp-desktop/MANGAYOMI_CONTRACT.md).
@@ -44,83 +48,37 @@ class JsExtensionHost(
 
     /** `getPopular(page)`, page 1-based. */
     suspend fun getPopular(source: JsSourceDescriptor, code: String, page: Int): JsMangaPage =
-        call(source, code, "getPopular($page)") {
-            parse("getPopular") { JsResultParser.mangaPage(invoke("getPopular", JsonPrimitive(page))) }
-        }
+        callAsync(source, code, "getPopular($page)", "getPopular", JsonPrimitive(page)) { JsResultParser.mangaPage(it) }
 
     /** `getLatestUpdates(page)`; only meaningful when [supportsLatest] is true. */
     suspend fun getLatestUpdates(source: JsSourceDescriptor, code: String, page: Int): JsMangaPage =
-        call(source, code, "getLatestUpdates($page)") {
-            parse("getLatestUpdates") { JsResultParser.mangaPage(invoke("getLatestUpdates", JsonPrimitive(page))) }
-        }
+        callAsync(source, code, "getLatestUpdates($page)", "getLatestUpdates", JsonPrimitive(page)) { JsResultParser.mangaPage(it) }
 
     /**
      * `search(query, page, filters)`. [filters] is the list from [getFilterList] with the user's state, in the
      * original order; `null` sends the source's default list (never `[]`, which breaks sources that read filters
      * by position, contract 5.1).
      */
-    suspend fun search(source: JsSourceDescriptor, code: String, query: String, page: Int, filters: List<JsFilter>? = null): JsMangaPage =
-        call(source, code, "search(${Json.encodeToString(JsonPrimitive.serializer(), JsonPrimitive(query))}, $page)") {
-            val filterJson = (filters ?: defaultFilters()).toJsonArray()
-            parse("search") { JsResultParser.mangaPage(invoke("search", JsonPrimitive(query), JsonPrimitive(page), filterJson)) }
+    suspend fun search(source: JsSourceDescriptor, code: String, query: String, page: Int, filters: List<JsFilter>? = null): JsMangaPage {
+        val filterList = filters ?: getFilterList(source, code)
+        val operation = "search(${Json.encodeToString(JsonPrimitive.serializer(), JsonPrimitive(query))}, $page)"
+        return callAsync(source, code, operation, "search", JsonPrimitive(query), JsonPrimitive(page), filterList.toJsonArray()) {
+            JsResultParser.mangaPage(it)
         }
+    }
 
     /** `getDetail(url)`: details and chapters (newest first) of the manga whose `link` is [url]. */
     suspend fun getDetail(source: JsSourceDescriptor, code: String, url: String): JsManga =
-        call(source, code, "getDetail") {
-            parse("getDetail") { JsResultParser.mangaDetail(invoke("getDetail", JsonPrimitive(url))) }
-        }
+        callAsync(source, code, "getDetail", "getDetail", JsonPrimitive(url)) { JsResultParser.mangaDetail(it) }
 
     /** `getPageList(url)` for the chapter whose `url` is [url]; empty and duplicate URLs removed. */
     suspend fun getPageList(source: JsSourceDescriptor, code: String, url: String): List<JsPage> =
-        call(source, code, "getPageList") {
-            parse("getPageList") { JsResultParser.pages(invoke("getPageList", JsonPrimitive(url))) }
-        }
+        callAsync(source, code, "getPageList", "getPageList", JsonPrimitive(url)) { JsResultParser.pages(it) }
 
     /** `getFilterList()`; `[]` when not implemented or unparsable (Mangayomi's defaults). */
     suspend fun getFilterList(source: JsSourceDescriptor, code: String): List<JsFilter> =
-        call(source, code, "getFilterList") { defaultFilters() }
-
-    /** `getSourcePreferences()`; `[]` when not implemented. */
-    suspend fun getSourcePreferences(source: JsSourceDescriptor, code: String): List<JsPreference> =
-        call(source, code, "getSourcePreferences") {
-            parse("getSourcePreferences") {
-                JsResultParser.preferences(invokeOrDefault("getSourcePreferences", JsonArray(emptyList())))
-            }
-        }
-
-    /** `getHeaders(url)` (always called with the base URL in Mangayomi); `{}` when not implemented. */
-    suspend fun getHeaders(source: JsSourceDescriptor, code: String, url: String = source.baseUrl): Map<String, String> =
-        call(source, code, "getHeaders") {
-            parse("getHeaders") { JsResultParser.headers(invokeOrDefault("getHeaders", JsonObject(emptyMap()), JsonPrimitive(url))) }
-        }
-
-    /** The `supportsLatest` getter; `true` when not implemented. */
-    suspend fun supportsLatest(source: JsSourceDescriptor, code: String): Boolean =
-        call(source, code, "supportsLatest") {
-            parse("supportsLatest") { JsResultParser.boolean(invokeOrDefault("supportsLatest", JsonPrimitive(true)), true) }
-        }
-
-    /** The same calls bound to one source. */
-    fun extension(source: JsSourceDescriptor, code: String): JsExtension = JsExtension(this, source, code)
-
-    private inner class CallScope(val engine: JsEngine, val source: JsSourceDescriptor, val operation: String) {
-
-        suspend fun invoke(member: String, vararg args: JsonElement): JsonElement? {
-            val callArgs = JsonArray(listOf(JsonPrimitive(member), JsonArray(args.toList())))
-            return engine.callFunction(INVOKE_FUNCTION, callArgs.toString())?.let(Json::parseToJsonElement)
-        }
-
-        /** Mangayomi's defaults for members whose base implementation throws "… not implemented" (contract 2.4). */
-        suspend fun invokeOrDefault(member: String, default: JsonElement, vararg args: JsonElement): JsonElement? = try {
-            invoke(member, *args)
-        } catch (e: JsEngineException.Script) {
-            if (e.jsMessage.contains("not implemented")) default else throw e
-        }
-
-        suspend fun defaultFilters(): List<JsFilter> {
-            val result = invokeOrDefault("getFilterList", JsonArray(emptyList()))
-            return try {
+        callSync(source, code, "getFilterList", "getFilterList", CallMode.SYNC, emptyList()) { result ->
+            try {
                 JsResultParser.filters(result)
             } catch (e: MalformedResultFailure) {
                 services.log.log(HostLog.Level.WARN, source, "Ignoring unparsable getFilterList result: ${e.message}")
@@ -128,57 +86,214 @@ class JsExtensionHost(
             }
         }
 
-        inline fun <T> parse(method: String, block: () -> T): T = try {
-            block()
-        } catch (e: MalformedResultFailure) {
-            throw JsSourceException.MalformedResult(source.name, operation, method, e.field, e.problem)
+    /** `getSourcePreferences()`; `[]` when not implemented. */
+    suspend fun getSourcePreferences(source: JsSourceDescriptor, code: String): List<JsPreference> =
+        callSync(source, code, "getSourcePreferences", "getSourcePreferences", CallMode.SYNC, emptyList()) {
+            parse(source, "getSourcePreferences", "getSourcePreferences") { JsResultParser.preferences(it) }
         }
-    }
 
-    private suspend fun <T> call(
+    /** `getHeaders(url)` (always called with the base URL in Mangayomi); `{}` when not implemented. */
+    suspend fun getHeaders(source: JsSourceDescriptor, code: String, url: String = source.baseUrl): Map<String, String> =
+        callSync(source, code, "getHeaders", "getHeaders", CallMode.SYNC, emptyMap(), JsonPrimitive(url)) {
+            parse(source, "getHeaders", "getHeaders") { JsResultParser.headers(it) }
+        }
+
+    /** The `supportsLatest` getter; `true` when not implemented. */
+    suspend fun supportsLatest(source: JsSourceDescriptor, code: String): Boolean =
+        callSync(source, code, "supportsLatest", "supportsLatest", CallMode.GETTER, true) {
+            parse(source, "supportsLatest", "supportsLatest") { JsResultParser.boolean(it, true) }
+        }
+
+    /** The same calls bound to one source. */
+    fun extension(source: JsSourceDescriptor, code: String): JsExtension = JsExtension(this, source, code)
+
+    private enum class CallMode(val js: String) { ASYNC("async"), SYNC("sync"), GETTER("getter") }
+
+    private suspend fun <T> callAsync(
         source: JsSourceDescriptor,
         code: String,
         operation: String,
-        block: suspend CallScope.() -> T,
-    ): T {
-        var loading = true
+        member: String,
+        vararg args: JsonElement,
+        decode: (JsonElement?) -> T,
+    ): T = when (val outcome = call(source, code, operation, member, CallMode.ASYNC, args.toList())) {
+        is CallOutcome.Value -> parse(source, operation, member) { decode(outcome.value) }
+        is CallOutcome.Failed -> throw outcome.error
+    }
+
+    /** A sync member with Mangayomi's [default] when the base class says it is not implemented (contract 2.4). */
+    private suspend fun <T> callSync(
+        source: JsSourceDescriptor,
+        code: String,
+        operation: String,
+        member: String,
+        mode: CallMode,
+        default: T,
+        vararg args: JsonElement,
+        decode: (JsonElement?) -> T,
+    ): T = when (val outcome = call(source, code, operation, member, mode, args.toList())) {
+        is CallOutcome.Value -> decode(outcome.value)
+        is CallOutcome.Failed -> if (outcome.notImplemented) default else throw outcome.error
+    }
+
+    private inline fun <T> parse(source: JsSourceDescriptor, operation: String, method: String, block: () -> T): T = try {
+        block()
+    } catch (e: MalformedResultFailure) {
+        throw JsSourceException.MalformedResult(source.name, operation, method, e.field, e.problem)
+    }
+
+    private sealed interface CallOutcome {
+        class Value(val value: JsonElement?) : CallOutcome
+        class Failed(val error: JsSourceException, val notImplemented: Boolean = false) : CallOutcome
+    }
+
+    /**
+     * One provider call in a fresh context. The host's own limit is told apart from the caller's timeouts and
+     * cancellation: only it becomes [JsSourceException.Timeout]; a `CancellationException` while the caller is still
+     * active (a service's or one the script forged) is an error of the call.
+     */
+    private suspend fun call(
+        source: JsSourceDescriptor,
+        code: String,
+        operation: String,
+        member: String,
+        mode: CallMode,
+        args: List<JsonElement>,
+    ): CallOutcome {
         var session: JsSession? = null
-        try {
-            // Dispatchers.Default: the timeout must run on a real clock, also under test dispatchers.
-            return withContext(Dispatchers.Default) {
-                withTimeout(limits.callTimeoutMillis) {
+        // Dispatchers.Default: the timeout must run on a real clock, also under test dispatchers.
+        val outcome = withContext(Dispatchers.Default) {
+            withTimeoutOrNull(limits.callTimeoutMillis) {
+                try {
                     policy.withEngine(engineFactory, limits.engine) { engine ->
-                        session = JsSession(source, services).also { it.install(engine) }
-                        engine.evaluate(code + JsPrelude.CREATE_PROVIDER, source.scriptFileName)
-                        loading = false
-                        CallScope(engine, source, operation).block()
+                        val current = JsSession(source, services, limits).also { session = it }
+                        run(engine, current, source, code, member, mode, args, operation)
+                    }
+                } catch (e: CancellationException) {
+                    if (currentCoroutineContext().isActive) {
+                        CallOutcome.Failed(scriptError(source, operation(session, operation), e.message ?: "cancelled", null))
+                    } else {
+                        throw e
                     }
                 }
             }
-        } catch (e: TimeoutCancellationException) {
-            throw JsSourceException.Timeout(source.name, operation(loading, operation), limits.callTimeoutMillis)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
-            val hostFailure = (e as? JsEngineException.Script)?.let { session?.failureFor(it.jsMessage) }
-            throw (hostFailure ?: e).toSourceException(source, operation(loading, operation))
         }
+        return outcome ?: CallOutcome.Failed(JsSourceException.Timeout(source.name, operation(session, operation), limits.callTimeoutMillis))
     }
 
-    private fun operation(loading: Boolean, operation: String) = if (loading) "loading the source" else operation
+    private suspend fun run(
+        engine: JsEngine,
+        session: JsSession,
+        source: JsSourceDescriptor,
+        code: String,
+        member: String,
+        mode: CallMode,
+        args: List<JsonElement>,
+        operation: String,
+    ): CallOutcome {
+        val escaped: Exception? = try {
+            session.install(engine)
+            engine.evaluate(JsPrelude.text, JsPrelude.FILE_NAME)
+            // Compiling the text alone first reports syntax errors as such and keeps the text from closing the
+            // wrapper function early.
+            engine.compile(code, source.scriptFileName)
+            engine.evaluate(JsPrelude.wrapExtension(code), source.scriptFileName)
+            engine.evaluate(JsPrelude.entryCall(member, JsonArray(args).toString(), mode.js), "<call $member>")
+            null
+        } catch (e: CancellationException) {
+            if (!currentCoroutineContext().isActive) throw e
+            e
+        } catch (e: Exception) {
+            e
+        }
+        val reported = session.outcome
+        if (reported != null) {
+            if (escaped != null) {
+                services.log.log(HostLog.Level.WARN, source, "Ignoring an error after $operation settled: ${escaped.message}")
+            }
+            return decodeOutcome(reported, engine, session, source, operation)
+        }
+        val currentOperation = operation(session, operation)
+        return CallOutcome.Failed(
+            when (escaped) {
+                null -> scriptError(source, currentOperation, "$member did not settle (its promise stayed pending)", null)
+                is JsEngineException.Script -> scriptError(source, currentOperation, escaped.jsMessage, escaped.jsStack)
+                is JsEngineException.OutOfMemory -> outOfMemory(source, currentOperation)
+                is JsEngineException.Interrupted ->
+                    JsSourceException.BridgeError(source.name, currentOperation, "engine", "interrupted", escaped)
+                is CancellationException -> scriptError(source, currentOperation, escaped.message ?: "cancelled", null)
+                else -> JsSourceException.BridgeError(
+                    source.name,
+                    currentOperation,
+                    "host",
+                    escaped.message ?: escaped::class.simpleName.orEmpty(),
+                    escaped,
+                )
+            },
+        )
+    }
 
-    private fun Throwable.toSourceException(source: JsSourceDescriptor, operation: String): JsSourceException = when (this) {
-        is JsSourceException -> this
+    /** Turns the entry's envelope (`JsPrelude` ENTRY) into an outcome; classification uses its markers only. */
+    private suspend fun decodeOutcome(
+        reported: String,
+        engine: JsEngine,
+        session: JsSession,
+        source: JsSourceDescriptor,
+        operation: String,
+    ): CallOutcome {
+        val body = reported.drop(1)
+        when (reported.firstOrNull()) {
+            'o' -> return CallOutcome.Value(body.takeIf { it.isNotEmpty() }?.let(Json::parseToJsonElement))
+            'e' -> Unit
+            else -> return CallOutcome.Failed(
+                if (isOutOfMemory(engine)) {
+                    outOfMemory(source, operation(session, operation))
+                } else {
+                    scriptError(source, operation(session, operation), "the error could not be reported", null)
+                },
+            )
+        }
+        val envelope = Json.parseToJsonElement(body) as JsonObject
+        fun field(name: String) = (envelope[name] as? JsonPrimitive)?.contentOrNull
+        val op = if (field("phase") == "load") LOADING else operation
+        val message = field("message").orEmpty()
+        val error = when (field("kind")) {
+            "unsupported" -> JsSourceException.Unsupported(source.name, op, field("feature").orEmpty(), field("reason").orEmpty())
+            "host" -> envelope["hostId"]?.jsonPrimitive?.intOrNull?.let(session::failure)?.toSourceException(source, op)
+                ?: scriptError(source, op, message, field("stack"))
+            "oom" -> outOfMemory(source, op)
+            "nullish" -> if (isOutOfMemory(engine)) outOfMemory(source, op) else scriptError(source, op, message, null)
+            "not_implemented" -> return CallOutcome.Failed(scriptError(source, op, message, field("stack")), notImplemented = op != LOADING)
+            else -> scriptError(source, op, message, field("stack"))
+        }
+        return CallOutcome.Failed(error)
+    }
+
+    private suspend fun isOutOfMemory(engine: JsEngine): Boolean {
+        val used = try {
+            engine.memoryUsedBytes()
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        val limit = limits.engine.memoryLimitBytes
+        return limit > 0 && used >= limit - limit / 16
+    }
+
+    private fun operation(session: JsSession?, operation: String) = if (session?.loaded == true) operation else LOADING
+
+    private fun scriptError(source: JsSourceDescriptor, operation: String, message: String, stack: String?) =
+        JsSourceException.ScriptError(source.name, operation, message, stack?.takeIf { it.isNotBlank() })
+
+    private fun outOfMemory(source: JsSourceDescriptor, operation: String) =
+        JsSourceException.OutOfMemory(source.name, operation, limits.engine.memoryLimitBytes)
+
+    private fun HostFunctionFailure.toSourceException(source: JsSourceDescriptor, operation: String): JsSourceException = when (this) {
         is HostFunctionFailure.Unsupported -> JsSourceException.Unsupported(source.name, operation, feature, reason)
         is HostFunctionFailure.Bridge -> JsSourceException.BridgeError(source.name, operation, channel, message.orEmpty(), cause)
-        is JsEngineException.Script -> JsSourceException.ScriptError(source.name, operation, jsMessage, jsStack)
-        is JsEngineException.OutOfMemory -> JsSourceException.OutOfMemory(source.name, operation, limits.engine.memoryLimitBytes)
-        is JsEngineException.Interrupted -> JsSourceException.Timeout(source.name, operation, limits.callTimeoutMillis)
-        else -> JsSourceException.BridgeError(source.name, operation, "host", message ?: this::class.simpleName.orEmpty(), this)
     }
 
     private companion object {
-        const val INVOKE_FUNCTION = "__kmk_invoke"
+        const val LOADING = "loading the source"
     }
 }
 
