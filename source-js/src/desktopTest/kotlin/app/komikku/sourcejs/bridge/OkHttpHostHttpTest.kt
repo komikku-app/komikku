@@ -51,7 +51,6 @@ class OkHttpHostHttpTest {
         assertEquals(201, response.statusCode)
         assertEquals("created", response.body.decodeToString())
         assertEquals(listOf("1", "2"), response.headers.filter { it.first.equals("X-A", true) }.map { it.second })
-        assertEquals(server.url("/items?x=1").toString(), response.finalUrl)
 
         val recorded = server.takeRequest()
         assertEquals("POST", recorded.method)
@@ -83,7 +82,6 @@ class OkHttpHostHttpTest {
         server.enqueue(MockResponse.Builder().body("target").build())
         val followed = http.execute(HostHttpRequest("GET", server.url("/start").toString(), emptyList(), null))
         assertEquals(200 to "target", followed.statusCode to followed.body.decodeToString())
-        assertEquals(server.url("/target").toString(), followed.finalUrl)
 
         server.enqueue(MockResponse.Builder().code(302).addHeader("Location", "/target").build())
         val notFollowed = http.execute(HostHttpRequest("GET", server.url("/start").toString(), emptyList(), null, followRedirects = false))
@@ -151,7 +149,7 @@ class OkHttpHostHttpTest {
               }
             }
         """
-        val page = host.getPopular(source, code, 3)
+        val page = host.extension(source, code).getPopular(3)
         assertEquals(listOf("Ünïcode" to "/m/42"), page.list.map { it.name to it.link })
         assertTrue(page.hasNextPage)
         val recorded = server.takeRequest()

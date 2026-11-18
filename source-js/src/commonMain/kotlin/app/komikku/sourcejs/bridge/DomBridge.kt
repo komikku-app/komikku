@@ -5,6 +5,9 @@ import com.fleeksoft.ksoup.nodes.DataNode
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.Collector
+import com.fleeksoft.ksoup.select.Evaluator
+import com.fleeksoft.ksoup.select.QueryParser
 
 /**
  * `Document` / `Element` (contract 4.3) on Ksoup, identical on every platform.
@@ -23,6 +26,9 @@ import com.fleeksoft.ksoup.nodes.TextNode
  */
 internal class DomBridge {
     private val nodes = ArrayList<Element>()
+
+    /** Parsed CSS queries of this context (`null`: invalid); sources repeat the same few selectors per item. */
+    private val queries = HashMap<String, Evaluator?>()
 
     fun parse(html: String): Int {
         val document = Ksoup.parse(html)
@@ -73,12 +79,26 @@ internal class DomBridge {
 
     fun select(key: Int, css: String): List<Int> {
         val node = node(key) ?: return emptyList()
-        return selectSafely(node, css).map(::store)
+        val evaluator = evaluator(css) ?: return emptyList()
+        return try {
+            node.select(evaluator).filter { it !== node }.map(::store)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
+    /** The first match in document order, stopping there; the node itself is skipped like in [select]. */
     fun selectFirst(key: Int, css: String): Int {
         val node = node(key) ?: return EMPTY
-        return store(selectSafely(node, css).firstOrNull())
+        val evaluator = evaluator(css) ?: return EMPTY
+        val found = try {
+            Collector.stream(evaluator, node).firstOrNull { it !== node }
+        } catch (e: Exception) {
+            null
+        } finally {
+            evaluator.reset()
+        }
+        return store(found)
     }
 
     fun list(key: Int, type: String, name: String): List<Int> {
@@ -102,11 +122,16 @@ internal class DomBridge {
         return nodes.lastIndex
     }
 
-    private fun selectSafely(node: Element, css: String): List<Element> = try {
-        node.select(rewriteContains(css)).filter { it !== node }
-    } catch (e: Exception) {
-        // Invalid selector: Mangayomi returns no match.
-        emptyList()
+    /** The parsed query, `null` for an invalid selector (Mangayomi then returns no match). */
+    private fun evaluator(css: String): Evaluator? {
+        if (queries.containsKey(css)) return queries[css]
+        val parsed = try {
+            QueryParser.parse(rewriteContains(css))
+        } catch (e: Exception) {
+            null
+        }
+        queries[css] = parsed
+        return parsed
     }
 
     companion object {

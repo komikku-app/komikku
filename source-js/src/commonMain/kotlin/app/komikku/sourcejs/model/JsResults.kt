@@ -68,3 +68,17 @@ data class JsPage(
     val url: String,
     val headers: Map<String, String> = emptyMap(),
 )
+
+/**
+ * The sync members of a source, read in one context by `JsExtension.metadata()` with the same defaults as the single
+ * calls; the source adapter caches it.
+ *
+ * @property headers `getHeaders(baseUrl)`.
+ */
+@Serializable
+data class JsSourceMetadata(
+    val supportsLatest: Boolean,
+    val filters: List<JsFilter>,
+    val preferences: List<JsPreference>,
+    val headers: Map<String, String>,
+)

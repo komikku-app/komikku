@@ -22,8 +22,6 @@ class InMemoryKeyValueStore : JsKeyValueStore {
     override fun put(key: String, value: String) {
         values[key] = value
     }
-
-    fun snapshot(): Map<String, String> = values.toMap()
 }
 
 /**

@@ -49,15 +49,11 @@ class HostHttpRequest(
 /**
  * @property headers response headers as received (names in any case, repeated names allowed).
  * @property body the raw body; the bridge decodes it (charset from `Content-Type`, UTF-8 otherwise).
- * @property finalUrl URL after redirects, `null` if unknown. Mangayomi exposes the original URL only, so this is
- *   informational.
  */
 class HostHttpResponse(
     val statusCode: Int,
     val headers: List<Pair<String, String>>,
     val body: ByteArray,
-    val finalUrl: String? = null,
-    val reasonPhrase: String? = null,
 )
 
 /** Values stored for one source's declared preferences (contract 4.6, 5.2). */
@@ -87,7 +83,7 @@ fun interface HostPreferencesProvider {
 fun interface HostLog {
     fun log(level: Level, source: JsSourceDescriptor, message: String)
 
-    enum class Level { DEBUG, INFO, WARN, ERROR }
+    enum class Level { INFO, WARN, ERROR }
 
     companion object {
         val None = HostLog { _, _, _ -> }

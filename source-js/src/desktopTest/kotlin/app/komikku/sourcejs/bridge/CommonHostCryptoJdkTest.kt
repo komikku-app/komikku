@@ -1,5 +1,6 @@
 package app.komikku.sourcejs.bridge
 
+import app.komikku.sourcejs.engine.Sha256
 import java.security.MessageDigest
 import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
@@ -56,6 +57,14 @@ class CommonHostCryptoJdkTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    fun sha256MatchesTheJdk() {
+        for (length in listOf(0, 1, 55, 56, 63, 64, 65, 1000, 100_000)) {
+            val data = random.nextBytes(length)
+            assertContentEquals(MessageDigest.getInstance("SHA-256").digest(data), Sha256.digest(data), "len=$length")
         }
     }
 

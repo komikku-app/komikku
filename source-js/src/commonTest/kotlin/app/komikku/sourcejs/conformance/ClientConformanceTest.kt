@@ -19,6 +19,7 @@ async function conformance(provider) {
   const error = await client.get("https://h.test/error");
   const latin1 = await client.get("https://h.test/latin1");
   const noCharset = await client.get("https://h.test/nocharset");
+  const raw = await client.get("https://h.test/raw");
   await client.post("https://h.test/post-text", {}, "a=b c");
   await client.post("https://h.test/post-form", {}, { q: "one piece", page: 2, "a&b": "é", "x*": "~y" });
   await client.post("https://h.test/post-json", { "Content-Type": "application/json" }, { q: "x", n: [1, 2] });
@@ -34,6 +35,7 @@ async function conformance(provider) {
     error: [error.statusCode, error.body],
     latin1: latin1.body,
     noCharset: noCharset.body,
+    raw: [raw.body, raw.statusCode, typeof raw.headers],
   };
 }
 """
@@ -49,11 +51,11 @@ async function conformance(provider) {
                     "X-Custom" to "v",
                 ),
                 body = if (request.method == "HEAD") ByteArray(0) else "héllo ✓".encodeToByteArray(),
-                finalUrl = "https://h.test/text-final",
             )
-            "/error" -> HostHttpResponse(503, emptyList(), "down".encodeToByteArray(), reasonPhrase = "Service Unavailable")
+            "/error" -> HostHttpResponse(503, emptyList(), "down".encodeToByteArray())
             "/latin1" -> HostHttpResponse(200, listOf("Content-Type" to "text/plain; charset=ISO-8859-1"), byteArrayOf(0xE9.toByte()))
             "/nocharset" -> HostHttpResponse(200, emptyList(), "ü".encodeToByteArray())
+            "/raw" -> HostHttpResponse(200, emptyList(), "line 1\nline \"2\"\r\n{\"json\": \\u0041}\n".encodeToByteArray())
             else -> HostHttpResponse(204, emptyList(), ByteArray(0))
         }
     }
@@ -79,6 +81,8 @@ async function conformance(provider) {
         assertJson("""[503, "down"]""", results["error"])
         assertJson("\"é\"", results["latin1"])
         assertJson("\"ü\"", results["noCharset"])
+        // Bodies travel raw next to the response object; newlines, quotes and backslashes are kept as sent.
+        assertJson("""["line 1\nline \"2\"\r\n{\"json\": \\u0041}\n", 200, "object"]""", results["raw"])
     }
 
     @Test

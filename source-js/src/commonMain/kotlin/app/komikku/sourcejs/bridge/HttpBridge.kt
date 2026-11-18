@@ -1,14 +1,15 @@
 package app.komikku.sourcejs.bridge
 
+import app.komikku.sourcejs.model.jsonBooleanOrNull
+import app.komikku.sourcejs.model.numberOrNull
+import app.komikku.sourcejs.model.textOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.put
 
 /**
@@ -35,7 +36,7 @@ internal object HttpBridge {
         maxBodyBytes: Long? = null,
     ): HostHttpRequest {
         val headerList = (headers as? JsonObject).orEmpty().mapNotNull { (name, value) ->
-            value.text()?.let { name to it }
+            value.textOrNull()?.let { name to it }
         }.toMutableList()
         val contentType = headerList.firstOrNull { it.first.equals("content-type", ignoreCase = true) }?.second
         val bytes: ByteArray? = when {
@@ -45,15 +46,13 @@ internal object HttpBridge {
             body is JsonObject -> {
                 if (contentType == null) headerList += "Content-Type" to "application/x-www-form-urlencoded; charset=utf-8"
                 body.entries.joinToString("&") { (key, value) ->
-                    formEncode(key) + "=" + formEncode(value.text().orEmpty())
+                    formEncode(key) + "=" + formEncode(value.textOrNull().orEmpty())
                 }.encodeToByteArray()
             }
-            body is JsonArray -> ByteArray(body.size) { index ->
-                ((body[index] as? JsonPrimitive)?.doubleOrNull ?: 0.0).toInt().toByte()
-            }
+            body is JsonArray -> ByteArray(body.size) { index -> (body[index].numberOrNull() ?: 0.0).toInt().toByte() }
             else -> {
                 if (contentType == null) headerList += "Content-Type" to "text/plain; charset=utf-8"
-                body.text().orEmpty().encodeToByteArray()
+                body.textOrNull().orEmpty().encodeToByteArray()
             }
         }
         val optionObject = options as? JsonObject
@@ -62,10 +61,10 @@ internal object HttpBridge {
             url = url,
             headers = headerList,
             body = bytes,
-            timeoutMillis = (optionObject?.get("timeout") as? JsonPrimitive)?.doubleOrNull
+            timeoutMillis = optionObject?.get("timeout").numberOrNull()
                 ?.takeIf { it > 0 }
                 ?.let { (it * 1000).toLong() },
-            followRedirects = (optionObject?.get("followRedirects") as? JsonPrimitive)?.booleanOrNull ?: true,
+            followRedirects = optionObject?.get("followRedirects").jsonBooleanOrNull() ?: true,
             maxBodyBytes = maxBodyBytes,
         )
     }
@@ -74,18 +73,16 @@ internal object HttpBridge {
     fun tooLargeMessage(maxBodyBytes: Long): String = "response body larger than $maxBodyBytes bytes"
 
     /**
-     * Mangayomi's response object (4.2). Header names are lower-cased, repeated headers joined with `", "`;
-     * `request.url` is the original URL. The body is decoded with the `Content-Type` charset; without one (or with
-     * a charset other than Latin-1 / ASCII) it is decoded as UTF-8, where Mangayomi falls back to Latin-1.
+     * Mangayomi's response object (4.2) without its `body`, which travels next to it as raw text ([body]). Header
+     * names are lower-cased, repeated headers joined with `", "`; `request.url` is the original URL.
      */
-    fun response(request: HostHttpRequest, response: HostHttpResponse): JsonObject {
+    fun responseWithoutBody(request: HostHttpRequest, response: HostHttpResponse): JsonObject {
         val responseHeaders = LinkedHashMap<String, String>()
         response.headers.forEach { (name, value) ->
             val key = name.lowercase()
             responseHeaders[key] = responseHeaders[key]?.let { "$it, $value" } ?: value
         }
         return buildJsonObject {
-            put("body", decodeBody(response.body, responseHeaders["content-type"]))
             put("statusCode", response.statusCode)
             put("headers", JsonObject(responseHeaders.mapValues { JsonPrimitive(it.value) }))
             put("isRedirect", false)
@@ -107,6 +104,13 @@ internal object HttpBridge {
         }
     }
 
+    /**
+     * The decoded body: with the `Content-Type` charset; without one (or with a charset other than Latin-1 / ASCII)
+     * as UTF-8, where Mangayomi falls back to Latin-1.
+     */
+    fun body(response: HostHttpResponse): String =
+        decodeBody(response.body, response.headers.firstOrNull { it.first.equals("content-type", ignoreCase = true) }?.second)
+
     fun decodeBody(body: ByteArray, contentType: String?): String {
         val charset = contentType
             ?.split(';')
@@ -121,12 +125,6 @@ internal object HttpBridge {
                 buildString(body.size) { body.forEach { append((it.toInt() and 0xFF).toChar()) } }
             else -> body.decodeToString()
         }
-    }
-
-    private fun JsonElement.text(): String? = when (this) {
-        is JsonNull -> null
-        is JsonPrimitive -> content
-        else -> toString()
     }
 
     private fun JsonObject?.orEmpty(): Map<String, JsonElement> = this ?: emptyMap()

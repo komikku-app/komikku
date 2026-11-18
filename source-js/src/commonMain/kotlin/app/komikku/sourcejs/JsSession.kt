@@ -9,12 +9,15 @@ import app.komikku.sourcejs.bridge.JsPreferenceValue
 import app.komikku.sourcejs.engine.JsEngine
 import app.komikku.sourcejs.model.JsResultParser
 import app.komikku.sourcejs.model.MalformedResultFailure
+import app.komikku.sourcejs.model.jsonBooleanOrNull
+import app.komikku.sourcejs.model.numberOrNull
+import app.komikku.sourcejs.model.textOrNull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import kotlinx.serialization.json.Json
@@ -23,9 +26,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.put
 
 /**
@@ -33,9 +34,10 @@ import kotlinx.serialization.json.put
  * `__kmk_host_async` and the per-context state (DOM handles, recorded host failures, timers, the call's outcome).
  *
  * Protocol (see `JsPrelude`): the bindings receive `(channel, payload)` as strings — the payload is a JSON array of
- * arguments — and always return a string reply: `"v" + JSON`, `"s" + raw text`, `"e" + {id, message}` for a host
- * failure recorded under `id`, or `"c"` for an async call dropped because the provider call already settled. They
- * never throw into the engine, so no exception object crosses the boundary.
+ * arguments, or the raw text for `dom_parse` — and always return a string reply: `"v" + JSON`, `"s" + raw text`,
+ * `"h" + response JSON + "\n" + raw body` (HTTP), `"e" + {id, message}` for a host failure recorded under `id`, or
+ * `"c"` for an async call dropped because the provider call already settled. They never throw into the engine, so no
+ * exception object crosses the boundary. Large strings (HTML, bodies, texts) travel raw, not inside JSON.
  *
  * All callbacks run on the engine's thread (`quickjs-kt` dispatches async bindings on the engine dispatcher).
  */
@@ -67,37 +69,31 @@ internal class JsSession(
     fun failure(id: Int): HostFunctionFailure? = failures.getOrNull(id - 1)
 
     suspend fun install(engine: JsEngine) {
-        engine.defineFunction(SYNC_FUNCTION, ::handleSync)
-        engine.defineSuspendFunction(ASYNC_FUNCTION, ::handleAsync)
-    }
-
-    private fun handleSync(args: List<String?>): String {
-        val channel = args.getOrNull(0).orEmpty()
-        return try {
-            sync(channel, args.getOrNull(1).orEmpty())
-        } catch (e: HostFunctionFailure) {
-            fail(e)
-        } catch (e: Exception) {
-            // Includes a CancellationException thrown by a service: a sync channel has no coroutine to cancel.
-            fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: e::class.simpleName}", e))
+        engine.defineFunction(SYNC_FUNCTION) { args ->
+            val channel = args.getOrNull(0).orEmpty()
+            // A sync channel has no coroutine: a CancellationException thrown by a service is a failure.
+            guarded(channel, isCancelled = { false }) { sync(channel, args.getOrNull(1).orEmpty()) }
+        }
+        engine.defineSuspendFunction(ASYNC_FUNCTION) { args ->
+            val channel = args.getOrNull(0).orEmpty()
+            val payload = args.getOrNull(1).orEmpty()
+            // Only a cancelled binding job (the engine closing) propagates; a service's own cancellation is a failure.
+            val job = currentCoroutineContext()[Job]
+            guarded(channel, isCancelled = { job?.isActive == false }) {
+                if (channel == "sleep") sleep(parseArgs(payload)) else untilSettled { asyncChannel(channel, payload) } ?: CANCELLED
+            }
         }
     }
 
-    private suspend fun handleAsync(args: List<String?>): String {
-        val channel = args.getOrNull(0).orEmpty()
-        val payload = args.getOrNull(1).orEmpty()
-        return try {
-            if (channel == "sleep") return sleep(parseArgs(payload))
-            untilSettled { asyncChannel(channel, payload) } ?: CANCELLED
-        } catch (e: HostFunctionFailure) {
-            fail(e)
-        } catch (e: CancellationException) {
-            // Only a cancelled binding job (engine closing) propagates; a service's own cancellation is a failure.
-            if (!currentCoroutineContext().isActive) throw e
-            fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: "cancelled"}", e))
-        } catch (e: Exception) {
-            fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: e::class.simpleName}", e))
-        }
+    private inline fun guarded(channel: String, isCancelled: () -> Boolean, block: () -> String): String = try {
+        block()
+    } catch (e: HostFunctionFailure) {
+        fail(e)
+    } catch (e: CancellationException) {
+        if (isCancelled()) throw e
+        fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: "cancelled"}", e))
+    } catch (e: Exception) {
+        fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: e::class.simpleName}", e))
     }
 
     private fun fail(failure: HostFunctionFailure): String {
@@ -124,7 +120,7 @@ internal class JsSession(
     /** `setTimeout`'s wait: `true` when it fired, `false` when cleared or when the call settled first. */
     private suspend fun sleep(args: JsonArray): String {
         val id = args.long(0)
-        val millis = (args.getOrNull(1) as? JsonPrimitive)?.doubleOrNull?.takeIf { it.isFinite() }?.toLong()?.coerceAtLeast(0) ?: 0
+        val millis = args.getOrNull(1).numberOrNull()?.toLong()?.coerceAtLeast(0) ?: 0
         val cleared = CompletableDeferred<Unit>()
         timers[id] = cleared
         return try {
@@ -146,95 +142,88 @@ internal class JsSession(
     private fun parseArgs(payload: String): JsonArray =
         payload.takeIf { it.isNotEmpty() }?.let { Json.parseToJsonElement(it) as? JsonArray } ?: JsonArray(emptyList())
 
-    private fun sync(channel: String, payload: String): String = when (channel) {
-        "settle" -> {
-            if (outcome == null) {
-                outcome = payload
-                settledSignal.complete(Unit)
+    private fun sync(channel: String, payload: String): String {
+        when (channel) {
+            "settle" -> {
+                if (outcome == null) {
+                    outcome = payload
+                    settledSignal.complete(Unit)
+                }
+                return NULL
             }
-            NULL
-        }
-        "loaded" -> {
-            loaded = true
-            NULL
-        }
-        "clear_timer" -> {
-            val id = parseArgs(payload).long(0)
-            timers[id]?.complete(Unit) ?: clearedTimers.add(id)
-            NULL
-        }
-        else -> syncValue(channel, parseArgs(payload)).toReply()
-    }
-
-    private fun syncValue(channel: String, args: JsonArray): JsonElement? = when (channel) {
-        "source" -> source.toJsSourceObject()
-        "log" -> {
-            val level = when (args.string(0)) {
-                "warn" -> HostLog.Level.WARN
-                "error" -> HostLog.Level.ERROR
-                else -> HostLog.Level.INFO
+            "loaded" -> {
+                loaded = true
+                return NULL
             }
-            services.log.log(level, source, args.string(1).orEmpty())
-            null
+            // The HTML travels raw.
+            "dom_parse" -> return dom.parse(payload).toReply()
         }
-
-        // DOM (contract 4.3)
-        "dom_parse" -> JsonPrimitive(dom.parse(args.string(0).orEmpty()))
-        "dom_get" -> JsonPrimitive(dom.element(args.int(0), args.string(1).orEmpty()))
-        "dom_string" -> JsonPrimitive(dom.string(args.int(0), args.string(1).orEmpty()))
-        "dom_attr" -> JsonPrimitive(dom.attr(args.int(0), args.string(1).orEmpty()))
-        "dom_has_attr" -> JsonPrimitive(dom.hasAttr(args.int(0), args.string(1).orEmpty()))
-        "dom_select" -> JsonArray(dom.select(args.int(0), args.string(1).orEmpty()).map(::JsonPrimitive))
-        "dom_select_first" -> JsonPrimitive(dom.selectFirst(args.int(0), args.string(1).orEmpty()))
-        "dom_list" -> JsonArray(dom.list(args.int(0), args.string(1).orEmpty(), args.string(2).orEmpty()).map(::JsonPrimitive))
-        "dom_by_id" -> JsonPrimitive(dom.byId(args.int(0), args.string(1).orEmpty()))
-
-        // SharedPreferences (contract 4.6)
-        "pref_get" -> buildJsonObject {
-            val value = preferences.getValue(args.string(0).orEmpty())
-            put("found", value != null)
-            if (value != null) put("value", value.toJson())
-        }
-        "pref_default" -> {
-            val key = args.string(0).orEmpty()
-            // Like Mangayomi, a declared list of the wrong shape counts as no preferences.
-            val declared = try {
-                JsResultParser.preferences(args.getOrNull(1))
-            } catch (e: MalformedResultFailure) {
-                emptyList()
-            }.firstOrNull { it.key == key }
-                ?: throw HostFunctionFailure.Bridge("pref_default", "Error when getting source preference \"$key\": no such preference")
-            val value = declared.defaultValue
-            preferences.setValue(key, value)
-            value.toJson()
-        }
-        "pref_get_string" -> {
-            val key = args.string(0).orEmpty()
-            preferences.getString(key)?.let(::JsonPrimitive) ?: args.string(1)?.let { default ->
-                preferences.setString(key, default)
-                JsonPrimitive(default)
+        val args = parseArgs(payload)
+        return when (channel) {
+            "clear_timer" -> {
+                val id = args.long(0)
+                timers[id]?.complete(Unit) ?: clearedTimers.add(id)
+                NULL
             }
-        }
-        "pref_set_string" -> {
-            preferences.setString(args.string(0).orEmpty(), args.string(1).orEmpty())
-            null
-        }
+            "log" -> {
+                val level = when (args.text(0)) {
+                    "warn" -> HostLog.Level.WARN
+                    "error" -> HostLog.Level.ERROR
+                    else -> HostLog.Level.INFO
+                }
+                services.log.log(level, source, args.text(1).orEmpty())
+                NULL
+            }
 
-        // Crypto and helpers (contract 4.4)
-        "crypto_handler" -> JsonPrimitive(
-            crypto.cryptoHandler(args.string(0).orEmpty(), args.string(1).orEmpty(), args.string(2).orEmpty(), args.boolean(3)),
-        )
-        "crypto_js_encrypt" -> JsonPrimitive(crypto.encryptCryptoJs(args.string(0).orEmpty(), args.string(1).orEmpty()))
-        "crypto_js_decrypt" -> JsonPrimitive(crypto.decryptCryptoJs(args.string(0).orEmpty(), args.string(1).orEmpty()))
-        "crypto_aes_gcm" -> JsonPrimitive(
-            crypto.decryptAesGcm(args.string(0).orEmpty(), args.string(1).orEmpty(), args.string(2).orEmpty(), args.string(3).orEmpty()),
-        )
-        "deobfuscate_js_password" -> JsonPrimitive(CryptoFunctions.deobfuscateJsPassword(args.string(0).orEmpty()))
+            // DOM (contract 4.3)
+            "dom_get" -> dom.element(args.int(0), args.text(1).orEmpty()).toReply()
+            "dom_string" -> raw(dom.string(args.int(0), args.text(1).orEmpty()))
+            "dom_attr" -> raw(dom.attr(args.int(0), args.text(1).orEmpty()))
+            "dom_has_attr" -> JsonPrimitive(dom.hasAttr(args.int(0), args.text(1).orEmpty())).toReply()
+            "dom_select" -> JsonArray(dom.select(args.int(0), args.text(1).orEmpty()).map(::JsonPrimitive)).toReply()
+            "dom_select_first" -> dom.selectFirst(args.int(0), args.text(1).orEmpty()).toReply()
+            "dom_list" -> JsonArray(dom.list(args.int(0), args.text(1).orEmpty(), args.text(2).orEmpty()).map(::JsonPrimitive)).toReply()
+            "dom_by_id" -> dom.byId(args.int(0), args.text(1).orEmpty()).toReply()
 
-        else -> {
-            // Like Mangayomi's unknown sendMessage channel: log and return null.
-            services.log.log(HostLog.Level.WARN, source, "No channel \"$channel\" registered")
-            null
+            // SharedPreferences (contract 4.6)
+            "pref_get" -> buildJsonObject {
+                val value = preferences.getValue(args.text(0).orEmpty())
+                put("found", value != null)
+                if (value != null) put("value", value.toJson())
+            }.toReply()
+            "pref_default" -> {
+                val key = args.text(0).orEmpty()
+                // Like Mangayomi, a declared list of the wrong shape counts as no preferences.
+                val declared = try {
+                    JsResultParser.preferences(args.getOrNull(1))
+                } catch (e: MalformedResultFailure) {
+                    emptyList()
+                }.firstOrNull { it.key == key }
+                    ?: throw HostFunctionFailure.Bridge("pref_default", "Error when getting source preference \"$key\": no such preference")
+                val value = declared.defaultValue
+                preferences.setValue(key, value)
+                value.toJson().toReply()
+            }
+            "pref_get_string" -> {
+                val key = args.text(0).orEmpty()
+                val value = preferences.getString(key) ?: args.text(1)?.also { default -> preferences.setString(key, default) }
+                value?.let(::raw) ?: NULL
+            }
+            "pref_set_string" -> {
+                preferences.setString(args.text(0).orEmpty(), args.text(1).orEmpty())
+                NULL
+            }
+
+            // Crypto and helpers (contract 4.4)
+            "crypto_handler" -> raw(crypto.cryptoHandler(args.text(0).orEmpty(), args.text(1).orEmpty(), args.text(2).orEmpty(), args.boolean(3)))
+            "crypto_js_encrypt" -> raw(crypto.encryptCryptoJs(args.text(0).orEmpty(), args.text(1).orEmpty()))
+            "crypto_js_decrypt" -> raw(crypto.decryptCryptoJs(args.text(0).orEmpty(), args.text(1).orEmpty()))
+            "crypto_aes_gcm" -> raw(
+                crypto.decryptAesGcm(args.text(0).orEmpty(), args.text(1).orEmpty(), args.text(2).orEmpty(), args.text(3).orEmpty()),
+            )
+            "deobfuscate_js_password" -> raw(CryptoFunctions.deobfuscateJsPassword(args.text(0).orEmpty()))
+
+            else -> unknownChannel(channel)
         }
     }
 
@@ -243,9 +232,9 @@ internal class JsSession(
         return when (channel) {
             "http" -> {
                 val request = HttpBridge.request(
-                    method = args.string(0).orEmpty(),
+                    method = args.text(0).orEmpty(),
                     options = args.getOrNull(1),
-                    url = args.string(2).orEmpty(),
+                    url = args.text(2).orEmpty(),
                     headers = args.getOrNull(3),
                     body = args.getOrNull(4),
                     maxBodyBytes = limits.maxResponseBodyBytes,
@@ -253,7 +242,7 @@ internal class JsSession(
                 val response = try {
                     services.http.execute(request)
                 } catch (e: CancellationException) {
-                    if (!currentCoroutineContext().isActive) throw e
+                    if (currentCoroutineContext()[Job]?.isActive == false) throw e
                     throw httpFailure(request.method, request.url, e.message ?: "cancelled", e)
                 } catch (e: Exception) {
                     throw httpFailure(request.method, request.url, e.message ?: e::class.simpleName.orEmpty(), e)
@@ -261,25 +250,27 @@ internal class JsSession(
                 if (response.body.size > limits.maxResponseBodyBytes) {
                     throw httpFailure(request.method, request.url, HttpBridge.tooLargeMessage(limits.maxResponseBodyBytes), null)
                 }
-                HttpBridge.response(request, response).toReply()
+                // JSON never contains a raw newline, so the first one separates the object from the body.
+                "h" + HttpBridge.responseWithoutBody(request, response) + "\n" + HttpBridge.body(response)
             }
             "webview" -> {
-                val headers = (args.getOrNull(1) as? JsonObject)?.mapValues { (_, value) ->
-                    (value as? JsonPrimitive)?.content ?: value.toString()
-                }.orEmpty()
-                val scripts = (args.getOrNull(2) as? JsonArray)?.map { (it as? JsonPrimitive)?.content ?: it.toString() }.orEmpty()
+                val headers = (args.getOrNull(1) as? JsonObject)?.mapValues { (_, value) -> value.textOrNull().orEmpty() }.orEmpty()
+                val scripts = (args.getOrNull(2) as? JsonArray)?.map { it.textOrNull().orEmpty() }.orEmpty()
                 val result = try {
-                    services.webView.evaluate(args.string(0).orEmpty(), headers, scripts, args.int(3).takeIf { it > 0 } ?: 30)
+                    services.webView.evaluate(args.text(0).orEmpty(), headers, scripts, args.int(3).takeIf { it > 0 } ?: 30)
                 } catch (e: UnsupportedOperationException) {
                     throw HostFunctionFailure.Unsupported("evaluateJavascriptViaWebview", e.message ?: "needs a WebView")
                 }
-                JsonPrimitive(result).toReply()
+                raw(result)
             }
-            else -> {
-                services.log.log(HostLog.Level.WARN, source, "No channel \"$channel\" registered")
-                NULL
-            }
+            else -> unknownChannel(channel)
         }
+    }
+
+    /** Like Mangayomi's unknown `sendMessage` channel: log and return `null`. */
+    private fun unknownChannel(channel: String): String {
+        services.log.log(HostLog.Level.WARN, source, "No channel \"$channel\" registered")
+        return NULL
     }
 
     private fun httpFailure(method: String, url: String, detail: String, cause: Throwable?) =
@@ -292,19 +283,19 @@ internal class JsSession(
         private const val NULL = "vnull"
         private const val CANCELLED = "c"
 
+        private fun raw(text: String): String = "s$text"
+
         private fun JsonElement?.toReply(): String = "v" + (this ?: JsonNull).toString()
 
-        private fun JsonArray.string(index: Int): String? = when (val element = getOrNull(index)) {
-            null, is JsonNull -> null
-            is JsonPrimitive -> element.content
-            else -> element.toString()
-        }
+        private fun Int.toReply(): String = "v$this"
 
-        private fun JsonArray.int(index: Int): Int = (getOrNull(index) as? JsonPrimitive)?.doubleOrNull?.toInt() ?: -1
+        private fun JsonArray.text(index: Int): String? = getOrNull(index).textOrNull()
 
-        private fun JsonArray.long(index: Int): Long = (getOrNull(index) as? JsonPrimitive)?.doubleOrNull?.toLong() ?: -1
+        private fun JsonArray.int(index: Int): Int = getOrNull(index).numberOrNull()?.toInt() ?: -1
 
-        private fun JsonArray.boolean(index: Int): Boolean = (getOrNull(index) as? JsonPrimitive)?.booleanOrNull ?: false
+        private fun JsonArray.long(index: Int): Long = getOrNull(index).numberOrNull()?.toLong() ?: -1
+
+        private fun JsonArray.boolean(index: Int): Boolean = getOrNull(index).jsonBooleanOrNull() ?: false
 
         private fun JsPreferenceValue.toJson(): JsonElement = when (this) {
             is JsPreferenceValue.Text -> JsonPrimitive(value)

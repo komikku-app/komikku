@@ -52,6 +52,7 @@ const promiseThen = uncurry(Promise.prototype.then);
 const weakMapGet = uncurry(WeakMap.prototype.get);
 const weakMapSet = uncurry(WeakMap.prototype.set);
 const stringSlice = uncurry(String.prototype.slice);
+const stringIndexOf = uncurry(String.prototype.indexOf);
 const brands = new WeakMap();
 
 // `await` reads `constructor` and resolving reads `then`: an extension must not be able to make the host's own
@@ -83,7 +84,8 @@ function isNotImplemented(error) {
   return info !== undefined && info.kind === "not_implemented";
 }
 
-// Host replies: "v" + JSON, "s" + raw string, "e" + {id, message} (host failure), "c" (dropped after the call settled).
+// Host replies: "v" + JSON, "s" + raw string, "h" + response JSON + "\n" + raw body, "e" + {id, message} (host
+// failure), "c" (dropped after the call settled).
 const CANCELLED = {};
 function decode(reply) {
   if (typeof reply !== "string" || reply.length === 0) return null;
@@ -91,6 +93,12 @@ function decode(reply) {
   const body = stringSlice(reply, 1);
   if (tag === "s") return body;
   if (tag === "v") return JsonParse(body);
+  if (tag === "h") {
+    const newline = stringIndexOf(body, "\n");
+    const response = JsonParse(stringSlice(body, 0, newline));
+    response.body = stringSlice(body, newline + 1);
+    return response;
+  }
   if (tag === "c") return CANCELLED;
   if (tag === "e") {
     const failure = JsonParse(body);
@@ -247,7 +255,8 @@ class Document {
     this._key = null;
   }
   get _doc() {
-    if (this._key === null) this._key = sync("dom_parse", json([this.html == null ? "" : StringCtor(this.html)]));
+    // The HTML travels raw, not inside JSON.
+    if (this._key === null) this._key = sync("dom_parse", this.html == null ? "" : StringCtor(this.html));
     return this._key;
   }
   get body() { return this.getElement("body"); }
@@ -350,7 +359,7 @@ defineGlobal("SharedPreferences", SharedPreferences);
     /** `MProvider` and `jsonStringify` (2.2 step 3, 3). */
     private const val PROVIDER = """
 class MProvider {
-  get source() { return sync("source", ""); }
+  get source() { return JsonParse(sourceJson); }
   get supportsLatest() { throw notImplemented("supportsLatest"); }
   getHeaders(url) { throw notImplemented("getHeaders"); }
   async getPopular(page) { throw notImplemented("getPopular"); }
@@ -374,10 +383,11 @@ defineGlobal("jsonStringify", async function (fn) {
      * Loading and calling (2.2 step 4, 2.4). The extension text is compiled inside a function (`wrap`) whose
      * definition is handed to `__kmk_define`; `__kmk_entry` runs it, creates the provider, calls the member and
      * reports one envelope through the `settle` channel: `"o" + JSON` (the result), `"e" + JSON` (the error),
-     * `"x"` (the error could not even be described). Both globals are non-writable and non-configurable, and each
-     * runs once per context.
+     * `"x"` (the error could not even be described), or for `metadata` `"m" + JSON` (one such envelope per
+     * member). Both globals are non-writable and non-configurable, and each runs once per context.
      */
     private const val ENTRY = """
+let sourceJson = "null";
 let ProviderClass = undefined;
 let provider = undefined;
 let defineExtension = null;
@@ -431,6 +441,26 @@ function describeError(error, phase) {
 }
 
 let phase = "load";
+// A promise returned by a sync member is not awaited (Mangayomi stringifies it to {}, the host then uses the
+// default); its rejection is ignored.
+function ignoreRejection(value) {
+  if (value !== null && typeof value === "object") {
+    try {
+      promiseThen(value, undefined, function () {});
+    } catch (e) {}
+  }
+}
+function outcomeOf(read) {
+  try {
+    const value = read();
+    ignoreRejection(value);
+    const out = JsonStringify(value);
+    return "o" + (typeof out === "string" ? out : "");
+  } catch (error) {
+    return describeError(error, "call");
+  }
+}
+
 async function run(member, argsJson, mode) {
   // Lets the entry attach its rejection handler before any extension code runs (see __kmk_entry).
   await undefined;
@@ -449,21 +479,23 @@ async function run(member, argsJson, mode) {
       return;
     }
     const args = JsonParse(argsJson);
-    let value;
     if (mode === "async") {
-      value = await provider[member](...args);
+      const value = await provider[member](...args);
+      const out = JsonStringify(value);
+      settle("o" + (typeof out === "string" ? out : ""));
+    } else if (mode === "metadata") {
+      // All sync members in one context, each with its own outcome.
+      const out = ObjectCreate(null);
+      out.supportsLatest = outcomeOf(function () { return provider.supportsLatest; });
+      out.getFilterList = outcomeOf(function () { return provider.getFilterList(); });
+      out.getSourcePreferences = outcomeOf(function () { return provider.getSourcePreferences(); });
+      out.getHeaders = outcomeOf(function () { return provider.getHeaders(args[0]); });
+      settle("m" + JsonStringify(out));
+    } else if (mode === "getter") {
+      settle(outcomeOf(function () { return provider[member]; }));
     } else {
-      // Sync members are not awaited (Mangayomi stringifies a promise to {}, the host then uses the default);
-      // a rejection of such a promise is ignored.
-      value = mode === "getter" ? provider[member] : provider[member](...args);
-      if (value !== null && typeof value === "object") {
-        try {
-          promiseThen(value, undefined, function () {});
-        } catch (e) {}
-      }
+      settle(outcomeOf(function () { return provider[member](...args); }));
     }
-    const out = JsonStringify(value);
-    settle("o" + (typeof out === "string" ? out : ""));
   } catch (error) {
     try {
       settle(describeError(error, "call"));
@@ -480,10 +512,11 @@ ObjectDefineProperty(global, "__kmk_define", {
   enumerable: false,
 });
 ObjectDefineProperty(global, "__kmk_entry", {
-  value: function (member, argsJson, mode) {
+  value: function (member, argsJson, mode, source) {
     try {
       if (entered) return;
       entered = true;
+      sourceJson = StringCtor(source);
       const pending = run(StringCtor(member), StringCtor(argsJson), StringCtor(mode));
       // Only reached when an await in run failed on an extension's value (QuickJS rejects run's promise directly).
       promiseThen(pending, undefined, function (error) { settle(describeError(error, phase)); });
@@ -510,9 +543,12 @@ ObjectPreventExtensions(ObjectPrototype);
      */
     fun wrapExtension(code: String): String = "__kmk_define(function () {$code\n;return DefaultExtension;\n});\n"
 
-    /** The call script: `member` with the JSON array [argsJson], `mode` one of `async`, `sync`, `getter`. */
-    fun entryCall(member: String, argsJson: String, mode: String): String =
-        "__kmk_entry(${jsString(member)}, ${jsString(argsJson)}, ${jsString(mode)});\n"
+    /**
+     * The call script: `member` with the JSON array [argsJson], `mode` one of `async`, `sync`, `getter`,
+     * `metadata`; [sourceJson] is the object `this.source` returns (Mangayomi builds it from a JSON literal too).
+     */
+    fun entryCall(member: String, argsJson: String, mode: String, sourceJson: String): String =
+        "__kmk_entry(${jsString(member)}, ${jsString(argsJson)}, ${jsString(mode)}, ${jsString(sourceJson)});\n"
 
     private fun jsString(value: String): String = buildString {
         append('"')

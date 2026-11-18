@@ -6,8 +6,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.longOrNull
 
 /** A result that does not fit the expected shape at [field]. */
 internal class MalformedResultFailure(val field: String, val problem: String) : Exception("$field: $problem")
@@ -66,7 +64,7 @@ internal object JsResultParser {
             description = obj["description"].string("$path.description").nullIfBlank(),
             author = obj["author"].string("$path.author").nullIfBlank(),
             artist = obj["artist"].string("$path.artist").nullIfBlank(),
-            status = JsMangaStatus.fromCode(obj["status"].number()?.toInt()),
+            status = JsMangaStatus.fromCode(obj["status"].numberOrNull()?.toInt()),
             genre = genre(obj["genre"], "$path.genre"),
             chapters = chapters,
         )
@@ -90,7 +88,7 @@ internal object JsResultParser {
         return JsChapter(
             name = obj["name"].string("$path.name").orEmpty(),
             url = url,
-            dateUpload = obj["dateUpload"].number()?.takeIf { it.isFinite() }?.toLong(),
+            dateUpload = obj["dateUpload"].numberOrNull()?.takeIf { it.isFinite() }?.toLong(),
             scanlator = obj["scanlator"].string("$path.scanlator").nullIfBlank(),
         )
     }
@@ -119,14 +117,14 @@ internal object JsResultParser {
                 type,
                 element,
                 value = element["value"].string("$path.value"),
-                state = state.number()?.toInt()?.takeIf { it in 0..2 } ?: JsFilter.TriState.STATE_IGNORE,
+                state = state.numberOrNull()?.toInt()?.takeIf { it in 0..2 } ?: JsFilter.TriState.STATE_IGNORE,
             )
             "SelectFilter" -> JsFilter.Select(
                 name,
                 type,
                 element,
                 values = options(element["values"], "$path.values"),
-                state = state.number()?.toInt()?.coerceAtLeast(0) ?: 0,
+                state = state.numberOrNull()?.toInt()?.coerceAtLeast(0) ?: 0,
             )
             "SortFilter" -> JsFilter.Sort(
                 name,
@@ -135,7 +133,7 @@ internal object JsResultParser {
                 values = options(element["values"], "$path.values"),
                 state = (state as? JsonObject)?.let {
                     JsSortState(
-                        index = it["index"].number()?.toInt()?.coerceAtLeast(0) ?: 0,
+                        index = it["index"].numberOrNull()?.toInt()?.coerceAtLeast(0) ?: 0,
                         ascending = it["ascending"].booleanOrDefault("$path.state.ascending", false),
                     )
                 } ?: JsSortState(),
@@ -187,7 +185,7 @@ internal object JsResultParser {
                 p.summary(path),
                 entries = p["entries"].strings("$path.entries"),
                 entryValues = p["entryValues"].strings("$path.entryValues"),
-                valueIndex = p["valueIndex"].number()?.toInt()?.coerceAtLeast(0) ?: 0,
+                valueIndex = p["valueIndex"].numberOrNull()?.toInt()?.coerceAtLeast(0) ?: 0,
             )
         }
         body("multiSelectListPreference")?.let { p ->
@@ -239,15 +237,6 @@ internal object JsResultParser {
 
     private fun JsonElement?.strings(path: String): List<String> =
         arrayOrEmpty(path).mapIndexedNotNull { index, item -> item.string("$path[$index]") }
-
-    /** Number from a JSON number or a numeric string; anything else (incl. `"NaN"`) gives `null`. */
-    private fun JsonElement?.number(): Double? {
-        val primitive = this as? JsonPrimitive ?: return null
-        if (primitive is JsonNull) return null
-        return primitive.longOrNull?.toDouble()
-            ?: primitive.doubleOrNull?.takeIf { it.isFinite() }
-            ?: primitive.content.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
-    }
 
     private fun JsonElement?.booleanOrDefault(path: String, default: Boolean): Boolean = when (this) {
         null, is JsonNull -> default

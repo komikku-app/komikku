@@ -41,8 +41,6 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
                                     statusCode = it.code,
                                     headers = it.headers.map { header -> header.first to header.second },
                                     body = it.readBody(request.maxBodyBytes),
-                                    finalUrl = it.request.url.toString(),
-                                    reasonPhrase = it.message.ifEmpty { null },
                                 )
                             }
                         } catch (e: IOException) {
