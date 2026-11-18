@@ -9,17 +9,19 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  * same code compiles for Kotlin/Native iOS later.
  *
  * Targets:
- * - `jvm("desktop")`: always.
+ * - `androidTarget()` (namespace `app.komikku.sourcejs`, SDK settings from `mihon.library`) and `jvm("desktop")`:
+ *   always. Their shared code (`OkHttpHostHttp`, the engine thread) lives in the `jvmShared` intermediate source
+ *   set (`src/jvmSharedMain`); `commonMain` stays free of JVM APIs for iOS.
  * - `iosArm64` / `iosSimulatorArm64`: only when the build host is macOS, so Linux / Windows builds and CI are
  *   unaffected.
- * - Android: not yet. `quickjs-kt`'s Android AAR clashes with the zhanghai `quickjs-android` AAR the app uses for
- *   Mihon extensions (both ship `libquickjs.so`), see PLAN.md 8.7 item 5. To add it later: apply
- *   `id("mihon.library")` (Android library + lint), call `androidTarget()` below, set `android { namespace =
- *   "app.komikku.sourcejs" }`, and give `androidMain` an `OkHttpHostHttp` (the `desktopMain` one is plain OkHttp
- *   and can move to a shared `jvmMain` group).
+ *
+ * Android uses `quickjs-kt`'s Android AAR (I2b replaced the zhanghai `quickjs-android` AAR that clashed with it,
+ * PLAN.md 8.7 item 5). Its native library only exists for Android ABIs, so the Android host unit tests
+ * (`testDebugUnitTest` / `testReleaseUnitTest`, which run `commonTest`) get the JVM artifact with host natives
+ * instead.
  */
 plugins {
-    id("mihon.code.lint")
+    id("mihon.library")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 }
@@ -27,6 +29,7 @@ plugins {
 val isMacOsHost = providers.systemProperty("os.name").get().startsWith("Mac", ignoreCase = true)
 
 kotlin {
+    androidTarget()
     jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -37,7 +40,14 @@ kotlin {
         iosSimulatorArm64()
     }
 
-    applyDefaultHierarchyTemplate()
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmShared") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
 
     compilerOptions {
         freeCompilerArgs.addAll(
@@ -59,7 +69,7 @@ kotlin {
             implementation(kotlin("test"))
             implementation(kotlinx.coroutines.test)
         }
-        named("desktopMain").configure {
+        named("jvmSharedMain").configure {
             dependencies {
                 implementation(libs.okhttp.core)
             }
@@ -69,7 +79,21 @@ kotlin {
                 implementation(libs.okhttp.mockwebserver)
             }
         }
+        named("androidUnitTest").configure {
+            dependencies {
+                runtimeOnly(libs.quickjs.kt.jvm)
+            }
+        }
     }
+}
+
+android {
+    namespace = "app.komikku.sourcejs"
+}
+
+// Android host unit tests: swap quickjs-kt's Android AAR (natives for Android ABIs only) for the JVM artifact.
+configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
+    exclude(group = "io.github.dokar3", module = "quickjs-kt-android")
 }
 
 tasks.withType<Test>().configureEach {
