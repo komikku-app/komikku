@@ -107,7 +107,8 @@ class ComickApi(
             .appendQueryParameter("limit", "20")
             .build()
         return with(json) {
-            client.newCall(GET(url.toString())).awaitSuccess().parseAs<ComickSearchResult>().data
+            // /integrations/v1/titles requires authentication.
+            authClient.newCall(GET(url.toString())).awaitSuccess().parseAs<ComickSearchResult>().data
                 .map { it.toTrackSearch(trackerId) }
         }
     }
@@ -117,7 +118,7 @@ class ComickApi(
         val url = "$RESOURCE_URL/titles".toUri().buildUpon().appendPath(hid).build()
         return try {
             with(json) {
-                client.newCall(GET(url.toString())).awaitSuccess().parseAs<ComickTitleLookupResult>()
+                authClient.newCall(GET(url.toString())).awaitSuccess().parseAs<ComickTitleLookupResult>()
                     .data.toTrackSearch(trackerId)
             }
         } catch (e: HttpException) {
