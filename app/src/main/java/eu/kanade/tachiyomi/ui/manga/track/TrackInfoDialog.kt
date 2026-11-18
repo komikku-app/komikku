@@ -386,7 +386,9 @@ data class TrackInfoDialogHomeScreen(
         }
 
         private suspend fun List<Track>.mapToTrackItem(): List<TrackItem> {
-            val loggedInTrackers = trackerManager.loggedInTrackers()
+            // KMK -->
+            val loggedInTrackers = trackerManager.orderedTrackers().filter { it.isLoggedIn }
+            // KMK <--
             val source = sourceManager.getOrStub(sourceId)
             return loggedInTrackers
                 // Map to TrackItem

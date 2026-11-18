@@ -121,6 +121,9 @@
     <string name="pref_track_on_add_library">Open track menu on adding to library</string>
     <string name="mangadex_session_expired_notification_title">MangaDex session expired</string>
     <string name="mangadex_session_expired_notification_text">Log in to MangaDex again to keep syncing your follows and tracking.</string>
+    <string name="pref_tracker_order">Tracker order</string>
+    <string name="pref_tracker_order_summary">Choose the order trackers appear when adding tracking to a title</string>
+    <string name="action_drag_to_reorder">Drag to reorder</string>
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>

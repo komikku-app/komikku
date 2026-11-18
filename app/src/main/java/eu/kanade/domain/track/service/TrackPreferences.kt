@@ -69,4 +69,8 @@ class TrackPreferences(
     // KMK -->
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
     // KMK <--
+
+    // KMK -->
+    fun trackerOrder() = preferenceStore.getString("pref_tracker_order", "")
+    // KMK <--
 }
