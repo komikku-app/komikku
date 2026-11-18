@@ -41,11 +41,19 @@ a target yet).
 ./gradlew :source-js:desktopTest --tests '*Conformance*'  # the bridge conformance suite only
 ```
 
-Tests: engine (`QuickJsEngineTest`), host core and limits (`HostCoreTest`), result models
-(`ResultModelsTest`) and the bridge conformance suite (`conformance/*`) live in `src/commonTest` with in-test
-JavaScript providers and a fake `HostHttp`, so they will run unchanged on iOS; `src/desktopTest` adds
-`OkHttpHostHttp` against `MockWebServer` and the pure Kotlin crypto checked against the JDK. No website is
-contacted and no third-party extension file is in the repository.
+Tests: engine (`QuickJsEngineTest`), host core and limits (`HostCoreTest`), the error protocol
+(`ErrorProtocolTest`), Mangayomi parity details (`MangayomiParityTest`), bytecode cache and metadata
+(`HostEfficiencyTest`), result models (`ResultModelsTest`) and the bridge conformance suite (`conformance/*`)
+live in `src/commonTest` with in-test JavaScript providers and a fake `HostHttp`, so they will run unchanged on
+iOS; `src/desktopTest` adds `OkHttpHostHttp` against `MockWebServer`, the pure Kotlin crypto and SHA-256 checked
+against the JDK, and the class-injection regression test (`ErrorClassInjectionTest`, payloads confined to a
+temporary directory; one test is `@Ignore`d until `quickjs-kt` is fixed, see [`PROGRESS.md`](PROGRESS.md)). No
+website is contacted and no third-party extension file is in the repository.
+
+Test stack: this module uses `kotlin.test` (with `kotlinx-coroutines-test`) instead of the JUnit 5 + Kotest +
+MockK stack that `AGENTS.md` names for the Android modules, because `commonTest` must compile for Kotlin/Native
+(iOS) too, where JUnit, Kotest's JVM assertions and MockK are not available; fakes are hand-written. On the JVM
+`kotlin.test` runs on the JUnit Platform (`useJUnitPlatform()` in `source-js/build.gradle.kts`).
 
 ## Package
 
@@ -73,9 +81,10 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | ProGuard | the `release` build type's ProGuard step is disabled: extensions are loaded reflectively against host classes (source API, OkHttp, kotlinx, compat layer) that shrinking would remove or rename. Enabling it needs keep rules for that shared surface |
 
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
-and macOS runners and uploads the installers as workflow artifacts. The PR workflow has a separate
-`desktop` job (`:desktopApp:compileKotlin` + `:desktopApp:test`) that cannot block the Android build and,
-while the port is experimental, does not fail the PR check (`continue-on-error`).
+and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test` and
+`:source-js:desktopTest` first). The PR workflow has a separate `desktop` job (`:desktopApp:compileKotlin`,
+`:desktopApp:test`, then `:source-js:desktopTest`) that cannot block the Android build and, while the port is
+experimental, does not fail the PR check (`continue-on-error`).
 
 Signing: none. macOS packages are neither signed nor notarized (Gatekeeper will warn; open them with
 right-click → Open), Windows installers are unsigned (SmartScreen warning). The TODOs in

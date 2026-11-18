@@ -65,6 +65,13 @@ jobs:
         if: runner.os == 'Linux'
         run: ./gradlew :desktopApp:test --max-workers=2
 
+      # KMK -->
+      # JavaScript source host (:source-js); Linux only, like the desktop tests.
+      - name: Test JavaScript source host
+        if: runner.os == 'Linux'
+        run: ./gradlew :source-js:desktopTest --max-workers=2
+      # KMK <--
+
       - name: Package desktop app
         run: ./gradlew :desktopApp:packageDistributionForCurrentOS
 
@@ -73,7 +80,11 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-test-report-${{ runner.os }}-${{ github.sha }}
-          path: desktopApp/build/reports/tests/test
+          # KMK -->
+          path: |
+            desktopApp/build/reports/tests/test
+            source-js/build/reports/tests/desktopTest
+          # KMK <--
 
       - name: Upload packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

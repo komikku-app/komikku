@@ -77,7 +77,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | Step | Status | Commit | Notes |
 |------|--------|--------|-------|
 | I0 Contract and feasibility | done | see git log (`docs(kmp): … Mangayomi …`) | Docs only. 114 JS manga entries from 18 files in the kodjodevf index (86 are MangaDex / Comick variants; files hosted by the `entityJY` fork; 2 files 404). Bridge used: `Client.get`, CSS DOM, `SharedPreferences`, filters, preferences, one `cryptoHandler`; no XPath, WebView, `parseDates` or unpacker. Engine: `quickjs-kt` 1.0.15 (iOS targets verified, QuickJS 2026-06-04 like Mangayomi); on Android it clashes with the zhanghai AAR (`libquickjs.so`), maintainer decision 8.7 item 5. Licences: Apache-2.0 (app, index, fork), MIT (`flutter_qjs`). Go for I1–I4 with conditions (8.9). |
-| I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits, policy)` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` (and `JsExtension` bound to one source); `EnginePolicy.FreshContextPerCall`; `JsHostLimits` (60 s wall clock per call, 64 MiB heap, 4 MiB JS stack); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
+| I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits).extension(source, code)` gives a `JsExtension` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` and `metadata()` (API as reshaped by the review fixes below); a fresh context per call; `JsHostLimits` (180 s wall clock per call, 64 MiB heap, 4 MiB JS stack, 50 MiB response bodies); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
 | I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
 | I3 Source adapter | todo | | |
 | I4 Store and UI | todo | | |
@@ -101,12 +101,11 @@ vague or wrong). Decisions taken without the maintainer, as asked:
   `cryptography` vectors. The CryptoJS salt comes from `kotlin.random` (a salt need not be secret).
 - **Engine threads and limits:** each context has its own thread (desktop: 4 MiB JS stack + 4 MiB headroom); the
   QuickJS runtime is created on that thread because QuickJS measures its stack limit from the creating thread.
-  Defaults per call: 60 s wall clock (including network waits; enforced on `Dispatchers.Default` so test
-  dispatchers do not fake it), 64 MiB heap, 4 MiB stack; cancelling the caller interrupts the script. When
-  QuickJS cannot allocate the error object on out-of-memory it throws `null`; the engine reports that as
-  out-of-memory.
+  Defaults per call: 180 s wall clock (including network waits; enforced on `Dispatchers.Default` so test
+  dispatchers do not fake it), 64 MiB heap, 4 MiB stack; cancelling the caller interrupts the script.
+  Out-of-memory: see the review fixes below.
 - **Fresh context for every call**, metadata calls included (Mangayomi keeps up to 6 metadata services alive);
-  extensions cannot observe the difference. A pooling `EnginePolicy` can come later.
+  extensions cannot observe the difference. `JsExtension.metadata()` reads the four sync members in one context.
 - **HTTP (deviations, as decided):** the app supplies the client (cookies from responses are stored by the app's
   jar, rate limits and Cloudflare handling apply); TLS certificates are always verified (`verifyCertificates` is
   ignored; Mangayomi defaults to not verifying); `reqcopyWith.timeout` and `followRedirects` are honoured, the
@@ -114,16 +113,16 @@ vague or wrong). Decisions taken without the maintainer, as asked:
   declared; other charsets as UTF-8. Repeated response headers are joined with `", "`; `reasonPhrase` is always
   `null` and `request.maxRedirects` 5, as with Mangayomi's default client. The JSON double encoding of string
   bodies with a JSON content type is kept.
-- **Bridge transport:** two host functions (`__kmk_host_sync` / `__kmk_host_async`, JSON text in and out)
-  instead of a global `sendMessage`, which no source calls. Host errors the script does not catch are mapped
-  back to `BridgeError` / `Unsupported` by message (QuickJS appends the Kotlin stack to it).
+- **Bridge transport:** two host functions (`__kmk_host_sync` / `__kmk_host_async`, strings in and out, hidden
+  from extension code) instead of a global `sendMessage`, which no source calls. Host errors reach the script
+  as errors branded with the id the host recorded; see the review fixes below.
 - **Prelude:** written for Komikku from the contract (no Mangayomi text). Helper functions are configurable
   `globalThis` properties, so an extension that declares its own `atob` / `unpackJs` / … still loads (a test
   covers it); `Client`, `Document`, `Element`, `SharedPreferences` and `MProvider` are classes as in Mangayomi.
   `Document` parses once on first use (Mangayomi re-parses per call; same results).
-- **Small leniencies:** sync members (`getFilterList`, …) are awaited if they return a promise (Mangayomi would get
-  `{}` and fall back to the default); `console.log(undefined)` logs `undefined` (Mangayomi throws); `hasAttr`
-  works (always `false` in Mangayomi); `:contains("x")` accepts quotes.
+- **Small leniencies:** `console.log(undefined)` logs `undefined` (Mangayomi throws); `hasAttr` works (always
+  `false` in Mangayomi); `:contains("x")` accepts quotes. (Sync members returning a promise are no longer
+  awaited: like Mangayomi they get their default.)
 - **DOM choices for unverified points:** `Element.select` / `selectFirst` match descendants only (DOM
   `querySelectorAll`; jsoup alone would include the element); `Document.text` is the `textContent` of the whole
   document; `children` is a getter; `:contains(x)` is rewritten to `:is(:contains(x), :containsData(x))` so script
@@ -136,12 +135,94 @@ vague or wrong). Decisions taken without the maintainer, as asked:
   an empty URL dropped, `dateUpload` `"NaN"` / invalid = `null`, pages trimmed and de-duplicated); wrong container
   types raise `MalformedResult` naming the method and field. Filters keep the source's raw JSON (extra keys
   round-trip, Mangayomi drops them); `search(filters = null)` sends the default list with states filled in, an
-  explicit list is sent as given. An unparsable filter list becomes `[]` with a warning (Mangayomi's default).
+  explicit list is sent as given. Any `getFilterList` failure becomes `[]` with a warning (Mangayomi's default).
 - **Preferences:** stored typed (`Text`, `Bool`, `TextSet`); a list preference stores its entry value (not the
   index); the declared default is stored on first read; `get` called from the provider's constructor evaluates
   `getSourcePreferences()` on an uninitialised instance (`extention` does not exist yet).
 - **Fixtures:** the conformance fixtures are Kotlin string constants, not `.js` resources, so the suite runs on
   iOS without resource loading.
+
+### Review fixes (I1 / I2)
+
+Code review of `:source-js` (four commits after `b019b0e402`: error protocol, Mangayomi parity, efficiency / API,
+CI and docs). Decisions taken without the maintainer, as asked.
+
+**Security: `quickjs-kt` class instantiation (residual risk, maintainer decision pending).** `quickjs-kt` 1.0.15
+turns a JS `Error` that reaches the JVM into `new <error.name>(error.message)` for any class
+(`js_error_to_java_error`, no `Throwable` check), so an extension could run a `(String)` constructor such as
+`java.io.FileOutputStream` (creates / truncates a file) or forge `CancellationException`s. The real fix is a
+patched `quickjs-kt`; it is **not** done here. Closed in Komikku's own code paths (defense in depth):
+
+- the evaluation never rejects with an extension's value: one entry (`__kmk_entry`) loads the extension and calls
+  the member inside `try` / `catch` and reports a string envelope through the bindings; the extension text is
+  compiled inside a function (after a standalone syntax check, so it cannot close the function early);
+  `Object.prototype` is made non-extensible (QuickJS resolves an evaluation's completion object, so an
+  inherited `then` / `value` accessor could otherwise reject it), and `Promise.prototype.constructor` / `then`
+  and `Promise[Symbol.species]` are locked (QuickJS rejects an async function's promise directly when an
+  `await` fails, bypassing its `catch`); the entry attaches its own rejection handler before any extension code
+  runs;
+- host bindings are captured in the prelude's closure and deleted from `globalThis`; every call passes strings
+  checked with `typeof`; bindings never throw into the engine (host failures are recorded under an id);
+- a `CancellationException` while the caller is still active is an error of the call; only the host's own limit
+  (`withTimeoutOrNull`) is a `Timeout`.
+
+**Not closable from JavaScript:** the native rejection tracker converts the reason of every rejection that has no
+handler *at the moment it happens* — a stray `Promise.reject(e)`, and also an `async` function that throws before
+its first `await` (its promise is already rejected when the caller gets it). An extension can therefore still
+trigger the class instantiation deliberately. `ErrorClassInjectionTest.unhandledRejectionsDoNotReachTheJvm` covers
+these cases and is `@Ignore`d; enable it once `quickjs-kt` is patched (it was run once with the annotation removed
+and fails today: the payload file is created, inside its temporary directory). The other tests of that class (error
+from sync members and after an `await`, at load, passed to every bridge function, raw binding lookup, patched
+intrinsics) pass.
+
+**Error protocol.** Classification by markers only: the `MProvider` defaults throw errors branded "not
+implemented" (defaults apply to those only, not to any message containing the words — deviation from Mangayomi's
+substring test); the stubs (`unpackJs`, `unpackJsAndCombine`, `parseDates`, XPath, extractors, HLS, EPUB) throw
+errors branded "unsupported" naming the feature, so a sync member hitting one is `Unsupported`, not a default;
+host failures carry their id. `SharedPreferences.get` without declared preferences fails with "Error when getting
+source preference …" (`BridgeError`, channel `pref_default`). Load failures (syntax error, top-level throw,
+constructor throw, no `DefaultExtension`) are `ScriptError`s "while loading the source"; a promise that never
+settles is a `ScriptError` instead of a hang until the timeout.
+
+**Out of memory.** QuickJS's own `InternalError: out of memory`, or the context still within 1/16 of its limit
+after the failure, is `OutOfMemory`. `throw null` / `throw undefined` / `Promise.reject()` are `ScriptError`s.
+Limitation: when QuickJS could only throw `null` and the memory was already released during unwinding (garbage in
+a frame that unwound), the failure is indistinguishable from `throw null` and reported as `ScriptError("null")`;
+`quickjs-kt` exposes no peak usage or allocation-failure counter.
+
+**Limits.** `quickjs-kt`'s `evaluationTimeoutMillis` is a deadline from the start of the evaluation that is only
+checked while JavaScript runs, i.e. still wall clock (a call that waited for the network would be interrupted at
+its next JS step), so there is no JS-time-only limit: the wall-clock call limit is now 180 s (the app's HTTP client
+allows 120 s per request). Response bodies are capped at 50 MiB (`JsHostLimits.maxResponseBodyBytes`, enforced
+while reading by `OkHttpHostHttp` and checked again by the bridge; a `BridgeError` the script can catch). A runtime
+created while the caller was cancelled is closed (it used to leak).
+
+**Mangayomi parity.** Source-supplied `Accept-Encoding` is dropped so OkHttp negotiates and decompresses; `getSrc`
+/ `getImg` / `getHref` / `getDataSrc` use `src="([^"]+)"` etc.; `getFilterList` turns every failure into `[]`;
+sync members of the wrong type (and promises, no longer awaited) fall back to their defaults with a warning;
+`setTimeout` waits end unrun when the call settles, callback errors are logged, `clearTimeout` added (Komikku
+extra); crypto helpers follow the Dart code (`deobfuscateJsPassword` paren / `+[]` rules with errors instead of
+Mangayomi's `RangeError` / endless loop on unbalanced input, no `Salted__` check, low-byte passphrases, Dart
+base64, replacement characters, stdlib hex); form bodies use `Uri.encodeQueryComponent`'s character set.
+
+**Efficiency and API.** The prelude is compiled once per process and each extension text once per SHA-256 (LRU of
+32, `BytecodeCache`); fresh contexts load the bytecode (fallback to the source text if loading fails). DOM
+`selectFirst` stops at the first descendant match and parsed CSS queries are cached per context; `this.source`
+is a fresh object from a JSON literal; HTML, response bodies and DOM strings cross the boundary raw. Measured with a
+throwaway benchmark (not committed; ~400 KB page, 1529 items, `getPopular` reading three values per item, JVM,
+average of 20 calls after 5 warm-ups): 72 ms → 61–65 ms per call; parsing alone (fetch + `new Document` + one
+lookup) 23 ms → 14–15 ms; an empty call 3 ms → 2 ms. The per-element bridge calls dominate what is left. API: one
+call surface (`JsExtensionHost.extension(source, code)` → `JsExtension`, plus `metadata()` → `JsSourceMetadata`
+read in one context for the adapter to cache); `EnginePolicy` removed — a pooling seam would have to reset the
+per-context bridge state, the frozen intrinsics and the one-shot entry, so it must be redesigned with I3 if
+pooling is ever wanted; dead surface removed (`HostHttpResponse.finalUrl` / `reasonPhrase`,
+`InMemoryKeyValueStore.snapshot()`, `HostLog.Level.DEBUG`, `-Xexpect-actual-classes`).
+
+**Tests and CI.** `ErrorProtocolTest`, `MangayomiParityTest`, `HostEfficiencyTest` (common),
+`ErrorClassInjectionTest` (desktop, temporary directory only), new cases in the engine, conformance and
+`OkHttpHostHttpTest` suites (gzip, body cap, an `EventListener` proving the OkHttp call is cancelled, directly and
+through an extension call). `:source-js:desktopTest` now runs in the PR workflow's `desktop` job and in
+`build_desktop.yml` (Linux). 87 tests, 1 skipped.
 
 **Real-extension smoke check** (local, not committed; offline `HostHttp` that always fails; files from the I0
 clones): 21 files (the 18 of the kodjodevf index incl. the two dead entries' copies, plus `batoto`, `baozimh`,

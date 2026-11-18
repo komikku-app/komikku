@@ -159,11 +159,16 @@ use the index `id`. `sourceCodeUrl` is built from the generator's fixed reposito
   A rejection or thrown error becomes an exception with the message
   `Extension "<source name>" failed while <call>: <JS error text>`.
 - **Sync members** (`getHeaders`, `supportsLatest`, `getFilterList`, `getSourcePreferences`): the host
-  evaluates `JSON.stringify(extention.<call>)` synchronously and decodes the string. If the JS throws an
-  error whose text contains `not implemented` and the host has a default, the default is used
-  (`{}`, `true`, `[]`, `[]`); any other error is reported. If the member returns a promise, the result
-  is `{}` (a promise stringifies to an empty object), so these members must be synchronous. (Komikku's host
-  awaits such a promise instead; no surveyed source returns one.)
+  evaluates `JSON.stringify(extention.<call>)` synchronously and decodes the string (`_extensionCall`). If the
+  JS throws an error whose text contains `not implemented` and the host has a default, the default is used
+  (`{}`, `true`, `[]`, `[]`); any other error is reported. If the decoded value has the **wrong type**
+  (`jsonDecode(…) as T` fails: `getHeaders` not an object, `supportsLatest` not a JSON boolean — a string
+  `"false"` included —, `getSourcePreferences` not an array, or `null` / `undefined`), the default is used too.
+  If the member returns a promise, the result is `{}` (a promise stringifies to an empty object), which is then
+  the default for every member except `getHeaders` (`{}` is its default anyway), so these members must be
+  synchronous. `getFilterList` additionally catches **every** error (including a parse failure) and gives `[]`.
+  Komikku does the same (with a warning in the log), except that "not implemented" is recognised by the base
+  class's own errors only (a marker, not the message text).
 - **JS → host** (bridge): see 4.1. Arguments always travel as one JSON string; results come back as
   native JS values (string, number, bool, null, array, object) or as a promise for async channels.
 
@@ -180,7 +185,7 @@ Signatures as the host calls them. "Page result" is `{ "list": [Manga…], "hasN
 | `getPageList(url)` | async | the chapter's `url` | array of page entries | The base class declares it without a parameter; the host passes the URL. |
 | `getHeaders(url)` | **sync** | always `source.baseUrl` | object of header name → value | Called at install and when loading covers/pages. |
 | `supportsLatest` | **sync getter** | — | bool | Read as a property, not called. Default `true`. |
-| `getFilterList()` | **sync** | — | filter array (5.1) | Default `[]`; parse errors also give `[]`. |
+| `getFilterList()` | **sync** | — | filter array (5.1) | Default `[]`; any error (thrown, unsupported, unparsable) also gives `[]`. |
 | `getSourcePreferences()` | **sync** | — | preference array (5.2) | Default `[]`. |
 | `getVideoList(url)` | async | episode URL | video list | Anime: out of scope. |
 | `getHtmlContent(name, url)`, `cleanHtmlContent(html)` | async | — | string | Novels: out of scope. |
@@ -275,7 +280,9 @@ response object. Network failures reject; **HTTP error statuses do not** (the re
 
 - `headers`: object; values stringified. Missing → none.
 - Body: a string is sent as text (UTF-8; `text/plain` content type unless set); an object is sent
-  form-URL-encoded; an array is sent as raw bytes. **If the request's `Content-Type` contains
+  form-URL-encoded (keys and values with Dart's `Uri.encodeQueryComponent`: UTF-8, `A-Z a-z 0-9 - . _ ~` kept,
+  space as `+`, everything else `%XX` in upper case — so `*` is encoded and `~` is not); an array is sent as raw
+  bytes. **If the request's `Content-Type` contains
   `application/json`, the body is always JSON-encoded first** — an object becomes JSON, and a string is
   encoded again as a JSON string literal (double encoding).
 - **Cookies:** responses' `Set-Cookie` headers are **not** stored (no cookie jar; `reqwest` is built
@@ -338,7 +345,7 @@ gives `[]`. Code such as `if (doc.selectFirst(x))` is therefore always true; sou
 |--------|---------|--------|
 | `text` | `get_element_string` `["text", key]` | DOM `textContent`: all descendant text concatenated, **not** whitespace-normalised, including `<script>`/`<style>` content |
 | `innerHtml`, `outerHtml`, `className`, `localName`, `namespaceUri` | same, with that type | string |
-| `getSrc`, `getImg`, `getHref`, `getDataSrc` (getters) | same | First match of the regex `src="…"`, `img="…"`, `href="…"`, `data-src="…"` in the element's **serialised outer HTML** (so it can come from a descendant, `getSrc` also matches inside `data-src="…"`, and the value is still HTML-escaped, e.g. `&amp;`); `""` if none |
+| `getSrc`, `getImg`, `getHref`, `getDataSrc` (getters) | same | First match of the regex `src="([^"]+)"`, `img="([^"]+)"`, `href="([^"]+)"`, `data-src="([^"]+)"` (`reg_exp_matcher.dart`) in the element's **serialised outer HTML** (so it can come from a descendant, `getSrc` also matches inside `data-src="…"`, empty values are skipped, a value may span lines, and the value is still HTML-escaped, e.g. `&amp;`); `""` if none |
 | `attr(name)` | `ele_attr` `[name, key]` | attribute value or `""` |
 | `hasAttr(name)` | `ele_has_attr` | **broken**: the wrapper sends `[undefined, name]`, so it always returns `false` |
 | `selectFirst(css)`, `select(css)` | `ele_selectFirst`, `ele_select` `[css, key]` | Element / array of Element, matched within the element (whether the element itself can match is **unverified**; Komikku matches descendants only, like DOM `querySelectorAll`) |
@@ -360,11 +367,11 @@ Surveyed sources use plain selectors, `+` combinators, `:contains` (6 uses) and 
 
 | Function | Sync | Channel and behaviour |
 |----------|------|-----------------------|
-| `cryptoHandler(text, iv, key, encrypt)` | sync | AES-CBC with PKCS#7 padding; key and IV are the **UTF-8 bytes** of the strings (key 16/24/32 bytes, IV 16). Encrypt: UTF-8 text → base64. Decrypt: base64 → UTF-8 text. **On any error returns `text` unchanged.** |
-| `encryptAESCryptoJS(plain, passphrase)` | sync | CryptoJS/OpenSSL passphrase format: random 8-byte salt, key (32 bytes) + IV (16 bytes) from MD5-based `EVP_BytesToKey` (one iteration) over trimmed passphrase + salt, AES-256-CBC PKCS#7, output base64 of `"Salted__" + salt + ciphertext`. Input trimmed. Errors throw. |
-| `decryptAESCryptoJS(b64, passphrase)` | sync | Inverse of the above (salt from bytes 8–16). Errors throw. |
-| `decryptAESGCM(b64, keyHex, ivHex, tagHex = "")` | sync | AES-GCM; `tagHex` is appended to the ciphertext when given (empty when the tag is already appended). Returns UTF-8 plaintext, **or the input on failure**. |
-| `deobfuscateJsPassword(s)` | sync | Decodes a JSFuck-style digit string: each `[...]` group becomes the count of `!+[]` in it (1–9; a lone `+[]` is 0; else `-`), each `(...)` group becomes `.`. |
+| `cryptoHandler(text, iv, key, encrypt)` | sync | AES-CBC with PKCS#7 padding; key and IV are the **UTF-8 bytes** of the strings (key 16/24/32 bytes, IV 16). Encrypt: UTF-8 text → base64. Decrypt: base64 (Dart's `base64.decode`: standard and URL-safe alphabets, padding required, no whitespace) → text decoded as UTF-8 with malformed sequences replaced by U+FFFD (`allowMalformed: true`). **On any error returns `text` unchanged.** |
+| `encryptAESCryptoJS(plain, passphrase)` | sync | CryptoJS/OpenSSL passphrase format: random 8-byte salt (bytes 1–245), key (32 bytes) + IV (16 bytes) from MD5-based `EVP_BytesToKey` (one iteration) over the trimmed passphrase + salt, AES-256-CBC PKCS#7, output base64 of `"Salted__" + salt + ciphertext`. The passphrase bytes are the **low byte of each UTF-16 code unit** (`createUint8ListFromString`), the plain text is trimmed and UTF-8 encoded. Errors throw. |
+| `decryptAESCryptoJS(b64, passphrase)` | sync | Inverse of the above: base64 of the trimmed input (as above), salt from bytes 8–16, ciphertext from byte 16 — the `"Salted__"` prefix is **not** checked; text decoded with replacement characters. Errors throw (input shorter than 16 bytes, bad padding, …). |
+| `decryptAESGCM(b64, keyHex, ivHex, tagHex = "")` | sync | AES-GCM; `tagHex` is appended to the ciphertext when given (empty when the tag is already appended). Hex as `package:convert` (either case, even length, nothing else), base64 as above. Returns the plaintext (replacement characters for malformed UTF-8), **or the input on failure**. |
+| `deobfuscateJsPassword(s)` | sync | Decodes a JSFuck-style digit string (`Deobfuscator`): characters outside brackets are skipped; each `[...]` group becomes the count of `!+[]` in it (1–9; with none, `0` when it contains exactly one `+[]`; else `-`); each `(...)` group becomes `.` and, when a `[...]` group follows it directly, that group is skipped. Unbalanced brackets throw a `RangeError` (or loop forever for an unbalanced group after `(...)`), as does a `(...)` group that ends the string; Komikku throws in all these cases. |
 | `unpackJs(packed)` | sync | Dean Edwards *p.a.c.k.e.r.* unpacker (Dart `js_packer` package); `""` on failure. |
 | `unpackJsAndCombine(script)` | sync | Regex-based unpacker: finds every `eval(function(p,a,c,k,e,…` payload, substitutes words from the symbol table (radix up to 36 numeric, 52/54/62/95 with fixed alphabets), joins all unpacked payloads with a space; `""` if none. |
 | `parseDates(values, dateFormat, locale)` | sync | See 4.7. Returns an array of millisecond strings. |
@@ -498,14 +505,18 @@ Declared values are defaults; the user's choice is stored per source and key and
   twice in one context. Such a declaration also fails ("redeclaration") when the prelude made the same name a
   non-configurable global (a global `function` or `var`); a host should install its helper functions as
   configurable `globalThis` properties so extensions may declare their own (several define `atob`-like helpers).
-- **Out of memory:** when QuickJS cannot even allocate the `InternalError`, the pending exception is `null`
-  (seen with `quickjs-kt` at a 16 MiB limit); a host should treat a bare `null` error as out-of-memory.
+- **Out of memory:** QuickJS throws `InternalError: out of memory`, or `null` when it cannot even allocate that
+  error (seen with `quickjs-kt` at a 16 MiB limit). A script can also throw `null` itself (`throw null`,
+  `Promise.reject()`), so a bare `null` is not evidence of out-of-memory; Komikku reports out-of-memory only for
+  QuickJS's own error or when the context is still at its limit after the failure (otherwise a script error).
 - **Strings:** values cross the bridge as JSON text, so any Unicode survives; lone surrogates do not
   (**unverified**). Response bodies are decoded before they reach JS (4.2); there is no binary body
   access from JS.
 - **Console:** see 4.5 (single argument).
 - **Timers and promise jobs:** the host drives the QuickJS job queue until the call's promise settles;
-  `setTimeout` callbacks run from the host's event loop.
+  `setTimeout` callbacks run from the host's event loop. Komikku ends timers still pending when the call
+  settles without running them, logs (instead of failing the call on) a callback's error, and adds
+  `clearTimeout`.
 
 ## 8. Mapping to Komikku (input for I3)
 

@@ -1,14 +1,17 @@
 package app.komikku.sourcejs.bridge
 
-import app.komikku.sourcejs.JsExtensionHost
 import app.komikku.sourcejs.JsSourceDescriptor
+import app.komikku.sourcejs.TestHost
+import app.komikku.sourcejs.provider
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
+import okhttp3.Call
+import okhttp3.EventListener
 import okhttp3.OkHttpClient
 import okio.Buffer
 import okio.GzipSink
@@ -122,13 +125,43 @@ class OkHttpHostHttpTest {
         assertEquals(1024, http.execute(request()).body.size)
     }
 
+    /** A client whose [EventListener] completes [canceled] when OkHttp cancels a call. */
+    private fun cancelTrackingClient(canceled: CompletableDeferred<Unit>) = OkHttpClient.Builder()
+        .eventListener(
+            object : EventListener() {
+                override fun canceled(call: Call) {
+                    canceled.complete(Unit)
+                }
+            },
+        )
+        .build()
+
     @Test
     fun cancellationCancelsTheCall() = runBlocking(Dispatchers.Default) {
+        val canceled = CompletableDeferred<Unit>()
+        val http = OkHttpHostHttp(cancelTrackingClient(canceled))
         server.enqueue(MockResponse.Builder().headersDelay(10, TimeUnit.SECONDS).body("late").build())
         val call = async { http.execute(HostHttpRequest("GET", server.url("/slow").toString(), emptyList(), null)) }
-        delay(200)
+        // The request reached the server, so the OkHttp call is in flight.
+        assertEquals("/slow", server.takeRequest(5, TimeUnit.SECONDS)?.target)
         call.cancel()
+        withTimeout(2_000) { canceled.await() }
         withTimeout(2_000) { call.join() }
+        assertTrue(call.isCancelled)
+    }
+
+    @Test
+    fun cancellingAnExtensionCallCancelsItsRequest() = runBlocking(Dispatchers.Default) {
+        val canceled = CompletableDeferred<Unit>()
+        server.enqueue(MockResponse.Builder().headersDelay(10, TimeUnit.SECONDS).body("late").build())
+        val extension = TestHost(http = OkHttpHostHttp(cancelTrackingClient(canceled))).extension(
+            provider("""async getPopular(page) { await new Client().get(${'"'}${server.url("/slow")}${'"'}); }"""),
+        )
+        val call = async { extension.getPopular(1) }
+        assertEquals("/slow", server.takeRequest(5, TimeUnit.SECONDS)?.target)
+        call.cancel()
+        withTimeout(5_000) { canceled.await() }
+        withTimeout(5_000) { call.join() }
         assertTrue(call.isCancelled)
     }
 
@@ -139,17 +172,16 @@ class OkHttpHostHttpTest {
                 .body("""{"results":[{"title":"Ünïcode","id":"42"}],"more":true}""").build(),
         )
         val source = JsSourceDescriptor(id = 1, name = "Mock", baseUrl = server.url("").toString().trimEnd('/'))
-        val host = JsExtensionHost(JsHostServices(http, KeyValueHostPreferences.provider(InMemoryKeyValueStore())))
-        val code = """
-            class DefaultExtension extends MProvider {
-              async getPopular(page) {
-                const res = await new Client().get(this.source.baseUrl + "/popular?page=" + page, { "Accept": "application/json" });
-                const data = JSON.parse(res.body);
-                return { list: data.results.map((m) => ({ name: m.title, link: "/m/" + m.id })), hasNextPage: data.more && res.statusCode == 200 };
-              }
+        val code = provider(
+            """
+            async getPopular(page) {
+              const res = await new Client().get(this.source.baseUrl + "/popular?page=" + page, { "Accept": "application/json" });
+              const data = JSON.parse(res.body);
+              return { list: data.results.map((m) => ({ name: m.title, link: "/m/" + m.id })), hasNextPage: data.more && res.statusCode == 200 };
             }
-        """
-        val page = host.extension(source, code).getPopular(3)
+            """,
+        )
+        val page = TestHost(http = http).extension(code, source).getPopular(3)
         assertEquals(listOf("Ünïcode" to "/m/42"), page.list.map { it.name to it.link })
         assertTrue(page.hasNextPage)
         val recorded = server.takeRequest()
