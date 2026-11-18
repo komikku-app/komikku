@@ -463,6 +463,16 @@ desktop and Android. **Milestone I-B (after I6):** the same on an iPhone.
    `app.cash.quickjs.QuickJs` compat class, or keep JavaScript sources off Android for now.
    **Decided 2026-11-17: switch** — Android uses `quickjs-kt` for Mihon extensions and for JavaScript
    sources (step I2b).
+   **Known risk, accepted 2026-11-18:** the I1/I2 review confirmed (runtime proof) that quickjs-kt
+   1.0.15 — unchanged in 1.0.18 — turns a JavaScript `Error` reaching the JVM into
+   `NewObject(FindClass(error.name), (String) constructor)` without a `Throwable` check, so script code
+   can construct arbitrary classes (e.g. `java.io.FileOutputStream(path)` creates or truncates a file).
+   `:source-js` closes the paths through its own code (errors cross as strings, raw bindings hidden),
+   but an unhandled promise rejection is converted natively and cannot be blocked from JavaScript; the
+   `app.cash.quickjs.QuickJs` API used by Mihon extensions keeps exact script semantics, so website
+   JavaScript that an extension evaluates keeps that exposure. Told this, the maintainer chose to switch
+   anyway. The fix is a one-line native change in quickjs-kt (`IsAssignableFrom(cls, Throwable)` in
+   `js_error_to_java_error`); a disabled regression test marks the residual path.
 
 ### 8.8 Later options (not planned)
 
