@@ -62,9 +62,24 @@ class TrackerOrderScreen : Screen() {
                 val fromIndex = from.index
                 val toIndex = to.index
                 if (fromIndex in trackers.indices && toIndex in trackers.indices) {
-                    val tracker = trackers.removeAt(fromIndex)
-                    trackers.add(toIndex, tracker)
-                    trackerManager.moveTracker(tracker.id, toIndex)
+                    // The indices refer to the order shown here, so capture ids before replacing
+                    // it with the latest saved order.
+                    val movedTrackerId = trackers[fromIndex].id
+                    val anchorTrackerId = trackers[toIndex].id
+
+                    // Another open screen may have changed the saved order since this screen was
+                    // opened. Resynchronize first so the editor, saved order and title sheet agree.
+                    val savedOrder = trackerManager.orderedTrackers()
+                    trackers.clear()
+                    trackers.addAll(savedOrder)
+
+                    val savedToIndex = savedOrder.indexOfFirst { it.id == anchorTrackerId }
+                    if (savedToIndex != -1) {
+                        trackerManager.moveTracker(movedTrackerId, savedToIndex)?.let { updated ->
+                            trackers.clear()
+                            trackers.addAll(updated)
+                        }
+                    }
                 }
             }
 
