@@ -95,7 +95,9 @@ object SettingsTrackingScreen : SearchableSettings {
         val trackPreferences = remember { Injekt.get<TrackPreferences>() }
         val trackerManager = remember { Injekt.get<TrackerManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
+        // KMK -->
         val navigator = LocalNavigator.current
+        // KMK <--
 
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
