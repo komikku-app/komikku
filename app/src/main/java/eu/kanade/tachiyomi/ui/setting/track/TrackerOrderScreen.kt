@@ -1,3 +1,4 @@
+// KMK -->
 package eu.kanade.tachiyomi.ui.setting.track
 
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,6 @@ import tachiyomi.presentation.core.util.plus
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-// KMK -->
 /**
  * Lets the user choose the order trackers appear in when adding tracking to a title.
  */
@@ -59,9 +59,13 @@ class TrackerOrderScreen : Screen() {
         ) { contentPadding ->
             val listPadding = contentPadding + topSmallPaddingValues
             val reorderableState = rememberReorderableLazyListState(lazyListState, listPadding) { from, to ->
-                val item = trackers.removeAt(from.index)
-                trackers.add(to.index, item)
-                trackerManager.saveTrackerOrder(trackers)
+                val fromIndex = from.index
+                val toIndex = to.index
+                if (fromIndex in trackers.indices && toIndex in trackers.indices) {
+                    val tracker = trackers.removeAt(fromIndex)
+                    trackers.add(toIndex, tracker)
+                    trackerManager.moveTracker(tracker.id, toIndex)
+                }
             }
 
             LazyColumn(

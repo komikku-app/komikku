@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.data.track
 
-import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.domain.track.service.TrackPreferences // KMK --> // KMK <--
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kavita.Kavita
@@ -12,12 +12,13 @@ import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.suwayomi.Suwayomi
 import kotlinx.coroutines.flow.combine
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.injectLazy // KMK --> // KMK <--
 
 class TrackerManager {
 
     // KMK -->
     private val trackPreferences: TrackPreferences by injectLazy()
+    private val trackerOrderLock = Any()
     // KMK <--
 
     companion object {
@@ -70,8 +71,21 @@ class TrackerManager {
         return ordered + trackers.filterNot { it.id in orderedIds }
     }
 
-    fun saveTrackerOrder(order: List<Tracker>) {
-        trackPreferences.trackerOrder().set(order.joinToString(",") { it.id.toString() })
+    /**
+     * Moves a single tracker in the persisted order.
+     * Always starts from the latest stored order so simultaneous reorder screens cannot
+     * overwrite each other's changes with stale full-list snapshots.
+     */
+    fun moveTracker(movedTrackerId: Long, toIndex: Int) {
+        synchronized(trackerOrderLock) {
+            val current = orderedTrackers().toMutableList()
+            val fromIndex = current.indexOfFirst { it.id == movedTrackerId }
+            if (fromIndex != -1 && toIndex in current.indices) {
+                val tracker = current.removeAt(fromIndex)
+                current.add(toIndex, tracker)
+                trackPreferences.trackerOrder().set(current.joinToString(",") { it.id.toString() })
+            }
+        }
     }
     // KMK <--
 }
