@@ -325,6 +325,13 @@ class SyncManager(
             return true
         }
 
+        // KMK -->
+        // The merge can take the library state from the other side without changing the version
+        if (localManga.favorite != remoteManga.favorite) {
+            return true
+        }
+        // KMK <--
+
         if (localCategories.toSet() != remoteManga.categories.toSet()) {
             return true
         }
@@ -419,6 +426,12 @@ class SyncManager(
                 if (localManga.favorite != nonFavorite.favorite) {
                     val updatedManga = localManga.copy(favorite = nonFavorite.favorite)
                     mangaRestorer.updateManga(updatedManga)
+                    // KMK -->
+                    // Keep the synced time of the library change rather than the one the trigger stamps
+                    nonFavorite.favoriteModifiedAt?.let {
+                        handler.await { mangasQueries.setFavoriteModifiedAt(it, localManga.id) }
+                    }
+                    // KMK <--
                 }
             }
         }

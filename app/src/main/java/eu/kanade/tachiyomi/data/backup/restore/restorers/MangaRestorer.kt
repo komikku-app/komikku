@@ -93,6 +93,14 @@ class MangaRestorer(
                 restoreExistingManga(manga, dbManga)
             }
 
+            // KMK -->
+            // Applying the synced library state fires the favorite trigger, which stamps this device's time on it.
+            // Keep the synced time, so the next sync doesn't take this copy as the latest library change.
+            if (isSync) {
+                manga.favoriteModifiedAt?.let { mangasQueries.setFavoriteModifiedAt(it, restoredManga.id) }
+            }
+            // KMK <--
+
             restoreMangaDetails(
                 manga = restoredManga,
                 chapters = backupManga.chapters,
