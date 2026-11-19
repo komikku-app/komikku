@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap // KMK --> // KMK <--
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 // KMK -->
-class Comick(id: Long) : BaseTracker(id, "Comick"), DeletableTracker {
+class Comick(id: Long) : BaseTracker(id, "ComicK"), DeletableTracker {
     private val json: Json by injectLazy()
     private val interceptorDelegate = lazy { ComickInterceptor(this) }
     private val interceptor by interceptorDelegate
