@@ -72,19 +72,19 @@ class TrackerManager {
     }
 
     /**
-     * Moves a single tracker in the persisted order.
+     * Moves a single tracker in the persisted order and returns the order that was saved.
      * Always starts from the latest stored order so simultaneous reorder screens cannot
      * overwrite each other's changes with stale full-list snapshots.
      */
-    fun moveTracker(movedTrackerId: Long, toIndex: Int) {
-        synchronized(trackerOrderLock) {
-            val current = orderedTrackers().toMutableList()
-            val fromIndex = current.indexOfFirst { it.id == movedTrackerId }
-            if (fromIndex != -1 && toIndex in current.indices) {
-                val tracker = current.removeAt(fromIndex)
-                current.add(toIndex, tracker)
-                trackPreferences.trackerOrder().set(current.joinToString(",") { it.id.toString() })
-            }
+    fun moveTracker(movedTrackerId: Long, toIndex: Int): List<Tracker>? = synchronized(trackerOrderLock) {
+        val current = orderedTrackers().toMutableList()
+        val fromIndex = current.indexOfFirst { it.id == movedTrackerId }
+        if (fromIndex == -1 || toIndex !in current.indices) {
+            null
+        } else {
+            current.add(toIndex, current.removeAt(fromIndex))
+            trackPreferences.trackerOrder().set(current.joinToString(",") { it.id.toString() })
+            current
         }
     }
     // KMK <--
