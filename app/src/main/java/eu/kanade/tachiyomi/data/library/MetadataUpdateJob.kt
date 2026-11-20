@@ -29,6 +29,7 @@ import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -50,6 +51,7 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
     // KMK -->
     private val mangaBakaCoverUpdater = MangaBakaCoverUpdater()
     private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    private val libraryPreferences: LibraryPreferences = Injekt.get()
     // KMK <--
 
     private val notifier = LibraryUpdateNotifier(context)
@@ -62,11 +64,15 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
         addMangaToQueue()
 
         return withIOContext {
+            // KMK -->
+            val mangaBakaMode = inputData.getString(KEY_MANGABAKA_MODE)
+            // Show the in-app progress banner while MangaBaka covers are checked or restored, as a library update
+            // does. Not for a plain metadata refresh with the feature off, which stays as it was.
+            val showBanner = mangaBakaMode != null || libraryPreferences.mangaBakaCovers().get()
+            // KMK <--
             try {
                 // KMK -->
-                // Show the in-app progress banner, as a library update does.
-                libraryUpdateStatus.start()
-                val mangaBakaMode = inputData.getString(KEY_MANGABAKA_MODE)
+                if (showBanner) libraryUpdateStatus.start()
                 val showProgress: suspend (Manga, Int, Int) -> Unit = { manga, done, total ->
                     notifier.showProgressNotification(listOf(manga), done, total)
                 }
@@ -96,7 +102,7 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
             } finally {
                 notifier.cancelProgressNotification()
                 // KMK -->
-                libraryUpdateStatus.stop()
+                if (showBanner) libraryUpdateStatus.stop()
                 // KMK <--
             }
         }

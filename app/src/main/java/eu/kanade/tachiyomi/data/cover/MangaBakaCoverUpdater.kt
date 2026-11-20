@@ -78,7 +78,6 @@ class MangaBakaCoverUpdater(
         trackerManager.mangaUpdates.id to "manga-updates",
     )
     private val json = Json { ignoreUnknownKeys = true }
-    private var lastApiCall = 0L
 
     /**
      * Updates covers for every title in the list, one at a time to stay inside MangaBaka's rate limit.
@@ -166,8 +165,8 @@ class MangaBakaCoverUpdater(
                 onProgress(manga, done, mangaList.size)
             }
             val coverFile = coverCache.getCustomCoverFile(manga.id)
-            val markerFile = File(coverFile.parentFile, coverFile.name + ".mb")
-            val marker = readMarker(markerFile) ?: return@forEachIndexed
+            val markerFile = mangaBakaMarkerFile(coverFile)
+            val marker = readMangaBakaMarker(markerFile) ?: return@forEachIndexed
             if (coverFile.exists() && marker.owns(coverFile.lastModified())) {
                 coverCache.deleteCustomCover(manga.id)
                 updateManga.awaitUpdateCoverLastModified(manga.id)
@@ -226,8 +225,8 @@ class MangaBakaCoverUpdater(
     private suspend fun updateInternal(manga: Manga, force: Boolean): Outcome {
         val language = libraryPreferences.mangaBakaCoverLanguage().get()
         val coverFile = coverCache.getCustomCoverFile(manga.id)
-        val markerFile = File(coverFile.parentFile, coverFile.name + ".mb")
-        val marker = readMarker(markerFile)
+        val markerFile = mangaBakaMarkerFile(coverFile)
+        val marker = readMangaBakaMarker(markerFile)
 
         // A custom cover we did not write (or that was changed since) belongs to the user.
         if (coverFile.exists() && marker?.owns(coverFile.lastModified()) != true) return Outcome.UserCover
@@ -328,7 +327,8 @@ class MangaBakaCoverUpdater(
         fetch(url)?.let { json.parseToJsonElement(it.decodeToString()).jsonObject }
 
     /**
-     * Downloads [url]. API calls are spaced so a whole-library pass stays under 180 requests per minute.
+     * Downloads [url]. API calls are spaced so a whole-library pass stays under 180 requests per minute,
+     * across every updater (library update, cover refresh, title screen), as they can overlap.
      * Rate limits (HTTP 429, waiting as long as the server asks), server errors (5xx) and network errors
      * are retried up to [MAX_ATTEMPTS] times with growing waits, so a busy moment does not skip a title.
      * Returns null for HTTP 404 and throws for any other failure.
@@ -338,8 +338,10 @@ class MangaBakaCoverUpdater(
         while (true) {
             if (url.startsWith(API)) {
                 // Image downloads come from the CDN and are not rate limited.
-                delay(REQUEST_SPACING_MS - (now() - lastApiCall))
-                lastApiCall = now()
+                apiSpacing.withLock {
+                    delay(REQUEST_SPACING_MS - (now() - lastApiCall))
+                    lastApiCall = now()
+                }
             }
             val wait = try {
                 client.newCall(Request.Builder().url(url).build()).await().use { response ->
@@ -366,14 +368,15 @@ class MangaBakaCoverUpdater(
 
     private fun now() = System.currentTimeMillis()
 
-    private fun readMarker(file: File): MangaBakaMarker? =
-        runCatching { MangaBakaMarker.parse(file.readText()) }.getOrNull()
-
     private fun writeMarker(file: File, marker: MangaBakaMarker) = file.writeText(marker.serialize())
 
     private companion object {
         /** One pass at a time: a library update, the refresh button or a language change. */
         val passLock = Mutex()
+
+        /** Spaces API calls across every instance; [lastApiCall] is only read and written under it. */
+        val apiSpacing = Mutex()
+        var lastApiCall = 0L
 
         const val API = "https://api.mangabaka.org"
 
@@ -389,6 +392,28 @@ class MangaBakaCoverUpdater(
         const val REQUEST_SPACING_MS = 350L
         const val PROGRESS_INTERVAL_MS = 500L
         const val NOTIFICATION_ID = -110
+    }
+}
+
+/** The marker file next to a custom cover, recording what [MangaBakaCoverUpdater] wrote there. */
+internal fun mangaBakaMarkerFile(coverFile: File) = File(coverFile.parentFile, coverFile.name + ".mb")
+
+internal fun readMangaBakaMarker(file: File): MangaBakaMarker? =
+    runCatching { MangaBakaMarker.parse(file.readText()) }.getOrNull()
+
+/**
+ * After a custom cover was copied from one entry to another (migration), carries MangaBaka's claim on it over too.
+ * Without this the copy would count as the user's own cover, and MangaBaka would never update or restore it.
+ */
+fun copyMangaBakaCoverMarker(fromMangaId: Long, toMangaId: Long, coverCache: CoverCache = Injekt.get()) {
+    val fromCover = coverCache.getCustomCoverFile(fromMangaId)
+    val toCover = coverCache.getCustomCoverFile(toMangaId)
+    val marker = readMangaBakaMarker(mangaBakaMarkerFile(fromCover)) ?: return
+    // Only a finished cover that MangaBaka still owns; anything else is left as the user's own.
+    if (marker.coverModified == MangaBakaMarker.WRITING || !marker.owns(fromCover.lastModified())) return
+    if (!toCover.exists()) return
+    runCatching {
+        mangaBakaMarkerFile(toCover).writeText(marker.copy(coverModified = toCover.lastModified()).serialize())
     }
 }
 
