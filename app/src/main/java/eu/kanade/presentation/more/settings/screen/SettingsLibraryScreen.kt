@@ -19,6 +19,7 @@ import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.library.MetadataUpdateJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
 import kotlinx.collections.immutable.persistentListOf
@@ -47,6 +48,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Locale
 
 object SettingsLibraryScreen : SearchableSettings {
     @Suppress("unused")
@@ -214,6 +216,33 @@ object SettingsLibraryScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_library_update_refresh_metadata),
                     subtitle = stringResource(MR.strings.pref_library_update_refresh_metadata_summary),
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.mangaBakaCovers(),
+                    title = stringResource(KMR.strings.pref_mangabaka_covers),
+                    subtitle = stringResource(KMR.strings.pref_mangabaka_covers_summary),
+                    onValueChanged = { enabled ->
+                        // On: fetch MangaBaka covers now. Off: put the sources' covers back.
+                        libraryPreferences.mangaBakaCovers().set(enabled)
+                        MetadataUpdateJob.startMangaBakaCovers(context, restore = !enabled)
+                        true
+                    },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = libraryPreferences.mangaBakaCoverLanguage(),
+                    // MangaBaka's language codes, named in the device language. "es-la" is Latin American Spanish.
+                    entries = "ja en ko zh zh-Hant fr de es es-la it pt pt-br ru pl nl uk he id th".split(' ')
+                        .associateWith { Locale.forLanguageTag(it.replace("es-la", "es-419")).displayName }
+                        .toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_mangabaka_cover_language),
+                    onValueChanged = { language ->
+                        // Save first so the refresh started below already reads the new language.
+                        libraryPreferences.mangaBakaCoverLanguage().set(language)
+                        if (libraryPreferences.mangaBakaCovers().get()) MetadataUpdateJob.startMangaBakaCovers(context)
+                        true
+                    },
+                ),
+                // KMK <--
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = libraryPreferences.autoUpdateMangaRestrictions(),
                     entries = persistentMapOf(

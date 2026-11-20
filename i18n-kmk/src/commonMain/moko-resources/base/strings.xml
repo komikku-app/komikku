@@ -240,4 +240,17 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <string name="pref_mangabaka_covers">Use MangaBaka covers</string>
+    <string name="pref_mangabaka_covers_summary">Use the latest volume cover from MangaBaka for tracked titles. Cover data from mangabaka.org (CC BY-NC-SA 4.0)</string>
+    <string name="pref_mangabaka_cover_language">MangaBaka cover language</string>
+    <string name="mangabaka_cover_updated">MangaBaka cover updated to volume %1$s</string>
+    <string name="mangabaka_cover_unchanged">MangaBaka cover is already the latest volume</string>
+    <string name="mangabaka_cover_none">No MangaBaka covers in this language, so the source cover is shown</string>
+    <string name="mangabaka_cover_not_tracked">MangaBaka covers need AniList, MyAnimeList, Kitsu or MangaUpdates tracking</string>
+    <string name="mangabaka_cover_user">Your own cover was kept</string>
+    <string name="mangabaka_cover_failed">MangaBaka cover failed: %1$s</string>
+    <string name="mangabaka_covers_result_title">MangaBaka covers checked</string>
+    <string name="mangabaka_covers_result">Updated: %1$d\nAlready latest: %2$d\nSource cover (none in this language): %3$d\nNot tracked: %4$d\nYour own cover kept: %5$d\nFailed: %6$d</string>
+    <string name="mangabaka_covers_restored_title">MangaBaka covers turned off</string>
+    <string name="mangabaka_covers_restored">Source covers restored: %1$d</string>
 </resources>
