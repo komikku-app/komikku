@@ -60,7 +60,7 @@
     <string name="action_confirm_color">色を確認</string>
     <string name="pref_custom_color">パレットのカスタマイズ</string>
     <string name="theme_custom">カスタムテーマ</string>
-    <string name="extensions_page_need_refresh">リストを更新するにはエクステンションページを更新してください。</string>
+    <string name="extensions_page_need_refresh">拡張機能ページを更新してリストを反映してください。</string>
     <string name="extensions_page_more">その他の拡張機能...</string>
     <string name="pref_expand_related_mangas">提案を展開</string>
     <string name="pref_expand_related_mangas_summary">この機能をオフにすると、「提案」は自動的に読み込まれず、展開された状態でも表示されません</string>
@@ -210,4 +210,6 @@
     <string name="pref_discord_configuration">Discord RPC の設定を開く</string>
     <string name="action_filter_unfinished_chapter">読み終わっていない章</string>
     <string name="action_filter_non_library_entries">ライブラリにない項目</string>
+    <string name="ext_update_signature_mismatch">%1$s は更新されませんでした。新しいバージョンの拡張機能は、インストール済みの拡張機能とは異なるキーで署名されています</string>
+    <string name="ext_store_signing_key_changed">拡張機能リポジトリ %1$s は現在 %2$s を指していますが、こちらは別のキーで署名されているため、更新されていません。新しいリポジトリを信頼する場合は、%1$s を削除して再度追加してください。</string>
 </resources>
