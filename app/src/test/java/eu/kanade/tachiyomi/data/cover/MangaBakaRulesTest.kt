@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class MangaBakaRulesTest {
 
@@ -87,5 +89,26 @@ class MangaBakaRulesTest {
         assertTrue(written.isCover(1, "5", "ja"))
         assertFalse(writing.isCover(1, "5", "ja")) // and never counts as the finished cover
         assertFalse(written.isCover(1, "5", "en"))
+    }
+
+    @Test
+    fun onlyMangaBakaHosts() {
+        assertTrue(MangaBakaRules.isMangaBakaHost("api.mangabaka.org"))
+        assertTrue(MangaBakaRules.isMangaBakaHost("cdn.mangabaka.dev"))
+        assertTrue(MangaBakaRules.isMangaBakaHost("mangabaka.dev"))
+        assertFalse(MangaBakaRules.isMangaBakaHost("evilmangabaka.dev"))
+        assertFalse(MangaBakaRules.isMangaBakaHost("mangabaka.dev.example.com"))
+        assertFalse(MangaBakaRules.isMangaBakaHost("192.168.1.1"))
+    }
+
+    @Test
+    fun retryAfterInSecondsOrAsDate() {
+        assertEquals(30_000L, MangaBakaRules.retryAfterMs("30", 0L))
+        val now = ZonedDateTime.parse("Wed, 21 Oct 2026 07:28:00 GMT", DateTimeFormatter.RFC_1123_DATE_TIME)
+            .toInstant().toEpochMilli()
+        assertEquals(90_000L, MangaBakaRules.retryAfterMs("Wed, 21 Oct 2026 07:29:30 GMT", now))
+        assertEquals(0L, MangaBakaRules.retryAfterMs("Wed, 21 Oct 2026 07:27:00 GMT", now))
+        assertNull(MangaBakaRules.retryAfterMs("soon", now))
+        assertNull(MangaBakaRules.retryAfterMs(null, now))
     }
 }

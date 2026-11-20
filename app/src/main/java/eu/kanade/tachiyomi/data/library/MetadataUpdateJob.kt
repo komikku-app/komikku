@@ -226,16 +226,24 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
         /**
          * Re-checks every MangaBaka cover without refreshing the sources' covers (after the feature is
          * turned on or the cover language changes), or with [restore] puts the sources' covers back
-         * (after it is turned off). Replaces a refresh already running, so the latest setting wins.
+         * (after it is turned off). Replaces a cover-only job already running, so the latest setting wins,
+         * but queues after a full "Refresh library covers" rather than cancelling it.
          */
         fun startMangaBakaCovers(context: Context, restore: Boolean = false) {
+            val wm = context.workManager
             val request = OneTimeWorkRequestBuilder<MetadataUpdateJob>()
                 .addTag(TAG)
                 .addTag(WORK_NAME_MANUAL)
+                .addTag(TAG_MANGABAKA)
                 .setInputData(workDataOf(KEY_MANGABAKA_MODE to if (restore) MODE_RESTORE else MODE_CHECK))
                 .build()
-            context.workManager.enqueueUniqueWork(WORK_NAME_MANUAL, ExistingWorkPolicy.REPLACE, request)
+            val refreshRunning = wm.getWorkInfosForUniqueWork(WORK_NAME_MANUAL).get()
+                .any { !it.state.isFinished && TAG_MANGABAKA !in it.tags }
+            val policy = if (refreshRunning) ExistingWorkPolicy.APPEND_OR_REPLACE else ExistingWorkPolicy.REPLACE
+            wm.enqueueUniqueWork(WORK_NAME_MANUAL, policy, request)
         }
+
+        private const val TAG_MANGABAKA = "MangaBakaCovers"
 
         private const val KEY_MANGABAKA_MODE = "mangabaka_mode"
         private const val MODE_CHECK = "check"

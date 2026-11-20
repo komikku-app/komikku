@@ -30,7 +30,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
+import okhttp3.ResponseBody
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -46,6 +48,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import java.io.IOException
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.math.floor
 
 /**
@@ -68,7 +72,10 @@ class MangaBakaCoverUpdater(
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get(),
 ) {
 
-    private val client get() = networkHelper.client
+    /** Does not follow redirects, so a request cannot be sent on to a host other than MangaBaka's. */
+    private val client by lazy {
+        networkHelper.client.newBuilder().followRedirects(false).followSslRedirects(false).build()
+    }
 
     /** Tracker ID to MangaBaka source name, in order of preference. */
     private val sources = listOf(
@@ -168,7 +175,8 @@ class MangaBakaCoverUpdater(
             val markerFile = mangaBakaMarkerFile(coverFile)
             val marker = readMangaBakaMarker(markerFile) ?: return@forEachIndexed
             if (coverFile.exists() && marker.owns(coverFile.lastModified())) {
-                coverCache.deleteCustomCover(manga.id)
+                // Keep the marker if the cover cannot be deleted, so a later pass can still restore it.
+                if (!coverCache.deleteCustomCover(manga.id)) return@forEachIndexed
                 updateManga.awaitUpdateCoverLastModified(manga.id)
                 restored++
             }
@@ -229,14 +237,45 @@ class MangaBakaCoverUpdater(
         val marker = readMangaBakaMarker(markerFile)
 
         // A custom cover we did not write (or that was changed since) belongs to the user.
-        if (coverFile.exists() && marker?.owns(coverFile.lastModified()) != true) return Outcome.UserCover
+        if (!ownsCover(coverFile, marker)) return Outcome.UserCover
         // Checked recently in this language (also covers titles MangaBaka has nothing for).
         val recheck = if (manga.status == SManga.COMPLETED.toLong()) RECHECK_COMPLETED_MS else RECHECK_MS
         val lastCheck = marker?.takeIf { it.language == language }?.checkedAt
         if (!force && lastCheck != null && now() - lastCheck < recheck) return Outcome.CheckedRecently
 
-        val tracks = getTracks.await(manga.id)
-        val links = sources.mapNotNull { (trackerId, source) ->
+        val links = trackerLinks(manga.id)
+        if (links.isEmpty()) {
+            // No longer tracked (or never was): show the source's cover, and forget the title.
+            showSourceCover(manga, coverFile)
+            markerFile.delete()
+            return Outcome.NotTracked
+        }
+
+        val found = findLatestCover(marker, links, language)
+        // The lookup took a while: the feature may have been turned off, or the user set a cover, meanwhile.
+        if (!libraryPreferences.mangaBakaCovers().get()) return Outcome.Skipped
+        val current = readMangaBakaMarker(markerFile)
+        if (!ownsCover(coverFile, current)) return Outcome.UserCover
+
+        if (found == null) {
+            // No covers in this language: go back to the source's cover, and remember the miss so it is
+            // not looked up again on every update.
+            showSourceCover(manga, coverFile)
+            writeMangaBakaMarker(markerFile, MangaBakaMarker(0, "", now(), 0, language, ""))
+            return Outcome.NoCovers
+        }
+        // The cover on disk is already this volume in this language.
+        if (coverFile.exists() && current != null && current.isCover(found.seriesId, found.cover.label, language)) {
+            writeMangaBakaMarker(markerFile, current.copy(checkedAt = now(), link = found.link))
+            return Outcome.Unchanged
+        }
+        return writeCover(manga, coverFile, markerFile, found, language)
+    }
+
+    /** MangaBaka source links ("anilist/30642") for the title's supported trackers, in order of preference. */
+    private suspend fun trackerLinks(mangaId: Long): List<String> {
+        val tracks = getTracks.await(mangaId)
+        return sources.mapNotNull { (trackerId, source) ->
             val remoteId = tracks.firstOrNull { it.trackerId == trackerId }?.remoteId?.takeIf { it > 0 }
                 ?: return@mapNotNull null
             // MangaBaka identifies MangaUpdates series by the 7-character base-36 form of the numeric ID.
@@ -247,48 +286,62 @@ class MangaBakaCoverUpdater(
             }
             "$source/$id"
         }
-        if (links.isEmpty()) return Outcome.NotTracked
+    }
 
+    /** The latest volume cover in [language] of the series behind [links], or null if there is none. */
+    private suspend fun findLatestCover(marker: MangaBakaMarker?, links: List<String>, language: String): FoundCover? {
         // Reuse the series found last time while that tracker link is unchanged, saving a lookup. If it has
         // no cover now (it may have been merged into another series), look the series up again.
-        var series = marker?.takeIf { it.seriesId > 0 && it.link in links }?.let { it.seriesId to it.link }
-        var latest = series?.let { latestVolumeCover(it.first, language) }
-        if (latest == null) {
-            // Try each linked tracker in order until MangaBaka knows the series.
-            series = links.firstNotNullOfOrNull { link -> resolveSeriesId(link)?.let { it to link } }
-            latest = series?.let { latestVolumeCover(it.first, language) }
+        marker?.takeIf { it.seriesId > 0 && it.link in links }?.let { known ->
+            latestVolumeCover(known.seriesId, language)?.let { return FoundCover(known.link, known.seriesId, it) }
         }
-        if (series == null || latest == null) {
-            // No covers in this language: go back to the source's cover, and remember the miss so it is
-            // not looked up again on every update.
-            if (coverFile.exists()) {
-                coverCache.deleteCustomCover(manga.id)
-                updateManga.awaitUpdateCoverLastModified(manga.id)
-            }
-            writeMarker(markerFile, MangaBakaMarker(0, "", now(), 0, language, ""))
-            return Outcome.NoCovers
-        }
-        val (seriesId, link) = series
-        val (index, imageUrl) = latest
+        // Try each linked tracker in order until MangaBaka knows the series.
+        val (link, seriesId) = links.firstNotNullOfOrNull { link -> resolveSeriesId(link)?.let { link to it } }
+            ?: return null
+        return latestVolumeCover(seriesId, language)?.let { FoundCover(link, seriesId, it) }
+    }
 
-        // The cover on disk is already this volume in this language.
-        if (coverFile.exists() && marker != null && marker.isCover(seriesId, index, language)) {
-            writeMarker(markerFile, marker.copy(checkedAt = now(), link = link))
-            return Outcome.Unchanged
-        }
-
-        val bytes = fetch(imageUrl) ?: throw HttpException(HTTP_NOT_FOUND)
+    private suspend fun writeCover(
+        manga: Manga,
+        coverFile: File,
+        markerFile: File,
+        found: FoundCover,
+        language: String,
+    ): Outcome {
+        val bytes = fetch(found.cover.url) ?: throw HttpException(HTTP_NOT_FOUND)
         // Only accept an actual image (not an error page served with HTTP 200).
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
         if (bounds.outWidth <= 0) return Outcome.Failed("not an image")
+        // Checked once more right before the cover is replaced, as the download took a while too.
+        if (!libraryPreferences.mangaBakaCovers().get()) return Outcome.Skipped
+        if (!ownsCover(coverFile, readMangaBakaMarker(markerFile))) return Outcome.UserCover
+
+        val index = found.cover.label
         // Claim the cover first, so a write cut short is not mistaken for the user's own cover later.
-        writeMarker(markerFile, MangaBakaMarker(seriesId, index, 0, MangaBakaMarker.WRITING, language, link))
+        writeMangaBakaMarker(
+            markerFile,
+            MangaBakaMarker(found.seriesId, index, 0, MangaBakaMarker.WRITING, language, found.link),
+        )
         coverCache.setCustomCoverToCache(manga, bytes.inputStream())
-        val written = MangaBakaMarker(seriesId, index, now(), coverFile.lastModified(), language, link)
-        writeMarker(markerFile, written)
-        updateManga.awaitUpdateCoverLastModified(manga.id)
+        // Refresh the cover's cache key before recording the cover as done, so a failure here is retried.
+        check(updateManga.awaitUpdateCoverLastModified(manga.id)) { "could not save the cover" }
+        writeMangaBakaMarker(
+            markerFile,
+            MangaBakaMarker(found.seriesId, index, now(), coverFile.lastModified(), language, found.link),
+        )
         return Outcome.Updated(index)
+    }
+
+    /** True when there is no custom cover, or the one there was written here and not changed since. */
+    private fun ownsCover(coverFile: File, marker: MangaBakaMarker?) =
+        !coverFile.exists() || marker?.owns(coverFile.lastModified()) == true
+
+    /** Removes the MangaBaka cover so the source's shows. Throws if it cannot, so the marker is kept. */
+    private suspend fun showSourceCover(manga: Manga, coverFile: File) {
+        if (!coverFile.exists()) return
+        if (!coverCache.deleteCustomCover(manga.id)) throw IOException("could not delete the cover")
+        updateManga.awaitUpdateCoverLastModified(manga.id)
     }
 
     /**
@@ -331,9 +384,12 @@ class MangaBakaCoverUpdater(
      * across every updater (library update, cover refresh, title screen), as they can overlap.
      * Rate limits (HTTP 429, waiting as long as the server asks), server errors (5xx) and network errors
      * are retried up to [MAX_ATTEMPTS] times with growing waits, so a busy moment does not skip a title.
-     * Returns null for HTTP 404 and throws for any other failure.
+     * Returns null for HTTP 404 and throws for any other failure. Only MangaBaka's own hosts are contacted,
+     * over HTTPS, and a response over [MAX_RESPONSE_BYTES] is refused.
      */
     private suspend fun fetch(url: String): ByteArray? {
+        val httpUrl = url.toHttpUrlOrNull()?.takeIf { it.isHttps && MangaBakaRules.isMangaBakaHost(it.host) }
+            ?: throw IllegalArgumentException("not a MangaBaka address")
         var attempt = 1
         while (true) {
             if (url.startsWith(API)) {
@@ -344,14 +400,14 @@ class MangaBakaCoverUpdater(
                 }
             }
             val wait = try {
-                client.newCall(Request.Builder().url(url).build()).await().use { response ->
+                client.newCall(Request.Builder().url(httpUrl).build()).await().use { response ->
                     val code = response.code
                     when {
-                        response.isSuccessful -> return response.body.bytes()
+                        response.isSuccessful -> return response.body.bytesAtMost(MAX_RESPONSE_BYTES)
                         code == HTTP_NOT_FOUND -> return null
                         code != HTTP_TOO_MANY_REQUESTS && code < HTTP_SERVER_ERROR -> throw HttpException(code)
                         attempt >= MAX_ATTEMPTS -> throw HttpException(code)
-                        else -> response.header("Retry-After")?.toLongOrNull()?.times(1000) ?: backoff(attempt)
+                        else -> MangaBakaRules.retryAfterMs(response.header("Retry-After"), now()) ?: backoff(attempt)
                     }
                 }
             } catch (e: IOException) {
@@ -364,11 +420,12 @@ class MangaBakaCoverUpdater(
     }
 
     /** 10 s, 20 s, 40 s, 80 s. */
-    private fun backoff(attempt: Int) = RETRY_MIN_MS shl (attempt - 1)
+    private fun backoff(attempt: Int): Long {
+        val doublings = attempt - 1
+        return RETRY_MIN_MS shl doublings
+    }
 
     private fun now() = System.currentTimeMillis()
-
-    private fun writeMarker(file: File, marker: MangaBakaMarker) = file.writeText(marker.serialize())
 
     private companion object {
         /** One pass at a time: a library update, the refresh button or a language change. */
@@ -388,7 +445,10 @@ class MangaBakaCoverUpdater(
         const val HTTP_SERVER_ERROR = 500
         const val MAX_ATTEMPTS = 5
         const val RETRY_MIN_MS = 10_000L
-        const val RETRY_MAX_MS = 120_000L
+
+        /** Longest wait between attempts, including a wait the server asks for. */
+        const val RETRY_MAX_MS = 5 * 60_000L
+        const val MAX_RESPONSE_BYTES = 10L * 1024 * 1024
         const val REQUEST_SPACING_MS = 350L
         const val PROGRESS_INTERVAL_MS = 500L
         const val NOTIFICATION_ID = -110
@@ -400,6 +460,23 @@ internal fun mangaBakaMarkerFile(coverFile: File) = File(coverFile.parentFile, c
 
 internal fun readMangaBakaMarker(file: File): MangaBakaMarker? =
     runCatching { MangaBakaMarker.parse(file.readText()) }.getOrNull()
+
+/** Written aside and renamed into place, so an interrupted write leaves the previous marker intact. */
+internal fun writeMangaBakaMarker(file: File, marker: MangaBakaMarker) {
+    val temp = File(file.parentFile, file.name + ".tmp")
+    temp.writeText(marker.serialize())
+    if (!temp.renameTo(file)) {
+        temp.delete()
+        throw IOException("could not save the cover marker")
+    }
+}
+
+/** The whole body, refusing anything over [limit] bytes so an oversized response cannot exhaust memory. */
+private fun ResponseBody.bytesAtMost(limit: Long): ByteArray {
+    val source = source()
+    check(contentLength() <= limit && !source.request(limit + 1)) { "response over ${limit / 1024 / 1024} MB" }
+    return source.readByteArray()
+}
 
 /**
  * After a custom cover was copied from one entry to another (migration), carries MangaBaka's claim on it over too.
@@ -413,7 +490,7 @@ fun copyMangaBakaCoverMarker(fromMangaId: Long, toMangaId: Long, coverCache: Cov
     if (marker.coverModified == MangaBakaMarker.WRITING || !marker.owns(fromCover.lastModified())) return
     if (!toCover.exists()) return
     runCatching {
-        mangaBakaMarkerFile(toCover).writeText(marker.copy(coverModified = toCover.lastModified()).serialize())
+        writeMangaBakaMarker(mangaBakaMarkerFile(toCover), marker.copy(coverModified = toCover.lastModified()))
     }
 }
 
@@ -430,6 +507,20 @@ internal object MangaBakaRules {
         if (!VOLUME_LABEL.matches(label)) return null
         val number = label.toDouble()
         return floor(number) * 2 + if (number == floor(number)) 1 else 0
+    }
+
+    private val MANGABAKA_DOMAINS = listOf("mangabaka.org", "mangabaka.dev")
+
+    /** MangaBaka's API and image hosts: mangabaka.org, mangabaka.dev and their subdomains. */
+    fun isMangaBakaHost(host: String) = MANGABAKA_DOMAINS.any { host == it || host.endsWith(".$it") }
+
+    /** The wait a Retry-After header asks for, given in seconds or as an HTTP date; null if absent or unreadable. */
+    fun retryAfterMs(value: String?, nowMs: Long): Long? {
+        val header = value?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        header.toLongOrNull()?.let { return it * 1000 }
+        val until = runCatching { ZonedDateTime.parse(header, DateTimeFormatter.RFC_1123_DATE_TIME) }.getOrNull()
+            ?: return null
+        return (until.toInstant().toEpochMilli() - nowMs).coerceAtLeast(0)
     }
 
     /** MangaBaka identifies MangaUpdates series by the 7-character base-36 form of the numeric ID. */
@@ -451,6 +542,9 @@ internal object MangaBakaRules {
 }
 
 internal data class VolumeCover(val label: String, val url: String, val rank: Double)
+
+/** A cover found for a title: [cover] of MangaBaka series [seriesId], reached through tracker [link]. */
+internal data class FoundCover(val link: String, val seriesId: Long, val cover: VolumeCover)
 
 /**
  * What [MangaBakaCoverUpdater] last did for a title, kept in a small file next to the cover: the cover

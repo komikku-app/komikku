@@ -65,4 +65,14 @@ class MangaBakaMarkerCopyTest {
         copyMangaBakaCoverMarker(1, 2, coverCache)
         assertFalse(mangaBakaMarkerFile(coverCache.getCustomCoverFile(2)).exists())
     }
+
+    @Test
+    fun markerIsReplacedWhole() {
+        val markerFile = mangaBakaMarkerFile(coverCache.getCustomCoverFile(1))
+        writeMangaBakaMarker(markerFile, MangaBakaMarker(1, "5", 1L, 2L, "ja", ""))
+        val next = MangaBakaMarker(1, "6", 3L, 4L, "ja", "anilist/1")
+        writeMangaBakaMarker(markerFile, next)
+        assertEquals(next, readMangaBakaMarker(markerFile))
+        assertFalse(File(dir, markerFile.name + ".tmp").exists())
+    }
 }
