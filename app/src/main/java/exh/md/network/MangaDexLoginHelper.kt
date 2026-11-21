@@ -9,11 +9,14 @@ import eu.kanade.tachiyomi.network.parseAs
 import exh.md.utils.MdApi
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
 import logcat.LogPriority
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import tachiyomi.core.common.util.system.logcat
+import kotlin.time.Duration.Companion.seconds
 
 class MangaDexLoginHelper(
     private val client: OkHttpClient,
@@ -45,7 +48,13 @@ class MangaDexLoginHelper(
         }.exceptionOrNull()
 
         return when (error == null) {
-            true -> true
+            true -> {
+                // KMK -->
+                // Logged in again: an earlier "session expired" notice is stale now.
+                mdList.sessionNotifier.dismiss()
+                // KMK <--
+                true
+            }
             false -> {
                 logcat(LogPriority.ERROR, error) { "Error logging in" }
                 mdList.logout()
@@ -54,42 +63,68 @@ class MangaDexLoginHelper(
         }
     }
 
+    // KMK -->
+    /**
+     * Logs out of MangaDex. Logging out locally always succeeds: the stored credentials are cleared first, so
+     * the app shows the user as logged out at once, even when offline or when the auth server fails or hangs.
+     *
+     * Revoking the session on the server is best effort: it is attempted afterwards with the credentials read
+     * before clearing them, bounded by [SERVER_LOGOUT_TIMEOUT], and a failure is only logged. A session that
+     * could not be revoked is left to expire on the server on its own.
+     *
+     * @return always true. Kept as a Boolean so existing callers compile unchanged.
+     */
+    // KMK <--
     suspend fun logout(): Boolean {
         val oauth = MdUtil.loadOAuth(preferences, mdList)
         val sessionToken = oauth?.accessToken
         val refreshToken = oauth?.refreshToken
-        if (refreshToken.isNullOrEmpty() || sessionToken.isNullOrEmpty()) {
-            mdList.logout()
-            return true
-        }
+        // KMK -->
+        // Log out locally before calling the server, so logging out never depends on the network. This also
+        // clears the auth interceptor's credentials and deletes the stored token.
+        mdList.logout()
 
+        if (!refreshToken.isNullOrEmpty() && !sessionToken.isNullOrEmpty()) {
+            revokeServerSession(sessionToken, refreshToken)
+        }
+        return true
+    }
+
+    /**
+     * Best effort: asks the auth server to end the session of [refreshToken]. Failures and timeouts are logged,
+     * not thrown; only cancellation is rethrown.
+     */
+    private suspend fun revokeServerSession(sessionToken: String, refreshToken: String) {
         val formBody = FormBody.Builder()
             .add("client_id", MdConstants.Login.clientId)
             .add("refresh_token", refreshToken)
             .add("redirect_uri", MdConstants.Login.redirectUri)
             .build()
 
-        val error = kotlin.runCatching {
-            client.newCall(
-                POST(
-                    url = MdApi.baseAuthUrl + MdApi.logout,
-                    headers = Headers.Builder().add("Authorization", "Bearer $sessionToken")
-                        .build(),
-                    body = formBody,
-                ),
-            ).awaitSuccess()
-            mdList.logout()
-        }.exceptionOrNull()
-
-        return when (error == null) {
-            true -> {
-                mangaDexAuthInterceptor.setAuth(null)
-                true
+        try {
+            val revoked = withTimeoutOrNull(SERVER_LOGOUT_TIMEOUT) {
+                client.newCall(
+                    POST(
+                        url = MdApi.baseAuthUrl + MdApi.logout,
+                        headers = Headers.Builder().add("Authorization", "Bearer $sessionToken")
+                            .build(),
+                        body = formBody,
+                    ),
+                ).awaitSuccess().close()
             }
-            false -> {
-                logcat(LogPriority.ERROR, error) { "Error logging out" }
-                false
+            if (revoked == null) {
+                logcat(LogPriority.WARN) { "Timed out revoking the MangaDex session, it will expire on its own" }
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) { "Error revoking the MangaDex session, it will expire on its own" }
         }
     }
+    // KMK <--
 }
+
+// KMK -->
+/** How long a logout waits for the server to revoke the session; the local logout is already done by then. */
+private val SERVER_LOGOUT_TIMEOUT = 5.seconds
+// KMK <--

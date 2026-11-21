@@ -21,5 +21,6 @@ object Constants {
 
     // KMK -->
     const val SHORTCUT_LIBRARY_UPDATE_ERRORS = "eu.kanade.tachiyomi.SHOW_LIBRARY_UPDATE_ERRORS"
+    const val SHORTCUT_MANGADEX_SETTINGS = "eu.kanade.tachiyomi.SHOW_MANGADEX_SETTINGS"
     // KMK <--
 }

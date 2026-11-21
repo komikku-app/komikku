@@ -47,6 +47,7 @@ import eu.kanade.tachiyomi.ui.library.LibraryTab
 import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.MoreTab
+import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -198,6 +199,8 @@ object HomeScreen : Screen() {
                                 // KMK -->
                             } else if (it.toLibraryUpdateErrors) {
                                 navigator.push(LibraryUpdateErrorScreen())
+                            } else if (it.toMangadexSettings) {
+                                navigator.push(SettingsScreen(SettingsScreen.Destination.Mangadex))
                                 // KMK <--
                             }
                         }
@@ -351,6 +354,7 @@ object HomeScreen : Screen() {
             val toDownloads: Boolean,
             // KMK -->
             val toLibraryUpdateErrors: Boolean = false,
+            val toMangadexSettings: Boolean = false,
             // KMK <--
         ) : Tab
     }
