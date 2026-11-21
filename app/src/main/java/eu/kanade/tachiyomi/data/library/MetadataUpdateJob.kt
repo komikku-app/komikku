@@ -10,6 +10,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import eu.kanade.tachiyomi.data.LibraryUpdateStatus
+import eu.kanade.tachiyomi.data.cover.MangaBakaCoverUpdater
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
@@ -26,6 +29,7 @@ import mihon.domain.source.interactor.UpdateMangaFromRemote
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
@@ -44,6 +48,12 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
     private val getLibraryManga: GetLibraryManga = Injekt.get()
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get()
 
+    // KMK -->
+    private val mangaBakaCoverUpdater = MangaBakaCoverUpdater()
+    private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    private val libraryPreferences: LibraryPreferences = Injekt.get()
+    // KMK <--
+
     private val notifier = LibraryUpdateNotifier(context)
 
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
@@ -54,8 +64,32 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
         addMangaToQueue()
 
         return withIOContext {
+            // KMK -->
+            val mangaBakaMode = inputData.getString(KEY_MANGABAKA_MODE)
+            // Show the in-app progress banner while MangaBaka covers are checked or restored, as a library update
+            // does. Not for a plain metadata refresh with the feature off, which stays as it was.
+            val showBanner = mangaBakaMode != null || libraryPreferences.mangaBakaCovers().get()
+            // KMK <--
             try {
-                updateMetadata()
+                // KMK -->
+                if (showBanner) libraryUpdateStatus.start()
+                val showProgress: suspend (Manga, Int, Int) -> Unit = { manga, done, total ->
+                    notifier.showProgressNotification(listOf(manga), done, total)
+                }
+                if (mangaBakaMode == MODE_RESTORE) {
+                    mangaBakaCoverUpdater.restoreSourceCovers(mangaToUpdate.map { it.manga }, showProgress)
+                } else {
+                    // "Refresh library covers" also checks every MangaBaka cover, ignoring the usual daily wait.
+                    // Done first: refreshing every source takes far longer, and the result shouldn't wait for it.
+                    val coverFailures = mangaBakaCoverUpdater.updateAll(
+                        mangaList = mangaToUpdate.map { it.manga },
+                        force = true,
+                        onProgress = showProgress,
+                    )
+                    notifier.showUpdateErrorNotification(coverFailures)
+                    if (mangaBakaMode == null) updateMetadata()
+                }
+                // KMK <--
                 Result.success()
             } catch (e: Exception) {
                 if (e is CancellationException) {
@@ -67,6 +101,9 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
                 }
             } finally {
                 notifier.cancelProgressNotification()
+                // KMK -->
+                if (showBanner) libraryUpdateStatus.stop()
+                // KMK <--
             }
         }
     }
@@ -184,6 +221,34 @@ class MetadataUpdateJob(private val context: Context, workerParams: WorkerParame
 
             return true
         }
+
+        // KMK -->
+        /**
+         * Re-checks every MangaBaka cover without refreshing the sources' covers (after the feature is
+         * turned on or the cover language changes), or with [restore] puts the sources' covers back
+         * (after it is turned off). Replaces a cover-only job already running, so the latest setting wins,
+         * but queues after a full "Refresh library covers" rather than cancelling it.
+         */
+        fun startMangaBakaCovers(context: Context, restore: Boolean = false) {
+            val wm = context.workManager
+            val request = OneTimeWorkRequestBuilder<MetadataUpdateJob>()
+                .addTag(TAG)
+                .addTag(WORK_NAME_MANUAL)
+                .addTag(TAG_MANGABAKA)
+                .setInputData(workDataOf(KEY_MANGABAKA_MODE to if (restore) MODE_RESTORE else MODE_CHECK))
+                .build()
+            val refreshRunning = wm.getWorkInfosForUniqueWork(WORK_NAME_MANUAL).get()
+                .any { !it.state.isFinished && TAG_MANGABAKA !in it.tags }
+            val policy = if (refreshRunning) ExistingWorkPolicy.APPEND_OR_REPLACE else ExistingWorkPolicy.REPLACE
+            wm.enqueueUniqueWork(WORK_NAME_MANUAL, policy, request)
+        }
+
+        private const val TAG_MANGABAKA = "MangaBakaCovers"
+
+        private const val KEY_MANGABAKA_MODE = "mangabaka_mode"
+        private const val MODE_CHECK = "check"
+        private const val MODE_RESTORE = "restore"
+        // KMK <--
 
         fun stop(context: Context) {
             val wm = context.workManager

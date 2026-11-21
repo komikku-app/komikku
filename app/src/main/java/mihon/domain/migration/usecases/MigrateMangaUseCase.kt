@@ -4,6 +4,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.cover.copyMangaBakaCoverMarker
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
@@ -166,6 +167,10 @@ class MigrateMangaUseCase(
             // Update custom cover (recheck if custom cover exists)
             if (MigrationFlag.CUSTOM_COVER in flags && current.hasCustomCover()) {
                 coverCache.setCustomCoverToCache(target, coverCache.getCustomCoverFile(current.id).inputStream())
+                // KMK -->
+                // A MangaBaka cover stays managed by MangaBaka on the new entry, rather than becoming the user's own.
+                copyMangaBakaCoverMarker(current.id, target.id, coverCache)
+                // KMK <--
             }
 
             val currentMangaUpdate = MangaUpdate(
