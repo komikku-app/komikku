@@ -5,9 +5,12 @@ import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import exh.md.utils.MdUtil
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
+import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
@@ -17,7 +20,14 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.jupiter.api.Test
 import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreference
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 class MangaDexAuthInterceptorTest {
 
@@ -34,10 +44,22 @@ class MangaDexAuthInterceptorTest {
     private var tokenRequests = 0
 
     @Test
-    fun `OAuth error body on 400 or 401 is a rejection`() {
+    fun `invalid_grant on 400 or 401 is a rejection`() {
         isRefreshRejected(400, """{"error":"invalid_grant","error_description":"Token is not active"}""") shouldBe true
-        isRefreshRejected(401, """{"error":"invalid_client"}""") shouldBe true
-        isRefreshRejected(400, """{"error":"not_allowed"}""") shouldBe true
+        isRefreshRejected(401, """{"error":"invalid_grant"}""") shouldBe true
+    }
+
+    @Test
+    fun `other OAuth errors on 400 or 401 are not a rejection`() {
+        isRefreshRejected(401, """{"error":"invalid_client"}""") shouldBe false
+        isRefreshRejected(400, """{"error":"invalid_client"}""") shouldBe false
+        isRefreshRejected(400, """{"error":"unauthorized_client"}""") shouldBe false
+        isRefreshRejected(400, """{"error":"not_allowed"}""") shouldBe false
+        isRefreshRejected(400, """{"error":"invalid_scope"}""") shouldBe false
+        isRefreshRejected(400, """{"error":"invalid_request"}""") shouldBe false
+        // Matched exactly, case included.
+        isRefreshRejected(400, """{"error":"INVALID_GRANT"}""") shouldBe false
+        isRefreshRejected(401, """{"error":"Invalid_Grant"}""") shouldBe false
     }
 
     @Test
@@ -90,6 +112,19 @@ class MangaDexAuthInterceptorTest {
 
         shouldThrow<IOException> {
             interceptor.intercept(chain(tokenStatus = 503, tokenBody = "Service Unavailable"))
+        }
+        tokenPreference.get() shouldBe storedToken
+        rejections shouldBe 0
+    }
+
+    @Test
+    fun `OAuth error other than invalid_grant keeps the stored token and does not report the session`() {
+        var rejections = 0
+        val interceptor = loggedInInterceptor(onSessionRejected = { rejections++ })
+        val storedToken = tokenPreference.get()
+
+        shouldThrow<IOException> {
+            interceptor.intercept(chain(tokenStatus = 400, tokenBody = """{"error":"invalid_client"}"""))
         }
         tokenPreference.get() shouldBe storedToken
         rejections shouldBe 0
@@ -187,6 +222,123 @@ class MangaDexAuthInterceptorTest {
         rejections shouldBe 1
     }
 
+    @Test
+    fun `logout does not wait for a refresh in flight, whose result is then discarded`() {
+        val rejections = AtomicInteger()
+        val interceptor = loggedInInterceptor(onSessionRejected = { rejections.incrementAndGet() })
+        val refreshStarted = CountDownLatch(1)
+        val releaseRefresh = CountDownLatch(1)
+        val chain = chain(
+            tokenStatus = 200,
+            tokenBody = REFRESHED_TOKEN_BODY,
+            beforeTokenResponse = {
+                refreshStarted.countDown()
+                releaseRefresh.await(WAIT_SECONDS, TimeUnit.SECONDS)
+            },
+        )
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val request = executor.submit<Response> { interceptor.intercept(chain) }
+            refreshStarted.await(WAIT_SECONDS, TimeUnit.SECONDS) shouldBe true
+
+            // The refresh is blocked on the network, the logout must not wait for it.
+            measureTime { interceptor.setAuth(null) } shouldBeLessThan 2.seconds
+            request.isDone shouldBe false
+
+            releaseRefresh.countDown()
+            shouldThrow<ExecutionException> { request.get(WAIT_SECONDS, TimeUnit.SECONDS) }
+                .cause.shouldBeInstanceOf<IOException>()
+        } finally {
+            releaseRefresh.countDown()
+            executor.shutdownNow()
+        }
+
+        // The token refreshed after the logout was not saved.
+        tokenRequests shouldBe 1
+        tokenPreference.get() shouldBe ""
+        interceptor.token shouldBe null
+        rejections.get() shouldBe 0
+    }
+
+    @Test
+    fun `new login during a refresh in flight survives that refresh being rejected`() {
+        val rejections = AtomicInteger()
+        val interceptor = loggedInInterceptor(onSessionRejected = { rejections.incrementAndGet() })
+        val login = loginOAuth(accessToken = "login-access-token")
+        val refreshStarted = CountDownLatch(1)
+        val releaseRefresh = CountDownLatch(1)
+        val chain = chain(
+            tokenStatus = 400,
+            tokenBody = """{"error":"invalid_grant"}""",
+            beforeTokenResponse = {
+                refreshStarted.countDown()
+                releaseRefresh.await(WAIT_SECONDS, TimeUnit.SECONDS)
+            },
+        )
+        val executor = Executors.newSingleThreadExecutor()
+        val response = try {
+            val request = executor.submit<Response> { interceptor.intercept(chain) }
+            refreshStarted.await(WAIT_SECONDS, TimeUnit.SECONDS) shouldBe true
+
+            // The refresh is blocked on the network, the login must not wait for it.
+            measureTime { interceptor.setAuth(login) } shouldBeLessThan 2.seconds
+            request.isDone shouldBe false
+
+            releaseRefresh.countDown()
+            request.get(WAIT_SECONDS, TimeUnit.SECONDS)
+        } finally {
+            releaseRefresh.countDown()
+            executor.shutdownNow()
+        }
+
+        // The old session's rejection did not clear the new login, which the request went out with.
+        response.request.header("Authorization") shouldBe "Bearer login-access-token"
+        tokenRequests shouldBe 1
+        MdUtil.loadOAuth(trackPreferences, mdList) shouldBe login
+        interceptor.token shouldBe "login-access-token"
+        rejections.get() shouldBe 0
+    }
+
+    @Test
+    fun `refresh failing because its call was canceled does not start the cooldown`() {
+        val interceptor = loggedInInterceptor()
+        val storedToken = tokenPreference.get()
+        val canceledChain = chain(
+            tokenStatus = 200,
+            tokenBody = REFRESHED_TOKEN_BODY,
+            canceled = true,
+            beforeTokenResponse = { throw IOException("Canceled") },
+        )
+        shouldThrow<IOException> { interceptor.intercept(canceledChain) }.cause?.message shouldBe "Canceled"
+        tokenPreference.get() shouldBe storedToken
+
+        // Well within the cooldown a failure would have started, the next request refreshes the token for real.
+        val response = interceptor.intercept(chain(tokenStatus = 200, tokenBody = REFRESHED_TOKEN_BODY))
+        tokenRequests shouldBe 2
+        response.request.header("Authorization") shouldBe "Bearer refreshed-access-token"
+    }
+
+    @Test
+    fun `network error on a call that was not canceled starts the cooldown`() {
+        val interceptor = loggedInInterceptor()
+        shouldThrow<IOException> {
+            interceptor.intercept(
+                chain(
+                    tokenStatus = 200,
+                    tokenBody = REFRESHED_TOKEN_BODY,
+                    beforeTokenResponse = { throw SocketTimeoutException("timeout") },
+                ),
+            )
+        }
+
+        // The token endpoint would answer now, but the next request fails fast with the same error.
+        val error = shouldThrow<IOException> {
+            interceptor.intercept(chain(tokenStatus = 200, tokenBody = REFRESHED_TOKEN_BODY))
+        }
+        tokenRequests shouldBe 1
+        error.cause.shouldBeInstanceOf<SocketTimeoutException>()
+    }
+
     /** An interceptor logged in with [oauth], by default an expired access token so its first request refreshes it. */
     private fun loggedInInterceptor(
         onSessionRejected: () -> Unit = {},
@@ -214,16 +366,27 @@ class MangaDexAuthInterceptorTest {
     /**
      * A chain answering the token endpoint with [tokenStatus] and [tokenBody], requests sent with
      * [expiredAccessToken] with MangaDex's 401 for an expired access token, and any other request with 200.
+     * [beforeTokenResponse] runs before each token endpoint answer, to block or fail it. Its call reports
+     * [canceled].
      */
-    private fun chain(tokenStatus: Int, tokenBody: String, expiredAccessToken: String? = null): Interceptor.Chain {
+    private fun chain(
+        tokenStatus: Int,
+        tokenBody: String,
+        expiredAccessToken: String? = null,
+        canceled: Boolean = false,
+        beforeTokenResponse: () -> Unit = {},
+    ): Interceptor.Chain {
         val request = Request.Builder().url("https://api.mangadex.org/user/follows/manga").build()
+        val chainCall = mockk<Call> { every { isCanceled() } returns canceled }
         return mockk {
             every { request() } returns request
+            every { call() } returns chainCall
             every { proceed(any()) } answers {
                 val sent = firstArg<Request>()
                 when {
                     sent.url.host == "auth.mangadex.org" -> {
                         tokenRequests++
+                        beforeTokenResponse()
                         response(sent, tokenStatus, tokenBody)
                     }
                     expiredAccessToken != null && sent.header("Authorization") == "Bearer $expiredAccessToken" ->
@@ -252,6 +415,9 @@ private const val REFRESHED_TOKEN_BODY = """{
     "access_token": "refreshed-access-token",
     "expires_in": 900
 }"""
+
+/** Bound on every wait of the concurrency tests, so that they fail instead of hanging. */
+private const val WAIT_SECONDS = 10L
 
 /** The `www-authenticate` header MangaDex sends along a 401 for an expired access token. */
 private const val EXPIRED_TOKEN_CHALLENGE =
