@@ -91,7 +91,8 @@ class SettingsScreen(
         data object DataAndStorage : Destination(1)
         data object Tracking : Destination(2)
         // KMK -->
-        data object Mangadex : Destination(3)
+        // Komikku destinations start at 100 to stay clear of ids upstream adds.
+        data object Mangadex : Destination(100)
         // KMK <--
     }
 }

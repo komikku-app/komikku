@@ -13,6 +13,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import tachiyomi.core.common.util.system.logcat
 import java.io.IOException
+import kotlin.time.Duration.Companion.seconds
 
 class MangaDexAuthInterceptor(
     private val trackPreferences: TrackPreferences,
@@ -24,6 +25,8 @@ class MangaDexAuthInterceptor(
      * interceptor's lock; exceptions it throws are logged and ignored.
      */
     private val onSessionRejected: () -> Unit = {},
+    /** Monotonic clock in nanoseconds, timing [REFRESH_FAILURE_COOLDOWN]. Replaced in tests. */
+    private val nanoTime: () -> Long = System::nanoTime,
     // KMK <--
 ) : Interceptor {
 
@@ -34,6 +37,9 @@ class MangaDexAuthInterceptor(
 
     @Volatile
     private var oauth: MALOAuth? = null
+
+    /** The last transient refresh failure, until [setAuth] clears it. Guarded by this interceptor's lock. */
+    private var lastRefreshFailure: RefreshFailure? = null
     // KMK <--
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -93,11 +99,13 @@ class MangaDexAuthInterceptor(
     /**
      * Called when the user authenticates with MangaDex for the first time (or logs out, with null). Sets the
      * refresh token and the oauth object. Synchronized with [refreshToken], which also goes through here.
+     * Forgets the last transient refresh failure, so new credentials are never blocked by its cooldown.
      */
     @Synchronized
     fun setAuth(oauth: MALOAuth?) {
         token = oauth?.accessToken
         this.oauth = oauth
+        lastRefreshFailure = null
         MdUtil.saveOAuth(trackPreferences, mdList, oauth)
     }
 
@@ -121,6 +129,10 @@ class MangaDexAuthInterceptor(
      * rejects the refresh token ([RefreshResult.Rejected]). Transient failures ([RefreshResult.TransientError]:
      * no network, 429, 5xx, challenge pages, malformed responses...) keep them, so a later request can retry the
      * refresh instead of forcing a browser re-login.
+     *
+     * For [REFRESH_FAILURE_COOLDOWN] after a transient failure, refreshes fail fast with the same error and no
+     * network call, so requests queued behind a slow failure (e.g. a hanging auth server) do not each wait out
+     * another timeout while holding the lock, which would also hold up [setAuth] and therefore logout.
      */
     @Synchronized
     private fun refreshToken(chain: Interceptor.Chain, staleOauth: MALOAuth): RefreshResult {
@@ -128,15 +140,23 @@ class MangaDexAuthInterceptor(
         val latest = oauth ?: return RefreshResult.Rejected
         // Already refreshed (or logged in again) by another thread.
         if (latest.accessToken != staleOauth.accessToken) return RefreshResult.Success(latest)
+        // Failed moments ago, most likely while this request was waiting for the lock.
+        val recentFailure = lastRefreshFailure
+            ?.takeIf { nanoTime() - it.failedAt < REFRESH_FAILURE_COOLDOWN.inWholeNanoseconds }
+        if (recentFailure != null) {
+            logcat { "Skipping MangaDex token refresh, it failed less than $REFRESH_FAILURE_COOLDOWN ago" }
+            return recentFailure.result
+        }
 
         val result = requestNewToken(chain, latest)
         when (result) {
+            // Both go through setAuth, which also clears lastRefreshFailure.
             is RefreshResult.Success -> setAuth(result.oauth)
             is RefreshResult.Rejected -> {
                 setAuth(null)
                 notifySessionRejected()
             }
-            is RefreshResult.TransientError -> Unit
+            is RefreshResult.TransientError -> lastRefreshFailure = RefreshFailure(nanoTime(), result)
         }
         return result
     }
@@ -192,11 +212,17 @@ class MangaDexAuthInterceptor(
 
         data class TransientError(val cause: Throwable) : RefreshResult
     }
+
+    /** A transient refresh failure, [failedAt] a [nanoTime] reading taken when it happened. */
+    private class RefreshFailure(val failedAt: Long, val result: RefreshResult.TransientError)
     // KMK <--
 }
 
 // KMK -->
 private const val MAX_ERROR_BODY_BYTES = 64 * 1024L
+
+// Short: just long enough for requests queued behind a slow failure to drain, not to fail retries once back online.
+private val REFRESH_FAILURE_COOLDOWN = 10.seconds
 
 /**
  * Whether a failed token endpoint response definitively rejects the refresh token, so the user has to log in

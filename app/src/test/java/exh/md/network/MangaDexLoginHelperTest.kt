@@ -44,7 +44,7 @@ class MangaDexLoginHelperTest {
                 refreshToken = "refresh-token",
                 accessToken = "access-token",
                 expiresIn = 900,
-                createdAt = System.currentTimeMillis(),
+                createdAt = System.currentTimeMillis() / 1000,
             ),
         )
 
