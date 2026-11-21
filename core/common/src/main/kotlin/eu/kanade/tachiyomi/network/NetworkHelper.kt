@@ -57,6 +57,9 @@ import kotlin.random.Random
             // KMK <--
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.HEADERS
+                // KMK --> Never expose tracker OAuth credentials in extra logs.
+                redactHeader("Authorization")
+                // KMK <--
             }
             builder.addNetworkInterceptor(httpLoggingInterceptor)
         }

@@ -1,0 +1,31 @@
+-- KMK --> Migrate Houri's Comick tracker rows (63) to Komikku's tracker ID (12).
+-- Preserve Houri's personal fields and retain the highest saved progress.
+UPDATE manga_sync AS current
+SET
+    remote_id = (SELECT old.remote_id FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    library_id = (SELECT old.library_id FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    title = (SELECT old.title FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    last_chapter_read = max(current.last_chapter_read, (SELECT old.last_chapter_read FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63)),
+    total_chapters = (SELECT old.total_chapters FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    status = CASE (SELECT old.status FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63)
+        WHEN 4 THEN 5
+        WHEN 5 THEN 4
+        ELSE (SELECT old.status FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63)
+    END,
+    score = (SELECT old.score FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    remote_url = (SELECT old.remote_url FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    start_date = (SELECT old.start_date FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    finish_date = (SELECT old.finish_date FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63),
+    private = (SELECT old.private FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63)
+WHERE current.sync_id = 12
+  AND EXISTS (SELECT 1 FROM manga_sync old WHERE old.manga_id = current.manga_id AND old.sync_id = 63);
+
+DELETE FROM manga_sync
+WHERE sync_id = 63
+  AND manga_id IN (SELECT manga_id FROM manga_sync WHERE sync_id = 12);
+
+UPDATE manga_sync
+SET sync_id = 12,
+    status = CASE status WHEN 4 THEN 5 WHEN 5 THEN 4 ELSE status END
+WHERE sync_id = 63;
+-- KMK <--

@@ -35,9 +35,14 @@ class TrackerManager {
     val mangaUpdates = MangaUpdates(7L)
     val kavita = Kavita(KAVITA)
     val suwayomi = Suwayomi(9L)
+    // KMK -->
+    val comick = eu.kanade.tachiyomi.data.track.comick.Comick(12L)
+    // KMK <--
 
-    val trackers =
-        listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi)
+    val trackers = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates, kavita, suwayomi) +
+        // KMK -->
+        listOf(comick)
+    // KMK <--
 
     fun loggedInTrackers() = trackers.filter { it.isLoggedIn }
 

@@ -58,6 +58,7 @@ val migrations: List<Migration>
         DisabledRepoMigration(),
         SyncPrefKeyMigration(),
         ChapterUrlHashMigration(),
+        ComickTrackerIdMigration(),
         // KMK <--
         InstallationIdMigration(),
     )

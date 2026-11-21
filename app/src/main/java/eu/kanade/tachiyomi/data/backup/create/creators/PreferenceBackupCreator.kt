@@ -25,6 +25,10 @@ class PreferenceBackupCreator(
     fun createApp(includePrivatePreferences: Boolean): List<BackupPreference> {
         return preferenceStore.getAll().toBackupPreferences()
             .withPrivatePreferences(includePrivatePreferences)
+            // KMK --> Keep Comick's private preferences usable in both Mihon
+            // (tracker ID 12) and Houri (tracker ID 63).
+            .flatMap { it.withComickTrackerIdAliases() }
+        // KMK <--
     }
 
     fun createSource(includePrivatePreferences: Boolean): List<BackupSourcePreferences> {
@@ -65,4 +69,18 @@ class PreferenceBackupCreator(
         } else {
             this.filter { !Preference.isPrivate(it.key) }
         }
+
+    // KMK -->
+    private fun BackupPreference.withComickTrackerIdAliases(): List<BackupPreference> {
+        val comickPreferencePrefixes = listOf(
+            "pref_mangasync_username_",
+            "pref_mangasync_password_",
+            "pref_tracker_auth_expired_",
+            "track_token_",
+        ).map { Preference.privateKey(it) }
+        val prefix = comickPreferencePrefixes.firstOrNull { key.startsWith(it) } ?: return listOf(this)
+        if (key != "${prefix}12") return listOf(this)
+        return listOf(this, copy(key = "${prefix}63"))
+    }
+    // KMK <--
 }
