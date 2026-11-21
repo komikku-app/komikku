@@ -81,9 +81,16 @@ sealed class Preference {
             override val icon: ImageVector? = null,
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (value: T) -> Boolean = { true },
+            // KMK -->
+            val entryEnabled: (T) -> Boolean = { true },
+            // KMK <--
         ) : PreferenceItem<T, Boolean>() {
             internal fun internalSet(value: Any) = preference.set(value as T)
             internal suspend fun internalOnValueChanged(value: Any) = onValueChanged(value as T)
+
+            // KMK -->
+            internal fun internalEntryEnabled(value: Any?) = entryEnabled(value as T)
+            // KMK <--
 
             @Composable
             internal fun internalSubtitleProvider(value: Any?, entries: ImmutableMap<out Any?, String>) =
