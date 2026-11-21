@@ -155,10 +155,7 @@ class MangaCoverFetcher(
 
                 // Read from snapshot
                 // KMK -->
-                val snapshotData = snapshot.data
-                setRatioAndColorsInScope(mangaCover = mangaCover) {
-                    FileSystem.SYSTEM.source(snapshotData).buffer()
-                }
+                setRatioAndColorsInScope(mangaCover = mangaCover, snapshot = snapshot)
                 // KMK <--
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
@@ -181,10 +178,7 @@ class MangaCoverFetcher(
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
                     // KMK -->
-                    val snapshotData = snapshot.data
-                    setRatioAndColorsInScope(mangaCover = mangaCover) {
-                        FileSystem.SYSTEM.source(snapshotData).buffer()
-                    }
+                    setRatioAndColorsInScope(mangaCover = mangaCover, snapshot = snapshot)
                     // KMK <--
                     return SourceFetchResult(
                         source = snapshot.toImageSource(),
@@ -312,7 +306,7 @@ class MangaCoverFetcher(
         } catch (e: Exception) {
             try {
                 editor.abort()
-            } catch (_: Exception) {
+            } catch (ignored: Exception) {
             }
             throw e
         }
@@ -399,6 +393,14 @@ class MangaCoverFetcher(
                 logcat(LogPriority.ERROR, e) { "Failed to extract cover ratio & colors" }
             }
         }
+    }
+
+    /**
+     * [setRatioAndColorsInScope] reading the cover through a new handle on the [snapshot]'s file,
+     * independent from the one handed to Coil.
+     */
+    private fun setRatioAndColorsInScope(mangaCover: MangaCover, snapshot: DiskCache.Snapshot) {
+        setRatioAndColorsInScope(mangaCover = mangaCover) { FileSystem.SYSTEM.source(snapshot.data).buffer() }
     }
     // KMK <--
 
