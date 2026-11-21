@@ -95,8 +95,11 @@ fun TrackerSearch(
     selected: TrackSearch?,
     onSelectedChange: (TrackSearch) -> Unit,
     onConfirmSelection: (private: Boolean) -> Unit,
+    onCreateManualEntry: (private: Boolean) -> Unit = {},
     onDismissRequest: () -> Unit,
     supportsPrivateTracking: Boolean,
+    supportsManualCreate: Boolean = false,
+    manualCreateLabel: String = "",
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -204,10 +207,22 @@ fun TrackerSearch(
             val availableTracks = queryResult.getOrNull()
             if (availableTracks != null) {
                 if (availableTracks.isEmpty()) {
-                    EmptyScreen(
+                    Column(
                         modifier = Modifier.padding(innerPadding),
-                        stringRes = MR.strings.no_results_found,
-                    )
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                    ) {
+                        EmptyScreen(stringRes = MR.strings.no_results_found)
+                        if (supportsManualCreate && state.text.isNotEmpty()) {
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = MaterialTheme.padding.medium),
+                                onClick = { onCreateManualEntry(false) },
+                            ) {
+                                Text(text = manualCreateLabel)
+                            }
+                        }
+                    }
                 } else {
                     ScrollbarLazyColumn(
                         contentPadding = innerPadding + PaddingValues(vertical = 12.dp),

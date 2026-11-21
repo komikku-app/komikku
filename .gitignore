@@ -18,6 +18,7 @@ local.properties
 .DS_Store
 
 /app/client_secrets.json
+/app/src/main/assets/client_secrets.json
 /app/google-services.json
 *.jks
 app/standard/preview/*
