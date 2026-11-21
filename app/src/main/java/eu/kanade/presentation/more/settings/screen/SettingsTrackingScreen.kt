@@ -102,6 +102,9 @@ object SettingsTrackingScreen : SearchableSettings {
                     TrackingLoginDialog(
                         tracker = tracker,
                         uNameStringRes = uNameStringRes,
+                        // KMK -->
+                        pwStringRes = pwStringRes,
+                        // KMK <--
                         onDismissRequest = { dialog = null },
                     )
                 }
@@ -191,6 +194,19 @@ object SettingsTrackingScreen : SearchableSettings {
                         login = { context.openInBrowser(BangumiApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.bangumi) },
                     ),
+                    // KMK -->
+                    Preference.PreferenceItem.TrackerPreference(
+                        tracker = trackerManager.yamtrack,
+                        login = {
+                            dialog = LoginDialog(
+                                tracker = trackerManager.yamtrack,
+                                uNameStringRes = KMR.strings.yamtrack_host_url,
+                                pwStringRes = KMR.strings.yamtrack_api_token,
+                            )
+                        },
+                        logout = { dialog = LogoutDialog(trackerManager.yamtrack) },
+                    ),
+                    // KMK <--
                     Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.tracking_info)),
                 ),
             ),
@@ -214,6 +230,9 @@ object SettingsTrackingScreen : SearchableSettings {
     private fun TrackingLoginDialog(
         tracker: Tracker,
         uNameStringRes: StringResource,
+        // KMK -->
+        pwStringRes: StringResource = MR.strings.password,
+        // KMK <--
         onDismissRequest: () -> Unit,
     ) {
         val context = LocalContext.current
@@ -261,7 +280,7 @@ object SettingsTrackingScreen : SearchableSettings {
                             .semantics { contentType = ContentType.Password },
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text(text = stringResource(MR.strings.password)) },
+                        label = { Text(text = stringResource(pwStringRes)) },
                         trailingIcon = {
                             IconButton(onClick = { hidePassword = !hidePassword }) {
                                 Icon(
@@ -377,6 +396,9 @@ object SettingsTrackingScreen : SearchableSettings {
 private data class LoginDialog(
     val tracker: Tracker,
     val uNameStringRes: StringResource,
+    // KMK -->
+    val pwStringRes: StringResource = MR.strings.password,
+    // KMK <--
 )
 
 private data class LogoutDialog(
