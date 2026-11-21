@@ -1278,8 +1278,9 @@ class ReaderViewModel @JvmOverloads constructor(
         ImageUtil.findImageType(stream1) ?: throw Exception("Not an image")
         val stream2 = page2.stream!!
         ImageUtil.findImageType(stream2) ?: throw Exception("Not an image")
-        val imageBitmap = ImageDecoder.newInstance(stream1())?.decode()!!
-        val imageBitmap2 = ImageDecoder.newInstance(stream2())?.decode()!!
+        val cropBorders = readerPreferences.cropBorders().get()
+        val imageBitmap = ImageDecoder.newInstance(stream1(), cropBorders)?.decode()!!
+        val imageBitmap2 = ImageDecoder.newInstance(stream2(), cropBorders)?.decode()!!
 
         val chapter = page1.chapter.chapter
 
@@ -1292,7 +1293,7 @@ class ReaderViewModel @JvmOverloads constructor(
 
         return imageSaver.save(
             image = Image.Page(
-                inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, 0, bg).inputStream() },
+                inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, if (cropBorders) 40 else 0, bg).inputStream() },
                 name = filename,
                 location = location,
             ),
