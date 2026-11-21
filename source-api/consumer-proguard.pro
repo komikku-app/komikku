@@ -21,6 +21,8 @@
 -keep class eu.kanade.tachiyomi.source.online.ParsedHttpSource { public protected *; }
 # SY -->
 -keep class eu.kanade.tachiyomi.source.PagePreviewSource { public protected *; }
+-keep class eu.kanade.tachiyomi.source.PagePreviewPage { public protected *; }
+-keep class eu.kanade.tachiyomi.source.PagePreviewInfo { public protected *; }
 -keep class eu.kanade.tachiyomi.source.online.FollowsSource { public protected *; }
 -keep class eu.kanade.tachiyomi.source.online.LoginSource { public protected *; }
 -keep class eu.kanade.tachiyomi.source.online.MetadataSource { public protected *; }
