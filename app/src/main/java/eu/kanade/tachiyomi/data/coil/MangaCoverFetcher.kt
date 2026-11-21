@@ -352,7 +352,8 @@ class MangaCoverFetcher(
      *
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
+     * @param force if true then it will re-calculate ratio & colors even if they are known, except in the cases
+     *  where [MangaCoverMetadata.needsColorUpdate] always skips.
      * @param openSource if it returns a [BufferedSource] then it will load bitmap from that, regardless of [ogFile].
      *  It's called on the calling thread, and only when the bitmap is actually going to be decoded. The source
      *  must be independent from the one handed to Coil, it is read on another thread and closed after use.
@@ -371,7 +372,8 @@ class MangaCoverFetcher(
             try {
                 openSource()
             } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e) { "Failed to open cover source for metadata" }
+                // Expected when the request is cancelled or the connection drops, Coil will report it if it matters
+                logcat(LogPriority.WARN, e) { "Failed to open cover source for metadata" }
                 null
             }
         } else {
