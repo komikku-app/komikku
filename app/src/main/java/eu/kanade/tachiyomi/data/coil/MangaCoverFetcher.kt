@@ -356,6 +356,7 @@ class MangaCoverFetcher(
      * @param force if true then it will re-calculate ratio & colors even if they are known, except in the cases
      *  where [MangaCoverMetadata.needsColorUpdate] always skips.
      * @param openSource if it returns a [BufferedSource] then it will load bitmap from that, regardless of [ogFile].
+     *  If it returns null or fails then nothing is extracted, it doesn't fall back to [ogFile] or [CoverCache].
      *  It's called on the calling thread, and only when the bitmap is actually going to be decoded. The source
      *  must be independent from the one handed to Coil, it is read on another thread and closed after use.
      */
@@ -374,13 +375,19 @@ class MangaCoverFetcher(
         }
         if (!MangaCoverMetadata.needsColorUpdate(mangaCover, onlyFavorite, force)) return
         val bufferedSource = if (openSource != null) {
-            try {
+            val source = try {
                 openSource()
             } catch (e: Exception) {
                 // Expected when the request is cancelled or the connection drops, Coil will report it if it matters
                 logcat(LogPriority.WARN, e) { "Failed to open cover source for metadata" }
                 null
+            } catch (e: OutOfMemoryError) {
+                // Colors are optional, don't fail the cover's fetch because its copy doesn't fit in memory
+                logcat(LogPriority.ERROR, e) { "Not enough memory to open cover source for metadata" }
+                null
             }
+            // Skip rather than fall back to CoverCache, which may still hold an older cover than the one being loaded
+            source ?: return
         } else {
             null
         }
