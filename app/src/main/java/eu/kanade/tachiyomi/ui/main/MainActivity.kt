@@ -665,6 +665,10 @@ class MainActivity : BaseActivity() {
                 navigator.popUntilRoot()
                 HomeScreen.Tab.More(toDownloads = false, toLibraryUpdateErrors = true)
             }
+            Constants.SHORTCUT_MANGADEX_SETTINGS -> {
+                navigator.popUntilRoot()
+                HomeScreen.Tab.More(toDownloads = false, toMangadexSettings = true)
+            }
             // KMK <--
             Intent.ACTION_SEARCH, Intent.ACTION_SEND, "com.google.android.gms.actions.SEARCH_ACTION" -> {
                 // If the intent match the "standard" Android search intent

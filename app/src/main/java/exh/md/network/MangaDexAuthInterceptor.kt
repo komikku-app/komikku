@@ -17,6 +17,14 @@ import java.io.IOException
 class MangaDexAuthInterceptor(
     private val trackPreferences: TrackPreferences,
     private val mdList: MdList,
+    // KMK -->
+    /**
+     * Called once each time the server definitively rejects the refresh token and the credentials are cleared,
+     * so the user can be told to log in again. Not called on logout. Runs on an OkHttp thread, under this
+     * interceptor's lock; exceptions it throws are logged and ignored.
+     */
+    private val onSessionRejected: () -> Unit = {},
+    // KMK <--
 ) : Interceptor {
 
     // KMK -->
@@ -109,10 +117,10 @@ class MangaDexAuthInterceptor(
      * others reuse its result instead of replaying an already used refresh token, which the server may reject
      * and which would then wipe a valid session.
      *
-     * The stored credentials are only cleared when the server definitively rejects the refresh token
-     * ([RefreshResult.Rejected]). Transient failures ([RefreshResult.TransientError]: no network, 429, 5xx,
-     * challenge pages, malformed responses...) keep them, so a later request can retry the refresh instead of
-     * forcing a browser re-login.
+     * The stored credentials are only cleared, and [onSessionRejected] called, when the server definitively
+     * rejects the refresh token ([RefreshResult.Rejected]). Transient failures ([RefreshResult.TransientError]:
+     * no network, 429, 5xx, challenge pages, malformed responses...) keep them, so a later request can retry the
+     * refresh instead of forcing a browser re-login.
      */
     @Synchronized
     private fun refreshToken(chain: Interceptor.Chain, staleOauth: MALOAuth): RefreshResult {
@@ -124,10 +132,22 @@ class MangaDexAuthInterceptor(
         val result = requestNewToken(chain, latest)
         when (result) {
             is RefreshResult.Success -> setAuth(result.oauth)
-            is RefreshResult.Rejected -> setAuth(null)
+            is RefreshResult.Rejected -> {
+                setAuth(null)
+                notifySessionRejected()
+            }
             is RefreshResult.TransientError -> Unit
         }
         return result
+    }
+
+    /** Runs [onSessionRejected], which must never break the request that hit the rejection. */
+    private fun notifySessionRejected() {
+        try {
+            onSessionRejected()
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Failed to report the rejected MangaDex session" }
+        }
     }
 
     private fun requestNewToken(chain: Interceptor.Chain, current: MALOAuth): RefreshResult {

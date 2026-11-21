@@ -31,6 +31,9 @@ object MdConstants {
         // KMK -->
         // Request an offline refresh token so the app can keep renewing the session on its
         // own (offline tokens survive the browser SSO session) without forcing a re-login.
+        // Only sent in the authorization URL at login: the code exchange and refresh requests
+        // inherit the scope granted there. Tokens issued before this scope was added stay
+        // online tokens until the next login.
         const val scope = "openid offline_access"
         // KMK <--
 

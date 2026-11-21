@@ -33,11 +33,6 @@ class MangaDexLoginHelper(
             .add("code", authorizationCode)
             .add("code_verifier", MdUtil.getPkceChallengeCode())
             .add("redirect_uri", MdConstants.Login.redirectUri)
-            // KMK -->
-            // Match the scope requested in the authorization URL so the exchanged token
-            // pair includes an offline refresh token.
-            .add("scope", MdConstants.Login.scope)
-            // KMK <--
             .build()
 
         val error = kotlin.runCatching {
@@ -50,7 +45,13 @@ class MangaDexLoginHelper(
         }.exceptionOrNull()
 
         return when (error == null) {
-            true -> true
+            true -> {
+                // KMK -->
+                // Logged in again: an earlier "session expired" notice is stale now.
+                mdList.sessionNotifier.dismiss()
+                // KMK <--
+                true
+            }
             false -> {
                 logcat(LogPriority.ERROR, error) { "Error logging in" }
                 mdList.logout()
