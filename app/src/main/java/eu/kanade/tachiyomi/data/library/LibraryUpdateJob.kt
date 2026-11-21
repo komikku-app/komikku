@@ -231,13 +231,16 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         // Check if specific manga IDs are provided for targeted update
         val targetMangaIds = inputData.getLongArray(KEY_MANGA_IDS)?.toSet()
         if (targetMangaIds != null) {
+            val forceUpdate = inputData.getBoolean(KEY_FORCE_UPDATE, false)
             // Filter to only the specified manga IDs
             mangaToUpdate = libraryManga
                 .filter {
                     it.manga.id in targetMangaIds &&
                         when {
-                            // Apply update restrictions even for targeted updates
-                            it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
+                            // Apply update restrictions unless the targeted update is forced
+                            !forceUpdate &&
+                                it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE &&
+                                it.totalChapters > 0L -> false
                             // Skip other restrictions for targeted updates to allow forced refresh
                             else -> true
                         }
@@ -742,6 +745,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
          * Key for specific manga IDs to update.
          */
         private const val KEY_MANGA_IDS = "manga_ids"
+        private const val KEY_FORCE_UPDATE = "force_update"
         // KMK <--
 
         fun setupTask(
@@ -806,6 +810,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             // SY <--
             // KMK -->
             mangaIds: List<Long>? = null,
+            forceUpdate: Boolean = false,
             // KMK <--
         ): Boolean {
             val wm = context.workManager
@@ -824,6 +829,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // SY <--
                 // KMK -->
                 KEY_MANGA_IDS to mangaIds?.toLongArray(),
+                KEY_FORCE_UPDATE to forceUpdate,
                 // KMK <--
             )
 
