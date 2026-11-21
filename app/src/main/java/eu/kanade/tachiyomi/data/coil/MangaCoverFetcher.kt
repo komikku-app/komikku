@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,7 +105,7 @@ class MangaCoverFetcher(
 
     private fun fileLoader(file: File): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover, ogFile = file)
+        setRatioAndColorsInScope(mangaCover = mangaCover, ogFile = file)
         // KMK <--
         return SourceFetchResult(
             source = ImageSource(
@@ -119,7 +120,7 @@ class MangaCoverFetcher(
 
     private fun fileUriLoader(uri: String): FetchResult {
         // KMK -->
-        setRatioAndColorsInScope(mangaCover)
+        setRatioAndColorsInScope(mangaCover = mangaCover)
         // KMK <--
         val source = UniFile.fromUri(options.context, uri.toUri())!!
             .openInputStream()
@@ -155,7 +156,7 @@ class MangaCoverFetcher(
 
                 // Read from snapshot
                 // KMK -->
-                setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
+                setRatioAndColorsInScope(mangaCover = mangaCover, snapshot = snapshot)
                 // KMK <--
                 return SourceFetchResult(
                     source = snapshot.toImageSource(),
@@ -178,7 +179,7 @@ class MangaCoverFetcher(
                 snapshot = writeToDiskCache(response)
                 if (snapshot != null) {
                     // KMK -->
-                    setRatioAndColorsInScope(mangaCover, bufferedSource = snapshot.toImageSource().source())
+                    setRatioAndColorsInScope(mangaCover = mangaCover, snapshot = snapshot)
                     // KMK <--
                     return SourceFetchResult(
                         source = snapshot.toImageSource(),
@@ -188,13 +189,10 @@ class MangaCoverFetcher(
                 }
 
                 // KMK -->
-                setRatioAndColorsInScope(
-                    mangaCover,
-                    bufferedSource = ImageSource(
-                        source = responseBody.source(),
-                        fileSystem = FileSystem.SYSTEM,
-                    ).source(),
-                )
+                // Metadata extraction must never share the live response stream with Coil: two
+                // concurrent readers of one HTTP/2 stream crash with "Unbalanced enter/exit".
+                // So give it an independent in-memory copy, peeked here before Coil starts reading.
+                setRatioAndColorsInScope(mangaCover = mangaCover) { peekCoverForMetadata(response) }
                 // KMK <--
                 // Read from response if cache is unused or unusable
                 return SourceFetchResult(
@@ -315,6 +313,21 @@ class MangaCoverFetcher(
         }
     }
 
+    // KMK -->
+    /**
+     * Copy the cover out of [response] without consuming it, so the body can still be read by Coil.
+     *
+     * @return null if the cover is larger than [MAX_COVER_PEEK_BYTES], to avoid buffering a large image
+     *  in memory or decoding a truncated one.
+     */
+    private fun peekCoverForMetadata(response: Response): BufferedSource? {
+        if (response.body.contentLength() > MAX_COVER_PEEK_BYTES) return null
+        // Peek one more byte than the cap to detect a body of unknown length which exceeds it
+        val peeked = response.peekBody(MAX_COVER_PEEK_BYTES + 1)
+        return peeked.source().takeIf { peeked.contentLength() <= MAX_COVER_PEEK_BYTES }
+    }
+    // KMK <--
+
     private fun DiskCache.Snapshot.toImageSource(): ImageSource {
         return ImageSource(
             file = data,
@@ -338,22 +351,75 @@ class MangaCoverFetcher(
     /**
      * [setRatioAndColorsInScope] is called whenever a cover is loaded with [MangaCoverFetcher.fetch]
      *
-     * @param bufferedSource if not null then it will load bitmap from [BufferedSource], regardless of [ogFile]
      * @param ogFile if not null then it will load bitmap from [File]. If it's null then it will try to load bitmap
      *  from [CoverCache] using either [CoverCache.customCoverCacheDir] or [CoverCache.cacheDir]
-     * @param force if true then it will always re-calculate ratio & color for favorite mangas.
+     * @param force if true then it will re-calculate ratio & colors even if they are known, except in the cases
+     *  where [MangaCoverMetadata.needsColorUpdate] always skips.
+     * @param openSource if it returns a [BufferedSource] then it will load bitmap from that, regardless of [ogFile].
+     *  If it returns null or fails then nothing is extracted, it doesn't fall back to [ogFile] or [CoverCache].
+     *  It's called on the calling thread, and only when the bitmap is actually going to be decoded. The source
+     *  must be independent from the one handed to Coil, it is read on another thread and closed after use.
      */
     private fun setRatioAndColorsInScope(
         mangaCover: MangaCover,
-        bufferedSource: BufferedSource? = null,
         ogFile: File? = null,
         onlyFavorite: Boolean = !themeCoverBased,
         force: Boolean = false,
+        openSource: (() -> BufferedSource?)? = null,
     ) {
         if (!preloadLibraryColor) return
-        scope.launch {
-            MangaCoverMetadata.setRatioAndColors(mangaCover, bufferedSource, ogFile, onlyFavorite, force)
+        // This runs for every displayed cover and most of them already have their colors, so do the cheap
+        // bookkeeping here and only launch a coroutine when a bitmap is actually going to be decoded.
+        if (!mangaCover.isMangaFavorite) {
+            with(MangaCoverMetadata) { mangaCover.remove() }
         }
+        if (!MangaCoverMetadata.needsColorUpdate(mangaCover, onlyFavorite, force)) return
+        val bufferedSource = if (openSource != null) {
+            val source = try {
+                openSource()
+            } catch (e: Exception) {
+                // Expected when the request is cancelled or the connection drops, Coil will report it if it matters
+                logcat(LogPriority.WARN, e) { "Failed to open cover source for metadata" }
+                null
+            } catch (e: OutOfMemoryError) {
+                // Colors are optional, don't fail the cover's fetch because its copy doesn't fit in memory
+                logcat(LogPriority.ERROR, e) { "Not enough memory to open cover source for metadata" }
+                null
+            }
+            // Skip rather than fall back to CoverCache, which may still hold an older cover than the one being loaded
+            source ?: return
+        } else {
+            null
+        }
+        scope.launch {
+            try {
+                bufferedSource.use {
+                    MangaCoverMetadata.setRatioAndColors(
+                        mangaCover = mangaCover,
+                        bufferedSource = it,
+                        ogFile = ogFile,
+                        onlyDominantColor = onlyFavorite,
+                        force = force,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Colors are optional, never let them crash the app
+                logcat(LogPriority.ERROR, e) { "Failed to extract cover ratio & colors" }
+            } catch (e: OutOfMemoryError) {
+                // Same for a cover which is too large to decode, it's only this bitmap which doesn't fit
+                logcat(LogPriority.ERROR, e) { "Not enough memory to extract cover ratio & colors" }
+            }
+        }
+    }
+
+    /**
+     * [setRatioAndColorsInScope] reading the cover through a new handle on the [snapshot]'s file,
+     * independent from the one handed to Coil.
+     */
+    private fun setRatioAndColorsInScope(mangaCover: MangaCover, snapshot: DiskCache.Snapshot) {
+        setRatioAndColorsInScope(mangaCover = mangaCover) { FileSystem.SYSTEM.source(snapshot.data).buffer() }
     }
     // KMK <--
 
@@ -420,5 +486,10 @@ class MangaCoverFetcher(
         private val CACHE_CONTROL_NO_NETWORK_NO_CACHE = CacheControl.Builder().noCache().onlyIfCached().build()
 
         private const val HTTP_NOT_MODIFIED = 304
+
+        // KMK -->
+        /** Maximum bytes to peek from the network response for cover metadata extraction. */
+        private const val MAX_COVER_PEEK_BYTES = 5L * 1024 * 1024 // 5 MiB
+        // KMK <--
     }
 }
