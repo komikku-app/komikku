@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher.Companion.USE_CUSTOM_COVER_KEY
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -366,9 +367,13 @@ class MangaCoverFetcher(
         openSource: (() -> BufferedSource?)? = null,
     ) {
         if (!preloadLibraryColor) return
-        val bufferedSource = if (
-            openSource != null && MangaCoverMetadata.needsColorUpdate(mangaCover, onlyFavorite, force)
-        ) {
+        // This runs for every displayed cover and most of them already have their colors, so do the cheap
+        // bookkeeping here and only launch a coroutine when a bitmap is actually going to be decoded.
+        if (!mangaCover.isMangaFavorite) {
+            with(MangaCoverMetadata) { mangaCover.remove() }
+        }
+        if (!MangaCoverMetadata.needsColorUpdate(mangaCover, onlyFavorite, force)) return
+        val bufferedSource = if (openSource != null) {
             try {
                 openSource()
             } catch (e: Exception) {
@@ -390,6 +395,8 @@ class MangaCoverFetcher(
                         force = force,
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 // Colors are optional, never let them crash the app
                 logcat(LogPriority.ERROR, e) { "Failed to extract cover ratio & colors" }
