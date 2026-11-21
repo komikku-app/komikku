@@ -3,6 +3,7 @@ package exh.md.network
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
+import eu.kanade.tachiyomi.network.interceptor.MangaDexUserAgentInterceptor
 import exh.md.utils.MdUtil
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.comparables.shouldBeLessThan
@@ -42,6 +43,21 @@ class MangaDexAuthInterceptorTest {
 
     /** Calls to the token endpoint, across all chains made by [chain]. */
     private var tokenRequests = 0
+
+    /** The last request sent to the token endpoint by a chain made by [chain]. */
+    private var lastTokenRequest: Request? = null
+
+    @Test
+    fun `refresh request sends the non-browser MangaDex User-Agent`() {
+        val interceptor = loggedInInterceptor()
+
+        interceptor.intercept(chain(tokenStatus = 200, tokenBody = REFRESHED_TOKEN_BODY))
+
+        tokenRequests shouldBe 1
+        val userAgent = lastTokenRequest?.header("User-Agent")
+        userAgent shouldBe MangaDexUserAgentInterceptor.defaultUserAgent()
+        userAgent!!.startsWith("Tachiyomi ") shouldBe true
+    }
 
     @Test
     fun `invalid_grant on 400 or 401 is a rejection`() {
@@ -386,6 +402,7 @@ class MangaDexAuthInterceptorTest {
                 when {
                     sent.url.host == "auth.mangadex.org" -> {
                         tokenRequests++
+                        lastTokenRequest = sent
                         beforeTokenResponse()
                         response(sent, tokenStatus, tokenBody)
                     }
