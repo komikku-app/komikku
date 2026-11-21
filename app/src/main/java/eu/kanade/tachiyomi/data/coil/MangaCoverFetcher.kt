@@ -391,6 +391,9 @@ class MangaCoverFetcher(
             } catch (e: Exception) {
                 // Colors are optional, never let them crash the app
                 logcat(LogPriority.ERROR, e) { "Failed to extract cover ratio & colors" }
+            } catch (e: OutOfMemoryError) {
+                // Same for a cover which is too large to decode, it's only this bitmap which doesn't fit
+                logcat(LogPriority.ERROR, e) { "Not enough memory to extract cover ratio & colors" }
             }
         }
     }
