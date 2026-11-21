@@ -343,6 +343,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                     preference = uiPreferences.bottomBarLabels(),
                     title = stringResource(SYMR.strings.pref_show_bottom_bar_labels),
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = uiPreferences.autoHideBarsOnScroll(),
+                    title = stringResource(KMR.strings.pref_auto_hide_bars_on_scroll),
+                ),
+                // KMK <--
             ),
         )
     }
