@@ -108,7 +108,6 @@ import logcat.LogPriority
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
 import mihon.domain.manga.model.toDomainManga
 import mihon.domain.source.interactor.UpdateMangaFromRemote
-import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.TriState
@@ -591,20 +590,18 @@ class MangaScreenModel(
     fun fetchAllFromSource(manualFetch: Boolean = true) {
         screenModelScope.launch {
             updateSuccessState { it.copy(isRefreshingData = true) }
-            // KMK -->
-            val newChapters = fetchAllFromSource(
+            fetchAllFromSource(
                 manualFetch = manualFetch,
                 fetchDetails = true,
                 fetchChapters = true,
             )
+            // KMK -->
             launch { syncTrackers() }
-            // A refresh the user asked for also re-checks the MangaBaka cover, ignoring the usual daily wait,
-            // then sums up both: "Refreshed. 2 new chapters, cover updated to volume 12".
+            // A refresh the user asked for also re-checks the MangaBaka cover, ignoring the usual daily wait.
             if (manualFetch) {
                 successState?.manga?.let { manga ->
                     launch {
-                        val outcome = mangaBakaCoverUpdater.update(manga, force = true)
-                        val message = refreshMessage(newChapters, outcome)
+                        val message = mangaBakaMessage(mangaBakaCoverUpdater.update(manga, force = true))
                         if (message != null) snackbarHostState.showSnackbar(message = message)
                     }
                 }
@@ -614,19 +611,14 @@ class MangaScreenModel(
         }
     }
 
-    // KMK -->
-    /** Returns the number of new chapters, or null if the refresh failed (the error is shown already). */
     private suspend fun fetchAllFromSource(
         manualFetch: Boolean,
         fetchDetails: Boolean,
         fetchChapters: Boolean,
-    ): Int? {
-        val state = successState ?: return null
-        // KMK <--
+    ) {
+        val state = successState ?: return
         try {
-            // KMK -->
-            return withIOContext {
-                // KMK <--
+            withIOContext {
                 val update = updateMangaFromRemote(
                     source = state.source,
                     manga = state.manga,
@@ -643,9 +635,6 @@ class MangaScreenModel(
                 if (manualFetch) {
                     downloadNewChapters(update.newChapters)
                 }
-                // KMK -->
-                update.newChapters.size
-                // KMK <--
             }
         } catch (_: CancellationException) {
             // ignore
@@ -664,37 +653,16 @@ class MangaScreenModel(
             writeErrorToDB(state.manga to with(context) { e.formattedMessage })
             // KMK <--
         }
-        // KMK -->
-        return null
-        // KMK <--
     }
 
     // KMK -->
-    /**
-     * One message for a manual refresh with MangaBaka covers on: new chapters and a new cover, either, or neither.
-     * Null with the feature off (the refresh stays as it was), or when the refresh itself failed and its error
-     * is shown instead, unless the cover check failed too.
-     */
-    private fun refreshMessage(newChapters: Int?, outcome: MangaBakaCoverUpdater.Outcome): String? {
-        if (outcome == MangaBakaCoverUpdater.Outcome.Skipped) return null
-        val coverFailed = (outcome as? MangaBakaCoverUpdater.Outcome.Failed)
-            ?.let { context.stringResource(KMR.strings.mangabaka_cover_failed, it.reason) }
-        if (newChapters == null) return coverFailed
-        val volume = (outcome as? MangaBakaCoverUpdater.Outcome.Updated)?.volume
-        val summary = when {
-            newChapters > 0 && volume != null -> context.pluralStringResource(
-                KMR.plurals.refreshed_new_chapters_and_cover,
-                newChapters,
-                newChapters,
-                volume,
-            )
-            newChapters > 0 ->
-                context.pluralStringResource(KMR.plurals.refreshed_new_chapters, newChapters, newChapters)
-            volume != null -> context.stringResource(KMR.strings.refreshed_new_cover, volume)
-            coverFailed != null -> context.stringResource(KMR.strings.refreshed_no_new_chapters)
-            else -> context.stringResource(KMR.strings.refreshed_nothing_new)
-        }
-        return listOfNotNull(summary, coverFailed).joinToString("\n")
+    /** Only a new cover or a failure gets a message: like chapters, a refresh that finds nothing new is silent. */
+    private fun mangaBakaMessage(outcome: MangaBakaCoverUpdater.Outcome): String? = when (outcome) {
+        is MangaBakaCoverUpdater.Outcome.Updated ->
+            context.stringResource(KMR.strings.mangabaka_cover_updated, outcome.volume)
+        is MangaBakaCoverUpdater.Outcome.Failed ->
+            context.stringResource(KMR.strings.mangabaka_cover_failed, outcome.reason)
+        else -> null
     }
 
     private suspend fun clearErrorFromDB(mangaId: Long) {

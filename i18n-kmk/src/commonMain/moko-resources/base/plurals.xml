@@ -1,11 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <plurals name="refreshed_new_chapters">
-        <item quantity="one">Refreshed. %1$d new chapter</item>
-        <item quantity="other">Refreshed. %1$d new chapters</item>
-    </plurals>
-    <plurals name="refreshed_new_chapters_and_cover">
-        <item quantity="one">Refreshed. %1$d new chapter, cover updated to volume %2$s</item>
-        <item quantity="other">Refreshed. %1$d new chapters, cover updated to volume %2$s</item>
-    </plurals>
 </resources>

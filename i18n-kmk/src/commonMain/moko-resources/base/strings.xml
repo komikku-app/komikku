@@ -243,9 +243,7 @@
     <string name="pref_mangabaka_covers">Use MangaBaka covers</string>
     <string name="pref_mangabaka_covers_summary">Use the latest volume cover from MangaBaka for tracked titles. Cover data from mangabaka.org (CC BY-NC-SA 4.0)</string>
     <string name="pref_mangabaka_cover_language">MangaBaka cover language</string>
-    <string name="refreshed_nothing_new">Refreshed. No new chapters or covers</string>
-    <string name="refreshed_no_new_chapters">Refreshed. No new chapters</string>
-    <string name="refreshed_new_cover">Refreshed. Cover updated to volume %1$s</string>
+    <string name="mangabaka_cover_updated">MangaBaka cover updated to volume %1$s</string>
     <string name="mangabaka_cover_failed">MangaBaka cover failed: %1$s</string>
     <string name="mangabaka_covers_result_title">MangaBaka covers checked</string>
     <string name="mangabaka_covers_result">Updated: %1$d\nAlready latest: %2$d\nSource cover (none in this language): %3$d\nNot tracked: %4$d\nYour own cover kept: %5$d\nFailed: %6$d</string>
