@@ -29,14 +29,29 @@ class MangaDexAuthInterceptor(
         if (oauth == null) {
             oauth = MdUtil.loadOAuth(trackPreferences, mdList)
         }
-        // Refresh access token if expired
-        if (oauth != null && oauth!!.isExpired()) {
-            setAuth(refreshToken(chain))
-        }
 
         if (oauth == null) {
             throw IOException("No authentication token")
         }
+
+        // KMK -->
+        // Refresh access token if expired. Only clear the stored credentials when the
+        // refresh token is genuinely rejected by the server; transient failures (no
+        // network, server errors, ...) must keep the credentials so the app can keep
+        // renewing on its own instead of forcing a browser re-login.
+        if (oauth!!.isExpired()) {
+            when (val result = refreshToken(chain)) {
+                is RefreshResult.Success -> setAuth(result.oauth)
+                is RefreshResult.InvalidGrant -> {
+                    setAuth(null)
+                    throw IOException("MangaDex session expired, please log in again")
+                }
+                is RefreshResult.TransientError -> {
+                    throw IOException("Could not refresh MangaDex token", result.cause)
+                }
+            }
+        }
+        // KMK <--
 
         // Add the authorization header to the original request
         val authRequest = originalRequest.newBuilder()
@@ -50,10 +65,18 @@ class MangaDexAuthInterceptor(
         // Retry the request once with a new token in case it was not already refreshed
         // by the is expired check before.
         if (response.code == 401 && tokenIsExpired) {
-            val newToken = refreshToken(chain)
-            setAuth(newToken)
+            // KMK -->
+            val newToken = when (val result = refreshToken(chain)) {
+                is RefreshResult.Success -> result.oauth.also { setAuth(it) }
+                is RefreshResult.InvalidGrant -> {
+                    setAuth(null)
+                    return response
+                }
+                // Keep credentials on transient errors and return the original response.
+                is RefreshResult.TransientError -> return response
+            }
+            // KMK <--
 
-            newToken ?: return response
             response.close()
 
             val newRequest = originalRequest.newBuilder()
@@ -76,20 +99,51 @@ class MangaDexAuthInterceptor(
         MdUtil.saveOAuth(trackPreferences, mdList, oauth)
     }
 
-    private fun refreshToken(chain: Interceptor.Chain): MALOAuth? {
-        val newOauth = runCatching {
-            val oauthResponse = chain.proceed(MdUtil.refreshTokenRequest(oauth!!))
+    // KMK -->
+    /**
+     * Attempts to refresh the access token using the stored refresh token.
+     *
+     * Distinguishes a definitive rejection of the refresh token ([RefreshResult.InvalidGrant]),
+     * which requires the user to log in again, from transient failures
+     * ([RefreshResult.TransientError]) that must not clear the stored credentials.
+     */
+    private fun refreshToken(chain: Interceptor.Chain): RefreshResult {
+        val currentOauth = oauth ?: return RefreshResult.InvalidGrant
 
-            if (oauthResponse.isSuccessful) {
-                with(MdUtil.jsonParser) { oauthResponse.parseAs<MALOAuth>() }
-            } else {
-                oauthResponse.close()
-                null
-            }
+        // If the refresh token is known to be expired there is no point in trying.
+        if (currentOauth.isRefreshTokenExpired()) {
+            return RefreshResult.InvalidGrant
         }
 
-        logcat(throwable = newOauth.exceptionOrNull()) { "Fetched new mangadex oauth" }
-
-        return newOauth.getOrNull()
+        return runCatching {
+            chain.proceed(MdUtil.refreshTokenRequest(currentOauth)).use { oauthResponse ->
+                when {
+                    oauthResponse.isSuccessful -> {
+                        val newOauth = with(MdUtil.jsonParser) { oauthResponse.parseAs<MALOAuth>() }
+                        RefreshResult.Success(newOauth)
+                    }
+                    // 400/401 with an invalid_grant error means the refresh token is dead.
+                    oauthResponse.code in 400..401 &&
+                        oauthResponse.peekBody(Long.MAX_VALUE).string().contains("invalid_grant") -> {
+                        RefreshResult.InvalidGrant
+                    }
+                    else -> RefreshResult.TransientError(
+                        IOException("Unexpected refresh response: HTTP ${oauthResponse.code}"),
+                    )
+                }
+            }
+        }.getOrElse { e ->
+            logcat(throwable = e) { "Failed to refresh mangadex oauth" }
+            RefreshResult.TransientError(e)
+        }
     }
+
+    private sealed interface RefreshResult {
+        data class Success(val oauth: MALOAuth) : RefreshResult
+
+        data object InvalidGrant : RefreshResult
+
+        data class TransientError(val cause: Throwable) : RefreshResult
+    }
+    // KMK <--
 }
