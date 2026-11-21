@@ -175,9 +175,9 @@ enum class MangaCoverHide(private val ratio: Float) {
         shape: Shape = MaterialTheme.shapes.extraSmall,
         onClick: (() -> Unit)? = null,
         // KMK -->
-        /** background color, which used for loading/error indicator */
+        /** background color, which is used for loading/error indicator */
         bgColor: Color? = CoverPlaceholderColor,
-        /** onBackground color, which used for loading/error indicator */
+        /** onBackground color, which is used for loading/error indicator */
         @ColorInt tint: Int? = null,
         size: Size = Size.Normal,
     ) {
