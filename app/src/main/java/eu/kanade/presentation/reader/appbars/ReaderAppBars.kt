@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
@@ -248,6 +250,11 @@ fun ReaderAppBars(
                         isVerticalSlider = false,
                         currentPageText = currentPageText,
                         // SY <--
+                        // KMK -->
+                        modifier = Modifier.windowInsetsPadding(
+                            WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal),
+                        ),
+                        // KMK <--
                     )
                 }
                 ReaderBottomBar(
