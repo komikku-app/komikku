@@ -1315,7 +1315,9 @@ class LibraryScreenModel(
                                     (manga.artist?.contains(query, true) != true) &&
                                     (manga.description?.contains(query, true) != true) &&
                                     (source?.name?.contains(query, true) != true) &&
-                                    (sourceIdString != null && sourceIdString != query) &&
+                                    // KMK -->
+                                    (sourceIdString != query) &&
+                                    // KMK <--
                                     (
                                         loggedInTrackServices.isEmpty() ||
                                             tracks == null ||
