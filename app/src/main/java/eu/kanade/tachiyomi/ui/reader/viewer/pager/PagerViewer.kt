@@ -19,11 +19,15 @@ import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
+import eu.kanade.tachiyomi.util.upscale.AiUpscalePrefetcher
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import tachiyomi.core.common.util.system.logcat
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.min
 
@@ -74,6 +78,13 @@ abstract class PagerViewer(
      * or dragging, there'd be a noticeable and annoying jump.
      */
     private var awaitingIdleViewerChapters: ViewerChapters? = null
+
+    // KMK -->
+    /**
+     * Tracking of previous chapter
+     */
+    private var lastPrefetchChapterId: Long? = null
+    // KMK <--
 
     /**
      * Whether the view pager is currently in idle mode. It sets the awaiting chapters if setting
@@ -170,6 +181,9 @@ abstract class PagerViewer(
     override fun destroy() {
         super.destroy()
         scope.cancel()
+        // KMK -->
+        AiUpscalePrefetcher.clear()
+        // KMK <--
     }
 
     /**
@@ -264,6 +278,17 @@ abstract class PagerViewer(
             logcat { "Request preload next chapter because we're at page ${page.number} of ${pages.size}" }
             adapter.nextTransition?.to?.let(activity::requestPreloadChapter)
         }
+
+        // KMK -->
+        val prefetchAhead = Injekt.get<ReaderPreferences>().aiUpscalePrefetchAheadCount().get()
+        val targetWidth = activity.resources.displayMetrics.widthPixels
+        AiUpscalePrefetcher.updatePosition(
+            current = page,
+            aheadCount = prefetchAhead,
+            targetWidth = targetWidth,
+            nextChapterProvider = { adapter.nextTransition?.to?.pages },
+        )
+        // KMK <--
     }
 
     /**
@@ -298,6 +323,14 @@ abstract class PagerViewer(
      * Sets the active [chapters] on this pager.
      */
     internal fun setChaptersInternal(chapters: ViewerChapters) {
+        // KMK -->
+        val newChapterId = chapters.currChapter.chapter.id
+        if (lastPrefetchChapterId != null && lastPrefetchChapterId != newChapterId) {
+            AiUpscalePrefetcher.clear()
+        }
+        lastPrefetchChapterId = newChapterId
+        // KMK <--
+
         // Remove listener so the change in item doesn't trigger it
         // since we're about to change the size of the items
         // If we don't the size change could put us on a new chapter

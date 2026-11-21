@@ -5,6 +5,8 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
@@ -12,6 +14,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.Companion.zoomWideImagesAllowedList
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.WebtoonScaleType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.setting.UpscaleModelSelectionScreen
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import kotlinx.collections.immutable.persistentListOf
@@ -114,6 +117,9 @@ object SettingsReaderScreen : SearchableSettings {
             getPageDownloadingGroup(readerPreferences = readerPref),
             getForkSettingsGroup(readerPreferences = readerPref),
             // SY <--
+            // KMK -->
+            getUpscalingGroup(readerPreferences = readerPref),
+            // KMK <--
         )
     }
 
@@ -161,6 +167,83 @@ object SettingsReaderScreen : SearchableSettings {
             ),
         )
     }
+
+    // KMK -->
+    @Composable
+    private fun getUpscalingGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
+        val navigator = LocalNavigator.currentOrThrow
+        val aiUpscaleEnabledPref = readerPreferences.aiUpscaleEnabled()
+        val aiUpscaleEnabled by aiUpscaleEnabledPref.collectAsState()
+        val aiUpscaleModel by readerPreferences.aiUpscaleModel().collectAsState()
+        val aiUpscaleBatch by readerPreferences.aiUpscaleBatchSize().collectAsState()
+        val aiUpscalePrefetchAheadPref = readerPreferences.aiUpscalePrefetchAheadCount()
+        val aiUpscalePrefetchAhead by aiUpscalePrefetchAheadPref.collectAsState()
+        val aiUpscaleWifiOnlyPref = readerPreferences.aiUpscaleWifiOnlyDownloads()
+        val aiUpscaleTileOverlapPref = readerPreferences.aiUpscaleTileOverlap()
+        val aiUpscaleTileOverlap by aiUpscaleTileOverlapPref.collectAsState()
+
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_category_upscaling),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = aiUpscaleEnabledPref,
+                    title = stringResource(KMR.strings.pref_ai_upscale_enabled),
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.pref_ai_upscale_model),
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_model_subtitle, aiUpscaleModel.displayName, aiUpscaleBatch),
+                    onClick = { navigator.push(UpscaleModelSelectionScreen()) },
+                    enabled = aiUpscaleEnabled,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = aiUpscaleWifiOnlyPref,
+                    title = stringResource(KMR.strings.pref_ai_upscale_wifi_only),
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_wifi_only_summary),
+                    enabled = aiUpscaleEnabled,
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = aiUpscalePrefetchAhead,
+                    valueRange = 1..10,
+                    title = stringResource(KMR.strings.pref_ai_upscale_prefetch_ahead),
+                    valueString = aiUpscalePrefetchAhead.toString(),
+                    enabled = aiUpscaleEnabled,
+                    onValueChanged = { aiUpscalePrefetchAheadPref.set(it) },
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = aiUpscaleTileOverlap,
+                    valueRange = 0..64,
+                    steps = 3, // 5 fermate: 0, 16, 32, 48, 64
+                    title = stringResource(KMR.strings.pref_ai_upscale_tile_overlap),
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_tile_overlap_summary),
+                    valueString = if (aiUpscaleTileOverlap == 0) {
+                        stringResource(KMR.strings.pref_ai_upscale_tile_overlap_off)
+                    } else {
+                        aiUpscaleTileOverlap.toString()
+                    },
+                    enabled = aiUpscaleEnabled,
+                    onValueChanged = { aiUpscaleTileOverlapPref.set(it) },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.aiUpscaleCacheSize(),
+                    title = stringResource(KMR.strings.pref_ai_upscale_cache_size),
+                    subtitle = stringResource(KMR.strings.pref_ai_upscale_cache_size_summary),
+                    enabled = aiUpscaleEnabled,
+                    entries = persistentMapOf(
+                        50 to "50 MB",
+                        100 to "100 MB",
+                        200 to "200 MB",
+                        350 to "350 MB",
+                        500 to "500 MB",
+                        750 to "750 MB",
+                        1000 to "1 GB",
+                        1500 to "1.5 GB",
+                        2000 to "2 GB",
+                    ),
+                ),
+            ),
+        )
+    }
+    // KMK <--
 
     @Composable
     private fun getEInkGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
