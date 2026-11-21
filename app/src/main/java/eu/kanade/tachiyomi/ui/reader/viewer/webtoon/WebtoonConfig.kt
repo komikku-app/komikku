@@ -52,6 +52,13 @@ class WebtoonConfig(
         private set
 
     var webtoonScaleTypeChangedListener: ((ReaderPreferences.WebtoonScaleType) -> Unit)? = null
+
+    /** Auto-scroll speed in dp per second. */
+    var autoScrollSpeed = ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_DEFAULT
+        private set
+
+    var autoScrollStopAtChapterEnd = false
+        private set
     // KMK <--
 
     // SY -->
@@ -126,6 +133,19 @@ class WebtoonConfig(
                 { webtoonScaleType = it },
                 { webtoonScaleTypeChangedListener?.invoke(it) },
             )
+
+        readerPreferences.webtoonAutoScrollSpeed()
+            .register(
+                {
+                    autoScrollSpeed = it.coerceIn(
+                        ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_MIN,
+                        ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_MAX,
+                    )
+                },
+            )
+
+        readerPreferences.webtoonAutoScrollStopAtChapterEnd()
+            .register({ autoScrollStopAtChapterEnd = it })
         // KMK <--
 
         readerPreferences.readerTheme().changes()

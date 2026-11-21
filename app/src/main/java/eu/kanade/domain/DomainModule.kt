@@ -41,6 +41,7 @@ import tachiyomi.data.category.CategoryRepositoryImpl
 import tachiyomi.data.chapter.ChapterRepositoryImpl
 import tachiyomi.data.history.HistoryRepositoryImpl
 import tachiyomi.data.manga.MangaRepositoryImpl
+import tachiyomi.data.readinglog.ReadingLogRepositoryImpl
 import tachiyomi.data.release.ReleaseServiceImpl
 import tachiyomi.data.source.SourceRepositoryImpl
 import tachiyomi.data.source.StubSourceRepositoryImpl
@@ -84,6 +85,11 @@ import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.interactor.UpdateMangaNotes
 import tachiyomi.domain.manga.repository.MangaRepository
+import tachiyomi.domain.readinglog.interactor.GetReadingHeatmap
+import tachiyomi.domain.readinglog.interactor.GetReadingStreak
+import tachiyomi.domain.readinglog.interactor.GetYearInReview
+import tachiyomi.domain.readinglog.interactor.LogReadTime
+import tachiyomi.domain.readinglog.repository.ReadingLogRepository
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.domain.release.service.ReleaseService
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -176,6 +182,14 @@ class DomainModule : InjektModule {
         addFactory { UpsertHistory(get()) }
         addFactory { RemoveHistory(get()) }
         addFactory { GetTotalReadDuration(get()) }
+
+        // KMK -->
+        addSingletonFactory<ReadingLogRepository> { ReadingLogRepositoryImpl(get()) }
+        addFactory { LogReadTime(get()) }
+        addFactory { GetReadingStreak(get()) }
+        addFactory { GetReadingHeatmap(get()) }
+        addFactory { GetYearInReview(get()) }
+        // KMK <--
 
         addFactory { DeleteDownload(get(), get()) }
 

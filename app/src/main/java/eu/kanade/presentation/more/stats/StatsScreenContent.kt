@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
@@ -12,18 +13,24 @@ import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import eu.kanade.presentation.more.stats.components.ReadingHeatmap
 import eu.kanade.presentation.more.stats.components.StatsItem
 import eu.kanade.presentation.more.stats.components.StatsOverviewItem
 import eu.kanade.presentation.more.stats.data.StatsData
 import eu.kanade.presentation.util.toDurationString
+import tachiyomi.domain.readinglog.interactor.GetReadingHeatmap
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import java.time.LocalDate
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -32,6 +39,9 @@ import kotlin.time.toDuration
 fun StatsScreenContent(
     state: StatsScreenState.Success,
     paddingValues: PaddingValues,
+    // KMK -->
+    onClickYearInReview: () -> Unit,
+    // KMK <--
 ) {
     LazyColumn(
         contentPadding = paddingValues,
@@ -40,6 +50,11 @@ fun StatsScreenContent(
         item {
             OverviewSection(state.overview)
         }
+        // KMK -->
+        item {
+            ActivitySection(state.activity, onClickYearInReview)
+        }
+        // KMK <--
         item {
             TitlesStats(state.titles)
         }
@@ -85,6 +100,48 @@ private fun LazyItemScope.OverviewSection(
         }
     }
 }
+
+// KMK -->
+@Composable
+private fun LazyItemScope.ActivitySection(
+    data: StatsData.Activity,
+    onClickYearInReview: () -> Unit,
+) {
+    val streak = data.streak
+    val today = remember { LocalDate.now() }
+    SectionCard(KMR.strings.label_reading_activity_section) {
+        Row {
+            StatsItem(
+                streak.current.toString(),
+                stringResource(KMR.strings.label_streak_current),
+            )
+            StatsItem(
+                streak.longest.toString(),
+                stringResource(KMR.strings.label_streak_longest),
+            )
+        }
+        Text(
+            text = when {
+                streak.atRisk -> stringResource(KMR.strings.streak_grace_used)
+                streak.readToday -> stringResource(KMR.strings.streak_read_today)
+                streak.graceAvailable -> stringResource(KMR.strings.streak_grace_available)
+                else -> stringResource(KMR.strings.streak_grace_waiting)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+        )
+        ReadingHeatmap(
+            activity = data.heatmap,
+            start = today.minusWeeks(GetReadingHeatmap.WEEKS.toLong()),
+            end = today,
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+        )
+        TextButton(onClick = onClickYearInReview) {
+            Text(stringResource(KMR.strings.year_in_review_title))
+        }
+    }
+}
+// KMK <--
 
 @Composable
 private fun LazyItemScope.TitlesStats(

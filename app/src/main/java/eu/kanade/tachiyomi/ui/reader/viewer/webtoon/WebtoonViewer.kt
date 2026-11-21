@@ -6,7 +6,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.animation.LinearInterpolator
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
 import androidx.core.view.doOnLayout
@@ -15,8 +14,10 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.WebtoonLayoutManager
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
+import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -30,7 +31,6 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.time.Duration
 
 /**
  * Implementation of a [Viewer] to display pages with a [RecyclerView].
@@ -90,6 +90,15 @@ class WebtoonViewer(
     /* [EXH] private */
     var currentPage: Any? = null
 
+    // KMK -->
+    private val autoScroller = WebtoonAutoScroller(
+        recycler = recycler,
+        speedDpPerSecond = { config.autoScrollSpeed },
+        gate = ::autoScrollGate,
+        onStopRequested = ::requestAutoScrollOff,
+    )
+    // KMK <--
+
     private val threshold: Int =
         // KMK -->
         readerPreferences
@@ -127,6 +136,10 @@ class WebtoonViewer(
                     val lastItem = adapter.items.getOrNull(lastIndex)
                     if (lastItem is ChapterTransition.Next && lastItem.to == null) {
                         activity.showMenu()
+                        // KMK -->
+                        // End of the series: the menu stops the scrolling, so the switch has to follow
+                        requestAutoScrollOff()
+                        // KMK <--
                     }
                 }
             },
@@ -216,6 +229,11 @@ class WebtoonViewer(
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
 
+        // KMK -->
+        // Touching the screen takes the control back to the user
+        frame.onUserTouch = { requestAutoScrollOff() }
+        // KMK <--
+
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)
     }
@@ -252,6 +270,9 @@ class WebtoonViewer(
      */
     override fun destroy() {
         super.destroy()
+        // KMK -->
+        autoScroller.stop()
+        // KMK <--
         scope.cancel()
     }
 
@@ -325,6 +346,11 @@ class WebtoonViewer(
         val item = adapter.items.getOrNull(position)
         val allowPreload = checkAllowPreload(item as? ReaderPage)
         if (item != null && currentPage != item) {
+            // KMK -->
+            if (config.autoScrollStopAtChapterEnd && autoScroller.isActive && isChapterEnd(currentPage, item)) {
+                requestAutoScrollOff()
+            }
+            // KMK <--
             currentPage = item
             when (item) {
                 is ReaderPage -> onPageSelected(item, allowPreload)
@@ -344,17 +370,69 @@ class WebtoonViewer(
         }
     }
 
+    // KMK -->
     /**
-     * Scrolls one screen over a period of time
+     * Starts scrolling continuously at the speed set in the preferences. Replaces the former
+     * "one screen per interval" scrolling.
      */
-    fun linearScroll(duration: Duration) {
-        recycler.smoothScrollBy(
-            0,
-            activity.resources.displayMetrics.heightPixels,
-            LinearInterpolator(),
-            duration.inWholeMilliseconds.toInt(),
-        )
+    fun startAutoScroll() = autoScroller.start()
+
+    /**
+     * Stops the continuous scrolling. Does nothing if it wasn't started.
+     */
+    fun stopAutoScroll() = autoScroller.stop()
+
+    /**
+     * Turns the auto-scroll off from the user's point of view (switch and buttons), if it's running.
+     * Used when the user takes the control, or when there is nothing else to scroll.
+     */
+    private fun requestAutoScrollOff() {
+        if (autoScroller.isActive) {
+            autoScroller.stop()
+            activity.viewModel.toggleAutoScroll(false)
+        }
     }
+
+    /**
+     * Decides what the auto-scroll has to do next, based on the item that is about to be shown at the
+     * bottom of the screen.
+     */
+    private fun autoScrollGate(): AutoScrollGate {
+        val position = layoutManager.findLastVisibleItemPosition()
+        // The first layout is not done yet
+        val item = adapter.items.getOrNull(position) ?: return AutoScrollGate.HOLD
+        val atEnd = position == adapter.itemCount - 1 && !recycler.canScrollVertically(1)
+
+        return when (item) {
+            is ReaderPage -> when (item.status) {
+                Page.State.Ready -> if (atEnd) AutoScrollGate.STOP else AutoScrollGate.PROCEED
+                is Page.State.Error -> AutoScrollGate.STOP
+                else -> AutoScrollGate.HOLD
+            }
+            is ChapterTransition.Next -> when {
+                !atEnd -> AutoScrollGate.PROCEED
+                // End of the series
+                item.to == null -> AutoScrollGate.STOP
+                item.to.state is ReaderChapter.State.Error -> AutoScrollGate.STOP
+                // The next chapter is still being loaded
+                else -> AutoScrollGate.HOLD
+            }
+            else -> AutoScrollGate.PROCEED
+        }
+    }
+
+    /**
+     * Returns true if moving from [previous] to [item] means that the end of a chapter has been reached.
+     */
+    private fun isChapterEnd(previous: Any?, item: Any): Boolean {
+        return when (item) {
+            is ChapterTransition.Next -> true
+            // The transition is not shown, the chapters are directly one after the other
+            is ReaderPage -> (previous as? ReaderPage)?.let { it.chapter != item.chapter } == true
+            else -> false
+        }
+    }
+    // KMK <--
 
     /**
      * Scrolls down by [scrollDistance].
@@ -424,6 +502,10 @@ class WebtoonViewer(
             -> if (isUp) scrollDown()
             else -> return false
         }
+        // KMK -->
+        // Using the keys takes the control back to the user
+        requestAutoScrollOff()
+        // KMK <--
         return true
     }
 

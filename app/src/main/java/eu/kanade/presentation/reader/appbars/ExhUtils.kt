@@ -39,7 +39,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.material.Slider
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -53,12 +56,22 @@ fun ExhUtils(
     autoScrollFrequency: String,
     onSetAutoScrollFrequency: (String) -> Unit,
     onClickAutoScrollHelp: () -> Unit,
+    // KMK -->
+    /** The auto-scroll is controlled by its speed instead of an interval. */
+    useAutoScrollSpeed: Boolean = false,
+    autoScrollSpeed: Int = 0,
+    onSetAutoScrollSpeed: (Int) -> Unit = {},
+    // KMK <--
     onClickRetryAll: () -> Unit,
     onClickRetryAllHelp: () -> Unit,
     onClickBoostPage: () -> Unit,
     onClickBoostPageHelp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // KMK -->
+    // The interval is not used in speed mode, so it can't make the switch unavailable
+    val isAutoScrollEnabled = isAutoScrollEnabled || useAutoScrollSpeed
+    // KMK <--
     Column(
         modifier
             .fillMaxWidth()
@@ -116,47 +129,71 @@ fun ExhUtils(
                             Modifier.weight(3f),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            var autoScrollFrequencyState by remember {
-                                mutableStateOf(autoScrollFrequency)
-                            }
-                            TextField(
-                                value = autoScrollFrequencyState,
-                                onValueChange = {
-                                    autoScrollFrequencyState = it
-                                    onSetAutoScrollFrequency(it)
-                                },
-                                isError = !isAutoScrollEnabled,
-                                singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                modifier = Modifier.fillMaxWidth(0.75f),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Decimal,
-                                ),
-                            )
-                            AnimatedVisibility(!isAutoScrollEnabled) {
+                            // KMK -->
+                            if (useAutoScrollSpeed) {
                                 Text(
-                                    text = stringResource(SYMR.strings.eh_autoscroll_freq_invalid),
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.labelSmall,
+                                    text = stringResource(KMR.strings.webtoon_auto_scroll_speed_value, autoScrollSpeed),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                                Slider(
+                                    value = autoScrollSpeed,
+                                    onValueChange = onSetAutoScrollSpeed,
+                                    valueRange = ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_RANGE,
+                                    steps = ReaderPreferences.WEBTOON_AUTO_SCROLL_SPEED_SLIDER_STEPS,
+                                )
+                            } else {
+                                // KMK <--
+                                var autoScrollFrequencyState by remember {
+                                    mutableStateOf(autoScrollFrequency)
+                                }
+                                TextField(
+                                    value = autoScrollFrequencyState,
+                                    onValueChange = {
+                                        autoScrollFrequencyState = it
+                                        onSetAutoScrollFrequency(it)
+                                    },
+                                    isError = !isAutoScrollEnabled,
+                                    singleLine = true,
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color.Transparent,
+                                        unfocusedContainerColor = Color.Transparent,
+                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    ),
+                                    modifier = Modifier.fillMaxWidth(0.75f),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Decimal,
+                                    ),
+                                )
+                                AnimatedVisibility(!isAutoScrollEnabled) {
+                                    Text(
+                                        text = stringResource(SYMR.strings.eh_autoscroll_freq_invalid),
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
+                                // KMK -->
+                            }
+                            // KMK <--
+                        }
+                        // KMK -->
+                        if (!useAutoScrollSpeed) {
+                            // KMK <--
+                            TextButton(
+                                onClick = onClickAutoScrollHelp,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(
+                                    text = "?",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
                                 )
                             }
+                            // KMK -->
                         }
-                        TextButton(
-                            onClick = onClickAutoScrollHelp,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(
-                                text = "?",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
+                        // KMK <--
                     }
                 }
                 Row(

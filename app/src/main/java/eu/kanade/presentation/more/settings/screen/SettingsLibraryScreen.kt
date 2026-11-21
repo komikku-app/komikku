@@ -19,6 +19,7 @@ import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.library.ReleaseReminderJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
 import kotlinx.collections.immutable.persistentListOf
@@ -65,6 +66,9 @@ object SettingsLibraryScreen : SearchableSettings {
         return listOf(
             getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
             getGlobalUpdateGroup(allCategories, libraryPreferences),
+            // KMK -->
+            getReleaseReminderGroup(libraryPreferences),
+            // KMK <--
             getBehaviorGroup(libraryPreferences),
             // SY -->
             getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
@@ -237,6 +241,41 @@ object SettingsLibraryScreen : SearchableSettings {
             ),
         )
     }
+
+    // KMK -->
+    @Composable
+    private fun getReleaseReminderGroup(
+        libraryPreferences: LibraryPreferences,
+    ): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val enabled by libraryPreferences.releaseReminder().collectAsState()
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_category_release_reminder),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.releaseReminder(),
+                    title = stringResource(KMR.strings.pref_release_reminder),
+                    subtitle = stringResource(KMR.strings.pref_release_reminder_summary),
+                    onValueChanged = {
+                        // Post to event looper to allow the preference to be updated.
+                        ContextCompat.getMainExecutor(context).execute { ReleaseReminderJob.setupTask(context) }
+                        true
+                    },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = libraryPreferences.releaseReminderHour(),
+                    entries = (0..23).associateWith { "%02d:00".format(it) }.toImmutableMap(),
+                    title = stringResource(KMR.strings.pref_release_reminder_time),
+                    enabled = enabled,
+                    onValueChanged = {
+                        ContextCompat.getMainExecutor(context).execute { ReleaseReminderJob.setupTask(context) }
+                        true
+                    },
+                ),
+            ),
+        )
+    }
+    // KMK <--
 
     @Composable
     private fun getBehaviorGroup(

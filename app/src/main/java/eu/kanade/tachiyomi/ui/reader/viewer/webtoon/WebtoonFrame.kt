@@ -41,6 +41,13 @@ class WebtoonFrame(context: Context) : FrameLayout(context) {
         }
     // KMK <--
 
+    // KMK -->
+    /**
+     * Called when the user puts a finger on the screen, before any other handling of the touch.
+     */
+    var onUserTouch: (() -> Unit)? = null
+    // KMK <--
+
     var zoomOutDisabled = false
         set(value) {
             field = value
@@ -57,6 +64,11 @@ class WebtoonFrame(context: Context) : FrameLayout(context) {
      * Dispatches a touch event to the detectors.
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        // KMK -->
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+            onUserTouch?.invoke()
+        }
+        // KMK <--
         scaleDetector.onTouchEvent(ev)
         flingDetector.onTouchEvent(ev)
 

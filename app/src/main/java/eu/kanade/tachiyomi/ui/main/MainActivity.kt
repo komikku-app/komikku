@@ -80,6 +80,7 @@ import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.library.ReleaseReminderJob
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
@@ -522,6 +523,16 @@ class MainActivity : BaseActivity() {
                             Toast.LENGTH_LONG,
                         ).show()
                     }
+                }
+                // The reminder is a chain of one-shot jobs: restart it if the chain was broken
+                try {
+                    if (Injekt.get<LibraryPreferences>().releaseReminder().get() &&
+                        !ReleaseReminderJob.isScheduled(context)
+                    ) {
+                        ReleaseReminderJob.setupTask(context)
+                    }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
                 }
                 try {
                     if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {

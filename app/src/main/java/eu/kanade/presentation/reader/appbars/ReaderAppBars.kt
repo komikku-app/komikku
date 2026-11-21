@@ -85,6 +85,12 @@ fun ReaderAppBars(
     autoScrollFrequency: String,
     onSetAutoScrollFrequency: (String) -> Unit,
     onClickAutoScrollHelp: () -> Unit,
+    // KMK -->
+    useAutoScrollSpeed: Boolean,
+    autoScrollSpeed: Int,
+    onSetAutoScrollSpeed: (Int) -> Unit,
+    onClickAutoScroll: () -> Unit,
+    // KMK <--
     onClickRetryAll: () -> Unit,
     onClickRetryAllHelp: () -> Unit,
     onClickBoostPage: () -> Unit,
@@ -142,6 +148,11 @@ fun ReaderAppBars(
                     autoScrollFrequency = autoScrollFrequency,
                     onSetAutoScrollFrequency = onSetAutoScrollFrequency,
                     onClickAutoScrollHelp = onClickAutoScrollHelp,
+                    // KMK -->
+                    useAutoScrollSpeed = useAutoScrollSpeed,
+                    autoScrollSpeed = autoScrollSpeed,
+                    onSetAutoScrollSpeed = onSetAutoScrollSpeed,
+                    // KMK <--
                     onClickRetryAll = onClickRetryAll,
                     onClickRetryAllHelp = onClickRetryAllHelp,
                     onClickBoostPage = onClickBoostPage,
@@ -275,6 +286,10 @@ fun ReaderAppBars(
                     onClickPageLayout = onClickPageLayout,
                     onClickShiftPage = onClickShiftPage,
                     // SY <--
+                    // KMK -->
+                    isAutoScroll = isAutoScroll,
+                    onClickAutoScroll = onClickAutoScroll,
+                    // KMK <--
                 )
             }
         }

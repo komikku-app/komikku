@@ -184,6 +184,28 @@ class ReaderPreferences(
 
     fun smoothAutoScroll() = preferenceStore.getBoolean("smooth_auto_scroll", true)
 
+    // KMK -->
+    /** Speed of the continuous auto-scroll of the webtoon reader, in dp per second. */
+    fun webtoonAutoScrollSpeed() = preferenceStore.getInt(
+        "webtoon_auto_scroll_speed",
+        WEBTOON_AUTO_SCROLL_SPEED_DEFAULT,
+    )
+
+    /** Publish a launcher shortcut that continues the last read title. Opt-in, it shows the title. */
+    fun continueReadingShortcut() = preferenceStore.getBoolean("continue_reading_shortcut", false)
+
+    /** Minutes after which the auto-scroll stops by itself, 0 when the sleep timer is off. */
+    fun autoScrollSleepTimerMinutes() = preferenceStore.getInt(
+        "auto_scroll_sleep_timer_minutes",
+        AUTO_SCROLL_SLEEP_TIMER_DEFAULT,
+    )
+
+    fun webtoonAutoScrollStopAtChapterEnd() = preferenceStore.getBoolean(
+        "webtoon_auto_scroll_stop_at_chapter_end",
+        false,
+    )
+    // KMK <--
+
     fun preserveReadingPosition() = preferenceStore.getBoolean("eh_preserve_reading_position", false)
 
     fun preloadSize() = preferenceStore.getInt("eh_preload_size", 10)
@@ -264,6 +286,27 @@ class ReaderPreferences(
     companion object {
         const val WEBTOON_PADDING_MIN = 0
         const val WEBTOON_PADDING_MAX = 25
+
+        // KMK -->
+        const val WEBTOON_AUTO_SCROLL_SPEED_MIN = 10
+        const val WEBTOON_AUTO_SCROLL_SPEED_MAX = 400
+        const val WEBTOON_AUTO_SCROLL_SPEED_STEP = 10
+        const val WEBTOON_AUTO_SCROLL_SPEED_DEFAULT = 80
+
+        val WEBTOON_AUTO_SCROLL_SPEED_RANGE =
+            WEBTOON_AUTO_SCROLL_SPEED_MIN..WEBTOON_AUTO_SCROLL_SPEED_MAX step WEBTOON_AUTO_SCROLL_SPEED_STEP
+
+        /** Number of stops between both ends of the slider. */
+        const val WEBTOON_AUTO_SCROLL_SPEED_SLIDER_STEPS =
+            (WEBTOON_AUTO_SCROLL_SPEED_MAX - WEBTOON_AUTO_SCROLL_SPEED_MIN) / WEBTOON_AUTO_SCROLL_SPEED_STEP - 1
+
+        const val AUTO_SCROLL_SLEEP_TIMER_MAX = 60
+        const val AUTO_SCROLL_SLEEP_TIMER_STEP = 5
+        const val AUTO_SCROLL_SLEEP_TIMER_DEFAULT = 0
+        val AUTO_SCROLL_SLEEP_TIMER_RANGE =
+            AUTO_SCROLL_SLEEP_TIMER_DEFAULT..AUTO_SCROLL_SLEEP_TIMER_MAX step AUTO_SCROLL_SLEEP_TIMER_STEP
+        const val AUTO_SCROLL_SLEEP_TIMER_SLIDER_STEPS = AUTO_SCROLL_SLEEP_TIMER_MAX / AUTO_SCROLL_SLEEP_TIMER_STEP - 1
+        // KMK <--
 
         const val MILLI_CONVERSION = 100
 

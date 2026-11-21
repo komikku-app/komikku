@@ -38,6 +38,14 @@ class LibraryPreferences(
     fun autoUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 0)
 
     // KMK -->
+    /** A daily notification listing the titles expected to release today. Opt-in. */
+    fun releaseReminder() = preferenceStore.getBoolean("release_reminder", false)
+
+    /** Hour of the day (0 to 23) of the release reminder. */
+    fun releaseReminderHour() = preferenceStore.getInt("release_reminder_hour", RELEASE_REMINDER_DEFAULT_HOUR)
+    // KMK <--
+
+    // KMK -->
     fun showUpdatingProgressBanner() = preferenceStore.getBoolean(
         Preference.appStateKey("pref_show_updating_progress_banner_key"),
         true,
@@ -271,6 +279,10 @@ class LibraryPreferences(
     // SY <--
 
     companion object {
+        // KMK -->
+        const val RELEASE_REMINDER_DEFAULT_HOUR = 9
+        // KMK <--
+
         const val DEVICE_ONLY_ON_WIFI = "wifi"
         const val DEVICE_NETWORK_NOT_METERED = "network_not_metered"
         const val DEVICE_CHARGING = "ac"

@@ -83,6 +83,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.shortcut.ContinueReadingShortcut
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -116,7 +117,9 @@ import exh.util.mangaType
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -257,6 +260,9 @@ class ReaderActivity : BaseActivity() {
 
         // EXH -->
         enableExhAutoScroll()
+        // KMK -->
+        lifecycleScope.launch { enableWebtoonAutoScroll() }
+        // KMK <--
         // EXH <--
 
         // Finish when incognito mode is disabled
@@ -309,6 +315,11 @@ class ReaderActivity : BaseActivity() {
                     is ReaderViewModel.Event.SetCoverResult -> {
                         onSetAsCoverResult(event.result)
                     }
+                    // KMK -->
+                    ReaderViewModel.Event.AutoScrollTimerElapsed -> {
+                        toast(KMR.strings.auto_scroll_sleep_timer_elapsed)
+                    }
+                    // KMK <--
                 }
             }
             .launchIn(lifecycleScope)
@@ -528,9 +539,22 @@ class ReaderActivity : BaseActivity() {
         readingModeToast?.cancel()
     }
 
+    // KMK -->
+    override fun onStop() {
+        // Don't keep scrolling when the user comes back to the reader. Rotating is not leaving.
+        if (!isChangingConfigurations) {
+            viewModel.toggleAutoScroll(false)
+        }
+        super.onStop()
+    }
+    // KMK <--
+
     override fun onPause() {
         lifecycleScope.launchNonCancellable {
             viewModel.updateHistory()
+            // KMK -->
+            ContinueReadingShortcut.update(this@ReaderActivity)
+            // KMK <--
         }
 
         // AM (DISCORD) -->
@@ -665,6 +689,10 @@ class ReaderActivity : BaseActivity() {
         val readerBottomButtons by readerPreferences.readerBottomButtons().changes().map { it.toImmutableSet() }
             .collectAsState(persistentSetOf())
         val dualPageSplitPaged by readerPreferences.dualPageSplitPaged().collectAsState()
+        // KMK -->
+        val smoothAutoScroll by readerPreferences.smoothAutoScroll().collectAsState()
+        val autoScrollSpeed by readerPreferences.webtoonAutoScrollSpeed().collectAsState()
+        // KMK <--
 
         val forceHorizontalSeekbar by readerPreferences.forceHorizontalSeekbar().collectAsState()
         val landscapeVerticalSeekbar by readerPreferences.landscapeVerticalSeekbar().collectAsState()
@@ -732,6 +760,21 @@ class ReaderActivity : BaseActivity() {
             autoScrollFrequency = state.ehAutoscrollFreq,
             onSetAutoScrollFrequency = viewModel::setAutoScrollFrequency,
             onClickAutoScrollHelp = viewModel::openAutoScrollHelpDialog,
+            // KMK -->
+            useAutoScrollSpeed = state.viewer is WebtoonViewer && smoothAutoScroll,
+            autoScrollSpeed = autoScrollSpeed,
+            onSetAutoScrollSpeed = { readerPreferences.webtoonAutoScrollSpeed().set(it) },
+            onClickAutoScroll = {
+                val current = viewModel.state.value
+                val enable = !current.autoScroll
+                // Without a speed, a valid interval is needed, like for the switch of the SY tools
+                val canStart = (current.viewer is WebtoonViewer && smoothAutoScroll) || current.isAutoScrollEnabled
+                if (!enable || canStart) {
+                    viewModel.toggleAutoScroll(enable)
+                    if (enable) hideMenu()
+                }
+            },
+            // KMK <--
             onClickRetryAll = ::exhRetryAll,
             onClickRetryAllHelp = viewModel::openRetryAllHelp,
             onClickBoostPage = ::exhBoostPage,
@@ -791,9 +834,10 @@ class ReaderActivity : BaseActivity() {
                                     when (v) {
                                         is PagerViewer -> v.moveToNext()
                                         is WebtoonViewer -> {
-                                            if (readerPreferences.smoothAutoScroll().get()) {
-                                                v.linearScroll(interval)
-                                            } else {
+                                            // KMK -->
+                                            // Smooth scrolling is done continuously by enableWebtoonAutoScroll()
+                                            if (!readerPreferences.smoothAutoScroll().get()) {
+                                                // KMK <--
                                                 v.scrollDown()
                                             }
                                         }
@@ -809,6 +853,34 @@ class ReaderActivity : BaseActivity() {
             }
             .launchIn(lifecycleScope)
     }
+
+    // KMK -->
+    /**
+     * Scrolls the webtoon viewer continuously, at the speed set in the preferences, while the auto-scroll
+     * is on, the menu is hidden and the activity is started.
+     */
+    private suspend fun enableWebtoonAutoScroll() {
+        combine(
+            viewModel.state.map { it.autoScroll && !it.menuVisible }.distinctUntilChanged(),
+            viewModel.state.map { it.viewer }.distinctUntilChanged(),
+            readerPreferences.smoothAutoScroll().changes(),
+        ) { active, viewer, smooth ->
+            (viewer as? WebtoonViewer)?.takeIf { active && smooth }
+        }
+            .distinctUntilChanged()
+            .collectLatest { viewer ->
+                viewer ?: return@collectLatest
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewer.startAutoScroll()
+                    try {
+                        awaitCancellation()
+                    } finally {
+                        viewer.stopAutoScroll()
+                    }
+                }
+            }
+    }
+    // KMK <--
 
     private fun exhRetryAll() {
         var retried = 0
@@ -1367,9 +1439,16 @@ class ReaderActivity : BaseActivity() {
                 .onEach { setDisplayProfile(it) }
                 .launchIn(lifecycleScope)
 
-            readerPreferences.keepScreenOn().changes()
+            // KMK -->
+            // The screen must not turn off while the auto-scroll is on
+            combine(
+                readerPreferences.keepScreenOn().changes(),
+                viewModel.state.map { it.autoScroll }.distinctUntilChanged(),
+            ) { keepScreenOn, autoScroll -> keepScreenOn || autoScroll }
+                .distinctUntilChanged()
                 .onEach(::setKeepScreenOn)
                 .launchIn(lifecycleScope)
+            // KMK <--
 
             readerPreferences.customBrightness().changes()
                 .onEach(::setCustomBrightness)

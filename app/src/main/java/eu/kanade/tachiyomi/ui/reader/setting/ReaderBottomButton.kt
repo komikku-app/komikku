@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import dev.icerock.moko.resources.StringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 
 enum class ReaderBottomButton(val value: String, val stringRes: StringResource) {
@@ -15,6 +16,10 @@ enum class ReaderBottomButton(val value: String, val stringRes: StringResource) 
     CropBordersContinuesVertical("cbc", SYMR.strings.pref_crop_borders_continuous_vertical),
     CropBordersWebtoon("cbw", SYMR.strings.pref_crop_borders_webtoon),
     PageLayout("pl", SYMR.strings.page_layout),
+
+    // KMK -->
+    AutoScroll("as", KMR.strings.action_auto_scroll),
+    // KMK <--
     ;
 
     fun isIn(buttons: Collection<String>) = value in buttons

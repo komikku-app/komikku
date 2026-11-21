@@ -1,11 +1,13 @@
 package eu.kanade.presentation.more.settings.screen
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.tachiyomi.data.shortcut.ContinueReadingShortcut
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -234,6 +236,22 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.alwaysShowChapterTransition(),
                     title = stringResource(MR.strings.pref_always_show_chapter_transition),
                 ),
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.continueReadingShortcut(),
+                    title = stringResource(KMR.strings.pref_continue_reading_shortcut),
+                    subtitle = stringResource(KMR.strings.pref_continue_reading_shortcut_summary),
+                    onValueChanged = {
+                        // The preference is only written once this returns, so update with the new value
+                        if (it) {
+                            ContinueReadingShortcut.update(Injekt.get<Application>(), enabled = true)
+                        } else {
+                            ContinueReadingShortcut.remove(Injekt.get<Application>())
+                        }
+                        true
+                    },
+                ),
+                // KMK <--
             ),
         )
     }
