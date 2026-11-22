@@ -195,9 +195,24 @@ class MdUtil {
             return POST(MdApi.baseAuthUrl + MdApi.token, body = formBody, headers = headers)
         }
 
+        // KMK -->
+        // Only the refresh request still uses this in-memory verifier; logins use [newLoginCodeVerifier].
+        // KMK <--
         fun getPkceChallengeCode(): String {
             return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
         }
+
+        // KMK -->
+        /**
+         * Creates the PKCE code verifier of a new login, to build its authorization URL with, and stores it for
+         * the code exchange in [exh.md.network.MangaDexLoginHelper.login], replacing the one of any earlier
+         * login. Each login gets its own verifier.
+         */
+        fun newLoginCodeVerifier(preferences: TrackPreferences, mdList: MdList): String {
+            return PkceUtil.generateCodeVerifier()
+                .also { preferences.trackPkceCodeVerifier(mdList).set(it) }
+        }
+        // KMK <--
 
         fun getEnabledMangaDex(
             sourcePreferences: SourcePreferences = Injekt.get(),

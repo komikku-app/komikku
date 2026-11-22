@@ -163,7 +163,9 @@ object SettingsMangadexScreen : SearchableSettings {
                     } else {
                         {
                             context.openInBrowser(
-                                MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()),
+                                // KMK -->
+                                MdConstants.Login.authUrl(MdUtil.newLoginCodeVerifier(trackPreferences, mdex.mdList)),
+                                // KMK <--
                                 forceDefaultBrowser = true,
                             )
                         }

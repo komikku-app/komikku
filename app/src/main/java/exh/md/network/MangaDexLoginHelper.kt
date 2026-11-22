@@ -30,11 +30,24 @@ class MangaDexLoginHelper(
      *  Login given the generated authorization code
      */
     suspend fun login(authorizationCode: String): Boolean {
+        // KMK -->
+        // The verifier stored when the login URL was built, maybe by a process that was killed since.
+        val codeVerifierPreference = preferences.trackPkceCodeVerifier(mdList)
+        val codeVerifier = codeVerifierPreference.get()
+        if (codeVerifier.isEmpty()) {
+            // Any other verifier would fail the server's PKCE check. Nothing was sent, so a session the user
+            // may already have is kept.
+            logcat(LogPriority.ERROR) { "Error logging in: no PKCE code verifier stored for this login" }
+            return false
+        }
+        // KMK <--
         val loginFormBody = FormBody.Builder()
             .add("client_id", MdConstants.Login.clientId)
             .add("grant_type", MdConstants.Login.authorizationCode)
             .add("code", authorizationCode)
-            .add("code_verifier", MdUtil.getPkceChallengeCode())
+            // KMK -->
+            .add("code_verifier", codeVerifier)
+            // KMK <--
             .add("redirect_uri", MdConstants.Login.redirectUri)
             .build()
 
@@ -46,6 +59,14 @@ class MangaDexLoginHelper(
             }
             mangaDexAuthInterceptor.setAuth(data)
         }.exceptionOrNull()
+
+        // KMK -->
+        // Cancelled, e.g. because the login activity was recreated, which delivers the redirect again. The code
+        // may not have reached the server, so keep the verifier for that retry and leave the session alone.
+        if (error is CancellationException) throw error
+        // The exchange completed: a verifier is good for a single code exchange, whatever its outcome.
+        codeVerifierPreference.delete()
+        // KMK <--
 
         return when (error == null) {
             true -> {
