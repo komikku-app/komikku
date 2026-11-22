@@ -24,7 +24,6 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
-import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
@@ -132,7 +131,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
     // KMK -->
     private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
-    private val coverCache: CoverCache = Injekt.get()
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
@@ -599,10 +597,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 }
 
                 // KMK -->
-                if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl != remoteThumbnailUrl) {
-                    // Drop the cover cached under the old source URL before switching to the new one.
-                    // Not deleteFromCache(): it keys on thumbnailUrl, which is the custom cover URL when set.
-                    coverCache.getCoverFile(dbManga.ogThumbnailUrl)?.delete()
+                // Only fill a missing cover. An existing one comes from the details parser, which applies the
+                // cover-quality and first-volume-cover preferences that the follows list doesn't.
+                if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl.isNullOrBlank()) {
                     dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
                 }
                 // KMK <--
