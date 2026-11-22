@@ -8,6 +8,7 @@ import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.POST
+import eu.kanade.tachiyomi.network.interceptor.MangaDexUserAgentInterceptor
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.PkceUtil
@@ -184,6 +185,11 @@ class MdUtil {
             // the part where the token is added automatically.
             val headers = Headers.Builder()
                 .add("Authorization", "Bearer ${oauth.accessToken}")
+                // KMK -->
+                // Sent from inside the auth interceptor, past MangaDexUserAgentInterceptor, so set the same
+                // non-browser User-Agent here instead of falling back to OkHttp's default.
+                .add("User-Agent", MangaDexUserAgentInterceptor.defaultUserAgent())
+                // KMK <--
                 .build()
 
             return POST(MdApi.baseAuthUrl + MdApi.token, body = formBody, headers = headers)

@@ -183,7 +183,10 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
             TrackMangaMetadata(
                 remoteId = 0,
                 title = manga.title,
-                thumbnailUrl = manga.thumbnail_url, // Doesn't load the actual cover because of Refer header
+                // KMK -->
+                // Loaded as a plain URL; MangaDexUserAgentInterceptor gives it a User-Agent MangaDex doesn't block.
+                thumbnailUrl = manga.thumbnail_url,
+                // KMK <--
                 description = manga.description,
                 authors = manga.author,
                 artists = manga.artist,
