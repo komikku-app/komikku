@@ -85,7 +85,7 @@ internal class MangaDexSimilarPagingSource(
                 // KMK <--
                 val similarPageDef = async {
                     // KMK -->
-                    getSimilarOrEmpty()
+                    similarHandler.getSimilar(manga.toSManga())
                     // KMK <--
                 }
                 val relatedPageDef = async {
@@ -113,19 +113,4 @@ internal class MangaDexSimilarPagingSource(
 
         return mangasPage.takeIf { it.mangas.isNotEmpty() } ?: throw NoResultsException()
     }
-
-    // KMK -->
-    /**
-     * similarmanga.com answers 404 for titles it has no data for, which is common. That only means there are no
-     * similar titles, and must not hide the related titles from MangaDex.
-     */
-    private suspend fun getSimilarOrEmpty(): MetadataMangasPage {
-        return try {
-            similarHandler.getSimilar(manga.toSManga())
-        } catch (e: HttpException) {
-            if (e.code != 404) throw e
-            MetadataMangasPage(emptyList(), false, emptyList())
-        }
-    }
-    // KMK <--
 }
