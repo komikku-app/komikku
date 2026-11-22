@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.network.interceptor
 
+import eu.kanade.tachiyomi.network.NetworkHelper.Companion.addUserAgentInterceptors
 import io.kotest.matchers.shouldBe
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -11,15 +12,17 @@ import org.junit.jupiter.api.Test
 
 class MangaDexUserAgentInterceptorTest {
 
-    private val appUserAgent = "Tachiyomi Dalvik/2.1.0 (Linux; U; Android 14)"
+    private val appUserAgent = MangaDexUserAgentInterceptor.defaultUserAgent()
     private val browserUserAgent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 Chrome/141.0.0.0 Mobile"
 
-    /** Sends [request] through the same interceptor order as NetworkHelper and returns the User-Agent that left. */
+    /**
+     * Sends [request] through the User-Agent interceptors NetworkHelper's shared client uses, added by the same
+     * function and so in the same order, and returns the User-Agent that left.
+     */
     private fun sentUserAgent(request: Request): String? {
         var sent: Request? = null
         val client = OkHttpClient.Builder()
-            .addInterceptor(MangaDexUserAgentInterceptor(appUserAgent))
-            .addInterceptor(UserAgentInterceptor { browserUserAgent })
+            .addUserAgentInterceptors { browserUserAgent }
             .addInterceptor(
                 Interceptor { chain ->
                     sent = chain.request()
