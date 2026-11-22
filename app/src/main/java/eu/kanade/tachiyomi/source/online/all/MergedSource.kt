@@ -87,11 +87,19 @@ class MergedSource : HttpSource() {
 
             val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga }
                 ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
-            val dbManga = mangaInfoReference?.run {
-                getManga.await(mangaUrl, mangaSourceId)?.toSManga()
-            }
+            // KMK -->
+            val infoManga = mangaInfoReference?.run {
+                getManga.await(mangaUrl, mangaSourceId)
+            }?.takeIf { it.id != mergedManga.id }
+            val dbManga = infoManga?.toSManga()
+            // KMK <--
             (dbManga ?: mergedManga.toSManga()).copy(
                 url = manga.url,
+                // KMK -->
+                // The merged entry shows the cover its info entry shows, custom cover URL included, as
+                // SmartSearchMerge seeds it. Never the merged entry's own custom URL (fallback above).
+                thumbnail_url = if (infoManga != null) infoManga.thumbnailUrl else mergedManga.ogThumbnailUrl,
+                // KMK <--
             )
         }
     }
