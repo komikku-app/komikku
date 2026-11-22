@@ -44,6 +44,8 @@ class MangaDexUserAgentInterceptorTest {
             "https://api.mangadex.org/manga",
             "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/logout",
             "https://mangadex.org/title/a",
+            "https://abc123.mangadex.network/data/hash/1.jpg",
+            "https://api.mangadex.network/report",
         ).forEach { url ->
             sentUserAgent(Request.Builder().url(url).build()) shouldBe appUserAgent
         }
@@ -64,6 +66,7 @@ class MangaDexUserAgentInterceptorTest {
             "https://api.similarmanga.com/similar/a.json",
             "https://notmangadex.org/a",
             "https://mangadex.org.example.com/a",
+            "https://notmangadex.network/a",
         ).forEach { url ->
             sentUserAgent(Request.Builder().url(url).build()) shouldBe browserUserAgent
         }
