@@ -77,11 +77,15 @@ internal class MangaDexSimilarPagingSource(
     // KMK <--
 
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
-        val mangasPage = coroutineScope {
-            try {
+        // KMK -->
+        // The catch must wrap coroutineScope, not sit inside it: a failed async child fails the whole scope,
+        // which then rethrows the exception after any catch inside it has run.
+        val mangasPage = try {
+            coroutineScope {
+                // KMK <--
                 val similarPageDef = async {
                     // KMK -->
-                    similarHandler.getSimilar(manga.toSManga())
+                    getSimilarOrEmpty()
                     // KMK <--
                 }
                 val relatedPageDef = async {
@@ -97,14 +101,31 @@ internal class MangaDexSimilarPagingSource(
                     false,
                     relatedPage.mangasMetadata + similarPage.mangasMetadata,
                 )
-            } catch (e: HttpException) {
-                when (e.code) {
-                    404 -> throw NoResultsException()
-                    else -> throw e
-                }
+                // KMK -->
+            }
+        } catch (e: HttpException) {
+            // KMK <--
+            when (e.code) {
+                404 -> throw NoResultsException()
+                else -> throw e
             }
         }
 
         return mangasPage.takeIf { it.mangas.isNotEmpty() } ?: throw NoResultsException()
     }
+
+    // KMK -->
+    /**
+     * similarmanga.com answers 404 for titles it has no data for, which is common. That only means there are no
+     * similar titles, and must not hide the related titles from MangaDex.
+     */
+    private suspend fun getSimilarOrEmpty(): MetadataMangasPage {
+        return try {
+            similarHandler.getSimilar(manga.toSManga())
+        } catch (e: HttpException) {
+            if (e.code != 404) throw e
+            MetadataMangasPage(emptyList(), false, emptyList())
+        }
+    }
+    // KMK <--
 }
