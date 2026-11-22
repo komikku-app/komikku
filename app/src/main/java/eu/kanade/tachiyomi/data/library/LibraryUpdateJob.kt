@@ -24,6 +24,7 @@ import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
@@ -131,6 +132,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
     // KMK -->
     private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    private val coverCache: CoverCache = Injekt.get()
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
@@ -573,11 +575,20 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 
+                // KMK -->
+                // The follows list already carries each entry's cover. UpdateMangaFromRemote doesn't fetch
+                // details here, so it only writes back the local manga: the cover has to be put on it first.
+                val remoteThumbnailUrl = networkManga.thumbnail_url?.takeIf { it.isNotEmpty() }
+                // KMK <--
+
                 if (dbManga == null) {
                     dbManga = networkToLocalManga(
                         Manga.create().copy(
                             url = networkManga.url,
                             ogTitle = networkManga.title,
+                            // KMK -->
+                            ogThumbnailUrl = remoteThumbnailUrl,
+                            // KMK <--
                             source = mangaDex.id,
                             favorite = true,
                             dateAdded = System.currentTimeMillis(),
@@ -586,6 +597,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }
+
+                // KMK -->
+                if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl != remoteThumbnailUrl) {
+                    // Drop the cover cached under the old URL before switching to the new one
+                    coverCache.deleteFromCache(dbManga)
+                    dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
+                }
+                // KMK <--
 
                 updateMangaFromRemote(
                     manga = dbManga,
