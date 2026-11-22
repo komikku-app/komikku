@@ -600,8 +600,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 // KMK -->
                 if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl != remoteThumbnailUrl) {
-                    // Drop the cover cached under the old URL before switching to the new one
-                    coverCache.deleteFromCache(dbManga)
+                    // Drop the cover cached under the old source URL before switching to the new one.
+                    // Not deleteFromCache(): it keys on thumbnailUrl, which is the custom cover URL when set.
+                    coverCache.getCoverFile(dbManga.ogThumbnailUrl)?.delete()
                     dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
                 }
                 // KMK <--
