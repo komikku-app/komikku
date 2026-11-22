@@ -577,6 +577,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // The follows list already carries each entry's cover. UpdateMangaFromRemote doesn't fetch
                 // details here, so it only writes back the local manga: the cover has to be put on it first.
                 val remoteThumbnailUrl = networkManga.thumbnail_url?.takeIf { it.isNotEmpty() }
+
+                // Only new entries and entries whose cover URL changes get their cover refreshed (cached cover
+                // dropped + coverLastModified bumped). Otherwise every sync would re-download every cover.
+                var refreshCover = false
                 // KMK <--
 
                 if (dbManga == null) {
@@ -592,6 +596,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                             dateAdded = System.currentTimeMillis(),
                         ),
                     )
+                    // KMK -->
+                    refreshCover = true
+                    // KMK <--
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }
@@ -601,16 +608,23 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // cover-quality and first-volume-cover preferences that the follows list doesn't.
                 if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl.isNullOrBlank()) {
                     dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
+                    refreshCover = true
                 }
                 // KMK <--
 
                 updateMangaFromRemote(
                     manga = dbManga,
                     // KMK -->
-                    // Update cover & fetchInterval
-                    manualFetch = true,
-                    // KMK <--
+                    // manualFetch makes UpdateMangaFromRemote refresh the cover even when its URL is unchanged,
+                    // and makes SyncChaptersWithSource recalculate the fetch interval.
+                    manualFetch = refreshCover,
                 )
+                    .onSuccess {
+                        // Without manualFetch, still recalculate the fetch interval as manualFetch would.
+                        // Only on success: an entry with no chapters fails without updating it either way.
+                        if (!refreshCover) updateManga.awaitUpdateFetchInterval(dbManga)
+                    }
+                // KMK <--
 
                 metadata.mangaId = dbManga.id
                 insertFlatMetadata.await(metadata)
