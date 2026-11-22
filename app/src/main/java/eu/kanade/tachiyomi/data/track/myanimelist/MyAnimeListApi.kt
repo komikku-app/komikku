@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.track.myanimelist
 
 import android.net.Uri
 import androidx.core.net.toUri
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -42,7 +43,12 @@ class MyAnimeListApi(
 
     private val authClient = client.newBuilder().addInterceptor(interceptor).build()
 
-    suspend fun getAccessToken(authCode: String): MALOAuth {
+    suspend fun getAccessToken(
+        authCode: String,
+        // KMK -->
+        codeVerifier: String,
+        // KMK <--
+    ): MALOAuth {
         return withIOContext {
             val formBody: RequestBody = FormBody.Builder()
                 .add("client_id", CLIENT_ID)
@@ -312,13 +318,19 @@ class MyAnimeListApi(
 
         private const val LIST_PAGINATION_AMOUNT = 250
 
-        private var codeVerifier: String = ""
-
-        fun authUrl(): Uri = "$BASE_OAUTH_URL/authorize".toUri().buildUpon()
-            .appendQueryParameter("client_id", CLIENT_ID)
-            .appendQueryParameter("code_challenge", getPkceChallengeCode())
-            .appendQueryParameter("response_type", "code")
-            .build()
+        // KMK -->
+        /**
+         * Authorization URL of a new login, with a new PKCE code verifier stored by [newLoginCodeVerifier].
+         * MAL only supports the plain method, so the code challenge is the verifier itself.
+         */
+        fun authUrl(trackPreferences: TrackPreferences, tracker: MyAnimeList): Uri {
+            return "$BASE_OAUTH_URL/authorize".toUri().buildUpon()
+                .appendQueryParameter("client_id", CLIENT_ID)
+                .appendQueryParameter("code_challenge", newLoginCodeVerifier(trackPreferences, tracker))
+                .appendQueryParameter("response_type", "code")
+                .build()
+        }
+        // KMK <--
 
         fun mangaUrl(id: Long): Uri = "$BASE_API_URL/manga".toUri().buildUpon()
             .appendPath(id.toString())
@@ -342,9 +354,16 @@ class MyAnimeListApi(
             return POST("$BASE_OAUTH_URL/token", body = formBody, headers = headers)
         }
 
-        private fun getPkceChallengeCode(): String {
-            codeVerifier = PkceUtil.generateCodeVerifier()
-            return codeVerifier
+        // KMK -->
+        /**
+         * Creates the PKCE code verifier of a new login and stores it for the code exchange in
+         * [MyAnimeList.login], replacing the one of any earlier login. Stored rather than kept in memory, so the
+         * login still completes when the app process is killed while the browser is open.
+         */
+        private fun newLoginCodeVerifier(trackPreferences: TrackPreferences, tracker: MyAnimeList): String {
+            return PkceUtil.generateCodeVerifier()
+                .also { trackPreferences.trackPkceCodeVerifier(tracker).set(it) }
         }
+        // KMK <--
     }
 }
