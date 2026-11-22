@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.track.myanimelist
 
 import eu.kanade.domain.track.service.TrackPreferences
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.NetworkHelper
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -22,7 +23,7 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.jupiter.api.Test
 import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreference
 import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.addSingleton
+import uy.kohesive.injekt.api.addFactory
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
@@ -35,6 +36,22 @@ class MyAnimeListLoginTest {
     private val authExpiredPreference = InMemoryPreference("pref_tracker_auth_expired_1", null, false)
     private val tokenPreference = InMemoryPreference("track_token_1", null, "")
     private val codeVerifierPreference = InMemoryPreference("track_pkce_code_verifier_1", null, "")
+    private val trackPreferences = mockk<TrackPreferences> {
+        every { trackUsername(any()) } returns usernamePreference
+        every { trackPassword(any()) } returns passwordPreference
+        every { trackAuthExpired(any()) } returns authExpiredPreference
+        every { trackToken(any()) } returns tokenPreference
+        every { trackPkceCodeVerifier(any()) } returns codeVerifierPreference
+        every { setCredentials(any(), any(), any()) } answers {
+            usernamePreference.set(secondArg())
+            passwordPreference.set(thirdArg())
+            authExpiredPreference.set(false)
+        }
+    }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
 
     /** Requests that reached the network. */
     private val sent = CopyOnWriteArrayList<Request>()
@@ -51,18 +68,12 @@ class MyAnimeListLoginTest {
         .build()
 
     init {
-        // Injekt keeps the instances registered first, so each test stubs the same mocks again.
-        every { trackPreferences.trackUsername(any()) } returns usernamePreference
-        every { trackPreferences.trackPassword(any()) } returns passwordPreference
-        every { trackPreferences.trackAuthExpired(any()) } returns authExpiredPreference
-        every { trackPreferences.trackToken(any()) } returns tokenPreference
-        every { trackPreferences.trackPkceCodeVerifier(any()) } returns codeVerifierPreference
-        every { trackPreferences.setCredentials(any(), any(), any()) } answers {
-            usernamePreference.set(secondArg())
-            passwordPreference.set(thirdArg())
-            authExpiredPreference.set(false)
-        }
-        every { networkHelper.client } returns client
+        // MyAnimeList and its API and interceptor resolve these through Injekt. Factories, not singletons: Injekt
+        // keeps a singleton's first instance for the whole JVM, whichever test registered it.
+        val networkHelper = mockk<NetworkHelper> { every { client } returns this@MyAnimeListLoginTest.client }
+        Injekt.addFactory { trackPreferences }
+        Injekt.addFactory { networkHelper }
+        Injekt.addFactory { json }
     }
 
     /** A new tracker, as in a new app process: nothing is kept in memory. */
@@ -183,8 +194,14 @@ class MyAnimeListLoginTest {
         usernamePreference.set("old-user")
         passwordPreference.set("old-access-token")
         tokenPreference.set(
-            """{"token_type":"Bearer","refresh_token":"old-refresh-token","access_token":"old-access-token",""" +
-                """"expires_in":3600,"created_at":${System.currentTimeMillis() / 1000}}""",
+            json.encodeToString(
+                MALOAuth(
+                    tokenType = "Bearer",
+                    refreshToken = "old-refresh-token",
+                    accessToken = "old-access-token",
+                    expiresIn = 3600,
+                ),
+            ),
         )
     }
 
@@ -208,23 +225,6 @@ class MyAnimeListLoginTest {
     private fun Request.formFields(): Map<String, String> {
         val form = body as FormBody
         return (0 until form.size).associate { form.name(it) to form.value(it) }
-    }
-
-    companion object {
-        private val trackPreferences = mockk<TrackPreferences>()
-        private val networkHelper = mockk<NetworkHelper>()
-
-        init {
-            // MyAnimeList and its API and interceptor resolve these through Injekt.
-            Injekt.addSingleton(trackPreferences)
-            Injekt.addSingleton(networkHelper)
-            Injekt.addSingleton(
-                Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                },
-            )
-        }
     }
 }
 
