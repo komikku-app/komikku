@@ -62,6 +62,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
+import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
@@ -134,6 +135,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
+    private val chapterRepository: ChapterRepository = Injekt.get()
     // KMK <--
 
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
@@ -618,16 +620,22 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     manga = dbManga,
                     // KMK -->
                     // manualFetch makes UpdateMangaFromRemote refresh the cover even when its URL is unchanged,
-                    // and makes SyncChaptersWithSource recalculate the fetch interval.
+                    // and makes SyncChaptersWithSource recalculate the fetch interval (only if it has chapters).
                     manualFetch = refreshCover,
                 )
                     .onSuccess {
                         // Without manualFetch, still recalculate the fetch interval as manualFetch would.
-                        // Only on success: an entry with no chapters fails without updating it either way.
                         if (!refreshCover) {
                             // Like UpdateMangaFromRemote, don't let one entry's failure stop the rest of the sync.
                             try {
-                                updateManga.awaitUpdateFetchInterval(dbManga)
+                                // Not for an entry with no chapters (new follows, follows never updated): the
+                                // interval would be a guess, and its nextUpdate could make the "outside release
+                                // period" restriction skip it in the next library update, which fetches its
+                                // chapters. Checked right before recalculating, with a query that throws on failure
+                                // instead of returning an empty list.
+                                if (chapterRepository.getChapterByMangaId(dbManga.id).isNotEmpty()) {
+                                    updateManga.awaitUpdateFetchInterval(dbManga)
+                                }
                             } catch (e: Exception) {
                                 if (e is CancellationException) throw e
                                 logcat(LogPriority.ERROR, e)
