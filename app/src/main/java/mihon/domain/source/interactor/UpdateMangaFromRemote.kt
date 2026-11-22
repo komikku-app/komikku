@@ -116,6 +116,13 @@ class UpdateMangaFromRemote(
                 // SY -->
                 val newChapters = if (source is MergedSource) {
                     source.fetchChaptersAndSync(manga, downloadChapters = manualFetch)
+                    // KMK -->
+                } else if (!fetchChapters && update.chapters.isEmpty()) {
+                    // Chapters weren't fetched, so these are the manga's DB chapters, not the source's: none means
+                    // the manga hasn't fetched any yet, not that the source has none. Syncing them would only throw
+                    // NoChaptersException after the details above were saved.
+                    emptyList()
+                    // KMK <--
                 } else {
                     // SY <--
                     syncChaptersWithSource.await(

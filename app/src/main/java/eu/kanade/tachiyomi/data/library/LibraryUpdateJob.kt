@@ -60,6 +60,7 @@ import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.library.model.GroupLibraryMode
@@ -134,6 +135,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
     private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get()
     // KMK <--
 
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
@@ -612,19 +614,25 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     // A custom thumbnail URL still wins over the filled one: its cached cover stays valid.
                     if (dbManga.thumbnailUrl != shownThumbnailUrl) refreshCover = true
                 }
+
+                // New follows (and follows never updated) have no chapters yet: the next library update fetches
+                // them, or opening the entry does. Without fetchChapters, UpdateMangaFromRemote skips the chapter
+                // sync for these instead of failing with NoChaptersException.
+                val hasChapters = getChaptersByMangaId.await(dbManga.id).isNotEmpty()
                 // KMK <--
 
                 updateMangaFromRemote(
                     manga = dbManga,
                     // KMK -->
                     // manualFetch makes UpdateMangaFromRemote refresh the cover even when its URL is unchanged,
-                    // and makes SyncChaptersWithSource recalculate the fetch interval.
+                    // and makes SyncChaptersWithSource recalculate the fetch interval (only if it has chapters).
                     manualFetch = refreshCover,
                 )
                     .onSuccess {
                         // Without manualFetch, still recalculate the fetch interval as manualFetch would.
-                        // Only on success: an entry with no chapters fails without updating it either way.
-                        if (!refreshCover) {
+                        // Not for an entry with no chapters: the interval would be a guess, and its nextUpdate
+                        // could make the "outside release period" restriction skip it in the next library update.
+                        if (!refreshCover && hasChapters) {
                             // Like UpdateMangaFromRemote, don't let one entry's failure stop the rest of the sync.
                             try {
                                 updateManga.awaitUpdateFetchInterval(dbManga)
