@@ -160,7 +160,11 @@ class UpdateMangaFromRemote(
         val coverLastModified = when {
             // Never refresh covers if the url is empty to avoid "losing" existing covers
             remoteManga.thumbnail_url.isNullOrEmpty() -> null
-            !manualFetch && localManga.thumbnailUrl == remoteManga.thumbnail_url -> null
+            // KMK -->
+            // Compare source URL with source URL: `thumbnailUrl` would be the user's custom cover URL
+            // when one is set, so the cover cache would be wiped on every update.
+            !manualFetch && localManga.ogThumbnailUrl == remoteManga.thumbnail_url -> null
+            // KMK <--
             localManga.isLocal() -> Instant.now().toEpochMilli()
             localManga.hasCustomCover(coverCache) -> {
                 coverCache.deleteFromCache(localManga, false)
