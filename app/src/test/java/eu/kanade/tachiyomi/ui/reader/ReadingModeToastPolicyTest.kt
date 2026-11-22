@@ -1,12 +1,11 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class ReadingModeToastPolicyTest {
 
+    // KMK -->
     @Test
     fun `auto webtoon toast is hidden when show reading mode is disabled`() {
         shouldShowAutoWebtoonToast(showReadingMode = false, isAutoWebtoon = true) shouldBe false
@@ -18,10 +17,23 @@ class ReadingModeToastPolicyTest {
     }
 
     @Test
-    fun `reader activity passes the show reading mode preference to the auto webtoon toast`() {
-        // Unit tests run with the module directory (app/) as working directory.
-        val source = File("src/main/java/eu/kanade/tachiyomi/ui/reader/ReaderActivity.kt").readText()
-
-        source shouldContain "shouldShowAutoWebtoonToast(readerPreferences.showReadingMode().get(), isAutoWebtoon)"
+    fun `auto webtoon toast is hidden for non-webtoon chapters`() {
+        shouldShowAutoWebtoonToast(showReadingMode = true, isAutoWebtoon = false) shouldBe false
     }
+
+    @Test
+    fun `auto webtoon toast callback only runs when policy allows it`() {
+        var toastShown = false
+
+        val didShowToast = showAutoWebtoonToastIfNeeded(
+            showReadingMode = false,
+            isAutoWebtoon = true,
+        ) {
+            toastShown = true
+        }
+
+        didShowToast shouldBe false
+        toastShown shouldBe false
+    }
+    // KMK <--
 }

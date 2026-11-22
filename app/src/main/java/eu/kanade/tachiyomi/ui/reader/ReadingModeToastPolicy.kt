@@ -8,4 +8,14 @@ package eu.kanade.tachiyomi.ui.reader
 internal fun shouldShowAutoWebtoonToast(showReadingMode: Boolean, isAutoWebtoon: Boolean): Boolean {
     return showReadingMode && isAutoWebtoon
 }
+
+internal fun showAutoWebtoonToastIfNeeded(
+    showReadingMode: Boolean,
+    isAutoWebtoon: Boolean,
+    showToast: () -> Unit,
+): Boolean {
+    if (!shouldShowAutoWebtoonToast(showReadingMode, isAutoWebtoon)) return false
+    showToast()
+    return true
+}
 // KMK <--
