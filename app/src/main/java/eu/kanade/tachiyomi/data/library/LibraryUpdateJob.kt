@@ -573,11 +573,20 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
                 var dbManga = getManga.await(networkManga.url, mangaDex.id)
 
+                // KMK -->
+                // The follows list already carries each entry's cover. UpdateMangaFromRemote doesn't fetch
+                // details here, so it only writes back the local manga: the cover has to be put on it first.
+                val remoteThumbnailUrl = networkManga.thumbnail_url?.takeIf { it.isNotEmpty() }
+                // KMK <--
+
                 if (dbManga == null) {
                     dbManga = networkToLocalManga(
                         Manga.create().copy(
                             url = networkManga.url,
                             ogTitle = networkManga.title,
+                            // KMK -->
+                            ogThumbnailUrl = remoteThumbnailUrl,
+                            // KMK <--
                             source = mangaDex.id,
                             favorite = true,
                             dateAdded = System.currentTimeMillis(),
@@ -586,6 +595,14 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 } else if (!dbManga.favorite) {
                     updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }
+
+                // KMK -->
+                // Only fill a missing cover. An existing one comes from the details parser, which applies the
+                // cover-quality and first-volume-cover preferences that the follows list doesn't.
+                if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl.isNullOrBlank()) {
+                    dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
+                }
+                // KMK <--
 
                 updateMangaFromRemote(
                     manga = dbManga,
