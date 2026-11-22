@@ -39,6 +39,11 @@ class UpdateMangaFromRemote(
      *
      * If neither [fetchDetails] nor [fetchChapters] is `true`, it will only update cover's last modified date & fetchInterval,
      * and also perform renaming downloaded folders.
+     *
+     * KMK -->
+     * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
+     * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     * KMK <--
      */
     suspend operator fun invoke(
         manga: Manga,
@@ -74,6 +79,11 @@ class UpdateMangaFromRemote(
      *
      * If neither [fetchDetails] nor [fetchChapters] is `true`, it will only update cover's last modified date & fetchInterval,
      * and also perform renaming downloaded folders.
+     *
+     * KMK -->
+     * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
+     * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     * KMK <--
      */
     suspend operator fun invoke(
         source: Source,
