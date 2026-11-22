@@ -10,6 +10,9 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.FormBody
 import okhttp3.Headers
@@ -25,6 +28,8 @@ import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreferen
 import tachiyomi.core.common.preference.Preference
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class MangaDexLoginHelperTest {
 
@@ -102,6 +107,40 @@ class MangaDexLoginHelperTest {
 
         loggedIn shouldBe false
         sent.size shouldBe 1
+        codeVerifierPreference.isSet() shouldBe false
+    }
+
+    @Test
+    fun `cancelled code exchange keeps the code verifier for the redelivered redirect`() {
+        codeVerifierPreference.set("stored-verifier")
+        val requestSent = CountDownLatch(1)
+        val releaseRequest = CountDownLatch(1)
+        val hangingClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                sent += chain.request() to tokenPreference.get().isEmpty()
+                requestSent.countDown()
+                releaseRequest.await(WAIT_SECONDS, TimeUnit.SECONDS)
+                throw IOException("Canceled")
+            }
+            .build()
+
+        try {
+            runBlocking {
+                val login = launch(Dispatchers.IO) { helper(hangingClient).login("auth-code") }
+                requestSent.await(WAIT_SECONDS, TimeUnit.SECONDS) shouldBe true
+                // The login activity is recreated, which cancels its scope.
+                login.cancelAndJoin()
+            }
+        } finally {
+            releaseRequest.countDown()
+        }
+
+        codeVerifierPreference.get() shouldBe "stored-verifier"
+        verify(exactly = 0) { mdList.logout() }
+
+        // The recreated activity delivers the redirect again, and its exchange can still send the verifier.
+        runBlocking { helper(tokenEndpoint(200, LOGIN_TOKEN_BODY)).login("auth-code") } shouldBe true
+        sent.last().first.formFields()["code_verifier"] shouldBe "stored-verifier"
         codeVerifierPreference.isSet() shouldBe false
     }
 
@@ -204,6 +243,9 @@ class MangaDexLoginHelperTest {
         return (0 until form.size).associate { form.name(it) to form.value(it) }
     }
 }
+
+/** Bound on every wait of the cancellation test, so that it fails instead of hanging. */
+private const val WAIT_SECONDS = 10L
 
 /** A successful code exchange response. */
 private const val LOGIN_TOKEN_BODY = """{

@@ -61,7 +61,10 @@ class MangaDexLoginHelper(
         }.exceptionOrNull()
 
         // KMK -->
-        // A verifier is good for a single code exchange, whatever its outcome (runCatching caught any error).
+        // Cancelled, e.g. because the login activity was recreated, which delivers the redirect again. The code
+        // may not have reached the server, so keep the verifier for that retry and leave the session alone.
+        if (error is CancellationException) throw error
+        // The exchange completed: a verifier is good for a single code exchange, whatever its outcome.
         codeVerifierPreference.delete()
         // KMK <--
 
