@@ -607,8 +607,10 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 // Only fill a missing cover. An existing one comes from the details parser, which applies the
                 // cover-quality and first-volume-cover preferences that the follows list doesn't.
                 if (remoteThumbnailUrl != null && dbManga.ogThumbnailUrl.isNullOrBlank()) {
+                    val shownThumbnailUrl = dbManga.thumbnailUrl
                     dbManga = dbManga.copy(ogThumbnailUrl = remoteThumbnailUrl)
-                    refreshCover = true
+                    // A custom thumbnail URL still wins over the filled one: its cached cover stays valid.
+                    if (dbManga.thumbnailUrl != shownThumbnailUrl) refreshCover = true
                 }
                 // KMK <--
 
@@ -622,7 +624,15 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     .onSuccess {
                         // Without manualFetch, still recalculate the fetch interval as manualFetch would.
                         // Only on success: an entry with no chapters fails without updating it either way.
-                        if (!refreshCover) updateManga.awaitUpdateFetchInterval(dbManga)
+                        if (!refreshCover) {
+                            // Like UpdateMangaFromRemote, don't let one entry's failure stop the rest of the sync.
+                            try {
+                                updateManga.awaitUpdateFetchInterval(dbManga)
+                            } catch (e: Exception) {
+                                if (e is CancellationException) throw e
+                                logcat(LogPriority.ERROR, e)
+                            }
+                        }
                     }
                 // KMK <--
 
