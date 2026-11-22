@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.myanimelist
 
+import android.net.Uri
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -7,6 +8,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
@@ -99,16 +102,20 @@ class MyAnimeListLoginTest {
     }
 
     @Test
-    fun `each login URL gets a new code verifier and the latest one is sent`() {
+    fun `each login URL carries a new code verifier and the latest one is sent`() {
         val tracker = tracker()
-        val first = MyAnimeListApi.newLoginCodeVerifier(trackPreferences, tracker)
-        val second = MyAnimeListApi.newLoginCodeVerifier(trackPreferences, tracker)
-        first shouldNotBe second
-        codeVerifierPreference.get() shouldBe second
+        val first = authUrl(tracker)
+        val second = authUrl(tracker)
+
+        first.base shouldBe "https://myanimelist.net/v1/oauth2/authorize"
+        first.parameters["code_challenge"] shouldNotBe second.parameters["code_challenge"]
+        // MAL only supports plain PKCE: the challenge is the stored verifier itself, with no method.
+        second.parameters["code_challenge"] shouldBe codeVerifierPreference.get()
+        second.parameters.keys shouldBe setOf("client_id", "code_challenge", "response_type")
 
         runBlocking { tracker.login("auth-code") }
 
-        sent.first().formFields()["code_verifier"] shouldBe second
+        sent.first().formFields()["code_verifier"] shouldBe second.parameters["code_challenge"]
         codeVerifierPreference.isSet() shouldBe false
         tracker.isLoggedIn shouldBe true
     }
@@ -220,6 +227,25 @@ class MyAnimeListLoginTest {
             .message("HTTP $code")
             .body(body.toResponseBody("application/json".toMediaType()))
             .build()
+    }
+
+    private class AuthUrl(val base: String, val parameters: Map<String, String>)
+
+    /** Builds [MyAnimeListApi.authUrl]. `android.net.Uri` is only a stub in unit tests, so a mock records it. */
+    private fun authUrl(tracker: MyAnimeList): AuthUrl {
+        val base = slot<String>()
+        val parameters = linkedMapOf<String, String>()
+        val builder = mockk<Uri.Builder>()
+        every { builder.appendQueryParameter(any(), any()) } answers {
+            parameters[firstArg()] = secondArg()
+            builder
+        }
+        every { builder.build() } returns mockk()
+        mockkStatic(Uri::class) {
+            every { Uri.parse(capture(base)) } returns mockk { every { buildUpon() } returns builder }
+            MyAnimeListApi.authUrl(trackPreferences, tracker)
+        }
+        return AuthUrl(base.captured, parameters)
     }
 
     private fun Request.formFields(): Map<String, String> {

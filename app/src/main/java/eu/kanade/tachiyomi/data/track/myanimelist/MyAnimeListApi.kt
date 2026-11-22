@@ -360,7 +360,7 @@ class MyAnimeListApi(
          * [MyAnimeList.login], replacing the one of any earlier login. Stored rather than kept in memory, so the
          * login still completes when the app process is killed while the browser is open.
          */
-        internal fun newLoginCodeVerifier(trackPreferences: TrackPreferences, tracker: MyAnimeList): String {
+        private fun newLoginCodeVerifier(trackPreferences: TrackPreferences, tracker: MyAnimeList): String {
             return PkceUtil.generateCodeVerifier()
                 .also { trackPreferences.trackPkceCodeVerifier(tracker).set(it) }
         }
