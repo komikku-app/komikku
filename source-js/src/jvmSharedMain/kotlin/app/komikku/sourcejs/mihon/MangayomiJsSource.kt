@@ -130,9 +130,12 @@ class MangayomiJsSource(
         return awaitMetadata()
     }
 
-    /** The metadata, read again first if a preference changed since it was read. */
+    /**
+     * The metadata, read again first if a preference changed since it was read; waits for a refresh in progress too
+     * (it may have taken the stale mark of a later change than the one it started for).
+     */
     suspend fun awaitMetadata(): JsSourceMetadata {
-        if (!stale.get()) return cached.metadata
+        if (!stale.get() && !refreshLock.isLocked) return cached.metadata
         refreshLock.withLock {
             if (stale.getAndSet(false)) {
                 try {
