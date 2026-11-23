@@ -389,6 +389,20 @@ run {
         "eu/kanade/tachiyomi/ui/browse/source/globalsearch/GlobalSearchScreenModel.kt",
         "eu/kanade/tachiyomi/ui/browse/source/globalsearch/SearchScreenModel.kt",
     )
+
+    // Library grouping, selection and batch actions (P2): LibraryActions.kt holds the selection / batch-action logic
+    // moved out of LibraryScreenModel (grouping moved into LibraryFilterSort.kt above), the cover helper it uses, and
+    // the change-category and remove dialogs with their helpers. Desktop counterpart in app-shared/src/desktopMain:
+    // CategoryExtensions (`visualName`; the Android file's two `stringResource` imports are ambiguous on desktop).
+    desktopCopy(
+        "eu/kanade/core/preference/CheckboxState.kt",
+        "eu/kanade/presentation/category/components/CategoryDialogs.kt",
+        "eu/kanade/presentation/components/DownloadDropdownMenu.kt",
+        "eu/kanade/presentation/components/DropdownMenu.kt",
+        "eu/kanade/presentation/library/DeleteLibraryMangaDialog.kt",
+        "eu/kanade/tachiyomi/ui/library/LibraryActions.kt",
+        "eu/kanade/tachiyomi/util/MangaExtensions.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

@@ -6,10 +6,12 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFilter
+import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMapNotNull
 import eu.kanade.core.util.fastFilterNot
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
@@ -31,11 +33,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.util.lang.compareToWithCollator
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
@@ -49,6 +53,8 @@ import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
+import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -421,6 +427,138 @@ fun List<LibraryItem>.groupByDefaultCategory(
                 .orEmpty()
         }
 }
+
+/**
+ * Grouping other than by category (formerly the `LibraryGroup.UNGROUPED` branch of `LibraryScreenModel.applyGrouping`
+ * and `LibraryScreenModel.getGroupedMangaItems`): ungrouped, by tracking status, by source, by status.
+ */
+fun List<LibraryItem>.groupLibraryItems(
+    // KMK -->
+    groupType: Int,
+    context: Context,
+    getTracks: GetTracks,
+    trackerManager: TrackerManager,
+    sourceManager: SourceManager,
+    // KMK <--
+): Map<Category, List</* LibraryItem */ Long>> {
+    // KMK -->
+    if (groupType == LibraryGroup.UNGROUPED) {
+        return mapOf(
+            Category(
+                0,
+                context.stringResource(SYMR.strings.ungrouped),
+                0,
+                0,
+                // KMK -->
+                false,
+                // KMK <--
+            ) to
+                map { it.id },
+        )
+    }
+    // KMK <--
+    // SY -->
+    return when (groupType) {
+        LibraryGroup.BY_TRACK_STATUS -> {
+            val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
+            // KMK -->
+            val groupCache = mutableMapOf</* Track.status */ Int, MutableList</* LibraryItem */ Long>>()
+            forEach { item ->
+                val statuses = tracks[item.libraryManga.manga.id]?.fastMapNotNull { track ->
+                    TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
+                }
+                    ?.takeIf { it.isNotEmpty() }
+                    ?: listOf(TrackStatus.OTHER)
+                statuses.forEach { status ->
+                    groupCache.getOrPut(status.int) { mutableListOf() }.add(item.id)
+                }
+            }
+            // KMK <--
+            groupCache.mapKeys { (id) ->
+                // KMK -->
+                val trackStatus = TrackStatus.entries.find { it.int == id } ?: TrackStatus.OTHER
+                // KMK <--
+                Category(
+                    id = id.toLong(),
+                    // KMK -->
+                    name = context.stringResource(trackStatus.res),
+                    order = trackStatus.ordinal.toLong(),
+                    // KMK <--
+                    flags = 0,
+                    // KMK -->
+                    hidden = false,
+                    // KMK <--
+                )
+            }
+                // KMK -->
+                .mapValues { (_, values) -> values.distinct() }
+            // KMK <--
+        }
+        LibraryGroup.BY_SOURCE -> {
+            // KMK -->
+            val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
+            forEach { item ->
+                groupCache.getOrPut(item.libraryManga.manga.source) { mutableListOf() }.add(item.id)
+            }
+            val sources = groupCache.keys
+                .map { sourceManager.getOrStub(it) }
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
+            val sourceOrderMap = sources.withIndex().associate { (index, source) -> source.id to index.toLong() }
+
+            sources.associate {
+                val category = Category(
+                    id = it.id,
+                    name = if (it.id == LocalSource.ID) {
+                        context.stringResource(MR.strings.local_source)
+                    } else {
+                        it.name.ifBlank { it.id.toString() }
+                    },
+                    order = sourceOrderMap[it.id] ?: Long.MAX_VALUE,
+                    flags = 0,
+                    // KMK -->
+                    hidden = false,
+                    // KMK <--
+                )
+                category to groupCache[it.id].orEmpty()
+            }
+            // KMK <--
+        }
+        LibraryGroup.BY_STATUS -> {
+            groupBy { item ->
+                item.libraryManga.manga.status
+            }.mapKeys {
+                // KMK -->
+                val (nameRes, order) = libraryStatusGroups[it.key] ?: (MR.strings.unknown to 7L)
+                // KMK <--
+                Category(
+                    id = it.key + 1,
+                    name = context.stringResource(nameRes),
+                    order = order,
+                    flags = 0,
+                    // KMK -->
+                    hidden = false,
+                    // KMK <--
+                )
+            }
+                // KMK -->
+                .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id } }
+            // KMK <--
+        }
+        else -> emptyMap()
+    }.toSortedMap(compareBy { it.order })
+    // SY <--
+}
+
+// KMK -->
+private val libraryStatusGroups = mapOf(
+    SManga.ONGOING.toLong() to (MR.strings.ongoing to 1L),
+    SManga.COMPLETED.toLong() to (MR.strings.completed to 2L),
+    SManga.PUBLISHING_FINISHED.toLong() to (MR.strings.publishing_finished to 3L),
+    SManga.LICENSED.toLong() to (MR.strings.licensed to 4L),
+    SManga.ON_HIATUS.toLong() to (MR.strings.on_hiatus to 5L),
+    SManga.CANCELLED.toLong() to (MR.strings.cancelled to 6L),
+)
+// KMK <--
 
 /** Formerly `LibraryScreenModel.applySort`. */
 fun Map<Category, List</* LibraryItem */ Long>>.applyLibrarySort(

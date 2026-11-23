@@ -26,14 +26,9 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
-import eu.kanade.tachiyomi.util.removeCovers
 import exh.favorites.FavoritesSyncHelper
 import exh.log.xLogE
 import exh.md.utils.FollowStatus
@@ -52,7 +47,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
@@ -69,8 +63,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
-import kotlinx.coroutines.runBlocking
-import mihon.core.common.utils.mutate
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.TriState
@@ -99,15 +91,12 @@ import tachiyomi.domain.manga.interactor.GetSearchTitles
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerManga
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.sy.SYMR
-import tachiyomi.source.local.LocalSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -152,6 +141,21 @@ class LibraryScreenModel(
 
     private var recommendationSearchJob: Job? = null
     // SY <--
+
+    // KMK -->
+    private val libraryBatchActions = LibraryBatchActions(
+        getCategories = getCategories,
+        getNextChapters = getNextChapters,
+        getBookmarkedChaptersByMangaId = getBookmarkedChaptersByMangaId,
+        setReadStatus = setReadStatus,
+        updateManga = updateManga,
+        setMangaCategories = setMangaCategories,
+        coverCache = coverCache,
+        sourceManager = sourceManager,
+        downloadManager = downloadManager,
+        getMergedMangaById = getMergedMangaById,
+    )
+    // KMK <--
 
     init {
         mutableState.update { state ->
@@ -431,24 +435,14 @@ class LibraryScreenModel(
                 // KMK <--
             }
             // KMK -->
-            LibraryGroup.UNGROUPED -> {
-                return mapOf(
-                    Category(
-                        0,
-                        preferences.context.stringResource(SYMR.strings.ungrouped),
-                        0,
-                        0,
-                        // KMK -->
-                        false,
-                        // KMK <--
-                    ) to
-                        map { it.id },
-                )
-            }
-
             else -> {
-                return getGroupedMangaItems(
+                // UNGROUPED branch and getGroupedMangaItems moved to LibraryFilterSort.kt (shared with the desktop app)
+                return groupLibraryItems(
                     groupType = groupType,
+                    context = preferences.context,
+                    getTracks = getTracks,
+                    trackerManager = trackerManager,
+                    sourceManager = sourceManager,
                 )
             }
         }
@@ -516,10 +510,10 @@ class LibraryScreenModel(
      * @param mangas the list of manga.
      */
     private suspend fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
-        if (mangas.isEmpty()) return emptyList()
-        return mangas
-            .map { getCategories.await(it.id).toSet() }
-            .reduce { set1, set2 -> set1.intersect(set2) }
+        // KMK -->
+        // Body moved to LibraryActions.kt (shared with the desktop app)
+        return libraryBatchActions.getCommonCategories(mangas)
+        // KMK <--
     }
 
     suspend fun getNextUnreadChapter(manga: Manga): Chapter? {
@@ -539,10 +533,10 @@ class LibraryScreenModel(
      * @param mangas the list of manga.
      */
     private suspend fun getMixCategories(mangas: List<Manga>): Collection<Category> {
-        if (mangas.isEmpty()) return emptyList()
-        val mangaCategories = mangas.map { getCategories.await(it.id).toSet() }
-        val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2) }
-        return mangaCategories.flatten().distinct().subtract(common)
+        // KMK -->
+        // Body moved to LibraryActions.kt (shared with the desktop app)
+        return libraryBatchActions.getMixCategories(mangas)
+        // KMK <--
     }
 
     /**
@@ -563,99 +557,20 @@ class LibraryScreenModel(
     private fun downloadNextChapters(amount: Int?) {
         val mangas = state.value.selectedManga
         screenModelScope.launchNonCancellable {
-            mangas.forEach { manga ->
-                // SY -->
-                if (manga.source == MERGED_SOURCE_ID) {
-                    val mergedMangas = getMergedMangaById.await(manga.id)
-                        .associateBy { it.id }
-                    getNextChapters.await(manga.id)
-                        .let { if (amount != null) it.take(amount) else it }
-                        .groupBy { it.mangaId }
-                        .forEach ab@{ (mangaId, chapters) ->
-                            val mergedManga = mergedMangas[mangaId] ?: return@ab
-                            val downloadChapters = chapters.fastFilterNot { chapter ->
-                                downloadManager.queueState.value.fastAny { chapter.id == it.chapter.id } ||
-                                    downloadManager.isChapterDownloaded(
-                                        chapter.name,
-                                        chapter.scanlator,
-                                        chapter.url,
-                                        mergedManga.ogTitle,
-                                        mergedManga.source,
-                                    )
-                            }
-
-                            downloadManager.downloadChapters(mergedManga, downloadChapters)
-                        }
-
-                    return@forEach
-                }
-
-                // SY <--
-                val chapters = getNextChapters.await(manga.id)
-                    .fastFilterNot { chapter ->
-                        downloadManager.getQueuedDownloadOrNull(chapter.id) != null ||
-                            downloadManager.isChapterDownloaded(
-                                chapter.name,
-                                chapter.scanlator,
-                                chapter.url,
-                                // SY -->
-                                manga.ogTitle,
-                                // SY <--
-                                manga.source,
-                            )
-                    }
-                    .let { if (amount != null) it.take(amount) else it }
-
-                downloadManager.downloadChapters(manga, chapters)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            libraryBatchActions.downloadNextChapters(mangas, amount)
+            // KMK <--
         }
     }
 
     private fun downloadBookmarkedChapters() {
         val mangas = state.value.selectedManga
         screenModelScope.launchNonCancellable {
-            mangas.forEach { manga ->
-                // SY -->
-                if (manga.source == MERGED_SOURCE_ID) {
-                    val mergedMangas = getMergedMangaById.await(manga.id)
-                        .associateBy { it.id }
-                    getBookmarkedChaptersByMangaId.await(manga.id)
-                        .groupBy { it.mangaId }
-                        .forEach ab@{ (mangaId, chapters) ->
-                            val mergedManga = mergedMangas[mangaId] ?: return@ab
-                            val downloadChapters = chapters.fastFilterNot { chapter ->
-                                downloadManager.queueState.value.fastAny { chapter.id == it.chapter.id } ||
-                                    downloadManager.isChapterDownloaded(
-                                        chapter.name,
-                                        chapter.scanlator,
-                                        chapter.url,
-                                        mergedManga.ogTitle,
-                                        mergedManga.source,
-                                    )
-                            }
-
-                            downloadManager.downloadChapters(mergedManga, downloadChapters)
-                        }
-
-                    return@forEach
-                }
-                // SY <--
-
-                val chapters = getBookmarkedChaptersByMangaId.await(manga.id)
-                    .fastFilterNot { chapter ->
-                        downloadManager.getQueuedDownloadOrNull(chapter.id) != null ||
-                            downloadManager.isChapterDownloaded(
-                                chapter.name,
-                                chapter.scanlator,
-                                chapter.url,
-                                // SY -->
-                                manga.ogTitle,
-                                // SY <--
-                                manga.source,
-                            )
-                    }
-                downloadManager.downloadChapters(manga, chapters)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            libraryBatchActions.downloadBookmarkedChapters(mangas)
+            // KMK <--
         }
     }
 
@@ -748,12 +663,10 @@ class LibraryScreenModel(
     fun markReadSelection(read: Boolean) {
         val selection = state.value.selectedManga
         screenModelScope.launchNonCancellable {
-            selection.forEach { manga ->
-                setReadStatus.await(
-                    manga = manga,
-                    read = read,
-                )
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            libraryBatchActions.markRead(selection, read)
+            // KMK <--
         }
         clearSelection()
     }
@@ -767,39 +680,10 @@ class LibraryScreenModel(
      */
     fun removeMangas(mangas: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
         screenModelScope.launchNonCancellable {
-            if (deleteFromLibrary) {
-                val toDelete = mangas
-                    .distinctBy { it.id }
-                    .map {
-                        it.removeCovers(coverCache)
-                        MangaUpdate(
-                            favorite = false,
-                            id = it.id,
-                        )
-                    }
-                updateManga.awaitAll(toDelete)
-            }
-
-            if (deleteChapters) {
-                mangas.forEach { manga ->
-                    val source = sourceManager.get(manga.source) as? HttpSource
-                    if (source != null) {
-                        if (source is MergedSource) {
-                            val mergedMangas = getMergedMangaById.await(manga.id)
-                            val sources = mergedMangas.distinctBy {
-                                it.source
-                            }.map { sourceManager.getOrStub(it.source) }
-                            mergedMangas.forEach merge@{ mergedManga ->
-                                val mergedSource =
-                                    sources.firstOrNull { mergedManga.source == it.id } as? HttpSource ?: return@merge
-                                downloadManager.deleteManga(mergedManga, mergedSource)
-                            }
-                        } else {
-                            downloadManager.deleteManga(manga, source)
-                        }
-                    }
-                }
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            libraryBatchActions.removeMangas(mangas, deleteFromLibrary, deleteChapters)
+            // KMK <--
         }
     }
 
@@ -812,15 +696,10 @@ class LibraryScreenModel(
      */
     fun setMangaCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
         screenModelScope.launchNonCancellable {
-            mangaList.forEach { manga ->
-                val categoryIds = getCategories.await(manga.id)
-                    .map { it.id }
-                    .subtract(removeCategories.toSet())
-                    .plus(addCategories)
-                    .toList()
-
-                setMangaCategories.await(manga.id, categoryIds)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            libraryBatchActions.setMangaCategories(mangaList, addCategories, removeCategories)
+            // KMK <--
         }
     }
 
@@ -890,9 +769,10 @@ class LibraryScreenModel(
 
     fun toggleSelection(category: Category, manga: LibraryManga) {
         mutableState.update { state ->
-            val newSelection = state.selection.mutate { set ->
-                if (!set.remove(manga.id)) set.add(manga.id)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            val newSelection = state.selection.toggleLibrarySelection(manga.id)
+            // KMK <--
             lastSelectionCategory = category.id.takeIf { newSelection.isNotEmpty() }
             state.copy(selection = newSelection)
         }
@@ -904,25 +784,14 @@ class LibraryScreenModel(
      */
     fun toggleRangeSelection(category: Category, manga: LibraryManga) {
         mutableState.update { state ->
-            val newSelection = state.selection.mutate { list ->
-                val lastSelected = list.lastOrNull()
-                if (lastSelectionCategory != category.id) {
-                    list.add(manga.id)
-                    return@mutate
-                }
-
-                val items = state.getItemsForCategoryId(category.id).fastMap { it.id }
-                val lastMangaIndex = items.indexOf(lastSelected)
-                val curMangaIndex = items.indexOf(manga.id)
-
-                val selectionRange = when {
-                    lastMangaIndex < curMangaIndex -> lastMangaIndex..curMangaIndex
-                    curMangaIndex < lastMangaIndex -> curMangaIndex..lastMangaIndex
-                    // We shouldn't reach this point
-                    else -> return@mutate
-                }
-                selectionRange.mapNotNull { items[it] }.let(list::addAll)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            val newSelection = state.selection.toggleLibraryRangeSelection(
+                mangaId = manga.id,
+                categoryItems = state.getItemsForCategoryId(category.id).fastMap { it.id },
+                isSameCategory = lastSelectionCategory == category.id,
+            )
+            // KMK <--
             lastSelectionCategory = category.id
             state.copy(selection = newSelection)
         }
@@ -931,9 +800,12 @@ class LibraryScreenModel(
     fun selectAll() {
         lastSelectionCategory = null
         mutableState.update { state ->
-            val newSelection = state.selection.mutate { list ->
-                state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id }.let(list::addAll)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            val newSelection = state.selection.selectAllLibraryItems(
+                state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id },
+            )
+            // KMK <--
             state.copy(selection = newSelection)
         }
     }
@@ -941,12 +813,12 @@ class LibraryScreenModel(
     fun invertSelection() {
         lastSelectionCategory = null
         mutableState.update { state ->
-            val newSelection = state.selection.mutate { list ->
-                val itemIds = state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id }
-                val (toRemove, toAdd) = itemIds.partition { it in list }
-                list.removeAll(toRemove.toSet())
-                list.addAll(toAdd)
-            }
+            // KMK -->
+            // Body moved to LibraryActions.kt (shared with the desktop app)
+            val newSelection = state.selection.invertLibrarySelection(
+                state.getItemsForCategoryId(state.activeCategory?.id).fastMap { it.id },
+            )
+            // KMK <--
             state.copy(selection = newSelection)
         }
     }
@@ -979,19 +851,10 @@ class LibraryScreenModel(
             val categories = state.value.libraryData.categories.fastFilter { it.id != 0L }
             // KMK <--
 
-            // Get indexes of the common categories to preselect.
-            val common = getCommonCategories(mangaList)
-            // Get indexes of the mix categories to preselect.
-            val mix = getMixCategories(mangaList)
-            val preselected = categories
-                .fastMap {
-                    when (it) {
-                        in common -> CheckboxState.State.Checked(it)
-                        in mix -> CheckboxState.TriState.Exclude(it)
-                        else -> CheckboxState.State.None(it)
-                    }
-                }
-                .toImmutableList()
+            // KMK -->
+            // Moved to LibraryActions.kt (shared with the desktop app)
+            val preselected = libraryBatchActions.getChangeCategorySelection(mangaList, categories)
+            // KMK <--
             mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
         }
     }
@@ -1019,112 +882,11 @@ class LibraryScreenModel(
         // SY <--
     }
 
-    // SY -->
-    private fun List<LibraryItem>.getGroupedMangaItems(
-        groupType: Int,
-    ): Map<Category, List</* LibraryItem */ Long>> {
-        val context = preferences.context
-        return when (groupType) {
-            LibraryGroup.BY_TRACK_STATUS -> {
-                val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
-                // KMK -->
-                val groupCache = mutableMapOf</* Track.status */ Int, MutableList</* LibraryItem */ Long>>()
-                forEach { item ->
-                    val statuses = tracks[item.libraryManga.manga.id]?.fastMapNotNull { track ->
-                        TrackStatus.parseTrackerStatus(trackerManager, track.trackerId, track.status)
-                    }
-                        ?.takeIf { it.isNotEmpty() }
-                        ?: listOf(TrackStatus.OTHER)
-                    statuses.forEach { status ->
-                        groupCache.getOrPut(status.int) { mutableListOf() }.add(item.id)
-                    }
-                }
-                // KMK <--
-                groupCache.mapKeys { (id) ->
-                    // KMK -->
-                    val trackStatus = TrackStatus.entries.find { it.int == id } ?: TrackStatus.OTHER
-                    // KMK <--
-                    Category(
-                        id = id.toLong(),
-                        // KMK -->
-                        name = context.stringResource(trackStatus.res),
-                        order = trackStatus.ordinal.toLong(),
-                        // KMK <--
-                        flags = 0,
-                        // KMK -->
-                        hidden = false,
-                        // KMK <--
-                    )
-                }
-                    // KMK -->
-                    .mapValues { (_, values) -> values.distinct() }
-                // KMK <--
-            }
-            LibraryGroup.BY_SOURCE -> {
-                // KMK -->
-                val groupCache = mutableMapOf</* Source.id */ Long, MutableList</* LibraryItem */ Long>>()
-                forEach { item ->
-                    groupCache.getOrPut(item.libraryManga.manga.source) { mutableListOf() }.add(item.id)
-                }
-                val sources = groupCache.keys
-                    .map { sourceManager.getOrStub(it) }
-                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.ifBlank { it.id.toString() } })
-                val sourceOrderMap = sources.withIndex().associate { (index, source) -> source.id to index.toLong() }
-
-                sources.associate {
-                    val category = Category(
-                        id = it.id,
-                        name = if (it.id == LocalSource.ID) {
-                            context.stringResource(MR.strings.local_source)
-                        } else {
-                            it.name.ifBlank { it.id.toString() }
-                        },
-                        order = sourceOrderMap[it.id] ?: Long.MAX_VALUE,
-                        flags = 0,
-                        // KMK -->
-                        hidden = false,
-                        // KMK <--
-                    )
-                    category to groupCache[it.id].orEmpty()
-                }
-                // KMK <--
-            }
-            LibraryGroup.BY_STATUS -> {
-                groupBy { item ->
-                    item.libraryManga.manga.status
-                }.mapKeys {
-                    // KMK -->
-                    val (nameRes, order) = statusMap[it.key] ?: (MR.strings.unknown to 7L)
-                    // KMK <--
-                    Category(
-                        id = it.key + 1,
-                        name = context.stringResource(nameRes),
-                        order = order,
-                        flags = 0,
-                        // KMK -->
-                        hidden = false,
-                        // KMK <--
-                    )
-                }
-                    // KMK -->
-                    .mapValues { (_, libraryItem) -> libraryItem.fastMap { it.id } }
-                // KMK <--
-            }
-            else -> emptyMap()
-        }.toSortedMap(compareBy { it.order })
-    }
-
     // KMK -->
-    private val statusMap = mapOf(
-        SManga.ONGOING.toLong() to (MR.strings.ongoing to 1L),
-        SManga.COMPLETED.toLong() to (MR.strings.completed to 2L),
-        SManga.PUBLISHING_FINISHED.toLong() to (MR.strings.publishing_finished to 3L),
-        SManga.LICENSED.toLong() to (MR.strings.licensed to 4L),
-        SManga.ON_HIATUS.toLong() to (MR.strings.on_hiatus to 5L),
-        SManga.CANCELLED.toLong() to (MR.strings.cancelled to 6L),
-    )
+    // getGroupedMangaItems and statusMap moved to LibraryFilterSort.kt as groupLibraryItems (shared with the desktop app)
     // KMK <--
 
+    // SY -->
     fun runRecommendationSearch(selection: List<Manga>) {
         recommendationSearch.runSearch(screenModelScope, selection)?.let {
             recommendationSearchJob = it
