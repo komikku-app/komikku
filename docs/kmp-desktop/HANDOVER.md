@@ -93,7 +93,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   errors; pinned / all / has results; row → the source's search, result → details; from the sources tab and the
   details title; JavaScript sources included). Headless tests `SourcesUiTest`, `GlobalSearchUiTest`. The sources tab
   now hides disabled languages / sources like Android.
-- **P1 review** (medium, 6 findings) — all fixed in `03642a4`, `4cfc263`, docs `3240a78` (PROGRESS.md "Review fixes
+- **P1 review** (medium, 6 findings) — all fixed in `03642a4`, `7d5b984`, docs `3240a78` (PROGRESS.md "Review fixes
   (P1)"): global search re-runs when the source filter reaches the state (first search from a title, chip clicks), the
   sources tab shows an error and recovers on the next preference change, fresh source lookups, only installed sources
   become the last used one, `hasPinnedSources` remembered.
