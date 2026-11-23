@@ -1053,8 +1053,15 @@ class LibraryScreenModel(
         }
     }
 
-    fun resetInfo() {
-        state.value.selection.forEach { id ->
+    fun resetInfo(
+        // KMK -->
+        mangaIds: Collection<Long>,
+        // KMK <--
+    ) {
+        // KMK -->
+        // state.value.selection.forEach { id ->
+        mangaIds.forEach { id ->
+            // KMK <--
             val mangaInfo = CustomMangaInfo(
                 id = id,
                 title = null,
@@ -1485,6 +1492,13 @@ class LibraryScreenModel(
         mutableState.update { it.copy(dialog = Dialog.DeleteManga(state.value.selectedManga)) }
     }
 
+    // KMK -->
+    fun openResetInfoMangaDialog() {
+        val mangaList = state.value.selectedManga
+        mutableState.update { it.copy(dialog = Dialog.ResetInfoManga(mangaList)) }
+    }
+    // KMK <--
+
     fun closeDialog() {
         mutableState.update { it.copy(dialog = null) }
     }
@@ -1496,6 +1510,9 @@ class LibraryScreenModel(
             val initialSelection: ImmutableList<CheckboxState<Category>>,
         ) : Dialog
         data class DeleteManga(val manga: List<Manga>) : Dialog
+        // KMK -->
+        data class ResetInfoManga(val manga: List<Manga>) : Dialog
+        // KMK <--
 
         // SY -->
         data object SyncFavoritesWarning : Dialog
