@@ -2,8 +2,8 @@
 
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
-and source toggles, with its review fixes, and parity step P2, library grouping and batch actions, are done; next is
-the review of P2; see "Done" and "Left to do").
+and source toggles, with its review fixes, and parity step P2, library grouping and batch actions, with its review
+fixes, are done; next is P3, scheduled library updates and backups; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -103,6 +103,11 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   change-category / remove dialogs and the download menu; desktop Group tab, pages per group, selection (long press,
   click, Shift-click range, Ctrl-click, select all, invert), selection bar (set categories, mark read / unread,
   download, update, remove). `LibraryUpdateRunner.Target.Entries`. Headless test `LibraryGroupSelectionUiTest`.
+- **P2 review** (medium, 8 findings) — all fixed in `2d720a7`, `d8a8329`, `e9b4313`, `84508c4` (PROGRESS.md "Review
+  fixes (P2)"): no range-selection crash without an anchor on the page (Android too), the effective grouping in the
+  desktop state, group pages update through `Target.Group` (restrictions, `groupLibraryUpdateType`), the selection bar
+  stays on an empty page, "update already running" keeps the selection, press modifiers reset on long press,
+  `groupLibraryItems` suspends instead of `runBlocking`, no new SY markers in Komikku-owned files.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -139,9 +144,8 @@ mark the residual path in both modules.
    sources not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, start-up may wait up to
    15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
-   its review fixes are done; P2 (library grouping, selection and batch actions) is done. **Next:** review P2
-   (`/code-review medium 3240a78..<last P2 commit>`; the Android `LibraryScreenModel` refactor in `a60bb21` deserves
-   a careful look since Android UI is compile-only). Known gaps: no bulk favourites in global search, no "search
+   its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done.
+   **Next:** P3 scheduled library updates and backups. Known gaps: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
    Then scheduled updates / backups, delegated sources, AVIF / JXL, WebView / Cloudflare, signing, updater.

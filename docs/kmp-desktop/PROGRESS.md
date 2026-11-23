@@ -1700,6 +1700,27 @@ Verification (after `59d7aab`): `spotlessCheck`, `:app:verifyBorrowedSources`, `
 classes, 120 tests, 0 failures (was 35 / 118: `LibraryGroupSelectionUiTest` 2). The desktop library was not run in a
 real window; Shift-click is proven with the test input's key state only.
 
+### Review fixes (P2)
+
+Review of `3240a78..c060104` (medium, 8 findings), fixed in `2d720a7`, `d8a8329`, `e9b4313` (test tidy-up `84508c4`).
+Failing runs were made against the unfixed code for findings 1–5 (each fix reverted on its own; the UI test then failed
+at that finding's assertion).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | Range selection crashed (`categoryItems[-1]`) when the anchor (`lastOrNull()`) is not on the page: select A on page 1, select + deselect B on page 2, range-select C on page 2 (Android too) | fixed in the shared `toggleLibraryRangeSelection`: when either index is -1 only the clicked entry is added; otherwise unchanged on both platforms. Desktop `toggleSelection` still sets `lastSelectionCategory` on a deselect, like Android (`category.id.takeIf { newSelection.isNotEmpty() }`): with the guard that is harmless, and a different rule would make the platforms differ. Test `LibraryActionsTest` (failed before: `ArrayIndexOutOfBoundsException`) | `2d720a7` |
+| 2 | With a category filter that has included categories the page is ungrouped but the state kept the preference's group type, so "Update category" ran `Target.Category(0)` | fixed: `State.groupType` is the effective grouping (`UNGROUPED` under the filter); page titles and the update button use it. Android's `LibraryScreenModel` keeps the preference value in its state (same latent issue, Android code not changed). Test step in `LibraryGroupSelectionUiTest` (failed before: `Category(0)`) | `e9b4313` |
+| 3 | A group page (source / status / tracking status / ungrouped) updated through `Target.Entries`, skipping the smart-update restrictions and `groupLibraryUpdateType` | fixed: new `LibraryUpdateRunner.Target.Group(groupType, mangaIds)`; `LibraryUpdateSelection` takes the whole library (update categories, like "all") for `GLOBAL` (Android's default) and for `ALL_BUT_UNGROUPED` on the ungrouped page, else the page's entries, then all `autoUpdateMangaRestrictions` and the update order, like Android SY's group branch. `Target.Entries` (restriction-free except "fetch once") stays for an explicit selection only. Deviation: the page's shown entries (after library filters / search) are the group, Android re-derives the group from the whole library through `groupExtra`. Tests `LibraryUpdateRunnerTest` (`a group page goes through the restrictions and groupLibraryUpdateType`) and the UI step (failed before: `Entries`) | `e9b4313` |
+| 4 | The selection bar was pushed out when the shown page is empty (`EmptyScreen` without a weight) | fixed: `Modifier.weight(1f)` on the empty branch. UI step (failed before: bar not displayed) | `e9b4313` |
+| 5 | "Update" on a selection ignored `runner.start(...) == false` and cleared the selection | fixed: the selection stays and `MR.strings.update_already_running` is shown (compat toast → snackbar), Android's library snackbar message; "Update category" / "Update library" show it too. UI step (failed before: no message) | `e9b4313` |
+| 6 | Press modifiers were reset only in `onClick` | fixed: `onLongClick` resets them too | `e9b4313` |
+| 7 | `runBlocking { getTracks.await() }` in `groupLibraryItems` | fixed: `groupLibraryItems` and Android's private `applyGrouping` are `suspend` (both callers already run in a coroutine: Android's `combine` transform, desktop's `buildResult`), the tracks are awaited. Same data at the same point, Android behaviour unchanged | `d8a8329` |
+| 8 | New SY blocks in Komikku-owned code | rule applied: a file new in Komikku (`LibraryActions.kt`) has no SY markers; its KDoc names the functions moved from `LibraryScreenModel` and the parts that come from TachiyomiSY (merged-entry download branches, `ogTitle` in the download checks). Code moved into an existing file (`groupLibraryItems` in `LibraryFilterSort.kt`, KMK-owned since 8.5) is wrapped in one KMK block with a "moved from …" comment; the inner `// SY` block is `getGroupedMangaItems`'s own SY block moved verbatim with its body, so it stays (said in the KDoc); the KMK block around `libraryStatusGroups` merged into the outer one | `2d720a7`, `d8a8329` |
+
+No new strings. Verification after the fixes: `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources` pass;
+`:desktopApp:test` 37 classes, 124 tests, 0 failures (was 36 / 120: `LibraryActionsTest` +2, `LibraryUpdateRunnerTest`
++1, `LibraryGroupSelectionUiTest` +1). Android UI compile-only.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
