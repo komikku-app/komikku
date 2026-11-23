@@ -126,6 +126,21 @@ class MangayomiIndexTest {
     }
 
     @Test
+    fun repoInfoUrlResolvesAgainstTheIndexUrl() {
+        // No path: the file is at the root, the host stays.
+        assertEquals("https://example.com/repo.json", MangayomiRepoInfo.infoUrl("https://example.com"))
+        assertEquals("https://example.com:8443/repo.json", MangayomiRepoInfo.infoUrl("https://example.com:8443"))
+        // A query (or fragment) containing "/" is not part of the path.
+        assertEquals("https://example.com/repo.json", MangayomiRepoInfo.infoUrl("https://example.com?index=a/b/c.json"))
+        assertEquals("https://example.com/repo.json", MangayomiRepoInfo.infoUrl("https://example.com#a/b"))
+        assertEquals("https://example.com/ext/repo.json", MangayomiRepoInfo.infoUrl("https://example.com/ext/index.json?p=x/y#z/w"))
+        // A trailing slash names a directory: the file is inside it.
+        assertEquals("https://example.com/ext/repo.json", MangayomiRepoInfo.infoUrl("https://example.com/ext/"))
+        assertEquals("https://example.com/repo.json", MangayomiRepoInfo.infoUrl("https://example.com/"))
+        assertEquals("https://example.com/repo.json", MangayomiRepoInfo.infoUrl("https://example.com/index.json"))
+    }
+
+    @Test
     fun versionsCompareLikeMangayomi() {
         fun cmp(a: String, b: String) = MangayomiVersions.compare(a, b).coerceIn(-1, 1)
         assertEquals(-1, cmp("0.0.9", "0.0.10"))

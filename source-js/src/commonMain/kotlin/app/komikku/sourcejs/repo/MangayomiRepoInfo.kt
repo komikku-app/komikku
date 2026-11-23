@@ -13,9 +13,21 @@ data class MangayomiRepoInfo(val name: String?, val website: String?, val indexV
     companion object {
         private val json = Json { isLenient = true }
 
-        /** The `repo.json` URL for the index at [indexUrl]: the index URL without its file name, query and fragment. */
-        fun infoUrl(indexUrl: String): String =
-            indexUrl.substringBefore('#').substringBefore('?').substringBeforeLast('/') + "/repo.json"
+        /**
+         * The `repo.json` URL for the index at [indexUrl]: `repo.json` resolved against it (RFC 3986 5.2), so the
+         * index's file name, query and fragment are dropped and an index URL without a path gives `/repo.json` on its
+         * host; a trailing slash names a directory.
+         */
+        fun infoUrl(indexUrl: String): String {
+            val url = indexUrl.trim().substringBefore('#').substringBefore('?')
+            val authorityStart = url.indexOf("://").let { if (it < 0) -1 else it + 3 }
+            val pathStart = if (authorityStart < 0) 0 else url.indexOf('/', authorityStart)
+            return if (pathStart < 0) {
+                "$url/repo.json"
+            } else {
+                url.substring(0, maxOf(url.lastIndexOf('/') + 1, pathStart)) + "repo.json"
+            }
+        }
 
         /** The info in [text], or `null` when it is not a JSON object (a missing or broken `repo.json` is no error). */
         fun parse(text: String): MangayomiRepoInfo? {
