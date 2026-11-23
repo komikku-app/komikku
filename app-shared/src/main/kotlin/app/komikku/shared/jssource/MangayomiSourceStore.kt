@@ -181,17 +181,18 @@ class MangayomiSourceStore(
      */
     val items: Flow<List<JsSourceItem>> = combine(
         _installed,
-        available,
-        combine(listings, remoteTexts, ::Pair),
+        combine(preferences.repositories().changes(), listings, ::Pair),
+        remoteTexts,
         loadErrors,
         this.showNsfw,
-    ) { installed, offers, (listings, texts), errors, nsfw ->
+    ) { installed, (urls, listings), texts, errors, nsfw ->
+        val offers = offersOf(urls, listings)
         val offerById = offers.associateBy { it.id }
+        // Not obsolete while any added repository was not read yet (or never read well): it may offer the source.
+        val listingKnown = urls.all { listings[it]?.entries != null }
         val installedItems = installed.orEmpty().map { source ->
             val offer = offerById[source.id]
             val text = texts[source.id]?.takeIf { offer != null && it.url == offer.descriptor.sourceCodeUrl && it.version == offer.descriptor.version }
-            // Not obsolete while the repository it came from is added but was not read yet (or never read well).
-            val listingKnown = source.repoUrl !in preferences.repositories().get() || listings[source.repoUrl]?.entries != null
             JsSourceItem(
                 installed = source,
                 offer = offer,
@@ -226,9 +227,10 @@ class MangayomiSourceStore(
         val normalized = url.trim()
         checkedUrl(normalized)
         val listing = readListing(normalized)
-        listings.update { it + (normalized to listing) }
         val repos = preferences.repositories()
+        // The URL first: a refresh finishing in between keeps the listings of added repositories only.
         repos.set(repos.get() + normalized)
+        listings.update { if (normalized in repos.get()) it + (normalized to listing) else it }
         checkInstalledTexts()
         return normalized
     }
@@ -263,11 +265,17 @@ class MangayomiSourceStore(
                     }
                 }.awaitAll()
             }
+            // Merged into the current listings, for the repositories added now: one added while this refresh ran keeps
+            // its listing, one removed meanwhile does not come back.
+            val added = preferences.repositories().get()
             listings.update { current ->
-                results.associate { (url, listing) ->
+                val merged = current.filterKeys { it in added }.toMutableMap()
+                results.forEach { (url, listing) ->
+                    if (url !in added) return@forEach
                     val previous = current[url]
-                    url to if (listing.error != null && previous != null) previous.copy(error = listing.error) else listing
+                    merged[url] = if (listing.error != null && previous != null) previous.copy(error = listing.error) else listing
                 }
+                merged
             }
             checkInstalledTexts()
         } finally {

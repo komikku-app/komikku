@@ -22,6 +22,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -46,6 +48,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * The JavaScript source store end to end against [MockWebServer] in a temporary directory: add a repository → refresh →
@@ -63,6 +67,10 @@ class MangayomiSourceStoreTest {
     private val server = MockWebServer()
     private val routes = ConcurrentHashMap<String, MockResponse>()
 
+    /** Paths requested so far, and paths whose answer waits for its latch. */
+    private val seen: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private val gates = ConcurrentHashMap<String, CountDownLatch>()
+
     private lateinit var app: Application
     private lateinit var dataDir: File
     private lateinit var storeDir: File
@@ -75,8 +83,12 @@ class MangayomiSourceStoreTest {
         dataDir = File(dir, "data")
         storeDir = File(dir, "store")
         server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse =
-                routes[request.url.encodedPath] ?: MockResponse.Builder().code(404).build()
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.url.encodedPath
+                seen += path
+                gates[path]?.await(30, TimeUnit.SECONDS)
+                return routes[path] ?: MockResponse.Builder().code(404).build()
+            }
         }
         server.start()
         app = DesktopInjekt.init(dataDir)
@@ -382,6 +394,67 @@ class MangayomiSourceStoreTest {
     }
 
     @Test
+    @Order(13)
+    fun `a refresh keeps repositories added or removed while it runs`(): Unit = runBlocking {
+        val prefs = JsSourcePreferences(DesktopPreferenceStores.get("merge", File(storeDir.parentFile, "merge-preferences")))
+        val s = newStore(File(storeDir.parentFile, "merge"), preferences = prefs)
+        withTimeout(10_000) { s.isLoaded.first { it } }
+        route("/slow/index.json", "[]")
+        route("/gone/index.json", "[]")
+        route("/added/index.json", index(version = "1.0.0").replace("$ID", "$ADDED_ID"))
+        s.addRepository(url("/slow/index.json"))
+        s.addRepository(url("/gone/index.json"))
+
+        // The refresh reads the slow repository while one is added and another removed.
+        val gate = CountDownLatch(1)
+        gates["/slow/index.json"] = gate
+        seen -= "/slow/index.json"
+        val refresh = async(Dispatchers.IO) { s.refresh() }
+        withTimeout(10_000) { while ("/slow/index.json" !in seen) delay(20) }
+        s.addRepository(url("/added/index.json"))
+        s.removeRepository(url("/gone/index.json"))
+        gate.countDown()
+        gates.remove("/slow/index.json")
+        refresh.await()
+
+        s.repositories.first().map { it.url to it.entries } shouldContainExactly listOf(
+            url("/added/index.json") to 1,
+            url("/slow/index.json") to 0,
+        )
+        s.offer(ADDED_ID).shouldNotBeNull()
+        // The removed one was not brought back: set again (e.g. by a restore), it is not read yet.
+        prefs.repositories().set(prefs.repositories().get() + url("/gone/index.json"))
+        s.repositories.first().single { it.url == url("/gone/index.json") }.entries.shouldBeNull()
+    }
+
+    @Test
+    @Order(14)
+    fun `a source is obsolete only once every repository was read`(): Unit = runBlocking {
+        val prefs = JsSourcePreferences(DesktopPreferenceStores.get("obsolete", File(storeDir.parentFile, "obsolete-preferences")))
+        val dir = File(storeDir.parentFile, "obsolete")
+        val obsoleteCode = code("obsolete").replace("$ID", "$OBSOLETE_ID")
+        route("/first/index.json", index(version = "1.0.0", codePath = "/code/obsolete.js").replace("$ID", "$OBSOLETE_ID"))
+        route("/code/obsolete.js", obsoleteCode)
+        route("/second/index.json", "[]")
+        val s = newStore(dir, preferences = prefs)
+        s.addRepository(url("/first/index.json"))
+        s.addRepository(url("/second/index.json"))
+        s.install(s.offer(OBSOLETE_ID)!!, sha256Hex(obsoleteCode))
+
+        // Started again: the first repository no longer offers it, the second cannot be read.
+        route("/first/index.json", "[]")
+        routes.remove("/second/index.json")
+        val again = newStore(dir, preferences = prefs)
+        withTimeout(20_000) { again.isLoaded.first { it } }
+        again.refresh()
+        again.items.first().single { it.id == OBSOLETE_ID }.status shouldBe JsSourceStatus.UP_TO_DATE
+
+        route("/second/index.json", "[]")
+        again.refresh()
+        again.items.first().single { it.id == OBSOLETE_ID }.status shouldBe JsSourceStatus.OBSOLETE
+    }
+
+    @Test
     @Order(15)
     fun `a failed update keeps the installed version working`(): Unit = runBlocking {
         val prefs = JsSourcePreferences(DesktopPreferenceStores.get("failing", File(storeDir.parentFile, "failing-preferences")))
@@ -442,6 +515,8 @@ class MangayomiSourceStoreTest {
     companion object {
         private const val ID = 652112892L
         private const val OTHER_ID = 777L
+        private const val ADDED_ID = 778L
+        private const val OBSOLETE_ID = 779L
         private const val FAIL_ID = 780L
     }
 }
