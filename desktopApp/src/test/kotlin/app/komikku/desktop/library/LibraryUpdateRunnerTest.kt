@@ -6,6 +6,7 @@ import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.library.LibraryUpdateSelection
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import exh.source.PURURIN_SOURCE_ID
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CompletableDeferred
@@ -48,8 +49,9 @@ class LibraryUpdateRunnerTest {
         lastRead: Long = 0,
         status: Int = SManga.ONGOING,
         strategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE,
+        source: Long = 0,
     ) = LibraryManga(
-        manga = Manga.create().copy(id = id, ogTitle = "Manga $id", favorite = true, ogStatus = status.toLong(), updateStrategy = strategy),
+        manga = Manga.create().copy(id = id, ogTitle = "Manga $id", favorite = true, ogStatus = status.toLong(), updateStrategy = strategy, source = source),
         categories = categories,
         totalChapters = total,
         readCount = read,
@@ -208,5 +210,23 @@ class LibraryUpdateRunnerTest {
         runner.start(LibraryUpdateRunner.Target.All) shouldBe true
         withTimeout(10_000) { runner.progress.first { it?.finished == true } }
         Unit
+    }
+
+    @Test
+    fun `galleries of SY's excluded sources are never updated, but a single refresh is`() {
+        prefs.autoUpdateMangaRestrictions().set(emptySet())
+        prefs.updateCategories().set(emptySet())
+        prefs.updateCategoriesExclude().set(emptySet())
+        val library = listOf(entry(1, listOf(1)), entry(2, listOf(1), source = PURURIN_SOURCE_ID))
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.All, prefs, Long.MAX_VALUE).let {
+            it.toUpdate.map { e -> e.manga.id } shouldBe listOf(1L)
+            it.skipped shouldBe emptyList()
+        }
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Category(1), prefs, Long.MAX_VALUE)
+            .toUpdate.map { it.manga.id } shouldBe listOf(1L)
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Entries(setOf(1, 2)), prefs, Long.MAX_VALUE)
+            .toUpdate.map { it.manga.id } shouldBe listOf(1L)
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Single(2), prefs, Long.MAX_VALUE)
+            .toUpdate.map { it.manga.id } shouldBe listOf(2L)
     }
 }

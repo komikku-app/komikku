@@ -2,6 +2,7 @@ package app.komikku.shared.library
 
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -73,8 +74,9 @@ data class LibraryUpdateProgress(
 /**
  * KMK: which library entries an update refreshes, from Android's `LibraryUpdateJob.addMangaToQueue`:
  * a category's entries, for "all" the included / excluded update categories, a group page by
- * `groupLibraryUpdateType`; then the "smart update" restrictions and "only fetch once" strategy, in the job's order
- * (due today, started, recently read, title).
+ * `groupLibraryUpdateType`; without SY's `LIBRARY_UPDATE_EXCLUDED_SOURCES` (all but a single entry's refresh); then the
+ * "smart update" restrictions and "only fetch once" strategy, in the job's order (due today, started, recently read,
+ * title).
  */
 object LibraryUpdateSelection {
 
@@ -93,6 +95,7 @@ object LibraryUpdateSelection {
             is LibraryUpdateRunner.Target.Entries -> return Result(
                 library.filter {
                     it.manga.id in target.mangaIds &&
+                        it.manga.source !in LIBRARY_UPDATE_EXCLUDED_SOURCES &&
                         !(it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L)
                 }.distinctBy { it.manga.id },
                 emptyList(),
@@ -111,6 +114,9 @@ object LibraryUpdateSelection {
             }
             LibraryUpdateRunner.Target.All -> library.inUpdateCategories(preferences)
         }.distinctBy { it.manga.id }
+            // Android SY's `LibraryUpdateJob.updateChapterList`: galleries of these sources (E-Hentai, Pururin, the
+            // NHentai delegates) are never updated, and not counted as skipped
+            .filterNot { it.manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES }
 
         val restrictions = preferences.autoUpdateMangaRestrictions().get()
         val (toUpdate, skipped) = candidates.partition {
