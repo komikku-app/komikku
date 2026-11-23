@@ -50,6 +50,7 @@ packaging the desktop app: [`BUILDING.md`](BUILDING.md).
 | 8.5 Library extras | partial | `c58a6fe65f`, see git log (`fix(kmp): … library search`) | **Search = Android's matcher, extracted (review fixes of `c58a6fe65f`).** The library filter / sort / text-search code of Android's `LibraryScreenModel` moved, bodies unchanged, into the new KMK file `ui/library/LibraryFilterSort.kt` (`applyLibraryFilters`, `applyLibrarySort`, `filterLibraryByQuery` with the file-private `filterManga` / `filterTracks`, `groupByDefaultCategory`, `hasActiveLibraryFilters`, `libraryItemPreferencesFlow`, `libraryTrackingFiltersFlow`, `LibraryManga.toLibraryItem`, `LibraryItemPreferences` (was the private `ItemPreferences`)); Android's screen model calls them (KMK blocks), desktop borrows the file as `desktopCopy` with `LibraryItem.kt`, the SY query parser `exh/search/*` (8 files), `exh/util/LewdMangaChecker.kt`, `exh/util/CoroutineUtil.kt`, `eu/kanade/core/util/CollectionUtils.kt`. Desktop search therefore has Android's exact semantics: space / comma separated terms, quoted phrases, `-term` exclusion, `namespace:tag` and wildcards (SY `SearchEngine`), `id:<manga id>`, `src:<source id or local>`, matched (case-insensitive `contains`) against title, author, artist, description, source name, source id, genres (partial), logged-in tracker names / statuses and SY search tags / titles of metadata sources. Only the MangaDex DMCA easter-egg query (`mangadex-dmca`, Android raw resource) stays Android-only. Desktop `LibraryScreenModel` keeps query and selected category in its state (survive the pages leaving composition), debounces the query (250 ms, Android's `SEARCH_DEBOUNCE_MILLIS`) and filters on `Dispatchers.Default`; empty categories are hidden while searching / filtering unless `showEmptyCategoriesSearch` (Android); empty states as Android's `LibraryPagerEmptyScreen` (`no_results_found` / `error_no_match` / `information_no_manga_category`); tab counts when `categoryNumberOfItems` is on or a search is active (Android); unread badge from `LibraryItem.unreadCount` (0 when `unreadBadge` is off, as on Android). Category tab item counts, unread badge on covers (`c58a6fe65f`). Tests: `LibraryPagesTest` (grouping, hidden categories; search by title / author / artist / description / partial genre / source id, trimming, AND terms, exclusion, quoted phrase, `id:` / `src:`), `LibraryUiTest` (headless: `library-search` debounced + trimmed, other categories hidden, "No results found", tab counts follow the preference, `unread-badge-*` hidden at 0 and when the preference is off). **Not done:** see the 8.5b row |
 | 8.5b Library filters / sort / display | done | see git log (`feat(kmp): … library filters`) | **Settings dialog** (`LibrarySettingsDialog`, filter icon `library-settings` next to the search field, highlighted while a filter is active as on Android) with **Filter / Sort / Display** tabs over the borrowed Android `LibrarySettingsScreenModel` (`desktopCopy`, with `PreferenceMutableState.kt`): tri-state downloaded (locked to "include" by "downloaded only"), unread, started, bookmarked, completed, custom interval (when the smart-update restriction is on), lewd (SY), KMK category include / exclude (borrowed `TriStateListDialog`), one tri-state per logged-in tracker; sort alphabetical / total chapters / last read / last update / unread count / latest chapter / chapter fetch date / date added / tracker mean (when logged in) / tag list (SY, when tags are set) / random (reseeded on each click), ascending / descending with Android's toggle rules, written through `SetSortModeForCategory` (per-category flags when `categorizedDisplaySettings`, else global + all categories; the global sort when the Android grouping is not "by category"); display modes compact grid (title over the cover), comfortable grid (title below; also used for the KMK panorama mode), cover-only grid, list; columns slider (0 = auto) bound to the landscape or portrait preference depending on the window's aspect; badge switches download / unread / local / language; show hidden categories; number of items. **Everything is the Android preference or category flag**, so it round-trips through backups. Filtering / sorting run the borrowed Android code (step above). **Badges** (`LibraryItems.kt`): downloads (`download-badge-*`), unread, local folder icon or source language code (text: no flag icons on desktop). **Not on desktop:** grouping by source / status / tracker / ungrouped (SY "Group" tab), source-icon badge and language flag icons, "continue reading" button, category-tabs switch (tabs always shown), selection / batch actions, global search from the library. Tests: `LibraryFilterSortTest` (each tri-state filter both ways, downloaded via local + global "downloaded only", combined filters, `hasActiveFilters`, tracker include / exclude / not logged in, category include / exclude / disabled; alphabetical (both directions), total chapters, last read, date added, latest chapter, unread count (both directions, Android's "unread first" rule), seeded random, per-category flags vs. global sort), `LibraryUiTest` (headless: dialog → sort by total chapters, flags + global sort written, grid order follows and flips; unread filter hides the read entry; list display mode) |
 | 9.1 Packaging and CI configuration | configured, not executed | see git log (`ci(kmp): …`) | `:desktopApp` `nativeDistributions`: Msi / Exe / Dmg / Deb / Rpm / AppImage, package name, version read from `app/build.gradle.kts` (`versionName` / `versionCode`, not duplicated; also `-Dkomikku.version*` for the desktop `BuildConfig`), description / vendor / copyright / `LICENSE`, jlink `modules(...)` (jdeps over the runtime class path + `jdk.crypto.ec`, `jdk.charsets`, `jdk.localedata`, `jdk.accessibility`, `java.net.http`; `includeAllModules` documented as fallback), icons generated offline from the Android launcher vector layers (`desktopApp/icons/generate_icons.py` → png / ico / icns), Windows (fixed upgrade UUID, menu group, shortcut, per-user, dir chooser), macOS (bundle ID `app.komikku`, category, signing / notarization TODO), Linux (package `komikku`, categories, shortcut); release ProGuard disabled (reflective extension loading). `.github/workflows/build_desktop.yml` (manual + `desktop-v*` tags; Ubuntu / Windows / macOS matrix, JDK from `.github/.java-version`, same pinned actions as the other workflows, tests on Linux, `packageDistributionForCurrentOS`, artifacts; no secrets). PR workflow: separate `desktop` job (KMK markers) running `:desktopApp:compileKotlin` + `:desktopApp:test --max-workers=2`, `continue-on-error: true` while the port is experimental, independent of the APK job. Validated: `:desktopApp:tasks --all` lists the package tasks, `-m` dry run of `packageDistributionForCurrentOS`, `checkRuntime` + `createRuntimeImage` (jlink of the chosen modules, 116 MB image), YAML parsed with PyYAML. **Not validated:** any installer build, the icons inside installers, the workflows on GitHub runners. `BUILDING.md` documents run / test / package / data dirs / `linkCheck` / limitations |
+| P1 Global search and source toggles | done | `5137a56` … `2e39d59` | Android's global search model and source filter model borrowed, sources tab on Android's `GetEnabledSources` with pins / disable; see "P1 — global search and source toggles" |
 **Milestone B** (install an extension, browse its catalogue, open a manga's details on desktop):
 **compiles and passes fixture tests; not exercised with real extensions.** Every stage runs in tests on
 generated fixtures — store index over `MockWebServer`, signed APK (apksig) with dx-produced dex,
@@ -1540,12 +1541,92 @@ or downloaded by hand from a repo you trust:
   `com.android.library` + `kotlin("multiplatform")` in favour of
   `com.android.kotlin.multiplatform.library`; the plugin will need a rewrite at that point.
 
+## P1 — global search and source toggles
+
+The first two desktop parity gaps (commits `5137a56` … `2e39d59`).
+
+**Borrowed** (`app-shared/borrowed-app-sources.gradle.kts`, block "P1"):
+
+- `shared` (one copy for both targets, `app` gets them from `:app-shared`, code unchanged): `ToggleLanguage`,
+  `ToggleSource`, `ToggleSourcePin`, `presentation/browse/components/GlobalSearchResultItems.kt` (row header,
+  loading and error items).
+- `desktopCopy` (Android unchanged): `GetEnabledSources` (uses `tachiyomi.source.local.isLocal`; `:source-local` is a
+  desktop-only dependency of `:app-shared`, so it cannot be `shared` without changing the Android dependency graph),
+  `GetLanguagesWithSources` (uses `LocaleHelper`), `SourcesFilterScreenModel`, `SearchScreenModel`,
+  `GlobalSearchScreenModel` (use the per-platform `ExtensionManager`; desktop = the `PlatformExtensionManager`
+  typealias from 8.1).
+- New desktop counterpart `app-shared/src/desktopMain/.../util/system/LocaleHelper.kt`: Android's `LocaleHelper`
+  without `LocaleListCompat` / `SourcesScreenModel` (same comparator, names, `last_used` / `pinned` keys, default
+  languages; system language = JVM default locale; no app language switching).
+- Registered in `DesktopDomainModule`: `GetEnabledSources`, `GetLanguagesWithSources`, `ToggleLanguage`,
+  `ToggleSource`, `ToggleSourcePin` (same constructors as Android's `DomainModule`).
+
+**Sources tab** (`desktopApp/.../ui/browse/SourcesPane.kt`): `SourcesPaneModel` reads Android's `GetEnabledSources`
+(enabled languages, disabled sources, pins, last used source, SY source categories from a restored backup) and groups
+with the comparator of Android's `SourcesScreenModel.collectLatestSources` (last used, pinned, categories, languages,
+no language last). Android's model itself is not borrowed: it needs `SourcesScreen.SmartSearchConfig` (nested in the
+Android Voyager screen), `SourceUiModel` (in a presentation file full of Android-only UI) and the SY category /
+data-saver / show-latest interactors and screens. Rows: click → catalogue, pin button (Android SY `showPin`), long
+press → Android's options dialog (pin / unpin, disable; not for the local source), right click → the same two actions
+as a context menu (desktop addition), settings button for configurable sources, "JS" label. Toolbar actions above the
+list: global search and the source filter (Android's sources tab toolbar).
+
+- **Behaviour change on desktop:** before P1 the sources tab listed every source; now, like Android, only sources of
+  enabled languages (default `all`, `en` and the system language) that are not disabled.
+- The catalogue (`CatalogueScreen`) sets `lastUsedSource` when opened outside incognito mode, as Android's
+  `BrowseSourceScreenModel` does, so the "Last used" group works.
+- Not on desktop: SY source categories (set / filter), data-saver exclusion, "extension info" in the dialog, the
+  "Latest" button in the row (the catalogue has a Latest chip), Komikku's source search box and NSFW-only filter.
+
+**Source filter** (`SourcesFilterScreen.kt`): the borrowed `SourcesFilterScreenModel` with a desktop layout: a switch
+per language (`LocaleHelper` names, sticky), SY's "All sources" switch and a check box per source of an enabled
+language. Like Android it lists only online (`HttpSource`) sources, so the local source is not in it. No flag emoji
+(`FlagEmoji` is Android-only).
+
+**Global search** (`GlobalSearchScreen.kt`): the borrowed `GlobalSearchScreenModel` / `SearchScreenModel` unchanged:
+enabled languages, disabled and pinned sources read when the screen opens, at most five searches at a time, results
+stored with `NetworkToLocalManga`, rows sorted like Android (with results first, pinned, name), "pinned only" / "all"
+and "has results" persisted in the same `SourcePreferences`; no pinned source → "all" and no pinned chip (KMK).
+JavaScript sources are in the source manager and take part like any other source (tested). Desktop UI: toolbar
+(search field, progress bar while rows load, chips), one borrowed `GlobalSearchResultItem` per source with the loading
+/ error items, a desktop card row (cover item, library entries dimmed with Android's alpha and an "In library" label;
+Android's `GlobalSearchCardRow` needs the library `MangaComfortableGridItem` / `MangaCover` chain). The row header
+opens the source's own search with the query (`CatalogueScreen(sourceId, initialQuery)`, Android's
+`BrowseSourceScreen(id, query)`), a result opens the manga details. Entry points: the sources tab action and a click on
+the title in the manga details (Android's manga info header).
+
+- Not on desktop: bulk favourite selection (`BulkFavoriteScreenModel`), the extension filter and its single-result
+  shortcut (deep links), the extension-name suffix of row titles (`Source.installedExtension` is Android-only; JS rows
+  show the "JS" label instead), "search globally" from the library search, related mangas and deep links.
+- Same as Android (its `GlobalSearchToolbar` TODO): the model reads the source filter from its preference flow, so a
+  chip change can apply only to the next search; the test searches again after changing it.
+
+**Build note:** moving a file from `shared` to `desktopCopy` left `:app-shared:compileKotlinDesktop` up to date
+without the moved class (Kotlin incremental compilation across the two generated source roots);
+`./gradlew :app-shared:compileKotlinDesktop --rerun` fixed it. Repeat that after moving borrowed files between kinds.
+
+No new strings (all from `MR` / `SYMR` / `KMR`).
+
+Tests (`desktopApp/src/test/.../ui/browse/`): `SourcesUiTest` (pin / unpin moves a source to the pinned group,
+long-press disable hides it, the filter screen enables a language, re-enables a source and toggles all sources of a
+language, all through `SourcePreferences`; the grouping order), `GlobalSearchUiTest` (a Mihon-style source, a
+JavaScript source, one without results and a failing one are searched, a disabled-language and a disabled source are
+not; "has results", "pinned only" / "all"; row → the source's search with the query; result → details; details title →
+new global search). `FakeSources.kt` gains `SimpleSearchSource` (an `HttpSource` without network).
+
+Verification: `spotlessCheck`, `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin`
+pass; `:desktopApp:test` 35 classes, 115 tests, 0 failures (was 33 / 111: `SourcesUiTest` 2, `GlobalSearchUiTest` 2).
+One full run before `2e39d59` failed `GlobalSearchUiTest` on the filter-chip race above (passed alone); fixed in the
+test. Android UI unchanged and compile-only (the moved interactors and result items are the same code from
+`:app-shared`); the desktop screens were not run in a real window.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
-1. **Browse:** global search across sources, enabling / disabling sources and languages, pinned sources,
-   source feeds / saved searches UI, migration (out of scope so far).
+1. **Browse:** source feeds / saved searches UI, migration (out of scope so far). Global search, source / language
+   toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
+   library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
 2. **Library:** grouping by source / status / tracker / ungrouped, selection and batch actions (mark read,
    change categories, delete, download), "continue reading" button, source-icon badge and language flag
    icons, random-entry shortcut, scheduled automatic library updates.

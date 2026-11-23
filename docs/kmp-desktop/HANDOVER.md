@@ -1,8 +1,8 @@
 # Komikku Desktop / JS Sources — Handover
 
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
-review fixes, and step I4, the repository store and UI, with its review fixes, are done; next are the desktop parity
-gaps; see "Done" and "Left to do").
+review fixes, step I4, the repository store and UI, with its review fixes, and desktop parity step P1, global search
+and source toggles, are done; next is the review of P1, then parity step P2; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -82,6 +82,17 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   tab and the store lookup is guarded, the install dialog shows the post-redirect host, obsolete only once every
   repository was read, no stale icon, `repo.json` URL resolution for index URLs without a path.
 
+### Desktop parity
+- **P1** global search and source toggles (`5137a56` … `2e39d59`, PROGRESS.md "P1 — global search and source
+  toggles"): Android's `SearchScreenModel` / `GlobalSearchScreenModel`, `SourcesFilterScreenModel`,
+  `GetEnabledSources`, `GetLanguagesWithSources` borrowed (`desktopCopy`), the toggle interactors and the global search
+  result items `shared`, a desktop `LocaleHelper` counterpart. Desktop sources tab on `GetEnabledSources` with
+  Android's grouping (last used, pinned, languages), pin button, long-press / right-click pin and disable, source
+  filter screen (languages, all sources, single sources), global search (per-source rows with progress, results,
+  errors; pinned / all / has results; row → the source's search, result → details; from the sources tab and the
+  details title; JavaScript sources included). Headless tests `SourcesUiTest`, `GlobalSearchUiTest`. The sources tab
+  now hides disabled languages / sources like Android.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -116,8 +127,11 @@ mark the residual path in both modules.
    their outcomes. Known gaps: PROGRESS.md "I4 — repository store and UI" and "Review fixes (I4)" (Android UI not run,
    sources not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, start-up may wait up to
    15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
-4. **Next: desktop parity gaps** (PROGRESS list): global search, source/language toggles, library grouping/batch
-   actions, scheduled updates/backups, delegated sources, AVIF/JXL, WebView/Cloudflare, signing, updater.
+4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) is
+   done; review it (`/code-review medium 1ff8d31..2e39d59`). Known P1 gaps: no bulk favourites in global search, no
+   "search globally" from the library, no SY source categories / data-saver exclusion, desktop UI not run in a real
+   window. **Next: P2** library grouping / batch actions, then scheduled updates / backups, delegated sources,
+   AVIF / JXL, WebView / Cloudflare, signing, updater.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
