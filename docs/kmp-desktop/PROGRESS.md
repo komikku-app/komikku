@@ -1599,7 +1599,7 @@ the title in the manga details (Android's manga info header).
   shortcut (deep links), the extension-name suffix of row titles (`Source.installedExtension` is Android-only; JS rows
   show the "JS" label instead), "search globally" from the library search, related mangas and deep links.
 - Same as Android (its `GlobalSearchToolbar` TODO): the model reads the source filter from its preference flow, so a
-  chip change can apply only to the next search; the test searches again after changing it.
+  chip change can apply only to the next search. Fixed on desktop in the P1 review (see "Review fixes (P1)").
 
 **Build note:** moving a file from `shared` to `desktopCopy` left `:app-shared:compileKotlinDesktop` up to date
 without the moved class (Kotlin incremental compilation across the two generated source roots);
@@ -1619,6 +1619,23 @@ pass; `:desktopApp:test` 35 classes, 115 tests, 0 failures (was 33 / 111: `Sourc
 One full run before `2e39d59` failed `GlobalSearchUiTest` on the filter-chip race above (passed alone); fixed in the
 test. Android UI unchanged and compile-only (the moved interactors and result items are the same code from
 `:app-shared`); the desktop screens were not run in a real window.
+
+### Review fixes (P1)
+
+Review of `1ff8d31..7f4e22f` (medium, 6 findings), fixed in `03642a4` and `4cfc263`. Each fix has a
+headless test where the defect can be shown; the failing runs were made against the unfixed code.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | Global search opened with a query (details title) could show no rows and never search: the borrowed model's first `search()` runs with the state's default `PinnedOnly` before the preference flow (and its own "no pinned sources → all") reaches the state | fixed: `GlobalSearchScreen` re-runs `model.search()` from `LaunchedEffect(state.sourceFilter)`; `search()` skips an already searched query + filter, so nothing runs twice. The borrowed model is unchanged. Test `a search opened with a query runs on all sources while the stored filter is pinned only` (failed before: no rows) | `03642a4` |
+| 2 | The Pinned / All chip did not re-run the search (`setSourceFilter` searches before the preference reaches the state) | fixed by the same effect; the extra search click is gone from `only pinned sources are searched with the pinned filter`. That test passed on the unfixed code too in this environment (the preference collector happened to update the state first), so it guards the fix but did not show the race | `03642a4` |
+| 3 | One failure in the enabled-sources flow left the sources tab on "no sources" for good (`.catch` ends the collection) | fixed: `SourcesPaneModel` keeps an `error` state (shown with `KMR.desktop_source_error`), and `retryWhen` subscribes again on the next change of anything `GetEnabledSources` reads (its seven source preferences or the source manager's sources), so no busy retry loop on a persistent error. Test `a failure reading the sources shows an error and a later preference change recovers` (malformed `sourcesTabSourcesInCategories` entry; failed before) | `4cfc263` |
+| 4 | `remember(source.id) { sourceManager.get(source.id) }` kept a stale source instance | fixed: keyed on the manager's `sources` flow as well (an updated / reinstalled source is looked up again) | `4cfc263` |
+| 5 | A catalogue of a source that is not installed recorded `lastUsedSource` | fixed: only a `CatalogueSource` is recorded (and loaded). Test `only an installed source becomes the last used source` (failed before) | `4cfc263` |
+| 6 | `model.hasPinnedSources()` ran on every recomposition | fixed: `remember(state.sourceFilter)` | `03642a4` |
+
+No new strings. Verification after the fixes: `spotlessCheck` passes; `:desktopApp:test` 35 classes, 118 tests, 0
+failures (was 115: `GlobalSearchUiTest` +1, `SourcesUiTest` +2). Android code is unchanged by these fixes.
 
 ## Remaining parity gaps
 
