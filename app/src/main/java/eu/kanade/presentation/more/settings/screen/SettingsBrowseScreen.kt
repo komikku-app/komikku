@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
 import kotlinx.collections.immutable.persistentListOf
 import mihon.domain.extension.interactor.GetExtensionStoreCountAsFlow
+import mihon.feature.jssources.JsSourcesScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -148,6 +149,15 @@ object SettingsBrowseScreen : SearchableSettings {
                             navigator.push(ExtensionStoresScreen())
                         },
                     ),
+                    // KMK -->
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(KMR.strings.js_sources),
+                        subtitle = stringResource(KMR.strings.js_sources_summary),
+                        onClick = {
+                            navigator.push(JsSourcesScreen())
+                        },
+                    ),
+                    // KMK <--
                 ),
             ),
             Preference.PreferenceGroup(

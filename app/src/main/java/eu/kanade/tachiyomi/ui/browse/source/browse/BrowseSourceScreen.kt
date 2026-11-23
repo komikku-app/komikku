@@ -34,6 +34,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import app.komikku.shared.jssource.JsSourceNotesBanner
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -335,6 +337,11 @@ data class BrowseSourceScreen(
                         // KMK <--
                     }
 
+                    // KMK -->
+                    (screenModel.source as? MangayomiJsSource)?.descriptor?.notes?.takeIf { it.isNotBlank() }?.let {
+                        JsSourceNotesBanner(notes = it)
+                    }
+                    // KMK <--
                     HorizontalDivider()
                 }
             },

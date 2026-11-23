@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import kotlinx.collections.immutable.persistentListOf
+import mihon.feature.jssources.JsSourcesScreen
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -55,6 +56,10 @@ fun extensionsTab(
             AppBar.OverflowAction(
                 title = stringResource(MR.strings.action_webview_refresh),
                 onClick = extensionsScreenModel::findAvailableExtensions,
+            ),
+            AppBar.OverflowAction(
+                title = stringResource(KMR.strings.js_sources),
+                onClick = { navigator.push(JsSourcesScreen()) },
             ),
             // KMK <--
             AppBar.OverflowAction(

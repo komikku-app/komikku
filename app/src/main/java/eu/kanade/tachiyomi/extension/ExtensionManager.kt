@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import app.komikku.shared.jssource.MangayomiSourceStore
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
@@ -48,6 +49,7 @@ import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The manager of extensions installed as another apk which extend the available sources. It handles
@@ -124,6 +126,10 @@ class ExtensionManager(
             }
         }
 
+        // KMK -->
+        jsSourceIcon(sourceId)?.let { return it }
+        // KMK <--
+
         // SY -->
         return when (sourceId) {
             // KMK -->
@@ -135,6 +141,20 @@ class ExtensionManager(
         }
         // SY <--
     }
+
+    // KMK -->
+    /** Icons of installed JavaScript sources by source id, with the install time they were read for. */
+    private val jsSourceIcons = ConcurrentHashMap<Long, Pair<Long, Drawable?>>()
+
+    private fun jsSourceIcon(sourceId: Long): Drawable? {
+        val store = runCatching { Injekt.get<MangayomiSourceStore>() }.getOrNull() ?: return null
+        val installed = store.installedSource(sourceId) ?: return null
+        jsSourceIcons[sourceId]?.takeIf { it.first == installed.updatedAt }?.let { return it.second }
+        val icon = store.iconFileForSource(sourceId)?.let { Drawable.createFromPath(it.path) }
+        jsSourceIcons[sourceId] = installed.updatedAt to icon
+        return icon
+    }
+    // KMK <--
 
     private var availableExtensionsSourcesData: Map<Long, StubSource> = emptyMap()
 

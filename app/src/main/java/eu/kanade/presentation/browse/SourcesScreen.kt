@@ -33,6 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import app.komikku.shared.jssource.JsSourceLabel
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
@@ -46,6 +48,7 @@ import exh.source.EXH_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Source
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -60,6 +63,8 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun SourcesScreen(
@@ -206,6 +211,10 @@ private fun SourceItem(
         onClickItem = { onClickItem(source, Listing.Popular) },
         onLongClickItem = { onLongClickItem(source) },
         action = {
+            // KMK -->
+            val isJsSource = remember(source.id) { Injekt.get<SourceManager>().get(source.id) is MangayomiJsSource }
+            if (isJsSource) JsSourceLabel(modifier = Modifier.padding(horizontal = 4.dp))
+            // KMK <--
             if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
                 TextButton(onClick = { onClickItem(source, Listing.Latest) }) {
                     Text(
