@@ -29,7 +29,6 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.FakeMangaServer
 import app.komikku.desktop.reader.TestLibrary
-import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.browse.SimpleSearchSource
 import app.komikku.desktop.window.DesktopShortcuts
@@ -228,7 +227,8 @@ class LibraryGroupSelectionUiTest {
     @Test
     fun `update targets of group pages and selections, and an update already running`() = runDesktopComposeUiTest(width = 1200, height = 800) {
         val preferences = Injekt.get<LibraryPreferences>()
-        setContent { DesktopToastHost { KomikkuApp(context = app, shortcuts = DesktopShortcuts(isMacOs = false)) } }
+        // KomikkuApp shows compat toasts as snackbars (DesktopToastHost)
+        setContent { KomikkuApp(context = app, shortcuts = DesktopShortcuts(isMacOs = false)) }
         // Not Ajin / Blue Period: the batch-action test may have removed or moved them already
         waitForTag("library-item-${frieren.id}")
         try {
