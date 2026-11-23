@@ -1721,6 +1721,74 @@ No new strings. Verification after the fixes: `spotlessCheck`, `:app:compileDebu
 `:desktopApp:test` 37 classes, 124 tests, 0 failures (was 36 / 120: `LibraryActionsTest` +2, `LibraryUpdateRunnerTest`
 +1, `LibraryGroupSelectionUiTest` +1). Android UI compile-only.
 
+## P3 — scheduled updates and backups
+
+Commits `80c64c6` (scheduler), `3f50fd0` (scheduled work), `f5c934a` (settings / last runs) and this section's docs
+commit.
+
+**Scheduler** (`desktopApp/…/scheduler/DesktopScheduler.kt`, new, desktop-only): the counterpart of Android's periodic
+WorkManager jobs, owned by the app's lifetime (`main()` starts it after `DesktopInjekt.init()` and stops it when the
+window closes; tests never start it). Every minute, and at once when an interval preference changes, it starts the due
+tasks in its own scope. A task is due when its interval is on and has passed since the later of its persisted last run
+(so a run missed while the app was closed is caught up once on the first check) and its last attempt in this process.
+A task never runs twice at once. Outcomes follow WorkManager: done / failed wait a whole interval from the attempt (a
+failing task is not retried every minute), busy (the same work already runs) retries after 10 minutes (Android's
+back-off). The clock is injected (`now: () -> Long`).
+
+**Scheduled work** (`scheduler/DesktopScheduledJobs.kt`), on Android's preferences and keys (a restored backup carries
+them; `lastUpdatedTimestamp` / `lastAutoBackupTimestamp` are app-state keys, not in backups, as on Android):
+- Library update: every `autoUpdateInterval()` hours (Android's entries: never, 12, 24, 48, 72 h, weekly) a
+  `LibraryUpdateRunner.Target.All` through the existing desktop runner (update categories and smart-update restrictions,
+  like Android's periodic job). Due from `lastUpdatedTimestamp()`, which every desktop library update (all targets but
+  `Single`) now stores when it starts, as Android's `LibraryUpdateJob` does (`CoroutineLibraryUpdateRunner` gains an
+  `onStarted` hook); so a manual update postpones the next scheduled one (Android's periodic work runs on its own
+  period instead). A running update makes it "busy" (Android: `Result.retry()` while the manual worker runs).
+- Automatic backup: every `backupInterval()` hours (off, 1, 3, 6, 12, 24, 48 h, weekly) the borrowed `BackupCreator` in
+  automatic mode (`DesktopBackupService.createAutomatic`: the storage location's `autobackup` folder through
+  `StorageManager`, newest four kept, sets `lastAutoBackupTimestamp()`), started through the backup jobs' single slot
+  (`DesktopBackupJobs.createAutomatic`), so it never runs next to a manual backup or a restore ("busy"; Android retries
+  while a restore runs). Like Android it reports no result; while it runs the data screen shows the progress row (with
+  cancel) and disables its buttons, afterwards the previous status is back.
+
+**Settings / last run:**
+- Settings → Library, "Library update" group: "Automatic updates" (Android's interval list) and SY's "Library dynamic
+  category updates" (`groupLibraryUpdateType`, used by the group-page update since the P2 review).
+- Settings → Data and storage: "Automatic backup frequency" and Android's info text with "Last automatically backed up:
+  …" (borrowed `ListPreference` / `InfoPreference` rendered through the new `PreferenceRow` of `:app-shared`'s
+  `PreferenceList.kt`).
+- Updates tab: Android's "Library last updated: …" line at the top of the list (Android's `updatesLastUpdatedItem`).
+- Desktop `relativeTimeSpanString` (`ui/RelativeTime.kt`): Android's never / just now, otherwise the localized date and
+  time (Android's `TimeUtils` needs `android.text.format.DateUtils` for "5 minutes ago"; not borrowed).
+
+**Decisions / deviations:**
+- Device restrictions: none applies on desktop. Wi-Fi / unmetered / charging (and Android's implicit "battery not low"
+  and "network connected") have no reliable JVM API across Windows / macOS / Linux, so the restriction list is not shown
+  and the preference is left untouched (it still round-trips through backups). Offline runs fail per entry and are
+  stored as update errors, like a manual update.
+- Only while the app is open (no tray / background service, no OS-level scheduling); notifications are not shown (the
+  library update banner shows the run like a manual one).
+- The schedule is measured from the last run, not from when the interval was set (WorkManager); the first run after
+  enabling is immediate when nothing ran yet, as WorkManager's first periodic run.
+- No change to Android code or behaviour (the runner hook is in `:app-shared`'s desktop runner path only; Android keeps
+  WorkManager).
+
+No new strings (`MR` / `SYMR` reused: `pref_library_update_interval`, `update_*hour`, `update_never`, `update_weekly`,
+`library_group_updates*`, `pref_backup_interval`, `backup_info`, `last_auto_backup_info`, `updates_last_update_info`,
+`relative_time_span_never`, `updates_last_update_info_just_now`, `off`).
+
+Tests: `DesktopSchedulerTest` (7, injected clock: due / not due, catch-up once, disabled, no overlap, busy retry /
+failure wait, exceptions, start / wake-ups / stop), `DesktopScheduledJobsTest` (2: the library task on the real desktop
+runner stores the last update, a manual update postpones it, a running update makes it busy; the automatic backup writes
+one `.tachibk` into `autobackup` through the borrowed creator and stores its time, a running restore makes it busy),
+`ScheduleSettingsUiTest` (1: the settings entries set Android's preferences, the last automatic backup text follows the
+preference).
+
+Verification (after `f5c934a`): `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`,
+`:desktopApp:compileKotlin` pass; `:desktopApp:test` 40 classes, 134 tests, 0 failures (was 37 / 124 after the P2
+review: `DesktopSchedulerTest` 7, `DesktopScheduledJobsTest` 2, `ScheduleSettingsUiTest` 1). Not run in a real window;
+the scheduler was never left running for real hours (only the injected clock and the wake-up path are tested); the
+"Library last updated" line in the updates list has no test of its own.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -1730,13 +1798,14 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
    recommendations, SY clean titles / MangaDex follow / reset info from the selection. Also: "continue reading" button, source-icon badge and language flag
-   icons, random-entry shortcut, scheduled automatic library updates.
+   icons, random-entry shortcut. Scheduled automatic library updates are done (P3; no device restrictions on desktop).
 3. **Manga details:** duplicate detection on add, merged entries, metadata editing, cover actions, sharing,
    recommendations.
 4. **Reader:** neighbouring chapters appended in viewers, animated GIF / WebP playback, AVIF / JPEG XL / HEIF
    pages, automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
    chapters exercised from the UI.
-5. **System integration:** notifications / tray, scheduled backups, WebView (Cloudflare) login, OAuth via
+5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
+   them), WebView (Cloudflare) login, OAuth via
    redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs).
 6. **Distribution:** installers built and tried on each OS, signing / notarization, auto-update.
 

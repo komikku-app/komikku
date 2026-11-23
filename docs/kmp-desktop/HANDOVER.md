@@ -2,8 +2,9 @@
 
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
-and source toggles, with its review fixes, and parity step P2, library grouping and batch actions, with its review
-fixes, are done; next is P3, scheduled library updates and backups; see "Done" and "Left to do").
+and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
+fixes, and parity step P3, scheduled library updates and backups, are done; next is the review of P3; see "Done" and
+"Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -108,6 +109,14 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   desktop state, group pages update through `Target.Group` (restrictions, `groupLibraryUpdateType`), the selection bar
   stays on an empty page, "update already running" keeps the selection, press modifiers reset on long press,
   `groupLibraryItems` suspends instead of `runBlocking`, no new SY markers in Komikku-owned files.
+- **P3** scheduled updates and backups (`80c64c6` … , PROGRESS.md "P3 — scheduled updates and backups"): an
+  app-lifetime `DesktopScheduler` (injected clock, catch-up once at start, no overlap, WorkManager-like busy / failed
+  handling) runs the library update every `autoUpdateInterval()` hours (`Target.All`, due from `lastUpdatedTimestamp`,
+  which every desktop update now stores) and the automatic backup every `backupInterval()` hours (borrowed
+  `BackupCreator` in automatic mode, the backup jobs' single slot); settings entries (Library: interval, grouped-update
+  mode; Data and storage: backup frequency, last automatic backup) and "Library last updated" in the updates list. No
+  device restrictions on desktop; only while the app is open. Headless tests `DesktopSchedulerTest`,
+  `DesktopScheduledJobsTest`, `ScheduleSettingsUiTest`.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -144,11 +153,12 @@ mark the residual path in both modules.
    sources not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, start-up may wait up to
    15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
-   its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done.
-   **Next:** P3 scheduled library updates and backups. Known gaps: no bulk favourites in global search, no "search
+   its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done; P3
+   (scheduled library updates and backups) is done. **Next:** review P3 (`/code-review medium 80160e3..<last P3
+   commit>`). Known gaps: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   Then scheduled updates / backups, delegated sources, AVIF / JXL, WebView / Cloudflare, signing, updater.
+   Then delegated sources, AVIF / JXL, WebView / Cloudflare, notifications / tray, signing, updater.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
