@@ -305,6 +305,7 @@ class MangayomiSourceStore(
      * @throws JsSourceStoreException
      */
     suspend fun download(offer: JsSourceOffer): JsSourceDownload {
+        awaitLoaded()
         val url = checkedUrl(offer.descriptor.sourceCodeUrl)
         val text = fetchText(offer.descriptor.sourceCodeUrl, limits.codeBytes)
         val sha256 = sha256Hex(text)
@@ -341,8 +342,8 @@ class MangayomiSourceStore(
                 "The text of ${descriptor.name} changed since it was confirmed (SHA-256 $sha256, confirmed $confirmedSha256)",
             )
         }
+        awaitLoaded()
         return mutex.withLock {
-            awaitManifest()
             val source = try {
                 runtime.source(descriptor, text)
             } catch (e: CancellationException) {
@@ -382,8 +383,8 @@ class MangayomiSourceStore(
 
     /** Removes the installed source [id]: its source, text (unless another entry uses it) and icon; its preferences stay. */
     suspend fun uninstall(id: Long) {
+        awaitLoaded()
         mutex.withLock {
-            awaitManifest()
             val current = _installed.value.orEmpty()
             val record = current.find { it.id == id } ?: return
             val updated = current - record
@@ -417,17 +418,31 @@ class MangayomiSourceStore(
 
     // ---- Files ----
 
-    private suspend fun awaitManifest() {
-        if (_installed.value == null) _installed.first { it != null }
+    /** Waits for [load] (outside the lock, which [load] holds). */
+    private suspend fun awaitLoaded() {
+        if (!_isLoaded.value) _isLoaded.first { it }
     }
 
-    private suspend fun load() {
-        val records = mutex.withLock { withContext(Dispatchers.IO) { readManifest() } }
+    /**
+     * Reads the manifest and builds every installed source, under the store's lock: an install, update or uninstall
+     * started meanwhile waits, so it can neither be overwritten by the start-up state nor race it in the runtime.
+     */
+    private suspend fun load() = mutex.withLock {
+        try {
+            loadLocked()
+        } finally {
+            if (_installed.value == null) _installed.value = emptyList()
+            _isLoaded.value = true
+        }
+    }
+
+    private suspend fun loadLocked() {
+        val records = withContext(Dispatchers.IO) { readManifest() }
         _installed.value = records
         val sources = mutableMapOf<Long, MangayomiJsSource>()
         val errors = mutableMapOf<Long, String>()
-        val withMetadata = mutableListOf<InstalledJsSource>()
-        records.forEach { record ->
+        var metadataCached = false
+        val updated = records.map { record ->
             try {
                 val text = withContext(Dispatchers.IO) { codeFile(record.sha256).takeIf(File::isFile)?.readText() }
                     ?: throw IOException("The text file of ${record.descriptor.name} is missing")
@@ -435,27 +450,31 @@ class MangayomiSourceStore(
                     throw IOException("The text file of ${record.descriptor.name} does not match its SHA-256")
                 }
                 val source = runtime.source(record.descriptor, text, record.metadata)
-                // The cached metadata may predate preference changes: read it again in the background.
-                if (record.metadata != null) source.requestMetadataRefresh() else withMetadata += record.copy(metadata = source.metadata)
                 sources[record.id] = source
+                if (record.metadata != null) {
+                    // The cached metadata may predate preference changes: read it again in the background.
+                    source.requestMetadataRefresh()
+                    record
+                } else {
+                    metadataCached = true
+                    record.copy(metadata = source.metadata)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
                 xLogE("Could not load the JavaScript source ${record.descriptor.name} (${record.id})", e)
                 errors[record.id] = e.message ?: e.toString()
+                record
             }
         }
         loaded.value = sources
         loadErrors.value = errors
-        _isLoaded.value = true
-        if (withMetadata.isNotEmpty()) {
-            mutex.withLock {
-                val byId = withMetadata.associateBy { it.id }
-                val updated = _installed.value.orEmpty().map { current ->
-                    byId[current.id]?.takeIf { it.sha256 == current.sha256 } ?: current
-                }
-                runCatching { writeManifest(updated) }.onFailure { xLogW("Could not cache JavaScript source metadata", it) }
+        if (metadataCached) {
+            try {
+                writeManifest(updated)
                 _installed.value = updated
+            } catch (e: IOException) {
+                xLogW("Could not cache the JavaScript source metadata", e)
             }
         }
     }

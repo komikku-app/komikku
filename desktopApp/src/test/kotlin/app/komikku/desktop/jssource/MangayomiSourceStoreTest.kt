@@ -352,6 +352,13 @@ class MangayomiSourceStoreTest {
         withTimeout(5_000) { reloaded.sources.first { it.isNotEmpty() } }.map { it.id } shouldContainExactly listOf(JsSourceIds.komikkuId(OTHER_ID))
         reloaded.items.first().single { it.id == ID }.loadError.shouldNotBeNull() shouldContain "SHA-256"
 
+        // A store asked to install while it is still loading waits for its files first.
+        val busy = newStore(storeDir)
+        busy.addRepository(url("/repo2/index.json"))
+        busy.install(busy.offer(OTHER_ID)!!, sha256Hex(code("good").replace("$ID", "$OTHER_ID")))
+        busy.installed.value!!.map { it.id }.toSet() shouldBe setOf(ID, OTHER_ID)
+        busy.close()
+
         // Broken JavaScript is refused at install.
         route("/code/source.js", "this is not javascript (")
         shouldThrow<JsSourceStoreException> {
