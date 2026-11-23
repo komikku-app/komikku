@@ -100,6 +100,7 @@ class DesktopSourceManager(
                                 if (it is MangayomiJsSource) StubSource(id = it.id, lang = it.lang, name = it.stubName) else StubSource.from(it),
                             )
                         }
+                        DesktopDelegatedSources.publishSourceIds(map.values)
                         sourcesMap.value = map
                         if (initialized) _isInitialized.value = true
                     }

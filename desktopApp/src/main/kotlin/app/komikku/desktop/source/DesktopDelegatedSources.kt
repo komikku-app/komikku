@@ -11,7 +11,15 @@ import eu.kanade.tachiyomi.source.online.english.EightMuses
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.source.DelegatedHttpSource
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import exh.source.EnhancedHttpSource
+import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import exh.source.PURURIN_SOURCE_ID
+import exh.source.lanraragiSourceIds
+import exh.source.mangaDexSourceIds
+import exh.source.metadataDelegatedSourceIds
+import exh.source.nHentaiSourceIds
 
 /**
  * KMK: the desktop's SY delegated (enhanced) sources, Android's `AndroidSourceManager.toInternalSource` /
@@ -63,5 +71,21 @@ object DesktopDelegatedSources {
             xLogE("Could not delegate ${source::class.qualifiedName}", e)
             source
         }
+    }
+
+    /**
+     * Android's `handleSourceLibrary` (run when `AndroidSourceManager.currentDelegatedSources` changes): publishes the
+     * ids of the delegated sources in [sources] to the shared SY lookups (`exh.source`: metadata sources for the library
+     * search by tags, NHentai / MangaDex / LANraragi ids, the sources library updates skip). Recomputed from the current
+     * sources (Android's map only grows during a run).
+     */
+    fun publishSourceIds(sources: Collection<Source>) {
+        val delegated = sources.filterIsInstance<EnhancedHttpSource>()
+        fun idsOf(predicate: (HttpSource) -> Boolean) = delegated.filter { predicate(it.enhancedSource) }.map { it.originalSource.id }.sorted()
+        metadataDelegatedSourceIds = idsOf { it is Pururin || it is EightMuses || it is NHentai || it is Lanraragi }
+        nHentaiSourceIds = idsOf { it is NHentai }
+        mangaDexSourceIds = idsOf { it is MangaDex }
+        lanraragiSourceIds = idsOf { it is Lanraragi }
+        LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(EH_SOURCE_ID, EXH_SOURCE_ID, PURURIN_SOURCE_ID) + nHentaiSourceIds
     }
 }

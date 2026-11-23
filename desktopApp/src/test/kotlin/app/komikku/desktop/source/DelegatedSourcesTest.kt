@@ -6,16 +6,24 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.shared.extension.PlatformExtensionManager
+import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.extension.all.mangadex.MangaDex
 import eu.kanade.tachiyomi.extension.all.nhentai.NHentai
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.ui.library.LibraryItem
+import eu.kanade.tachiyomi.ui.library.filterLibraryByQuery
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.pref.DelegateSourcePreferences
 import exh.source.EnhancedHttpSource
+import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import exh.source.isMetadataSource
+import exh.source.mangaDexSourceIds
+import exh.source.nHentaiSourceIds
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
@@ -30,6 +38,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
@@ -103,6 +112,13 @@ class DelegatedSourcesTest {
         source.name shouldBe "NHentai"
         manager.get(plainSource.id) shouldBeSameInstanceAs plainSource
         DesktopDelegatedSources.delegateFor(plainSource) shouldBe null
+        // The shared SY lookups (Android's handleSourceLibrary)
+        nHentaiSourceIds shouldBe listOf(extensionSource.id)
+        mangaDexSourceIds shouldBe listOf(mangaDexSource.id)
+        isMetadataSource(extensionSource.id) shouldBe true
+        isMetadataSource(plainSource.id) shouldBe false
+        (extensionSource.id in LIBRARY_UPDATE_EXCLUDED_SOURCES) shouldBe true
+        (mangaDexSource.id in LIBRARY_UPDATE_EXCLUDED_SOURCES) shouldBe false
     }
 
     @Test
@@ -138,7 +154,31 @@ class DelegatedSourcesTest {
         metadata.nhId shouldBe 1L
         metadata.mediaId shouldBe "777"
         metadata.tags.map { it.namespace to it.name }.toSet() shouldBe setOf("tag" to "full color", "artist" to "someone")
+
+        // The library's SY text search now matches the stored namespace tags (a metadata source, Android's lookup)
+        Injekt.get<UpdateManga>().awaitUpdateFavorite(manga.id, true)
+        val item = LibraryItem(
+            LibraryManga(
+                manga = manga, categories = listOf(0), totalChapters = 0, readCount = 0, bookmarkCount = 0, bookmarkReadCount = 0,
+                chapterFlags = 0, latestUpload = 0, chapterFetchedAt = 0, lastRead = 0,
+            ),
+        )
+        search(listOf(item), "artist:someone") shouldBe listOf(manga.id)
+        search(listOf(item), "artist:nobody") shouldBe emptyList()
     }
+
+    private suspend fun search(items: List<LibraryItem>, query: String): List<Long> = filterLibraryByQuery(
+        unfiltered = items,
+        query = query,
+        loggedInTrackServices = emptyMap(),
+        searchEngine = Injekt.get(),
+        getIdsOfFavoriteMangaWithMetadata = Injekt.get(),
+        getTracks = Injekt.get(),
+        sourceManager = manager,
+        getSearchTags = Injekt.get(),
+        getSearchTitles = Injekt.get(),
+        trackerManager = Injekt.get<TrackerManager>(),
+    ).map { it.id }
 
     @Test
     fun `plain searches reach the extension, URL searches go through the URL import`() = runBlocking<Unit> {
