@@ -20,6 +20,7 @@ import exh.log.xLogW
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -327,8 +328,9 @@ class MangayomiSourceStore(
 
     /**
      * Installs (or updates to) the text of [offer] if it still has [confirmedSha256]: downloads it, checks the hash,
-     * loads it (a text that does not load is not installed; an update keeps the old version then), stores the text,
-     * icon and manifest, and publishes the source.
+     * loads it next to the installed version, stores the text and manifest, then swaps the new source in and stores
+     * its icon. Any failure before the manifest is written (a text that does not load, a file that cannot be written)
+     * changes nothing: the installed version stays in use and the new files are removed.
      *
      * @throws JsSourceStoreException
      */
@@ -344,35 +346,52 @@ class MangayomiSourceStore(
         }
         awaitLoaded()
         return mutex.withLock {
+            // Built next to the installed version, which stays registered and open until the swap below.
             val source = try {
-                runtime.source(descriptor, text)
+                runtime.prepare(descriptor, text)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 throw JsSourceStoreException(Reason.LOAD_FAILED, "${descriptor.name} does not load: ${e.message}", e)
             }
-            withContext(Dispatchers.IO) {
-                writeAtomically(codeFile(sha256), text.encodeToByteArray())
-                downloadIcon(descriptor.id, descriptor.iconUrl)
-            }
-            val now = clock()
+            val icon = fetchIcon(descriptor.id, descriptor.iconUrl)
             val current = _installed.value.orEmpty()
             val previous = current.find { it.id == descriptor.id }
-            val record = InstalledJsSource(
-                descriptor = descriptor,
-                repoUrl = offer.repoUrl,
-                sha256 = sha256,
-                installedAt = previous?.installedAt ?: now,
-                updatedAt = now,
-                metadata = source.metadata,
-            )
-            val updated = current.filterNot { it.id == descriptor.id } + record
-            writeManifest(updated)
-            _installed.value = updated
-            if (previous != null && previous.sha256 != sha256) deleteUnusedCode(previous.sha256, updated)
-            loaded.update { it + (descriptor.id to source) }
-            loadErrors.update { it - descriptor.id }
-            remoteTexts.update { it + (descriptor.id to RemoteText(descriptor.sourceCodeUrl, descriptor.version, sha256)) }
+            val code = codeFile(sha256)
+            val codeWasThere = code.isFile
+            val updated = try {
+                storage("store the text of ${descriptor.name}") {
+                    withContext(Dispatchers.IO) { writeAtomically(code, text.encodeToByteArray()) }
+                }
+                val now = clock()
+                val record = InstalledJsSource(
+                    descriptor = descriptor,
+                    repoUrl = offer.repoUrl,
+                    sha256 = sha256,
+                    installedAt = previous?.installedAt ?: now,
+                    updatedAt = now,
+                    metadata = source.metadata,
+                )
+                val updated = current.filterNot { it.id == descriptor.id } + record
+                storage("store the JavaScript source manifest") { writeManifest(updated) }
+                updated
+            } catch (e: Throwable) {
+                source.close()
+                if (!codeWasThere) withContext(NonCancellable + Dispatchers.IO) { code.delete() }
+                throw e
+            }
+            // Written: from here on the new version is the installed one, also if the caller is cancelled.
+            withContext(NonCancellable) {
+                _installed.value = updated
+                runtime.register(source)
+                loaded.update { it + (descriptor.id to source) }
+                loadErrors.update { it - descriptor.id }
+                remoteTexts.update { it + (descriptor.id to RemoteText(descriptor.sourceCodeUrl, descriptor.version, sha256)) }
+                withContext(Dispatchers.IO) {
+                    if (previous != null && previous.sha256 != sha256) deleteUnusedCode(previous.sha256, updated)
+                    storeIcon(descriptor.id, icon)
+                }
+            }
             source
         }
     }
@@ -388,7 +407,7 @@ class MangayomiSourceStore(
             val current = _installed.value.orEmpty()
             val record = current.find { it.id == id } ?: return
             val updated = current - record
-            writeManifest(updated)
+            storage("store the JavaScript source manifest") { writeManifest(updated) }
             _installed.value = updated
             loaded.update { it - id }
             loadErrors.update { it - id }
@@ -505,31 +524,56 @@ class MangayomiSourceStore(
         if (installed.none { it.sha256.equals(sha256, ignoreCase = true) }) codeFile(sha256).delete()
     }
 
-    /** Best effort: a missing, insecure or too large icon only means no icon. */
-    private suspend fun downloadIcon(id: Long, iconUrl: String) {
-        val file = iconFile(id)
-        if (iconUrl.isBlank()) {
-            file.delete()
-            return
-        }
-        try {
-            writeAtomically(file, fetchBytes(iconUrl, limits.iconBytes))
+    /** Best effort: a missing, insecure or too large icon only means no icon (`null`). */
+    private suspend fun fetchIcon(id: Long, iconUrl: String): ByteArray? {
+        if (iconUrl.isBlank()) return null
+        return try {
+            fetchBytes(iconUrl, limits.iconBytes).bytes
         } catch (e: JsSourceStoreException) {
             xLogW("No icon for JavaScript source $id", e)
+            null
         }
+    }
+
+    /** Stores [bytes] as the icon of [id]; without an icon (or when it cannot be written) an older one is removed. */
+    private fun storeIcon(id: Long, bytes: ByteArray?) {
+        val file = iconFile(id)
+        if (bytes != null) {
+            try {
+                writeAtomically(file, bytes)
+                return
+            } catch (e: IOException) {
+                xLogW("Could not store the icon of JavaScript source $id", e)
+            }
+        }
+        file.delete()
+    }
+
+    /** Runs the file operation [block], reporting a file failure as [Reason.STORAGE_FAILED]. */
+    private inline fun <T> storage(what: String, block: () -> T): T = try {
+        block()
+    } catch (e: IOException) {
+        throw JsSourceStoreException(Reason.STORAGE_FAILED, "Could not $what: ${e.message}", e)
+    } catch (e: SecurityException) {
+        throw JsSourceStoreException(Reason.STORAGE_FAILED, "Could not $what: ${e.message}", e)
     }
 
     private fun writeAtomically(file: File, bytes: ByteArray) {
         file.parentFile?.mkdirs()
         val temp = File(file.parentFile, "${file.name}.tmp")
-        temp.outputStream().use { out ->
-            out.write(bytes)
-            out.fd.sync()
-        }
         try {
-            Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-        } catch (e: AtomicMoveNotSupportedException) {
-            Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            temp.outputStream().use { out ->
+                out.write(bytes)
+                out.fd.sync()
+            }
+            try {
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+            } catch (e: AtomicMoveNotSupportedException) {
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+        } catch (e: IOException) {
+            temp.delete()
+            throw e
         }
     }
 
@@ -543,13 +587,16 @@ class MangayomiSourceStore(
         return parsed
     }
 
-    private suspend fun fetchText(url: String, limit: Long): String = fetchBytes(url, limit).decodeToString()
+    private suspend fun fetchText(url: String, limit: Long): String = fetchBytes(url, limit).bytes.decodeToString()
+
+    /** A downloaded file and the [url] that served it (after redirects). */
+    private class Fetched(val url: HttpUrl, val bytes: ByteArray)
 
     /**
      * GET [url] (no cache) into memory, at most [limit] bytes. Redirects are followed here, at most
      * [MAX_REDIRECTS], each target checked by [allowUrl] before it is requested.
      */
-    private suspend fun fetchBytes(url: String, limit: Long): ByteArray = withContext(Dispatchers.IO) {
+    private suspend fun fetchBytes(url: String, limit: Long): Fetched = withContext(Dispatchers.IO) {
         val noRedirects = client().newBuilder().followRedirects(false).followSslRedirects(false).build()
         var target = checkedUrl(url)
         repeat(MAX_REDIRECTS + 1) { _ ->
@@ -580,7 +627,7 @@ class MangayomiSourceStore(
                 try {
                     val source = body.source()
                     if (source.request(limit + 1)) throw JsSourceStoreException(Reason.TOO_LARGE, "$url is larger than $limit bytes")
-                    source.buffer.readByteArray()
+                    Fetched(target, source.buffer.readByteArray())
                 } catch (e: IOException) {
                     throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: ${e.message}", e)
                 }

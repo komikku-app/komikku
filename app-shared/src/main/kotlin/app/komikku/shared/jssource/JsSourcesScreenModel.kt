@@ -3,6 +3,7 @@ package app.komikku.shared.jssource
 import app.komikku.sourcejs.repo.JsSourceStatus
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -54,7 +55,15 @@ class JsSourcesScreenModel(
     }
 
     fun refresh() {
-        screenModelScope.launch { store.refresh() }
+        screenModelScope.launch {
+            try {
+                store.refresh()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                mutableState.update { it.copy(error = e.asStoreException()) }
+            }
+        }
     }
 
     fun showDialog(dialog: Dialog) = mutableState.update { it.copy(dialog = dialog) }
@@ -68,8 +77,10 @@ class JsSourcesScreenModel(
         store.addRepository(url)
         dismissDialog()
         null
-    } catch (e: JsSourceStoreException) {
-        e
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        e.asStoreException()
     }
 
     fun removeRepository(repository: JsSourceRepository) {
@@ -102,8 +113,9 @@ class JsSourcesScreenModel(
                 block()
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: JsSourceStoreException) {
-                mutableState.update { it.copy(error = e) }
+            } catch (e: Exception) {
+                // Any failure is shown, never thrown: an uncaught one would end the app.
+                mutableState.update { it.copy(error = e.asStoreException()) }
             } finally {
                 mutableState.update { it.copy(busy = it.busy - id) }
             }
@@ -111,6 +123,12 @@ class JsSourcesScreenModel(
     }
 
     companion object {
+        /** [this] as a store failure for the UI ([JsSourceStoreException.Reason.UNEXPECTED] unless it is one; logged). */
+        internal fun Exception.asStoreException(): JsSourceStoreException = this as? JsSourceStoreException
+            ?: JsSourceStoreException(JsSourceStoreException.Reason.UNEXPECTED, message ?: toString(), this).also {
+                xLogE("JavaScript source store operation failed", this)
+            }
+
         /** Whether [status] is worth showing next to the version. */
         fun isNotable(status: JsSourceStatus?): Boolean = status != null && status != JsSourceStatus.UP_TO_DATE
     }

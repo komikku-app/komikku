@@ -1,6 +1,7 @@
 package app.komikku.desktop.jssource
 
 import android.app.Application
+import android.content.Context
 import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.shared.jssource.JsSourcePreferences
@@ -19,6 +20,9 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.types.shouldBeSameInstanceAs
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -248,7 +252,11 @@ class MangayomiSourceStoreTest {
         val download = store.downloadUpdate(ID)
         download.textChangedUnderSameVersion shouldBe false
         val installedAt = store.installed.value!!.single().installedAt
+        // The icon cannot be downloaded this time: the old one is not kept as if it were the new version's.
+        routes.remove("/icon.png")
         val source = store.update(ID, download.sha256)
+        store.iconFileForSource(source.id).shouldBeNull()
+        route("/icon.png", "PNG-BYTES")
         source.getPopularManga(1).mangas.single().title shouldBe "First v2"
         store.sources.value.single() shouldBe source
         val record = store.installed.value!!.single()
@@ -373,8 +381,67 @@ class MangayomiSourceStoreTest {
         reloaded.close()
     }
 
+    @Test
+    @Order(15)
+    fun `a failed update keeps the installed version working`(): Unit = runBlocking {
+        val prefs = JsSourcePreferences(DesktopPreferenceStores.get("failing", File(storeDir.parentFile, "failing-preferences")))
+        val dir = File(storeDir.parentFile, "failing")
+        val v1 = latestCode("v1")
+        val v2 = latestCode("v2")
+        route("/fail/index.json", index(version = "1.0.0", codePath = "/code/fail.js").replace("$ID", "$FAIL_ID"))
+        route("/code/fail.js", v1)
+        val s = newStore(dir, preferences = prefs)
+        s.addRepository(url("/fail/index.json"))
+        val old = s.install(s.offer(FAIL_ID)!!, sha256Hex(v1))
+        old.supportsLatest shouldBe true
+
+        route("/fail/index.json", index(version = "1.0.1", codePath = "/code/fail.js").replace("$ID", "$FAIL_ID"))
+        route("/code/fail.js", v2)
+        s.refresh()
+        val download = s.downloadUpdate(FAIL_ID)
+
+        // The manifest cannot be written: a non-empty directory stands in its place.
+        val manifest = File(dir, "manifest.json")
+        manifest.delete() shouldBe true
+        File(manifest, "blocker").apply { parentFile.mkdirs() }.writeText("x")
+        val failure = shouldThrow<Exception> { s.update(FAIL_ID, download.sha256) }
+        failure.shouldBeStoreFailure()
+
+        // The installed version is unchanged and still works.
+        s.sources.value.single() shouldBeSameInstanceAs old
+        s.installed.value!!.single().descriptor.version shouldBe "1.0.0"
+        File(dir, "code/${sha256Hex(v1)}.js").isFile shouldBe true
+        File(dir, "code/${download.sha256}.js").exists() shouldBe false
+        s.iconFileForSource(old.id).shouldNotBeNull()
+        old.getPopularManga(1).mangas.size shouldBe 1
+        // Not closed: it still follows its preferences.
+        app.getSharedPreferences(JsSourceIds.preferencesName(old.id), Context.MODE_PRIVATE).edit().putBoolean("k", false).apply()
+        withTimeout(10_000) { while (old.supportsLatest) delay(50) }
+
+        // Uninstalling fails the same way and keeps the source.
+        shouldThrow<Exception> { s.uninstall(FAIL_ID) }.shouldBeStoreFailure()
+        s.sources.value.single() shouldBeSameInstanceAs old
+
+        // Once the manifest can be written again, the update goes through.
+        manifest.deleteRecursively()
+        val updated = s.update(FAIL_ID, download.sha256)
+        s.sources.value.single() shouldBeSameInstanceAs updated
+        s.installed.value!!.single().descriptor.version shouldBe "1.0.1"
+        File(dir, "code/${sha256Hex(v1)}.js").exists() shouldBe false
+    }
+
+    private fun Throwable.shouldBeStoreFailure() {
+        shouldBeInstanceOf<JsSourceStoreException>().reason shouldBe Reason.STORAGE_FAILED
+    }
+
+    /** [code] whose `supportsLatest` is its "k" preference. */
+    private fun latestCode(tag: String) = code(tag)
+        .replace("get supportsLatest() { return false; }", "get supportsLatest() { return new SharedPreferences().get(\"k\"); }")
+        .replace("$ID", "$FAIL_ID")
+
     companion object {
         private const val ID = 652112892L
         private const val OTHER_ID = 777L
+        private const val FAIL_ID = 780L
     }
 }

@@ -125,5 +125,11 @@ class JsSourceStoreException(
 
         /** The text does not load as a Mangayomi extension. */
         LOAD_FAILED,
+
+        /** The store's files could not be written (disk full, no permission, …); nothing was changed. */
+        STORAGE_FAILED,
+
+        /** Any other failure (a bug); the message has the details. */
+        UNEXPECTED,
     }
 }

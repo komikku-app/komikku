@@ -294,4 +294,8 @@
     <string name="js_source_error_sha_mismatch">The text changed after you confirmed it. Check it again before installing.</string>
     <string name="js_source_error_not_found">No repository offers this source</string>
     <string name="js_source_error_load_failed">The source does not load</string>
+    <string name="js_source_error_storage_failed">Could not save the source\'s files. Nothing was changed.</string>
+    <string name="js_source_error_unexpected">Something went wrong: %1$s</string>
+    <string name="js_source_host_redirected">Downloaded from %1$s (redirected from %2$s)</string>
+    <string name="js_sources_unavailable">JavaScript sources are not available: their store could not be started</string>
 </resources>

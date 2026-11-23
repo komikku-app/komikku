@@ -392,6 +392,8 @@ fun JsSourceStoreException.text(): String = when (reason) {
     JsSourceStoreException.Reason.SHA_MISMATCH -> stringResource(KMR.strings.js_source_error_sha_mismatch)
     JsSourceStoreException.Reason.NOT_FOUND -> stringResource(KMR.strings.js_source_error_not_found)
     JsSourceStoreException.Reason.LOAD_FAILED -> stringResource(KMR.strings.js_source_error_load_failed)
+    JsSourceStoreException.Reason.STORAGE_FAILED -> stringResource(KMR.strings.js_source_error_storage_failed)
+    JsSourceStoreException.Reason.UNEXPECTED -> stringResource(KMR.strings.js_source_error_unexpected, message.orEmpty())
 }
 
 private fun formatBytes(bytes: Long): String = when {

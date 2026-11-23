@@ -87,10 +87,20 @@ class MangayomiJsRuntime(
      * metadata is read once more after registering the source, so headers and `supportsLatest` see what later calls see.
      */
     suspend fun source(descriptor: JsSourceDescriptor, code: String, metadata: JsSourceMetadata? = null): MangayomiJsSource {
+        val source = prepare(descriptor, code, metadata)
+        register(source, metadataRead = metadata == null)
+        return source
+    }
+
+    /**
+     * The source for [descriptor] whose extension text is [code], like [source] but not registered yet: the source of
+     * the same id built earlier stays in use (and open) until [register] swaps it. A prepared source that is not
+     * registered must be [closed][MangayomiJsSource.close].
+     */
+    suspend fun prepare(descriptor: JsSourceDescriptor, code: String, metadata: JsSourceMetadata? = null): MangayomiJsSource {
         val extension = extension(descriptor, code)
-        val readWith = sources[descriptor.id]?.metadata?.preferences.orEmpty()
         val initial = metadata ?: sharedPermits.withPermit { extension.metadata() }
-        val source = MangayomiJsSource(
+        return MangayomiJsSource(
             extension = extension,
             initialMetadata = initial,
             clientProvider = client,
@@ -98,9 +108,18 @@ class MangayomiJsRuntime(
             sharedPermits = sharedPermits,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )
+    }
+
+    /**
+     * Registers the [prepare]d [source], replacing (and closing) the earlier one of its id. [metadataRead]: its metadata
+     * was read from its text while the earlier declarations typed the stored values, so it is read once more when the
+     * new declarations type them differently (see [source]).
+     */
+    suspend fun register(source: MangayomiJsSource, metadataRead: Boolean = true) {
+        val descriptor = source.descriptor
+        val readWith = sources[descriptor.id]?.metadata?.preferences.orEmpty()
         sources.put(descriptor.id, source)?.takeIf { it !== source }?.close()
-        if (metadata == null && readsDiffer(preferencesOf(descriptor), readWith, initial.preferences)) source.refreshMetadata()
-        return source
+        if (metadataRead && readsDiffer(preferencesOf(descriptor), readWith, source.metadata.preferences)) source.refreshMetadata()
     }
 
     /** Forgets and closes the source of [descriptor] (uninstalled). */
