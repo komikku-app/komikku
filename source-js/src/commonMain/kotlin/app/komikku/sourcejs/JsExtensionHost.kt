@@ -55,19 +55,23 @@ class JsExtensionHost internal constructor(
         class Failed(val error: JsSourceException, val notImplemented: Boolean = false) : CallOutcome
     }
 
-    /** One member call. */
+    /** One member call of [extension]. */
     internal suspend fun call(
-        source: JsSourceDescriptor,
-        code: String,
+        extension: JsExtension,
         operation: String,
         member: String,
         mode: CallMode,
         args: List<JsonElement>,
-    ): CallOutcome = callInContext(source, code, operation, member, mode, args).values.single()
+    ): CallOutcome = callInContext(extension, operation, member, mode, args).values.single()
 
-    /** The sync members in one context, keyed by member name; a load failure is the only entry then. */
-    internal suspend fun callMetadata(source: JsSourceDescriptor, code: String): Map<String, CallOutcome> =
-        callInContext(source, code, "reading the source's metadata", "metadata", CallMode.METADATA, listOf(JsonPrimitive(source.baseUrl)))
+    /** The sync members of [extension] in one context, keyed by member name; a load failure is the only entry then. */
+    internal suspend fun callMetadata(extension: JsExtension): Map<String, CallOutcome> = callInContext(
+        extension,
+        "reading the source's metadata",
+        "metadata",
+        CallMode.METADATA,
+        listOf(JsonPrimitive(extension.source.baseUrl)),
+    )
 
     /**
      * Runs one entry in a fresh context. The host's own limit is told apart from the caller's timeouts and
@@ -75,17 +79,17 @@ class JsExtensionHost internal constructor(
      * active (a service's, or one the script forged) is an error of the call.
      */
     private suspend fun callInContext(
-        source: JsSourceDescriptor,
-        code: String,
+        extension: JsExtension,
         operation: String,
         member: String,
         mode: CallMode,
         args: List<JsonElement>,
     ): Map<String, CallOutcome> {
+        val source = extension.source
         var session: JsSession? = null
         suspend fun attempt(useBytecode: Boolean) = withEngine { engine ->
             val current = JsSession(source, services, limits).also { session = it }
-            run(engine, current, source, code, member, mode, args, operation, useBytecode)
+            run(engine, current, extension, member, mode, args, operation, useBytecode)
         }
         // Dispatchers.Default: the timeout must run on a real clock, also under test dispatchers.
         val results = withContext(Dispatchers.Default) {
@@ -126,7 +130,9 @@ class JsExtensionHost internal constructor(
     private class BytecodeFailure(cause: JsEngineException) : Exception(cause)
 
     /** Loads the prelude and the extension: cached bytecode when [useBytecode], compiled on a miss. */
-    private suspend fun load(engine: JsEngine, source: JsSourceDescriptor, code: String, useBytecode: Boolean) {
+    private suspend fun load(engine: JsEngine, extension: JsExtension, useBytecode: Boolean) {
+        val source = extension.source
+        val code = extension.code
         if (!useBytecode) {
             engine.evaluate(JsPrelude.text, JsPrelude.FILE_NAME)
             // Compiling the text alone first reports syntax errors as such and keeps it from closing the wrapper early.
@@ -136,18 +142,22 @@ class JsExtensionHost internal constructor(
         }
         val prelude = bytecode.prelude() ?: engine.compile(JsPrelude.text, JsPrelude.FILE_NAME).also { bytecode.putPrelude(it) }
         evaluateBytecode(engine, prelude)
-        val key = BytecodeCache.keyOf(code)
-        val extension = bytecode.extension(key) ?: run {
+        val key = extension.bytecodeKey
+        val compiled = bytecode.extension(key) ?: run {
             engine.compile(code, source.scriptFileName)
             engine.compile(JsPrelude.wrapExtension(code), source.scriptFileName).also { bytecode.putExtension(key, it) }
         }
-        evaluateBytecode(engine, extension)
+        evaluateBytecode(engine, compiled)
     }
 
+    /**
+     * Only a script error means the bytecode itself failed (the prelude and the wrapper only define functions);
+     * running out of memory or being interrupted is the call's failure and keeps the cache.
+     */
     private suspend fun evaluateBytecode(engine: JsEngine, bytecode: ByteArray) {
         try {
             engine.evaluate(bytecode)
-        } catch (e: JsEngineException) {
+        } catch (e: JsEngineException.Script) {
             throw BytecodeFailure(e)
         }
     }
@@ -155,17 +165,17 @@ class JsExtensionHost internal constructor(
     private suspend fun run(
         engine: JsEngine,
         session: JsSession,
-        source: JsSourceDescriptor,
-        code: String,
+        extension: JsExtension,
         member: String,
         mode: CallMode,
         args: List<JsonElement>,
         operation: String,
         useBytecode: Boolean,
     ): Map<String, CallOutcome> {
+        val source = extension.source
         val escaped: Throwable? = try {
             session.install(engine)
-            load(engine, source, code, useBytecode)
+            load(engine, extension, useBytecode)
             val sourceJson = source.toJsSourceObject().toString()
             engine.evaluate(JsPrelude.entryCall(member, JsonArray(args).toString(), mode.js, sourceJson), "<call $member>")
             null

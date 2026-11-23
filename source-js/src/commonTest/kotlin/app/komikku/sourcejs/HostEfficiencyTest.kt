@@ -7,7 +7,6 @@ import app.komikku.sourcejs.engine.JsEngineException
 import app.komikku.sourcejs.engine.JsEngineFactory
 import app.komikku.sourcejs.engine.JsEngineLimits
 import app.komikku.sourcejs.engine.QuickJsEngine
-import app.komikku.sourcejs.engine.Sha256
 import app.komikku.sourcejs.model.JsFilter
 import app.komikku.sourcejs.model.JsPreference
 import app.komikku.sourcejs.model.JsSourceMetadata
@@ -20,8 +19,8 @@ import kotlin.test.assertTrue
 /** Bytecode cache, the metadata snapshot and the DOM / source shortcuts. */
 class HostEfficiencyTest {
 
-    /** Counts what the host asks of the engine; [failBytecode] makes loading bytecode fail. */
-    private class CountingFactory(private val failBytecode: Boolean = false) : JsEngineFactory {
+    /** Counts what the host asks of the engine; loading bytecode throws [bytecodeFailure] when set. */
+    private class CountingFactory(private val bytecodeFailure: JsEngineException? = null) : JsEngineFactory {
         var created = 0
         var compiles = 0
         var bytecodeLoads = 0
@@ -37,7 +36,7 @@ class HostEfficiencyTest {
 
                 override suspend fun evaluate(bytecode: ByteArray) {
                     bytecodeLoads++
-                    if (failBytecode) throw JsEngineException.Script("Error: bad bytecode", null)
+                    bytecodeFailure?.let { throw it }
                     engine.evaluate(bytecode)
                 }
             }
@@ -73,9 +72,39 @@ class HostEfficiencyTest {
 
     @Test
     fun bytecodeThatFailsToLoadFallsBackToTheSource() = runTest {
-        val (host, test) = host(CountingFactory(failBytecode = true))
+        val (host, test) = host(CountingFactory(JsEngineException.Script("Error: bad bytecode", null)))
         assertEquals("a", host.extension(testSource, code("a")).getPopular(1).list.single().name)
         assertTrue(test.log.lines.any { it.first == HostLog.Level.WARN && "Bytecode failed" in it.second }, test.log.lines.toString())
+    }
+
+    @Test
+    fun runningOutOfMemoryOrBeingInterruptedIsNotABytecodeFailure() = runTest {
+        val failures = listOf(JsEngineException.OutOfMemory("InternalError: out of memory"), JsEngineException.Interrupted("interrupted"))
+        for (failure in failures) {
+            val cache = BytecodeCache()
+            val test = TestHost()
+            val factory = CountingFactory()
+            val warm = JsExtensionHost(test.services, factory, JsHostLimits(callTimeoutMillis = 20_000), cache)
+            warm.extension(testSource, code("a")).getPopular(1)
+            val failing = JsExtensionHost(test.services, CountingFactory(failure), JsHostLimits(callTimeoutMillis = 20_000), cache)
+            val error = assertFailsWith<JsSourceException> { failing.extension(testSource, code("a")).getPopular(1) }
+            val expected = if (failure is JsEngineException.OutOfMemory) JsSourceException.OutOfMemory::class else JsSourceException.BridgeError::class
+            assertEquals(expected, error::class, "$error")
+            // No fallback to the source and the shared cache kept.
+            assertTrue(test.log.lines.none { "Bytecode failed" in it.second }, test.log.lines.toString())
+            assertTrue(cache.prelude() != null)
+        }
+    }
+
+    @Test
+    fun bytecodeIsCachedPerFileName() = runTest {
+        val (host) = host(CountingFactory())
+        val text = provider("async getPopular(page) { throw new Error('where'); }")
+        for (file in listOf("first.js", "second.js")) {
+            val source = testSource.copy(sourceCodeUrl = "https://raw.example.org/javascript/manga/src/en/$file")
+            val error = assertFailsWith<JsSourceException.ScriptError> { host.extension(source, text).getPopular(1) }
+            assertTrue(error.jsStack.orEmpty().contains(file), "${error.jsStack}")
+        }
     }
 
     @Test
@@ -150,13 +179,13 @@ class HostEfficiencyTest {
 
     @Test
     fun sha256MatchesKnownVectors() {
-        fun hex(text: String) = Sha256.digest(text.encodeToByteArray()).toHexString()
-        assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", hex(""))
-        assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", hex("abc"))
+        assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", sha256Hex(""))
+        assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", sha256Hex("abc"))
         assertEquals(
             "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1",
-            hex("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
+            sha256Hex("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
         )
-        assertEquals(BytecodeCache.keyOf("abc"), hex("abc"))
+        // UTF-8 bytes of non-ASCII text (Python hashlib).
+        assertEquals("1184d1f608158eea09d297565575892231550c403aaa913008d867a97cfd5c76", sha256Hex("é😀"))
     }
 }

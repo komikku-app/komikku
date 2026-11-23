@@ -3,6 +3,7 @@ package app.komikku.sourcejs
 import app.komikku.sourcejs.JsExtensionHost.CallMode
 import app.komikku.sourcejs.JsExtensionHost.CallOutcome
 import app.komikku.sourcejs.bridge.HostLog
+import app.komikku.sourcejs.engine.BytecodeCache
 import app.komikku.sourcejs.model.JsFilter
 import app.komikku.sourcejs.model.JsManga
 import app.komikku.sourcejs.model.JsMangaPage
@@ -31,6 +32,9 @@ class JsExtension internal constructor(
     val code: String,
 ) {
     private val log get() = host.services.log
+
+    /** The bytecode cache key of this text under this file name ([BytecodeCache.keyOf]), computed once. */
+    internal val bytecodeKey: String by lazy { BytecodeCache.keyOf(source.scriptFileName, code) }
 
     /** `getPopular(page)`, page 1-based. */
     suspend fun getPopular(page: Int): JsMangaPage =
@@ -79,7 +83,7 @@ class JsExtension internal constructor(
      * with the same defaults and errors as the single calls.
      */
     suspend fun metadata(): JsSourceMetadata {
-        val outcomes = host.callMetadata(source, code)
+        val outcomes = host.callMetadata(this)
         // A failure to load (or a timeout) is reported under the entry's own name.
         (outcomes["metadata"] as? CallOutcome.Failed)?.let { throw it.error }
         fun outcome(member: String) = outcomes[member] ?: CallOutcome.Value(null)
@@ -92,13 +96,13 @@ class JsExtension internal constructor(
     }
 
     private suspend fun <T> callAsync(operation: String, member: String, vararg args: JsonElement, decode: (JsonElement?) -> T): T =
-        when (val outcome = host.call(source, code, operation, member, CallMode.ASYNC, args.toList())) {
+        when (val outcome = host.call(this, operation, member, CallMode.ASYNC, args.toList())) {
             is CallOutcome.Value -> parse(operation, member) { decode(outcome.value) }
             is CallOutcome.Failed -> throw outcome.error
         }
 
     private suspend fun callSync(member: String, mode: CallMode, vararg args: JsonElement): CallOutcome =
-        host.call(source, code, member, member, mode, args.toList())
+        host.call(this, member, member, mode, args.toList())
 
     // Sync members (contract 2.4): Mangayomi's defaults when the base class says "not implemented" or the result has
     // the wrong type (its `_extensionCall`); other errors are reported, except by getFilterList.

@@ -1,12 +1,13 @@
 package app.komikku.sourcejs.engine
 
+import app.komikku.sourcejs.sha256Hex
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * Compiled scripts kept between calls, so a fresh context loads bytecode instead of parsing the prelude and the
- * extension again: the prelude once, extensions by the SHA-256 of their text (least recently used dropped beyond
- * [capacity]). Bytecode is only valid for the engine implementation that produced it, so one cache serves one
+ * extension again: the prelude once, extensions by [keyOf] their file name and text (least recently used dropped
+ * beyond [capacity]; the file name is part of the bytecode, in its stack traces). Bytecode is only valid for the engine implementation that produced it, so one cache serves one
  * [JsEngineFactory] ([shared] is the one for [QuickJsEngine]).
  */
 internal class BytecodeCache(private val capacity: Int = 32) {
@@ -39,12 +40,12 @@ internal class BytecodeCache(private val capacity: Int = 32) {
         /** Process-wide cache for [QuickJsEngine]. */
         val shared = BytecodeCache()
 
-        /** The cache key of an extension text: its SHA-256 in hex. */
-        fun keyOf(code: String): String = Sha256.digest(code.encodeToByteArray()).toHexString()
+        /** The cache key of the extension text [code] compiled as [fileName]: a SHA-256 in hex. */
+        fun keyOf(fileName: String, code: String): String = sha256Hex(fileName + "\u0000" + code)
     }
 }
 
-/** SHA-256 (FIPS 180-4) in pure Kotlin for every platform; only used for cache keys. */
+/** SHA-256 (FIPS 180-4) in pure Kotlin for every platform (cache keys, [sha256Hex]). */
 internal object Sha256 {
     private val K = intArrayOf(
         0x428a2f98, 0x71374491, -0x4a3f0431, -0x164a245b, 0x3956c25b, 0x59f111f1, -0x6dc07d5c, -0x54e3a12b,
