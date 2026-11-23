@@ -98,6 +98,16 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+# KMK --> Komikku modules (app.komikku.*: :source-js models, descriptors and page refs, :core:quickjs, :app-shared)
+-keep,includedescriptorclasses class app.komikku.**$$serializer { *; }
+-keepclassmembers class app.komikku.** {
+    *** Companion;
+}
+-keepclasseswithmembers class app.komikku.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+# KMK <--
+
 # Filter serializer
 -keep,includedescriptorclasses class xyz.nulldev.ts.api.http.serializer.**$$serializer { *; }
 -keepclassmembers class xyz.nulldev.ts.api.http.serializer.** {

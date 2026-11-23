@@ -208,6 +208,8 @@ dependencies {
     implementation(projects.presentationWidget)
     // KMK -->
     implementation(projects.appShared)
+    // Mangayomi JavaScript sources (host + Mihon source adapter, docs/kmp-desktop/PLAN.md 8)
+    implementation(projects.sourceJs)
     // KMK <--
     implementation(projects.telemetry)
 

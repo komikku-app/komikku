@@ -11,8 +11,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  *
  * Targets:
  * - `androidTarget()` (namespace `app.komikku.sourcejs`, SDK settings from `mihon.library`) and `jvm("desktop")`:
- *   always. Their shared code (`OkHttpHostHttp`, the engine thread) lives in the `jvmShared` intermediate source
- *   set (`src/jvmSharedMain`); `commonMain` stays free of JVM APIs for iOS.
+ *   always. Their shared code (`OkHttpHostHttp`, the engine thread, the Mihon source adapter in
+ *   `app.komikku.sourcejs.mihon` over `source-api`) lives in the `jvmShared` intermediate source set
+ *   (`src/jvmSharedMain`, tests in `src/jvmSharedTest`); `commonMain` stays free of JVM APIs for iOS.
  * - `iosArm64` / `iosSimulatorArm64`: only when the build host is macOS, so Linux / Windows builds and CI are
  *   unaffected.
  *
