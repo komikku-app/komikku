@@ -420,7 +420,7 @@ class LibraryScreenModel(
         // KMK <--
     }
 
-    private fun List<LibraryItem>.applyGrouping(
+    private /* KMK --> */ suspend /* KMK <-- */ fun List<LibraryItem>.applyGrouping(
         categories: List<Category>,
         // KMK -->
         groupType: Int,

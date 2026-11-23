@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.util.lang.compareToWithCollator
@@ -428,11 +427,13 @@ fun List<LibraryItem>.groupByDefaultCategory(
         }
 }
 
+// KMK --> moved from LibraryScreenModel (applyGrouping's UNGROUPED branch, getGroupedMangaItems, statusMap)
 /**
  * Grouping other than by category (formerly the `LibraryGroup.UNGROUPED` branch of `LibraryScreenModel.applyGrouping`
- * and `LibraryScreenModel.getGroupedMangaItems`): ungrouped, by tracking status, by source, by status.
+ * and `LibraryScreenModel.getGroupedMangaItems`): ungrouped, by tracking status, by source, by status. The `// SY`
+ * block is `getGroupedMangaItems`'s own SY block, moved verbatim with its body (not new SY code).
  */
-fun List<LibraryItem>.groupLibraryItems(
+suspend fun List<LibraryItem>.groupLibraryItems(
     // KMK -->
     groupType: Int,
     context: Context,
@@ -460,7 +461,10 @@ fun List<LibraryItem>.groupLibraryItems(
     // SY -->
     return when (groupType) {
         LibraryGroup.BY_TRACK_STATUS -> {
-            val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
+            // KMK -->
+            // Was `runBlocking { getTracks.await() }`: the function suspends now (its callers already run in a coroutine)
+            val tracks = getTracks.await().groupBy { it.mangaId }
+            // KMK <--
             // KMK -->
             val groupCache = mutableMapOf</* Track.status */ Int, MutableList</* LibraryItem */ Long>>()
             forEach { item ->
@@ -549,7 +553,6 @@ fun List<LibraryItem>.groupLibraryItems(
     // SY <--
 }
 
-// KMK -->
 private val libraryStatusGroups = mapOf(
     SManga.ONGOING.toLong() to (MR.strings.ongoing to 1L),
     SManga.COMPLETED.toLong() to (MR.strings.completed to 2L),
