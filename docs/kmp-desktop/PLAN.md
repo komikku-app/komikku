@@ -331,7 +331,7 @@ test and package: [`BUILDING.md`](BUILDING.md).
 ## 8. iOS: JavaScript sources (Mangayomi extensions)
 
 Status: I0 done (8.9); I1 and I2 done on desktop (`:source-js`, see PROGRESS.md); Android approved
-(8.7 item 5) and switched in I2b (`:core:quickjs`; `:source-js` has an Android target); I3 (source adapter) done, not reviewed; I4 onward not started. Facts about Mangayomi below come from reading its source
+(8.7 item 5) and switched in I2b (`:core:quickjs`; `:source-js` has an Android target); I3 (source adapter) done and reviewed; I4 (repository store and UI) done, not reviewed; I5 onward not started. Facts about Mangayomi below come from reading its source
 (`kodjodevf/mangayomi` at `bc0b410`, 2026-11-16); the items once marked *(verify)* were resolved in I0
 (8.9). The full contract is [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md), the usage scan
 [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).

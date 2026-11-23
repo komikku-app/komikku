@@ -71,6 +71,17 @@ chapter-loader code paths:
 ./gradlew :desktopApp:test --tests '*JsSourceBrowseUiTest*' --max-workers=2
 ```
 
+The repository store (I4): index parsing, `repo.json`, version comparison and statuses are pure
+(`app.komikku.sourcejs.repo`, `MangayomiIndexTest` in `src/commonTest`); the store itself
+(`app.komikku.shared.jssource.MangayomiSourceStore` in `:app-shared`) is tested end to end against `MockWebServer`
+in a temporary directory by `MangayomiSourceStoreTest`, the source-manager merge by `JsSourceManagerTest` and the
+desktop pane headlessly by `JsSourcesUiTest`. `MockWebServer` serves plain HTTP, so these tests build the store with
+an `allowUrl` that also accepts the server's host; the app's store accepts `https` only.
+
+```bash
+./gradlew :desktopApp:test --tests 'app.komikku.desktop.jssource.*' --tests '*JsSourcesUiTest*' --max-workers=2
+```
+
 Test stack: this module uses `kotlin.test` (with `kotlinx-coroutines-test`) instead of the JUnit 5 + Kotest +
 MockK stack that `AGENTS.md` names for the Android modules, because `commonTest` must compile for Kotlin/Native
 (iOS) too, where JUnit, Kotest's JVM assertions and MockK are not available; fakes are hand-written. On the JVM

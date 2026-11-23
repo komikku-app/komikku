@@ -1,16 +1,17 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3, the
-source adapter, and its review fixes are done; next is I4, the repository store and UI; see "Done" and "Left to do").
+State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
+review fixes, and step I4, the repository store and UI, are done; next is the review of I4; see "Done" and "Left to
+do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
 
 ## Working agreement (from the maintainer)
 
-- Coordinator (planning, task instructions, code review) runs on Opus at max effort; coding is
-  delegated to sub-agents on Opus at high effort. Earlier the coordinator was Fable 5.2 medium.
-- After each coding step: review it (`/code-review max <range>`), then have a sub-agent fix the
+- Coordinator (planning, task instructions, code review) runs on Opus at medium effort; coding is
+  delegated to sub-agents on Opus at high effort. Earlier the coordinator was Fable 5.2 medium, then Opus max.
+- After each coding step: review it (`/code-review medium <range>`), then have a sub-agent fix the
   findings, then re-report the findings with outcomes.
 - Commit and push after every step (and in small increments) so work survives usage-limit stops.
   Push only to `claude/kmp-multiplatform-support`. No Claude attribution in commits. No PR unless asked.
@@ -65,6 +66,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   per-source one (2), `http(s)`-only covers / page images, header values with control characters dropped, failed
   metadata refreshes retried after 60 s, `exh.log` logging, the browse test closes its runtime.
 
+- **I4** repository store and UI (`5780d0e` … , PROGRESS.md "I4 — repository store and UI"): index / `repo.json` /
+  version / status logic in `:source-js` (`app.komikku.sourcejs.repo`); `MangayomiSourceStore` in `:app-shared`
+  (`app.komikku.shared.jssource`: repositories in the `mangayomi_js_repos` preference, installed sources as files under
+  `<filesDir>/mangayomi-js/` with atomic writes, `https` only, size limits, two-step install bound to the confirmed
+  SHA-256, statuses up to date / update / text changed / obsolete, NSFW hidden, no auto-update, one runtime);
+  sources merged into `AndroidSourceManager` / `DesktopSourceManager` with `StubSource(id, lang, stubName)` stubs; a
+  shared screen model and Compose list, hosted by the Android `mihon.feature.jssources.JsSourcesScreen` (Extensions
+  tab overflow, Browse settings) and a third desktop browse tab; "JS" label, notes banner, Android source icons.
+  Android UI compile-only. Not reviewed yet.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -95,10 +106,10 @@ mark the residual path in both modules.
 1. Re-report the review's findings with their outcomes (coordinator), then decide on the residual risks above.
 2. **I3** source adapter and its review fixes: done (see "Done"). Known gaps: PROGRESS.md "I3 — source adapter" and
    "Review fixes (I3)" (left open).
-3. **I4 (next)** repository store + UI: Mangayomi repository type (index fetch, install/update/uninstall, SHA-256 at
-   install, NSFW flag, notes banner, `i18n-kmk` strings), one `MangayomiJsRuntime` owned by the store, sources
-   registered in `DesktopSourceManager` and `AndroidSourceManager` — their stubs as
-   `StubSource(id, lang, source.stubName)` so an uninstalled source keeps its download folder. Review + fix.
+3. **I4** repository store + UI: done (see "Done"). **Next: review it** (`/code-review medium 5780d0e^..HEAD`), fix
+   the findings, re-report them. Known gaps: PROGRESS.md "I4 — repository store and UI" (Android UI not run, sources
+   not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, `isInitialized` does not wait for
+   the store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
 4. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 5. Desktop parity gaps (PROGRESS list): global search, source/language toggles, library grouping/batch
    actions, scheduled updates/backups, delegated sources, AVIF/JXL, WebView/Cloudflare, signing, updater.
