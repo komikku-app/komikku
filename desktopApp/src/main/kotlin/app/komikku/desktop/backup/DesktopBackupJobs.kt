@@ -5,9 +5,11 @@ import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,11 +30,14 @@ class DesktopBackupJobs(
     private val createBackup: suspend (target: File, options: BackupOptions) -> File,
     private val restoreBackup: suspend (file: File, options: RestoreOptions, listener: BackupProgressListener) -> Unit,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    /** P3: Android's automatic backup (`BackupCreator(isAutoBackup = true)`), see [createAutomatic]. */
+    private val createAutomaticBackup: suspend () -> Unit = {},
 ) {
 
     constructor(service: DesktopBackupService) : this(
         createBackup = { target, options -> service.create(target, options) },
         restoreBackup = { file, options, listener -> service.restore(file, options, listener) },
+        createAutomaticBackup = { service.createAutomatic() },
     )
 
     enum class Kind { Create, Restore }
@@ -76,6 +81,35 @@ class DesktopBackupJobs(
         }
         restoreBackup(file, options, listener)
         completed ?: Status.Restored(0, emptyList(), null)
+    }
+
+    /**
+     * Starts an automatic backup (the scheduler, P3) in the same one-job slot; `null` when another job runs (Android's
+     * automatic backup retries while a restore runs). Like Android it reports no result: while it runs [status] is
+     * [Status.Running] (the screen's buttons are disabled, it can be cancelled), afterwards the previous status is back.
+     * The result completes with whether a backup was written.
+     */
+    @Synchronized
+    fun createAutomatic(): Deferred<Boolean>? {
+        if (job?.isActive == true) return null
+        val previous = _status.value
+        val running = Status.Running(Kind.Create)
+        _status.value = running
+        val result = scope.async {
+            try {
+                createAutomaticBackup()
+                true
+            } catch (_: CancellationException) {
+                false
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                false
+            } finally {
+                _status.compareAndSet(running, previous)
+            }
+        }
+        job = result
+        return result
     }
 
     /** Cancels the running job (reported as [Status.Cancelled]). */

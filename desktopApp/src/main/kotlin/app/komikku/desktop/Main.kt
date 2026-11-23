@@ -11,6 +11,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
@@ -31,15 +32,20 @@ import java.awt.Dimension
 
 /**
  * Komikku desktop entry point: boots the shared stack through Injekt ([DesktopInjekt]: preferences,
- * network, database, repositories, interactors, local source) and opens the main window.
+ * network, database, repositories, interactors, local source), starts the scheduler ([DesktopScheduler]) and opens
+ * the main window.
  */
 fun main() {
     DesktopLogcatLogger.install()
     val app = DesktopInjekt.init()
+    // Scheduled library updates and automatic backups while the app runs (P3); the first check catches up on what
+    // was missed while it was closed.
+    val scheduler = Injekt.get<DesktopScheduler>().also { it.start() }
 
     application {
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication)
     }
+    scheduler.stop()
 }
 
 /** The main window: persisted size / position / maximized state, keyboard shortcuts, the app UI. */

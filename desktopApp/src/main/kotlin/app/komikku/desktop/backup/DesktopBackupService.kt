@@ -15,6 +15,7 @@ import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import java.io.File
@@ -31,7 +32,19 @@ import java.nio.file.StandardCopyOption
 class DesktopBackupService(
     private val app: Application,
     private val storagePreferences: StoragePreferences,
+    private val storageManager: StorageManager,
 ) {
+
+    /**
+     * P3: Android's automatic backup (`BackupCreateJob` with `isAutoBackup`): the borrowed `BackupCreator` in automatic
+     * mode writes a new file into the storage location's automatic backups folder, keeps the newest four and sets
+     * `BackupPreferences.lastAutoBackupTimestamp()`. No notification, like Android.
+     */
+    suspend fun createAutomatic(options: BackupOptions = BackupOptions()): String = withIOContext {
+        val dir = storageManager.getAutomaticBackupsDirectory()
+            ?: throw IllegalStateException(app.stringResource(MR.strings.create_backup_file_error))
+        BackupCreator(app, isAutoBackup = true).backup(dir.uri, options)
+    }
 
     /** Android `BackupCreator.getFilename()` in `<storage folder>/backup` (no directory is created here). */
     fun defaultBackupFile(): File {

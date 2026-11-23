@@ -160,6 +160,8 @@ class CoroutineLibraryUpdateRunner(
     private val onError: suspend (Manga, Throwable) -> Unit = { _, _ -> },
     private val onFinished: suspend (LibraryUpdateProgress) -> Unit = {},
     private val parallelism: Int = 3,
+    /** Called when an update starts, before it selects entries (e.g. to store the "last updated" time). */
+    private val onStarted: (LibraryUpdateRunner.Target) -> Unit = {},
 ) : LibraryUpdateRunner {
 
     private val _progress = MutableStateFlow<LibraryUpdateProgress?>(null)
@@ -171,6 +173,7 @@ class CoroutineLibraryUpdateRunner(
     override fun start(target: LibraryUpdateRunner.Target): Boolean {
         if (job?.isActive == true) return false
         _progress.value = LibraryUpdateProgress(target = target, total = 0)
+        onStarted(target)
         job = scope.launch {
             try {
                 val selection = LibraryUpdateSelection.select(getLibrary(), target, preferences, fetchWindowUpperBound())
