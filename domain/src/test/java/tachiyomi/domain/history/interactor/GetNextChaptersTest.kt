@@ -93,11 +93,43 @@ class GetNextChaptersTest {
     }
 
     @Test
-    fun `present read chapter with onlyUnread keeps returning every unread chapter`() = runTest {
+    fun `present read chapter with onlyUnread resumes from the next unread chapter`() = runTest {
         setUp(numberSortManga, chapters)
 
-        // Unchanged behavior: the read chapter is missing from the unread list, so the list starts from the first one
-        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
+        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(7L)
+        getNextChapters.await(MANGA_ID, 2, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
+        // The filtered chapters are only loaded once more, to place the read chapter
+        coVerify(exactly = 4) { getChaptersByMangaId.await(MANGA_ID, applyFilter = true) }
+        coVerify(exactly = 0) { getChapter.await(any<Long>()) }
+    }
+
+    @Test
+    fun `last read chapter with onlyUnread returns nothing`() = runTest {
+        setUp(numberSortManga, chapters + chapter(8, 8.0, read = true))
+
+        getNextChapters.await(MANGA_ID, 8, onlyUnread = true).ids() shouldBe emptyList()
+    }
+
+    @Test
+    fun `present read chapter of a merged manga with onlyUnread resumes from the next unread chapter`() = runTest {
+        val manga = numberSortManga.copy(source = MERGED_SOURCE_ID)
+        val chapters = chapters.map { if (it.id == 6L) it.copy(mangaId = OTHER_MANGA_ID) else it }
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(7L)
+        coVerify(exactly = 0) { getChaptersByMangaId.await(any(), any()) }
+    }
+
+    @Test
+    fun `present read chapter of an E-Hentai manga with onlyUnread returns the last unread chapter`() = runTest {
+        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+        setUp(manga, chapters)
+
+        // Only the last chapter is returned when only unread, and it always comes after a read chapter
+        getNextChapters.await(MANGA_ID, 2, onlyUnread = true).ids() shouldBe listOf(7L)
+        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(7L)
+        setUp(manga, chapters + chapter(8, 8.0, read = true))
+        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe emptyList()
     }
 
     @Test
@@ -289,6 +321,7 @@ class GetNextChaptersTest {
         val filtered = chapters.filterNot { it.scanlator == EXCLUDED }
         coEvery { getChaptersByMangaId.await(MANGA_ID, applyFilter = true) } returnsMany listOf(filtered, emptyList())
 
+        // The chapter can't be placed without all the filtered chapters, so the list starts from the first one
         getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
     }
 
