@@ -49,11 +49,15 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.domain.manga.model.toDomainManga
@@ -69,13 +73,16 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/** Popular / latest / search listing of one source, as a cover grid. */
-class CatalogueScreen(private val sourceId: Long) : Screen() {
+/**
+ * Popular / latest / search listing of one source, as a cover grid. With [initialQuery] (global search: "open this
+ * source's own search") it starts with that search, like Android's `BrowseSourceScreen(sourceId, query)`.
+ */
+class CatalogueScreen(private val sourceId: Long, private val initialQuery: String? = null) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { CatalogueScreenModel(sourceId) }
+        val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery) }
         val state by model.state.collectAsState()
         val source = model.source
         BrowseScaffold(
@@ -109,9 +116,14 @@ class CatalogueScreen(private val sourceId: Long) : Screen() {
 
 class CatalogueScreenModel(
     sourceId: Long,
+    initialQuery: String? = null,
     sourceManager: SourceManager = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-) : StateScreenModel<CatalogueScreenModel.State>(State()) {
+    getIncognitoState: GetIncognitoState = Injekt.get(),
+    sourcePreferences: SourcePreferences = Injekt.get(),
+) : StateScreenModel<CatalogueScreenModel.State>(
+    State(mode = initialQuery?.takeIf { it.isNotBlank() }?.let { Mode.Search(it) } ?: Mode.Popular),
+) {
 
     sealed interface Mode {
         data object Popular : Mode
@@ -134,6 +146,10 @@ class CatalogueScreenModel(
 
     init {
         if (source is CatalogueSource) loadMore()
+        // Same as Android's BrowseSourceScreenModel: a source opened outside incognito mode becomes the last used one
+        getIncognitoState.subscribe(sourceId)
+            .onEach { incognito -> if (!incognito) sourcePreferences.lastUsedSource().set(sourceId) }
+            .launchIn(screenModelScope)
     }
 
     fun setMode(mode: Mode) {
