@@ -3,6 +3,8 @@
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
+import app.komikku.shared.jssource.MangayomiSourceStore
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
@@ -72,6 +74,11 @@ class AndroidSourceManager(
     // SY <--
     // KMK -->
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+
+    /** Installed Mangayomi JavaScript sources; none when their store cannot start. */
+    private val jsSources: StateFlow<List<MangayomiJsSource>> by lazy {
+        MangayomiSourceStore.sourcesOrEmpty { Injekt.get() }
+    }
     // KMK <--
 
     init {
@@ -85,6 +92,8 @@ class AndroidSourceManager(
                 .combine(
                     exhPreferences.isHentaiEnabled().changes(),
                 ) { (a, b), c -> Triple(a, b, c) }
+                // Rebuild when JavaScript sources are loaded, installed or removed (read below).
+                .combine(jsSources) { state, _ -> state }
                 // KMK <--
                 // SY <--
                 .collectLatest { (extensions, enableExhentai/* KMK --> */, isHentaiEnabled/* KMK <-- */) ->
@@ -122,6 +131,14 @@ class AndroidSourceManager(
                             registerStubSource(StubSource.from(it))
                         }
                     }
+                    // KMK -->
+                    // Stubs keep the "[JS]" name, so an uninstalled source keeps its download folder.
+                    jsSources.value.forEach {
+                        if (mutableMap.containsKey(it.id)) return@forEach
+                        mutableMap[it.id] = it
+                        registerStubSource(StubSource(id = it.id, lang = it.lang, name = it.stubName))
+                    }
+                    // KMK <--
                     sourcesMapFlow.value = mutableMap
                     _isInitialized.value = true
                 }

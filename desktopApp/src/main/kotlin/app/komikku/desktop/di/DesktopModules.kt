@@ -18,6 +18,8 @@ import app.komikku.shared.download.DesktopDownloadEvents
 import app.komikku.shared.download.DownloadNotificationSink
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
+import app.komikku.shared.jssource.JsSourcePreferences
+import app.komikku.shared.jssource.MangayomiSourceStore
 import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.reader.ReaderProgressSaver
 import app.komikku.shared.reader.ReaderTrackerHook
@@ -129,6 +131,7 @@ class DesktopPreferenceModule(
         addSingletonFactory { UiPreferences(get()) }
         addSingletonFactory { SourcePreferences(get()) }
         addSingletonFactory { DesktopWindowPreferences(get()) }
+        addSingletonFactory { JsSourcePreferences(get()) }
         // Borrowed (desktopCopy) app preference classes (6L.1, 7.x)
         addSingletonFactory { BasePreferences(app, get()) }
         addSingletonFactory { ReaderPreferences(get()) }
@@ -222,6 +225,9 @@ class DesktopDomainModule(
         }
         addSingletonFactory<PlatformExtensionManager> { get<DesktopExtensionManager>() }
         addFactory { GetPlatformExtensionsByType(get(), get()) }
+
+        // Mangayomi JavaScript sources (Android: KMKDomainModule)
+        addSingletonFactory { MangayomiSourceStore.forApp(app, get(), get(), get()) }
         addFactory { GetExtensionSources(get()) }
 
         addSingletonFactory<SourceManager> {
@@ -233,6 +239,7 @@ class DesktopDomainModule(
                 allowHiddenFiles = get<SourcePreferences>().allowLocalSourceHiddenFolders()::get,
                 extensionManager = get(),
                 exhPreferences = get(),
+                jsSources = MangayomiSourceStore.sourcesOrEmpty { get() },
             )
         }
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }

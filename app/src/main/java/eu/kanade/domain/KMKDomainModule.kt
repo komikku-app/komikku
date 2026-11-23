@@ -1,5 +1,8 @@
 package eu.kanade.domain
 
+import android.app.Application
+import app.komikku.shared.jssource.JsSourcePreferences
+import app.komikku.shared.jssource.MangayomiSourceStore
 import eu.kanade.domain.extension.interactor.RefreshExtensionStores
 import tachiyomi.data.libraryUpdateError.LibraryUpdateErrorRepositoryImpl
 import tachiyomi.data.libraryUpdateError.LibraryUpdateErrorWithRelationsRepositoryImpl
@@ -39,5 +42,9 @@ class KMKDomainModule : InjektModule {
         addFactory { InsertLibraryUpdateErrors(get()) }
 
         addFactory { RefreshExtensionStores(get(), get()) }
+
+        // Mangayomi JavaScript sources (docs/kmp-desktop/PROGRESS.md, "I4")
+        addSingletonFactory { JsSourcePreferences(get()) }
+        addSingletonFactory { MangayomiSourceStore.forApp(get<Application>(), get(), get(), get()) }
     }
 }

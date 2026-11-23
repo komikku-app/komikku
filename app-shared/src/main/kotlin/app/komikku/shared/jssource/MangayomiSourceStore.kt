@@ -1,5 +1,6 @@
 package app.komikku.shared.jssource
 
+import android.app.Application
 import app.komikku.shared.jssource.JsSourceStoreException.Reason
 import app.komikku.sourcejs.mihon.MangayomiJsRuntime
 import app.komikku.sourcejs.mihon.MangayomiJsSource
@@ -10,7 +11,9 @@ import app.komikku.sourcejs.repo.MangayomiIndexException
 import app.komikku.sourcejs.repo.MangayomiRepoInfo
 import app.komikku.sourcejs.repo.MangayomiVersions
 import app.komikku.sourcejs.sha256Hex
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import exh.log.xLogE
 import exh.log.xLogW
@@ -573,5 +576,33 @@ class MangayomiSourceStore(
 
         /** Redirects followed by one download. */
         const val MAX_REDIRECTS = 5
+
+        /**
+         * The app's store (Android and desktop DI): files under `<filesDir>/mangayomi-js`, one runtime on the app's
+         * client and preference files, NSFW sources following [SourcePreferences.showNsfwSource].
+         */
+        fun forApp(
+            application: Application,
+            network: NetworkHelper,
+            preferences: JsSourcePreferences,
+            sourcePreferences: SourcePreferences,
+        ): MangayomiSourceStore = MangayomiSourceStore(
+            directory = File(application.filesDir, DIRECTORY),
+            preferences = preferences,
+            runtime = MangayomiJsRuntime(application, network),
+            client = { network.client },
+            showNsfw = sourcePreferences.showNsfwSource().changes(),
+        )
+
+        /**
+         * [MangayomiSourceStore.sources] of the store [store] gives, or no sources when the store cannot be built, so
+         * the source managers keep working without JavaScript sources.
+         */
+        fun sourcesOrEmpty(store: () -> MangayomiSourceStore): StateFlow<List<MangayomiJsSource>> = try {
+            store().sources
+        } catch (e: Throwable) {
+            xLogE("The JavaScript source store could not be started; no JavaScript sources", e)
+            MutableStateFlow(emptyList())
+        }
     }
 }

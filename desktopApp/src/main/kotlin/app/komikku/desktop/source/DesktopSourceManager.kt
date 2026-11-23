@@ -2,6 +2,8 @@ package app.komikku.desktop.source
 
 import android.content.Context
 import app.komikku.shared.extension.PlatformExtensionManager
+import app.komikku.sourcejs.mihon.MangayomiJsSource
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.source.BlacklistedSources
@@ -37,6 +39,9 @@ import java.util.concurrent.ConcurrentHashMap
  * recorded as a stub source in the database, and unknown ids resolve to database stubs, then to the
  * available extensions' metadata.
  *
+ * Installed Mangayomi JavaScript sources ([jsSources], from the JavaScript source store) are added after the
+ * extensions' sources; their stubs are named [MangayomiJsSource.stubName].
+ *
  * Not on desktop (yet): SY's built-in E-Hentai / merged sources and delegated (enhanced) sources,
  * which live in the Android app.
  */
@@ -49,6 +54,7 @@ class DesktopSourceManager(
     private val extensionManager: PlatformExtensionManager? = null,
     exhPreferences: ExhPreferences? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    jsSources: Flow<List<Source>>? = null,
 ) : SourceManager {
 
     private val localSource = LocalSource(context, fileSystem, coverManager, allowHiddenFiles)
@@ -63,14 +69,15 @@ class DesktopSourceManager(
     override val sources: Flow<List<Source>> = sourcesMap.map { it.values.toList() }
 
     init {
-        if (extensionManager != null) {
+        if (extensionManager != null || jsSources != null) {
             scope.launch {
                 combine(
-                    extensionManager.installedExtensionsFlow,
-                    extensionManager.isInitialized,
+                    extensionManager?.installedExtensionsFlow ?: flowOf(emptyList()),
+                    extensionManager?.isInitialized ?: flowOf(true),
                     exhPreferences?.isHentaiEnabled()?.changes() ?: flowOf(false),
-                ) { extensions, initialized, isHentaiEnabled -> Triple(extensions, initialized, isHentaiEnabled) }
-                    .collectLatest { (extensions, initialized, isHentaiEnabled) ->
+                    jsSources ?: flowOf(emptyList()),
+                ) { extensions, initialized, isHentaiEnabled, js -> Loaded(extensions, initialized, isHentaiEnabled, js) }
+                    .collectLatest { (extensions, initialized, isHentaiEnabled, js) ->
                         val map = linkedMapOf<Long, Source>(LocalSource.ID to localSource)
                         extensions.forEach { extension ->
                             extension.sources
@@ -80,12 +87,28 @@ class DesktopSourceManager(
                                     registerStubSource(StubSource.from(it))
                                 }
                         }
+                        // Mangayomi JavaScript sources (extension sources win an id clash). Their stubs keep the
+                        // "[JS]" name, so an uninstalled source keeps its download folder.
+                        js.forEach {
+                            if (it.id in map) return@forEach
+                            map[it.id] = it
+                            registerStubSource(
+                                if (it is MangayomiJsSource) StubSource(id = it.id, lang = it.lang, name = it.stubName) else StubSource.from(it),
+                            )
+                        }
                         sourcesMap.value = map
                         if (initialized) _isInitialized.value = true
                     }
             }
         }
     }
+
+    private data class Loaded(
+        val extensions: List<Extension.Installed>,
+        val initialized: Boolean,
+        val isHentaiEnabled: Boolean,
+        val jsSources: List<Source>,
+    )
 
     override fun get(sourceKey: Long): Source? = sourcesMap.value[sourceKey]
 
