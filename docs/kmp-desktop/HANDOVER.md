@@ -1,8 +1,9 @@
 # Komikku Desktop / JS Sources — Handover
 
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
-review fixes, step I4, the repository store and UI, with its review fixes, and desktop parity step P1, global search
-and source toggles, are done; next is the review of P1, then parity step P2; see "Done" and "Left to do").
+review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
+and source toggles, with its review fixes, and parity step P2, library grouping and batch actions, are done; next is
+the review of P2; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -92,6 +93,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   errors; pinned / all / has results; row → the source's search, result → details; from the sources tab and the
   details title; JavaScript sources included). Headless tests `SourcesUiTest`, `GlobalSearchUiTest`. The sources tab
   now hides disabled languages / sources like Android.
+- **P1 review** (medium, 6 findings) — all fixed in `03642a4`, `4cfc263`, docs `3240a78` (PROGRESS.md "Review fixes
+  (P1)"): global search re-runs when the source filter reaches the state (first search from a title, chip clicks), the
+  sources tab shows an error and recovers on the next preference change, fresh source lookups, only installed sources
+  become the last used one, `hasPinnedSources` remembered.
+- **P2** library grouping and batch actions (`a60bb21` … , PROGRESS.md "P2 — library grouping and batch actions"):
+  Android's grouping (`groupLibraryItems` in `LibraryFilterSort.kt`) and selection / batch-action bodies (new KMK file
+  `LibraryActions.kt`) moved out of `LibraryScreenModel` (Android calls them, behaviour unchanged) and borrowed with the
+  change-category / remove dialogs and the download menu; desktop Group tab, pages per group, selection (long press,
+  click, Shift-click range, Ctrl-click, select all, invert), selection bar (set categories, mark read / unread,
+  download, update, remove). `LibraryUpdateRunner.Target.Entries`. Headless test `LibraryGroupSelectionUiTest`.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -127,11 +138,13 @@ mark the residual path in both modules.
    their outcomes. Known gaps: PROGRESS.md "I4 — repository store and UI" and "Review fixes (I4)" (Android UI not run,
    sources not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, start-up may wait up to
    15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
-4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) is
-   done; review it (`/code-review medium 1ff8d31..2e39d59`). Known P1 gaps: no bulk favourites in global search, no
-   "search globally" from the library, no SY source categories / data-saver exclusion, desktop UI not run in a real
-   window. **Next: P2** library grouping / batch actions, then scheduled updates / backups, delegated sources,
-   AVIF / JXL, WebView / Cloudflare, signing, updater.
+4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
+   its review fixes are done; P2 (library grouping, selection and batch actions) is done. **Next:** review P2
+   (`/code-review medium 3240a78..<last P2 commit>`; the Android `LibraryScreenModel` refactor in `a60bb21` deserves
+   a careful look since Android UI is compile-only). Known gaps: no bulk favourites in global search, no "search
+   globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
+   SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
+   Then scheduled updates / backups, delegated sources, AVIF / JXL, WebView / Cloudflare, signing, updater.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
