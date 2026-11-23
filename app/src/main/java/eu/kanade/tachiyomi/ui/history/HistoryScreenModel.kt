@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -91,15 +92,8 @@ class HistoryScreenModel(
                     .distinctUntilChanged(),
             ) { query, itemPreferences -> query to itemPreferences }
                 .flatMapLatest { (query, pref) ->
-                    // KMK <--
-                    getHistory.subscribe(
-                        query ?: "",
-                        // KMK -->
-                        unfinishedManga = pref.filterUnfinishedManga.toBooleanOrNull(),
-                        unfinishedChapter = pref.filterUnfinishedChapter.toBooleanOrNull(),
-                        nonLibraryEntries = pref.filterNonLibraryManga.toBooleanOrNull(),
+                    subscribeHistory(query, pref)
                         // KMK <--
-                    )
                         .distinctUntilChanged()
                         .catch { error ->
                             logcat(LogPriority.ERROR, error)
@@ -140,7 +134,24 @@ class HistoryScreenModel(
     }
 
     suspend fun getNextChapter(): Chapter? {
-        return withIOContext { getNextChapters.await(onlyUnread = false).firstOrNull() }
+        return withIOContext {
+            // KMK -->
+            // Resume the top entry of the history list with the current search query and filters, not the latest
+            // history: that one ignores them, so it can be a manga the list hides. Without filters or search, both
+            // are the same entry. Query the database instead of reading `state.list`, which lags behind a search or
+            // filter change and never loads if the history query fails. If this query fails, fall back to the list
+            // on screen, which a failed query leaves as it was.
+            val latestHistory = subscribeHistory(state.value.searchQuery, getHistoryItemPreferenceFlow().first())
+                .catch { error ->
+                    logcat(LogPriority.ERROR, error)
+                    emit(state.value.list)
+                }
+                .first()
+                .firstOrNull()
+                ?: return@withIOContext null
+            getNextChapters.await(latestHistory.mangaId, latestHistory.chapterId, onlyUnread = false).firstOrNull()
+            // KMK <--
+        }
     }
 
     fun getNextChapterForManga(mangaId: Long, chapterId: Long) {
@@ -395,6 +406,7 @@ class HistoryScreenModel(
     }
     // KMK <--
 
+    // KMK -->
     private fun getHistoryItemPreferenceFlow(): Flow<ItemPreferences> {
         return combine(
             historyPreferences.filterUnfinishedManga().changes(),
@@ -407,6 +419,15 @@ class HistoryScreenModel(
                 filterNonLibraryManga = nonLibraryManga,
             )
         }
+    }
+
+    private fun subscribeHistory(query: String?, pref: ItemPreferences): Flow<List<HistoryWithRelations>> {
+        return getHistory.subscribe(
+            query ?: "",
+            unfinishedManga = pref.filterUnfinishedManga.toBooleanOrNull(),
+            unfinishedChapter = pref.filterUnfinishedChapter.toBooleanOrNull(),
+            nonLibraryEntries = pref.filterNonLibraryManga.toBooleanOrNull(),
+        )
     }
 
     fun showFilterDialog() {
