@@ -92,19 +92,10 @@ class QuickJsEngine private constructor(
      */
     private suspend fun QuickJsException.toEngineException(): JsEngineException {
         val text = message ?: "Unknown JavaScript error"
-        if (text.startsWith(OUT_OF_MEMORY) || isNearMemoryLimit()) return JsEngineException.OutOfMemory(text)
+        if (text.startsWith(OUT_OF_MEMORY) || isNearMemoryLimit(this@QuickJsEngine, memoryLimitBytes)) {
+            return JsEngineException.OutOfMemory(text)
+        }
         return JsEngineException.Script(text.substringBefore("\n    at "), stack?.takeIf { it.isNotBlank() })
-    }
-
-    /** Whether the context's allocations are within 1/16 of the memory limit. */
-    internal suspend fun isNearMemoryLimit(): Boolean {
-        if (memoryLimitBytes <= 0) return false
-        val used = try {
-            memoryUsedBytes()
-        } catch (e: QuickJsException) {
-            null
-        } ?: return false
-        return used >= memoryLimitBytes - memoryLimitBytes / 16
     }
 
     companion object Factory : JsEngineFactory {
@@ -118,31 +109,23 @@ class QuickJsEngine private constructor(
 
         /**
          * Creates the runtime on [thread]. The creation itself is not cancellable; if the caller was cancelled
-         * meanwhile, the runtime is closed instead of being lost.
+         * meanwhile (or configuring the runtime failed), it is closed through [close] instead of being lost.
          */
         internal suspend fun create(limits: JsEngineLimits, thread: JsEngineThread): JsEngine {
-            var created: QuickJs? = null
+            var engine: QuickJsEngine? = null
             try {
                 withContext(NonCancellable + thread.dispatcher) {
                     val quickJs = quickJsLifecycle { QuickJs.create(thread.dispatcher) }
-                    created = quickJs
                     liveRuntimes.incrementAndFetch()
+                    engine = QuickJsEngine(quickJs, thread, limits.memoryLimitBytes)
                     quickJs.memoryLimit = limits.memoryLimitBytes
                     quickJs.maxStackSize = minOf(limits.maxStackSizeBytes, thread.maxJsStackBytes)
                 }
                 currentCoroutineContext().ensureActive()
-                return QuickJsEngine(created!!, thread, limits.memoryLimitBytes)
+                return engine!!
             } catch (e: Throwable) {
-                withContext(NonCancellable) {
-                    try {
-                        created?.let { quickJs ->
-                            withContext(thread.dispatcher) { quickJsLifecycle { quickJs.close() } }
-                            liveRuntimes.decrementAndFetch()
-                        }
-                    } finally {
-                        thread.dispatcher.close()
-                    }
-                }
+                val created = engine
+                if (created != null) created.close() else thread.dispatcher.close()
                 throw e
             }
         }

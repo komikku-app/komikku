@@ -7,6 +7,7 @@ import app.komikku.sourcejs.engine.JsEngine
 import app.komikku.sourcejs.engine.JsEngineException
 import app.komikku.sourcejs.engine.JsEngineFactory
 import app.komikku.sourcejs.engine.QuickJsEngine
+import app.komikku.sourcejs.engine.isNearMemoryLimit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -282,15 +283,7 @@ class JsExtensionHost internal constructor(
         return CallOutcome.Failed(error)
     }
 
-    private suspend fun isOutOfMemory(engine: JsEngine): Boolean {
-        val used = try {
-            engine.memoryUsedBytes()
-        } catch (e: Exception) {
-            null
-        } ?: return false
-        val limit = limits.engine.memoryLimitBytes
-        return limit > 0 && used >= limit - limit / 16
-    }
+    private suspend fun isOutOfMemory(engine: JsEngine): Boolean = isNearMemoryLimit(engine, limits.engine.memoryLimitBytes)
 
     private fun operation(session: JsSession?, operation: String) = if (session?.loaded == true) operation else LOADING
 

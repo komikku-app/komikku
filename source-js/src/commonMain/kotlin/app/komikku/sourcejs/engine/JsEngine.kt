@@ -38,6 +38,20 @@ interface JsEngine {
     suspend fun close()
 }
 
+/**
+ * Whether [engine]'s allocations are within 1/16 of [memoryLimitBytes]: how an out-of-memory failure is recognised
+ * when QuickJS could not even allocate its error (and threw `null`). `false` without a limit or a usage figure.
+ */
+internal suspend fun isNearMemoryLimit(engine: JsEngine, memoryLimitBytes: Long): Boolean {
+    if (memoryLimitBytes <= 0) return false
+    val used = try {
+        engine.memoryUsedBytes()
+    } catch (e: Exception) {
+        null
+    } ?: return false
+    return used >= memoryLimitBytes - memoryLimitBytes / 16
+}
+
 /** Creates engines; one engine is one JavaScript context. */
 fun interface JsEngineFactory {
     suspend fun create(limits: JsEngineLimits): JsEngine
