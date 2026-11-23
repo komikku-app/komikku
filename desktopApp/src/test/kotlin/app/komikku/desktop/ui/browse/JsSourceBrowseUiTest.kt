@@ -71,6 +71,7 @@ import javax.imageio.ImageIO
 class JsSourceBrowseUiTest {
 
     private lateinit var app: Application
+    private lateinit var runtime: MangayomiJsRuntime
     private lateinit var source: MangayomiJsSource
     private val server = MockWebServer()
     private val requests = CopyOnWriteArrayList<RecordedRequest>()
@@ -113,7 +114,7 @@ class JsSourceBrowseUiTest {
         server.start()
 
         app = DesktopInjekt.init(dataDir)
-        val runtime = MangayomiJsRuntime(app, Injekt.get<NetworkHelper>())
+        runtime = MangayomiJsRuntime(app, Injekt.get<NetworkHelper>())
         val descriptor = JsSourceDescriptor(
             id = MANGAYOMI_ID,
             name = "JS Test Source",
@@ -126,7 +127,11 @@ class JsSourceBrowseUiTest {
     }
 
     @AfterAll
-    fun stop() = server.close()
+    fun stop() {
+        // Unregisters the source's preference listener and cancels its refresh scope.
+        if (::runtime.isInitialized) runtime.close()
+        server.close()
+    }
 
     private fun ComposeUiTest.waitForText(text: String, timeoutMillis: Long = 20_000) {
         waitUntil(timeoutMillis = timeoutMillis) { onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
