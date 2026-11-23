@@ -78,8 +78,9 @@ data class JsSourceItem(
 }
 
 /**
- * A downloaded, not yet installed text for [offer], shown to the user before installing: its [host], [sha256] and
- * size. [installed] is the version it would replace (an update).
+ * A downloaded, not yet installed text for [offer], shown to the user before installing: its [host] (the server that
+ * served it, after redirects), [sha256] and size. [requestedHost] is the host of the offer's code URL (another one when
+ * that URL redirected). [installed] is the version it would replace (an update).
  */
 data class JsSourceDownload(
     val offer: JsSourceOffer,
@@ -87,8 +88,12 @@ data class JsSourceDownload(
     val sha256: String,
     val sizeBytes: Long,
     val installed: InstalledJsSource?,
+    val requestedHost: String = host,
 ) {
     val isUpdate: Boolean get() = installed != null
+
+    /** Whether the code URL redirected to another host. */
+    val redirected: Boolean get() = !requestedHost.equals(host, ignoreCase = true)
 
     /** An update whose text changed while the version stayed the same (the index cannot tell; the hash can). */
     val textChangedUnderSameVersion: Boolean

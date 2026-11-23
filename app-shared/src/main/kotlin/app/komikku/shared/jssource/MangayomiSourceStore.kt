@@ -334,17 +334,19 @@ class MangayomiSourceStore(
     suspend fun download(offer: JsSourceOffer): JsSourceDownload {
         awaitLoaded()
         val url = checkedUrl(offer.descriptor.sourceCodeUrl)
-        val text = fetchText(offer.descriptor.sourceCodeUrl, limits.codeBytes)
+        val fetched = fetchBytes(offer.descriptor.sourceCodeUrl, limits.codeBytes)
+        val text = fetched.bytes.decodeToString()
         val sha256 = sha256Hex(text)
         if (_installed.value.orEmpty().any { it.id == offer.id }) {
             remoteTexts.update { it + (offer.id to RemoteText(offer.descriptor.sourceCodeUrl, offer.descriptor.version, sha256)) }
         }
         return JsSourceDownload(
             offer = offer,
-            host = url.host,
+            host = fetched.url.host,
             sha256 = sha256,
             sizeBytes = text.encodeToByteArray().size.toLong(),
             installed = _installed.value.orEmpty().find { it.id == offer.id },
+            requestedHost = url.host,
         )
     }
 

@@ -208,6 +208,7 @@ class MangayomiSourceStoreTest {
         val download = store.download(offer)
         download.sha256 shouldBe sha256Hex(code("v1"))
         download.host shouldBe server.hostName
+        download.redirected shouldBe false
         download.isUpdate shouldBe false
 
         val source = store.install(offer, download.sha256)
@@ -503,6 +504,33 @@ class MangayomiSourceStoreTest {
         File(dir, "code/${sha256Hex(v1)}.js").exists() shouldBe false
     }
 
+    @Test
+    @Order(16)
+    fun `the confirmation names the host a redirected text came from`(): Unit = runBlocking {
+        val other = if (server.hostName == "127.0.0.1") "localhost" else "127.0.0.1"
+        val prefs = JsSourcePreferences(DesktopPreferenceStores.get("redirect", File(storeDir.parentFile, "redirect-preferences")))
+        val s = newStore(
+            File(storeDir.parentFile, "redirect"),
+            allowUrl = { it.host == server.hostName || it.host == other },
+            preferences = prefs,
+        )
+        val text = code("redirected").replace("$ID", "$REDIRECT_ID")
+        route("/redirect/index.json", index(version = "1.0.0", codePath = "/redirect/source.js").replace("$ID", "$REDIRECT_ID"))
+        routes["/redirect/source.js"] = MockResponse.Builder()
+            .code(302)
+            .addHeader("Location", server.url("/code/redirected.js").newBuilder().host(other).build().toString())
+            .build()
+        route("/code/redirected.js", text)
+        s.addRepository(url("/redirect/index.json"))
+
+        val download = s.download(s.offer(REDIRECT_ID)!!)
+        download.host shouldBe other
+        download.requestedHost shouldBe server.hostName
+        download.redirected shouldBe true
+        download.sha256 shouldBe sha256Hex(text)
+        s.install(download.offer, download.sha256).id shouldBe JsSourceIds.komikkuId(REDIRECT_ID)
+    }
+
     private fun Throwable.shouldBeStoreFailure() {
         shouldBeInstanceOf<JsSourceStoreException>().reason shouldBe Reason.STORAGE_FAILED
     }
@@ -518,5 +546,6 @@ class MangayomiSourceStoreTest {
         private const val ADDED_ID = 778L
         private const val OBSOLETE_ID = 779L
         private const val FAIL_ID = 780L
+        private const val REDIRECT_ID = 781L
     }
 }

@@ -352,7 +352,14 @@ private fun ConfirmInstallDialog(download: JsSourceDownload, model: JsSourcesScr
                             fontWeight = FontWeight.Bold,
                         )
                     }
-                    Text(stringResource(KMR.strings.js_source_host, download.host), fontWeight = FontWeight.Bold)
+                    Text(
+                        if (download.redirected) {
+                            stringResource(KMR.strings.js_source_host_redirected, download.host, download.requestedHost)
+                        } else {
+                            stringResource(KMR.strings.js_source_host, download.host)
+                        },
+                        fontWeight = FontWeight.Bold,
+                    )
                     Text(stringResource(KMR.strings.js_source_size, formatBytes(download.sizeBytes)))
                     Text(
                         stringResource(KMR.strings.js_source_sha256, download.sha256),
