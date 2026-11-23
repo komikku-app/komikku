@@ -62,19 +62,22 @@ jobs:
           path: desktopApp/build/reports/tests/test
 
       # KMK -->
-      # JavaScript source host (:source-js, not a dependency of :desktopApp yet); runs even when the desktop
+      # JavaScript source host (:source-js, not a dependency of :desktopApp yet) and the app.cash.quickjs.QuickJs
+      # engine (:core:quickjs, also run on the Android host by testReleaseUnitTest); runs even when the desktop
       # tests failed, under the same continue-on-error policy.
       - name: Run JavaScript source host tests
         id: source_js_tests
         if: ${{ !cancelled() }}
-        run: ./gradlew :source-js:desktopTest --max-workers=2
+        run: ./gradlew :core:quickjs:desktopTest :source-js:desktopTest --max-workers=2
 
       - name: Upload JavaScript source host test report
         if: failure() && steps.source_js_tests.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: source-js-test-report-${{ github.sha }}
-          path: source-js/build/reports/tests/desktopTest
+          path: |
+            core/quickjs/build/reports/tests/desktopTest
+            source-js/build/reports/tests/desktopTest
       # KMK <--
   # KMK <--
 

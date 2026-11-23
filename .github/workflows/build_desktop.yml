@@ -66,10 +66,11 @@ jobs:
         run: ./gradlew :desktopApp:test --max-workers=2
 
       # KMK -->
-      # JavaScript source host (:source-js); Linux only, like the desktop tests.
+      # JavaScript source host (:source-js) and the app.cash.quickjs.QuickJs engine (:core:quickjs); Linux only,
+      # like the desktop tests.
       - name: Test JavaScript source host
         if: runner.os == 'Linux'
-        run: ./gradlew :source-js:desktopTest --max-workers=2
+        run: ./gradlew :core:quickjs:desktopTest :source-js:desktopTest --max-workers=2
       # KMK <--
 
       - name: Package desktop app
@@ -83,6 +84,7 @@ jobs:
           # KMK -->
           path: |
             desktopApp/build/reports/tests/test
+            core/quickjs/build/reports/tests/desktopTest
             source-js/build/reports/tests/desktopTest
           # KMK <--
 
