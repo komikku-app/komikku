@@ -2,6 +2,7 @@ package tachiyomi.domain.history.interactor
 
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
+import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
@@ -17,6 +18,9 @@ class GetNextChapters(
     // SY <--
     private val getManga: GetManga,
     private val historyRepository: HistoryRepository,
+    // KMK -->
+    private val getChapter: GetChapter,
+    // KMK <--
 ) {
 
     suspend fun await(onlyUnread: Boolean = true): List<Chapter> {
@@ -67,6 +71,11 @@ class GetNextChapters(
     ): List<Chapter> {
         val chapters = await(mangaId, onlyUnread)
         val currChapterIndex = chapters.indexOfFirst { it.id == fromChapterId }
+        // KMK -->
+        if (currChapterIndex == -1) {
+            getChaptersAfterHiddenChapter(mangaId, fromChapterId, onlyUnread, chapters)?.let { return it }
+        }
+        // KMK <--
         val nextChapters = chapters.subList(max(0, currChapterIndex), chapters.size)
 
         if (onlyUnread) {
@@ -83,4 +92,36 @@ class GetNextChapters(
             nextChapters.drop(1)
         }
     }
+
+    // KMK -->
+    /**
+     * Handles a [fromChapterId] that the chapter filters hide, e.g. a chapter whose scanlator was excluded or that the
+     * bookmark filter hides. Returns the chapters of [chapters] that sort after it, plus other scanlators'
+     * copies of it when it isn't completely read.
+     *
+     * Returns null to keep the default behavior when the chapter can't be found or isn't hidden by the filters, i.e. it
+     * is only missing from [chapters] because [onlyUnread] dropped it.
+     */
+    private suspend fun getChaptersAfterHiddenChapter(
+        mangaId: Long,
+        fromChapterId: Long,
+        onlyUnread: Boolean,
+        chapters: List<Chapter>,
+    ): List<Chapter>? {
+        val fromChapter = getChapter.await(fromChapterId) ?: return null
+        if (onlyUnread && await(mangaId, onlyUnread = false).any { it.id == fromChapterId }) return null
+        val manga = getManga.await(mangaId) ?: return null
+
+        val chapterSort = getChapterSort(manga, sortDescending = false)
+        return chapters.filter {
+            var order = chapterSort(it, fromChapter)
+            // Ties that aren't copies of the same chapter (e.g. unknown upload dates or chapter numbers) fall back to
+            // source order, which lists the first chapter last
+            if (order == 0 && !(it.isRecognizedNumber && it.chapterNumber == fromChapter.chapterNumber)) {
+                order = fromChapter.sourceOrder.compareTo(it.sourceOrder)
+            }
+            order > 0 || (order == 0 && !fromChapter.read)
+        }
+    }
+    // KMK <--
 }
