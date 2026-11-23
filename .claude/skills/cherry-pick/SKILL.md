@@ -274,8 +274,9 @@ step 1.
     whole commit.
   - When the pick folds in part of another upstream commit (Body, above) and that commit has more to pick later, mark
     its row `--status '?' --note 'Folded <YYYY-MM-DD>: <part> into the pick of <hash>.'`.
-  - `update` keeps a `?` with either note until it finds `O` evidence; with any note other than these or
-    `AI checked`, it re-checks the row and can reset it.
+  - `update` always keeps a `?` with either note, even when it finds `O` evidence: it can't see a left-out part under
+    `partial_ignore_paths` (a SQLDelight migration). Picking the rest later marks the row `O` here. With any note other
+    than these or `AI checked`, `update` re-checks the row and can reset it.
 - **Commit:** stage only the pick's own files and the log row, with `git add <path>` for each one. Never use
   `git add -A`, `git add -u` or `git commit -a`.
   - After a conflict: write the message to a scratchpad file (`.git/MERGE_MSG` without its `# Conflicts:` block), then

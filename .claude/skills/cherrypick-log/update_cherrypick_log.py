@@ -35,8 +35,8 @@ How it works (full explanation in README.md next to this file):
   Rows already marked ``O`` skip this check.
   A commit and its copies in other upstreams share one status.
 * Re-running keeps ``O`` / ``X`` (and any other hand-written status) and the Notes
-  column, re-checks empty / ``?`` rows (keeping an AI verdict, and a ``?`` with a
-  ``Partial <date>:`` / ``Folded <date>:`` note, unless ``O`` evidence appears),
+  column, re-checks empty / ``?`` rows (keeping an AI verdict unless ``O`` evidence appears,
+  and always keeping a ``?`` with a ``Partial <date>:`` / ``Folded <date>:`` note),
   adds new upstream commits, and moves commits
   that disappeared from upstream into a "Gone from upstream" section. Rows dated before
   ``since`` that are already in the file (added by a one-off pass over older history) are
@@ -81,8 +81,9 @@ RECHECKED_STATUSES = ("", STATUS_MAYBE)
 # reviewed "not picked" verdict and is only overridden by strong (O) evidence.
 AI_NOTE_MARK = "AI checked"
 # Notes the cherry-pick skill writes for a partial pick ("Partial <date>: …", or "Folded <date>: …" when only a part
-# was folded into another pick). The '?' they come with is set by hand: detection only sees whole files and citing
-# commits, so it would reset it, and it is kept unless strong (O) evidence appears.
+# was folded into another pick). The '?' they come with is set by hand and always kept: detection only sees whole files
+# and citing commits, so it would reset it, and it can't see a left-out part under ``partial_ignore_paths`` (such as a
+# SQLDelight migration), so even O evidence doesn't prove the rest was picked. Mark the row O by hand once it is.
 PARTIAL_NOTE_RE = re.compile(r"\b(?:Partial|Folded) \d{4}-\d{2}-\d{2}:")
 # Notes for rows the script itself flags '?' (commits that cancel each other out). Older versions
 # marked them X with an "Omitted (script):" note; such rows are released the same way.
@@ -886,15 +887,15 @@ def carry_over(old_status: str, old_notes: str, computed: str) -> tuple[str, str
     """Status and Notes of a regenerated row, from its previous row and this run's detection.
 
     Script revert-chain flags are released first. A manual status (O, X, …) is kept. An empty / '?' row is
-    re-checked (``computed``), except that an AI verdict (Notes with ``AI checked``) and a partial pick
-    (a '?' whose Notes have ``Partial <date>:`` or ``Folded <date>:``) are kept unless strong O evidence appears.
+    re-checked (``computed``), except that an AI verdict (Notes with ``AI checked``) is kept unless strong O evidence
+    appears, and a partial pick (a '?' whose Notes have ``Partial <date>:`` or ``Folded <date>:``) is always kept.
     """
     status, notes = release_script_flag(old_status, old_notes)
     if status not in RECHECKED_STATUSES:
         return status, notes
     if AI_NOTE_MARK in unesc(notes) and computed != STATUS_DONE:
         return status, notes
-    if status == STATUS_MAYBE and PARTIAL_NOTE_RE.search(unesc(notes)) and computed != STATUS_DONE:
+    if status == STATUS_MAYBE and PARTIAL_NOTE_RE.search(unesc(notes)):
         return status, notes
     return computed, notes
 
@@ -968,8 +969,9 @@ def cmd_update(root: Path, cfg: Config, args: argparse.Namespace) -> None:
         row = pre_rows[e.commit.full][0]
         cells = list(row.cells)
         cells[0], cells[-1] = release_script_flag(cells[0], cells[-1])
-        # Only strong evidence changes a kept row; its '?' may come from the pass that added it.
-        if cells[0] in RECHECKED_STATUSES and e.status == STATUS_DONE:
+        # Only strong evidence changes a kept row; its '?' may come from the pass that added it. A partial pick stays.
+        partial = cells[0] == STATUS_MAYBE and PARTIAL_NOTE_RE.search(unesc(cells[-1]))
+        if cells[0] in RECHECKED_STATUSES and e.status == STATUS_DONE and not partial:
             cells[0] = STATUS_DONE
             evidence = [d for d in e.details if d not in unesc(cells[6])]
             cells[6] = esc("; ".join([unesc(cells[6]), *evidence]).strip("; "))
