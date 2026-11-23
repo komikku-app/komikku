@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.komikku.desktop.source.DesktopDelegatedSources
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.shared.settings.PreferenceList
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -33,6 +34,7 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import exh.pref.DelegateSourcePreferences
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -339,6 +341,7 @@ private fun downloadPreferences(): List<Preference> {
 private fun browsePreferences(): List<Preference> {
     val sources = remember { Injekt.get<SourcePreferences>() }
     val base = remember { Injekt.get<BasePreferences>() }
+    val delegates = remember { Injekt.get<DelegateSourcePreferences>() }
     return listOf(
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_sources),
@@ -348,6 +351,16 @@ private fun browsePreferences(): List<Preference> {
                     base.incognitoMode(),
                     stringResource(MR.strings.pref_incognito_mode),
                     subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
+                ),
+                // P4: SY's delegated sources toggle (Android: Settings → Advanced, which the desktop has no screen for)
+                Preference.PreferenceItem.SwitchPreference(
+                    delegates.delegateSources(),
+                    stringResource(SYMR.strings.toggle_delegated_sources),
+                    subtitle = stringResource(
+                        SYMR.strings.toggle_delegated_sources_summary,
+                        stringResource(MR.strings.app_name),
+                        DesktopDelegatedSources.delegates.map { it.sourceName }.distinct().joinToString(),
+                    ),
                 ),
             ),
         ),

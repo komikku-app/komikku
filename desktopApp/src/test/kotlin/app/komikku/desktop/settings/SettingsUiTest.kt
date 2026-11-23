@@ -19,6 +19,7 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import exh.pref.DelegateSourcePreferences
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.TestInstance
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -100,6 +102,17 @@ class SettingsUiTest {
         Injekt.get<DownloadPreferences>().saveChaptersAsCBZ().get() shouldBe true
         onNodeWithText(MR.strings.save_chapter_as_cbz.localized()).performClick()
         waitUntil(timeoutMillis = 5_000) { !Injekt.get<DownloadPreferences>().saveChaptersAsCBZ().get() }
+        back()
+
+        // Browse: SY's delegated sources toggle (P4), on by default like Android
+        waitForTag("settings-browse")
+        onNodeWithTag("settings-browse").performClick()
+        waitForTag("settings-Browse")
+        val delegates = Injekt.get<DelegateSourcePreferences>().delegateSources()
+        delegates.get() shouldBe true
+        onNodeWithText(SYMR.strings.toggle_delegated_sources.localized()).performClick()
+        waitUntil(timeoutMillis = 5_000) { !delegates.get() }
+        delegates.set(true)
         back()
 
         // About shows the version
