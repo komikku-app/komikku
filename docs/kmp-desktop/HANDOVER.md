@@ -117,6 +117,11 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   mode; Data and storage: backup frequency, last automatic backup) and "Library last updated" in the updates list. No
   device restrictions on desktop; only while the app is open. Headless tests `DesktopSchedulerTest`,
   `DesktopScheduledJobsTest`, `ScheduleSettingsUiTest`.
+- **P3 review** (medium, 8 findings) — all fixed in `d6110e7`, `3121d4e`, `560bd49`, `8f936c1` (PROGRESS.md "Review fixes
+  (P3)"): a user-cancelled automatic backup waits a whole interval, updates wait for the sources (bounded), a taken backup
+  slot shows Android's message, the scheduler owns the scheduled update's due time, exit stops and joins the work and
+  automatic backups are written to a temporary file and rotated afterwards, clock-back recovery, `onStarted` before the
+  progress, "Just now" refreshes.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
