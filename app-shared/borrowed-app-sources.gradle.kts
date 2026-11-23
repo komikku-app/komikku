@@ -405,9 +405,9 @@ run {
     )
 
     // SY delegated (enhanced) sources applied over installed extension sources (P4), with the URL import they search
-    // through (SearchOverride.kt → GalleryAdder). The MangaDex delegate stays Android-only (MDList tracker login,
-    // follows / similar screens). Desktop counterpart in app-shared/src/desktopMain: the EHentai placeholder
-    // (AbsentSources.kt) with `GalleryNotFoundException`, which GalleryAdder tests for.
+    // through (SearchOverride.kt → GalleryAdder); MangaDex in the next block. Desktop counterpart in
+    // app-shared/src/desktopMain: the EHentai placeholder (AbsentSources.kt) with `GalleryNotFoundException`, which
+    // GalleryAdder tests for.
     desktopCopy(
         "eu/kanade/tachiyomi/source/online/all/Lanraragi.kt",
         "eu/kanade/tachiyomi/source/online/all/NHentai.kt",
@@ -415,6 +415,47 @@ run {
         "eu/kanade/tachiyomi/source/online/english/EightMuses.kt",
         "exh/GalleryAdder.kt",
         "exh/util/SearchOverride.kt",
+    )
+
+    // The MangaDex delegate (P4) with its API layer and the MDList tracker it logs in / syncs through (replaces the
+    // desktop MDList stub). Not borrowed: MangaDexLoginActivity (the desktop has no MDList login yet), the follows /
+    // similar screens and their paging sources.
+    desktopCopy(
+        "eu/kanade/tachiyomi/data/track/mdlist/MdList.kt",
+        "eu/kanade/tachiyomi/source/online/all/MangaDex.kt",
+        "exh/md/dto/AtHomeDto.kt",
+        "exh/md/dto/ChapterDto.kt",
+        "exh/md/dto/ListCallDto.kt",
+        "exh/md/dto/MangaDto.kt",
+        "exh/md/dto/MangaPlusDto.kt",
+        "exh/md/dto/RatingDto.kt",
+        "exh/md/dto/ResultDto.kt",
+        "exh/md/dto/SimilarDto.kt",
+        "exh/md/dto/StatisticsDto.kt",
+        "exh/md/handlers/ApiMangaParser.kt",
+        "exh/md/handlers/AzukiHandler.kt",
+        "exh/md/handlers/BilibiliHandler.kt",
+        "exh/md/handlers/ComikeyHandler.kt",
+        "exh/md/handlers/FilterHandler.kt",
+        "exh/md/handlers/FollowsHandler.kt",
+        "exh/md/handlers/MangaHandler.kt",
+        "exh/md/handlers/MangaHotHandler.kt",
+        "exh/md/handlers/MangaPlusHandler.kt",
+        "exh/md/handlers/NamicomiHandler.kt",
+        "exh/md/handlers/PageHandler.kt",
+        "exh/md/handlers/SimilarHandler.kt",
+        "exh/md/network/MangaDexAuthInterceptor.kt",
+        "exh/md/network/MangaDexLoginHelper.kt",
+        "exh/md/service/MangaDexAuthService.kt",
+        "exh/md/service/MangaDexService.kt",
+        "exh/md/service/SimilarService.kt",
+        "exh/md/utils/MdApi.kt",
+        "exh/md/utils/MdConstants.kt",
+        "exh/md/utils/MdExtensions.kt",
+        "exh/md/utils/MdLang.kt",
+        "exh/md/utils/MdUtil.kt",
+        "exh/util/Boolean.kt",
+        "exh/util/Math.kt",
     )
 }
 

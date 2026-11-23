@@ -33,7 +33,7 @@ sealed interface TrackerLoginMethod {
     /** Komga / Kavita / Suwayomi: logged in by the matching installed source (Android: `loginNoop`). */
     data object Enhanced : TrackerLoginMethod
 
-    /** MDList: needs the SY MangaDex source, not available on desktop. */
+    /** MDList: logs in through the MangaDex source's OAuth (Android: `MangaDexLoginActivity`), not on desktop yet. */
     data object Unsupported : TrackerLoginMethod
 }
 

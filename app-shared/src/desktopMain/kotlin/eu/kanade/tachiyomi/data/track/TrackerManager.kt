@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.combine
  * KMK: desktop counterpart of the Android `TrackerManager` (same members, ids and tracker order; the
  * trackers themselves are the borrowed Android implementations). Difference: [extraTrackers] are
  * appended, so tests can register an in-test tracker that the borrowed interactors (`TrackChapter`,
- * `AddTracks`, `RefreshTracks`) then find through [get]. MangaDex (MDList) is a desktop stub.
+ * `AddTracks`, `RefreshTracks`) then find through [get]. MDList is the borrowed tracker (P4); its login is not on desktop yet.
  */
 class TrackerManager(extraTrackers: List<Tracker> = emptyList()) {
 

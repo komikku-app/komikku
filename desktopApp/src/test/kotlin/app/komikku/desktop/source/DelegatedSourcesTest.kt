@@ -1,11 +1,13 @@
 package app.komikku.desktop.source
 
 import android.app.Application
+import androidx.core.net.toUri
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.tachiyomi.extension.all.mangadex.MangaDex
 import eu.kanade.tachiyomi.extension.all.nhentai.NHentai
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
@@ -35,6 +37,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import java.io.File
+import eu.kanade.tachiyomi.source.online.all.MangaDex as MangaDexDelegate
 import eu.kanade.tachiyomi.source.online.all.NHentai as NHentaiDelegate
 
 /**
@@ -48,6 +51,7 @@ class DelegatedSourcesTest {
     private lateinit var app: Application
     private val extensionSource = NHentai()
     private val plainSource = FakeHttpSource("http://localhost:1")
+    private val mangaDexSource = MangaDex()
     private lateinit var manager: DesktopSourceManager
 
     private class FixedExtensions(sources: List<eu.kanade.tachiyomi.source.Source>) : PlatformExtensionManager {
@@ -82,7 +86,7 @@ class DelegatedSourcesTest {
             coverManager = Injekt.get(),
             stubSourceRepository = Injekt.get(),
             allowHiddenFiles = { false },
-            extensionManager = FixedExtensions(listOf(extensionSource, plainSource)),
+            extensionManager = FixedExtensions(listOf(extensionSource, plainSource, mangaDexSource)),
         )
         // The URL import (GalleryAdder) looks the sources up through Injekt
         Injekt.addSingletonFactory<SourceManager> { manager }
@@ -103,13 +107,25 @@ class DelegatedSourcesTest {
 
     @Test
     fun `every desktop delegate starts over an extension source`() {
-        DesktopDelegatedSources.delegates.map { it.sourceName } shouldBe listOf("Pururin", "8Muses", "NHentai", "LANraragi")
+        DesktopDelegatedSources.delegates.map { it.sourceName } shouldBe listOf("Pururin", "MangaDex", "8Muses", "NHentai", "LANraragi")
         DesktopDelegatedSources.delegates.forEach { delegate ->
             val enhanced = delegate.create(plainSource, app)
             enhanced.delegate shouldBeSameInstanceAs plainSource
             enhanced.id shouldBe plainSource.id
             (enhanced is MetadataSource<*, *>) shouldBe true
         }
+    }
+
+    @Test
+    fun `MangaDex is delegated and imports its title URLs`() = runBlocking<Unit> {
+        val source = manager.get(mangaDexSource.id)
+        source.shouldBeInstanceOf<EnhancedHttpSource>()
+        val delegate = source.enhancedSource.shouldBeInstanceOf<MangaDexDelegate>()
+        delegate.matchesUri("https://mangadex.org/title/0aaa0000-1111-2222-3333-444455556666/some-title".toUri()) shouldBe true
+        delegate.mapUrlToMangaUrl("https://mangadex.org/title/0aaa0000-1111-2222-3333-444455556666/some-title".toUri()) shouldBe
+            "/manga/0aaa0000-1111-2222-3333-444455556666"
+        // Not logged in to MDList (the borrowed tracker, no desktop login yet)
+        delegate.isLogged() shouldBe false
     }
 
     @Test

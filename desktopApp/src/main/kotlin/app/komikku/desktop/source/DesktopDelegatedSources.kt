@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.Lanraragi
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.Pururin
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -20,8 +21,8 @@ import exh.source.EnhancedHttpSource
  * id, name and language, so library entries, backups and the "use the enhanced source" setting
  * (`DelegateSourcePreferences.delegateSources()`) behave as on Android.
  *
- * Not on desktop (yet): the MangaDex delegate (it needs the MDList tracker with its login activity, which is a stub on
- * desktop, and the follows / similar screens), and SY's built-in E-Hentai / ExHentai and merged sources.
+ * MangaDex works without an account: its MDList login (Android's `MangaDexLoginActivity`) and the follows / similar
+ * screens are not on desktop yet. Not on desktop: SY's built-in E-Hentai / ExHentai and merged sources.
  */
 object DesktopDelegatedSources {
 
@@ -33,9 +34,10 @@ object DesktopDelegatedSources {
         val create: (HttpSource, Context) -> DelegatedHttpSource,
     )
 
-    /** Android's `AndroidSourceManager.DELEGATED_SOURCES` without MangaDex (same class names and order). */
+    /** Android's `AndroidSourceManager.DELEGATED_SOURCES` (same class names and order). */
     val delegates: List<Delegate> = listOf(
         Delegate("Pururin", "eu.kanade.tachiyomi.extension.all.pururin.Pururin") { source, context -> Pururin(source, context) },
+        Delegate("MangaDex", "eu.kanade.tachiyomi.extension.all.mangadex.MangaDex") { source, context -> MangaDex(source, context) },
         Delegate("8Muses", "eu.kanade.tachiyomi.extension.en.eightmuses.EightMuses") { source, context -> EightMuses(source, context) },
         Delegate("NHentai", "eu.kanade.tachiyomi.extension.all.nhentai.NHentai") { source, context -> NHentai(source, context) },
         Delegate("LANraragi", "eu.kanade.tachiyomi.extension.all.lanraragi.LANraragi") { source, context -> Lanraragi(source, context) },

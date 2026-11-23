@@ -44,8 +44,8 @@ import java.util.concurrent.ConcurrentHashMap
  * [jsSources] gave its first list (`MangayomiSourceStore.sourcesOrEmpty` gives it once the store loaded its sources,
  * at most after its timeout), so an installed JavaScript source is not taken for a missing one at start-up.
  *
- * Extension sources with an SY delegate are wrapped like Android's (`DesktopDelegatedSources`: NHentai, Pururin, 8Muses,
- * LANraragi). Not on desktop (yet): the MangaDex delegate and SY's built-in E-Hentai / merged sources.
+ * Extension sources with an SY delegate are wrapped like Android's (`DesktopDelegatedSources`: Pururin, MangaDex, 8Muses,
+ * NHentai, LANraragi). Not on desktop (yet): SY's built-in E-Hentai / merged sources.
  */
 class DesktopSourceManager(
     private val context: Context,
@@ -84,7 +84,7 @@ class DesktopSourceManager(
                         extensions.forEach { extension ->
                             extension.sources
                                 .filterNot { isHentaiEnabled && it.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES }
-                                // SY delegated sources (NHentai, Pururin, 8Muses, LANraragi), like Android
+                                // SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi), like Android
                                 .map { DesktopDelegatedSources.wrap(it, context) }
                                 .forEach {
                                     map[it.id] = it
