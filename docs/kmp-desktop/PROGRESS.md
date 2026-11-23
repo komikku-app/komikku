@@ -632,7 +632,10 @@ existing code through `FixedSourceManager`: headless browse popular / search →
 description, title, resolved cover) → the settings screen → turning latest off refreshes `supportsLatest`; and the
 reader's `ChapterLoader` loading a page into the chapter cache with the source's `Referer` (the server refuses images
 without it) and the page list cache keeping the image URL in `Page.url`). That test found the refresh race fixed in
-`bbd19b16bf`. Totals: `:source-js` `desktopTest` 136 (1 skipped; was 110), `testReleaseUnitTest` 95 (was 83).
+`bbd19b16bf`. Totals: `:source-js` `desktopTest` 136 (1 skipped; was 110), `testReleaseUnitTest` 95 (was 83). The whole
+`:desktopApp:test` suite passes with `:source-js` on its class path (30 classes, 88 tests). Also run: `spotlessCheck`,
+`:app:compileDebugKotlin`, `:app:checkDebugDuplicateClasses`, `:desktopApp:compileKotlin` (all pass); `:core:quickjs`
+was not touched.
 
 **Known gaps / risks:**
 - Not wired into the source managers, no store, no UI label for JavaScript sources (I4); nothing was run on a
