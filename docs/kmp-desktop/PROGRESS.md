@@ -916,7 +916,7 @@ of what those files reference:
 | `eu.kanade.tachiyomi.data.notification.Notifications` | notification channels / ids | 8.2: ids used by borrowed files |
 | `eu.kanade.tachiyomi.data.backup.create.BackupCreateJob`, `eu.kanade.tachiyomi.data.library.LibraryUpdateJob`, `eu.kanade.tachiyomi.data.updater.AppUpdateJob` | WorkManager jobs | 8.2: `object`s, `setupTask` = no-op (no scheduling on desktop) |
 | `eu.kanade.tachiyomi.data.track.TrackerManager` | tracker registry | 8.3: same trackers / API + `extraTrackers` constructor parameter (tests) |
-| `eu.kanade.tachiyomi.data.track.mdlist.MdList` | SY MangaDex tracker | 8.3: stub (statuses only, never logged in) |
+| `eu.kanade.tachiyomi.data.track.mdlist.MdList` | SY MangaDex tracker | 8.3: stub (statuses only, never logged in); removed in P4 (the real tracker is borrowed with the MangaDex delegate) |
 | `eu.kanade.domain.track.service.DelayedTrackingUpdateJob` | WorkManager retry job | 8.3: coroutine retry (5 → 40 min, 4 runs) over the persisted store |
 | `eu.kanade.tachiyomi.R` | Android resources | 8.3: `drawable.brand_*` ids for `Tracker.getLogo()` |
 | `tachiyomi.core.common.preference.AndroidPreferenceStore(context, prefs)` | `SharedPreferences`-backed store | 8.2: function returning the compat preferences' `DesktopPreferenceStore` |
@@ -1071,7 +1071,7 @@ or downloaded by hand from a repo you trust:
   | Kitsu | Username / password | Credentials dialog | Works as on Android (not exercised against the real service) |
   | MangaUpdates | Username / password | Credentials dialog | Works as on Android (not exercised against the real service) |
   | Komga / Kavita / Suwayomi (enhanced) | Enabled when the matching extension is installed | Same rule (`loginNoop`), enabled when an accepted source class is loaded | Compiles and is wired; depends on those extensions running on desktop (untested) |
-  | MDList (MangaDex) | SY MangaDex delegated source login | Not available (stub) | Needs the SY MangaDex source (Phase 8 "delegated sources") |
+  | MDList (MangaDex) | SY MangaDex delegated source login | OAuth by paste through the MangaDex source since P4 (was: not available, stub) | Needs the MangaDex extension installed; unverified against the server |
 
   No request was made to any tracker service; tests use an in-test tracker. Tracker logos are not shown on
   desktop (names only; `R.drawable` ids have no images). Not ported: Android's "track on adding to
@@ -1812,6 +1812,76 @@ No new strings (`backup_in_progress`, `restore_in_progress` reused). Verificatio
 134: `DesktopSchedulerTest` +2, `DesktopScheduledJobsTest` +5, `LibraryUpdateRunnerTest` +2, `RelativeTimeUiTest` 1). Still
 not run in a real window; the exit path (`stopDesktopWork` after `application {}` returns) is tested headless only.
 
+## P4 — delegated sources
+
+Commits `678778d` (borrowing), `8bdca18` (delegation in the source manager), `60bb46c` (settings toggle), `0c2270b`
+(MangaDex + MDList), `2dc771d` (MDList login), `02c1181` (SY id lookups), `a204b58` (update exclusion) and this section's
+docs commit. Chosen from "Remaining parity gaps" over AVIF / JXL because the SY delegates turned out to be desktop-safe:
+their Android dependencies (`Context`, `SharedPreferences`, `Uri`, `androidx.core.net.toUri`, `android.util.Base64`) are
+all covered by `:desktop:android-compat`, and the base classes (`DelegatedHttpSource`, `EnhancedHttpSource`,
+`MetadataSource`, `UrlImportableSource`, `NamespaceSource`, `PagePreviewSource`, the `exh.metadata` models) already live in
+`:source-api`, so no blocker was found and AVIF / JXL stays open.
+
+**What Android does:** `AndroidSourceManager.toInternalSource` wraps an installed extension source whose class name is in
+`DELEGATED_SOURCES` (Pururin, MangaDex, 8Muses, NHentai, LANraragi) in an `EnhancedHttpSource(original, delegate)`;
+`EnhancedHttpSource.source()` picks the delegate while `DelegateSourcePreferences.delegateSources()` is on (default), else
+the extension. The delegates add SY metadata (stored through `MetadataSource` into the metadata tables), namespace tags,
+URL import (a gallery URL typed into the source's search goes through `GalleryAdder`), page previews and, for MangaDex,
+the MDList tracker / follows. `handleSourceLibrary` publishes the delegated ids to `exh.source` lookups (metadata sources
+for the library search by tags, NHentai / MangaDex / LANraragi ids, `LIBRARY_UPDATE_EXCLUDED_SOURCES`).
+
+**Desktop:**
+- Borrowed unchanged (`desktopCopy`, Android still compiles its own copy): the five delegates
+  (`source/online/all/{Pururin,MangaDex,NHentai,Lanraragi}.kt`, `source/online/english/EightMuses.kt`), the URL import
+  (`exh/util/SearchOverride.kt`, `exh/GalleryAdder.kt`), MangaDex's API layer (`exh/md/{dto,handlers,network,service}`,
+  `exh/md/utils/{MdApi,MdConstants,MdExtensions,MdLang,MdUtil}.kt`), the real MDList tracker
+  (`data/track/mdlist/MdList.kt`, replacing the desktop stub) and two pure helpers (`exh/util/{Boolean,Math}.kt`). Desktop
+  counterpart added: `EHentai.GalleryNotFoundException` in the EHentai placeholder (`AbsentSources.kt`), which
+  `GalleryAdder` tests for.
+- `app.komikku.desktop.source.DesktopDelegatedSources`: Android's list (same class names and order, explicit
+  constructors instead of reflection), `wrap(source, context)` used by `DesktopSourceManager` for every extension source
+  (after the SY blacklist, like Android), `publishSourceIds` (Android's `handleSourceLibrary`, run on every rebuild).
+- DI: the `MetadataSource.GetMangaId` / `GetFlatMetadataById` / `InsertFlatMetadata` bindings (Android: `SYDomainModule`).
+- Settings → Browse → "Enable delegated sources" (SY's switch and strings; Android has it in Settings → Advanced, which the
+  desktop has no screen for).
+- MDList login: Settings → Tracking offers MangaDex's OAuth like the other OAuth trackers (authorize page in the browser,
+  paste the `tachiyomisy://mangadex-auth?code=…` redirect); the code goes to the enabled MangaDex source's `login(code)`
+  (Android's `MangaDexLoginActivity`), so it needs the MangaDex extension installed.
+- Library updates skip `LIBRARY_UPDATE_EXCLUDED_SOURCES` (Pururin, NHentai delegates, E-Hentai ids) for every target but
+  a single entry's refresh, like Android SY's `LibraryUpdateJob.updateChapterList` (not counted as skipped).
+
+**Decisions / deviations:**
+- A delegate that throws while being created leaves the plain extension source in place (logged); Android does not guard.
+- The id lookups are recomputed from the current sources on every rebuild; Android's `currentDelegatedSources` only grows
+  during a run (an uninstalled delegated source keeps its ids there). `AndroidSourceManager.currentDelegatedSources` itself
+  stays Android-only.
+- The `DELEGATED_SOURCES` list is mirrored, not shared: it lives in the Android source manager's companion (with
+  reflection over Android-only classes); moving it would change Android code for no behaviour gain.
+- MDList logout on desktop is the tracker's generic logout (clears the stored token); Android's MangaDex settings logout
+  also revokes the token on the server.
+
+**Known gaps:** no SY metadata / namespace-tag view and no page previews on the desktop details screen (the metadata is
+stored and searchable); no batch add / "open URL" import screen (URL import works through a source's search box); no
+MangaDex settings screen (preferred MangaDex, data saver, blocked groups — the source reads its preferences, which only
+Android can edit for now), follows / similar screens or MangaDex follow from the library selection; SY's built-in
+E-Hentai / ExHentai and merged sources are still absent. Not run against real extension APKs (dex2jar keeps class names,
+so the class-name match is expected to work) or the real MangaDex / NHentai servers; the MDList login is unverified
+against MangaDex.
+
+No new strings (`SYMR.strings.toggle_delegated_sources`, `toggle_delegated_sources_summary` reused).
+
+Tests: `DelegatedSourcesTest` (5: wrapping by class name and the id lookups; every delegate starts over an extension
+source; MangaDex delegate URL mapping and not logged in; NHentai details through the delegate's parser into the metadata
+tables and the library search by `artist:` tag; plain search to the extension, URL import of a gallery URL, unknown URL,
+toggle off), offline test doubles of the NHentai / MangaDex extensions (`desktopApp/src/test/kotlin/eu/kanade/tachiyomi/
+extension/all/…`), `TrackingTest` (MDList login method, no login without a MangaDex source), `LibraryUpdateRunnerTest`
+(excluded sources), `SettingsUiTest` (the toggle).
+
+Verification (after `a204b58`): `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`,
+`:desktopApp:compileKotlin` pass; `:desktopApp:test` 42 classes, 150 tests, 0 failures (was 41 / 144 after the P3 review:
+`DelegatedSourcesTest` 5, `LibraryUpdateRunnerTest` +1; `TrackingTest` / `SettingsUiTest` steps added to existing tests).
+Android code unchanged (all borrowed files are `desktopCopy`); Android UI not run.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -1819,11 +1889,13 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 1. **Browse:** source feeds / saved searches UI, migration (out of scope so far). Global search, source / language
    toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
    library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
+   SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
+   import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
    recommendations, SY clean titles / MangaDex follow / reset info from the selection. Also: "continue reading" button, source-icon badge and language flag
    icons, random-entry shortcut. Scheduled automatic library updates are done (P3; no device restrictions on desktop).
 3. **Manga details:** duplicate detection on add, merged entries, metadata editing, cover actions, sharing,
-   recommendations.
+   recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the metadata, P4).
 4. **Reader:** neighbouring chapters appended in viewers, animated GIF / WebP playback, AVIF / JPEG XL / HEIF
    pages, automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
    chapters exercised from the UI.

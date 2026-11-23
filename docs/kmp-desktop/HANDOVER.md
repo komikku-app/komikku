@@ -3,8 +3,8 @@
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
-fixes, and parity step P3, scheduled library updates and backups, are done; next is the review of P3; see "Done" and
-"Left to do").
+fixes, parity step P3, scheduled library updates and backups, with its review fixes, and parity step P4, SY delegated
+sources, are done; next is the review of P4; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -122,6 +122,13 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   slot shows Android's message, the scheduler owns the scheduled update's due time, exit stops and joins the work and
   automatic backups are written to a temporary file and rotated afterwards, clock-back recovery, `onStarted` before the
   progress, "Just now" refreshes.
+- **P4** delegated sources (`678778d` … , PROGRESS.md "P4 — delegated sources"): SY's delegates (Pururin, MangaDex, 8Muses,
+  NHentai, LANraragi), their URL import (`GalleryAdder`), MangaDex's API layer and the real MDList tracker borrowed
+  (`desktopCopy`); `DesktopDelegatedSources` wraps matching extension sources in `EnhancedHttpSource` like
+  `AndroidSourceManager` and publishes SY's id lookups (library search by tags, update exclusion); "Enable delegated
+  sources" in Settings → Browse; MDList login by OAuth paste through the MangaDex source; desktop library updates skip
+  `LIBRARY_UPDATE_EXCLUDED_SOURCES`. Headless tests `DelegatedSourcesTest` and additions to `TrackingTest`,
+  `LibraryUpdateRunnerTest`, `SettingsUiTest`. No metadata view / page previews / MangaDex screens on desktop yet.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -159,11 +166,13 @@ mark the residual path in both modules.
    15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
    its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done; P3
-   (scheduled library updates and backups) is done. **Next:** review P3 (`/code-review medium 80160e3..<last P3
-   commit>`). Known gaps: no bulk favourites in global search, no "search
+   (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
+   delegated sources) is done. **Next:** review P4 (`/code-review medium ddfd839..<last P4 commit>`). Known gaps: P4's
+   (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
+   against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   Then delegated sources, AVIF / JXL, WebView / Cloudflare, notifications / tray, signing, updater.
+   Then AVIF / JXL, WebView / Cloudflare, notifications / tray, signing, updater.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
