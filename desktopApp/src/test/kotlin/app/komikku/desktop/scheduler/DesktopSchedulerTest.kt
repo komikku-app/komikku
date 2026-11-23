@@ -170,4 +170,33 @@ class DesktopSchedulerTest {
         delay(200)
         runs.get() shouldBe count
     }
+
+    @Test
+    fun `after the clock moves back, stored times count from the first check that saw them`() {
+        val task = task()
+        val scheduler = scheduler(task)
+        // A persisted last run in the future: one interval from the first check that saw it, not until the clock
+        // caught up with it
+        lastRun = clock + 100.hours.inWholeMilliseconds
+        scheduler.check() shouldBe emptyList()
+        clock += 12.hours.inWholeMilliseconds
+        scheduler.check() shouldBe listOf("task")
+        // The attempt (in memory) ends up in the future
+        clock -= 50.hours.inWholeMilliseconds
+        scheduler.check() shouldBe emptyList()
+        clock += 12.hours.inWholeMilliseconds
+        scheduler.check() shouldBe listOf("task")
+        runs.get() shouldBe 2
+    }
+
+    @Test
+    fun `after the clock moves back, a busy retry waits the retry delay`() {
+        val scheduler = scheduler(task())
+        outcome = DesktopScheduler.Outcome.Busy
+        scheduler.check() shouldBe listOf("task")
+        clock -= 5.hours.inWholeMilliseconds
+        scheduler.check() shouldBe emptyList()
+        clock += 10.minutes.inWholeMilliseconds
+        scheduler.check() shouldBe listOf("task")
+    }
 }

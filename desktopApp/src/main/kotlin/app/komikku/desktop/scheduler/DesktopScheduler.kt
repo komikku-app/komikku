@@ -5,9 +5,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
@@ -23,7 +25,8 @@ import kotlin.time.Duration.Companion.minutes
  * last attempt in this process. A task never runs twice at once. Outcomes follow WorkManager's: [Outcome.Done] and
  * [Outcome.Failed] wait a whole interval from the attempt (a failing task is not retried every check), [Outcome.Busy]
  * (the work is already running elsewhere, e.g. a manual update; Android's `Result.retry()`) retries after
- * [Task.retryDelay]. [now] is the clock (epoch milliseconds), injected for tests.
+ * [Task.retryDelay]. [now] is the clock (epoch milliseconds), injected for tests; when it moves back, stored times in
+ * the future count from the check that first saw them.
  */
 class DesktopScheduler(
     private val scope: CoroutineScope,
@@ -51,6 +54,10 @@ class DesktopScheduler(
         var job: Job? = null
         var lastAttempt = 0L
         var retryAt = 0L
+
+        /** A persisted last run found in the future (clock moved back) and when it was first seen. */
+        var futureLastRun = 0L
+        var futureSeenAt = 0L
     }
 
     private val states = tasks.associate { it.name to TaskState() }
@@ -70,12 +77,18 @@ class DesktopScheduler(
         }
     }
 
-    /** Stops the checks and cancels running tasks (app exit). */
-    @Synchronized
-    fun stop() {
-        loop?.cancel()
-        loop = null
-        states.values.forEach { it.job?.cancel() }
+    /**
+     * Stops the checks, cancels the running tasks and waits until they ended (app exit). A task's [Task.run] stops the
+     * work it started when it is cancelled (see `DesktopScheduledJobs`), so this returns once that work ended too; the
+     * caller bounds the wait.
+     */
+    suspend fun stop() {
+        val running = synchronized(this) {
+            loop?.cancel()
+            loop = null
+            states.values.mapNotNull { it.job?.apply { cancel() } }
+        }
+        running.joinAll()
     }
 
     /** Waits for the running tasks and their outcome bookkeeping (tests). */
@@ -91,8 +104,21 @@ class DesktopScheduler(
         if (state.job?.isActive == true) return false
         val interval = task.intervalMillis()
         if (interval <= 0) return false
-        // A last run in the future (clock moved back) counts as now.
-        val last = maxOf(task.lastRun().coerceAtMost(at), state.lastAttempt)
+        // The clock moved back: times in the future count from the first check that saw them (once, not "now" at
+        // every check, which would stall the task until the clock caught up again).
+        if (state.lastAttempt > at) state.lastAttempt = at
+        state.retryAt = state.retryAt.coerceAtMost(at + task.retryDelay.inWholeMilliseconds)
+        val stored = task.lastRun()
+        val persisted = if (stored > at) {
+            if (state.futureLastRun != stored || state.futureSeenAt > at) {
+                state.futureLastRun = stored
+                state.futureSeenAt = at
+            }
+            state.futureSeenAt
+        } else {
+            stored
+        }
+        val last = maxOf(persisted, state.lastAttempt)
         return at >= last + interval && at >= state.retryAt
     }
 
@@ -106,7 +132,11 @@ class DesktopScheduler(
                 val outcome = try {
                     task.run()
                 } catch (e: CancellationException) {
-                    throw e
+                    // The scheduler stopped: no bookkeeping. Otherwise the work was cancelled on its own (e.g. the
+                    // user cancelled the automatic backup on the data screen): a failure, so it waits a whole
+                    // interval instead of restarting on the next check.
+                    ensureActive()
+                    Outcome.Failed
                 } catch (e: Throwable) {
                     xLogE("Scheduled ${task.name} failed", e)
                     Outcome.Failed
