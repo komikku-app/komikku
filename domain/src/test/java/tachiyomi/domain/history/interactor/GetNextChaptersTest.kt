@@ -178,6 +178,23 @@ class GetNextChaptersTest {
     }
 
     @Test
+    fun `excluded chapter with a tied upload date returns the next chapters in chapter number order`() = runTest {
+        // The source lists the newest chapter first and gives no upload dates
+        val manga = numberSortManga.copy(chapterFlags = Manga.CHAPTER_SORTING_UPLOAD_DATE)
+        val chapters = listOf(
+            chapter(5, 5.0, sourceOrder = 0),
+            chapter(4, 4.0, sourceOrder = 1),
+            chapter(30, 3.0, read = true, scanlator = EXCLUDED, sourceOrder = 2),
+            chapter(2, 2.0, sourceOrder = 3),
+            chapter(1, 1.0, sourceOrder = 4),
+        )
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = false).ids() shouldBe listOf(4L, 5)
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = true).ids() shouldBe listOf(4L, 5)
+    }
+
+    @Test
     fun `excluded chapter with a tied upload date and chapter number falls back to source order`() = runTest {
         val manga = numberSortManga.copy(chapterFlags = Manga.CHAPTER_SORTING_UPLOAD_DATE)
         val chapters = listOf(
@@ -228,6 +245,42 @@ class GetNextChaptersTest {
 
         getNextChapters.await(MANGA_ID, 30, onlyUnread = false).ids() shouldBe listOf(4L, 5)
         getNextChapters.await(MANGA_ID, 30, onlyUnread = true).ids() shouldBe listOf(4L, 5)
+    }
+
+    @Test
+    fun `excluded unnumbered chapter of a merged manga compares source order within its entry`() = runTest {
+        val manga = numberSortManga.copy(source = MERGED_SOURCE_ID, chapterFlags = Manga.CHAPTER_SORTING_SOURCE)
+        val chapters = listOf(
+            chapter(10, -1.0, read = true, sourceOrder = 4),
+            chapter(11, -1.0, sourceOrder = 3),
+            chapter(20, -1.0, read = true, scanlator = EXCLUDED, sourceOrder = 2),
+            chapter(12, -1.0, sourceOrder = 1),
+            chapter(13, -1.0, sourceOrder = 0),
+        ).map { it.copy(mangaId = OTHER_MANGA_ID) }
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(12L, 13)
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe listOf(12L, 13)
+    }
+
+    @Test
+    fun `excluded chapter of a merged manga compares the stored source order when deduping rewrote it`() = runTest {
+        val manga = numberSortManga.copy(source = MERGED_SOURCE_ID, chapterFlags = Manga.CHAPTER_SORTING_SOURCE)
+        val stored = listOf(
+            chapter(10, -1.0, read = true, sourceOrder = 11),
+            chapter(11, -1.0, sourceOrder = 10),
+            chapter(20, -1.0, read = true, scanlator = EXCLUDED, sourceOrder = 9),
+            chapter(12, -1.0, sourceOrder = 8),
+        ).map { it.copy(mangaId = OTHER_MANGA_ID) }
+        setUp(manga, stored)
+        // Priority deduping gives the merged chapters their index as source order
+        val deduped = stored.filterNot { it.scanlator == EXCLUDED }.reversed().mapIndexed { index, chapter ->
+            chapter.copy(sourceOrder = index.toLong())
+        }
+        coEvery { getMergedChaptersByMangaId.await(MANGA_ID, true, applyFilter = true) } returns deduped
+
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(12L)
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe listOf(12L)
     }
 
     @Test
