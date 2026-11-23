@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.shared.jssource.JsSourcePreferences
 import app.komikku.shared.jssource.MangayomiSourceStore
 import app.komikku.shared.jssource.TAG_ADD_REPOSITORY_CONFIRM
 import app.komikku.shared.jssource.TAG_INSTALL_CONFIRM
@@ -36,6 +37,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Headless UI test of the desktop JavaScript sources tab against [MockWebServer]: add a Mangayomi repository through
@@ -49,6 +51,9 @@ class JsSourcesUiTest {
     private val server = MockWebServer()
     private lateinit var app: Application
     private lateinit var store: MangayomiSourceStore
+
+    /** Paths the fixture server was asked for. */
+    private val requested: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     private val code = """
         class DefaultExtension extends MProvider {
@@ -68,7 +73,9 @@ class JsSourcesUiTest {
     fun setUp(@TempDir dir: File) {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
+                requested += request.url.encodedPath
                 val body = when (request.url.encodedPath) {
+                    "/other/index.json" -> "[]"
                     "/repo/index.json" -> """
                         [{"name":"UI JS source","id":4711,"lang":"en","baseUrl":"${server.url("/site")}",
                           "sourceCodeUrl":"${server.url("/code.js")}","version":"0.1.0","itemType":0,
@@ -112,11 +119,17 @@ class JsSourcesUiTest {
 
     @Test
     fun `add a repository, install a source after confirming it, browse it`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        // An added repository is read when the JavaScript sources tab is opened, not with the browse screen.
+        Injekt.get<JsSourcePreferences>().repositories().set(setOf(server.url("/other/index.json").toString()))
         setContent { KomikkuApp(context = app) }
 
         onNodeWithText(MR.strings.browse.text()).performClick()
+        waitForIdle()
+        Thread.sleep(500)
+        requested.contains("/other/index.json") shouldBe false
         onNodeWithText(KMR.strings.js_sources.text()).performClick()
         waitForText(KMR.strings.js_sources_empty.text())
+        waitUntil(timeoutMillis = 10_000) { "/other/index.json" in requested }
 
         // Add the repository through the dialog
         onNodeWithText(KMR.strings.js_source_repo_add.text()).performClick()

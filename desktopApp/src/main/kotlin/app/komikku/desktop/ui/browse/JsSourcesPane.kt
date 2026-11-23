@@ -29,18 +29,15 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 /**
  * JavaScript sources tab of the desktop browse screen: the shared list ([JsSourcesContent]) of repositories and
  * sources, with install / update / uninstall and each installed source's settings screen.
  */
 @Composable
-fun JsSourcesPane(model: JsSourcesScreenModel) {
+fun JsSourcesPane(model: JsSourcesScreenModel, store: MangayomiSourceStore) {
     val navigator = LocalNavigator.currentOrThrow
     val state by model.state.collectAsState()
-    val store = remember { Injekt.get<MangayomiSourceStore>() }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),

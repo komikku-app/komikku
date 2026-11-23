@@ -1,5 +1,6 @@
 package mihon.feature.jssources
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Extension
@@ -27,8 +28,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
+import tachiyomi.presentation.core.screens.EmptyScreen
 
 /**
  * KMK: Mangayomi JavaScript sources (docs/kmp-desktop/PROGRESS.md, "I4"): repositories, then installed and available
@@ -39,9 +39,20 @@ class JsSourcesScreen : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { JsSourcesScreenModel() }
+        val store = remember { MangayomiSourceStore.getOrNull() }
+        if (store == null) {
+            Scaffold(
+                topBar = { scrollBehavior ->
+                    AppBar(navigateUp = navigator::pop, title = stringResource(KMR.strings.js_sources), scrollBehavior = scrollBehavior)
+                },
+            ) { paddingValues ->
+                EmptyScreen(stringRes = KMR.strings.js_sources_unavailable, modifier = Modifier.padding(paddingValues))
+            }
+            return
+        }
+        // Created with the screen: opening it reads the added repositories (this screen is reached on purpose).
+        val model = rememberScreenModel { JsSourcesScreenModel(store) }
         val state by model.state.collectAsState()
-        val store = remember { Injekt.get<MangayomiSourceStore>() }
 
         Scaffold(
             topBar = { scrollBehavior ->

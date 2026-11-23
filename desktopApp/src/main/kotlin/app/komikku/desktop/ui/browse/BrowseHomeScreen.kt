@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.komikku.shared.jssource.JsSourceLabel
 import app.komikku.shared.jssource.JsSourcesScreenModel
+import app.komikku.shared.jssource.MangayomiSourceStore
 import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -55,7 +56,6 @@ data object BrowseHomeScreen : Screen() {
     @Composable
     override fun Content() {
         val extensionsModel = rememberScreenModel { ExtensionsScreenModel() }
-        val jsSourcesModel = rememberScreenModel { JsSourcesScreenModel() }
         var selected by rememberSaveable { mutableIntStateOf(0) }
         Column(modifier = Modifier.fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = selected) {
@@ -66,10 +66,25 @@ data object BrowseHomeScreen : Screen() {
             when (selected) {
                 0 -> SourcesPane()
                 1 -> ExtensionsPane(extensionsModel)
-                else -> JsSourcesPane(jsSourcesModel)
+                else -> JsSourcesTab()
             }
         }
     }
+}
+
+/**
+ * The JavaScript sources tab. Its model (which reads every added repository when created) is only created when the tab
+ * is opened, and only when the store could be built.
+ */
+@Composable
+private fun BrowseHomeScreen.JsSourcesTab() {
+    val store = remember { MangayomiSourceStore.getOrNull() }
+    if (store == null) {
+        EmptyScreen(stringRes = KMR.strings.js_sources_unavailable)
+        return
+    }
+    val model = rememberScreenModel { JsSourcesScreenModel(store) }
+    JsSourcesPane(model, store)
 }
 
 /** The sources of the desktop `SourceManager` by language; click opens the catalogue. */
