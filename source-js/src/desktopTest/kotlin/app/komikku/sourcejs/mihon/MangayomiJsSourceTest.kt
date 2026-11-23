@@ -327,6 +327,15 @@ class MangayomiJsSourceTest {
     }
 
     @Test
+    fun theFirstMetadataReadIsTypedByTheNewDeclarations() = runBlocking {
+        // A value stored by an earlier version under another type (a switch then, a list now).
+        context.getSharedPreferences(JsSourceIds.preferencesName(JsSourceIds.komikkuId(8)), Context.MODE_PRIVATE)
+            .edit().putBoolean("mode", true).commit()
+        val source = source(TYPED, descriptor(id = 8))
+        assertEquals("A", source.headers["X-Mode"])
+    }
+
+    @Test
     fun onlyTheMissingMethodItselfCountsAsNoLatestOrNoSearch() = runBlocking {
         val source = source(DELEGATING, descriptor(id = 10))
         val latest = assertFailsWith<JsSourceException.NotImplemented> { source.getLatestUpdates(1) }
@@ -334,16 +343,6 @@ class MangayomiJsSourceTest {
         assertEquals(true, source.supportsLatest)
         val search = assertFailsWith<JsSourceException.NotImplemented> { source.getSearchManga(1, "q", FilterList()) }
         assertEquals("getPageList", search.member)
-    }
-
-    @Test
-    fun headerValuesWithControlCharactersAreDropped() {
-        val source = source(HEADERS, descriptor(id = 9))
-        assertEquals("ok", source.headers["X-Ok"])
-        assertEquals("é", source.headers["X-Unicode"])
-        assertNull(source.headers["X-Crlf"])
-        assertNull(source.headers["X-Injected"])
-        assertNull(source.headers["X-Nul"])
     }
 
     @Test
@@ -367,12 +366,61 @@ class MangayomiJsSourceTest {
     }
 
     @Test
-    fun theFirstMetadataReadIsTypedByTheNewDeclarations() = runBlocking {
-        // A value stored by an earlier version under another type (a switch then, a list now).
-        context.getSharedPreferences(JsSourceIds.preferencesName(JsSourceIds.komikkuId(8)), Context.MODE_PRIVATE)
-            .edit().putBoolean("mode", true).commit()
-        val source = source(TYPED, descriptor(id = 8))
-        assertEquals("A", source.headers["X-Mode"])
+    fun aFailedRefreshIsRetriedOnceTheRetryDelayHasPassed() = runBlocking {
+        val descriptor = descriptor(id = 30)
+        val prefs = context.getSharedPreferences(JsSourceIds.preferencesName(JsSourceIds.komikkuId(30)), Context.MODE_PRIVATE)
+        fun loads() = prefs.getString(SharedPreferencesHostPreferences.STRING_KEY_PREFIX + "loads", "0")!!.toInt()
+        fun setFree(key: String, value: String) =
+            prefs.edit().putString(SharedPreferencesHostPreferences.STRING_KEY_PREFIX + key, value).commit()
+
+        val extension = runtime.extension(descriptor, FLAKY)
+        var now = 0L
+        val source = MangayomiJsSource(
+            extension = extension,
+            initialMetadata = extension.metadata(),
+            clientProvider = { client },
+            preferencesProvider = { prefs },
+            metadataRetryDelayMillis = 1_000,
+            clock = { now },
+        )
+        try {
+            assertEquals(1, loads())
+            setFree("fail", "1")
+            setFree("n", "2")
+            source.refreshMetadata()
+            assertEquals(2, loads())
+            assertEquals("0", source.headers["X-N"])
+
+            // Within the delay calls use the cached metadata: a failing source is not read again on every call.
+            repeat(3) { source.awaitMetadata() }
+            assertEquals(2, loads())
+
+            now += 1_000
+            source.awaitMetadata()
+            assertEquals(3, loads())
+            source.awaitMetadata()
+            assertEquals(3, loads())
+
+            setFree("fail", "0")
+            now += 1_000
+            source.awaitMetadata()
+            assertEquals(4, loads())
+            assertEquals("2", source.headers["X-N"])
+            source.awaitMetadata()
+            assertEquals(4, loads())
+        } finally {
+            source.close()
+        }
+    }
+
+    @Test
+    fun headerValuesWithControlCharactersAreDropped() {
+        val source = source(HEADERS, descriptor(id = 9))
+        assertEquals("ok", source.headers["X-Ok"])
+        assertEquals("é", source.headers["X-Unicode"])
+        assertNull(source.headers["X-Crlf"])
+        assertNull(source.headers["X-Injected"])
+        assertNull(source.headers["X-Nul"])
     }
 
     companion object {
@@ -419,22 +467,23 @@ class MangayomiJsSourceTest {
             }
         """.trimIndent()
 
+        /** Headers from a list preference: a stored value of another type must read as the default. */
+        val TYPED = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 8 }];
+            class DefaultExtension extends MProvider {
+              getHeaders(url) { return { "X-Mode": new SharedPreferences().get("mode").toUpperCase() }; }
+              getSourcePreferences() {
+                return [{ key: "mode", listPreference: { title: "Mode", summary: "", valueIndex: 0, entries: ["A", "B"], entryValues: ["a", "b"] } }];
+              }
+            }
+        """.trimIndent()
+
         /** Latest and search that call other, missing, methods. */
         val DELEGATING = """
             const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 10 }];
             class DefaultExtension extends MProvider {
               async getLatestUpdates(page) { return await this.getDetail("x"); }
               async search(query, page, filters) { return await this.getPageList("y"); }
-            }
-        """.trimIndent()
-
-        /** Header values OkHttp refuses, some of which `addUnsafeNonAscii` would still send. */
-        val HEADERS = """
-            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 9 }];
-            class DefaultExtension extends MProvider {
-              getHeaders(url) {
-                return { "X-Ok": "ok", "X-Unicode": "é", "X-Crlf": "a\r\nX-Injected: 1", "X-Nul": "a\u0000b" };
-              }
             }
         """.trimIndent()
 
@@ -449,14 +498,24 @@ class MangayomiJsSourceTest {
             }
         """.trimIndent()
 
-        /** Headers from a list preference: a stored value of another type must read as the default. */
-        val TYPED = """
-            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 8 }];
+        /** Header values OkHttp refuses, some of which `addUnsafeNonAscii` would still send. */
+        val HEADERS = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 9 }];
             class DefaultExtension extends MProvider {
-              getHeaders(url) { return { "X-Mode": new SharedPreferences().get("mode").toUpperCase() }; }
-              getSourcePreferences() {
-                return [{ key: "mode", listPreference: { title: "Mode", summary: "", valueIndex: 0, entries: ["A", "B"], entryValues: ["a", "b"] } }];
+              getHeaders(url) {
+                return { "X-Ok": "ok", "X-Unicode": "é", "X-Crlf": "a\r\nX-Injected: 1", "X-Nul": "a\u0000b" };
               }
+            }
+        """.trimIndent()
+
+        /** Fails to load while the free string "fail" is "1"; counts its loads in the free string "loads". */
+        val FLAKY = """
+            const store = new SharedPreferences();
+            store.setString("loads", String(Number(store.getString("loads", "0")) + 1));
+            if (store.getString("fail", "0") === "1") throw new Error("broken");
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 30 }];
+            class DefaultExtension extends MProvider {
+              getHeaders(url) { return { "X-N": new SharedPreferences().getString("n", "0") }; }
             }
         """.trimIndent()
 

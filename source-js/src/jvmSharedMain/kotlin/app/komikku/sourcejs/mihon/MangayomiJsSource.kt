@@ -50,7 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - **Metadata** (`supportsLatest`, filters, preferences, `getHeaders(baseUrl)`) is read in one context
  *   ([JsExtension.metadata]) and cached, because Mihon reads [supportsLatest], [headers] and [getFilterList]
  *   synchronously. It is read again after the source's preferences change (they may depend on them): a change of the
- *   preference file schedules a refresh, and every call waits for a pending one ([awaitMetadata]).
+ *   preference file schedules a refresh, and every call waits for a pending one ([awaitMetadata]). A refresh that fails
+ *   keeps the cached metadata and is tried again by the first call after [metadataRetryDelayMillis].
  * - **Calls** run at most [permits] at a time, and at most [sharedPermits] at a time across the runtime's sources (each
  *   one creates a JavaScript context with its own heap), on the host's threads. The per-source permit is always taken
  *   first, so the two limits cannot deadlock.
@@ -70,6 +71,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param sharedPermits the calls that may run at once across the sources of one runtime (`MangayomiJsRuntime`); `null`:
  *   no shared limit.
  * @param scope runs the metadata refreshes scheduled by preference changes; [close] cancels it.
+ * @param metadataRetryDelayMillis how long after a failed metadata refresh the next call tries again.
+ * @param clock milliseconds of a monotonic clock, for [metadataRetryDelayMillis].
  */
 class MangayomiJsSource(
     val extension: JsExtension,
@@ -79,6 +82,8 @@ class MangayomiJsSource(
     private val permits: Semaphore = Semaphore(DEFAULT_CONCURRENT_CALLS),
     private val sharedPermits: Semaphore? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val metadataRetryDelayMillis: Long = DEFAULT_METADATA_RETRY_DELAY_MILLIS,
+    private val clock: () -> Long = { System.nanoTime() / 1_000_000 },
 ) : HttpSource(), ConfigurableSource {
 
     val descriptor: JsSourceDescriptor get() = extension.source
@@ -108,6 +113,10 @@ class MangayomiJsSource(
     private val stale = AtomicBoolean(false)
     private val refreshLock = Mutex()
 
+    /** [clock] time before which a stale mark left by a failed refresh is not acted on; `null`: no failure pending. */
+    @Volatile
+    private var retryNotBefore: Long? = null
+
     /** Set once `getLatestUpdates` turned out not to be implemented although `supportsLatest` said so. */
     @Volatile
     private var latestMissing = false
@@ -135,39 +144,54 @@ class MangayomiJsSource(
 
     // ---- Metadata ----
 
-    /** Marks the metadata stale and reads it again in the background (calls wait for it). */
+    /**
+     * Marks the metadata stale and reads it again in the background (calls wait for it). A new change is worth trying
+     * at once, so a pending retry delay is dropped.
+     */
     fun requestMetadataRefresh() {
-        stale.set(true)
+        markStale()
         scope.launch { awaitMetadata() }
     }
 
-    /** Reads the metadata again now. A failure keeps the cached metadata (logged). */
+    /** Reads the metadata again now (also within a retry delay). A failure keeps the cached metadata (logged). */
     suspend fun refreshMetadata(): JsSourceMetadata {
-        stale.set(true)
+        markStale()
         return awaitMetadata()
     }
 
     /**
      * The metadata, read again first if a preference changed since it was read; waits for a refresh in progress too
-     * (it may have taken the stale mark of a later change than the one it started for).
+     * (it may have taken the stale mark of a later change than the one it started for). After a failed refresh the
+     * metadata stays stale, but is only read again once [metadataRetryDelayMillis] have passed, so a source that keeps
+     * failing costs one extra read per delay, not one per call.
      */
     suspend fun awaitMetadata(): JsSourceMetadata {
         if (!stale.get() && !refreshLock.isLocked) return cached.metadata
         refreshLock.withLock {
-            if (stale.getAndSet(false)) {
+            val notBefore = retryNotBefore
+            if (stale.get() && (notBefore == null || clock() >= notBefore)) {
+                stale.set(false)
                 try {
                     val metadata = withPermits { extension.metadata() }
                     cached = Cached(metadata, metadata.headers.toSafeHeaders())
                     latestMissing = false
+                    retryNotBefore = null
                 } catch (e: CancellationException) {
                     stale.set(true)
                     throw e
                 } catch (e: JsSourceException) {
-                    logcat(LogPriority.WARN, e) { "Keeping the cached metadata of $name" }
+                    retryNotBefore = clock() + metadataRetryDelayMillis
+                    stale.set(true)
+                    logcat(LogPriority.WARN, e) { "Keeping the cached metadata of $name, retrying in $metadataRetryDelayMillis ms" }
                 }
             }
         }
         return cached.metadata
+    }
+
+    private fun markStale() {
+        retryNotBefore = null
+        stale.set(true)
     }
 
     /** Stops listening to preference changes and cancels pending refreshes (the source is being removed). */
@@ -360,6 +384,9 @@ class MangayomiJsSource(
 
         /** Calls of one source that may run at once (each holds a JavaScript context of up to 64 MiB). */
         const val DEFAULT_CONCURRENT_CALLS = 2
+
+        /** Delay after a failed metadata refresh before a call tries again. */
+        const val DEFAULT_METADATA_RETRY_DELAY_MILLIS = 60_000L
 
         /** Characters of an unsupported image URL quoted in an error (a `data:` URL can be megabytes). */
         private const val MAX_URL_IN_MESSAGE = 64
