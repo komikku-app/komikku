@@ -89,7 +89,11 @@ class GetNextChapters(
         val fromChapter = chapters.getOrNull(currChapterIndex)
         // KMK -->
         // Resume from the first unread chapter when the current one can't be found, e.g. it was deleted
-        if (currChapterIndex == -1) return nextChapters.dropWhile { it.read }
+        if (currChapterIndex == -1) {
+            // An E-Hentai manga's chapters are versions of the gallery, so only the latest one is worth resuming
+            if (getManga.await(mangaId)?.isEhBasedManga() == true) return chapters.takeLast(1).filterNot { it.read }
+            return nextChapters.dropWhile { it.read }
+        }
         // KMK <--
         return if (fromChapter != null && !fromChapter.read) {
             nextChapters

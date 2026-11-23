@@ -318,6 +318,34 @@ class GetNextChaptersTest {
         getNextChapters.await(MANGA_ID, 999, onlyUnread = false) shouldBe emptyList()
     }
 
+    @Test
+    fun `missing chapter of an E-Hentai manga resumes from the latest version`() = runTest {
+        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+        setUp(manga, listOf(chapter(1, 1.0), chapter(2, 2.0, read = true), chapter(3, 3.0)))
+
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = false).ids() shouldBe listOf(3L)
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = true).ids() shouldBe listOf(3L)
+    }
+
+    @Test
+    fun `missing chapter of an E-Hentai manga with a read latest version has no next chapter`() = runTest {
+        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+        setUp(manga, listOf(chapter(1, 1.0), chapter(2, 2.0), chapter(3, 3.0, read = true)))
+
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = false) shouldBe emptyList()
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = true) shouldBe emptyList()
+    }
+
+    @Test
+    fun `present chapter of an E-Hentai manga resumes from the next version`() = runTest {
+        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+        setUp(manga, listOf(chapter(1, 1.0, read = true), chapter(2, 2.0), chapter(3, 3.0)))
+
+        // Unchanged behavior, without looking the manga up again
+        getNextChapters.await(MANGA_ID, 1, onlyUnread = false).ids() shouldBe listOf(2L, 3)
+        coVerify(exactly = 1) { getManga.await(MANGA_ID) }
+    }
+
     companion object {
         private const val MANGA_ID = 1L
         private const val OTHER_MANGA_ID = 2L
