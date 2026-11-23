@@ -19,6 +19,10 @@ import app.komikku.desktop.di.DesktopInjekt
 import eu.kanade.domain.source.service.SourcePreferences
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -27,6 +31,7 @@ import tachiyomi.domain.source.model.Pins
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
@@ -122,6 +127,41 @@ class SourcesUiTest {
     }
 
     @Test
+    fun `a failure reading the sources shows an error and a later preference change recovers`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            // A malformed SY source category entry (no "|") makes GetEnabledSources throw
+            preferences.sourcesTabSourcesInCategories().set(setOf("malformed"))
+            setContent { KomikkuApp(context = app) }
+
+            onNodeWithText(MR.strings.browse.localized()).performClick()
+            waitForText(KMR.strings.desktop_source_error.localized().substringBefore("%"))
+            onAllNodesWithText(KMR.strings.desktop_no_sources.localized()).fetchSemanticsNodes().isEmpty() shouldBe true
+            onAllNodesWithText("Alpha source").fetchSemanticsNodes().isEmpty() shouldBe true
+
+            preferences.sourcesTabSourcesInCategories().set(emptySet())
+            waitForText("Alpha source")
+            waitForNoText(KMR.strings.desktop_source_error.localized().substringBefore("%"))
+        }
+
+    @Test
+    fun `only an installed source becomes the last used source`() {
+        val lastUsed = preferences.lastUsedSource()
+        val before = lastUsed.get()
+        try {
+            lastUsed.set(SECOND)
+            CatalogueScreenModel(sourceId = MISSING)
+            runBlocking { delay(1_000) }
+            lastUsed.get() shouldBe SECOND
+
+            // Positive control: the installed source is recorded
+            CatalogueScreenModel(sourceId = FIRST)
+            runBlocking { withTimeout(5_000) { lastUsed.changes().first { it == FIRST } } }
+        } finally {
+            lastUsed.set(before)
+        }
+    }
+
+    @Test
     fun `sources are grouped like on Android`() {
         fun source(id: Long, lang: String, pin: Pins = Pins.unpinned, usedLast: Boolean = false, category: String? = null) =
             Source(id, lang, "s$id", supportsLatest = false, isStub = false, pin = pin, isUsedLast = usedLast, category = category)
@@ -155,5 +195,6 @@ class SourcesUiTest {
         const val FIRST = 7101L
         const val SECOND = 7102L
         const val FRENCH = 7103L
+        const val MISSING = 7199L
     }
 }

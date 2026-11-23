@@ -47,12 +47,18 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.log.xLogE
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.source.model.Pin
@@ -80,16 +86,39 @@ class SourcesPaneModel(
     private val getEnabledSources: GetEnabledSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
 ) : StateScreenModel<SourcesPaneModel.State>(State()) {
 
     init {
+        // A failure (e.g. a malformed SY source category entry) shows an error instead of "no sources"; the flow is
+        // subscribed again on the next change of what it reads, so a fixed preference brings the list back.
         getEnabledSources.subscribe()
-            .onEach { sources -> mutableState.update { it.copy(isLoading = false, items = groupSources(sources)) } }
-            .catch { e ->
+            .onEach { sources ->
+                mutableState.update { it.copy(isLoading = false, error = null, items = groupSources(sources)) }
+            }
+            .retryWhen { e, _ ->
+                if (e is CancellationException) return@retryWhen false
                 xLogE("Failed to read the enabled sources", e)
-                mutableState.update { it.copy(isLoading = false) }
+                mutableState.update { it.copy(isLoading = false, error = e.message ?: e::class.simpleName.orEmpty()) }
+                inputChanges().first()
+                true
             }
             .launchIn(screenModelScope)
+    }
+
+    /** The next change of anything [GetEnabledSources] reads. */
+    private fun inputChanges(): Flow<Any?> = with(sourcePreferences) {
+        merge(
+            pinnedSources().changes().drop(1),
+            enabledLanguages().changes().drop(1),
+            disabledSources().changes().drop(1),
+            lastUsedSource().changes().drop(1),
+            dataSaverExcludedSources().changes().drop(1),
+            sourcesTabSourcesInCategories().changes().drop(1),
+            sourcesTabCategoriesFilter().changes().drop(1),
+            sourceManager.sources.drop(1),
+        )
     }
 
     fun togglePin(source: Source) {
@@ -119,6 +148,8 @@ class SourcesPaneModel(
     data class State(
         val isLoading: Boolean = true,
         val items: List<Item> = emptyList(),
+        /** Why the enabled sources could not be read, if they could not. */
+        val error: String? = null,
         val dialog: Source? = null,
     )
 
@@ -179,8 +210,10 @@ internal fun SourcesPane(model: SourcesPaneModel) {
                 Icon(Icons.Outlined.FilterList, contentDescription = stringResource(MR.strings.action_filter))
             }
         }
+        val error = state.error
         when {
             state.isLoading -> LoadingScreen()
+            error != null -> EmptyScreen(message = stringResource(KMR.strings.desktop_source_error, error))
             state.items.isEmpty() -> EmptyScreen(stringRes = KMR.strings.desktop_no_sources)
             else -> SourcesList(
                 items = state.items,
@@ -217,6 +250,8 @@ private fun SourcesList(
 ) {
     val context = LocalContext.current
     val sourceManager = remember { Injekt.get<SourceManager>() }
+    // Read again whenever the installed sources change, so an updated or reinstalled source is not a stale instance
+    val installedSources by remember { sourceManager.sources }.collectAsState(initial = null)
     LazyColumn(modifier = Modifier.fillMaxSize().testTag("sources-list")) {
         items.forEach { item ->
             when (item) {
@@ -228,7 +263,7 @@ private fun SourcesList(
                 }
                 is SourcesPaneModel.Item.Entry -> item(key = "source-${item.source.key()}") {
                     val source = item.source
-                    val live = remember(source.id) { sourceManager.get(source.id) }
+                    val live = remember(source.id, installedSources) { sourceManager.get(source.id) }
                     val isPinned = Pin.Pinned in source.pin
                     val pinLabel = stringResource(if (isPinned) MR.strings.action_unpin else MR.strings.action_pin)
                     val disableLabel = stringResource(MR.strings.action_disable)

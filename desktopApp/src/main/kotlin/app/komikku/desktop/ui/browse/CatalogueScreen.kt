@@ -145,11 +145,14 @@ class CatalogueScreenModel(
     private var job: Job? = null
 
     init {
-        if (source is CatalogueSource) loadMore()
-        // Same as Android's BrowseSourceScreenModel: a source opened outside incognito mode becomes the last used one
-        getIncognitoState.subscribe(sourceId)
-            .onEach { incognito -> if (!incognito) sourcePreferences.lastUsedSource().set(sourceId) }
-            .launchIn(screenModelScope)
+        if (source is CatalogueSource) {
+            loadMore()
+            // Same as Android's BrowseSourceScreenModel: a source opened outside incognito mode becomes the last used
+            // one. A source that is not installed (nothing to browse) is not recorded.
+            getIncognitoState.subscribe(sourceId)
+                .onEach { incognito -> if (!incognito) sourcePreferences.lastUsedSource().set(sourceId) }
+                .launchIn(screenModelScope)
+        }
     }
 
     fun setMode(mode: Mode) {
