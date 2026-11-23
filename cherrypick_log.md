@@ -4,20 +4,30 @@
 <!-- Only edit the Status and Notes columns; everything else is regenerated on every run. -->
 
 Commits from main upstream **mihon** and additional **tachiyomiSY** since **2024-01-01** (authors matching `renovate` excluded), checked against `master`.
-Last updated **2026-11-02** from mihon `mihon/main` @ `e588e04359`, tachiyomiSY `tachiyomiSY/master` @ `c1eb1e3cbf`.
+Last updated **2026-11-23** from mihon `mihon/main` @ `f8e30a8608`, tachiyomiSY `tachiyomiSY/master` @ `5c77cad303`.
 How to update / review: [.claude/skills/cherrypick-log/README.md](.claude/skills/cherrypick-log/README.md).
 
 **Status:** `O` cherry-picked · `?` maybe, needs review (includes commits that cancel each other out, flagged by the script) · empty = not found · `X` won't pick (set by hand, or version-bump-only commits). **Upstream** `↳ name` = copy of the mihon commit right below it. **Details** = how pairing / status was found (regenerated); **Notes** = yours, kept.
 
 | Upstream | O | ? | X | empty | other | total |
 |---|--:|--:|--:|--:|--:|--:|
-| mihon | 588 | 30 | 66 | 651 | 0 | 1335 |
-| tachiyomiSY | 735 | 2 | 15 | 590 | 0 | 1342 |
+| mihon | 590 | 30 | 66 | 659 | 0 | 1345 |
+| tachiyomiSY | 739 | 2 | 15 | 592 | 0 | 1348 |
 
 ## Commits
 
 | Status | Commit | Upstream | Date | Title | Author | Details | Notes |
 |:-:|---|---|---|---|---|---|---|
+|   | [f64d82b942](https://github.com/mihonapp/mihon/commit/f64d82b94218b42410c36e6c85da818574865a28) | mihon | 2026-11-19 | Show the shared WebView screen in the WebView activity | AntsyLich |  |  |
+|   | [994a095397](https://github.com/mihonapp/mihon/commit/994a0953972c237d09b4abc02035505b13468f3b) | mihon | 2026-11-19 | Match the private extension uninstall prompt to Android 17's | AntsyLich |  |  |
+|   | [c0d3aeaeb5](https://github.com/mihonapp/mihon/commit/c0d3aeaeb57340b0835ce96a342d2a10463ce846) | mihon | 2026-11-19 | Replace Voyager with Navigation 3 (#3984) | Secozzi |  |  |
+|   | [524fa53043](https://github.com/mihonapp/mihon/commit/524fa53043f2f5b2321ea13027e44f093ab4245c) | mihon | 2026-11-09 | Remove Injekt usage outside the extension API (#4179) | AntsyLich |  |  |
+|   | [4df41cef63](https://github.com/mihonapp/mihon/commit/4df41cef6305cb37d3b301e65b6515c4015e39ef) | mihon | 2026-11-09 | Add agent instructions | AntsyLich |  |  |
+|   | [002a5fba27](https://github.com/mihonapp/mihon/commit/002a5fba27cc386d4925fdea204ebe0587b68a1e) | mihon | 2026-11-09 | Rework scrollbars around Compose scroll indicator APIs | AntsyLich |  |  |
+|   | [629033c804](https://github.com/mihonapp/mihon/commit/629033c804d019535390759d14be9aabc24999f8) | mihon | 2026-11-09 | Fix resource, locale and custom view lint errors | AntsyLich |  |  |
+|   | [70c73c728b](https://github.com/mihonapp/mihon/commit/70c73c728b6350dd9f1447420e9cef54e8403b41) | mihon | 2026-11-05 | Bump webgpuviewer (#4243) | w |  |  |
+|   | [ede052af17](https://github.com/mihonapp/mihon/commit/ede052af170e2ef2949dac2acd91adfb58043a96) | mihon | 2026-11-05 | Bump webgpuviewer (#4242) | w |  |  |
+|   | [32eb14c763](https://github.com/mihonapp/mihon/commit/32eb14c763ff67efd03c6c55639bc536358b44f4) | mihon | 2026-11-04 | Update webgpuviewer, add shader constants, crop instead of zoom (#4226) | w |  |  |
 |   | [e588e04359](https://github.com/mihonapp/mihon/commit/e588e04359fe1058206a2cbac1b01018ad787359) | mihon | 2026-10-26 | Share the reader's page chrome and page logic between viewers (#4193) | AntsyLich |  |  |
 |   | [9079ad8c9a](https://github.com/mihonapp/mihon/commit/9079ad8c9ad57a3760eb87ccf56c15eb52d17017) | mihon | 2026-10-26 | Handle reader input and state in the activity (#4192) | AntsyLich |  |  |
 |   | [00335b2a70](https://github.com/mihonapp/mihon/commit/00335b2a70c89e2498c84e72e24118af5888169d) | mihon | 2026-10-27 | Draw the reader through Compose (#4191) | AntsyLich |  |  |
@@ -29,6 +39,12 @@ How to update / review: [.claude/skills/cherrypick-log/README.md](.claude/skills
 |   | [007ec9a868](https://github.com/mihonapp/mihon/commit/007ec9a868bfa9a335217e16fd96a7aba03bb0f0) | mihon | 2026-10-26 | Release v0.21.3 | AntsyLich |  |  |
 |   | [b19c8abeba](https://github.com/mihonapp/mihon/commit/b19c8abeba92a5c4e047751a1e050d9d8f0ee870) | mihon | 2026-10-26 | Keep tab badges visible when the tab label is too long | AntsyLich |  |  |
 | ? | [e8977b4a66](https://github.com/mihonapp/mihon/commit/e8977b4a666093005c3691703b8a444ef444b9ca) | mihon | 2026-10-26 | Revert "Keep tab badges visible when the tab label is too long (#4178)" | AntsyLich |  | Cancels out (script): reverts `7a5632c013` [was: empty]; AI checked 2026-11-02: cancels out with 7a5632c013; master has neither (Tabs.kt TabText has no Modifier.weight(1f, fill = false)) - maintainer decides |
+|   | [5c77cad303](https://github.com/jobobby04/TachiyomiSY/commit/5c77cad3039dc846943196beb97cba586d470efe) | tachiyomiSY | 2026-11-13 | fix(reader): enforce split/double-pages exclusivity at toggle time (#1669) | 皆川すみれ |  |  |
+|   | [9926c3131a](https://github.com/jobobby04/TachiyomiSY/commit/9926c3131a32d84c2eb64855060acb3b29163f2e) | tachiyomiSY | 2026-11-13 | Translations update from Hosted Weblate (#1684) | Weblate (bot) |  |  |
+|   | [90f9bfcb64](https://github.com/jobobby04/TachiyomiSY/commit/90f9bfcb6404cd2346856f7da8a88bad1cb002d9) | tachiyomiSY | 2026-11-13 | page preview improvements | Jobobby04 |  |  |
+|   | [f8334d644e](https://github.com/jobobby04/TachiyomiSY/commit/f8334d644e67cb46dea1acf206aa67c8503f1722) | tachiyomiSY | 2026-11-13 | Maybe fix a crash | Jobobby04 |  |  |
+| O | [4ba3a6af5b](https://github.com/jobobby04/TachiyomiSY/commit/4ba3a6af5b6a125597f2971dd3a8a9e7c7af796a) | tachiyomiSY | 2026-11-09 | Fix Mangadex login issues | Jobobby04 |  | AI checked 2026-11-23: present in master 2155baf60c (headers on token POST) + 1656575e8fd (lazy loginHelper); logout keeps bare headers but MangaDexUserAgentInterceptor sets the UA for auth.mangadex.org |
+|   | [a8ed0a7194](https://github.com/jobobby04/TachiyomiSY/commit/a8ed0a7194fab2b1a398f851d2cbff1a7d7201dc) | tachiyomiSY | 2026-11-09 | Fix crashes with Google Drive and MangaDex login | Jobobby04 |  | AI checked 2026-11-23: not needed yet - fixes missing inject() bindings after SY's Metro DI migration (5d010c6611 / bf6ffe61b8, mihon 524fa53043); Komikku still uses Injekt, pick together with the Metro migration |
 |   | [c1eb1e3cbf](https://github.com/jobobby04/TachiyomiSY/commit/c1eb1e3cbfd7d5ab0156a75642222c59c764b9c9) | tachiyomiSY | 2026-10-28 | Fix merging | Jobobby04 |  |  |
 |   | [9955747216](https://github.com/jobobby04/TachiyomiSY/commit/99557472169f156e36a185eb8112638fefb7a79a) | tachiyomiSY | 2026-10-27 | Fix migration error | Jobobby04 |  |  |
 |   | [d9346ae10b](https://github.com/jobobby04/TachiyomiSY/commit/d9346ae10bcdabaa5c09738c81a609c4b8c44e7f) | tachiyomiSY | 2026-10-27 | Translations update from Hosted Weblate (#1677) | Weblate (bot) |  |  |
@@ -309,10 +325,10 @@ How to update / review: [.claude/skills/cherrypick-log/README.md](.claude/skills
 |   | [f82a7a68f4](https://github.com/mihonapp/mihon/commit/f82a7a68f42add8970e43916cf4d8e28e8847c33) | mihon | 2026-10-04 | Build download error notifications fresh each time | AntsyLich |  |  |
 |   | [461c2d785f](https://github.com/jobobby04/TachiyomiSY/commit/461c2d785f0de4a5e1fe4d90c4156098f3194905) | ↳ tachiyomiSY | 2026-10-21 | Fix webtoon reader leaving a gap after zooming in a resized window | AntsyLich | pick of mihon `d1c5c12bdd` [marker] |  |
 |   | [d1c5c12bdd](https://github.com/mihonapp/mihon/commit/d1c5c12bdd59e68c850958ffa8cb321189e99627) | mihon | 2026-10-04 | Fix webtoon reader leaving a gap after zooming in a resized window | AntsyLich |  |  |
-|   | [95388a852a](https://github.com/jobobby04/TachiyomiSY/commit/95388a852aa997e801dfe1ddc02353153ac3304d) | ↳ tachiyomiSY | 2026-10-21 | Fix race condition when updating search items in SearchViewModel (#4037) | Chopper | pick of mihon `4c88f02646` [marker] |  |
-|   | [4c88f02646](https://github.com/mihonapp/mihon/commit/4c88f02646aa1a358611e5b3b37ef7a62909b8d9) | mihon | 2026-10-03 | Fix race condition when updating search items in SearchViewModel (#4037) | Chopper |  |  |
-|   | [cffc6459a5](https://github.com/jobobby04/TachiyomiSY/commit/cffc6459a55f3228132ab712888f3b8304ca7ecd) | ↳ tachiyomiSY | 2026-10-21 | Use Dispatchers.IO.limitedParallelism in SearchViewModel to prevent thread leak (#4036) | Chopper | pick of mihon `a4780e4edb` [marker] |  |
-|   | [a4780e4edb](https://github.com/mihonapp/mihon/commit/a4780e4edb4a380011a4f726474fa2e3c9e104e7) | mihon | 2026-10-03 | Use Dispatchers.IO.limitedParallelism in SearchViewModel to prevent thread leak (#4036) | Chopper |  |  |
+| O | [95388a852a](https://github.com/jobobby04/TachiyomiSY/commit/95388a852aa997e801dfe1ddc02353153ac3304d) | ↳ tachiyomiSY | 2026-10-21 | Fix race condition when updating search items in SearchViewModel (#4037) | Chopper | pick of mihon `4c88f02646` [marker]; master `6e218618d2` [hash of mihon, pr+title mihonapp/mihon#4037, title+author] |  |
+| O | [4c88f02646](https://github.com/mihonapp/mihon/commit/4c88f02646aa1a358611e5b3b37ef7a62909b8d9) | mihon | 2026-10-03 | Fix race condition when updating search items in SearchViewModel (#4037) | Chopper | master `6e218618d2` [hash of mihon, pr+title mihonapp/mihon#4037, title+author] |  |
+| O | [cffc6459a5](https://github.com/jobobby04/TachiyomiSY/commit/cffc6459a55f3228132ab712888f3b8304ca7ecd) | ↳ tachiyomiSY | 2026-10-21 | Use Dispatchers.IO.limitedParallelism in SearchViewModel to prevent thread leak (#4036) | Chopper | pick of mihon `a4780e4edb` [marker]; master `8d091eaebc` [hash of mihon, pr+title mihonapp/mihon#4036, title+author] |  |
+| O | [a4780e4edb](https://github.com/mihonapp/mihon/commit/a4780e4edb4a380011a4f726474fa2e3c9e104e7) | mihon | 2026-10-03 | Use Dispatchers.IO.limitedParallelism in SearchViewModel to prevent thread leak (#4036) | Chopper | master `8d091eaebc` [hash of mihon, pr+title mihonapp/mihon#4036, title+author] |  |
 |   | [2191f0f7c6](https://github.com/jobobby04/TachiyomiSY/commit/2191f0f7c6dcadb1ef8c7f2e4848144b2534925d) | ↳ tachiyomiSY | 2026-10-21 | Make CoroutineWorker supertypes have Worker suffix | AntsyLich | pick of mihon `db45dda525` [marker] |  |
 |   | [db45dda525](https://github.com/mihonapp/mihon/commit/db45dda525f6934ad092bb3b2cba5d707b5db50f) | mihon | 2026-10-02 | Make CoroutineWorker supertypes have Worker suffix | AntsyLich |  |  |
 |   | [3e1ad01c46](https://github.com/jobobby04/TachiyomiSY/commit/3e1ad01c46c5878c1594ab15b5db1efebd94b90f) | ↳ tachiyomiSY | 2026-10-21 | Rename `Preference.enabled` to `visible` to correctly reflect usage | AntsyLich | pick of mihon `9abc830769` [marker] |  |
@@ -959,7 +975,7 @@ How to update / review: [.claude/skills/cherrypick-log/README.md](.claude/skills
 |   | [daec1a404d](https://github.com/jobobby04/TachiyomiSY/commit/daec1a404dc49fa411e84f940ec5cadc882e9ee0) | tachiyomiSY | 2026-10-21 | Move merge settings to Compose | AntsyLich |  |  |
 |   | [09c6644d50](https://github.com/jobobby04/TachiyomiSY/commit/09c6644d505e6027baf1cf5c75ccb70f21a8938e) | tachiyomiSY | 2026-10-21 | Move edit info to Compose | AntsyLich |  |  |
 |   | [0ccfc28513](https://github.com/jobobby04/TachiyomiSY/commit/0ccfc28513449e1b79b44908e3fe772e31a2a002) | tachiyomiSY | 2026-10-21 | Move metadata descriptions to Compose | AntsyLich |  |  |
-|   | [f56b4f977d](https://github.com/jobobby04/TachiyomiSY/commit/f56b4f977ddc2bbb35b11ceae9feb33fbf53ddc3) | tachiyomiSY | 2026-10-21 | Fix LANraragi metadata failing to parse on newer servers | AntsyLich |  |  |
+| O | [f56b4f977d](https://github.com/jobobby04/TachiyomiSY/commit/f56b4f977ddc2bbb35b11ceae9feb33fbf53ddc3) | tachiyomiSY | 2026-10-21 | Fix LANraragi metadata failing to parse on newer servers | AntsyLich | master `290267dd4c` [hash of tachiyomiSY, title+author] |  |
 |   | [ca3e600a25](https://github.com/jobobby04/TachiyomiSY/commit/ca3e600a258f1770e04584b48539f8e79b42a511) | tachiyomiSY | 2026-10-21 | Fix LANraragi requesting details from the extension | AntsyLich |  |  |
 |   | [27a276465e](https://github.com/jobobby04/TachiyomiSY/commit/27a276465e80e8bdf7dfd7c8d8ff2ef7cec6f580) | tachiyomiSY | 2026-10-21 | Fix delegated sources not saving metadata | AntsyLich |  |  |
 | O | [84b66cf62d](https://github.com/jobobby04/TachiyomiSY/commit/84b66cf62db7862ed9b70d402bdf5fc0808935c9) | ↳ tachiyomiSY | 2026-10-21 | Revert "Bump workflows JDK to 21 (#3053)" | AntsyLich | pick of mihon `ce5820b496` [pr+title]; master `06107dba9b` [hash of mihon, pr+title mihonapp/mihon#3053, title+author] |  |
