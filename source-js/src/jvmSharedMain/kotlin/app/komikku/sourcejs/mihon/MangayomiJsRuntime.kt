@@ -17,6 +17,8 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
 import okhttp3.OkHttpClient
 import tachiyomi.core.common.util.system.logcat
@@ -29,16 +31,21 @@ import java.util.concurrent.ConcurrentHashMap
  * ([SharedPreferencesHostPreferences], typed by the source's declared preferences once its metadata is known), its
  * console and the host's warnings to logcat.
  *
+ * Calls of all its sources run at most [concurrentCalls] at a time (each one is a JavaScript context of its own, on its
+ * own thread), next to each source's own limit ([MangayomiJsSource.DEFAULT_CONCURRENT_CALLS]).
+ *
  * The store of installed sources (I4) owns one runtime and calls [source] for each installed extension text.
  *
  * @param preferences the preference file of the source with the given Komikku id ([JsSourceIds.preferencesName]).
  * @param client the app's HTTP client, read for every request (it may be rebuilt when network settings change).
+ * @param concurrentCalls the calls that may run at once across the runtime's sources.
  */
 class MangayomiJsRuntime(
     private val preferences: (komikkuId: Long) -> SharedPreferences,
     private val client: () -> OkHttpClient,
     limits: JsHostLimits = JsHostLimits(),
     log: HostLog = LogcatHostLog,
+    concurrentCalls: Int = DEFAULT_CONCURRENT_CALLS,
 ) {
 
     /** The runtime of the app: [application]'s preference files and [network]'s client. */
@@ -50,6 +57,9 @@ class MangayomiJsRuntime(
 
     /** The sources built so far, by Mangayomi id: their metadata types the stored preferences. */
     private val sources = ConcurrentHashMap<Long, MangayomiJsSource>()
+
+    /** Shared by every source of this runtime; each source takes its own permit first. */
+    private val sharedPermits = Semaphore(concurrentCalls)
 
     private val http = HostHttp { request -> OkHttpHostHttp(client()).execute(request) }
 
@@ -71,12 +81,13 @@ class MangayomiJsRuntime(
      */
     suspend fun source(descriptor: JsSourceDescriptor, code: String, metadata: JsSourceMetadata? = null): MangayomiJsSource {
         val extension = extension(descriptor, code)
-        val initial = metadata ?: extension.metadata()
+        val initial = metadata ?: sharedPermits.withPermit { extension.metadata() }
         val source = MangayomiJsSource(
             extension = extension,
             initialMetadata = initial,
             clientProvider = client,
             preferencesProvider = { preferencesOf(descriptor) },
+            sharedPermits = sharedPermits,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )
         sources.put(descriptor.id, source)?.takeIf { it !== source }?.close()
@@ -107,5 +118,10 @@ class MangayomiJsRuntime(
             }
             logcat(priority, tag = "JS ${source.name}") { message }
         }
+    }
+
+    companion object {
+        /** Calls of all sources of one runtime that may run at once. */
+        const val DEFAULT_CONCURRENT_CALLS = 4
     }
 }

@@ -51,8 +51,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   ([JsExtension.metadata]) and cached, because Mihon reads [supportsLatest], [headers] and [getFilterList]
  *   synchronously. It is read again after the source's preferences change (they may depend on them): a change of the
  *   preference file schedules a refresh, and every call waits for a pending one ([awaitMetadata]).
- * - **Calls** run at most [permits] at a time (each one creates a JavaScript context with its own heap), on the host's
- *   threads.
+ * - **Calls** run at most [permits] at a time, and at most [sharedPermits] at a time across the runtime's sources (each
+ *   one creates a JavaScript context with its own heap), on the host's threads. The per-source permit is always taken
+ *   first, so the two limits cannot deadlock.
  * - **Failures:** an unhandled network failure of the script is rethrown as the original `IOException` (so the app
  *   shows "offline" / "unknown host" as for any source); a source without `getLatestUpdates` or `search` gives an empty
  *   page (and latest is no longer offered); everything else (also another method that is missing, called by those two)
@@ -65,6 +66,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   `HostHttp`).
  * @param preferencesProvider the source's preference file ([JsSourceIds.preferencesName]); also the store of the script's
  *   `SharedPreferences` (`MangayomiJsRuntime`) and of [setupPreferenceScreen].
+ * @param permits the calls of this source that may run at once.
+ * @param sharedPermits the calls that may run at once across the sources of one runtime (`MangayomiJsRuntime`); `null`:
+ *   no shared limit.
  * @param scope runs the metadata refreshes scheduled by preference changes; [close] cancels it.
  */
 class MangayomiJsSource(
@@ -73,6 +77,7 @@ class MangayomiJsSource(
     private val clientProvider: () -> OkHttpClient,
     private val preferencesProvider: () -> SharedPreferences,
     private val permits: Semaphore = Semaphore(DEFAULT_CONCURRENT_CALLS),
+    private val sharedPermits: Semaphore? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) : HttpSource(), ConfigurableSource {
 
@@ -151,7 +156,7 @@ class MangayomiJsSource(
         refreshLock.withLock {
             if (stale.getAndSet(false)) {
                 try {
-                    val metadata = permits.withPermit { extension.metadata() }
+                    val metadata = withPermits { extension.metadata() }
                     cached = Cached(metadata, metadata.headers.toSafeHeaders())
                     latestMissing = false
                 } catch (e: CancellationException) {
@@ -271,13 +276,18 @@ class MangayomiJsSource(
     private suspend fun <T> call(block: suspend (JsExtension) -> T): T {
         awaitMetadata()
         return try {
-            permits.withPermit { block(extension) }
+            withPermits { block(extension) }
         } catch (e: JsSourceException.BridgeError) {
             val cause = e.cause
             // The script did not handle a network failure: report it like any source's.
             if (e.channel == "http" && cause is IOException) throw cause
             throw e
         }
+    }
+
+    /** This source's permit first, then the runtime's: every path takes them in this order, so none can deadlock. */
+    private suspend fun <T> withPermits(block: suspend () -> T): T = permits.withPermit {
+        if (sharedPermits == null) block() else sharedPermits.withPermit { block() }
     }
 
     private fun JsMangaPage.toMangasPage(): MangasPage = MangasPage(list.mapNotNull { it.toSManga() }, hasNextPage)

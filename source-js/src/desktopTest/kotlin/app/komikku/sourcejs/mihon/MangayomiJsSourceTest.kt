@@ -17,6 +17,9 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.preferenceKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
@@ -27,6 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -342,6 +346,26 @@ class MangayomiJsSourceTest {
         assertNull(source.headers["X-Nul"])
     }
 
+    @Test
+    fun callsOfAllSourcesShareTheRuntimesLimit() = runBlocking {
+        val inFlight = AtomicInteger()
+        val maxInFlight = AtomicInteger()
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                maxInFlight.accumulateAndGet(inFlight.incrementAndGet(), ::maxOf)
+                Thread.sleep(400)
+                inFlight.decrementAndGet()
+                return json("[]")
+            }
+        }
+        // Three sources, two calls each: each source allows two at once, the runtime four.
+        val sources = (21L..23L).map { id -> source(SLOW, descriptor(id = id)) }
+        sources.flatMap { source -> List(2) { async(Dispatchers.IO) { source.getPopularManga(1) } } }.awaitAll()
+        // Without the runtime's limit five or six ran at once.
+        val max = maxInFlight.get()
+        assertTrue(max in 2..MangayomiJsRuntime.DEFAULT_CONCURRENT_CALLS, "at most ${MangayomiJsRuntime.DEFAULT_CONCURRENT_CALLS} at once, got $max")
+    }
+
     companion object {
         /** Popular, latest (failing), search, details, pages, filters, preferences and headers. */
         val FULL = """
@@ -401,6 +425,17 @@ class MangayomiJsSourceTest {
             class DefaultExtension extends MProvider {
               getHeaders(url) {
                 return { "X-Ok": "ok", "X-Unicode": "é", "X-Crlf": "a\r\nX-Injected: 1", "X-Nul": "a\u0000b" };
+              }
+            }
+        """.trimIndent()
+
+        /** Popular through one slow request. */
+        val SLOW = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 21 }];
+            class DefaultExtension extends MProvider {
+              async getPopular(page) {
+                await new Client().get(this.source.baseUrl.replace(/\/+$/, "") + "/slow");
+                return { list: [], hasNextPage: false };
               }
             }
         """.trimIndent()
