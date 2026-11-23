@@ -166,16 +166,34 @@ class GlobalSearchUiTest {
         hasNoText("Result for xyz") shouldBe true
         hasNoText("Failing source") shouldBe true
 
-        // All sources again, with the same query: the other sources are searched too. Like on Android the chip may
-        // only apply to the next search (the model reads the filter from its preference flow), so search again.
+        // All sources again: the chip alone searches the other sources with the same query
         onNodeWithText(MR.strings.all.localized()).performClick()
         waitUntil(timeoutMillis = 5_000) { preferences.globalSearchPinnedState().get() == SourceFilter.All }
-        waitForIdle()
-        onNodeWithContentDescription(MR.strings.action_search.localized()).performClick()
         waitForText("Result for xyz")
         waitForText("Boom from the source")
         preferences.pinnedSources().set(emptySet())
     }
+
+    @Test
+    fun `a search opened with a query runs on all sources while the stored filter is pinned only`() =
+        runDesktopComposeUiTest(width = 1280, height = 1000) {
+            // The preference default: pinned only, and no source is pinned
+            preferences.pinnedSources().set(emptySet())
+            preferences.globalSearchPinnedState().set(SourceFilter.PinnedOnly)
+            setContent { KomikkuApp(context = app) }
+
+            onNodeWithText(MR.strings.browse.localized()).performClick()
+            waitForText("Fake source")
+            // The first entry (the source may also be in the last used group)
+            onAllNodesWithText("Fake source")[0].performClick()
+            waitForText("Popular manga 1")
+            onNodeWithText("Popular manga 1").performClick()
+            waitForText("Fake description")
+            onNodeWithTag("details-title").performClick()
+            waitForText("Result for Popular manga 1")
+            waitForText("JS hit Popular manga 1")
+            preferences.globalSearchPinnedState().get() shouldBe SourceFilter.All
+        }
 
     private companion object {
         const val EMPTY = 7201L

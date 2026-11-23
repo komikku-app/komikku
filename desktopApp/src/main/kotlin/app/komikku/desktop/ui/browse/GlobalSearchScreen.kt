@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -91,10 +92,15 @@ class GlobalSearchScreen(private val searchQuery: String = "") : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { GlobalSearchScreenModel(initialQuery = searchQuery) }
         val state by model.state.collectAsState()
+        // The borrowed model reads the pinned / all filter from its preference flow, after its first search (opened
+        // with a query) and after a chip click: search again once the filter in the state changes. `search()` skips a
+        // query and filter it has already searched, so this does not search twice.
+        LaunchedEffect(state.sourceFilter) { model.search() }
+        val hasPinnedSources = remember(state.sourceFilter) { model.hasPinnedSources() }
         Column(modifier = Modifier.fillMaxSize()) {
             GlobalSearchToolbar(
                 state = state,
-                hasPinnedSources = model.hasPinnedSources(),
+                hasPinnedSources = hasPinnedSources,
                 onBack = navigator::pop,
                 onChangeSearchQuery = model::updateSearchQuery,
                 onSearch = model::search,
