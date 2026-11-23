@@ -368,6 +368,27 @@ run {
         "exh/util/CoroutineUtil.kt",
         "exh/util/LewdMangaChecker.kt",
     )
+
+    // Source toggles / pins (P1): the toggle interactors behind Android's sources tab and source filter
+    // screen, and the global search result rows.
+    shared(
+        "eu/kanade/domain/source/interactor/ToggleLanguage.kt",
+        "eu/kanade/domain/source/interactor/ToggleSource.kt",
+        "eu/kanade/domain/source/interactor/ToggleSourcePin.kt",
+        "eu/kanade/presentation/browse/components/GlobalSearchResultItems.kt",
+    )
+
+    // Enabled-sources query (uses `:source-local`, a desktop-only dependency of `:app-shared`), source
+    // filter screen model and global search screen models (P1). Desktop counterparts in
+    // app-shared/src/desktopMain: LocaleHelper (language names and order without Android's locale list),
+    // ExtensionManager (typealias of PlatformExtensionManager, see 8.1).
+    desktopCopy(
+        "eu/kanade/domain/source/interactor/GetEnabledSources.kt",
+        "eu/kanade/domain/source/interactor/GetLanguagesWithSources.kt",
+        "eu/kanade/tachiyomi/ui/browse/source/SourcesFilterScreenModel.kt",
+        "eu/kanade/tachiyomi/ui/browse/source/globalsearch/GlobalSearchScreenModel.kt",
+        "eu/kanade/tachiyomi/ui/browse/source/globalsearch/SearchScreenModel.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

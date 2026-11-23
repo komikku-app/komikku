@@ -32,7 +32,12 @@ import eu.kanade.domain.extension.interactor.RefreshExtensionStores
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.interactor.GetLanguagesWithSources
+import eu.kanade.domain.source.interactor.ToggleLanguage
+import eu.kanade.domain.source.interactor.ToggleSource
+import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.track.interactor.RefreshTracks
@@ -245,6 +250,12 @@ class DesktopDomainModule(
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetRemoteManga(get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
+        // Sources tab, source filter, pins and global search (P1): the Android interactors (borrowed)
+        addFactory { GetEnabledSources(get(), get()) }
+        addFactory { GetLanguagesWithSources(get(), get()) }
+        addFactory { ToggleLanguage(get()) }
+        addFactory { ToggleSource(get()) }
+        addFactory { ToggleSourcePin(get()) }
         addFactory { UpdateManga(get(), get()) }
         // Library text search (8.5): the SY query parser used by the borrowed LibraryFilterSort.kt
         addFactory { SearchEngine() }
