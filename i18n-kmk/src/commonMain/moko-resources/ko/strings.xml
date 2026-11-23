@@ -212,4 +212,6 @@
     <string name="pref_discord_show_discord_button_summary">Discord 서버 참여 버튼 표시</string>
     <string name="ext_update_signature_mismatch">%1$s 업데이트 실패: 설치된 확장 기능과 다른 키로 서명된 업데이트입니다</string>
     <string name="ext_store_signing_key_changed">확장 앱 스토어 %1$s의 현재 연결 대상(%2$s)이 다른 키로 서명되어 있어 업데이트하지 않았습니다. 새 스토어를 신뢰한다면 %1$s 항목을 제거한 후 다시 추가하세요.</string>
+    <string name="mangadex_session_expired_notification_title">MangaDex 세션 만료</string>
+    <string name="mangadex_session_expired_notification_text">팔로우 및 트래킹 동기화를 유지하려면 MangaDex에 다시 로그인하세요.</string>
 </resources>
