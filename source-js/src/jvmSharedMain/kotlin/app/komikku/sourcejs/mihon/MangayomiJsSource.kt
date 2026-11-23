@@ -246,7 +246,7 @@ class MangayomiJsSource(
     override fun getSourcePreferences(): SharedPreferences = preferencesProvider()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        JsPreferenceScreens.setup(screen, cached.metadata.preferences)
+        JsPreferenceScreens.setup(screen, cached.metadata.preferences, preferencesProvider())
     }
 
     // ---- Mapping ----

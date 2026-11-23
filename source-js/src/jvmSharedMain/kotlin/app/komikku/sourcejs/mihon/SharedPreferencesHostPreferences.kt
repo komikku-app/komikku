@@ -27,15 +27,11 @@ class SharedPreferencesHostPreferences(
     override fun getValue(key: String): JsPreferenceValue? {
         val stored = preferences.all[key] ?: return null
         val declaration = declared().firstOrNull { it.key == key }
+        if (!fits(stored, declaration)) return null
         return when (stored) {
-            is Boolean -> JsPreferenceValue.Bool(stored).takeIf {
-                declaration == null || declaration is JsPreference.CheckBox || declaration is JsPreference.Switch
-            }
-            is String -> JsPreferenceValue.Text(stored).takeIf {
-                declaration == null || declaration is JsPreference.List || declaration is JsPreference.EditText
-            }
+            is Boolean -> JsPreferenceValue.Bool(stored)
+            is String -> JsPreferenceValue.Text(stored)
             is Set<*> -> {
-                if (declaration != null && declaration !is JsPreference.MultiSelect) return null
                 val values = stored.filterIsInstance<String>()
                 val order = (declaration as JsPreference.MultiSelect?)?.entryValues.orEmpty()
                 JsPreferenceValue.TextSet(order.filter { it in values } + values.filterNot { it in order }.sorted())
@@ -63,5 +59,16 @@ class SharedPreferencesHostPreferences(
     companion object {
         /** Prefix of the keys of the free string store (`SharedPreferences.getString` / `setString`). */
         const val STRING_KEY_PREFIX = "mangayomi_str:"
+
+        /**
+         * Whether the [stored] value has the Android type of [declaration] (check box / switch `Boolean`, list / edit
+         * text `String`, multi-select `Set`); without a declaration every type the script can store fits.
+         */
+        fun fits(stored: Any, declaration: JsPreference?): Boolean = when (stored) {
+            is Boolean -> declaration == null || declaration is JsPreference.CheckBox || declaration is JsPreference.Switch
+            is String -> declaration == null || declaration is JsPreference.List || declaration is JsPreference.EditText
+            is Set<*> -> declaration == null || declaration is JsPreference.MultiSelect
+            else -> false
+        }
     }
 }

@@ -119,4 +119,53 @@ class JsPreferencesTest {
         assertEquals(JsPreferenceValue.Text("1"), host.getValue("list"))
         assertEquals(JsPreferenceValue.Text("xyz"), host.getValue("text"))
     }
+
+    @Test
+    fun listSummariesAreShownVerbatimOrAsTheCurrentEntry() {
+        val lists = listOf(
+            // AndroidX formats a list summary with String.format: a lone % would throw.
+            JsPreference.List("percent", title = "Quality", summary = "50% of %s", entries = listOf("Low"), entryValues = listOf("l")),
+            JsPreference.List("plain", title = "Plain", entries = listOf("One", "Two"), entryValues = listOf("1", "2"), valueIndex = 1),
+        )
+        val screen = PreferenceManager(context).apply { sharedPreferencesName = "source_1" }.createPreferenceScreen(context)
+        JsPreferenceScreens.setup(screen, lists)
+        assertEquals("50% of %s", screen.findPreference<ListPreference>("percent")!!.summary?.toString())
+        val plain = screen.findPreference<ListPreference>("plain")!!
+        assertEquals("Two", plain.summary?.toString())
+        plain.value = "1"
+        assertEquals("One", plain.summary?.toString())
+    }
+
+    @Test
+    fun storedValuesOfTheWrongTypeAreResetWhenTheScreenOpens() {
+        prefs.edit()
+            .putString("check", "yes")
+            .putString("switch", "no")
+            .putBoolean("list", true)
+            .putString("multi", "r")
+            .putInt("text", 3)
+            .commit()
+        val screen = PreferenceManager(context).apply { sharedPreferencesName = "source_1" }.createPreferenceScreen(context)
+        JsPreferenceScreens.setup(screen, declared)
+
+        // The widgets show the declared defaults, which are what the script reads now.
+        assertEquals(true, screen.findPreference<CheckBoxPreference>("check")!!.isChecked)
+        assertEquals(false, screen.findPreference<SwitchPreferenceCompat>("switch")!!.isChecked)
+        assertEquals("2", screen.findPreference<ListPreference>("list")!!.value)
+        assertEquals(setOf("b", "r"), screen.findPreference<MultiSelectListPreference>("multi")!!.values)
+        assertEquals("abc", screen.findPreference<EditTextPreference>("text")!!.text)
+        assertEquals(true, prefs.getBoolean("check", false))
+        assertEquals("2", prefs.getString("list", null))
+    }
+
+    @Test
+    fun storedValuesOfTheRightTypeAreKeptWhenTheScreenOpens() {
+        prefs.edit().putBoolean("check", false).putString("list", "1").putStringSet("multi", setOf("g")).putString("text", "kept").commit()
+        val screen = PreferenceManager(context).apply { sharedPreferencesName = "source_1" }.createPreferenceScreen(context)
+        JsPreferenceScreens.setup(screen, declared)
+        assertEquals(false, screen.findPreference<CheckBoxPreference>("check")!!.isChecked)
+        assertEquals("1", screen.findPreference<ListPreference>("list")!!.value)
+        assertEquals(setOf("g"), screen.findPreference<MultiSelectListPreference>("multi")!!.values)
+        assertEquals("kept", screen.findPreference<EditTextPreference>("text")!!.text)
+    }
 }
