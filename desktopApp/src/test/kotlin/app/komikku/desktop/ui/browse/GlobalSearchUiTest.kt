@@ -166,8 +166,12 @@ class GlobalSearchUiTest {
         hasNoText("Result for xyz") shouldBe true
         hasNoText("Failing source") shouldBe true
 
-        // All sources again, with the same query: the other sources are searched too
+        // All sources again, with the same query: the other sources are searched too. Like on Android the chip may
+        // only apply to the next search (the model reads the filter from its preference flow), so search again.
         onNodeWithText(MR.strings.all.localized()).performClick()
+        waitUntil(timeoutMillis = 5_000) { preferences.globalSearchPinnedState().get() == SourceFilter.All }
+        waitForIdle()
+        onNodeWithContentDescription(MR.strings.action_search.localized()).performClick()
         waitForText("Result for xyz")
         waitForText("Boom from the source")
         preferences.pinnedSources().set(emptySet())
