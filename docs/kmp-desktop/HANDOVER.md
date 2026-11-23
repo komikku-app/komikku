@@ -1,7 +1,7 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes and step I3, the
-source adapter, are done; I3 is not reviewed yet; see "Done" and "Left to do").
+State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3, the
+source adapter, and its review fixes are done; next is I4, the repository store and UI; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -58,6 +58,12 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   `:app` / `:desktopApp` depend on `:source-js`; ProGuard keeps `app.komikku.**` serializers. Proven headless on
   desktop (`JsSourceBrowseUiTest`: browse, details, library, settings, chapter loader); not in the source managers
   yet (I4).
+- **I3 review** (max level, 12 findings) — all fixed in `6bdcd94` … `9efd135` (PROGRESS.md "Review fixes (I3)"):
+  own download folder (`toString()` = `"<name> [JS] (<LANG>)"`, `stubName`), settings screen safe against `%` in
+  list summaries and stored values of the wrong type, empty select filters as headers, typed first metadata read,
+  only the missing member itself counts as no latest / no search, a runtime-wide call limit (4) next to the
+  per-source one (2), `http(s)`-only covers / page images, header values with control characters dropped, failed
+  metadata refreshes retried after 60 s, `exh.log` logging, the browse test closes its runtime.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -87,11 +93,12 @@ mark the residual path in both modules.
 ## Left to do (in order)
 
 1. Re-report the review's findings with their outcomes (coordinator), then decide on the residual risks above.
-2. **I3** source adapter: done (see "Done"); review it (`/code-review max c259852190^..6c45bdf10a` plus the docs
-   commit) and fix the findings. Its known gaps are listed in PROGRESS.md "I3 — source adapter".
-3. **I4** store + UI: Mangayomi repository type (index fetch, install/update/uninstall, SHA-256 at
-   install, NSFW flag, notes banner, `i18n-kmk` strings), registered in `DesktopSourceManager` and
-   `AndroidSourceManager`. Review + fix.
+2. **I3** source adapter and its review fixes: done (see "Done"). Known gaps: PROGRESS.md "I3 — source adapter" and
+   "Review fixes (I3)" (left open).
+3. **I4 (next)** repository store + UI: Mangayomi repository type (index fetch, install/update/uninstall, SHA-256 at
+   install, NSFW flag, notes banner, `i18n-kmk` strings), one `MangayomiJsRuntime` owned by the store, sources
+   registered in `DesktopSourceManager` and `AndroidSourceManager` — their stubs as
+   `StubSource(id, lang, source.stubName)` so an uninstalled source keeps its download folder. Review + fix.
 4. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 5. Desktop parity gaps (PROGRESS list): global search, source/language toggles, library grouping/batch
    actions, scheduled updates/backups, delegated sources, AVIF/JXL, WebView/Cloudflare, signing, updater.
