@@ -28,6 +28,14 @@
 -keep class eu.kanade.tachiyomi.source.online.RandomMangaSource { public protected *; }
 -keep class eu.kanade.tachiyomi.source.online.UrlImportableSource { public protected *; }
 # SY <--
+# KMK -->
+# Extensions implement ResolvableSource (extensions-lib 1.5+) and return UriType objects
+-keep class eu.kanade.tachiyomi.source.online.ResolvableSource { public protected *; }
+-keep class eu.kanade.tachiyomi.source.online.UriType { public protected *; }
+-keep class eu.kanade.tachiyomi.source.online.UriType$* { public protected *; }
+# LoginSource implementers return these constants from twoFactorAuth
+-keep class eu.kanade.tachiyomi.source.online.LoginSource$AuthSupport { public protected *; }
+# KMK <--
 
 # Final classes and top-level functions extensions only call into
 -keep,allowoptimization class eu.kanade.tachiyomi.AppInfo { public protected *; }
