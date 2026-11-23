@@ -160,8 +160,17 @@ class CoroutineLibraryUpdateRunner(
     private val onError: suspend (Manga, Throwable) -> Unit = { _, _ -> },
     private val onFinished: suspend (LibraryUpdateProgress) -> Unit = {},
     private val parallelism: Int = 3,
-    /** Called when an update starts, before it selects entries (e.g. to store the "last updated" time). */
+    /**
+     * Called when an update starts, before its progress is published (e.g. to store the "last updated" time). When it
+     * throws, [start] throws and nothing is published or started.
+     */
     private val onStarted: (LibraryUpdateRunner.Target) -> Unit = {},
+    /**
+     * Suspends until the entries can be refreshed, before selecting them (the desktop: until the source manager loaded
+     * the extension and JavaScript sources, so an update at launch does not resolve them to stubs). The progress is
+     * published (total 0) while it waits; cancelling the update ends the wait.
+     */
+    private val awaitReady: suspend () -> Unit = {},
 ) : LibraryUpdateRunner {
 
     private val _progress = MutableStateFlow<LibraryUpdateProgress?>(null)
@@ -172,10 +181,11 @@ class CoroutineLibraryUpdateRunner(
     @Synchronized
     override fun start(target: LibraryUpdateRunner.Target): Boolean {
         if (job?.isActive == true) return false
-        _progress.value = LibraryUpdateProgress(target = target, total = 0)
         onStarted(target)
+        _progress.value = LibraryUpdateProgress(target = target, total = 0)
         job = scope.launch {
             try {
+                awaitReady()
                 val selection = LibraryUpdateSelection.select(getLibrary(), target, preferences, fetchWindowUpperBound())
                 _progress.update { it?.copy(total = selection.toUpdate.size, skipped = selection.skipped.size) }
                 val semaphore = Semaphore(parallelism)
@@ -192,6 +202,14 @@ class CoroutineLibraryUpdateRunner(
                 throw e
             } finally {
                 withContext(NonCancellable) { _progress.value?.let { onFinished(it) } }
+            }
+        }
+        // Cancelled before its body started (an immediate cancel): the body's handler never ran, end the progress here
+        // so whoever waits for it is released. A later update has its own progress object.
+        val started = _progress.value
+        job?.invokeOnCompletion { cause ->
+            if (cause != null) {
+                _progress.compareAndSet(started, started?.copy(finished = true, cancelled = true))
             }
         }
         return true

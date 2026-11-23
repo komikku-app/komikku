@@ -6,11 +6,14 @@ import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.library.LibraryUpdateSelection
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -146,6 +149,64 @@ class LibraryUpdateRunnerTest {
         progress.failed.map { it.first.id } shouldBe listOf(3L)
         errors shouldBe listOf(3L)
         progress.cancelled shouldBe false
+        Unit
+    }
+
+    @Test
+    fun `the runner waits until the sources are ready before it selects entries`() = runBlocking {
+        prefs.autoUpdateMangaRestrictions().set(emptySet())
+        val ready = CompletableDeferred<Unit>()
+        var libraryReads = 0
+        val runner = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            getLibrary = {
+                libraryReads++
+                listOf(entry(1))
+            },
+            preferences = prefs,
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { 1 },
+            awaitReady = { ready.await() },
+        )
+        runner.start(LibraryUpdateRunner.Target.All) shouldBe true
+        delay(200)
+        libraryReads shouldBe 0
+        runner.progress.value?.finished shouldBe false
+        ready.complete(Unit)
+        val progress = withTimeout(10_000) { runner.progress.first { it?.finished == true }!! }
+        libraryReads shouldBe 1
+        progress.done shouldBe 1
+        // Cancelling while it waits ends the update as cancelled
+        val never = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            getLibrary = { listOf(entry(1)) },
+            preferences = prefs,
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { 1 },
+            awaitReady = { awaitCancellation() },
+        )
+        never.start(LibraryUpdateRunner.Target.All) shouldBe true
+        never.cancel()
+        withTimeout(10_000) { never.progress.first { it?.finished == true }!! }.cancelled shouldBe true
+        Unit
+    }
+
+    @Test
+    fun `a throwing onStarted publishes no progress and starts nothing`() = runBlocking {
+        var fail = true
+        val runner = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            getLibrary = { listOf(entry(1)) },
+            preferences = prefs,
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { 1 },
+            onStarted = { if (fail) error("preference store broken") },
+        )
+        shouldThrow<IllegalStateException> { runner.start(LibraryUpdateRunner.Target.All) }
+        runner.progress.value shouldBe null
+        fail = false
+        runner.start(LibraryUpdateRunner.Target.All) shouldBe true
+        withTimeout(10_000) { runner.progress.first { it?.finished == true } }
         Unit
     }
 }
