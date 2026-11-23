@@ -79,6 +79,19 @@ class ErrorClassInjectionTest {
     }
 
     @Test
+    fun textsThatCloseASyncWrapperDoNotReachTheJvm() = runBlocking {
+        // A sync wrapper parsed `await /"/g` as a division, so the string closed it and the throw ran at the top level.
+        // Self-contained (the escaped code runs outside the wrapper, where the text's own declarations do not exist)
+        // and without double quotes, which would end the string literal the check sees.
+        val path = "'" + File(directory, "escaped").absolutePath.replace("\\", "\\\\").replace("'", "\\'") + "'"
+        val code = "await /\"/g; \"}); var e = new Error($path); e.name = 'java.io.FileOutputStream'; throw e; " +
+            "__kmk_define(function () {\"; /\"/g;\n" +
+            "class DefaultExtension extends MProvider { async getPopular(page) { return { list: [] }; } }\n"
+        runCatching { TestHost().extension(code).getPopular(1) }
+        assertFalse(file("escaped").exists())
+    }
+
+    @Test
     fun errorsPassedToTheBridgeDoNotReachTheJvm() {
         attack(
             """

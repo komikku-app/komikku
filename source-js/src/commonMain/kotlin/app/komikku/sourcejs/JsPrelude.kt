@@ -41,6 +41,7 @@ const StringCtor = String;
 const NumberCtor = Number;
 const ErrorCtor = Error;
 const PromiseCtor = Promise;
+const ReflectApply = Reflect.apply;
 const ObjectCreate = Object.create;
 const ObjectDefineProperty = Object.defineProperty;
 const ObjectGetPrototypeOf = Object.getPrototypeOf;
@@ -469,7 +470,9 @@ async function run(member, argsJson, mode) {
       const factory = defineExtension;
       defineExtension = null;
       if (factory === null) throw new ErrorCtor("The extension did not load");
-      ProviderClass = factory();
+      // The extension's top-level code runs with `this` = the global object, as in Mangayomi's global script.
+      const defined = await ReflectApply(factory, global, []);
+      ProviderClass = defined.value;
       provider = new ProviderClass();
       defineGlobal("extention", provider);
       sync("loaded", "");
@@ -536,12 +539,20 @@ ObjectPreventExtensions(ObjectPrototype);
     val text: String = "(function () {\n$CORE$LANGUAGE$CLIENT$DOM$UTILS$PREFERENCES$PROVIDER$ENTRY})();\n"
 
     /**
-     * The extension text as the body of the function handed to `__kmk_define`: its top-level declarations stay
-     * visible to each other, a top-level throw happens inside the entry's `try`, and the line numbers are those of
-     * the file. The host compiles [code] alone first, so a syntax error is reported as such and the text cannot close
-     * the function early.
+     * The extension text as the body of the async function handed to `__kmk_define`, which the entry calls with
+     * `this` = the global object and awaits: its top-level declarations stay visible to each other (they are not
+     * properties of `globalThis`, unlike in Mangayomi's global script), a top-level throw happens inside the
+     * entry's `try`, and the line numbers are those of the file.
+     *
+     * The host compiles [code] alone first, as an async script (quickjs-kt's only grammar), so a syntax error is
+     * reported as such, and the body of an async function has the same grammar (`await` is a keyword in both), so
+     * the text cannot close the function early. The body starts with `await undefined;`: the text runs only once
+     * the entry awaits the function's promise, so a throw before the text's first `await` rejects a promise that
+     * already has a handler (quickjs-kt converts unhandled rejections natively). As a consequence a leading
+     * `"use strict"` of the text is not a directive (the text runs in sloppy mode).
      */
-    fun wrapExtension(code: String): String = "__kmk_define(function () {$code\n;return DefaultExtension;\n});\n"
+    fun wrapExtension(code: String): String =
+        "__kmk_define(async function () {await undefined;$code\n;return { __proto__: null, value: DefaultExtension };\n});\n"
 
     /**
      * The call script: `member` with the JSON array [argsJson], `mode` one of `async`, `sync`, `getter`,
