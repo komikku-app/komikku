@@ -139,11 +139,12 @@ class HistoryScreenModel(
             // Resume the top entry of the history list with the current search query and filters, not the latest
             // history: that one ignores them, so it can be a manga the list hides. Without filters or search, both
             // are the same entry. Query the database instead of reading `state.list`, which lags behind a search or
-            // filter change and never loads if the history query fails.
+            // filter change and never loads if the history query fails. If this query fails, fall back to the list
+            // on screen, which a failed query leaves as it was.
             val latestHistory = subscribeHistory(state.value.searchQuery, getHistoryItemPreferenceFlow().first())
                 .catch { error ->
                     logcat(LogPriority.ERROR, error)
-                    emit(emptyList())
+                    emit(state.value.list)
                 }
                 .first()
                 .firstOrNull()
