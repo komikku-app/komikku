@@ -41,6 +41,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.shared.jssource.JsSourceNotesBanner
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -90,13 +92,16 @@ class CatalogueScreen(private val sourceId: Long) : Screen() {
             if (source !is CatalogueSource) {
                 EmptyScreen(stringRes = KMR.strings.desktop_source_not_installed)
             } else {
-                CatalogueContent(
-                    state = state,
-                    supportsLatest = source.supportsLatest,
-                    onMode = model::setMode,
-                    onLoadMore = model::loadMore,
-                    onClick = { navigator.push(MangaDetailsScreen(it.id)) },
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    (source as? MangayomiJsSource)?.descriptor?.notes?.takeIf { it.isNotBlank() }?.let { JsSourceNotesBanner(it) }
+                    CatalogueContent(
+                        state = state,
+                        supportsLatest = source.supportsLatest,
+                        onMode = model::setMode,
+                        onLoadMore = model::loadMore,
+                        onClick = { navigator.push(MangaDetailsScreen(it.id)) },
+                    )
+                }
             }
         }
     }

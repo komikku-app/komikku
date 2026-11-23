@@ -1,7 +1,9 @@
 package app.komikku.desktop.ui.browse
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,7 +24,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import app.komikku.shared.jssource.JsSourceLabel
+import app.komikku.shared.jssource.JsSourcesScreenModel
+import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -42,21 +49,24 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
 
-/** Browse home: Sources / Extensions tabs, like Android's Browse screen. */
+/** Browse home: Sources / Extensions tabs, like Android's Browse screen, and the JavaScript sources (I4). */
 data object BrowseHomeScreen : Screen() {
 
     @Composable
     override fun Content() {
         val extensionsModel = rememberScreenModel { ExtensionsScreenModel() }
+        val jsSourcesModel = rememberScreenModel { JsSourcesScreenModel() }
         var selected by rememberSaveable { mutableIntStateOf(0) }
         Column(modifier = Modifier.fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = selected) {
                 Tab(selected = selected == 0, onClick = { selected = 0 }, text = { Text(stringResource(MR.strings.label_sources)) })
                 Tab(selected = selected == 1, onClick = { selected = 1 }, text = { Text(stringResource(MR.strings.label_extensions)) })
+                Tab(selected = selected == 2, onClick = { selected = 2 }, text = { Text(stringResource(KMR.strings.js_sources)) })
             }
             when (selected) {
                 0 -> SourcesPane()
-                else -> ExtensionsPane(extensionsModel)
+                1 -> ExtensionsPane(extensionsModel)
+                else -> JsSourcesPane(jsSourcesModel)
             }
         }
     }
@@ -83,10 +93,16 @@ private fun SourcesPane() {
                 byLanguage.forEach { (lang, langSources) ->
                     item(key = "header-$lang") { ListGroupHeader(text = languageName(lang)) }
                     items(items = langSources, key = { it.id }) { source ->
-                        val configurable = sourceManager.get(source.id) is ConfigurableSource
+                        val live = sourceManager.get(source.id)
+                        val configurable = live is ConfigurableSource
                         ListItem(
                             modifier = Modifier.clickable { navigator.push(CatalogueScreen(source.id)) },
-                            headlineContent = { Text(text = source.name) },
+                            headlineContent = {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(text = source.name)
+                                    if (live is MangayomiJsSource) JsSourceLabel()
+                                }
+                            },
                             leadingContent = {
                                 Icon(
                                     imageVector = if (source.isLocal()) Icons.Outlined.Folder else Icons.Outlined.Public,

@@ -304,6 +304,7 @@ private fun AddRepositoryDialog(model: JsSourcesScreenModel) {
         },
         confirmButton = {
             TextButton(
+                modifier = Modifier.testTag(TAG_ADD_REPOSITORY_CONFIRM),
                 enabled = url.isNotBlank() && !adding,
                 onClick = {
                     adding = true
@@ -369,13 +370,17 @@ private fun ConfirmInstallDialog(download: JsSourceDownload, model: JsSourcesScr
             }
         },
         confirmButton = {
-            TextButton(onClick = { model.confirmInstall(download) }) {
+            TextButton(onClick = { model.confirmInstall(download) }, modifier = Modifier.testTag(TAG_INSTALL_CONFIRM)) {
                 Text(stringResource(if (download.isUpdate) MR.strings.ext_update else MR.strings.ext_install))
             }
         },
         dismissButton = { TextButton(onClick = model::dismissDialog) { Text(stringResource(MR.strings.action_cancel)) } },
     )
 }
+
+/** Test tags of the dialogs' confirm buttons (their texts also appear in the list behind them). */
+const val TAG_ADD_REPOSITORY_CONFIRM = "js-source-add-repository-confirm"
+const val TAG_INSTALL_CONFIRM = "js-source-install-confirm"
 
 /** The user-facing text of a store failure. */
 @Composable
