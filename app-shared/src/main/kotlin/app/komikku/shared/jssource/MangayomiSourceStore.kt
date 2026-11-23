@@ -523,19 +523,30 @@ class MangayomiSourceStore(
 
     private suspend fun fetchText(url: String, limit: Long): String = fetchBytes(url, limit).decodeToString()
 
-    private suspend fun fetchBytes(url: String, limit: Long): ByteArray {
-        val request = GET(checkedUrl(url), cache = CacheControl.FORCE_NETWORK)
-        return withContext(Dispatchers.IO) {
+    /**
+     * GET [url] (no cache) into memory, at most [limit] bytes. Redirects are followed here, at most
+     * [MAX_REDIRECTS], each target checked by [allowUrl] before it is requested.
+     */
+    private suspend fun fetchBytes(url: String, limit: Long): ByteArray = withContext(Dispatchers.IO) {
+        val noRedirects = client().newBuilder().followRedirects(false).followSslRedirects(false).build()
+        var target = checkedUrl(url)
+        repeat(MAX_REDIRECTS + 1) { _ ->
             val response = try {
-                client().newCall(request).await()
+                noRedirects.newCall(GET(target, cache = CacheControl.FORCE_NETWORK)).await()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IOException) {
                 throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: ${e.message}", e)
             }
             response.use {
-                if (!allowUrl(it.request.url)) {
-                    throw JsSourceStoreException(Reason.INSECURE_URL, "$url redirected to ${it.request.url}, which is not https")
+                if (it.isRedirect) {
+                    val location = it.header("Location")?.let(it.request.url::resolve)
+                        ?: throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: bad redirect")
+                    if (!allowUrl(location)) {
+                        throw JsSourceStoreException(Reason.INSECURE_URL, "$url redirected to $location, which is not https")
+                    }
+                    target = location
+                    return@use null
                 }
                 if (!it.isSuccessful) {
                     throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: HTTP ${it.code}")
@@ -551,12 +562,16 @@ class MangayomiSourceStore(
                 } catch (e: IOException) {
                     throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: ${e.message}", e)
                 }
-            }
+            }?.let { return@withContext it }
         }
+        throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: more than $MAX_REDIRECTS redirects")
     }
 
     companion object {
         const val DIRECTORY = "mangayomi-js"
         const val MANIFEST = "manifest.json"
+
+        /** Redirects followed by one download. */
+        const val MAX_REDIRECTS = 5
     }
 }
