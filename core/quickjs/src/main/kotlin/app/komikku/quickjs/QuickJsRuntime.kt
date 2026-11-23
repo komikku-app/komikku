@@ -4,6 +4,8 @@ import app.cash.quickjs.QuickJsException
 import com.dokar.quickjs.binding.FunctionBinding
 import com.dokar.quickjs.binding.JsObject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
@@ -41,6 +43,10 @@ internal class QuickJsRuntime private constructor(
     /** Whether [completionHelperScript] ran in this runtime (engine thread). */
     private var completionHelperInstalled = false
 
+    /** The coroutine of the evaluation in progress, cancelled by [close] (set on the engine thread). */
+    @Volatile
+    private var running: Job? = null
+
     fun evaluate(script: String, fileName: String): Outcome = call {
         installCompletionHelper()
         try {
@@ -70,9 +76,9 @@ internal class QuickJsRuntime private constructor(
     }
 
     /** Engine thread. */
-    private fun installCompletionHelper() {
+    private suspend fun installCompletionHelper() {
         if (completionHelperInstalled) return
-        runBlocking { engine.evaluate<Any?>(completionHelperScript(), "?") }
+        engine.evaluate<Any?>(completionHelperScript(), "?")
         completionHelperInstalled = true
     }
 
@@ -97,7 +103,7 @@ internal class QuickJsRuntime private constructor(
         val outcome = call {
             val rawName = hiddenName()
             engine.defineBinding(rawName, FunctionBinding { args -> dispatch(target, specs, args) })
-            runBlocking { engine.evaluate<Any?>(setScript(rawName, name, specs), "?") }
+            engine.evaluate<Any?>(setScript(rawName, name, specs), "?")
         }
         if (outcome is Outcome.Value && outcome.value == false) {
             throw IllegalArgumentException("A global object called $name already exists")
@@ -107,9 +113,7 @@ internal class QuickJsRuntime private constructor(
 
     /** `QuickJs.get` once the interface was validated: checks the global [name] and returns a proxy of [type]. */
     fun <T> get(name: String, type: Class<T>, specs: List<MethodSpec>): Outcome {
-        val outcome = call {
-            runBlocking { engine.evaluate<Any?>(getCheckScript(name, specs.map { it.method.name }), "?") }
-        }
+        val outcome = call { engine.evaluate<Any?>(getCheckScript(name, specs.map { it.method.name }), "?") }
         if (outcome !is Outcome.Value) return outcome
         val status = outcome.value as? String ?: "notobject"
         when {
@@ -137,12 +141,17 @@ internal class QuickJsRuntime private constructor(
         return Outcome.Value(Proxy.newProxyInstance(type.classLoader, arrayOf(type), handler))
     }
 
-    /** Closes the runtime after the calls already queued, waits for it and ends the engine thread. */
+    /**
+     * Closes the runtime, waits for it and ends the engine thread. The evaluation in progress is cancelled (quickjs-kt
+     * interrupts busy JavaScript and stops waiting for pending jobs) and throws the closed-instance
+     * `NullPointerException`, like every call that was queued but had not started.
+     */
     fun close() {
         if (thread.isCurrent && bindingDepth > 0) {
             throw IllegalStateException("Cannot close QuickJs from within a Java method bound with set()")
         }
         if (!closed.compareAndSet(false, true)) return
+        running?.cancel()
         try {
             thread.run { EngineLifecycle.close(engine) }
         } catch (_: RejectedExecutionException) {
@@ -171,12 +180,7 @@ internal class QuickJsRuntime private constructor(
             val invoker = invokerName ?: installInvoker()
             proxyArguments = arguments
             try {
-                runBlocking {
-                    engine.evaluate<Any?>(
-                        "$invoker(${jsString(name)}, ${jsString(spec.method.name)}, ${spec.result.js})",
-                        "?",
-                    )
-                }
+                engine.evaluate<Any?>("$invoker(${jsString(name)}, ${jsString(spec.method.name)}, ${spec.result.js})", "?")
             } finally {
                 proxyArguments = emptyList()
             }
@@ -191,11 +195,11 @@ internal class QuickJsRuntime private constructor(
     }
 
     /** Engine thread. */
-    private fun installInvoker(): String {
+    private suspend fun installInvoker(): String {
         val pullName = hiddenName()
         val name = hiddenName()
         engine.defineBinding(pullName, FunctionBinding { proxyArguments })
-        runBlocking { engine.evaluate<Any?>(invokerScript(pullName, name), "?") }
+        engine.evaluate<Any?>(invokerScript(pullName, name), "?")
         invokerName = name
         return name
     }
@@ -242,8 +246,11 @@ internal class QuickJsRuntime private constructor(
         }
     }
 
-    /** Runs a JavaScript evaluation on the engine thread and turns failures into an [Outcome]. */
-    private fun call(block: () -> Any?): Outcome = onEngine {
+    /**
+     * Runs a JavaScript evaluation on the engine thread as a coroutine [close] can cancel, and turns failures into an
+     * [Outcome]; once the runtime is closed every failure is the closed-instance exception.
+     */
+    private fun call(block: suspend () -> Any?): Outcome = onEngine {
         ensureOpen()
         if (bindingDepth > 0) {
             throw UnsupportedOperationException(
@@ -252,8 +259,20 @@ internal class QuickJsRuntime private constructor(
         }
         pendingJavaException = null
         try {
-            Outcome.Value(block())
+            Outcome.Value(
+                runBlocking {
+                    running = coroutineContext.job
+                    try {
+                        // close() sets `closed` before reading `running`: one of the two sees the other.
+                        ensureOpen()
+                        block()
+                    } finally {
+                        running = null
+                    }
+                },
+            )
         } catch (e: Throwable) {
+            if (closed.get()) throw closedException()
             failure(e)
         } finally {
             pendingJavaException = null
@@ -378,9 +397,9 @@ internal class QuickJsRuntime private constructor(
          * raw value went through quickjs-kt's own conversion, whose failures are told apart from the script's by
          * where the exception was made ([isConversionFailure]).
          */
-        private fun evaluateToJava(evaluation: suspend () -> Any?): Any? {
+        private suspend fun evaluateToJava(evaluation: suspend () -> Any?): Any? {
             val value = try {
-                runBlocking { evaluation() }
+                evaluation()
             } catch (e: Throwable) {
                 // quickjs-java returned null for the values quickjs-kt fails to convert (top level only).
                 if (e !is CancellationException && isConversionFailure(e)) return null

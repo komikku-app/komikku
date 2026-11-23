@@ -82,7 +82,10 @@ class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeab
     fun execute(bytecode: ByteArray?): Any? =
         runtime.execute(bytecode ?: throw NullPointerException("bytecode == null")).unwrap()
 
-    /** Releases the engine and its thread. Idempotent; later calls throw `NullPointerException`, as before. */
+    /**
+     * Releases the engine and its thread. Idempotent; later calls throw `NullPointerException`, as before. A call
+     * running on another thread is cancelled (its script is interrupted) and throws that exception too.
+     */
     override fun close() {
         runtime.close()
     }
