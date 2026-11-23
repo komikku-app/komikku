@@ -19,6 +19,11 @@ import java.io.Closeable
  */
 class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeable {
 
+    init {
+        // Keeps this instance alive while its runtime is in use (calls in flight, `get` proxies), see QuickJsRuntime.
+        runtime.owner = this
+    }
+
     /**
      * Evaluates [script] and returns its completion value; [fileName] is used in error reporting.
      *
@@ -90,7 +95,10 @@ class QuickJs private constructor(private val runtime: QuickJsRuntime) : Closeab
         runtime.close()
     }
 
-    /** Frees an instance that was never closed (quickjs-java only logged the leak). */
+    /**
+     * Frees an instance that was never closed (quickjs-java only logged the leak). Runs only once no call is in
+     * flight and no `get` proxy is reachable.
+     */
     protected fun finalize() {
         runtime.closeLeaked()
     }

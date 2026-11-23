@@ -28,6 +28,14 @@ internal class QuickJsRuntime private constructor(
 ) {
     private val closed = AtomicBoolean(false)
 
+    /**
+     * The `app.cash.quickjs.QuickJs` this runtime belongs to. Whatever reaches the runtime (a call in flight, which the
+     * engine thread's queue holds; a `get` proxy's invocation handler) thus keeps the wrapper reachable, so its
+     * finalizer cannot close the runtime under them; the pair is still collected together once neither is reachable.
+     */
+    @Volatile
+    var owner: Any? = null
+
     /** Java exception thrown by (or recorded for) a `set` binding during the current call (engine thread). */
     private var pendingJavaException: Throwable? = null
 
