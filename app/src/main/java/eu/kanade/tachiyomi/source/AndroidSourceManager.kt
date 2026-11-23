@@ -31,11 +31,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
@@ -75,9 +78,12 @@ class AndroidSourceManager(
     // KMK -->
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
 
-    /** Installed Mangayomi JavaScript sources; none when their store cannot start. */
-    private val jsSources: StateFlow<List<MangayomiJsSource>> by lazy {
-        MangayomiSourceStore.sourcesOrEmpty { Injekt.get() }
+    /**
+     * Installed Mangayomi JavaScript sources; `null` until the store loaded them (at most
+     * [MangayomiSourceStore.LOAD_TIMEOUT_MILLIS]), none when their store cannot start.
+     */
+    private val jsSources: StateFlow<List<MangayomiJsSource>?> by lazy {
+        MangayomiSourceStore.sourcesOrEmpty { Injekt.get() }.stateIn(scope, SharingStarted.Eagerly, null)
     }
     // KMK <--
 
@@ -92,8 +98,9 @@ class AndroidSourceManager(
                 .combine(
                     exhPreferences.isHentaiEnabled().changes(),
                 ) { (a, b), c -> Triple(a, b, c) }
-                // Rebuild when JavaScript sources are loaded, installed or removed (read below).
-                .combine(jsSources) { state, _ -> state }
+                // Rebuild when JavaScript sources are loaded, installed or removed (read below). Waits for the
+                // store's first list, so isInitialized is not set while installed JavaScript sources are missing.
+                .combine(jsSources.filterNotNull()) { state, _ -> state }
                 // KMK <--
                 // SY <--
                 .collectLatest { (extensions, enableExhentai/* KMK --> */, isHentaiEnabled/* KMK <-- */) ->
@@ -133,7 +140,7 @@ class AndroidSourceManager(
                     }
                     // KMK -->
                     // Stubs keep the "[JS]" name, so an uninstalled source keeps its download folder.
-                    jsSources.value.forEach {
+                    jsSources.value.orEmpty().forEach {
                         if (mutableMap.containsKey(it.id)) return@forEach
                         mutableMap[it.id] = it
                         registerStubSource(StubSource(id = it.id, lang = it.lang, name = it.stubName))

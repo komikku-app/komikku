@@ -40,7 +40,9 @@ import java.util.concurrent.ConcurrentHashMap
  * available extensions' metadata.
  *
  * Installed Mangayomi JavaScript sources ([jsSources], from the JavaScript source store) are added after the
- * extensions' sources; their stubs are named [MangayomiJsSource.stubName].
+ * extensions' sources; their stubs are named [MangayomiJsSource.stubName]. The manager is initialized only once
+ * [jsSources] gave its first list (`MangayomiSourceStore.sourcesOrEmpty` gives it once the store loaded its sources,
+ * at most after its timeout), so an installed JavaScript source is not taken for a missing one at start-up.
  *
  * Not on desktop (yet): SY's built-in E-Hentai / merged sources and delegated (enhanced) sources,
  * which live in the Android app.
@@ -63,7 +65,7 @@ class DesktopSourceManager(
 
     private val stubSources = ConcurrentHashMap<Long, StubSource>()
 
-    private val _isInitialized = MutableStateFlow(extensionManager == null)
+    private val _isInitialized = MutableStateFlow(extensionManager == null && jsSources == null)
     override val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     override val sources: Flow<List<Source>> = sourcesMap.map { it.values.toList() }

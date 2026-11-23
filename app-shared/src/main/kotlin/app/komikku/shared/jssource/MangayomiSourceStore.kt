@@ -32,7 +32,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -41,11 +44,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.File
 import java.io.IOException
 import java.nio.file.AtomicMoveNotSupportedException
@@ -63,9 +69,11 @@ import java.nio.file.StandardCopyOption
  *   `code/<sha256>.js` (texts, shared by entries of one file) and `icons/<id>`. Every write goes to a temporary file
  *   that is then renamed over the old one. A manifest that cannot be read is set aside (`manifest.json.corrupt-<time>`)
  *   and the store starts empty, with a warning in the log; no SQL is involved.
- * - **Sources** ([sources]) are built through [runtime] once the files are read (in the background: start-up never
- *   waits for the store) — a text that fails to load is reported in [items] and left out, never thrown. Sources marked
- *   NSFW are left out while [showNsfw] is false.
+ * - **Sources** ([sources]) are built through [runtime] once the files are read (in the background; the source
+ *   managers wait for that through [sourcesOrEmpty], at most [LOAD_TIMEOUT_MILLIS]) — a text that fails to load is
+ *   reported in [items] and left out, never thrown. Sources marked NSFW are left out while [showNsfw] is false.
+ * - **Failures** are [JsSourceStoreException]s, file errors included ([Reason.STORAGE_FAILED]); an install, update or
+ *   uninstall that fails changes nothing (the installed version stays in use).
  * - **Trust:** only `https` URLs are fetched (repositories, code, icons; also after redirects); files have size limits
  *   ([Limits]). Installing is two steps: [download] fetches the text and gives its host and SHA-256 for the user to
  *   confirm, [install] fetches it again and installs it only if it still has the confirmed SHA-256. For installed
@@ -137,9 +145,16 @@ class MangayomiSourceStore(
     private val showNsfw: StateFlow<Boolean> = showNsfw.stateIn(scope, SharingStarted.Eagerly, true)
 
     /** The usable sources (installed, loaded, and not NSFW while those are hidden), for the source managers. */
-    val sources: StateFlow<List<MangayomiJsSource>> = combine(loaded, this.showNsfw) { sources, nsfw ->
-        sources.values.filter { nsfw || !it.descriptor.isNsfw }.sortedBy { it.id }
-    }.stateIn(scope, SharingStarted.Eagerly, emptyList())
+    val sources: StateFlow<List<MangayomiJsSource>> = combine(loaded, this.showNsfw, ::usable)
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * [sources], or `null` until the installed sources were loaded (or failed to load) once. The current values are
+     * read when [isLoaded] turns true (the loaded sources are published before it), so the first list is complete.
+     */
+    val loadedSources: StateFlow<List<MangayomiJsSource>?> = combine(loaded, this.showNsfw, _isLoaded) { _, _, isLoaded ->
+        if (isLoaded) usable(loaded.value, this.showNsfw.value) else null
+    }.stateIn(scope, SharingStarted.Eagerly, null)
 
     /** The added repositories, sorted by URL, with what their last read found. */
     val repositories: Flow<List<JsSourceRepository>> = combine(preferences.repositories().changes(), listings) { urls, listings ->
@@ -194,6 +209,9 @@ class MangayomiSourceStore(
     init {
         scope.launch { load() }
     }
+
+    private fun usable(sources: Map<Long, MangayomiJsSource>, nsfw: Boolean): List<MangayomiJsSource> =
+        sources.values.filter { nsfw || !it.descriptor.isNsfw }.sortedBy { it.id }
 
     // ---- Repositories ----
 
@@ -660,15 +678,41 @@ class MangayomiSourceStore(
             showNsfw = sourcePreferences.showNsfwSource().changes(),
         )
 
+        /** How long the source managers wait for the installed sources at start-up ([sourcesOrEmpty]). */
+        const val LOAD_TIMEOUT_MILLIS = 15_000L
+
         /**
-         * [MangayomiSourceStore.sources] of the store [store] gives, or no sources when the store cannot be built, so
-         * the source managers keep working without JavaScript sources.
+         * The sources of the store [store] gives, for the source managers: the first list comes once the installed
+         * sources were loaded ([loadedSources]), so a manager that waits for it before it counts as initialized does
+         * not take an installed source for a missing one (a queued download, the download cache, the reader). The
+         * wait is bounded: after [loadTimeoutMillis] the first list is empty (logged) and the sources follow when
+         * loaded. A store that cannot be built counts as loaded without sources, so the managers keep working.
          */
-        fun sourcesOrEmpty(store: () -> MangayomiSourceStore): StateFlow<List<MangayomiJsSource>> = try {
-            store().sources
+        fun sourcesOrEmpty(
+            loadTimeoutMillis: Long = LOAD_TIMEOUT_MILLIS,
+            store: () -> MangayomiSourceStore,
+        ): Flow<List<MangayomiJsSource>> {
+            val sources = try {
+                store().loadedSources
+            } catch (e: Throwable) {
+                xLogE("The JavaScript source store could not be started; no JavaScript sources", e)
+                return flowOf(emptyList())
+            }
+            return flow {
+                if (withTimeoutOrNull(loadTimeoutMillis) { sources.first { it != null } } == null) {
+                    xLogW("The JavaScript sources were not loaded after $loadTimeoutMillis ms; starting without them")
+                    emit(emptyList())
+                }
+                emitAll(sources.filterNotNull())
+            }
+        }
+
+        /** The app's store (DI), or `null` when it cannot be built (logged), for the screens that show it. */
+        fun getOrNull(): MangayomiSourceStore? = try {
+            Injekt.get<MangayomiSourceStore>()
         } catch (e: Throwable) {
-            xLogE("The JavaScript source store could not be started; no JavaScript sources", e)
-            MutableStateFlow(emptyList())
+            xLogE("The JavaScript source store could not be started", e)
+            null
         }
     }
 }
