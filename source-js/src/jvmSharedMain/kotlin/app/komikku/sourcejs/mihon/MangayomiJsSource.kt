@@ -58,7 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   page (and latest is no longer offered); everything else (also another method that is missing, called by those two)
  *   is the [JsSourceException], whose message names the source, the operation and the cause.
  * - **Pages** carry the image URL and the page's own headers in `Page.url` ([JsPageRef]); [imageRequest] sends the
- *   source headers plus the page headers.
+ *   source headers plus the page headers. Covers and page images must be `http(s)` URLs (or protocol-relative / paths
+ *   resolved against [baseUrl]): another cover is dropped, another page image fails that page.
  *
  * @param clientProvider the app's HTTP client for images and covers (the script's own requests go through the host's
  *   `HostHttp`).
@@ -212,22 +213,34 @@ class MangayomiJsSource(
         )
     }
 
+    /**
+     * The pages with their image URLs resolved. A page whose image is not an `http(s)` URL (`data:`, `file:`, …) keeps
+     * its place without `Page.imageUrl`, so loading it fails with a clear error ([getImageUrl]) instead of the chapter.
+     */
     override suspend fun getPageList(chapter: SChapter): List<Page> =
         call { it.getPageList(chapter.url) }
-            .mapNotNull { page -> JsSourceUrls.resolveCoverUrl(baseUrl, page.url)?.let { JsPageRef(it, page.headers) } }
+            .filter { it.url.isNotBlank() }
+            .map { page -> JsPageRef(JsSourceUrls.resolveCoverUrl(baseUrl, page.url) ?: page.url, page.headers) }
             .distinctBy { it.url }
-            .mapIndexed { index, page -> Page(index, url = page.encode(), imageUrl = page.url) }
+            .mapIndexed { index, page -> Page(index, url = page.encode(), imageUrl = page.url.takeIf(JsSourceUrls::isHttpUrl)) }
 
-    /** Only needed when `Page.imageUrl` was cleared: the URL kept in `Page.url`. */
-    override suspend fun getImageUrl(page: Page): String =
-        JsPageRef.decode(page.url)?.url ?: throw IllegalStateException("Not a page of the JavaScript source $name: ${page.url}")
+    /** Only needed when `Page.imageUrl` was cleared or never set: the URL kept in `Page.url`, if it is `http(s)`. */
+    override suspend fun getImageUrl(page: Page): String = storedImageUrl(page, JsPageRef.decode(page.url))
 
     /** [headers] plus the page's own headers (which win), for `Page.imageUrl` (the data saver may have changed it). */
     override fun imageRequest(page: Page): Request {
         val ref = JsPageRef.decode(page.url)
-        val url = page.imageUrl ?: ref?.url ?: throw IllegalStateException("Page ${page.index} of $name has no image URL")
+        val url = page.imageUrl ?: storedImageUrl(page, ref)
         val headers = if (ref == null || ref.headers.isEmpty()) headers else headers.newBuilder().setSafely(ref.headers).build()
         return GET(url, headers)
+    }
+
+    private fun storedImageUrl(page: Page, ref: JsPageRef?): String {
+        val url = ref?.url ?: throw IllegalStateException("Not a page of the JavaScript source $name: ${page.url}")
+        check(JsSourceUrls.isHttpUrl(url)) {
+            "Page ${page.index + 1} of $name has an unsupported image URL (only http and https): ${url.take(MAX_URL_IN_MESSAGE)}"
+        }
+        return url
     }
 
     // ---- Web pages (WebView, share): links that are not URLs or paths open the home page ----
@@ -335,5 +348,8 @@ class MangayomiJsSource(
 
         /** Calls of one source that may run at once (each holds a JavaScript context of up to 64 MiB). */
         const val DEFAULT_CONCURRENT_CALLS = 2
+
+        /** Characters of an unsupported image URL quoted in an error (a `data:` URL can be megabytes). */
+        private const val MAX_URL_IN_MESSAGE = 64
     }
 }

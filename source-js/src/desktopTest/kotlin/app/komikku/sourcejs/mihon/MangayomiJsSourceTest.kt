@@ -253,8 +253,15 @@ class MangayomiJsSourceTest {
     fun pagesCarryTheirHeadersToTheImageRequest() = runBlocking {
         val source = source()
         val pages = source.getPageList(SChapter.create().apply { url = "/c/2" })
-        assertEquals(listOf("${base}img/1.jpg", "${base}img/2.jpg"), pages.map { it.imageUrl })
-        assertEquals(listOf(0, 1), pages.map { it.index })
+        assertEquals(listOf("${base}img/1.jpg", "${base}img/2.jpg", null), pages.map { it.imageUrl })
+        assertEquals(listOf(0, 1, 2), pages.map { it.index })
+        // A page image that is not an http(s) URL fails that page with a clear error.
+        val unsupported = assertFailsWith<IllegalStateException> { source.getImageUrl(pages[2]) }
+        assertEquals(
+            "Page 3 of Adapter Test has an unsupported image URL (only http and https): data:image/png;base64,AAAA",
+            unsupported.message,
+        )
+        assertFailsWith<IllegalStateException> { source.getImage(pages[2]) }
         assertEquals(JsPageRef("${base}img/2.jpg", mapOf("X-Page" to "2", "Referer" to "https://page.test/")), JsPageRef.decode(pages[1].url))
 
         val image = source.getImage(pages[1]).use { it.body.string() }
@@ -349,7 +356,7 @@ class MangayomiJsSourceTest {
                 return JSON.parse(res.body);
               }
               async getPageList(url) {
-                return [this.base() + "/img/1.jpg", { url: "/img/2.jpg", headers: { "X-Page": "2", "Referer": "https://page.test/" } }, "", this.base() + "/img/1.jpg"];
+                return [this.base() + "/img/1.jpg", { url: "/img/2.jpg", headers: { "X-Page": "2", "Referer": "https://page.test/" } }, "", this.base() + "/img/1.jpg", "data:image/png;base64,AAAA"];
               }
               getFilterList() {
                 return [

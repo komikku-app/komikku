@@ -10,21 +10,27 @@ object JsSourceUrls {
     fun normalizeBaseUrl(baseUrl: String): String = baseUrl.trim().trimEnd('/')
 
     /**
-     * An absolute URL for the cover or page image [url] of a source whose base URL is [baseUrl]:
+     * An absolute `http(s)` URL for the cover or page image [url] of a source whose base URL is [baseUrl], or `null`:
      * - blank → `null`;
-     * - a URL with a scheme (`https://…`, `data:…`) → unchanged;
-     * - protocol-relative (`//host/x`) → with the scheme of [baseUrl] (`https` when it has none);
-     * - anything else is a path: `baseUrl + "/" + path` (leading slashes removed); `null` when [baseUrl] is blank.
+     * - a URL with a scheme → unchanged if the scheme is `http` / `https`, else `null` (OkHttp and the cover fetchers
+     *   cannot load `data:` URLs, and a source must not make the app read `file:` / `content:` URLs);
+     * - protocol-relative (`//host/x`) → with the scheme of [baseUrl] (`https` when it is not `http` / `https`);
+     * - anything else is a path: `baseUrl + "/" + path` (leading slashes removed); `null` when [baseUrl] is blank or not
+     *   an `http(s)` URL.
      */
     fun resolveCoverUrl(baseUrl: String, url: String?): String? {
         val value = url?.trim().orEmpty()
         if (value.isEmpty()) return null
         if (value.startsWith("//")) return "${schemeOf(baseUrl)}:$value"
-        if (hasScheme(value)) return value
+        if (hasScheme(value)) return value.takeIf(::isHttpUrl)
         val base = normalizeBaseUrl(baseUrl)
-        if (base.isEmpty()) return null
+        if (!isHttpUrl(base)) return null
         return base + "/" + value.trimStart('/')
     }
+
+    /** Whether [url] starts with `http://` or `https://` (any case). */
+    fun isHttpUrl(url: String): Boolean =
+        url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)
 
     /**
      * The web page of the manga or chapter whose key is [link], for "open in WebView" and sharing: absolute and
@@ -36,14 +42,14 @@ object JsSourceUrls {
         val base = normalizeBaseUrl(baseUrl)
         return when {
             value.startsWith("//") -> "${schemeOf(baseUrl)}:$value"
-            value.startsWith("http://", ignoreCase = true) || value.startsWith("https://", ignoreCase = true) -> value
+            isHttpUrl(value) -> value
             value.startsWith("/") && base.isNotEmpty() -> base + value
             else -> base
         }
     }
 
     private fun schemeOf(baseUrl: String): String =
-        baseUrl.trim().substringBefore("://", missingDelimiterValue = "").lowercase().ifEmpty { "https" }
+        baseUrl.trim().substringBefore("://", missingDelimiterValue = "").lowercase().takeIf { it == "http" } ?: "https"
 
     /** RFC 3986 scheme followed by `:` (`https:`, `data:`); a Windows-style `C:` is not expected from sources. */
     private fun hasScheme(value: String): Boolean {
