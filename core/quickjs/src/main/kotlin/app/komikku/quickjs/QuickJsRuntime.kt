@@ -363,8 +363,8 @@ internal class QuickJsRuntime private constructor(
             "Promise { <state>: \"pending\" }",
         )
 
-        fun create(): QuickJsRuntime {
-            val thread = EngineThread()
+        fun create(idleMillis: Long = EngineThread.IDLE_MILLIS): QuickJsRuntime {
+            val thread = EngineThread(idleMillis)
             val engine = try {
                 thread.run { EngineLifecycle.create().apply { maxStackSize = MAX_JS_STACK_BYTES } }
             } catch (e: Throwable) {

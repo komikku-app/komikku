@@ -18,8 +18,9 @@ import kotlin.concurrent.atomics.incrementAndFetch
  * [JsEngine] on QuickJS through `io.github.dokar3:quickjs-kt` (the same QuickJS release as Mangayomi, so `Date`
  * parsing, regular expressions and error texts match).
  *
- * Each engine owns a dedicated thread ([newJsEngineThread]): the QuickJS runtime is created on it (QuickJS
- * measures its stack limit from the creating thread) and every call runs on it. Coroutine cancellation interrupts
+ * Each engine owns a dedicated thread ([newJsEngineThread]) whose native stack holds the JS stack limit, and every
+ * call runs on it (quickjs-kt re-bases QuickJS's stack limit on the current thread at every entry into the engine,
+ * so the thread may be replaced while the engine is idle). Coroutine cancellation interrupts
  * a running script (`quickjs-kt` installs an interrupt handler), so `withTimeout` around a call stops even an
  * endless loop. `quickjs-kt`'s `evaluationTimeoutMillis` is not used: it is a wall-clock deadline from the start of
  * the evaluation that is only checked while JavaScript runs, so it would also count network waits.
