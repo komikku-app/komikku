@@ -55,8 +55,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   threads.
  * - **Failures:** an unhandled network failure of the script is rethrown as the original `IOException` (so the app
  *   shows "offline" / "unknown host" as for any source); a source without `getLatestUpdates` or `search` gives an empty
- *   page (and latest is no longer offered); everything else is the [JsSourceException], whose message names the source,
- *   the operation and the cause.
+ *   page (and latest is no longer offered); everything else (also another method that is missing, called by those two)
+ *   is the [JsSourceException], whose message names the source, the operation and the cause.
  * - **Pages** carry the image URL and the page's own headers in `Page.url` ([JsPageRef]); [imageRequest] sends the
  *   source headers plus the page headers.
  *
@@ -176,17 +176,21 @@ class MangayomiJsSource(
 
     override suspend fun getPopularManga(page: Int): MangasPage = call { it.getPopular(page) }.toMangasPage()
 
+    /** A source without `getLatestUpdates` gives an empty page; another missing method it calls is an error. */
     override suspend fun getLatestUpdates(page: Int): MangasPage = try {
         call { it.getLatestUpdates(page) }.toMangasPage()
-    } catch (_: JsSourceException.NotImplemented) {
+    } catch (e: JsSourceException.NotImplemented) {
+        if (e.member != "getLatestUpdates") throw e
         latestMissing = true
         MangasPage(emptyList(), hasNextPage = false)
     }
 
+    /** A source without `search` gives an empty page; another missing method it calls is an error. */
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage = try {
         val jsFilters = JsFilters.toJsFilters(filters, awaitMetadata().filters)
         call { it.search(query, page, jsFilters) }.toMangasPage()
-    } catch (_: JsSourceException.NotImplemented) {
+    } catch (e: JsSourceException.NotImplemented) {
+        if (e.member != "search") throw e
         MangasPage(emptyList(), hasNextPage = false)
     }
 

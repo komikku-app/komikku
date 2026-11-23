@@ -315,6 +315,16 @@ class MangayomiJsSourceTest {
         assertEquals("a", first.awaitMetadata().headers["X-Mode"])
     }
 
+    @Test
+    fun onlyTheMissingMethodItselfCountsAsNoLatestOrNoSearch() = runBlocking {
+        val source = source(DELEGATING, descriptor(id = 10))
+        val latest = assertFailsWith<JsSourceException.NotImplemented> { source.getLatestUpdates(1) }
+        assertEquals("getDetail", latest.member)
+        assertEquals(true, source.supportsLatest)
+        val search = assertFailsWith<JsSourceException.NotImplemented> { source.getSearchManga(1, "q", FilterList()) }
+        assertEquals("getPageList", search.member)
+    }
+
     companion object {
         /** Popular, latest (failing), search, details, pages, filters, preferences and headers. */
         val FULL = """
@@ -356,6 +366,15 @@ class MangayomiJsSourceTest {
                   { key: "langs", multiSelectListPreference: { title: "Languages", summary: "", entries: ["English", "French"], entryValues: ["en", "fr"], values: ["en"] } }
                 ];
               }
+            }
+        """.trimIndent()
+
+        /** Latest and search that call other, missing, methods. */
+        val DELEGATING = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 10 }];
+            class DefaultExtension extends MProvider {
+              async getLatestUpdates(page) { return await this.getDetail("x"); }
+              async search(query, page, filters) { return await this.getPageList("y"); }
             }
         """.trimIndent()
 
