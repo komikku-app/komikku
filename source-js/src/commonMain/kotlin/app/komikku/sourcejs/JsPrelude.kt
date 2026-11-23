@@ -52,6 +52,8 @@ const PromisePrototype = Promise.prototype;
 const promiseThen = uncurry(Promise.prototype.then);
 const weakMapGet = uncurry(WeakMap.prototype.get);
 const weakMapSet = uncurry(WeakMap.prototype.set);
+const setAdd = uncurry(Set.prototype.add);
+const setDelete = uncurry(Set.prototype.delete);
 const stringSlice = uncurry(String.prototype.slice);
 const stringIndexOf = uncurry(String.prototype.indexOf);
 const brands = new WeakMap();
@@ -119,6 +121,20 @@ async function asyncCall(channel, payload) {
   if (value === CANCELLED) return new PromiseCtor(function () {});
   return value;
 }
+// Marks a promise of the host's own bridge as handled, so a rejection the source handles only later (or never) does
+// not fail the call (quickjs-kt fails it on any rejection that has no handler while it runs the jobs). The source
+// still gets the rejection when it awaits the promise. The functions creating these promises start with an
+// `await`, so the source's arguments are converted (and may throw) only once the handler is attached.
+function quiet(promise) {
+  try {
+    promiseThen(promise, undefined, function () {});
+  } catch (e) {}
+  return promise;
+}
+async function failLater(error) {
+  await undefined;
+  throw error;
+}
 function describeShort(error) {
   try {
     return StringCtor(error);
@@ -142,26 +158,40 @@ defineGlobal("console", {
 });
 
 // 2.2: setTimeout(fn, ms); no extra arguments or setInterval. Komikku adds clearTimeout. When the provider call
-// settles the host ends pending timers without running them; a throwing callback is logged, never fails the call.
+// settles the host ends pending timers without running them; a throwing callback (or one whose promise rejects) is
+// logged, never fails the call.
 let timerSeq = 0;
+// Timers whose callback has not run yet; clearTimeout removes the id, also after the wait ended.
+const pendingTimers = new Set();
+function logTimerFailure(error) {
+  try {
+    log("error", "setTimeout callback failed: " + describeShort(error));
+  } catch (e) {}
+}
 defineGlobal("setTimeout", function (callback, ms) {
   const id = ++timerSeq;
   const delay = NumberCtor(ms) || 0;
+  setAdd(pendingTimers, id);
   (async function () {
     try {
       const fired = await asyncCall("sleep", json([id, delay]));
-      if (fired !== true || typeof callback !== "function") return;
-      callback();
+      if (!setDelete(pendingTimers, id) || fired !== true || typeof callback !== "function") return;
+      const result = callback();
+      if (result !== null && (typeof result === "object" || typeof result === "function")) {
+        try {
+          promiseThen(result, undefined, logTimerFailure);
+        } catch (e) {}
+      }
     } catch (error) {
-      try {
-        log("error", "setTimeout callback failed: " + describeShort(error));
-      } catch (e) {}
+      logTimerFailure(error);
     }
   })();
   return id;
 });
 defineGlobal("clearTimeout", function (id) {
-  sync("clear_timer", json([NumberCtor(id) || 0]));
+  const timer = NumberCtor(id) || 0;
+  setDelete(pendingTimers, timer);
+  sync("clear_timer", json([timer]));
 });
 
 // 4.5: Kotlin-style substring helpers; the whole string when the delimiter is absent.
@@ -198,12 +228,25 @@ class Client {
   constructor(reqcopyWith) {
     this.reqcopyWith = reqcopyWith ?? null;
   }
-  async get(url, headers) { return send("GET", this.reqcopyWith, url, headers, undefined); }
-  async head(url, headers) { return send("HEAD", this.reqcopyWith, url, headers, undefined); }
-  async post(url, headers, body) { return send("POST", this.reqcopyWith, url, headers, body); }
-  async put(url, headers, body) { return send("PUT", this.reqcopyWith, url, headers, body); }
-  async delete(url, headers, body) { return send("DELETE", this.reqcopyWith, url, headers, body); }
-  async patch(url, headers, body) { return send("PATCH", this.reqcopyWith, url, headers, body); }
+  async get(url, headers) { await undefined; return send("GET", this.reqcopyWith, url, headers, undefined); }
+  async head(url, headers) { await undefined; return send("HEAD", this.reqcopyWith, url, headers, undefined); }
+  async post(url, headers, body) { await undefined; return send("POST", this.reqcopyWith, url, headers, body); }
+  async put(url, headers, body) { await undefined; return send("PUT", this.reqcopyWith, url, headers, body); }
+  async delete(url, headers, body) { await undefined; return send("DELETE", this.reqcopyWith, url, headers, body); }
+  async patch(url, headers, body) { await undefined; return send("PATCH", this.reqcopyWith, url, headers, body); }
+}
+// The requests' promises are the host's own: marked handled (quiet) for the source. The class keeps async methods
+// (their body starts with an await, so the arguments are converted once the handler is attached) and they are
+// wrapped here: with plain methods in the class body, the native code crashed the JVM whenever a source ran
+// out of memory in an Array.prototype.push loop (QuickJS 2026-06-04, cause not found; PROGRESS.md "Review fixes (I2b)").
+for (const name of ["get", "head", "post", "put", "delete", "patch"]) {
+  const request = Client.prototype[name];
+  ObjectDefineProperty(Client.prototype, name, {
+    value: { [name](url, headers, body) { return quiet(ReflectApply(request, this, [url, headers, body])); } }[name],
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
 }
 defineGlobal("Client", Client);
 """
@@ -310,11 +353,15 @@ defineGlobal("unpackJsAndCombine", function (script) {
 defineGlobal("parseDates", function (values, dateFormat, dateFormatLocale) {
   throw unsupported("parseDates", "not implemented yet; no Mangayomi JavaScript manga source uses it");
 });
-defineGlobal("evaluateJavascriptViaWebview", async function (url, headers, scripts, time = 30) {
+async function webviewLater(url, headers, scripts, time) {
+  await undefined;
   return asyncCall("webview", json([StringCtor(url), headers ?? {}, scripts ?? [], NumberCtor(time) || 30]));
+}
+defineGlobal("evaluateJavascriptViaWebview", function (url, headers, scripts, time = 30) {
+  return quiet(webviewLater(url, headers, scripts, time));
 });
 for (const name of ["createHlsProxyUrl", "parseEpub", "parseEpubChapter"]) {
-  defineGlobal(name, async function () { throw unsupported(name, "only used by anime and novel sources"); });
+  defineGlobal(name, function () { return quiet(failLater(unsupported(name, "only used by anime and novel sources"))); });
 }
 for (const name of [
   "sibnetExtractor", "myTvExtractor", "okruExtractor", "voeExtractor", "vidBomExtractor", "streamlareExtractor",
@@ -322,7 +369,7 @@ for (const name of [
   "mp4UploadExtractor", "streamWishExtractor", "filemoonExtractor", "quarkVideosExtractor", "ucVideosExtractor",
   "quarkFilesExtractor", "ucFilesExtractor",
 ]) {
-  defineGlobal(name, async function () { throw unsupported(name, "video extractors are only used by anime sources"); });
+  defineGlobal(name, function () { return quiet(failLater(unsupported(name, "video extractors are only used by anime sources"))); });
 }
 """
 
@@ -333,7 +380,10 @@ function declaredPreferences() {
   const target = provider !== undefined ? provider : ProviderClass !== undefined ? ObjectCreate(ProviderClass.prototype) : undefined;
   if (target === undefined) return [];
   try {
-    return target.getSourcePreferences();
+    const declared = target.getSourcePreferences();
+    // An async getSourcePreferences: its promise counts as no preferences (JSON {}), its rejection is ignored.
+    ignoreRejection(declared);
+    return declared;
   } catch (error) {
     if (isNotImplemented(error)) return [];
     throw error;

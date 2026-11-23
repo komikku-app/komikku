@@ -9,8 +9,12 @@ import app.komikku.sourcejs.engine.JsEngineFactory
 import app.komikku.sourcejs.engine.QuickJsEngine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -177,7 +181,7 @@ class JsExtensionHost internal constructor(
             session.install(engine)
             load(engine, extension, useBytecode)
             val sourceJson = source.toJsSourceObject().toString()
-            engine.evaluate(JsPrelude.entryCall(member, JsonArray(args).toString(), mode.js, sourceJson), "<call $member>")
+            evaluateUntilSettled(engine, session, JsPrelude.entryCall(member, JsonArray(args).toString(), mode.js, sourceJson), "<call $member>")
             null
         } catch (e: BytecodeFailure) {
             throw e
@@ -210,6 +214,20 @@ class JsExtensionHost internal constructor(
             else -> JsSourceException.BridgeError(source.name, currentOperation, "host", escaped.message ?: escaped::class.simpleName.orEmpty(), escaped)
         }
         return mapOf(member to CallOutcome.Failed(error))
+    }
+
+    /**
+     * Evaluates the call [script] until it is done or the entry reported its outcome, whichever comes first: stray
+     * JavaScript still running then (a busy job, a pending timer) is interrupted instead of turning a result into a
+     * timeout.
+     */
+    private suspend fun evaluateUntilSettled(engine: JsEngine, session: JsSession, script: String, fileName: String) = coroutineScope {
+        val evaluation = async { engine.evaluate(script, fileName) }
+        val settledFirst = select {
+            evaluation.onAwait { false }
+            session.settled.onAwait { true }
+        }
+        if (settledFirst) evaluation.cancelAndJoin()
     }
 
     /** Turns an envelope (`JsPrelude` ENTRY) into an outcome; the classification uses its markers only. */

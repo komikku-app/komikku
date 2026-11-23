@@ -14,6 +14,7 @@ import app.komikku.sourcejs.model.numberOrNull
 import app.komikku.sourcejs.model.textOrNull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -56,6 +57,9 @@ internal class JsSession(
     /** Timers cleared before their wait started (async bindings start after the current JS job). */
     private val clearedTimers = mutableSetOf<Long>()
     private val settledSignal = CompletableDeferred<Unit>()
+
+    /** Completes when the entry reported its envelope ([outcome]). */
+    val settled: Deferred<Unit> get() = settledSignal
 
     /** The envelope the entry reported (`JsPrelude` ENTRY), `null` while the call has not settled. */
     var outcome: String? = null
