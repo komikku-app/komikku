@@ -15,9 +15,12 @@ import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.File
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
@@ -33,17 +36,31 @@ class DesktopBackupService(
     private val app: Application,
     private val storagePreferences: StoragePreferences,
     private val storageManager: StorageManager,
+    private val backupPreferences: BackupPreferences = Injekt.get(),
 ) {
 
     /**
-     * P3: Android's automatic backup (`BackupCreateJob` with `isAutoBackup`): the borrowed `BackupCreator` in automatic
-     * mode writes a new file into the storage location's automatic backups folder, keeps the newest four and sets
-     * `BackupPreferences.lastAutoBackupTimestamp()`. No notification, like Android.
+     * P3: Android's automatic backup (`BackupCreateJob` with `isAutoBackup`): a new `BackupCreator.getFilename()` file in
+     * the storage location's automatic backups folder, the newest [MAX_AUTO_BACKUPS] kept, then
+     * `BackupPreferences.lastAutoBackupTimestamp()` set. No notification, like Android.
+     *
+     * Unlike the borrowed creator's automatic mode (which deletes the oldest files first and writes the new one in
+     * place), the backup goes through [create]: a temporary file renamed once it is complete and validated, and the old
+     * files are rotated only after that, so a cancelled or interrupted run (app exit) never leaves a truncated newest
+     * backup or fewer backups than before. Returns the new file.
      */
-    suspend fun createAutomatic(options: BackupOptions = BackupOptions()): String = withIOContext {
-        val dir = storageManager.getAutomaticBackupsDirectory()
+    suspend fun createAutomatic(options: BackupOptions = BackupOptions()): File = withIOContext {
+        val dir = storageManager.getAutomaticBackupsDirectory()?.uri?.path?.let(::File)
             ?: throw IllegalStateException(app.stringResource(MR.strings.create_backup_file_error))
-        BackupCreator(app, isAutoBackup = true).backup(dir.uri, options)
+        val file = create(File(dir, BackupCreator.getFilename()), options)
+        val pattern = automaticBackupName()
+        dir.listFiles { candidate -> candidate.isFile && pattern.matches(candidate.name) }
+            .orEmpty()
+            .sortedByDescending { it.name }
+            .drop(MAX_AUTO_BACKUPS)
+            .forEach { it.delete() }
+        backupPreferences.lastAutoBackupTimestamp().set(System.currentTimeMillis())
+        file
     }
 
     /** Android `BackupCreator.getFilename()` in `<storage folder>/backup` (no directory is created here). */
@@ -112,6 +129,17 @@ class DesktopBackupService(
             logcat(LogPriority.ERROR, e)
             notifier.showRestoreError(e.message)
             throw e
+        }
+    }
+
+    private companion object {
+        /** Android `BackupCreator.MAX_AUTO_BACKUPS` (private there). */
+        const val MAX_AUTO_BACKUPS = 4
+
+        /** Android `BackupCreator.FILENAME_REGEX` (private there), from the application id in `getFilename()`. */
+        fun automaticBackupName(): Regex {
+            val applicationId = BackupCreator.getFilename().removeSuffix(".tachibk").dropLast("_yyyy-MM-dd_HH-mm".length)
+            return Regex(Regex.escape(applicationId) + """_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.tachibk""")
         }
     }
 }

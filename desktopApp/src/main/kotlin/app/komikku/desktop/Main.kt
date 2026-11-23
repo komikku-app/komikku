@@ -12,6 +12,7 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.scheduler.DesktopScheduler
+import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
@@ -23,6 +24,7 @@ import app.komikku.desktop.window.rememberPersistedWindowState
 import app.komikku.shared.coil.DesktopImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import eu.kanade.tachiyomi.network.NetworkHelper
+import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.util.system.DesktopLogcatLogger
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
@@ -45,7 +47,8 @@ fun main() {
     application {
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication)
     }
-    scheduler.stop()
+    // The work runs on daemon threads: stop it and let it clean up before the JVM exits (bounded).
+    runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
 }
 
 /** The main window: persisted size / position / maximized state, keyboard shortcuts, the app UI. */

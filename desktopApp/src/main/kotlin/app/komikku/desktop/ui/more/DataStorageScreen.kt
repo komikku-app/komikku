@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.more
 
+import android.app.Application
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.update
@@ -76,6 +78,8 @@ class DataStorageScreenModel(
     private val fileDialogs: DesktopFileDialogs = Injekt.get(),
     val storagePreferences: StoragePreferences = Injekt.get(),
     val backupPreferences: BackupPreferences = Injekt.get(),
+    /** The compat toast (shown in the window's snackbar host). */
+    private val app: Application = Injekt.get(),
 ) : StateScreenModel<DataStorageScreenModel.State>(State()) {
 
     @Immutable
@@ -108,7 +112,8 @@ class DataStorageScreenModel(
         dismissDialog()
         val suggested = backupService.defaultBackupFile()
         val target = fileDialogs.saveFile(dialogTitle, suggested.parentFile?.apply { mkdirs() }, suggested.name) ?: return
-        backupJobs.create(target, options)
+        // Another backup job holds the slot (e.g. the automatic backup started meanwhile): Android's message
+        if (!backupJobs.create(target, options)) app.toast(MR.strings.backup_in_progress)
     }
 
     fun pickRestoreFile(dialogTitle: String) {
@@ -134,7 +139,7 @@ class DataStorageScreenModel(
 
     fun restore(file: File, options: RestoreOptions) {
         dismissDialog()
-        backupJobs.restore(file, options)
+        if (!backupJobs.restore(file, options)) app.toast(MR.strings.restore_in_progress)
     }
 
     fun cancelJob() = backupJobs.cancel()

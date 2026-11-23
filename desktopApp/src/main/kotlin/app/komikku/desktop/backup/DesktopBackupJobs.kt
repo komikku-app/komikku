@@ -118,6 +118,15 @@ class DesktopBackupJobs(
         job?.cancel()
     }
 
+    /**
+     * App exit: cancels the running job and waits for its end (the creators write a temporary file that a cancelled run
+     * removes, a restore stops between entries); the caller bounds the wait.
+     */
+    suspend fun cancelAndJoin() {
+        val running = synchronized(this) { job?.apply { cancel() } }
+        running?.join()
+    }
+
     /** Clears a finished job's result (the screen dismissed it); a running job is left alone. */
     fun acknowledge() = _status.update { if (it is Status.Running) it else Status.Idle }
 

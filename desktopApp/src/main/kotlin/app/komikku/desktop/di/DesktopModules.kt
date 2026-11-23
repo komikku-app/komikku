@@ -10,6 +10,7 @@ import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.library.desktopLibraryUpdateRunner
 import app.komikku.desktop.platform.AwtFileDialogs
 import app.komikku.desktop.platform.DesktopFileDialogs
+import app.komikku.desktop.scheduler.DesktopSchedulerPreferences
 import app.komikku.desktop.scheduler.desktopScheduler
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.track.DesktopReaderTrackerHook
@@ -296,7 +297,8 @@ class DesktopDomainModule(
         addSingletonFactory { DesktopBackupJobs(get<DesktopBackupService>()) }
 
         // Scheduled library updates and automatic backups (P3), started by main() for the app's lifetime
-        addSingletonFactory { desktopScheduler(get(), get(), get(), get()) }
+        addSingletonFactory { DesktopSchedulerPreferences(get()) }
+        addSingletonFactory { desktopScheduler(get(), get(), get(), get(), get()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
 
         // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart
