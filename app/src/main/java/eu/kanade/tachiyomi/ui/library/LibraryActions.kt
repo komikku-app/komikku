@@ -32,8 +32,13 @@ import uy.kohesive.injekt.api.get
  * same code (borrowed as `desktopCopy`, see app-shared/borrowed-app-sources.gradle.kts and docs/kmp-desktop/PROGRESS.md,
  * P2). `LibraryScreenModel` calls these with its own state and coroutine scope.
  *
- * Markers: as in LibraryFilterSort.kt, this file is KMK-owned; the moved bodies keep the `// SY` / `// KMK` markers
- * they had in `LibraryScreenModel`, everything written for the move uses KMK markers only.
+ * Markers: this file is Komikku-owned and has no `// SY` / `// KMK` markers. Its bodies were moved from
+ * `LibraryScreenModel` (`toggleSelection`, `toggleRangeSelection`, `selectAll`, `invertSelection`, `getCommonCategories`,
+ * `getMixCategories`, `openChangeCategoryDialog`, `downloadNextChapters`, `downloadBookmarkedChapters`, `markReadSelection`,
+ * `removeMangas`, `setMangaCategories`); of those, these parts come from TachiyomiSY (they were `// SY` blocks there):
+ * the merged-entry (`MERGED_SOURCE_ID`) branches of the two download functions and `ogTitle` in their "already downloaded"
+ * checks. The guard for a range without an anchor on the page in `toggleLibraryRangeSelection` is new (Komikku). Upstream
+ * Mihon / SY changes to these functions must be applied here.
  */
 
 /** Formerly the body of `LibraryScreenModel.toggleSelection`. */
@@ -59,6 +64,12 @@ fun Set</* Manga */ Long>.toggleLibraryRangeSelection(
 
     val lastMangaIndex = categoryItems.indexOf(lastSelected)
     val curMangaIndex = categoryItems.indexOf(mangaId)
+    // The last selected manga (or the clicked one) is not in this category, e.g. after the category's last selection
+    // was deselected again: there is no range, select only the clicked manga (was an index-out-of-bounds crash).
+    if (lastMangaIndex == -1 || curMangaIndex == -1) {
+        list.add(mangaId)
+        return@mutate
+    }
 
     val selectionRange = when {
         lastMangaIndex < curMangaIndex -> lastMangaIndex..curMangaIndex
@@ -145,7 +156,6 @@ class LibraryBatchActions(
     /** Queues [amount] (all when `null`) unread chapters of each of [mangas] that are not downloaded or queued yet. */
     suspend fun downloadNextChapters(mangas: List<Manga>, amount: Int?) {
         mangas.forEach { manga ->
-            // SY -->
             if (manga.source == MERGED_SOURCE_ID) {
                 val mergedMangas = getMergedMangaById.await(manga.id)
                     .associateBy { it.id }
@@ -171,7 +181,6 @@ class LibraryBatchActions(
                 return@forEach
             }
 
-            // SY <--
             val chapters = getNextChapters.await(manga.id)
                 .fastFilterNot { chapter ->
                     downloadManager.getQueuedDownloadOrNull(chapter.id) != null ||
@@ -179,9 +188,7 @@ class LibraryBatchActions(
                             chapter.name,
                             chapter.scanlator,
                             chapter.url,
-                            // SY -->
                             manga.ogTitle,
-                            // SY <--
                             manga.source,
                         )
                 }
@@ -194,7 +201,6 @@ class LibraryBatchActions(
     /** Queues the bookmarked chapters of each of [mangas] that are not downloaded or queued yet. */
     suspend fun downloadBookmarkedChapters(mangas: List<Manga>) {
         mangas.forEach { manga ->
-            // SY -->
             if (manga.source == MERGED_SOURCE_ID) {
                 val mergedMangas = getMergedMangaById.await(manga.id)
                     .associateBy { it.id }
@@ -218,7 +224,6 @@ class LibraryBatchActions(
 
                 return@forEach
             }
-            // SY <--
 
             val chapters = getBookmarkedChaptersByMangaId.await(manga.id)
                 .fastFilterNot { chapter ->
@@ -227,9 +232,7 @@ class LibraryBatchActions(
                             chapter.name,
                             chapter.scanlator,
                             chapter.url,
-                            // SY -->
                             manga.ogTitle,
-                            // SY <--
                             manga.source,
                         )
                 }
