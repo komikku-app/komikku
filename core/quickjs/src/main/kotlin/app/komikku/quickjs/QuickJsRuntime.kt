@@ -3,6 +3,7 @@ package app.komikku.quickjs
 import app.cash.quickjs.QuickJsException
 import com.dokar.quickjs.binding.FunctionBinding
 import com.dokar.quickjs.binding.JsObject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.lang.reflect.InvocationHandler
@@ -38,11 +39,20 @@ internal class QuickJsRuntime private constructor(
     /** Global name of the `get` invoker, installed on first use (engine thread). */
     private var invokerName: String? = null
 
+    /** Whether [completionHelperScript] ran in this runtime (engine thread). */
+    private var completionHelperInstalled = false
+
     fun evaluate(script: String, fileName: String): Outcome = call {
-        evaluateToJava { engine.evaluate<Any?>(script, fileName) }
+        installCompletionHelper()
+        try {
+            evaluateToJava { engine.evaluate<Any?>(markCompletion(script), fileName) }
+        } catch (e: EngineException) {
+            throw originalSyntaxError(e, script, fileName)
+        }
     }
 
     fun execute(bytecode: ByteArray): Outcome = call {
+        installCompletionHelper()
         evaluateToJava { engine.evaluate<Any?>(bytecode) }
     }
 
@@ -50,9 +60,36 @@ internal class QuickJsRuntime private constructor(
     fun compile(sourceCode: String, fileName: String): Outcome = onEngine {
         ensureOpen()
         try {
-            Outcome.Value(engine.compile(sourceCode, fileName, false))
+            try {
+                Outcome.Value(engine.compile(markCompletion(sourceCode), fileName, false))
+            } catch (e: EngineException) {
+                throw originalSyntaxError(e, sourceCode, fileName)
+            }
         } catch (e: Throwable) {
             failure(e)
+        }
+    }
+
+    /** Engine thread. */
+    private fun installCompletionHelper() {
+        if (completionHelperInstalled) return
+        runBlocking { engine.evaluate<Any?>(completionHelperScript(), "?") }
+        completionHelperInstalled = true
+    }
+
+    /**
+     * A syntax error of [script] as QuickJS reports it for the text alone (the appended statement of
+     * [markCompletion] would move "unexpected end of input" and similar errors to its line); [failure] otherwise.
+     * Compiling runs nothing, and a valid script stays valid when the statement is appended, so a script that
+     * compiles failed at run time and keeps [failure].
+     */
+    private fun originalSyntaxError(failure: EngineException, script: String, fileName: String): Throwable {
+        if (failure.message?.startsWith(SYNTAX_ERROR) != true) return failure
+        return try {
+            engine.compile(script, fileName, false)
+            failure
+        } catch (e: EngineException) {
+            e
         }
     }
 
@@ -290,7 +327,10 @@ internal class QuickJsRuntime private constructor(
 
         private val FAILED = listOf(1)
 
-        private const val UNSUPPORTED_VALUE = "Unsupported js value type:"
+        private const val SYNTAX_ERROR = "SyntaxError"
+
+        private val ENGINE_CLASS_NAME = Engine::class.java.name
+        private const val GET_EVALUATE_RESULT = "getEvaluateResult"
 
         /** quickjs-kt's message for a thrown plain object (its `toString()`); QuickJS would say this. */
         private const val JS_OBJECT_PREFIX = "com.dokar.quickjs.binding.JsObject@"
@@ -298,7 +338,7 @@ internal class QuickJsRuntime private constructor(
         /** Error names QuickJS prepends to the message (`TypeError: …`); quickjs-java reports the message only. */
         private val ERROR_NAME_PREFIX = Regex("^[^\\s:]*: ")
 
-        /** What quickjs-kt returns for a promise it did not await (one nested in the completion value). */
+        /** What quickjs-kt returns for a promise it did not await (fallback conversion only). */
         private val PROMISE_STRINGS = setOf(
             "Promise { <state>: \"fulfilled\" }",
             "Promise { <state>: \"rejected\" }",
@@ -335,25 +375,54 @@ internal class QuickJsRuntime private constructor(
         /**
          * Evaluates with [evaluation] and converts the completion value like quickjs-java: primitives as `Boolean` /
          * `Integer` / `Double` / `String`, arrays as `Object[]` (elements strictly), anything else `null`.
+         * [markCompletion] normally hands over `[token, value]` (see `Completion.kt`); otherwise ([fallbackResult]) the
+         * raw value went through quickjs-kt's own conversion, whose failures are told apart from the script's by
+         * where the exception was made ([isConversionFailure]).
          */
         private fun evaluateToJava(evaluation: suspend () -> Any?): Any? {
             val value = try {
                 runBlocking { evaluation() }
-            } catch (e: EngineException) {
-                // quickjs-kt cannot convert symbols and BigInts; quickjs-java returned null for them.
-                if (e.stack == null && e.message.orEmpty().startsWith(UNSUPPORTED_VALUE)) return null
+            } catch (e: Throwable) {
+                // quickjs-java returned null for the values quickjs-kt fails to convert (top level only).
+                if (e !is CancellationException && isConversionFailure(e)) return null
                 throw e
             }
-            return toJavaResult(value)
+            if (value is List<*> && value.isNotEmpty() && value[0] == COMPLETION_TOKEN) {
+                if (value.size > 2) throw MarshalException(value[2] as? String ?: "Cannot marshal value to Java")
+                return toJava(value.getOrNull(1))
+            }
+            return fallbackResult(value)
         }
 
-        private fun toJavaResult(value: Any?): Any? = when (value) {
-            null, Unit -> null
+        /**
+         * quickjs-kt failed to convert the completion value itself: the exception was created while
+         * `getEvaluateResult` ran (a script's own errors are created by the rejection tracker, the evaluation or
+         * a job, and only thrown later).
+         */
+        private fun isConversionFailure(e: Throwable): Boolean =
+            e.stackTrace.firstOrNull { it.className == ENGINE_CLASS_NAME }?.methodName == GET_EVALUATE_RESULT
+
+        /** A value from [markCompletion]: primitives, `null` and lists of those. */
+        private fun toJava(value: Any?): Any? = when (value) {
+            is List<*> -> Array(value.size) { toJava(value[it]) }
+            is Number -> javaNumber(value)
+            is String, is Boolean -> value
+            else -> null
+        }
+
+        /** quickjs-kt's `Long` / `Double` as quickjs-java's `Integer` (int-tagged) / `Double`. */
+        private fun javaNumber(value: Number): Any = when (value) {
+            is Int, is Double -> value
+            is Long -> if (value in Int.MIN_VALUE..Int.MAX_VALUE) value.toInt() else value.toDouble()
+            else -> value.toDouble()
+        }
+
+        /** A raw value converted by quickjs-kt (the helper did not run). */
+        private fun fallbackResult(value: Any?): Any? = when (value) {
             is String -> if (value in PROMISE_STRINGS) null else value
             is List<*> -> Array(value.size) { arrayElement(value[it]) }
-            is Boolean, is Int, is Double -> value
-            is Long -> if (value in Int.MIN_VALUE..Int.MAX_VALUE) value.toInt() else value.toDouble()
-            is Number -> value.toDouble()
+            is Number -> javaNumber(value)
+            is Boolean -> value
             else -> null
         }
 
@@ -361,9 +430,8 @@ internal class QuickJsRuntime private constructor(
             null, Unit -> null
             is String -> if (value in PROMISE_STRINGS) cannotMarshal("[object Promise]") else value
             is List<*> -> Array(value.size) { arrayElement(value[it]) }
-            is Boolean, is Int, is Double -> value
-            is Long -> if (value in Int.MIN_VALUE..Int.MAX_VALUE) value.toInt() else value.toDouble()
-            is Number -> value.toDouble()
+            is Number -> javaNumber(value)
+            is Boolean -> value
             is JsObject -> cannotMarshal("[object Object]")
             is Map<*, *> -> cannotMarshal("[object Map]")
             is Set<*> -> cannotMarshal("[object Set]")
