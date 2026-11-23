@@ -12,6 +12,7 @@ import app.komikku.sourcejs.model.MalformedResultFailure
 import app.komikku.sourcejs.model.jsonBooleanOrNull
 import app.komikku.sourcejs.model.numberOrNull
 import app.komikku.sourcejs.model.textOrNull
+import app.komikku.sourcejs.model.toJsonArray
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -162,6 +163,8 @@ internal class JsSession(
             }
             // The HTML travels raw.
             "dom_parse" -> return dom.parse(payload).toReply()
+            // The source's getFilterList() result as JSON text, normalised like JsExtension.getFilterList.
+            "default_filters" -> return defaultFilters(payload)
         }
         val args = parseArgs(payload)
         return when (channel) {
@@ -277,11 +280,20 @@ internal class JsSession(
         }
     }
 
-    /** Like Mangayomi's unknown `sendMessage` channel: log and return `null`. */
-    private fun unknownChannel(channel: String): String {
-        services.log.log(HostLog.Level.WARN, source, "No channel \"$channel\" registered")
-        return NULL
+    private fun defaultFilters(json: String): String {
+        val filters = try {
+            JsResultParser.filters(Json.parseToJsonElement(json))
+        } catch (e: MalformedResultFailure) {
+            val error = JsSourceException.MalformedResult(source.id, source.name, "getFilterList", "getFilterList", e.field, e.problem)
+            services.log.log(HostLog.Level.WARN, source, "Ignoring getFilterList failure: ${error.message}")
+            emptyList()
+        }
+        return filters.toJsonArray().toReply()
     }
+
+    /** Only the prelude calls the bindings, so a channel it does not know is a host bug: a host failure. */
+    private fun unknownChannel(channel: String): Nothing =
+        throw HostFunctionFailure.Bridge(channel, "No channel \"$channel\" registered")
 
     private fun httpFailure(method: String, url: String, detail: String, cause: Throwable?) =
         HostFunctionFailure.Bridge("http", "HTTP $method $url failed: $detail", cause)

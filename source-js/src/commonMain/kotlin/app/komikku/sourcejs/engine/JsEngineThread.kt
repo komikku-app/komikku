@@ -8,7 +8,7 @@ import kotlinx.coroutines.CloseableCoroutineDispatcher
  * @property maxJsStackBytes the largest JS stack limit this thread's native stack can hold safely; engines clamp
  *   [JsEngineLimits.maxStackSizeBytes] to it.
  */
-class JsEngineThread(
+internal class JsEngineThread(
     val dispatcher: CloseableCoroutineDispatcher,
     val maxJsStackBytes: Long,
 )

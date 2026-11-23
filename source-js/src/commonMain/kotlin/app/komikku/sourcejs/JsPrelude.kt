@@ -7,7 +7,7 @@ package app.komikku.sourcejs
  * Security boundary (PROGRESS.md, "Review fixes"): `quickjs-kt` turns a JS `Error` that reaches Kotlin into an
  * instance of the Java class named by the error's `name`. The prelude therefore keeps every JS value but strings
  * away from Kotlin:
- * - the two host bindings (`__kmk_host_sync` / `__kmk_host_async`, see `JsSession`) are captured in this closure and
+ * - the two host bindings ([JsSession.SYNC_FUNCTION] / [JsSession.ASYNC_FUNCTION]) are captured in this closure and
  *   deleted from `globalThis`; every call passes a string checked with `typeof` right before the call;
  * - the call entry (`__kmk_entry`) loads the extension and calls the provider member inside `try` / `catch` and
  *   reports the outcome through the binding as a string envelope; it never throws and its promises are handled
@@ -29,10 +29,10 @@ internal object JsPrelude {
     private const val CORE = """
 "use strict";
 const global = globalThis;
-const hostSync = global.__kmk_host_sync;
-const hostAsync = global.__kmk_host_async;
-delete global.__kmk_host_sync;
-delete global.__kmk_host_async;
+const hostSync = global.${JsSession.SYNC_FUNCTION};
+const hostAsync = global.${JsSession.ASYNC_FUNCTION};
+delete global.${JsSession.SYNC_FUNCTION};
+delete global.${JsSession.ASYNC_FUNCTION};
 
 const uncurry = Function.prototype.bind.bind(Function.prototype.call);
 const JsonStringify = JSON.stringify;
@@ -80,7 +80,7 @@ function unsupported(feature, reason) {
   return brand(new ErrorCtor(feature + " is not supported: " + reason), { kind: "unsupported", feature: feature, reason: reason });
 }
 function notImplemented(member) {
-  return brand(new ErrorCtor(member + " not implemented"), { kind: "not_implemented" });
+  return brand(new ErrorCtor(member + " not implemented"), { kind: "not_implemented", member: member });
 }
 function isNotImplemented(error) {
   const info = brandOf(error);
@@ -457,6 +457,14 @@ function settle(payload) {
   }
 }
 
+function isOutOfMemory(error) {
+  try {
+    return ObjectGetPrototypeOf(error) === InternalErrorPrototype && error.message === "out of memory";
+  } catch (e) {
+    return false;
+  }
+}
+
 function describeError(error, phase) {
   try {
     const out = ObjectCreate(null);
@@ -470,13 +478,13 @@ function describeError(error, phase) {
         out.reason = StringCtor(info.reason);
       } else if (info.kind === "host") {
         out.hostId = info.id;
+      } else if (info.kind === "not_implemented") {
+        out.member = StringCtor(info.member);
       }
     } else if (error === null || error === undefined) {
       out.kind = "nullish";
-    } else {
-      try {
-        if (ObjectGetPrototypeOf(error) === InternalErrorPrototype && error.message === "out of memory") out.kind = "oom";
-      } catch (e) {}
+    } else if (isOutOfMemory(error)) {
+      out.kind = "oom";
     }
     out.message = describeShort(error);
     try {
@@ -512,6 +520,22 @@ function outcomeOf(read) {
   }
 }
 
+// search(…, filters = null): the default list, read like JsExtension.getFilterList (contract 5.1): any failure of
+// the source gives [] with a warning, but running out of memory (or QuickJS's null for it) fails the call.
+function defaultFilters() {
+  let text = null;
+  try {
+    const value = provider.getFilterList();
+    ignoreRejection(value);
+    text = JsonStringify(value);
+  } catch (error) {
+    if (error === null || error === undefined || isOutOfMemory(error)) throw error;
+    log("warn", "Ignoring getFilterList failure: " + describeShort(error));
+    return [];
+  }
+  return sync("default_filters", typeof text === "string" ? text : "null");
+}
+
 async function run(member, argsJson, mode) {
   // Lets the entry attach its rejection handler before any extension code runs (see __kmk_entry).
   await undefined;
@@ -532,6 +556,10 @@ async function run(member, argsJson, mode) {
       return;
     }
     const args = JsonParse(argsJson);
+    if (mode === "search_default_filters") {
+      args[2] = defaultFilters();
+      mode = "async";
+    }
     if (mode === "async") {
       const value = await provider[member](...args);
       const out = JsonStringify(value);

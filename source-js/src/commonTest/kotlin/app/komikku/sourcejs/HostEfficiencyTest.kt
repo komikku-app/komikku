@@ -134,12 +134,67 @@ class HostEfficiencyTest {
     }
 
     @Test
-    fun metadataReportsErrorsLikeTheSingleCalls() = runTest {
-        val (host) = host(CountingFactory())
-        val broken = host.extension(testSource, provider("""getHeaders(url) { throw new TypeError("no headers"); } getFilterList() { throw 1; }"""))
-        assertEquals("TypeError: no headers", assertFailsWith<JsSourceException.ScriptError> { broken.metadata() }.jsMessage)
+    fun metadataKeepsTheMembersThatWork() = runTest {
+        val (host, test) = host(CountingFactory())
+        val broken = host.extension(
+            testSource,
+            provider(
+                """
+                getHeaders(url) { throw new TypeError("no headers"); }
+                getFilterList() { throw 1; }
+                get supportsLatest() { return false; }
+                getSourcePreferences() { return [{ key: "q", listPreference: { title: "Q", entries: ["Hi"], entryValues: ["hi"], valueIndex: 0 } }]; }
+                """,
+            ),
+        )
+        val metadata = broken.metadata()
+        assertEquals(emptyMap(), metadata.headers)
+        assertEquals(emptyList(), metadata.filters)
+        assertEquals(false, metadata.supportsLatest)
+        assertEquals("q", metadata.preferences.single().key)
+        assertTrue(test.log.lines.any { it.first == HostLog.Level.WARN && "TypeError: no headers" in it.second }, test.log.lines.toString())
+        // The single call still reports it.
+        assertEquals("TypeError: no headers", assertFailsWith<JsSourceException.ScriptError> { broken.getHeaders() }.jsMessage)
         val notLoading = host.extension(testSource, "class DefaultExtension extends MProvider { constructor() { super(); throw 'down'; } }")
         assertEquals("loading the source", assertFailsWith<JsSourceException.ScriptError> { notLoading.metadata() }.operation)
+    }
+
+    @Test
+    fun searchWithoutFiltersReadsTheDefaultListInTheSameContext() = runTest {
+        val factory = CountingFactory()
+        val (host, test) = host(factory)
+        val extension = host.extension(
+            testSource,
+            provider(
+                """
+                getFilterList() { return [{ type_name: "SelectFilter", name: "Sort", state: 1, values: [{ type_name: "SelectOption", name: "A", value: "a" }, { type_name: "SelectOption", name: "B", value: "b" }] }, { type_name: "TextFilter", name: "Title" }]; }
+                async search(query, page, filters) { return { list: [{ name: JSON.stringify(filters.map((f) => [f.name, f.state])), link: "l" }] }; }
+                """,
+            ),
+        )
+        assertEquals("""[["Sort",1],["Title",""]]""", extension.search("q", 1).list.single().name)
+        assertEquals(1, factory.created)
+        // A failing getFilterList gives [] (Mangayomi), with a warning.
+        val failing = host.extension(
+            testSource,
+            provider("""getFilterList() { throw new Error("no filters"); } async search(query, page, filters) { return { list: [{ name: String(filters.length), link: "l" }] }; }"""),
+        )
+        assertEquals("0", failing.search("q", 1).list.single().name)
+        assertTrue(test.log.lines.any { it.first == HostLog.Level.WARN && "no filters" in it.second }, test.log.lines.toString())
+    }
+
+    @Test
+    fun searchFailsWhenReadingTheDefaultFiltersRunsOutOfMemory() = runTest {
+        val test = TestHost(limits = JsHostLimits(callTimeoutMillis = 20_000, engine = JsEngineLimits(memoryLimitBytes = 16L * 1024 * 1024)))
+        val extension = test.extension(
+            provider(
+                """
+                getFilterList() { const a = []; while (true) a.push("x".repeat(1000) + a.length); }
+                async search(query, page, filters) { return { list: [] }; }
+                """,
+            ),
+        )
+        assertFailsWith<JsSourceException.OutOfMemory> { extension.search("q", 1) }
     }
 
     @Test

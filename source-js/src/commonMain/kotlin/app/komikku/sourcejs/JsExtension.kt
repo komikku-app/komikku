@@ -47,12 +47,14 @@ class JsExtension internal constructor(
     /**
      * `search(query, page, filters)`. [filters] is the list from [getFilterList] / [metadata] with the user's
      * state, in the original order; `null` sends the source's default list (never `[]`, which breaks sources that
-     * read filters by position, contract 5.1).
+     * read filters by position, contract 5.1), read with `getFilterList()` in the same context like [getFilterList]
+     * (a script failure there gives `[]` with a warning; running out of memory or time fails the search).
      */
     suspend fun search(query: String, page: Int, filters: List<JsFilter>? = null): JsMangaPage {
-        val filterList = filters ?: getFilterList()
         val operation = "search(${Json.encodeToString(JsonPrimitive.serializer(), JsonPrimitive(query))}, $page)"
-        return callAsync(operation, "search", JsonPrimitive(query), JsonPrimitive(page), filterList.toJsonArray()) {
+        val mode = if (filters == null) CallMode.SEARCH_DEFAULT_FILTERS else CallMode.ASYNC
+        val filterArgument = filters?.toJsonArray() ?: JsonNull
+        return callAsync(operation, "search", JsonPrimitive(query), JsonPrimitive(page), filterArgument, mode = mode) {
             JsResultParser.mangaPage(it)
         }
     }
@@ -79,8 +81,13 @@ class JsExtension internal constructor(
     suspend fun supportsLatest(): Boolean = supportsLatest(callSync("supportsLatest", CallMode.GETTER))
 
     /**
-     * [supportsLatest], [getFilterList], [getSourcePreferences] and [getHeaders] (for `baseUrl`) read in one context,
-     * with the same defaults and errors as the single calls.
+     * [supportsLatest], [getFilterList], [getSourcePreferences] and [getHeaders] (for `baseUrl`) read in one context
+     * with the defaults of the single calls. A member that fails gets its default too, with a warning, so the others
+     * are kept (the single calls throw instead); a failure to load the source, a timeout or running out of memory
+     * still throws.
+     *
+     * Headers and `supportsLatest` may depend on the source's preferences: read the metadata again after a preference
+     * changed.
      */
     suspend fun metadata(): JsSourceMetadata {
         val outcomes = host.callMetadata(this)
@@ -88,15 +95,30 @@ class JsExtension internal constructor(
         (outcomes["metadata"] as? CallOutcome.Failed)?.let { throw it.error }
         fun outcome(member: String) = outcomes[member] ?: CallOutcome.Value(null)
         return JsSourceMetadata(
-            supportsLatest = supportsLatest(outcome("supportsLatest")),
+            supportsLatest = orDefault(true) { supportsLatest(outcome("supportsLatest")) },
             filters = filters(outcome("getFilterList")),
-            preferences = preferences(outcome("getSourcePreferences")),
-            headers = headers(outcome("getHeaders")),
+            preferences = orDefault(emptyList()) { preferences(outcome("getSourcePreferences")) },
+            headers = orDefault(emptyMap()) { headers(outcome("getHeaders")) },
         )
     }
 
-    private suspend fun <T> callAsync(operation: String, member: String, vararg args: JsonElement, decode: (JsonElement?) -> T): T =
-        when (val outcome = host.call(this, operation, member, CallMode.ASYNC, args.toList())) {
+    /** [read], or [default] with a warning when it fails with an error of the member itself. */
+    private inline fun <T> orDefault(default: T, read: () -> T): T = try {
+        read()
+    } catch (e: JsSourceException) {
+        if (e is JsSourceException.OutOfMemory || e is JsSourceException.Timeout) throw e
+        log.log(HostLog.Level.WARN, source, "Ignoring a metadata failure, using the default $default: ${e.message}")
+        default
+    }
+
+    private suspend fun <T> callAsync(
+        operation: String,
+        member: String,
+        vararg args: JsonElement,
+        mode: CallMode = CallMode.ASYNC,
+        decode: (JsonElement?) -> T,
+    ): T =
+        when (val outcome = host.call(this, operation, member, mode, args.toList())) {
             is CallOutcome.Value -> parse(operation, member) { decode(outcome.value) }
             is CallOutcome.Failed -> throw outcome.error
         }
@@ -156,6 +178,6 @@ class JsExtension internal constructor(
     private inline fun <T> parse(operation: String, method: String, block: () -> T): T = try {
         block()
     } catch (e: MalformedResultFailure) {
-        throw JsSourceException.MalformedResult(source.name, operation, method, e.field, e.problem)
+        throw JsSourceException.MalformedResult(source.id, source.name, operation, method, e.field, e.problem)
     }
 }

@@ -61,8 +61,12 @@ class HostCoreTest {
         assertEquals(emptyMap(), extension.getHeaders())
         assertEquals(emptyList(), extension.getFilterList())
         assertEquals(emptyList(), extension.getSourcePreferences())
-        val error = assertFailsWith<JsSourceException.ScriptError> { extension.getPopular(1) }
-        assertEquals("Error: getPopular not implemented", error.jsMessage)
+        // Async members say so with their own type (AL2), for the adapter.
+        val error = assertFailsWith<JsSourceException.NotImplemented> { extension.getPopular(1) }
+        assertEquals("getPopular", error.member)
+        assertEquals("getPopular(1)", error.operation)
+        assertEquals(testSource.id, error.sourceId)
+        assertEquals("search", assertFailsWith<JsSourceException.NotImplemented> { extension.search("q", 1, emptyList()) }.member)
     }
 
     @Test

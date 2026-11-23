@@ -61,7 +61,8 @@ kotlin {
         commonMain.dependencies {
             implementation(project.dependencies.platform(kotlinx.coroutines.bom))
             implementation(kotlinx.coroutines.core)
-            implementation(kotlinx.serialization.json)
+            // Public API: JsFilter.raw and the result models are kotlinx-serialization JSON types.
+            api(kotlinx.serialization.json)
             // QuickJS (same engine version as Mangayomi) behind `JsEngine`; multiplatform coordinate.
             implementation(libs.quickjs.kt)
             implementation(libs.ksoup)
@@ -72,7 +73,8 @@ kotlin {
         }
         named("jvmSharedMain").configure {
             dependencies {
-                implementation(libs.okhttp.core)
+                // Public API: OkHttpHostHttp(OkHttpClient).
+                api(libs.okhttp.core)
             }
         }
         named("desktopTest").configure {

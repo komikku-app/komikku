@@ -51,7 +51,15 @@ class JsExtensionHost internal constructor(
     /** The provider calls of [source], whose extension text is [code]. */
     fun extension(source: JsSourceDescriptor, code: String): JsExtension = JsExtension(this, source, code)
 
-    internal enum class CallMode(val js: String) { ASYNC("async"), SYNC("sync"), GETTER("getter"), METADATA("metadata") }
+    internal enum class CallMode(val js: String) {
+        ASYNC("async"),
+        SYNC("sync"),
+        GETTER("getter"),
+        METADATA("metadata"),
+
+        /** `search` whose third argument (`null`) is replaced by the default filter list read in the same context. */
+        SEARCH_DEFAULT_FILTERS("search_default_filters"),
+    }
 
     /** How one member ended: its JSON result (`null` for `undefined`) or the error, already classified. */
     internal sealed interface CallOutcome {
@@ -113,12 +121,12 @@ class JsExtensionHost internal constructor(
                 } catch (e: Throwable) {
                     // Not the script's (creating the engine, the host's own decoding): still a JsSourceException.
                     val detail = e.message ?: e::class.simpleName.orEmpty()
-                    mapOf(member to CallOutcome.Failed(JsSourceException.BridgeError(source.name, operation(session, operation), "engine", detail, e)))
+                    mapOf(member to CallOutcome.Failed(JsSourceException.BridgeError(source.id, source.name, operation(session, operation), "engine", detail, e)))
                 }
             }
         }
         return results ?: mapOf(
-            member to CallOutcome.Failed(JsSourceException.Timeout(source.name, operation(session, operation), limits.callTimeoutMillis)),
+            member to CallOutcome.Failed(JsSourceException.Timeout(source.id, source.name, operation(session, operation), limits.callTimeoutMillis)),
         )
     }
 
@@ -199,19 +207,19 @@ class JsExtensionHost internal constructor(
             if (reported.startsWith("m")) {
                 val members = Json.parseToJsonElement(reported.drop(1)) as JsonObject
                 return members.mapValues { (name, envelope) ->
-                    decodeOutcome(envelope.jsonPrimitive.content, engine, session, source, name)
+                    decodeOutcome(envelope.jsonPrimitive.content, engine, session, source, name, name)
                 }
             }
-            return mapOf(member to decodeOutcome(reported, engine, session, source, operation))
+            return mapOf(member to decodeOutcome(reported, engine, session, source, operation, member))
         }
         val currentOperation = operation(session, operation)
         val error = when (escaped) {
             null -> scriptError(source, currentOperation, "$member did not settle (its promise stayed pending)", null)
             is JsEngineException.Script -> scriptError(source, currentOperation, escaped.jsMessage, escaped.jsStack)
             is JsEngineException.OutOfMemory -> outOfMemory(source, currentOperation)
-            is JsEngineException.Interrupted -> JsSourceException.BridgeError(source.name, currentOperation, "engine", "interrupted", escaped)
+            is JsEngineException.Interrupted -> JsSourceException.BridgeError(source.id, source.name, currentOperation, "engine", "interrupted", escaped)
             is CancellationException -> scriptError(source, currentOperation, escaped.message ?: "cancelled", null)
-            else -> JsSourceException.BridgeError(source.name, currentOperation, "host", escaped.message ?: escaped::class.simpleName.orEmpty(), escaped)
+            else -> JsSourceException.BridgeError(source.id, source.name, currentOperation, "host", escaped.message ?: escaped::class.simpleName.orEmpty(), escaped)
         }
         return mapOf(member to CallOutcome.Failed(error))
     }
@@ -237,6 +245,7 @@ class JsExtensionHost internal constructor(
         session: JsSession,
         source: JsSourceDescriptor,
         operation: String,
+        member: String,
     ): CallOutcome {
         val body = reported.drop(1)
         when (reported.firstOrNull()) {
@@ -255,13 +264,19 @@ class JsExtensionHost internal constructor(
         val op = if (field("phase") == "load") LOADING else operation
         val message = field("message").orEmpty()
         val error = when (field("kind")) {
-            "unsupported" -> JsSourceException.Unsupported(source.name, op, field("feature").orEmpty(), field("reason").orEmpty())
+            "unsupported" -> JsSourceException.Unsupported(source.id, source.name, op, field("feature").orEmpty(), field("reason").orEmpty())
             "host" -> envelope["hostId"]?.jsonPrimitive?.intOrNull?.let(session::failure)?.toSourceException(source, op)
                 ?: scriptError(source, op, message, field("stack"))
             "oom" -> outOfMemory(source, op)
             // QuickJS throws `null` when it cannot even allocate its error; a script's own `throw null` is an error.
             "nullish" -> if (isOutOfMemory(engine)) outOfMemory(source, op) else scriptError(source, op, message, null)
-            "not_implemented" -> return CallOutcome.Failed(scriptError(source, op, message, field("stack")), notImplemented = op != LOADING)
+            // While loading (a constructor reading a default) it is the load's error.
+            "not_implemented" -> return if (op == LOADING) {
+                CallOutcome.Failed(scriptError(source, op, message, field("stack")))
+            } else {
+                val missing = field("member") ?: member
+                CallOutcome.Failed(JsSourceException.NotImplemented(source.id, source.name, op, missing), notImplemented = true)
+            }
             else -> scriptError(source, op, message, field("stack"))
         }
         return CallOutcome.Failed(error)
@@ -280,14 +295,14 @@ class JsExtensionHost internal constructor(
     private fun operation(session: JsSession?, operation: String) = if (session?.loaded == true) operation else LOADING
 
     private fun scriptError(source: JsSourceDescriptor, operation: String, message: String, stack: String?) =
-        JsSourceException.ScriptError(source.name, operation, message, stack?.takeIf { it.isNotBlank() })
+        JsSourceException.ScriptError(source.id, source.name, operation, message, stack?.takeIf { it.isNotBlank() })
 
     private fun outOfMemory(source: JsSourceDescriptor, operation: String) =
-        JsSourceException.OutOfMemory(source.name, operation, limits.engine.memoryLimitBytes)
+        JsSourceException.OutOfMemory(source.id, source.name, operation, limits.engine.memoryLimitBytes)
 
     private fun HostFunctionFailure.toSourceException(source: JsSourceDescriptor, operation: String): JsSourceException = when (this) {
-        is HostFunctionFailure.Unsupported -> JsSourceException.Unsupported(source.name, operation, feature, reason)
-        is HostFunctionFailure.Bridge -> JsSourceException.BridgeError(source.name, operation, channel, message.orEmpty(), cause)
+        is HostFunctionFailure.Unsupported -> JsSourceException.Unsupported(source.id, source.name, operation, feature, reason)
+        is HostFunctionFailure.Bridge -> JsSourceException.BridgeError(source.id, source.name, operation, channel, message.orEmpty(), cause)
     }
 
     private companion object {
