@@ -80,7 +80,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits).extension(source, code)` gives a `JsExtension` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` and `metadata()` (API as reshaped by the review fixes below); a fresh context per call; `JsHostLimits` (180 s wall clock per call, 64 MiB heap, 4 MiB JS stack, 50 MiB response bodies); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
 | I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
 | I2b Android engine switch | done | `6485fbe496`, `21f30d5dbe`, `935c6c9710`, `8cf7a35ebd`, `f2b94425c6` | New KMK module `:core:quickjs` (`mihon.library.kmp`, namespace `app.komikku.core.quickjs`): `app.cash.quickjs.QuickJs` / `QuickJsException` on `quickjs-kt` 1.0.15 for Android and desktop, binary compatible with quickjs-android (ABI check below), rebuilt to its behaviour (parity note below; `set` / `get` implemented although no extension uses them). Moved with `git mv` from `:desktop:android-compat` (`src/main/kotlin/app/cash/quickjs/{QuickJs,QuickJsException}.kt`, test `QuickJsTest.kt`); internals in `app.komikku.quickjs` (`QuickJsRuntime`, `EngineThread`, `Marshalling`, `JsStackTrace`). `core:common` depends on it for both targets (desktop no longer gets it from the compat module; `:desktop:extension-runtime` still exposes `app.cash.quickjs.` as a host package). Catalog: `quickjs-android` + bundle `js-engine` commented out (KMK), `quickjs-kt-jvm` added for host tests. Android: `:app:dependencyInsight` finds no `quickjs-android` in `debugRuntimeClasspath`, `quickjs-kt-android` comes through `:core:quickjs`; its AAR has `jni/{arm64-v8a,armeabi-v7a,x86,x86_64}/libquickjs.so` (all four split ABIs; `keepDebugSymbols` `**/libquickjs.so` still matches) and `:app:mergeDebugNativeLibs` packages only its copy (JNI symbols `Java_com_dokar_quickjs_*`). ProGuard: the AAR's consumer rules keep `QuickJs`, `QuickJsException`, `JsProperty`, `JsFunction`, `JsObject`, `UByteArray` (name only); KMK rules added for `MemoryUsage` (JNI constructor) and `UByteArray`'s `(byte[])` constructor and `storage` field; `app.cash.quickjs.** { public protected *; }` still matches. `:source-js` gained `androidTarget()` (namespace `app.komikku.sourcejs`, `mihon.library`) and a `jvmShared` source set (`OkHttpHostHttp`, `JsEngineThread.jvm.kt`, moved from `desktopMain`). Android host unit tests of both modules run the engine: their `*UnitTestRuntimeClasspath` excludes `quickjs-kt-android` and adds `quickjs-kt-jvm` (Linux / macOS / Windows x64 natives). Tests: `:core:quickjs` 16 (13 `QuickJsTest`, 3 `QuickJsErrorClassTest`, 2 of them `@Disabled`), on desktop and the Android host; `:source-js:testReleaseUnitTest` 67 (all of `commonTest`), `desktopTest` 87 (1 skipped). Not verified: R8 / release builds, a device or emulator. After the review fixes (section "Review fixes (I2b)"): `:core:quickjs` 38 (2 `@Disabled`), `:source-js` `desktopTest` 110 (1 skipped), `testReleaseUnitTest` 83. |
-| I3 Source adapter | todo | | |
+| I3 Source adapter | done | `c259852190`, `08091d4ed4`, `0d67724c45`, `9381c340e6`, `bbd19b16bf`, `6c45bdf10a` | `app.komikku.sourcejs.mihon` in `:source-js`: `MangayomiJsSource` (`HttpSource` + `ConfigurableSource` over a `JsExtension`, cached metadata refreshed after preference changes, filters / preferences mapped both ways, page headers in `Page.url`, details merge, readable failures) and `MangayomiJsRuntime` (one host, the app's client and preference files); pure helpers in `commonMain`. `:app` / `:desktopApp` depend on `:source-js`; not yet in the source managers (I4). Details: section "I3 — source adapter". Tests: `:source-js` `desktopTest` 136 (1 skipped), `testReleaseUnitTest` 95; `:desktopApp` `JsSourceBrowseUiTest` 2. |
 | I4 Store and UI | todo | | |
 | I5 Common core for iOS | todo | | Needs macOS. |
 | I6 iOS app | todo | | Needs macOS. |
@@ -523,6 +523,129 @@ parity), and the `quickjs-kt` class instantiation itself (accepted risk; the thr
 **Tests and CI.** `:core:quickjs` 38 tests (2 `@Disabled`; was 16), on desktop and the Android host;
 `:source-js` `desktopTest` 110 (1 skipped; was 87), `testReleaseUnitTest` 83 (was 67). CI runs
 `:core:quickjs:desktopTest` next to `:source-js:desktopTest`.
+
+### I3 — source adapter
+
+A Mangayomi JavaScript source as a Mihon source (PLAN.md 8.3, I-D4), usable on Android and desktop. Decisions taken
+without the maintainer, as asked. Wiring into `AndroidSourceManager` / `DesktopSourceManager` is I4 (the store
+provides the list); I3 only makes a source built by the runtime work when handed to the existing code paths.
+
+**What exists** (package `app.komikku.sourcejs.mihon` in `:source-js`):
+
+- `commonMain` (pure, no JVM types): `JsSourceIds` (`komikkuId(mangayomiId)` = first 8 bytes of
+  `MD5("mangayomi-js/<id>")` big-endian with the sign bit cleared, the shape of Mihon's generated ids;
+  `preferencesName(id)` = `source_<id>`, the same name `ConfigurableSource.preferenceKey()` gives; `normalizeLang`),
+  `JsSourceUrls` (`normalizeBaseUrl`, `resolveCoverUrl`, `resolveWebUrl`), `MihonMangaStatus` + `toMihonStatus()`
+  (0 ongoing → 1, 1 completed → 2, 2 on hiatus → 6, 3 cancelled → 5, 4 publishing finished → 4, 5 unknown → 0;
+  constants repeated from `SManga` because `commonMain` cannot see `source-api`, checked by the tests), `JsPageRef`
+  (a page's image URL and headers, encoded into `Page.url` as `mangayomi-page:<json>`).
+- `jvmSharedMain` (Android + desktop; `api(projects.sourceApi)` on that source set resolved for both targets, so no
+  separate module was needed): `JsFilters` (+ `HeaderFilter` … `GroupFilter`, `JsBackedFilter`),
+  `SharedPreferencesHostPreferences`, `JsPreferenceScreens`, `MangayomiJsSource`, `MangayomiJsRuntime`.
+- `:app` and `:desktopApp` depend on `:source-js` (KMK block in `app/build.gradle.kts`); `app/proguard-rules.pro`
+  keeps the serializers / companions of `app.komikku.**` (KMK block next to the `exh.**` rules).
+
+**Adapter (`MangayomiJsSource`)**: an `HttpSource` + `ConfigurableSource` (the chapter loader, downloader, download
+store and cover fetchers only handle `HttpSource`s). It overrides `id`, `client`, `headers` and every request helper
+it could reach, so it never touches `HttpSource`'s Injekt-provided `network` or the SY delegate and can be built
+without Injekt (unit tests do).
+
+- *Identity:* `name` from the index; `lang` normalised to Mihon's casing (`pt-br` → `pt-BR`, `zh-hans` → `zh-Hans`,
+  blank / `all` / `multi` / `*` → `all`) so language groups merge with Mihon sources; `baseUrl` trimmed of trailing
+  slashes; `supportsRelatedMangas = false` (related titles by search still work, through `search`).
+- *Metadata:* `supportsLatest`, filters, preferences and `getHeaders(baseUrl)` from `JsExtension.metadata()`, cached
+  (Mihon reads them synchronously). A change of the source's preference file (an `OnSharedPreferenceChangeListener`
+  held by the source, since Android keeps them weakly; keys of the free string store are ignored) marks the metadata
+  stale and refreshes it in the background; every call first waits for a pending or running refresh
+  (`awaitMetadata`). A refresh that fails keeps the cached metadata (logged). `refreshMetadata()` forces one;
+  `close()` unregisters and cancels the refresh scope. Opening the settings screen persists the defaults, which
+  triggers one (harmless) refresh.
+- *Calls:* at most `DEFAULT_CONCURRENT_CALLS` = 2 per source at a time (`Semaphore`; each call creates a context of up
+  to 64 MiB), metadata refreshes included.
+- *Lists:* entries without a `link` are dropped (they cannot be opened again); a blank name shows the link; covers
+  resolved against `baseUrl`.
+- *`getMangaUpdate`:* one `getDetail(manga.url)` for details and chapters (none when neither is asked). Because
+  `UpdateMangaFromRemote` writes author / artist / description / genre / status unconditionally, details the source
+  leaves out (`null` / blank, empty genre, status unknown) keep the incoming values; a blank name keeps the title; a
+  missing cover keeps the old one; `initialized = true`. Chapters: `date_upload = dateUpload ?: 0`,
+  `chapter_number = -1` (recognised by the app from the name), a blank name shows the URL.
+- *Pages:* relative page URLs resolved against `baseUrl`, de-duplicated; `Page.url` always carries `JsPageRef(url,
+  headers)` and `Page.imageUrl` the URL. **Deviation from the design note** (which put headers in `Page.url` only when
+  present and `""` otherwise): the URL is always included so `getImageUrl(page)` can recover it when
+  `Page.imageUrl` was cleared (reader retry on EH-based sources, downloader paths). `imageRequest` uses
+  `Page.imageUrl` (so the data saver's replacement is honoured) with the source headers plus the page headers (page
+  headers win).
+- *Headers:* invalid header names / values are skipped (non-ASCII values through `addUnsafeNonAscii`);
+  `Accept-Encoding` from the source is dropped so OkHttp decompresses, as for the script's own requests.
+- *WebView / share:* `getMangaUrl` / `getChapterUrl` (and `mangaDetailsRequest` / `chapterListRequest` /
+  `pageListRequest`) use the link when it is an absolute or protocol-relative URL or a path starting with `/`;
+  any other link is opaque (an id) and opens the home page `baseUrl`.
+- *Failures:* `getLatestUpdates` not implemented → an empty page, and `supportsLatest` turns false until the next
+  metadata refresh (Mangayomi's `supportsLatest` defaults to `true`, so many sources claim latest without it);
+  `search` not implemented → an empty page (global search shows nothing instead of an error); filter / preference /
+  header failures already fall back to defaults in `metadata()`. A `BridgeError` on channel `http` whose cause is an
+  `IOException` (a network failure the script did not handle) is rethrown as that `IOException`, so the app's
+  formatter shows "offline" / "unknown host" as for any source. Everything else (including `NotImplemented` of
+  `getPopular` / `getDetail` / `getPageList`, timeouts, out of memory) stays the `JsSourceException`, whose message
+  is readable (`Extension "X" failed while getPopular(1): TypeError: …`); no new user-visible strings were needed.
+
+**Filters (`JsFilters`)**: each Mihon filter (`Filter.Header` … `Filter.Group`) keeps its `JsFilter`;
+`getFilterList()` builds fresh objects from the cached metadata on every call (Mihon mutates states). Back: every
+`JsBackedFilter` becomes `js.copy(state = …)` in order (groups recursively; a `Sort` with no selection keeps the
+source's own state; select / sort indexes and tri-states clamped); other filters are skipped; an empty or foreign
+list (global search and related-titles search pass `FilterList()`) becomes the cached default list. The adapter never
+passes `null` to `search` (which would re-read the defaults in the call's context): the cached list is the same
+thing.
+
+**Preferences**: `SharedPreferencesHostPreferences` backs the script's `SharedPreferences` with the source's
+`source_<komikkuId>` file (the file the settings screen writes and backups include) using Android types: check box /
+switch `Boolean`, list / edit text `String` (a list stores its entry value), multi-select `Set<String>` (returned in
+the declared `entryValues` order, unknown values after them sorted). A stored value whose type does not fit the
+declared preference reads as missing (the script gets the declared default); before the metadata is known the stored
+type decides. The free `getString` / `setString` store uses keys prefixed `mangayomi_str:` in the same file. The
+existing `KeyValueHostPreferences` (tagged strings) was not usable for a file the settings screen also writes.
+`JsPreferenceScreens` maps check box → `CheckBoxPreference`, switch → `SwitchPreferenceCompat`, list →
+`ListPreference` (summary `%s` when blank), multi-select → `MultiSelectListPreference`, edit text →
+`EditTextPreference` (dialog title falls back to the title); blank or repeated keys are skipped and entry lists are
+cut to the shorter of `entries` / `entryValues` (AndroidX indexes one by the other). The file is compiled for each
+target against AndroidX (Android) and the compat model (desktop) — `PreferenceScreen` is an `expect class` in
+`source-api`, but shared Android + JVM source sets are compiled per target, so no `expect` / `actual` was needed.
+
+**Runtime (`MangayomiJsRuntime`)**: one `JsExtensionHost` for all sources; `OkHttpHostHttp` over the app's client
+(read per request, `NetworkHelper.client`), preferences through `SharedPreferencesHostPreferences` typed by the
+declared preferences of the source built for that Mangayomi id, console / host warnings to logcat
+(`LogcatHostLog`, tag `JS <name>`). `source(descriptor, code, metadata?)` reads the metadata when not given (a load
+failure throws its `JsSourceException`); a source built again for the same id replaces and closes the earlier one;
+`remove(descriptor)` / `close()`. The app constructor takes `(Application, NetworkHelper)`; the primary one takes a
+preference-file function and a client function (tests).
+
+**Tests** (`:source-js`): `AdapterHelpersTest` 6 (`commonTest`: ids against Python's MD5, languages, URLs, statuses,
+page refs), `JsFiltersTest` 6 (`jvmSharedTest`, desktop and Android host), `JsPreferencesTest` 4 and
+`MangayomiJsSourceTest` 10 (`desktopTest`; a small extension against `MockWebServer`: identity, popular with the
+script's own headers and preference-dependent query, metadata / headers / filters / settings screen, a preference
+change refreshing headers and `supportsLatest` (the free string store does not), search with changed and default
+filters, the details merge rules and chapter mapping, pages with headers through `getImage`, the data saver and the
+cleared-URL path, web URLs, missing latest / search, network failure as `IOException`, readable `NotImplemented` /
+`ScriptError` messages, a rebuilt source closing the old one). `:desktopApp`: `JsSourceBrowseUiTest` 2 (the runtime on
+the desktop app's network client and preference files, a Mangayomi-style extension using the DOM bridge, handed to the
+existing code through `FixedSourceManager`: headless browse popular / search → details → add to library (stored
+description, title, resolved cover) → the settings screen → turning latest off refreshes `supportsLatest`; and the
+reader's `ChapterLoader` loading a page into the chapter cache with the source's `Referer` (the server refuses images
+without it) and the page list cache keeping the image URL in `Page.url`). That test found the refresh race fixed in
+`bbd19b16bf`. Totals: `:source-js` `desktopTest` 136 (1 skipped; was 110), `testReleaseUnitTest` 95 (was 83).
+
+**Known gaps / risks:**
+- Not wired into the source managers, no store, no UI label for JavaScript sources (I4); nothing was run on a
+  device, under R8, or against a real website or real extension through the adapter.
+- The Android preference screen path (`JsPreferenceScreens` on real AndroidX, listener on the main thread) is only
+  compiled, not run (Android host tests cannot instantiate AndroidX preferences); likewise
+  `SharedPreferencesHostPreferences` on Android's `SharedPreferencesImpl`.
+- `MangayomiJsSource` registers its preference listener in its constructor (the runtime's provider resolves the
+  file through the `Application`), so building one touches the preference file.
+- Source ids cannot collide with Mihon ids except through a 63-bit MD5 prefix collision; no reserved-id check (e.g.
+  `LocalSource.ID` 0) is made.
+- After any preference change `supportsLatest` is offered again until `getLatestUpdates` proves missing again.
+- Per-extension incognito, `isNsfw`, `hasCloudflare` and `notes` are not used by the adapter (store / UI, I4).
 
 ## Files moved out of upstream paths
 

@@ -1,7 +1,7 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes are done; see
-"Done" and "Left to do").
+State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes and step I3, the
+source adapter, are done; I3 is not reviewed yet; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -49,6 +49,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   old `quickjs-android` AAR removed; ProGuard keeps added; `:source-js` has an Android target; Android
   unit tests swap in quickjs-kt's JVM artifact. Commits `4f0c9489c3` … `712fa9294c`.
 
+- **I3** source adapter (`c259852190` … `6c45bdf10a`, PROGRESS.md "I3 — source adapter"):
+  `app.komikku.sourcejs.mihon.MangayomiJsSource` (an `HttpSource` + `ConfigurableSource` over a `JsExtension`: ids
+  from `MD5("mangayomi-js/<id>")`, cached metadata refreshed after preference changes, filters and preferences
+  mapped both ways, the source's `source_<id>` preference file shared with the settings screen, page headers in
+  `Page.url`, details merge keeping what the source leaves out, empty pages for missing latest / search, network
+  failures as `IOException`) and `MangayomiJsRuntime` (one host on the app's client and preference files).
+  `:app` / `:desktopApp` depend on `:source-js`; ProGuard keeps `app.komikku.**` serializers. Proven headless on
+  desktop (`JsSourceBrowseUiTest`: browse, details, library, settings, chapter loader); not in the source managers
+  yet (I4).
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -77,9 +87,8 @@ mark the residual path in both modules.
 ## Left to do (in order)
 
 1. Re-report the review's findings with their outcomes (coordinator), then decide on the residual risks above.
-2. **I3** source adapter: wrap `JsExtension` as `CatalogueSource`/`ConfigurableSource` (ids from the index
-   id + fixed namespace, filters and preferences mapped both ways, cached `metadata()`, per-page headers,
-   relative covers against `baseUrl`), Android + desktop. Review + fix.
+2. **I3** source adapter: done (see "Done"); review it (`/code-review max c259852190^..6c45bdf10a` plus the docs
+   commit) and fix the findings. Its known gaps are listed in PROGRESS.md "I3 — source adapter".
 3. **I4** store + UI: Mangayomi repository type (index fetch, install/update/uninstall, SHA-256 at
    install, NSFW flag, notes banner, `i18n-kmk` strings), registered in `DesktopSourceManager` and
    `AndroidSourceManager`. Review + fix.

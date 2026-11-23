@@ -60,6 +60,17 @@ against the JDK, and the class-injection regression test (`ErrorClassInjectionTe
 temporary directory; one test is `@Ignore`d until `quickjs-kt` is fixed, see [`PROGRESS.md`](PROGRESS.md)). No
 website is contacted and no third-party extension file is in the repository.
 
+The Mihon source adapter (`app.komikku.sourcejs.mihon`, I3): its pure helpers are tested in `src/commonTest`
+(`AdapterHelpersTest`), the filter mapping in `src/jvmSharedTest` (`JsFiltersTest`, desktop and Android host),
+the preference store / screen and the adapter itself in `src/desktopTest` (`JsPreferencesTest` on the compat
+`androidx.preference` model, `MangayomiJsSourceTest` against `MockWebServer`). The desktop app's
+`JsSourceBrowseUiTest` browses and reads a JavaScript source through the desktop catalogue, details, settings and
+chapter-loader code paths:
+
+```bash
+./gradlew :desktopApp:test --tests '*JsSourceBrowseUiTest*' --max-workers=2
+```
+
 Test stack: this module uses `kotlin.test` (with `kotlinx-coroutines-test`) instead of the JUnit 5 + Kotest +
 MockK stack that `AGENTS.md` names for the Android modules, because `commonTest` must compile for Kotlin/Native
 (iOS) too, where JUnit, Kotest's JVM assertions and MockK are not available; fakes are hand-written. On the JVM
