@@ -15,9 +15,10 @@ They win over anything here; this file is the procedure. The upstreams and their
 `tachiyomiSY` (`tachiyomiSY/master`, GitHub `jobobby04/TachiyomiSY`), which Komikku is forked from and which picks
 mihon commits too.
 
-Never pick onto `master`, never push, and never put a bug fix in the pick commit on your own: bugs found while picking
-are fixed only by step 7's review, as uncommitted changes, and the user decides whether they go in the pick or a
-commit of their own. Write temporary files (messages, test data, worktrees) to the scratchpad directory, not the repo.
+Never pick onto `master` or `main`, never push, and never put a bug fix in the pick commit on your own: bugs found
+while picking are fixed only by step 7's review, as uncommitted changes, and the user decides whether they go in the
+pick or a commit of their own. Write temporary files (messages, test data, worktrees) to the scratchpad directory, not
+the repo.
 
 **Referring to commits.** When you name a commit to the user, give its short hash and then its subject in parentheses,
 with no quotes, like `git log --format=reference`. Shorten long subjects with `…` and drop a trailing PR reference such
@@ -29,9 +30,12 @@ already in the tree stay out of it (step 0).
 
 ## 0. Preflight
 
-1. The current branch is not `master`. Otherwise stop and ask.
-2. Resolve the hash: `git rev-parse --verify '<hash>^{commit}'`, then `git branch -r --contains <hash>` must list
-   `mihon/main` or `tachiyomiSY/master`. If it isn't found, `git fetch mihon` / `git fetch tachiyomiSY` and retry.
+1. The current branch is a named feature branch: `git branch --show-current` prints its name (nothing means a
+   detached `HEAD`), and it is not `master` or `main`. Otherwise stop and ask.
+2. Check that each argument is a commit hash, 7 to 40 hexadecimal characters (`^[0-9a-f]{7,40}$`), before putting it in
+   any command. Otherwise stop and ask. Then resolve it: `git rev-parse --verify '<hash>^{commit}'`, and
+   `git branch -r --contains <hash>` must list `mihon/main` or `tachiyomiSY/master`. If either fails (a commit that
+   isn't fetched yet fails `rev-parse`), `git fetch mihon` / `git fetch tachiyomiSY` and retry both.
 3. Look up its row in the working tree's `cherrypick_log.md` (`grep "commit/<full-hash>" cherrypick_log.md`), so
    notes that aren't committed yet count too. A mihon row can have a `↳ tachiyomiSY` row right above it: SY's copy of
    the same commit (its Details say `pick of mihon …`). Both share one status.
@@ -45,23 +49,27 @@ already in the tree stay out of it (step 0).
      say what is already here, and ask before picking.
    - `X`: show the note and ask before picking. If the user says to pick it anyway, step 4's `mark` needs `--force`
      (it refuses to change an `O` or `X` row otherwise).
-   - No row: say so (the log starts at `since` in `config.json` and leaves out Renovate commits) and go on.
+   - No row: say so (the log starts at `since` in `config.json` and leaves out Renovate commits) and go on. A decision
+     about such a commit can't go in the log (`mark` finds no row), so give it in the report.
 4. Read the row's **Notes** whatever its status. They can hold a decision made earlier for this commit, such as
    "fold in … from …" or "don't pick just for …". Follow it as part of this pick and say that you did. If a note
    contradicts the request, ask.
 5. Not already on this branch: `git log --oneline --grep=<full-hash> master..HEAD` is empty.
-6. If tracked files already have uncommitted changes, staged or not, list them and stash them with
-   `git stash push -m "unrelated to <short-hash>"` (`git cherry-pick` refuses to start with staged changes, and a dirty
-   `cherrypick_log.md` would otherwise be committed along with the row). Pop the stash after step 4's commit, or as soon
-   as you stop without committing (a "don't pick" decision, or after `git cherry-pick --abort` if the pick is in
-   progress, since `git stash pop` fails while it has unresolved conflicts). Untracked files can stay, unless the pick
-   adds a file at the same path; then ask.
+6. If tracked files already have uncommitted changes, staged or not, list them, stash them with
+   `git stash push -m "unrelated to <short-hash>"` and note the stash's commit (`git rev-parse refs/stash`).
+   `git cherry-pick` refuses to start with staged changes, and a dirty `cherrypick_log.md` would otherwise be committed
+   along with the row. Keep them stashed until the end, so that verification, review and the fixes see only the pick:
+   pop the stash once step 7 has carried out the user's answer, or as soon as you stop without committing (a "don't
+   pick" decision, or after `git cherry-pick --abort` if the pick is in progress, since `git stash pop` fails while it
+   has unresolved conflicts). Pop it by that commit, not by position, since another session may push or drop stashes
+   meanwhile: find its entry with `git stash list --format='%gd %H' | grep <commit>`, then
+   `git stash pop 'stash@{N}'`. Untracked files can stay, unless the pick adds a file at the same path; then ask.
 
 When the user decides something about a commit that isn't being picked now (pick it later with a change, skip it,
 fold part of it into another pick), record it in that commit's row, not only in chat or private memory:
 `python3 .claude/skills/cherrypick-log/update_cherrypick_log.py mark <hash> --note 'Plan <YYYY-MM-DD>: …'`. On an `O`
 or `X` row `mark` refuses even a note: add `--force` and leave out `--status`, so the status stays. Don't start the note
-with `AI checked`, which is reserved for review verdicts.
+with `AI checked`, which is reserved for review verdicts. A commit with no row gets its decision in the report instead.
 
 ## 1. Read it before picking
 
@@ -69,7 +77,10 @@ with `AI checked`, which is reserved for review verdicts.
   `(cherry picked from commit …)` line (an SY commit copied from mihon).
 - **Which copy to pick.** For a mihon commit that SY has also picked (a `↳ tachiyomiSY` row, or
   `git log tachiyomiSY/master --format='%h %s' --grep=<full-hash>`), compare the two:
-  `git range-diff <mihon>~1..<mihon> <sy>~1..<sy>`, or `git diff <mihon-hash> <sy-hash>` limited to the commit's files.
+  `git range-diff <mihon>~1..<mihon> <sy>~1..<sy>`, or compare the two patches limited to the commit's files:
+  `diff <(git show --format= <mihon-hash> -- <files>) <(git show --format= <sy-hash> -- <files>)`. Don't use
+  `git diff <mihon-hash> <sy-hash>`: it compares the two trees, so every other difference between the branches shows up
+  as if it were SY's adaptation.
   - **Mostly the same** (the same hunks, apart from context lines, line offsets, formatting, or files SY doesn't have,
     such as `CHANGELOG.md` and `fastlane/`): pick mihon's commit, as most Komikku picks do.
   - **More adaptation in SY's copy** (hunks changed or added to fit SY code: `// SY` / `// EXH` blocks, SY-only types,
@@ -103,10 +114,11 @@ with `AI checked`, which is reserved for review verdicts.
     added it: `git log --oneline -10 <hash>~ -- <file>` lists the last commits that touched the file upstream before
     this one; check which of them Komikku has.
   - **What it uses or adds:** for every class, function, key, preference, string, resource or dependency the commit
-    uses or adds, find what defines or reads it upstream at that commit (`git grep -n '<name>' <hash>`). Then check that
-    the same thing exists here (`git grep -n '<name>' HEAD`). Example: `6dfa10ffac` keeps
-    `eu.kanade.tachiyomi.network.HttpException`, which only exists as a public class since `430b13bb81` (Adapt network
-    implementation for TachiyomiX 1.6), here `87a173929b`.
+    uses but doesn't define itself, find what defines it upstream at that commit (`git grep -n '<name>' <hash>`). Then
+    check that the same thing exists here (`git grep -n '<name>' HEAD`). What the commit adds itself is no
+    prerequisite; only check that Komikku doesn't already have something different by that name. Example:
+    `6dfa10ffac` keeps `eu.kanade.tachiyomi.network.HttpException`, which only exists as a public class since
+    `430b13bb81` (Adapt network implementation for TachiyomiX 1.6), here `87a173929b`.
   - **Don't rely on a prerequisite's status.** The log's partial-pick check compares file names, not contents, and
     skips rows already marked `O`: `34102027d1` cites `b543bc089a` (Clean up some build warnings) but carries 14 of its
     21 files, and the row is `O`. For each prerequisite, compare its files with ours
@@ -206,8 +218,9 @@ found that is ours. Change only what this list covers:
   only things you change without asking. Leaving out any other part needs the user's OK first (step 1, Prerequisites).
 
 Files that merged without a conflict can still need these adaptations. Check everything the pick brings, not just the
-conflicts. `<base>` is `HEAD` while the pick is in progress and `HEAD~1` once git has committed it;
-`git diff --cached HEAD~1` covers the commit plus the adaptations staged on top:
+conflicts. These checks read the index, so stage every adaptation first (`git add <path>` for each). `<base>` is `HEAD`
+while the pick is in progress and `HEAD~1` once git has committed it; `git diff --cached HEAD~1` covers the commit plus
+the adaptations staged on top:
 
 ```bash
 git diff --cached <base> --stat -- data/src/main/sqldelight/tachiyomi/migrations app/src/main/java/mihon/core/migration/migrations i18n-kmk
@@ -254,7 +267,7 @@ step 1.
   `python3 .claude/skills/cherrypick-log/update_cherrypick_log.py mark <full-hash> --status O` for the picked commit
   and for its other copy, if any (the mihon row and its `↳ tachiyomiSY` row), adding `--force` for an `X` row the user
   said to pick (step 0), then `git add cherrypick_log.md`. `mark` rewrites only that row; the summary counts refresh
-  on the next `update`. Never edit the table by hand, except to resolve a stash-pop conflict on the row (below). If
+  on the next `update`. Never edit the table by hand, except to resolve a stash-pop conflict on the row (step 7). If
   there is no row, skip this and say so.
   - If the pick leaves out a part that applies here (not a gone file), use
     `--status '?' --note 'Partial <YYYY-MM-DD>: picked without <part> (<why>)'` instead, so the row doesn't claim the
@@ -271,18 +284,17 @@ step 1.
     add the log row, then `git commit --amend -F <file>`.
   - No `Co-Authored-By` trailer: the commit is upstream's.
   - Check that the commit holds only the expected files: `git show --stat HEAD`.
-  - Then, if step 0 stashed anything, run `git stash pop`. If it conflicts, keep both sides, and say so. On
-    `cherrypick_log.md` a conflict usually means an uncommitted note and the new `O` mark are on the same row.
-  - To resolve that: edit the row to keep status `O` and the note. Then run `git reset -q`: a conflicted pop leaves
-    every other popped file staged, and the stashed changes, the note included, must come back unstaged. Then
-    `git stash drop`, since a conflicted pop keeps the stash.
+  - Leave step 0's stash where it is; it comes back at the end of step 7.
 - **Signature:** commits are GPG-signed automatically (`commit.gpgsign`), so `git log -1 --format='%h %G?'` must show
   `G`. Rewrite history only with rebase or amend, never `filter-branch`, which drops signatures.
 
 ## 5. Verify
 
 AGENTS.md "Formatting & build verification" applies to every pick that changes code or build files (Kotlin, XML,
-`.sq` / `.sqm`, Gradle files and version catalogs, ProGuard rules), not only Kotlin or XML, in this order:
+`.sq` / `.sqm`, Gradle files and version catalogs, ProGuard rules), not only Kotlin or XML, in this order. Building
+runs the pick's Gradle files, plugins and tests with your privileges: if it changes build logic (Gradle files, version
+catalogs, `buildSrc/`, plugins, test code), first read those hunks for anything that downloads or runs code from
+elsewhere or reads credentials, and ask before building if anything does.
 
 1. `./gradlew spotlessCheck`. CI runs it, so a pick must pass even where upstream's formatting differs. If it fails,
    run `./gradlew spotlessApply`, check that it only reformatted the picked files, amend those changes into the pick,
@@ -295,14 +307,18 @@ AGENTS.md "Formatting & build verification" applies to every pick that changes c
    - **Database:** `./gradlew :data:generateSqlDelightInterface` and `./gradlew verifySqlDelightMigration`.
    - **Backups:** build a backup with the parent commit's debug build and restore it with the new one, or the reverse,
      when the models changed.
-   - **R8 / keep rules / `source-api`:** `./gradlew assembleRelease` (or `assemblePreview`) and check the kept classes
-     and members in the APK (`apkanalyzer dex packages --defined-only <apk> | grep <class>`), comparing with the parent
-     commit's build.
+   - **R8 / keep rules / `source-api`:** `./gradlew assembleRelease` (or `assemblePreview`) for the pick and for its
+     parent commit (in a scratchpad worktree), and compare what R8 removed.
+     `app/build/outputs/mapping/<build type>/usage.txt` lists every class and member R8 removed, so a class being in the
+     APK isn't enough: diff the two files for the `source-api` and `eu.kanade.tachiyomi.network` classes. A member
+     extensions use (a method, a constructor, an enum constant or an object's `INSTANCE`) that only the pick's build
+     removes fails at runtime with `NoSuchMethodError` or `NoSuchFieldError`.
    - **Runtime behavior or UI:** say what needs a manual check on a device or emulator (`./gradlew installDebug`), and
      do it when the user asks.
 
 If anything Komikku needs is broken, the commit already exists. Say so plainly, recommend against keeping it, and ask
-whether to drop it (`git reset --hard HEAD~1` discards it, so get confirmation first) or keep it and fix it in step 7.
+whether to drop it (`git reset --keep HEAD~1` discards it, so get confirmation first; unlike `--hard`, it refuses
+rather than discards uncommitted changes) or keep it and fix it in step 7.
 
 Report what ran, what passed and what wasn't run. AGENTS.md "Common issues" covers Gradle OOM, Spotless and SQLDelight
 errors.
@@ -384,11 +400,12 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
    again. If round 5 still finds new things, stop and report what is open.
 6. **Several picks:** keep each pick's fixes apart. Before the next pick, save them as
    `<scratchpad>/review-fixes-<short-hash>.patch` (`git add -N` any new file first, then `git diff HEAD > <file>`) and
-   stash them: `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`. The next pick then starts
-   from a clean tree (step 0). After the last pick's review, pop these stashes oldest first (`git stash list` shows
-   their messages; `git stash pop 'stash@{N}'`), so all the fixes are uncommitted in the working tree. If a pop
-   conflicts, keep both sides, run `git reset -q` and `git stash drop 'stash@{N}'` (a conflicted pop keeps the
-   stash), and say so. The patch files keep each pick's fixes apart for a fold.
+   stash them: `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
+   (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review,
+   pop these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back
+   last, below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run
+   `git reset -q` and `git stash drop 'stash@{N}'` (a conflicted pop keeps the stash), and say so. The patch files keep
+   each pick's fixes apart for a fold.
 
 For each fix, suggest where it should go:
 - **Fold into the pick** when it corrects the pick itself (a missed adaptation, a marker, a migration number or
@@ -418,6 +435,12 @@ Then carry out the user's answer to the Report's question:
 After any of these, every new or rewritten commit must show `G` in `git log --format='%h %G? %s' master..HEAD`, and
 step 5's checks run again on the branch tip.
 
+Last, if step 0 stashed anything, pop it by its commit (step 0). If it conflicts, keep both sides, and say so. On
+`cherrypick_log.md` a conflict usually means an uncommitted note and the new `O` mark are on the same row. To resolve
+that: edit the row to keep status `O` and the note. Then run `git reset -q`: a conflicted pop leaves every other popped
+file staged, and the stashed changes, the note included, must come back unstaged. Then `git stash drop 'stash@{N}'`,
+since a conflicted pop keeps the stash.
+
 ## 8. Which PR it belongs in
 
 Decide whether the pick can ship in the same PR as the rest of the branch (`git log --oneline master..HEAD`), should
@@ -441,7 +464,7 @@ share a `version` (`DisabledRepoMigration` and `SyncPrefKeyMigration` are both `
 `versionCode` for the same release (step 3). List the open PRs that change either:
 
 ```bash
-gh pr list -R komikku-app/komikku --state open --limit 200 --json number,title,files \
+gh pr list -R komikku-app/komikku --state open --limit 1000 --json number,title,files \
   --jq '.[] | {number, title, m: [.files[].path | select(startswith("data/src/main/sqldelight/tachiyomi/migrations/") or . == "app/build.gradle.kts")]} | select(.m != []) | "#\(.number) \(.title): \(.m | join(", "))"'
 ```
 
@@ -456,7 +479,7 @@ If two PRs take the same migration number or both raise `versionCode`, say so an
 **Open PRs in this repo.** List the open PRs that touch the same files:
 
 ```bash
-gh pr list -R komikku-app/komikku --state open --limit 200 --json number,title,files \
+gh pr list -R komikku-app/komikku --state open --limit 1000 --json number,title,files \
   --jq '.[] | select([.files[].path] | any(. == "<file>")) | "#\(.number) \(.title)"'
 ```
 
