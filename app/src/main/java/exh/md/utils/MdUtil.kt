@@ -169,22 +169,31 @@ class MdUtil {
             }
         }
 
-        private var codeVerifier: String? = null
+        // KMK -->
+        // Was only used for the refresh request's code_verifier, which is no longer sent.
+        // private var codeVerifier: String? = null
+        // KMK <--
 
         fun refreshTokenRequest(oauth: MALOAuth): Request {
             val formBody = FormBody.Builder()
                 .add("client_id", MdConstants.Login.clientId)
                 .add("grant_type", MdConstants.Login.refreshToken)
                 .add("refresh_token", oauth.refreshToken)
-                .add("code_verifier", getPkceChallengeCode())
-                .add("redirect_uri", MdConstants.Login.redirectUri)
+                // KMK -->
+                // Unused by a refresh: PKCE is for the code grant (RFC 7636), RFC 6749 §6 has no redirect_uri.
+                // .add("code_verifier", getPkceChallengeCode())
+                // .add("redirect_uri", MdConstants.Login.redirectUri)
+                // KMK <--
                 .build()
 
-            // Add the Authorization header manually as this particular
-            // request is called by the interceptor itself so it doesn't reach
-            // the part where the token is added automatically.
+            // KMK -->
+            // Keycloak's refresh grant never reads the bearer token, which is the expired access token anyway.
+            // // Add the Authorization header manually as this particular
+            // // request is called by the interceptor itself so it doesn't reach
+            // // the part where the token is added automatically.
+            // .add("Authorization", "Bearer ${oauth.accessToken}")
+            // KMK <--
             val headers = Headers.Builder()
-                .add("Authorization", "Bearer ${oauth.accessToken}")
                 // KMK -->
                 // Sent from inside the auth interceptor, past MangaDexUserAgentInterceptor, so set the same
                 // non-browser User-Agent here instead of falling back to OkHttp's default.
@@ -196,11 +205,12 @@ class MdUtil {
         }
 
         // KMK -->
-        // Only the refresh request still uses this in-memory verifier; logins use [newLoginCodeVerifier].
+        // Was only used for the refresh request's code_verifier, which is no longer sent; logins use
+        // [newLoginCodeVerifier].
+        // fun getPkceChallengeCode(): String {
+        //     return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
+        // }
         // KMK <--
-        fun getPkceChallengeCode(): String {
-            return codeVerifier ?: PkceUtil.generateCodeVerifier().also { codeVerifier = it }
-        }
 
         // KMK -->
         /**
