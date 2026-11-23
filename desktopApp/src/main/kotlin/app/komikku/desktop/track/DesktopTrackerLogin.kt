@@ -12,6 +12,8 @@ import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeListApi
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.shikimori.ShikimoriApi
+import exh.md.utils.MdConstants
+import exh.md.utils.MdUtil
 import tachiyomi.domain.source.service.SourceManager
 
 /**
@@ -33,7 +35,7 @@ sealed interface TrackerLoginMethod {
     /** Komga / Kavita / Suwayomi: logged in by the matching installed source (Android: `loginNoop`). */
     data object Enhanced : TrackerLoginMethod
 
-    /** MDList: logs in through the MangaDex source's OAuth (Android: `MangaDexLoginActivity`), not on desktop yet. */
+    /** Not used by the borrowed trackers any more (MDList logs in through [OAuthPaste] since P4); kept for tracker types without a desktop login. */
     data object Unsupported : TrackerLoginMethod
 }
 
@@ -44,7 +46,8 @@ object DesktopTrackerLogin {
         is Anilist -> TrackerLoginMethod.OAuthPaste({ AnilistApi.authUrl().toString() }, "anilist-auth", "access_token")
         is Shikimori -> TrackerLoginMethod.OAuthPaste({ ShikimoriApi.authUrl().toString() }, "shikimori-auth", "code")
         is Bangumi -> TrackerLoginMethod.OAuthPaste({ BangumiApi.authUrl().toString() }, "bangumi-auth", "code")
-        is MdList -> TrackerLoginMethod.Unsupported
+        // Android: Settings → MangaDex → login (MangaDexLoginActivity), through the enabled MangaDex source (P4)
+        is MdList -> TrackerLoginMethod.OAuthPaste({ MdConstants.Login.authUrl(MdUtil.getPkceChallengeCode()) }, "mangadex-auth", "code")
         is EnhancedTracker -> TrackerLoginMethod.Enhanced
         else -> TrackerLoginMethod.Credentials
     }
@@ -62,6 +65,12 @@ object DesktopTrackerLogin {
     /** OAuth trackers' `login(username, password)` takes the code / token as password (Android does the same). */
     suspend fun loginWithRedirect(tracker: Tracker, method: TrackerLoginMethod.OAuthPaste, pasted: String): Boolean {
         val credential = credentialFromRedirect(method, pasted) ?: return false
+        if (tracker is MdList) {
+            // Android's MangaDexLoginActivity: the code goes to the enabled MangaDex (delegated) source, which stores
+            // the MDList token; without one there is nothing to log in with
+            val mangaDex = MdUtil.getEnabledMangaDex() ?: return false
+            return mangaDex.login(credential) && tracker.isLoggedIn
+        }
         tracker.login("", credential)
         return tracker.isLoggedIn
     }

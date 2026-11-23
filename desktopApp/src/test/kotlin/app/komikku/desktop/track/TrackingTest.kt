@@ -97,7 +97,17 @@ class TrackingTest {
         DesktopTrackerLogin.method(Injekt.get<TrackerManager>().myAnimeList).let { (it as TrackerLoginMethod.OAuthPaste).host } shouldBe "myanimelist-auth"
         DesktopTrackerLogin.method(Injekt.get<TrackerManager>().kitsu) shouldBe TrackerLoginMethod.Credentials
         DesktopTrackerLogin.method(Injekt.get<TrackerManager>().komga) shouldBe TrackerLoginMethod.Enhanced
-        DesktopTrackerLogin.method(Injekt.get<TrackerManager>().mdList) shouldBe TrackerLoginMethod.Unsupported
+        // MDList (P4): MangaDex's OAuth with PKCE, the code goes to the enabled MangaDex source; none here, so no login
+        val mdList = Injekt.get<TrackerManager>().mdList
+        val mdMethod = DesktopTrackerLogin.method(mdList) as TrackerLoginMethod.OAuthPaste
+        mdMethod.host shouldBe "mangadex-auth"
+        mdMethod.authUrl().let {
+            it shouldContain "client_id=tachiyomisy"
+            it shouldContain "code_challenge_method=S256"
+        }
+        DesktopTrackerLogin.credentialFromRedirect(mdMethod, "tachiyomisy://mangadex-auth?code=abc") shouldBe "abc"
+        runBlocking { DesktopTrackerLogin.loginWithRedirect(mdList, mdMethod, "tachiyomisy://mangadex-auth?code=abc") } shouldBe false
+        mdList.isLoggedIn shouldBe false
         DesktopTrackerLogin.enhancedAvailable(Injekt.get<TrackerManager>().komga, Injekt.get()) shouldBe false
     }
 
