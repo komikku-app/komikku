@@ -4,10 +4,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import org.junit.jupiter.api.assertThrows
 
 /**
  * `close()` from another thread ends a call that never finishes (quickjs-kt keeps running pending jobs and awaits

@@ -169,7 +169,7 @@ internal fun jsString(value: String): String = buildString(value.length + 2) {
         when {
             c == '"' -> append("\\\"")
             c == '\\' -> append("\\\\")
-            c < ' ' || c == ' ' || c == ' ' || c.isSurrogate() || c.code > 0x7e ->
+            c < ' ' || c == '\u2028' || c == '\u2029' || c.isSurrogate() || c.code > 0x7e ->
                 append("\\u").append(c.code.toString(16).padStart(4, '0'))
             else -> append(c)
         }

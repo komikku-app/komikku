@@ -1,3 +1,4 @@
+import mihon.buildlogic.useQuickJsKtJvmInAndroidHostTests
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 /*
@@ -79,11 +80,6 @@ kotlin {
                 implementation(libs.okhttp.mockwebserver)
             }
         }
-        named("androidUnitTest").configure {
-            dependencies {
-                runtimeOnly(libs.quickjs.kt.jvm)
-            }
-        }
     }
 }
 
@@ -92,9 +88,7 @@ android {
 }
 
 // Android host unit tests: swap quickjs-kt's Android AAR (natives for Android ABIs only) for the JVM artifact.
-configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
-    exclude(group = "io.github.dokar3", module = "quickjs-kt-android")
-}
+useQuickJsKtJvmInAndroidHostTests("androidUnitTestRuntimeOnly")
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()

@@ -9,6 +9,8 @@
  * Tests (`src/test/kotlin`) run on desktop and on the Android host: quickjs-kt's Android AAR carries Android
  * natives only, so the Android unit-test runtime classpath gets the JVM artifact (host natives) instead.
  */
+import mihon.buildlogic.useQuickJsKtJvmInAndroidHostTests
+
 plugins {
     id("mihon.library.kmp")
 }
@@ -28,9 +30,4 @@ dependencies {
 }
 
 // Android host unit tests: swap the Android AAR (natives for Android ABIs only) for the JVM artifact.
-configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
-    exclude(group = "io.github.dokar3", module = "quickjs-kt-android")
-}
-dependencies {
-    "testRuntimeOnly"(libs.quickjs.kt.jvm)
-}
+useQuickJsKtJvmInAndroidHostTests("testRuntimeOnly")

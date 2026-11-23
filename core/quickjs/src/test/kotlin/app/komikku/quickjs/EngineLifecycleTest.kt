@@ -3,10 +3,10 @@ package app.komikku.quickjs
 import app.cash.quickjs.QuickJs
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import org.junit.jupiter.api.assertThrows
 import com.dokar.quickjs.QuickJs as Engine
 
 /**

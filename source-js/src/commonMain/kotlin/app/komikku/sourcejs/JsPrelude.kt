@@ -556,7 +556,7 @@ ObjectPreventExtensions(ObjectPrototype);
             when {
                 c == '"' -> append("\\\"")
                 c == '\\' -> append("\\\\")
-                c < ' ' || c == ' ' || c == ' ' -> append("\\u").append(c.code.toString(16).padStart(4, '0'))
+                c < ' ' || c == '\u2028' || c == '\u2029' -> append("\\u").append(c.code.toString(16).padStart(4, '0'))
                 else -> append(c)
             }
         }

@@ -27,7 +27,10 @@ class QuickJsLifecycleTest {
                 held.countDown()
                 release.await()
             }
-        }.apply { isDaemon = true; start() }
+        }.apply {
+            isDaemon = true
+            start()
+        }
         held.await()
         val creating = async(Dispatchers.Default) { QuickJsEngine.create(JsEngineLimits()) }
         assertNull(withTimeoutOrNull(500) { creating.await() })
@@ -43,7 +46,10 @@ class QuickJsLifecycleTest {
                 held2.countDown()
                 release2.await()
             }
-        }.apply { isDaemon = true; start() }
+        }.apply {
+            isDaemon = true
+            start()
+        }
         held2.await()
         val closing = async(Dispatchers.Default) { engine.close() }
         delay(500)

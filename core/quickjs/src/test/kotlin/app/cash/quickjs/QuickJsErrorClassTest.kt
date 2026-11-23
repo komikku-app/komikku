@@ -123,5 +123,4 @@ class QuickJsErrorClassTest {
     fun interface Sink {
         fun take(text: String?, value: Any?, values: Array<Any?>?)
     }
-
 }
