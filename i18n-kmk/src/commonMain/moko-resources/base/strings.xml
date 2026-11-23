@@ -242,4 +242,14 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <!-- Onboarding storage folder -->
+    <string name="onboarding_storage_folder_info">%1$s needs a folder for downloads, backups, and other files.</string>
+    <string name="onboarding_storage_folder_create">Create folder</string>
+    <string name="onboarding_storage_pick_info">Pick any folder you like. To make a new one, use the \"New folder\" button in the system dialog.</string>
+    <string name="onboarding_storage_create_info">Or let %1$s create the folder for you in Documents, then pick it in the next step.</string>
+    <string name="onboarding_storage_folder_name_label">Folder name</string>
+    <string name="onboarding_storage_folder_name_label_created">Folder created</string>
+    <string name="onboarding_storage_folder_name_hint">Folder name</string>
+    <string name="onboarding_storage_permission_dialog_title">Allow folder access</string>
+    <string name="onboarding_storage_permission_dialog_desc">The folder %1$s has been created in Documents. On the next screen, choose that folder and allow access so %2$s can read and write your files.</string>
 </resources>
