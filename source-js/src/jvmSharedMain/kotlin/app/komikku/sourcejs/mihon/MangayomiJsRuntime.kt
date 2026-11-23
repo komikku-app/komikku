@@ -12,6 +12,7 @@ import app.komikku.sourcejs.bridge.HostLog
 import app.komikku.sourcejs.bridge.HostPreferencesProvider
 import app.komikku.sourcejs.bridge.JsHostServices
 import app.komikku.sourcejs.bridge.OkHttpHostHttp
+import app.komikku.sourcejs.model.JsPreference
 import app.komikku.sourcejs.model.JsSourceMetadata
 import eu.kanade.tachiyomi.network.NetworkHelper
 import kotlinx.coroutines.CoroutineScope
@@ -78,9 +79,15 @@ class MangayomiJsRuntime(
      * The source for [descriptor] whose extension text is [code]. [metadata] is read from the text when not given
      * (a cache of the store); failing to load the text fails with its [app.komikku.sourcejs.JsSourceException]. A source built again for
      * the same id (an update) replaces the earlier one, which is [closed][MangayomiJsSource.close].
+     *
+     * The first read cannot know the new text's declared preferences yet (it reads them), so the stored values are
+     * typed by the earlier source's declarations, or by their stored types. When the new declarations type a stored
+     * value differently (a value of another type now reads as the default, a set gets the declared order), the
+     * metadata is read once more after registering the source, so headers and `supportsLatest` see what later calls see.
      */
     suspend fun source(descriptor: JsSourceDescriptor, code: String, metadata: JsSourceMetadata? = null): MangayomiJsSource {
         val extension = extension(descriptor, code)
+        val readWith = sources[descriptor.id]?.metadata?.preferences.orEmpty()
         val initial = metadata ?: sharedPermits.withPermit { extension.metadata() }
         val source = MangayomiJsSource(
             extension = extension,
@@ -91,6 +98,7 @@ class MangayomiJsRuntime(
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )
         sources.put(descriptor.id, source)?.takeIf { it !== source }?.close()
+        if (metadata == null && readsDiffer(preferencesOf(descriptor), readWith, initial.preferences)) source.refreshMetadata()
         return source
     }
 
@@ -107,6 +115,15 @@ class MangayomiJsRuntime(
 
     private fun preferencesOf(descriptor: JsSourceDescriptor): SharedPreferences =
         preferences(JsSourceIds.komikkuId(descriptor.id))
+
+    /** Whether a stored value of [stored] reads differently under the declarations [before] and [after]. */
+    private fun readsDiffer(stored: SharedPreferences, before: List<JsPreference>, after: List<JsPreference>): Boolean {
+        val old = SharedPreferencesHostPreferences(stored) { before }
+        val new = SharedPreferencesHostPreferences(stored) { after }
+        return stored.all.keys.any { key ->
+            !key.startsWith(SharedPreferencesHostPreferences.STRING_KEY_PREFIX) && old.getValue(key) != new.getValue(key)
+        }
+    }
 
     /** Script console output and host warnings in logcat, tagged with the source. */
     object LogcatHostLog : HostLog {

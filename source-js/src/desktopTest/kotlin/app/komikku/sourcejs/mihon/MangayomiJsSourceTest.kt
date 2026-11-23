@@ -366,6 +366,15 @@ class MangayomiJsSourceTest {
         assertTrue(max in 2..MangayomiJsRuntime.DEFAULT_CONCURRENT_CALLS, "at most ${MangayomiJsRuntime.DEFAULT_CONCURRENT_CALLS} at once, got $max")
     }
 
+    @Test
+    fun theFirstMetadataReadIsTypedByTheNewDeclarations() = runBlocking {
+        // A value stored by an earlier version under another type (a switch then, a list now).
+        context.getSharedPreferences(JsSourceIds.preferencesName(JsSourceIds.komikkuId(8)), Context.MODE_PRIVATE)
+            .edit().putBoolean("mode", true).commit()
+        val source = source(TYPED, descriptor(id = 8))
+        assertEquals("A", source.headers["X-Mode"])
+    }
+
     companion object {
         /** Popular, latest (failing), search, details, pages, filters, preferences and headers. */
         val FULL = """
@@ -436,6 +445,17 @@ class MangayomiJsSourceTest {
               async getPopular(page) {
                 await new Client().get(this.source.baseUrl.replace(/\/+$/, "") + "/slow");
                 return { list: [], hasNextPage: false };
+              }
+            }
+        """.trimIndent()
+
+        /** Headers from a list preference: a stored value of another type must read as the default. */
+        val TYPED = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 8 }];
+            class DefaultExtension extends MProvider {
+              getHeaders(url) { return { "X-Mode": new SharedPreferences().get("mode").toUpperCase() }; }
+              getSourcePreferences() {
+                return [{ key: "mode", listPreference: { title: "Mode", summary: "", valueIndex: 0, entries: ["A", "B"], entryValues: ["a", "b"] } }];
               }
             }
         """.trimIndent()
