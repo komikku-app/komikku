@@ -75,6 +75,9 @@ kotlin {
             dependencies {
                 // Public API: OkHttpHostHttp(OkHttpClient).
                 api(libs.okhttp.core)
+                // Public API: the source adapter (`app.komikku.sourcejs.mihon.MangayomiJsSource` is an `HttpSource`).
+                // Through it also `core:common` (NetworkHelper, logcat) and, on desktop, `:desktop:android-compat`.
+                api(projects.sourceApi)
             }
         }
         named("desktopTest").configure {
