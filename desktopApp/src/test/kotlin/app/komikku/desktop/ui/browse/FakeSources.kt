@@ -136,3 +136,49 @@ class FixedSourceManager(sources: List<Source>) : SourceManager {
     override suspend fun getMergedSources(mangaId: Long): List<Source> = emptyList()
     override fun getStubSources(): List<StubSource> = emptyList()
 }
+
+/**
+ * A minimal online source for source list and global search tests (an [HttpSource], so it is in the source filter
+ * screen like an extension source) without network: search returns "<prefix> <query>" (or nothing, or fails with
+ * [error]); popular returns "<prefix> popular".
+ */
+class SimpleSearchSource(
+    override val id: Long,
+    override val name: String,
+    override val lang: String = "en",
+    private val prefix: String? = name,
+    private val error: String? = null,
+) : HttpSource() {
+
+    override val baseUrl: String = "https://simple.example.org"
+
+    override val supportsLatest: Boolean = false
+
+    private fun page(title: String?) = MangasPage(
+        listOfNotNull(title).map { t ->
+            SManga.create().apply {
+                url = "/$id/${t.lowercase().replace(' ', '-')}"
+                this.title = t
+            }
+        },
+        hasNextPage = false,
+    )
+
+    override suspend fun getPopularManga(page: Int): MangasPage = page(prefix?.let { "$it popular" })
+
+    override suspend fun getLatestUpdates(page: Int): MangasPage = page(null)
+
+    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+        error?.let { throw java.io.IOException(it) }
+        return page(prefix?.let { "$it $query" })
+    }
+
+    override suspend fun getMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate = SMangaUpdate(manga, emptyList())
+
+    override suspend fun getPageList(chapter: SChapter): List<Page> = emptyList()
+}
