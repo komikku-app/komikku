@@ -1,8 +1,8 @@
 # Komikku Desktop / JS Sources — Handover
 
 State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
-review fixes, and step I4, the repository store and UI, are done; next is the review of I4; see "Done" and "Left to
-do").
+review fixes, and step I4, the repository store and UI, with its review fixes, are done; next are the desktop parity
+gaps; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -74,7 +74,13 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   sources merged into `AndroidSourceManager` / `DesktopSourceManager` with `StubSource(id, lang, stubName)` stubs; a
   shared screen model and Compose list, hosted by the Android `mihon.feature.jssources.JsSourcesScreen` (Extensions
   tab overflow, Browse settings) and a third desktop browse tab; "JS" label, notes banner, Android source icons.
-  Android UI compile-only. Not reviewed yet.
+  Android UI compile-only.
+- **I4 review** (medium, 9 findings) — all fixed in `6337d12` … `a1ef663` (PROGRESS.md "Review fixes (I4)"): store
+  file errors as `STORAGE_FAILED` and no crash from any failure in the screen model, the source managers wait for
+  the loaded JavaScript sources (at most 15 s; a broken store counts as loaded-empty), refresh merges into the current
+  repositories, a failed update keeps the old source open and registered, the desktop JS model is created with its
+  tab and the store lookup is guarded, the install dialog shows the post-redirect host, obsolete only once every
+  repository was read, no stale icon, `repo.json` URL resolution for index URLs without a path.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -106,13 +112,13 @@ mark the residual path in both modules.
 1. Re-report the review's findings with their outcomes (coordinator), then decide on the residual risks above.
 2. **I3** source adapter and its review fixes: done (see "Done"). Known gaps: PROGRESS.md "I3 — source adapter" and
    "Review fixes (I3)" (left open).
-3. **I4** repository store + UI: done (see "Done"). **Next: review it** (`/code-review medium 5780d0e^..HEAD`), fix
-   the findings, re-report them. Known gaps: PROGRESS.md "I4 — repository store and UI" (Android UI not run, sources
-   not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, `isInitialized` does not wait for
-   the store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
-4. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
-5. Desktop parity gaps (PROGRESS list): global search, source/language toggles, library grouping/batch
+3. **I4** repository store + UI and its review fixes: done (see "Done"); the coordinator re-reports the findings with
+   their outcomes. Known gaps: PROGRESS.md "I4 — repository store and UI" and "Review fixes (I4)" (Android UI not run,
+   sources not in backups, `TEXT_CHANGED` costs a download per installed source per refresh, start-up may wait up to
+   15 s for a slow store, no deep link / update badge). Milestone I-A (PLAN 8.4) then needs a first real run.
+4. **Next: desktop parity gaps** (PROGRESS list): global search, source/language toggles, library grouping/batch
    actions, scheduled updates/backups, delegated sources, AVIF/JXL, WebView/Cloudflare, signing, updater.
+5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
 7. First real run by the maintainer: `./gradlew :desktopApp:run`, Android `assembleDebug` on a device

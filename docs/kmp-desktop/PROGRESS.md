@@ -81,7 +81,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
 | I2b Android engine switch | done | `6485fbe496`, `21f30d5dbe`, `935c6c9710`, `8cf7a35ebd`, `f2b94425c6` | New KMK module `:core:quickjs` (`mihon.library.kmp`, namespace `app.komikku.core.quickjs`): `app.cash.quickjs.QuickJs` / `QuickJsException` on `quickjs-kt` 1.0.15 for Android and desktop, binary compatible with quickjs-android (ABI check below), rebuilt to its behaviour (parity note below; `set` / `get` implemented although no extension uses them). Moved with `git mv` from `:desktop:android-compat` (`src/main/kotlin/app/cash/quickjs/{QuickJs,QuickJsException}.kt`, test `QuickJsTest.kt`); internals in `app.komikku.quickjs` (`QuickJsRuntime`, `EngineThread`, `Marshalling`, `JsStackTrace`). `core:common` depends on it for both targets (desktop no longer gets it from the compat module; `:desktop:extension-runtime` still exposes `app.cash.quickjs.` as a host package). Catalog: `quickjs-android` + bundle `js-engine` commented out (KMK), `quickjs-kt-jvm` added for host tests. Android: `:app:dependencyInsight` finds no `quickjs-android` in `debugRuntimeClasspath`, `quickjs-kt-android` comes through `:core:quickjs`; its AAR has `jni/{arm64-v8a,armeabi-v7a,x86,x86_64}/libquickjs.so` (all four split ABIs; `keepDebugSymbols` `**/libquickjs.so` still matches) and `:app:mergeDebugNativeLibs` packages only its copy (JNI symbols `Java_com_dokar_quickjs_*`). ProGuard: the AAR's consumer rules keep `QuickJs`, `QuickJsException`, `JsProperty`, `JsFunction`, `JsObject`, `UByteArray` (name only); KMK rules added for `MemoryUsage` (JNI constructor) and `UByteArray`'s `(byte[])` constructor and `storage` field; `app.cash.quickjs.** { public protected *; }` still matches. `:source-js` gained `androidTarget()` (namespace `app.komikku.sourcejs`, `mihon.library`) and a `jvmShared` source set (`OkHttpHostHttp`, `JsEngineThread.jvm.kt`, moved from `desktopMain`). Android host unit tests of both modules run the engine: their `*UnitTestRuntimeClasspath` excludes `quickjs-kt-android` and adds `quickjs-kt-jvm` (Linux / macOS / Windows x64 natives). Tests: `:core:quickjs` 16 (13 `QuickJsTest`, 3 `QuickJsErrorClassTest`, 2 of them `@Disabled`), on desktop and the Android host; `:source-js:testReleaseUnitTest` 67 (all of `commonTest`), `desktopTest` 87 (1 skipped). Not verified: R8 / release builds, a device or emulator. After the review fixes (section "Review fixes (I2b)"): `:core:quickjs` 38 (2 `@Disabled`), `:source-js` `desktopTest` 110 (1 skipped), `testReleaseUnitTest` 83. |
 | I3 Source adapter | done | `c259852190`, `08091d4ed4`, `0d67724c45`, `9381c340e6`, `bbd19b16bf`, `6c45bdf10a` | `app.komikku.sourcejs.mihon` in `:source-js`: `MangayomiJsSource` (`HttpSource` + `ConfigurableSource` over a `JsExtension`, cached metadata refreshed after preference changes, filters / preferences mapped both ways, page headers in `Page.url`, details merge, readable failures) and `MangayomiJsRuntime` (one host, the app's client and preference files); pure helpers in `commonMain`. `:app` / `:desktopApp` depend on `:source-js`; not yet in the source managers (I4). Details: section "I3 — source adapter". Tests: `:source-js` `desktopTest` 136 (1 skipped), `testReleaseUnitTest` 95; `:desktopApp` `JsSourceBrowseUiTest` 2. After the review fixes (section "Review fixes (I3)", `6bdcd94` … `9efd135`): `desktopTest` 145 (1 skipped), `testReleaseUnitTest` 96, `JsSourceBrowseUiTest` 3. |
-| I4 Store and UI | done | `5780d0e` … (see section "I4 — repository store and UI") | Index / `repo.json` / version logic in `:source-js` (`app.komikku.sourcejs.repo`), `MangayomiSourceStore` + shared screen model and UI in `:app-shared` (`app.komikku.shared.jssource`), sources in `AndroidSourceManager` / `DesktopSourceManager`, Android screen `mihon.feature.jssources.JsSourcesScreen` (Extensions tab overflow, Browse settings), desktop third browse tab. Tests: `:source-js` `desktopTest` 153 (1 skipped), `testReleaseUnitTest` 104; `:desktopApp` `MangayomiSourceStoreTest` 12, `JsSourceManagerTest` 2, `JsSourcesUiTest` 1. Not reviewed yet. |
+| I4 Store and UI | done | `5780d0e` … (see section "I4 — repository store and UI") | Index / `repo.json` / version logic in `:source-js` (`app.komikku.sourcejs.repo`), `MangayomiSourceStore` + shared screen model and UI in `:app-shared` (`app.komikku.shared.jssource`), sources in `AndroidSourceManager` / `DesktopSourceManager`, Android screen `mihon.feature.jssources.JsSourcesScreen` (Extensions tab overflow, Browse settings), desktop third browse tab. Tests: `:source-js` `desktopTest` 153 (1 skipped), `testReleaseUnitTest` 104; `:desktopApp` `MangayomiSourceStoreTest` 12, `JsSourceManagerTest` 2, `JsSourcesUiTest` 1. Reviewed (medium, 9 findings), all fixed in `6337d12` … `a1ef663` (section "Review fixes (I4)"): `desktopTest` 154 (1 skipped), `testReleaseUnitTest` 105, `MangayomiSourceStoreTest` 16, `JsSourceManagerTest` 5. |
 | I5 Common core for iOS | todo | | Needs macOS. |
 | I6 iOS app | todo | | Needs macOS. |
 | I7 Distribution and CI | todo | | Needs macOS. |
@@ -741,7 +741,8 @@ taken without the maintainer, as asked.
   file system cannot). A manifest that does not decode is renamed to `manifest.json.corrupt-<time>` and the store
   starts empty with a warning. A text whose file is missing or no longer has its recorded SHA-256 is not loaded
   (reported on its row as a load error); other sources still load.
-- *Start-up:* the store reads its files in the background (the app does not wait). A source with cached metadata is
+- *Start-up:* the store reads its files in the background (the source managers wait for that, bounded; see "Review
+  fixes (I4)"). A source with cached metadata is
   built without running its script and then refreshes its metadata in the background (it may predate preference
   changes); a source without (a manifest written without it) runs its script once and the metadata is
   written to the manifest. Loading holds the store's lock, so an install / update / uninstall started meanwhile waits
@@ -772,8 +773,8 @@ which needs a 63-bit MD5 prefix collision) and register their stubs as `StubSour
 uninstalled source keeps its `"<name> [JS] (<LANG>)"` download folder (PROGRESS "Review fixes (I3)", left open item 1;
 checked in `JsSourceManagerTest`). Android: the extension flow is combined with the store's flow and the sources are
 read in the KMK block after the extension loop. Desktop: `jsSources` is the fourth `combine` input (the manager also
-runs with only JavaScript sources). `isInitialized` does not wait for the store (start-up must not block); a source
-that is not built yet resolves as its stub for that moment. When the store cannot be created at all
+runs with only JavaScript sources). `isInitialized` did not wait for the store at first; since the review fixes it
+waits for the store's first loaded list, at most 15 s ("Review fixes (I4)"). When the store cannot be created at all
 (`sourcesOrEmpty`), the managers run without JavaScript sources (logged).
 
 **UI:** one `JsSourcesScreenModel` + `JsSourcesContent` for both platforms: a "Repositories" header with an add
@@ -784,7 +785,7 @@ NSFW / obsolete / "Text changed" marks, the source's `notes`, a load error; acti
 the version (old → new for updates), "The text changed under the same version" in the error colour when it applies,
 the host, the size and the SHA-256 (selectable; for updates also the installed one). Failures are shown in a dialog
 (one message per `Reason`). The model refreshes the store when it is created (Android: opening the screen; desktop:
-opening the browse screen, as the desktop Extensions tab does).
+opening the JavaScript sources tab, since the review fixes).
 
 - Settings of an installed JavaScript source: like any `ConfigurableSource` — Android: the settings action of
   `BrowseSourceScreen` / `MangaScreen` (`SourcePreferencesScreen`, unchanged) and the store list; desktop: the
@@ -828,11 +829,44 @@ notes banner). Totals: `:source-js` `desktopTest` 153 (1 skipped; was 145), `tes
   device their library entries show as stubs until the sources are installed again. Whether the backup includes their
   `source_<id>` preference files (as for extension sources) was not checked.
 - A refresh downloads the text of each installed source whose version did not change (to detect `TEXT_CHANGED`).
-- `isInitialized` does not wait for the store: a reader or library update started in the first moments after a cold
-  start may see a JavaScript source as a stub (with cached metadata the window is the manifest and file reads).
+- ~~`isInitialized` does not wait for the store~~: fixed in "Review fixes (I4)" (waits, at most 15 s).
 - No Mangayomi deep link (`mangayomi://add-repo`), no update badge / notification for JavaScript sources, no
   per-source enable / disable beyond uninstall, no global search on desktop (unchanged gap).
 - The Android source list shows the label for loaded sources only (a stub has no type).
+
+### Review fixes (I4)
+
+Medium review of `5780d0e^..dff17e0`: 9 findings (6 important, 3 nits), all fixed; a failing test was written first
+where a unit test can show the defect (all seven new / changed store, manager and UI tests failed before the fixes).
+
+| # | Finding | Fix | Commit |
+|---|---------|-----|--------|
+| 1 | A disk error during install / update / uninstall crashed the app (`busy()` caught only store exceptions) | The store's file writes report `JsSourceStoreException(STORAGE_FAILED)` (`IOException` / `SecurityException`; a failed atomic write removes its `.tmp`); the screen model's `busy()`, `addRepository` and `refresh` show any other `Exception` as `UNEXPECTED` (logged) instead of throwing. Two new strings. Test: manifest write blocked by a directory → `STORAGE_FAILED` for update and uninstall | `ddec1a6` |
+| 2 | Source managers were initialized before the JavaScript sources were loaded (queued downloads dropped, download cache without them, reader stubs) | `MangayomiSourceStore.loadedSources` (`null` until loaded; the current values are read when `isLoaded` turns true, so the first list is complete) and `sourcesOrEmpty(loadTimeoutMillis = LOAD_TIMEOUT_MILLIS (15 s)) { store }`: the first list comes once loaded, or empty after the timeout (logged; the sources follow when loaded); a store that cannot be built is loaded-empty. Android (`stateIn` + `filterNotNull` in the KMK blocks) and desktop (`combine` input; `isInitialized` starts false when `jsSources` is given) wait for it. Tests: store whose scope thread is blocked → manager not initialized, then initialized with the source; timeout → initialized without it, source follows; broken store → initialized | `9a416e0` |
+| 3 | `refresh()` replaced all listings with the URL set captured at its start | Merged into the current listings, filtered by the repositories added at the end; `addRepository` stores the URL before its listing. Test: refresh held on a slow index while one repository is added and another removed | `54ca78b` |
+| 4 | A failed update left the old source closed | `MangayomiJsRuntime.prepare` (built, not registered) + `register` (swap, closes the old one; `source` = both); the store writes text and manifest first, then swaps (under `NonCancellable`); on a failure it closes the new source and removes its new text file. Test: manifest write fails → same source instance in `sources`, manifest record and text unchanged, new text gone, icon kept, browses, still follows its preferences (listener registered: a preference change refreshes `supportsLatest`); update succeeds once writable | `ddec1a6` |
+| 5 | Opening desktop Browse refreshed every JS repository; store lookup threw when the store could not be built | The desktop model is created in the JS tab (`JsSourcesTab`); `MangayomiSourceStore.getOrNull()` guards the lookup (desktop tab and Android screen show `js_sources_unavailable`). The Android screen is reached on purpose, so its refresh on open stays. UI test: a preset repository is not requested when Browse opens, only when the tab does | `a1ef663` |
+| 6 | The install dialog showed the pre-redirect host | `fetchBytes` returns the final URL; `JsSourceDownload.host` is the serving host, `requestedHost` the code URL's, the dialog shows both when they differ (new string). Test: redirect to another host name of the fixture server | `e7b8aa3` |
+| 7 | Obsolete too early (only the source's own repository counted) | Known only when every added repository has entries (the item flow now follows the repository preference). Test: one repository read without the source, another unreadable → up to date; readable → obsolete | `54ca78b` |
+| 8 | Stale icon after a failed icon download on update | The icon is fetched first and stored after the manifest; no icon (or a failed write) deletes the old file. Test in "a new version is an update" | `ddec1a6` |
+| 9 | `infoUrl` wrong for an index URL without a path | Resolution against the index URL in common code (no path → `/repo.json` on the host; query / fragment with `/` dropped; trailing slash = directory). `commonTest` `repoInfoUrlResolvesAgainstTheIndexUrl` | `6337d12` |
+
+New strings (`i18n-kmk` base only): `js_source_error_storage_failed`, `js_source_error_unexpected`,
+`js_source_host_redirected`, `js_sources_unavailable`.
+
+Tests: `:source-js` `desktopTest` 154 (1 skipped; was 153), `testReleaseUnitTest` 105 (was 104); `:desktopApp:test`
+33 classes, 111 tests (was 104): `MangayomiSourceStoreTest` 16, `JsSourceManagerTest` 5, `JsSourcesUiTest` 1.
+`spotlessCheck`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass.
+
+**Left open:**
+
+- Android stays compile-only (the guarded screen, the manager wait). A cold start with a slow store now delays
+  `isInitialized` (reader, download restore, feed) by up to 15 s; with cached metadata the wait is the file reads.
+- The record written for an update carries the metadata read at install; when `register` reads it once more (the new
+  declarations type stored values differently) the refreshed metadata reaches the manifest only at the next start
+  (the source refreshes cached metadata in the background then).
+- `TEXT_CHANGED` still costs one download per installed source per refresh; installed sources are still not in
+  backups (unchanged from I4).
 
 ## Files moved out of upstream paths
 
