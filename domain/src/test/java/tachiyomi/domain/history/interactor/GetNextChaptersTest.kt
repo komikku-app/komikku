@@ -304,11 +304,10 @@ class GetNextChaptersTest {
     }
 
     @Test
-    fun `missing chapter keeps the default behavior`() = runTest {
+    fun `missing chapter resumes from the first chapter`() = runTest {
         setUp(numberSortManga, chapters)
 
-        // Unchanged behavior: the list starts from the first chapter, which is dropped when not only unread
-        getNextChapters.await(MANGA_ID, 999, onlyUnread = false).ids() shouldBe listOf(2L, 3, 5, 6, 7)
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = false).ids() shouldBe listOf(1L, 2, 3, 5, 6, 7)
         getNextChapters.await(MANGA_ID, 999, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
     }
 
