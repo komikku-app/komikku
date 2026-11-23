@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.browse.CoverItem
+import app.komikku.desktop.ui.browse.GlobalSearchScreen
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -221,7 +222,15 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Box(modifier = Modifier.width(160.dp)) { CoverItem(manga = manga, onClick = {}) }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
-                    Text(manga.title, style = MaterialTheme.typography.headlineSmall)
+                    // Like Android's manga info header: clicking the title searches it in all sources
+                    val navigator = LocalNavigator.currentOrThrow
+                    Text(
+                        manga.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier
+                            .testTag("details-title")
+                            .clickable(enabled = manga.title.isNotBlank()) { navigator.push(GlobalSearchScreen(manga.title)) },
+                    )
                     Text(
                         listOfNotNull(manga.author, manga.artist?.takeIf { it != manga.author })
                             .joinToString().ifEmpty { stringResource(MR.strings.unknown_author) },
