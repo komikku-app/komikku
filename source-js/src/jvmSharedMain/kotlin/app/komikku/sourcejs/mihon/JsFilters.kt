@@ -33,7 +33,8 @@ object JsFilters {
         is JsFilter.Text -> TextFilter(filter)
         is JsFilter.CheckBox -> CheckBoxFilter(filter)
         is JsFilter.TriState -> TriStateFilter(filter)
-        is JsFilter.Select -> SelectFilter(filter)
+        // Mihon's select UI reads its first option: a select without options is shown as its name only.
+        is JsFilter.Select -> if (filter.values.isEmpty()) EmptySelectFilter(filter) else SelectFilter(filter)
         is JsFilter.Sort -> SortFilter(filter)
         is JsFilter.Group -> GroupFilter(filter)
     }
@@ -75,6 +76,11 @@ class SelectFilter internal constructor(override val js: JsFilter.Select) :
     Filter.Select<String>(js.name, js.values.map { it.name }.toTypedArray(), js.state.coerceIndex(js.values.size)),
     JsBackedFilter {
     override fun toJs(): JsFilter = js.copy(state = state.coerceIndex(js.values.size))
+}
+
+/** A select without options: a header with its name, sent back to the source unchanged. */
+class EmptySelectFilter internal constructor(override val js: JsFilter.Select) : Filter.Header(js.name), JsBackedFilter {
+    override fun toJs(): JsFilter = js
 }
 
 /** No selection in Mihon (`null`) sends the source's own default state. */

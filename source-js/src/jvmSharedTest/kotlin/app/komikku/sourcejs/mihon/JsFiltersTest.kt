@@ -114,7 +114,8 @@ class JsFiltersTest {
         mihon.state = -3
         assertEquals(0, ((mihon as JsBackedFilter).toJs() as JsFilter.Select).state)
         val empty = JsFilter.Select("E", null, JsonObject(emptyMap()), values = emptyList(), state = 4)
-        assertEquals(0, (JsFilters.toMihon(empty) as Filter.Select<*>).state)
+        // Not a select (its UI needs an option); the source gets its own state back.
+        assertSame(empty, (JsFilters.toMihon(empty) as JsBackedFilter).toJs())
         val tri = JsFilter.TriState("T", null, JsonObject(emptyMap()), state = 7)
         assertEquals(Filter.TriState.STATE_EXCLUDE, (JsFilters.toMihon(tri) as Filter.TriState).state)
     }
@@ -136,5 +137,16 @@ class JsFiltersTest {
         (first[2] as Filter.Text).state = "changed"
         assertEquals("x", (second[2] as Filter.Text).state)
         assertNull(JsFilters.toFilterList(emptyList()).firstOrNull())
+    }
+
+    @Test
+    fun aSelectWithoutOptionsIsAHeaderAndGoesBackUnchanged() {
+        val empty = JsResultParser.filters(
+            Json.parseToJsonElement("""[{"type_name": "SelectFilter", "name": "Type", "state": 0, "values": []}]"""),
+        )
+        val list = JsFilters.toFilterList(empty)
+        // Mihon's select UI reads options[0]: an empty select must not be one.
+        assertIs<Filter.Header>(list.single()).also { assertEquals("Type", it.name) }
+        assertSame(empty.single(), JsFilters.toJsFilters(list, defaults = emptyList()).single())
     }
 }
