@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
+import exh.log.xLogW
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,11 +30,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
-import logcat.LogPriority
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import tachiyomi.core.common.util.system.logcat
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -182,7 +181,7 @@ class MangayomiJsSource(
                 } catch (e: JsSourceException) {
                     retryNotBefore = clock() + metadataRetryDelayMillis
                     stale.set(true)
-                    logcat(LogPriority.WARN, e) { "Keeping the cached metadata of $name, retrying in $metadataRetryDelayMillis ms" }
+                    xLogW("Keeping the cached metadata of $name, retrying in $metadataRetryDelayMillis ms", e)
                 }
             }
         }
@@ -372,7 +371,7 @@ class MangayomiJsSource(
                     removeAll(headerName)
                     addUnsafeNonAscii(headerName, value)
                 } catch (_: IllegalArgumentException) {
-                    logcat(LogPriority.WARN) { "Ignoring the invalid header \"$headerName\" of $name" }
+                    xLogW("Ignoring the invalid header \"$headerName\" of $name")
                 }
             }
         }

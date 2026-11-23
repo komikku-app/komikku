@@ -15,14 +15,15 @@ import app.komikku.sourcejs.bridge.OkHttpHostHttp
 import app.komikku.sourcejs.model.JsPreference
 import app.komikku.sourcejs.model.JsSourceMetadata
 import eu.kanade.tachiyomi.network.NetworkHelper
+import exh.log.xLogE
+import exh.log.xLogI
+import exh.log.xLogW
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import logcat.LogPriority
 import okhttp3.OkHttpClient
-import tachiyomi.core.common.util.system.logcat
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -30,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
  * desktop): the script's HTTP goes through the app's client ([OkHttpHostHttp], so cookies, rate limits, DNS over HTTPS
  * and Cloudflare handling apply), its `SharedPreferences` through the source's preference file
  * ([SharedPreferencesHostPreferences], typed by the source's declared preferences once its metadata is known), its
- * console and the host's warnings to logcat.
+ * console and the host's warnings to the app log (`exh.log`).
  *
  * Calls of all its sources run at most [concurrentCalls] at a time (each one is a JavaScript context of its own, on its
  * own thread), next to each source's own limit ([MangayomiJsSource.DEFAULT_CONCURRENT_CALLS]).
@@ -45,7 +46,7 @@ class MangayomiJsRuntime(
     private val preferences: (komikkuId: Long) -> SharedPreferences,
     private val client: () -> OkHttpClient,
     limits: JsHostLimits = JsHostLimits(),
-    log: HostLog = LogcatHostLog,
+    log: HostLog = XLogHostLog,
     concurrentCalls: Int = DEFAULT_CONCURRENT_CALLS,
 ) {
 
@@ -125,15 +126,15 @@ class MangayomiJsRuntime(
         }
     }
 
-    /** Script console output and host warnings in logcat, tagged with the source. */
-    object LogcatHostLog : HostLog {
+    /** Script console output and host warnings in the app log (`exh.log`), prefixed with the source. */
+    object XLogHostLog : HostLog {
         override fun log(level: HostLog.Level, source: JsSourceDescriptor, message: String) {
-            val priority = when (level) {
-                HostLog.Level.INFO -> LogPriority.INFO
-                HostLog.Level.WARN -> LogPriority.WARN
-                HostLog.Level.ERROR -> LogPriority.ERROR
+            val line = "[JS ${source.name}] $message"
+            when (level) {
+                HostLog.Level.INFO -> xLogI(line)
+                HostLog.Level.WARN -> xLogW(line)
+                HostLog.Level.ERROR -> xLogE(line)
             }
-            logcat(priority, tag = "JS ${source.name}") { message }
         }
     }
 
