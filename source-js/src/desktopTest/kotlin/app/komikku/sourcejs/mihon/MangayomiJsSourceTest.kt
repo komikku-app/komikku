@@ -115,7 +115,9 @@ class MangayomiJsSourceTest {
         assertEquals("Adapter Test", source.name)
         assertEquals("pt-BR", source.lang)
         assertEquals(base.trimEnd('/'), source.baseUrl)
-        assertEquals("Adapter Test (PT-BR)", source.toString())
+        // The download directory name cannot equal a Mihon source's ("Adapter Test (PT-BR)").
+        assertEquals("Adapter Test [JS] (PT-BR)", source.toString())
+        assertEquals("Adapter Test [JS]", source.stubName)
         assertEquals(JsSourceIds.preferencesName(source.id), source.preferenceKey())
         assertSame(prefs(source), source.getSourcePreferences())
         assertEquals(false, source.supportsRelatedMangas)

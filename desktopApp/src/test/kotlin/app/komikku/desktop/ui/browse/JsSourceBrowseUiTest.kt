@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -49,6 +50,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -203,6 +205,17 @@ class JsSourceBrowseUiTest {
         }
         cached!!.map { JsPageRef.decode(it.url)?.url } shouldBe pages.map { it.imageUrl }
         Unit
+    }
+
+    @Test
+    fun `a JavaScript source has a download folder of its own`() {
+        val provider = Injekt.get<DownloadProvider>()
+        val folder = provider.getSourceDirName(source)
+        folder shouldBe "JS Test Source [JS] (EN)"
+        // A Mihon source for the same site (same name and language) gets another folder.
+        provider.getSourceDirName(StubSource(id = 1, lang = source.lang, name = source.name)) shouldNotBe folder
+        // The stub registered for an uninstalled JavaScript source keeps its folder.
+        provider.getSourceDirName(StubSource(id = source.id, lang = source.lang, name = source.stubName)) shouldBe folder
     }
 
     private fun loaderFor(manga: tachiyomi.domain.manga.model.Manga) = ChapterLoader(

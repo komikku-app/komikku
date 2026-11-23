@@ -44,7 +44,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Injekt-provided network, so it can be built without Injekt.
  *
  * - **Identity:** [id] from [JsSourceIds.komikkuId], [lang] normalised ([JsSourceIds.normalizeLang]), [baseUrl] without
- *   trailing slashes.
+ *   trailing slashes. [name] is the index name, but [toString] (the download directory name, `DownloadProvider`) carries
+ *   [JS_SOURCE_MARKER], so it can never equal the directory of a Mihon source for the same site: `DownloadCache` keeps
+ *   one source id per directory name.
  * - **Metadata** (`supportsLatest`, filters, preferences, `getHeaders(baseUrl)`) is read in one context
  *   ([JsExtension.metadata]) and cached, because Mihon reads [supportsLatest], [headers] and [getFilterList]
  *   synchronously. It is read again after the source's preferences change (they may depend on them): a change of the
@@ -82,6 +84,15 @@ class MangayomiJsSource(
     override val lang: String = JsSourceIds.normalizeLang(descriptor.lang)
 
     override val baseUrl: String = JsSourceUrls.normalizeBaseUrl(descriptor.baseUrl)
+
+    /**
+     * The name to register this source's `StubSource` under (the source managers, I4): [name] with [JS_SOURCE_MARKER],
+     * so the stub of an uninstalled source has the same [toString], hence the same download directory, as the source.
+     */
+    val stubName: String get() = name + JS_SOURCE_MARKER
+
+    /** `"<name> [JS] (<LANG>)"`: the download directory name; equal to the `StubSource` named [stubName]'s. */
+    override fun toString(): String = "$stubName (${lang.uppercase()})"
 
     private class Cached(val metadata: JsSourceMetadata, val headers: Headers)
 
@@ -315,6 +326,9 @@ class MangayomiJsSource(
     }
 
     companion object {
+        /** Marks a JavaScript source's [toString] / [stubName], so its download directory differs from Mihon sources'. */
+        const val JS_SOURCE_MARKER = " [JS]"
+
         /** Calls of one source that may run at once (each holds a JavaScript context of up to 64 MiB). */
         const val DEFAULT_CONCURRENT_CALLS = 2
     }
