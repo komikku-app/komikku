@@ -403,6 +403,19 @@ run {
         "eu/kanade/tachiyomi/ui/library/LibraryActions.kt",
         "eu/kanade/tachiyomi/util/MangaExtensions.kt",
     )
+
+    // SY delegated (enhanced) sources applied over installed extension sources (P4), with the URL import they search
+    // through (SearchOverride.kt → GalleryAdder). The MangaDex delegate stays Android-only (MDList tracker login,
+    // follows / similar screens). Desktop counterpart in app-shared/src/desktopMain: the EHentai placeholder
+    // (AbsentSources.kt) with `GalleryNotFoundException`, which GalleryAdder tests for.
+    desktopCopy(
+        "eu/kanade/tachiyomi/source/online/all/Lanraragi.kt",
+        "eu/kanade/tachiyomi/source/online/all/NHentai.kt",
+        "eu/kanade/tachiyomi/source/online/all/Pururin.kt",
+        "eu/kanade/tachiyomi/source/online/english/EightMuses.kt",
+        "exh/GalleryAdder.kt",
+        "exh/util/SearchOverride.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

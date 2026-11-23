@@ -59,6 +59,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.toast
 import exh.pref.DelegateSourcePreferences
@@ -87,6 +88,9 @@ import tachiyomi.data.di.registerDatabaseRepositories
 import tachiyomi.data.source.SourceRepositoryImpl
 import tachiyomi.domain.di.registerDomainPreferences
 import tachiyomi.domain.di.registerLibraryInteractors
+import tachiyomi.domain.manga.interactor.GetFlatMetadataById
+import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.InsertFlatMetadata
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
 import tachiyomi.domain.source.repository.SourceRepository
@@ -259,6 +263,10 @@ class DesktopDomainModule(
         addFactory { ToggleSource(get()) }
         addFactory { ToggleSourcePin(get()) }
         addFactory { UpdateManga(get(), get()) }
+        // SY delegated sources (P4): the metadata hooks of `MetadataSource` (Android: SYDomainModule)
+        addFactory<MetadataSource.GetMangaId> { GetManga(get()) }
+        addFactory<MetadataSource.GetFlatMetadataById> { GetFlatMetadataById(get()) }
+        addFactory<MetadataSource.InsertFlatMetadata> { InsertFlatMetadata(get()) }
         // Library text search (8.5): the SY query parser used by the borrowed LibraryFilterSort.kt
         addFactory { SearchEngine() }
 

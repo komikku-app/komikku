@@ -9,7 +9,7 @@ import tachiyomi.domain.manga.model.Manga
 
 /*
  * KMK: desktop placeholders for the SY built-in sources that `desktopCopy` borrowed files test for
- * with `is` (`UpdateMangaFromRemote`, the reader's `ChapterLoader`). The built-in E-Hentai and merged
+ * with `is` (`UpdateMangaFromRemote`, the reader's `ChapterLoader`, `GalleryAdder`). The built-in E-Hentai and merged
  * sources are not available on desktop (PROGRESS.md, 5.2), so these types are never instantiated and
  * the `is` checks are always false; only the members the borrowed files call are declared, with the
  * Android signatures.
@@ -24,6 +24,9 @@ abstract class EHentai : HttpSource() {
         fetchChapters: Boolean,
         throttleFunc: suspend () -> Unit,
     ): SMangaUpdate
+
+    /** Android's `EHentai.GalleryNotFoundException` (`GalleryAdder` checks for it); never thrown on desktop. */
+    class GalleryNotFoundException(cause: Throwable) : RuntimeException("Gallery not found!", cause)
 }
 
 /** Placeholder for the SY merged source (`app/…/source/online/all/MergedSource.kt`). */
