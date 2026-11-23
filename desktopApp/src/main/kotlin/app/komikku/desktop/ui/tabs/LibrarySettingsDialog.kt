@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.tabs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +11,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -27,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -46,6 +54,7 @@ import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.BaseSortItem
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
+import tachiyomi.presentation.core.components.IconItem
 import tachiyomi.presentation.core.components.SettingsChipRow
 import tachiyomi.presentation.core.components.SliderItem
 import tachiyomi.presentation.core.components.SortItem
@@ -56,7 +65,7 @@ import tachiyomi.presentation.core.util.collectAsState
 /**
  * Desktop counterpart of Android's `LibrarySettingsDialog` (Filter / Sort / Display tabs), driven by the
  * borrowed [LibrarySettingsScreenModel] so every change goes to the same preferences / category flags as on
- * Android (and round-trips through backups). Not on desktop: the SY "Group" tab, the "continue reading"
+ * Android (and round-trips through backups), including the SY "Group" tab (P2). Not on desktop: the "continue reading"
  * button, the source / language-icon badges and the category-tabs switch (desktop always shows tabs).
  *
  * @param category the shown category (per-category sort, Android's `categorizedDisplaySettings` rules).
@@ -78,7 +87,7 @@ fun LibrarySettingsDialog(
             var page by remember { mutableIntStateOf(0) }
             Column {
                 PrimaryTabRow(selectedTabIndex = page) {
-                    listOf(MR.strings.action_filter, MR.strings.action_sort, MR.strings.action_display)
+                    listOf(MR.strings.action_filter, MR.strings.action_sort, MR.strings.action_display, SYMR.strings.group)
                         .forEachIndexed { i, title ->
                             Tab(
                                 selected = page == i,
@@ -98,7 +107,8 @@ fun LibrarySettingsDialog(
                     when (page) {
                         0 -> FilterPage(screenModel, categories)
                         1 -> SortPage(screenModel, category)
-                        else -> DisplayPage(screenModel, landscape)
+                        2 -> DisplayPage(screenModel, landscape)
+                        else -> GroupPage(screenModel, hasCategories = categories.any { !it.isSystemCategory })
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -235,6 +245,43 @@ private fun SortPage(screenModel: LibrarySettingsScreenModel, category: Category
             )
         }
     }
+}
+
+/** Android's SY `GroupPage`: group the library by category, source, status, tracking status (with a tracker) or not. */
+@Composable
+private fun GroupPage(screenModel: LibrarySettingsScreenModel, hasCategories: Boolean) {
+    val trackers by screenModel.trackersFlow.collectAsState()
+    val grouping by screenModel.libraryPreferences.groupLibraryBy().collectAsState()
+    val groups = buildList {
+        add(LibraryGroup.BY_DEFAULT)
+        add(LibraryGroup.BY_SOURCE)
+        add(LibraryGroup.BY_STATUS)
+        if (trackers.isNotEmpty()) {
+            add(LibraryGroup.BY_TRACK_STATUS)
+        }
+        if (hasCategories || grouping == LibraryGroup.UNGROUPED) {
+            add(LibraryGroup.UNGROUPED)
+        }
+    }
+    groups.forEach { group ->
+        Box(modifier = Modifier.testTag("library-group-$group")) {
+            IconItem(
+                label = stringResource(LibraryGroup.groupTypeStringRes(group)),
+                icon = rememberVectorPainter(groupTypeIcon(group)),
+                selected = group == grouping,
+                onClick = { screenModel.setGrouping(group) },
+            )
+        }
+    }
+}
+
+/** Material counterparts of Android's group drawables. */
+private fun groupTypeIcon(type: Int): ImageVector = when (type) {
+    LibraryGroup.BY_STATUS -> Icons.Outlined.Schedule
+    LibraryGroup.BY_TRACK_STATUS -> Icons.Outlined.Sync
+    LibraryGroup.BY_SOURCE -> Icons.Outlined.Explore
+    LibraryGroup.UNGROUPED -> Icons.Outlined.ViewModule
+    else -> Icons.AutoMirrored.Outlined.Label
 }
 
 private val displayModes = listOf(

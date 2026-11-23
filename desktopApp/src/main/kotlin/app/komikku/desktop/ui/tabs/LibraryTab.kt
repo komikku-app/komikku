@@ -33,21 +33,27 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.desktop.ui.more.CategoriesScreen
 import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.navigation.AppNavigatorHost
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.collectAsState
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -82,11 +88,31 @@ data object LibraryHomeScreen : Screen() {
                 EmptyScreen(stringRes = MR.strings.information_empty_library)
             else -> LibraryPages(
                 state = state,
+                screenModel = screenModel,
                 settingsModel = settingsModel,
-                onQueryChange = screenModel::search,
-                onSelectCategory = screenModel::selectCategory,
                 onOpen = { navigator.push(MangaDetailsScreen(it)) },
             )
+        }
+        // Android's LibraryTab dialogs (borrowed dialogs, same actions)
+        when (val dialog = state.dialog) {
+            is LibraryScreenModel.Dialog.ChangeCategory -> ChangeCategoryDialog(
+                initialSelection = dialog.initialSelection,
+                onDismissRequest = screenModel::closeDialog,
+                onEditCategories = { navigator.push(CategoriesScreen()) },
+                onConfirm = { include, exclude ->
+                    screenModel.clearSelection()
+                    screenModel.setMangaCategories(dialog.manga, include, exclude)
+                },
+            )
+            is LibraryScreenModel.Dialog.DeleteManga -> DeleteLibraryMangaDialog(
+                containsLocalManga = dialog.manga.any(Manga::isLocal),
+                onDismissRequest = screenModel::closeDialog,
+                onConfirm = { deleteManga, deleteChapter ->
+                    screenModel.removeMangas(dialog.manga, deleteManga, deleteChapter)
+                    screenModel.clearSelection()
+                },
+            )
+            null -> Unit
         }
     }
 }
@@ -94,11 +120,12 @@ data object LibraryHomeScreen : Screen() {
 @Composable
 private fun LibraryPages(
     state: LibraryScreenModel.State,
+    screenModel: LibraryScreenModel,
     settingsModel: LibrarySettingsScreenModel,
-    onQueryChange: (String) -> Unit,
-    onSelectCategory: (Long) -> Unit,
     onOpen: (Long) -> Unit,
 ) {
+    val onQueryChange = screenModel::search
+    val onSelectCategory = screenModel::selectCategory
     val pages = state.pages
     val index = state.selectedIndex
     val runner = remember { Injekt.get<LibraryUpdateRunner>() }
@@ -121,36 +148,55 @@ private fun LibraryPages(
             if (landscape) libraryPreferences.landscapeColumns() else libraryPreferences.portraitColumns()
         }.collectAsState()
         Column(modifier = Modifier.fillMaxSize()) {
-            // Library refresh (6L.2): the shown category, or the whole library; search (8.5)
-            Row(
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            ) {
-                OutlinedTextField(
-                    value = state.query,
-                    onValueChange = onQueryChange,
-                    placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f).testTag("library-search"),
+            if (state.selectionMode) {
+                LibrarySelectionToolbar(
+                    count = state.selection.size,
+                    onClickUnselectAll = screenModel::clearSelection,
+                    onClickSelectAll = screenModel::selectAll,
+                    onClickInvertSelection = screenModel::invertSelection,
                 )
-                // Filter / sort / display settings (8.5); highlighted while a filter is active, like Android
-                IconButton(onClick = { showSettings = true }, modifier = Modifier.testTag("library-settings")) {
-                    Icon(
-                        Icons.Outlined.FilterList,
-                        contentDescription = stringResource(MR.strings.action_filter),
-                        tint = if (state.hasActiveFilters) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+            } else {
+                // Library refresh (6L.2): the shown category (or group), or the whole library; search (8.5)
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = state.query,
+                        onValueChange = onQueryChange,
+                        placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f).testTag("library-search"),
                     )
+                    // Filter / sort / display settings (8.5); highlighted while a filter is active, like Android
+                    IconButton(onClick = { showSettings = true }, modifier = Modifier.testTag("library-settings")) {
+                        Icon(
+                            Icons.Outlined.FilterList,
+                            contentDescription = stringResource(MR.strings.action_filter),
+                            tint = if (state.hasActiveFilters) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            // A group that is not a category (source, status, …): its entries, like Android's grouped update
+                            val page = pages[index]
+                            runner.start(
+                                if (state.groupType == LibraryGroup.BY_DEFAULT) {
+                                    LibraryUpdateRunner.Target.Category(page.category.id)
+                                } else {
+                                    LibraryUpdateRunner.Target.Entries(page.items.map { it.id }.toSet())
+                                },
+                            )
+                        },
+                        modifier = Modifier.testTag("update-category"),
+                    ) { Text(stringResource(MR.strings.action_update_category)) }
+                    TextButton(
+                        onClick = { runner.start(LibraryUpdateRunner.Target.All) },
+                        modifier = Modifier.testTag("update-library-all"),
+                    ) { Text(stringResource(MR.strings.action_update_library)) }
                 }
-                TextButton(
-                    onClick = { runner.start(LibraryUpdateRunner.Target.Category(pages[index].category.id)) },
-                    modifier = Modifier.testTag("update-category"),
-                ) { Text(stringResource(MR.strings.action_update_category)) }
-                TextButton(
-                    onClick = { runner.start(LibraryUpdateRunner.Target.All) },
-                    modifier = Modifier.testTag("update-library-all"),
-                ) { Text(stringResource(MR.strings.action_update_library)) }
             }
             LibraryUpdateBanner(runner)
             if (pages.size > 1) {
@@ -162,7 +208,7 @@ private fun LibraryPages(
                             text = {
                                 Text(
                                     // Android shows counts when the preference is on or a search is active.
-                                    text = page.title() +
+                                    text = page.title(state.groupType) +
                                         if (showCounts || state.query.isNotEmpty()) " (${page.items.size})" else "",
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -184,12 +230,50 @@ private fun LibraryPages(
                     },
                 )
             } else {
-                LibraryItems(page.items, displayMode, columns, onOpen)
+                LibraryItems(
+                    items = page.items,
+                    displayMode = displayMode,
+                    columns = columns,
+                    selection = state.selection,
+                    onClick = { id, modifiers ->
+                        // Android: a click selects while selecting, a long press selects a range. Desktop also:
+                        // Shift-click selects a range, Ctrl / Cmd-click toggles one entry.
+                        when {
+                            modifiers.shift -> screenModel.toggleRangeSelection(page.category, id)
+                            modifiers.toggle || state.selectionMode -> screenModel.toggleSelection(page.category, id)
+                            else -> onOpen(id)
+                        }
+                    },
+                    onLongClick = { screenModel.toggleRangeSelection(page.category, it) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            if (state.selectionMode) {
+                LibrarySelectionBar(
+                    selectedManga = state.selectedManga,
+                    onChangeCategoryClicked = screenModel::openChangeCategoryDialog,
+                    onMarkAsReadClicked = { screenModel.markReadSelection(true) },
+                    onMarkAsUnreadClicked = { screenModel.markReadSelection(false) },
+                    onDownloadClicked = screenModel::performDownloadAction,
+                    onUpdateClicked = {
+                        runner.start(LibraryUpdateRunner.Target.Entries(state.selection))
+                        screenModel.clearSelection()
+                    },
+                    onDeleteClicked = screenModel::openDeleteMangaDialog,
+                )
             }
         }
     }
 }
 
+/**
+ * Page title: the category name (Android's `visualName`: "Default" for the system category); a group that is not a
+ * category always shows its name (Android shows "Default" for a group with id 0, e.g. the local source).
+ */
 @Composable
-private fun LibraryPage.title(): String =
-    if (category.isSystemCategory) stringResource(MR.strings.label_default) else category.name
+private fun LibraryPage.title(groupType: Int): String =
+    if (groupType == LibraryGroup.BY_DEFAULT && category.isSystemCategory) {
+        stringResource(MR.strings.label_default)
+    } else {
+        category.name
+    }

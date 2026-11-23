@@ -1,24 +1,33 @@
 package app.komikku.desktop.ui.tabs
 
+import android.app.Application
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.ui.library.LibraryBatchActions
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibraryItemPreferences
 import eu.kanade.tachiyomi.ui.library.applyLibraryFilters
 import eu.kanade.tachiyomi.ui.library.applyLibrarySort
 import eu.kanade.tachiyomi.ui.library.filterLibraryByQuery
 import eu.kanade.tachiyomi.ui.library.groupByDefaultCategory
+import eu.kanade.tachiyomi.ui.library.groupLibraryItems
 import eu.kanade.tachiyomi.ui.library.hasActiveLibraryFilters
+import eu.kanade.tachiyomi.ui.library.invertLibrarySelection
 import eu.kanade.tachiyomi.ui.library.libraryItemPreferencesFlow
 import eu.kanade.tachiyomi.ui.library.libraryTrackingFiltersFlow
+import eu.kanade.tachiyomi.ui.library.selectAllLibraryItems
 import eu.kanade.tachiyomi.ui.library.toLibraryItem
+import eu.kanade.tachiyomi.ui.library.toggleLibraryRangeSelection
+import eu.kanade.tachiyomi.ui.library.toggleLibrarySelection
 import exh.log.xLogE
 import exh.search.SearchEngine
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,7 +41,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.TriState
+import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryGroup
@@ -44,6 +56,7 @@ import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaById
 import tachiyomi.domain.manga.interactor.GetSearchTags
 import tachiyomi.domain.manga.interactor.GetSearchTitles
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerManga
@@ -61,8 +74,13 @@ import uy.kohesive.injekt.api.get
  * active, empty categories are hidden unless `showEmptyCategoriesSearch` is on (as on Android). The query and
  * the selected category live here, so they survive the pages leaving composition.
  *
- * Not on desktop: grouping by source / status / tracker / ungrouped (pages are always categories),
- * selection and its actions, the MangaDex DMCA easter-egg query.
+ * Grouping (P2): `LibraryPreferences.groupLibraryBy()` with Android's shared grouping ([groupByDefaultCategory],
+ * [groupLibraryItems]: by category, source, status, tracking status, ungrouped; an active category filter with
+ * included categories shows the result ungrouped, like Android). Selection and batch actions (P2): Android's selection
+ * logic and action bodies from the shared `LibraryActions.kt` ([LibraryBatchActions]).
+ *
+ * Not on desktop: the MangaDex DMCA easter-egg query, the SY / KMK selection actions without desktop plumbing
+ * (migrate, merge, recommendations, clean titles, MangaDex follow, reset info).
  */
 class LibraryScreenModel(
     private val getCategories: GetCategories = Injekt.get(),
@@ -80,7 +98,12 @@ class LibraryScreenModel(
     private val getTracks: GetTracks = Injekt.get(),
     private val getSearchTags: GetSearchTags = Injekt.get(),
     private val getSearchTitles: GetSearchTitles = Injekt.get(),
+    private val context: Application = Injekt.get(),
+    private val batchActions: LibraryBatchActions = LibraryBatchActions(),
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
+
+    /** Android's `lastSelectionCategory`: the page of the last (range) selection, for Shift-click ranges. */
+    private var lastSelectionCategory: Long? = null
 
     init {
         screenModelScope.launch {
@@ -120,6 +143,8 @@ class LibraryScreenModel(
                             pages = result.pages,
                             isLibraryEmpty = result.isLibraryEmpty,
                             hasActiveFilters = result.hasActiveFilters,
+                            groupType = result.groupType,
+                            itemsById = result.itemsById,
                         )
                     }
                 }
@@ -163,7 +188,23 @@ class LibraryScreenModel(
         // shows "no match" (with the search / filter controls) instead of the empty-library screen.
         val hasActiveFilters = hasActiveLibraryFilters(prefs, trackingFilters) || prefs.globalFilterDownloaded
         val filteredById = filtered.associateBy { it.id }
-        val grouped = filtered.groupByDefaultCategory(categories, display.showHiddenCategories)
+        // Android's grouping (LibraryScreenModel.applyGrouping): an active category filter with included categories
+        // shows the result ungrouped.
+        val groupType = if (prefs.filterCategories && display.includedCategories.isNotEmpty()) {
+            LibraryGroup.UNGROUPED
+        } else {
+            display.groupType
+        }
+        val grouped = when (groupType) {
+            LibraryGroup.BY_DEFAULT -> filtered.groupByDefaultCategory(categories, display.showHiddenCategories)
+            else -> filtered.groupLibraryItems(
+                groupType = groupType,
+                context = context,
+                getTracks = getTracks,
+                trackerManager = trackerManager,
+                sourceManager = sourceManager,
+            )
+        }
             .applyLibrarySort(
                 favoritesById = filteredById,
                 trackMap = tracks,
@@ -183,6 +224,8 @@ class LibraryScreenModel(
             // library (no flash of the empty-library screen while a query is cleared).
             isLibraryEmpty = items.isEmpty(),
             hasActiveFilters = hasActiveFilters,
+            groupType = display.groupType,
+            itemsById = filteredById,
         )
     }
 
@@ -192,6 +235,105 @@ class LibraryScreenModel(
 
     fun selectCategory(categoryId: Long) {
         mutableState.update { it.copy(selectedCategoryId = categoryId) }
+    }
+
+    // Selection (Android's LibraryScreenModel, logic shared through LibraryActions.kt)
+
+    fun clearSelection() {
+        lastSelectionCategory = null
+        mutableState.update { it.copy(selection = emptySet()) }
+    }
+
+    fun toggleSelection(category: Category, mangaId: Long) {
+        mutableState.update { state ->
+            val newSelection = state.selection.toggleLibrarySelection(mangaId)
+            lastSelectionCategory = category.id.takeIf { newSelection.isNotEmpty() }
+            state.copy(selection = newSelection)
+        }
+    }
+
+    /** Android's long press; Shift-click on desktop. */
+    fun toggleRangeSelection(category: Category, mangaId: Long) {
+        mutableState.update { state ->
+            val newSelection = state.selection.toggleLibraryRangeSelection(
+                mangaId = mangaId,
+                categoryItems = state.itemIdsOf(category.id),
+                isSameCategory = lastSelectionCategory == category.id,
+            )
+            lastSelectionCategory = category.id
+            state.copy(selection = newSelection)
+        }
+    }
+
+    fun selectAll() {
+        lastSelectionCategory = null
+        mutableState.update { state ->
+            state.copy(selection = state.selection.selectAllLibraryItems(state.itemIdsOf(state.selectedPage?.category?.id)))
+        }
+    }
+
+    fun invertSelection() {
+        lastSelectionCategory = null
+        mutableState.update { state ->
+            state.copy(selection = state.selection.invertLibrarySelection(state.itemIdsOf(state.selectedPage?.category?.id)))
+        }
+    }
+
+    // Batch actions (Android's LibraryScreenModel, bodies shared through LibraryActions.kt)
+
+    fun markReadSelection(read: Boolean) {
+        val selection = state.value.selectedManga
+        screenModelScope.launchNonCancellable { batchActions.markRead(selection, read) }
+        clearSelection()
+    }
+
+    fun performDownloadAction(action: DownloadAction) {
+        val mangas = state.value.selectedManga
+        screenModelScope.launchNonCancellable {
+            when (action) {
+                DownloadAction.NEXT_1_CHAPTER -> batchActions.downloadNextChapters(mangas, 1)
+                DownloadAction.NEXT_5_CHAPTERS -> batchActions.downloadNextChapters(mangas, 5)
+                DownloadAction.NEXT_10_CHAPTERS -> batchActions.downloadNextChapters(mangas, 10)
+                DownloadAction.NEXT_25_CHAPTERS -> batchActions.downloadNextChapters(mangas, 25)
+                DownloadAction.UNREAD_CHAPTERS -> batchActions.downloadNextChapters(mangas, null)
+                DownloadAction.BOOKMARKED_CHAPTERS -> batchActions.downloadBookmarkedChapters(mangas)
+            }
+        }
+        clearSelection()
+    }
+
+    fun openChangeCategoryDialog() {
+        screenModelScope.launchIO {
+            val mangaList = state.value.selectedManga
+            // Hide the default category because it has a different behavior than the ones from db.
+            val categories = state.value.categories.filter { it.id != 0L }
+            val preselected = batchActions.getChangeCategorySelection(mangaList, categories)
+            mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
+        }
+    }
+
+    fun setMangaCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
+        screenModelScope.launchNonCancellable { batchActions.setMangaCategories(mangaList, addCategories, removeCategories) }
+    }
+
+    fun openDeleteMangaDialog() {
+        mutableState.update { it.copy(dialog = Dialog.DeleteManga(it.selectedManga)) }
+    }
+
+    fun removeMangas(mangas: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
+        screenModelScope.launchNonCancellable { batchActions.removeMangas(mangas, deleteFromLibrary, deleteChapters) }
+    }
+
+    fun closeDialog() {
+        mutableState.update { it.copy(dialog = null) }
+    }
+
+    sealed interface Dialog {
+        data class ChangeCategory(
+            val manga: List<Manga>,
+            val initialSelection: ImmutableList<CheckboxState<Category>>,
+        ) : Dialog
+        data class DeleteManga(val manga: List<Manga>) : Dialog
     }
 
     private fun displayPreferencesFlow(): Flow<DisplayPreferences> = combine(
@@ -213,6 +355,7 @@ class LibraryScreenModel(
             showEmptyCategoriesSearch = showEmpty,
             // Android: the global sort applies when the library is not grouped by category.
             globalSort = sort.takeIf { group != LibraryGroup.BY_DEFAULT },
+            groupType = group,
             includedCategories = included.mapNotNull(String::toLongOrNull).toSet(),
             excludedCategories = excluded.mapNotNull(String::toLongOrNull).toSet(),
         )
@@ -222,6 +365,7 @@ class LibraryScreenModel(
         val showHiddenCategories: Boolean,
         val showEmptyCategoriesSearch: Boolean,
         val globalSort: LibrarySort?,
+        val groupType: Int,
         val includedCategories: Set<Long>,
         val excludedCategories: Set<Long>,
     )
@@ -231,6 +375,8 @@ class LibraryScreenModel(
         val pages: List<LibraryPage>,
         val isLibraryEmpty: Boolean,
         val hasActiveFilters: Boolean,
+        val groupType: Int,
+        val itemsById: Map<Long, LibraryItem>,
     )
 
     @Immutable
@@ -243,10 +389,30 @@ class LibraryScreenModel(
         val pages: List<LibraryPage> = emptyList(),
         val isLibraryEmpty: Boolean = true,
         val hasActiveFilters: Boolean = false,
+        /** `LibraryPreferences.groupLibraryBy()` ([LibraryGroup]); pages are groups when it is not by category. */
+        val groupType: Int = LibraryGroup.BY_DEFAULT,
+        /** The filtered library entries by id (Android's `LibraryData.favoritesById`). */
+        val itemsById: Map<Long, LibraryItem> = emptyMap(),
+        /** Selected manga ids, in selection order (Android's `selection`). */
+        val selection: Set<Long> = emptySet(),
+        val dialog: Dialog? = null,
     ) {
         /** Index of the selected page (the first one when the selected category is not shown). */
         val selectedIndex: Int
             get() = pages.indexOfFirst { it.category.id == selectedCategoryId }.coerceAtLeast(0)
+
+        val selectedPage: LibraryPage?
+            get() = pages.getOrNull(selectedIndex)
+
+        val selectionMode: Boolean
+            get() = selection.isNotEmpty()
+
+        /** The selected entries that are still in the (filtered) library, like Android. */
+        val selectedManga: List<Manga>
+            get() = selection.mapNotNull { itemsById[it]?.libraryManga?.manga }
+
+        fun itemIdsOf(categoryId: Long?): List<Long> =
+            pages.firstOrNull { it.category.id == categoryId }?.items?.map { it.id }.orEmpty()
     }
 
     companion object {
