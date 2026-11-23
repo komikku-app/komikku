@@ -141,10 +141,29 @@ class GetNextChaptersTest {
     }
 
     @Test
-    fun `excluded chapter with a tied upload date falls back to source order`() = runTest {
+    fun `excluded unread chapter resumes from another scanlator's copy that sorts before it`() = runTest {
+        val manga = numberSortManga.copy(chapterFlags = Manga.CHAPTER_SORTING_SOURCE)
+        val chapters = listOf(
+            chapter(1, 1.0, read = true, sourceOrder = 3),
+            chapter(2, 2.0, sourceOrder = 2),
+            chapter(20, 2.0, scanlator = EXCLUDED, sourceOrder = 1),
+            chapter(3, 3.0, sourceOrder = 0),
+        )
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(2L, 3)
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe listOf(2L, 3)
+        // The copy of a read chapter is skipped
+        setUp(manga, chapters.map { if (it.id == 20L) it.copy(read = true) else it })
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(3L)
+    }
+
+    @Test
+    fun `excluded chapter with a tied upload date falls back to chapter number`() = runTest {
         // The source gives no upload dates, so every chapter ties
         val manga = numberSortManga.copy(chapterFlags = Manga.CHAPTER_SORTING_UPLOAD_DATE)
         val chapters = listOf(
+            chapter(10, 0.0, read = true, sourceOrder = 5),
             chapter(1, 1.0, sourceOrder = 4),
             chapter(20, 2.0, scanlator = EXCLUDED, sourceOrder = 3),
             chapter(3, 3.0, sourceOrder = 2),
@@ -159,19 +178,65 @@ class GetNextChaptersTest {
     }
 
     @Test
-    fun `excluded chapter of an E-Hentai manga only returns the last chapter when unread`() = runTest {
-        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+    fun `excluded chapter with a tied upload date and chapter number falls back to source order`() = runTest {
+        val manga = numberSortManga.copy(chapterFlags = Manga.CHAPTER_SORTING_UPLOAD_DATE)
         val chapters = listOf(
-            chapter(1, 1.0, read = true),
-            chapter(20, 2.0, read = true, scanlator = EXCLUDED),
-            chapter(3, 3.0),
+            chapter(10, -1.0, read = true, sourceOrder = 5),
+            chapter(11, -1.0, sourceOrder = 4),
+            chapter(20, -1.0, scanlator = EXCLUDED, sourceOrder = 3),
+            chapter(12, -1.0, sourceOrder = 2),
+            chapter(13, -1.0, read = true, sourceOrder = 1),
         )
         setUp(manga, chapters)
 
-        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(3L)
-        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe listOf(3L)
-        setUp(manga, chapters.map { if (it.id == 3L) it.copy(read = true) else it })
-        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe emptyList()
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = false).ids() shouldBe listOf(12L, 13)
+        getNextChapters.await(MANGA_ID, 20, onlyUnread = true).ids() shouldBe listOf(12L)
+    }
+
+    @Test
+    fun `excluded chapter of an E-Hentai manga resumes from the next filtered chapter`() = runTest {
+        val manga = numberSortManga.copy(source = EH_SOURCE_ID)
+        val chapters = listOf(
+            chapter(1, 1.0, read = true),
+            chapter(2, 2.0, read = true),
+            chapter(30, 3.0, read = true, scanlator = EXCLUDED),
+            chapter(4, 4.0),
+            chapter(5, 5.0),
+            chapter(60, 6.0, read = true, scanlator = EXCLUDED),
+        )
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = false).ids() shouldBe listOf(4L, 5)
+        // Only the last chapter is returned when only unread
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = true).ids() shouldBe listOf(5L)
+        getNextChapters.await(MANGA_ID, 60, onlyUnread = false).ids() shouldBe emptyList()
+        getNextChapters.await(MANGA_ID, 60, onlyUnread = true).ids() shouldBe emptyList()
+    }
+
+    @Test
+    fun `excluded chapter of a merged manga with source order sorting compares chapter numbers`() = runTest {
+        // Deduping gives the merged chapters a new source order, unrelated to the hidden chapter's own one
+        val manga = numberSortManga.copy(source = MERGED_SOURCE_ID, chapterFlags = Manga.CHAPTER_SORTING_SOURCE)
+        val chapters = listOf(
+            chapter(1, 1.0, read = true, sourceOrder = 3),
+            chapter(2, 2.0, sourceOrder = 2),
+            chapter(30, 3.0, read = true, scanlator = EXCLUDED, sourceOrder = 100).copy(mangaId = OTHER_MANGA_ID),
+            chapter(4, 4.0, sourceOrder = 1),
+            chapter(5, 5.0, sourceOrder = 0),
+        )
+        setUp(manga, chapters)
+
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = false).ids() shouldBe listOf(4L, 5)
+        getNextChapters.await(MANGA_ID, 30, onlyUnread = true).ids() shouldBe listOf(4L, 5)
+    }
+
+    @Test
+    fun `failed filtered chapter query keeps the default behavior`() = runTest {
+        setUp(numberSortManga, chapters)
+        val filtered = chapters.filterNot { it.scanlator == EXCLUDED }
+        coEvery { getChaptersByMangaId.await(MANGA_ID, applyFilter = true) } returnsMany listOf(filtered, emptyList())
+
+        getNextChapters.await(MANGA_ID, 6, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
     }
 
     @Test

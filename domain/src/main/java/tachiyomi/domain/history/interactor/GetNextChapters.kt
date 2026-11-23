@@ -9,6 +9,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.history.repository.HistoryRepository
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.model.Manga
 import kotlin.math.max
 
 class GetNextChapters(
@@ -96,8 +97,8 @@ class GetNextChapters(
     // KMK -->
     /**
      * Handles a [fromChapterId] that the chapter filters hide, e.g. a chapter whose scanlator was excluded or that the
-     * bookmark filter hides. Returns the chapters of [chapters] that sort after it, plus other scanlators'
-     * copies of it when it isn't completely read.
+     * bookmark filter hides. Returns the chapters of [chapters] that sort after it, plus other scanlators' copies of it
+     * (same chapter number) when it isn't completely read.
      *
      * Returns null to keep the default behavior when the chapter can't be found or isn't hidden by the filters, i.e. it
      * is only missing from [chapters] because [onlyUnread] dropped it.
@@ -109,18 +110,31 @@ class GetNextChapters(
         chapters: List<Chapter>,
     ): List<Chapter>? {
         val fromChapter = getChapter.await(fromChapterId) ?: return null
-        if (onlyUnread && await(mangaId, onlyUnread = false).any { it.id == fromChapterId }) return null
+        if (onlyUnread) {
+            val filteredChapters = await(mangaId, onlyUnread = false)
+            // [chapters] is a subset of this list, so an empty one means the query failed
+            if (filteredChapters.isEmpty() || filteredChapters.any { it.id == fromChapterId }) return null
+        }
         val manga = getManga.await(mangaId) ?: return null
 
-        val chapterSort = getChapterSort(manga, sortDescending = false)
+        // A merged manga's chapters come from several entries and deduping rewrites their source order, so the hidden
+        // chapter's source order can't be compared with theirs
+        val isMerged = manga.source == MERGED_SOURCE_ID
+        val chapterSort = if (isMerged && manga.sorting == Manga.CHAPTER_SORTING_SOURCE) {
+            { c1: Chapter, c2: Chapter -> c1.chapterNumber.compareTo(c2.chapterNumber) }
+        } else {
+            getChapterSort(manga, sortDescending = false)
+        }
         return chapters.filter {
-            var order = chapterSort(it, fromChapter)
-            // Ties that aren't copies of the same chapter (e.g. unknown upload dates or chapter numbers) fall back to
-            // source order, which lists the first chapter last
-            if (order == 0 && !(it.isRecognizedNumber && it.chapterNumber == fromChapter.chapterNumber)) {
-                order = fromChapter.sourceOrder.compareTo(it.sourceOrder)
+            if (it.isRecognizedNumber && it.chapterNumber == fromChapter.chapterNumber) {
+                return@filter !fromChapter.read
             }
-            order > 0 || (order == 0 && !fromChapter.read)
+            var order = chapterSort(it, fromChapter)
+            // Break ties (e.g. unknown upload dates) by chapter number, then by source order, which lists the first
+            // chapter last. Chapters still tied can't be placed after the hidden chapter.
+            if (order == 0) order = it.chapterNumber.compareTo(fromChapter.chapterNumber)
+            if (order == 0 && !isMerged) order = fromChapter.sourceOrder.compareTo(it.sourceOrder)
+            order > 0
         }
     }
     // KMK <--
