@@ -38,6 +38,16 @@ class OkHttpHostHttpTest {
     fun stop() = server.close()
 
     @Test
+    fun anUnboundedBodyCapReadsTheBody() = runBlocking {
+        // Long.MAX_VALUE used to overflow (`request(cap + 1)`), throw on OkHttp's thread and never resume the call.
+        server.enqueue(MockResponse.Builder().body("all of it").build())
+        val response = withTimeout(10_000) {
+            http.execute(HostHttpRequest("GET", server.url("/").toString(), emptyList(), null, maxBodyBytes = Long.MAX_VALUE))
+        }
+        assertEquals("all of it", response.body.decodeToString())
+    }
+
+    @Test
     fun sendsMethodHeadersAndBody() = runBlocking {
         server.enqueue(
             MockResponse.Builder().code(201).addHeader("Content-Type", "text/plain").addHeader("X-A", "1").addHeader("X-A", "2")

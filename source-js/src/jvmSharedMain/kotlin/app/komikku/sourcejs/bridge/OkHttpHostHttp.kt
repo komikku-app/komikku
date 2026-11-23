@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import okhttp3.internal.http.HttpMethod
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
@@ -43,7 +42,8 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
                                     body = it.readBody(request.maxBodyBytes),
                                 )
                             }
-                        } catch (e: IOException) {
+                        } catch (e: Throwable) {
+                            // Any failure, not only I/O: the coroutine must always be resumed.
                             continuation.resumeWithException(e)
                             return
                         }
@@ -56,11 +56,11 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
 
     /** The body, failing as soon as it is known to exceed [maxBytes] (declared length or bytes read). */
     private fun Response.readBody(maxBytes: Long?): ByteArray {
-        if (maxBytes == null) return body.bytes()
+        if (maxBytes == null || maxBytes == Long.MAX_VALUE) return body.bytes()
         val declared = body.contentLength()
-        if (declared > maxBytes) throw IOException("response body larger than $maxBytes bytes")
+        if (declared > maxBytes) throw IOException(HttpBridge.tooLargeMessage(maxBytes))
         val source = body.source()
-        if (source.request(maxBytes + 1)) throw IOException("response body larger than $maxBytes bytes")
+        if (source.request(maxBytes + 1)) throw IOException(HttpBridge.tooLargeMessage(maxBytes))
         return source.readByteArray()
     }
 
@@ -74,7 +74,7 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
         }.build()
         val requestBody = when {
             body != null -> body.toRequestBody()
-            HttpMethod.requiresRequestBody(method) -> ByteArray(0).toRequestBody()
+            method in METHODS_WITH_BODY -> ByteArray(0).toRequestBody()
             else -> null
         }
         return Request.Builder()
@@ -82,5 +82,10 @@ class OkHttpHostHttp(private val client: OkHttpClient) : HostHttp {
             .headers(headers)
             .method(method, requestBody)
             .build()
+    }
+
+    private companion object {
+        /** The methods OkHttp refuses without a body (`HttpMethod.requiresRequestBody`, an internal API). */
+        val METHODS_WITH_BODY = setOf("POST", "PUT", "PATCH", "PROPPATCH", "REPORT")
     }
 }

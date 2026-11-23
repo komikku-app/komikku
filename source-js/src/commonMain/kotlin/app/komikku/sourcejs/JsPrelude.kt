@@ -90,21 +90,21 @@ function isNotImplemented(error) {
 // Host replies: "v" + JSON, "s" + raw string, "h" + response JSON + "\n" + raw body, "e" + {id, message} (host
 // failure), "c" (dropped after the call settled).
 const CANCELLED = {};
+// Slices are taken from the reply itself: an HTTP body is in the heap twice (reply, body), not three times.
 function decode(reply) {
   if (typeof reply !== "string" || reply.length === 0) return null;
   const tag = reply[0];
-  const body = stringSlice(reply, 1);
-  if (tag === "s") return body;
-  if (tag === "v") return JsonParse(body);
+  if (tag === "s") return stringSlice(reply, 1);
+  if (tag === "v") return JsonParse(stringSlice(reply, 1));
   if (tag === "h") {
-    const newline = stringIndexOf(body, "\n");
-    const response = JsonParse(stringSlice(body, 0, newline));
-    response.body = stringSlice(body, newline + 1);
+    const newline = stringIndexOf(reply, "\n");
+    const response = JsonParse(stringSlice(reply, 1, newline));
+    response.body = stringSlice(reply, newline + 1);
     return response;
   }
   if (tag === "c") return CANCELLED;
   if (tag === "e") {
-    const failure = JsonParse(body);
+    const failure = JsonParse(stringSlice(reply, 1));
     throw brand(new ErrorCtor(StringCtor(failure.message)), { kind: "host", id: NumberCtor(failure.id) });
   }
   return null;

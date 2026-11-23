@@ -255,8 +255,13 @@ internal class JsSession(
                 if (response.body.size > limits.maxResponseBodyBytes) {
                     throw httpFailure(request.method, request.url, HttpBridge.tooLargeMessage(limits.maxResponseBodyBytes), null)
                 }
-                // JSON never contains a raw newline, so the first one separates the object from the body.
-                "h" + HttpBridge.responseWithoutBody(request, response) + "\n" + HttpBridge.body(response)
+                // JSON never contains a raw newline, so the first one separates the object from the body. Built in
+                // one buffer of the final size (the body is the large part).
+                val head = HttpBridge.responseWithoutBody(request, response).toString()
+                val body = HttpBridge.body(response)
+                buildString(head.length + body.length + 2) {
+                    append('h').append(head).append('\n').append(body)
+                }
             }
             "webview" -> {
                 val headers = (args.getOrNull(1) as? JsonObject)?.mapValues { (_, value) -> value.textOrNull().orEmpty() }.orEmpty()

@@ -12,6 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 /** The typed error envelope: classification by markers, load errors, nullish throws, timeouts and cancellation. */
 class ErrorProtocolTest {
@@ -204,7 +205,22 @@ class ErrorProtocolTest {
 
     @Test
     fun theDefaultCallLimitIsAboveTheHttpClientTimeout() {
-        assertEquals(180_000, JsHostLimits().callTimeoutMillis)
-        assertEquals(50L * 1024 * 1024, JsHostLimits().maxResponseBodyBytes)
+        // The app's HTTP client allows 120 s per request: one slow request fails as a network error first.
+        assertTrue(JsHostLimits().callTimeoutMillis > 120_000)
+    }
+
+    @Test
+    fun aBodyAtTheDefaultCapFitsTheDefaultHeap() = runTest(timeout = 120.seconds) {
+        val cap = JsHostLimits().maxResponseBodyBytes
+        // Worst case for the heap: one character above U+00FF makes QuickJS store the whole string as UTF-16.
+        fun body(bytes: Long) = ("a".repeat((bytes - 3).toInt()) + "中").encodeToByteArray()
+        val source = provider(
+            """async getPopular(page) { const r = await new Client().get("https://example.org/" + page); return { list: [{ name: String(r.body.length), link: "l" }] }; }""",
+        )
+        val atCap = TestHost(http = FakeHostHttp { HostHttpResponse(200, emptyList(), body(cap)) }).extension(source)
+        assertEquals((cap - 2).toString(), atCap.getPopular(1).list.single().name)
+        val overCap = TestHost(http = FakeHostHttp { HostHttpResponse(200, emptyList(), body(cap + 1)) }).extension(source)
+        val error = assertFailsWith<JsSourceException.BridgeError> { overCap.getPopular(1) }
+        assertEquals("HTTP GET https://example.org/1 failed: response body larger than $cap bytes", error.detail)
     }
 }
