@@ -74,7 +74,14 @@ class GetNextChapters(
         val currChapterIndex = chapters.indexOfFirst { it.id == fromChapterId }
         // KMK -->
         if (currChapterIndex == -1) {
-            getChaptersAfterHiddenChapter(mangaId, fromChapterId, onlyUnread, chapters)?.let { return it }
+            // Only unread chapters drop a read chapter too, so look for it among all the filtered chapters
+            val filteredChapters = if (onlyUnread) await(mangaId, onlyUnread = false) else chapters
+            val fromChapterIndex = filteredChapters.indexOfFirst { it.id == fromChapterId }
+            if (fromChapterIndex != -1) {
+                val nextChapterIds = filteredChapters.drop(fromChapterIndex + 1).mapTo(HashSet()) { it.id }
+                return chapters.filter { it.id in nextChapterIds }
+            }
+            getChaptersAfterHiddenChapter(mangaId, fromChapterId, chapters, filteredChapters)?.let { return it }
         }
         // KMK <--
         val nextChapters = chapters.subList(max(0, currChapterIndex), chapters.size)
@@ -108,17 +115,19 @@ class GetNextChapters(
      * bookmark filter hides. Returns the chapters of [chapters] that sort after it, plus other scanlators' copies of it
      * (same chapter number) when it isn't completely read.
      *
-     * Returns null to keep the default behavior when the chapter can't be found or isn't hidden by the filters, i.e. it
-     * is only missing from [chapters] because [onlyUnread] dropped it.
+     * [filteredChapters] holds all the filtered chapters, which [fromChapterId] is missing from. It is empty when the
+     * query failed (only unread [chapters] come from the same list) or every chapter is filtered out.
+     *
+     * Returns null to keep the default behavior when the chapter can't be found or [filteredChapters] is empty.
      */
     private suspend fun getChaptersAfterHiddenChapter(
         mangaId: Long,
         fromChapterId: Long,
-        onlyUnread: Boolean,
         chapters: List<Chapter>,
+        filteredChapters: List<Chapter>,
     ): List<Chapter>? {
         val fromChapter = getChapter.await(fromChapterId) ?: return null
-        if (onlyUnread && !isHiddenByFilters(mangaId, fromChapterId)) return null
+        if (filteredChapters.isEmpty()) return null
         val manga = getManga.await(mangaId) ?: return null
 
         val storedSourceOrders = if (manga.source == MERGED_SOURCE_ID) {
@@ -128,15 +137,6 @@ class GetNextChapters(
             emptyMap()
         }
         return HiddenChapterOrder(manga, fromChapter, storedSourceOrders).chaptersAfter(chapters)
-    }
-
-    /**
-     * Whether the chapter filters hide [chapterId] from [mangaId]'s chapters. False when the chapters can't be read: an
-     * empty list means the query failed, since the unread chapters come from the same list.
-     */
-    private suspend fun isHiddenByFilters(mangaId: Long, chapterId: Long): Boolean {
-        val filteredChapters = await(mangaId, onlyUnread = false)
-        return filteredChapters.isNotEmpty() && filteredChapters.none { it.id == chapterId }
     }
     // KMK <--
 }
