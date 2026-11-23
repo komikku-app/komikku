@@ -332,6 +332,16 @@ class MangayomiJsSourceTest {
         assertEquals("getPageList", search.member)
     }
 
+    @Test
+    fun headerValuesWithControlCharactersAreDropped() {
+        val source = source(HEADERS, descriptor(id = 9))
+        assertEquals("ok", source.headers["X-Ok"])
+        assertEquals("é", source.headers["X-Unicode"])
+        assertNull(source.headers["X-Crlf"])
+        assertNull(source.headers["X-Injected"])
+        assertNull(source.headers["X-Nul"])
+    }
+
     companion object {
         /** Popular, latest (failing), search, details, pages, filters, preferences and headers. */
         val FULL = """
@@ -382,6 +392,16 @@ class MangayomiJsSourceTest {
             class DefaultExtension extends MProvider {
               async getLatestUpdates(page) { return await this.getDetail("x"); }
               async search(query, page, filters) { return await this.getPageList("y"); }
+            }
+        """.trimIndent()
+
+        /** Header values OkHttp refuses, some of which `addUnsafeNonAscii` would still send. */
+        val HEADERS = """
+            const mangayomiSources = [{ "name": "Adapter Test", "lang": "pt-br", "id": 9 }];
+            class DefaultExtension extends MProvider {
+              getHeaders(url) {
+                return { "X-Ok": "ok", "X-Unicode": "é", "X-Crlf": "a\r\nX-Injected: 1", "X-Nul": "a\u0000b" };
+              }
             }
         """.trimIndent()
 

@@ -323,8 +323,9 @@ class MangayomiJsSource(
     private fun Map<String, String>.toSafeHeaders(): Headers = Headers.Builder().setSafely(this).build()
 
     /**
-     * Sets every header OkHttp accepts (non-ASCII values through `addUnsafeNonAscii`); `Accept-Encoding` is left to
-     * OkHttp, which then decompresses (as for the script's own requests).
+     * Sets every header OkHttp accepts, and values that are only non-ASCII through `addUnsafeNonAscii` (which checks the
+     * name only: a value with control characters such as CR / LF / NUL is skipped, it could split the request);
+     * `Accept-Encoding` is left to OkHttp, which then decompresses (as for the script's own requests).
      */
     private fun Headers.Builder.setSafely(values: Map<String, String>): Headers.Builder = apply {
         values.forEach { (headerName, value) ->
@@ -333,6 +334,7 @@ class MangayomiJsSource(
                 set(headerName, value)
             } catch (_: IllegalArgumentException) {
                 try {
+                    require(value.none { it != '\t' && (it < ' ' || it == '\u007f') })
                     removeAll(headerName)
                     addUnsafeNonAscii(headerName, value)
                 } catch (_: IllegalArgumentException) {
