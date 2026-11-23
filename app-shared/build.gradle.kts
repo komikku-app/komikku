@@ -94,6 +94,8 @@ dependencies {
     api(projects.domain)
     api(projects.data)
     api(projects.presentationCore)
+    // Mangayomi JavaScript sources: the repository store (app.komikku.shared.jssource) and the source adapter.
+    api(projects.sourceJs)
 
     api(libs.injekt)
     api(libs.materialKolor)
