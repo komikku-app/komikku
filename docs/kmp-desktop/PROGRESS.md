@@ -79,7 +79,7 @@ Plan: [`PLAN.md`](PLAN.md) section 8 (findings of I0 in 8.9). Contract:
 | I0 Contract and feasibility | done | see git log (`docs(kmp): … Mangayomi …`) | Docs only. 114 JS manga entries from 18 files in the kodjodevf index (86 are MangaDex / Comick variants; files hosted by the `entityJY` fork; 2 files 404). Bridge used: `Client.get`, CSS DOM, `SharedPreferences`, filters, preferences, one `cryptoHandler`; no XPath, WebView, `parseDates` or unpacker. Engine: `quickjs-kt` 1.0.15 (iOS targets verified, QuickJS 2026-06-04 like Mangayomi); on Android it clashes with the zhanghai AAR (`libquickjs.so`), maintainer decision 8.7 item 5. Licences: Apache-2.0 (app, index, fork), MIT (`flutter_qjs`). Go for I1–I4 with conditions (8.9). |
 | I1 Engine and host core | done | `86c99aefac`, `49da887244`, `0ec0f1193f` | New KMK module `:source-js` (`kotlin("multiplatform")`, code in `commonMain`, package `app.komikku.sourcejs`); target `jvm("desktop")` only, `iosArm64` / `iosSimulatorArm64` declared only on macOS hosts, no Android target yet (8.7 item 5). `JsEngine` (define sync / suspend host functions, evaluate, `callFunction` with JSON args, close) on `io.github.dokar3:quickjs-kt` 1.0.15 (`QuickJsEngine`), one dedicated thread per context. `JsExtensionHost(services, engineFactory, limits).extension(source, code)` gives a `JsExtension` with `getPopular`, `getLatestUpdates`, `search`, `getDetail`, `getPageList`, `getFilterList`, `getSourcePreferences`, `getHeaders`, `supportsLatest` and `metadata()` (API as reshaped by the review fixes below); a fresh context per call; `JsHostLimits` (180 s wall clock per call, 64 MiB heap, 4 MiB JS stack, 50 MiB response bodies); own prelude (`JsPrelude`). Typed `@Serializable` models: `JsMangaPage`, `JsManga` + `JsMangaStatus`, `JsChapter`, `JsPage`, `JsFilter` tree (8 kinds, raw JSON kept), `JsPreference` (5 kinds); lenient parser. Errors: sealed `JsSourceException` (`ScriptError` with JS stack, `Timeout`, `OutOfMemory`, `Unsupported`, `BridgeError`, `MalformedResult`). Tests (`:source-js:desktopTest`): `QuickJsEngineTest` 7, `HostCoreTest` 15, `ResultModelsTest` 11. Android unit tests: not applicable (no Android target). |
 | I2 Bridge | done | `49da887244` (code), `f57cacd5a3` (conformance tests) | Bridge interfaces in `commonMain`: `HostHttp` (`HostHttpRequest` / `HostHttpResponse`), `HostPreferences` + `HostPreferencesProvider` (`KeyValueHostPreferences` over a `JsKeyValueStore`), `HostCrypto` (`CommonHostCrypto`, pure Kotlin AES-CBC / AES-GCM / MD5), `HostLog`, `HostWebView` (`UnsupportedHostWebView`), bundled in `JsHostServices`. `Client` (all verbs, Mangayomi body encoding and response object), DOM on Ksoup `com.fleeksoft.ksoup:ksoup` 0.2.6 with Mangayomi's quirks, `SharedPreferences` (default materialisation, `getString` / `setString`), `cryptoHandler`, CryptoJS AES, `decryptAESGCM`, `deobfuscateJsPassword`, string helpers, `console`, `setTimeout`; clear "unsupported" errors for XPath, `parseDates`, unpackers, WebView, extractors, HLS, EPUB. Desktop: `OkHttpHostHttp(OkHttpClient)`. Tests: conformance suite in `commonTest` (`ClientConformanceTest` 2, `DomConformanceTest` 1, `PreferencesConformanceTest` 1, `UtilsConformanceTest` 2; fake `HostHttp`, fixed HTML, vectors from Python `cryptography`), `desktopTest`: `OkHttpHostHttpTest` 7 (`MockWebServer`), `CommonHostCryptoJdkTest` 3. 49 tests in total, all pass. Local smoke run (not committed) over the real files: see below. |
-| I2b Android engine switch | done | `6485fbe496`, `21f30d5dbe`, `935c6c9710`, `8cf7a35ebd`, `f2b94425c6` | New KMK module `:core:quickjs` (`mihon.library.kmp`, namespace `app.komikku.core.quickjs`): `app.cash.quickjs.QuickJs` / `QuickJsException` on `quickjs-kt` 1.0.15 for Android and desktop, binary compatible with quickjs-android (ABI check below), rebuilt to its behaviour (parity note below; `set` / `get` implemented although no extension uses them). Moved with `git mv` from `:desktop:android-compat` (`src/main/kotlin/app/cash/quickjs/{QuickJs,QuickJsException}.kt`, test `QuickJsTest.kt`); internals in `app.komikku.quickjs` (`QuickJsRuntime`, `EngineThread`, `Marshalling`, `JsStackTrace`). `core:common` depends on it for both targets (desktop no longer gets it from the compat module; `:desktop:extension-runtime` still exposes `app.cash.quickjs.` as a host package). Catalog: `quickjs-android` + bundle `js-engine` commented out (KMK), `quickjs-kt-jvm` added for host tests. Android: `:app:dependencyInsight` finds no `quickjs-android` in `debugRuntimeClasspath`, `quickjs-kt-android` comes through `:core:quickjs`; its AAR has `jni/{arm64-v8a,armeabi-v7a,x86,x86_64}/libquickjs.so` (all four split ABIs; `keepDebugSymbols` `**/libquickjs.so` still matches) and `:app:mergeDebugNativeLibs` packages only its copy (JNI symbols `Java_com_dokar_quickjs_*`). ProGuard: the AAR's consumer rules keep `QuickJs`, `QuickJsException`, `JsProperty`, `JsFunction`, `JsObject`, `UByteArray` (name only); KMK rules added for `MemoryUsage` (JNI constructor) and `UByteArray`'s `(byte[])` constructor and `storage` field; `app.cash.quickjs.** { public protected *; }` still matches. `:source-js` gained `androidTarget()` (namespace `app.komikku.sourcejs`, `mihon.library`) and a `jvmShared` source set (`OkHttpHostHttp`, `JsEngineThread.jvm.kt`, moved from `desktopMain`). Android host unit tests of both modules run the engine: their `*UnitTestRuntimeClasspath` excludes `quickjs-kt-android` and adds `quickjs-kt-jvm` (Linux / macOS / Windows x64 natives). Tests: `:core:quickjs` 16 (13 `QuickJsTest`, 3 `QuickJsErrorClassTest`, 2 of them `@Disabled`), on desktop and the Android host; `:source-js:testReleaseUnitTest` 67 (all of `commonTest`), `desktopTest` 87 (1 skipped). Not verified: R8 / release builds, a device or emulator. |
+| I2b Android engine switch | done | `6485fbe496`, `21f30d5dbe`, `935c6c9710`, `8cf7a35ebd`, `f2b94425c6` | New KMK module `:core:quickjs` (`mihon.library.kmp`, namespace `app.komikku.core.quickjs`): `app.cash.quickjs.QuickJs` / `QuickJsException` on `quickjs-kt` 1.0.15 for Android and desktop, binary compatible with quickjs-android (ABI check below), rebuilt to its behaviour (parity note below; `set` / `get` implemented although no extension uses them). Moved with `git mv` from `:desktop:android-compat` (`src/main/kotlin/app/cash/quickjs/{QuickJs,QuickJsException}.kt`, test `QuickJsTest.kt`); internals in `app.komikku.quickjs` (`QuickJsRuntime`, `EngineThread`, `Marshalling`, `JsStackTrace`). `core:common` depends on it for both targets (desktop no longer gets it from the compat module; `:desktop:extension-runtime` still exposes `app.cash.quickjs.` as a host package). Catalog: `quickjs-android` + bundle `js-engine` commented out (KMK), `quickjs-kt-jvm` added for host tests. Android: `:app:dependencyInsight` finds no `quickjs-android` in `debugRuntimeClasspath`, `quickjs-kt-android` comes through `:core:quickjs`; its AAR has `jni/{arm64-v8a,armeabi-v7a,x86,x86_64}/libquickjs.so` (all four split ABIs; `keepDebugSymbols` `**/libquickjs.so` still matches) and `:app:mergeDebugNativeLibs` packages only its copy (JNI symbols `Java_com_dokar_quickjs_*`). ProGuard: the AAR's consumer rules keep `QuickJs`, `QuickJsException`, `JsProperty`, `JsFunction`, `JsObject`, `UByteArray` (name only); KMK rules added for `MemoryUsage` (JNI constructor) and `UByteArray`'s `(byte[])` constructor and `storage` field; `app.cash.quickjs.** { public protected *; }` still matches. `:source-js` gained `androidTarget()` (namespace `app.komikku.sourcejs`, `mihon.library`) and a `jvmShared` source set (`OkHttpHostHttp`, `JsEngineThread.jvm.kt`, moved from `desktopMain`). Android host unit tests of both modules run the engine: their `*UnitTestRuntimeClasspath` excludes `quickjs-kt-android` and adds `quickjs-kt-jvm` (Linux / macOS / Windows x64 natives). Tests: `:core:quickjs` 16 (13 `QuickJsTest`, 3 `QuickJsErrorClassTest`, 2 of them `@Disabled`), on desktop and the Android host; `:source-js:testReleaseUnitTest` 67 (all of `commonTest`), `desktopTest` 87 (1 skipped). Not verified: R8 / release builds, a device or emulator. After the review fixes (section "Review fixes (I2b)"): `:core:quickjs` 38 (2 `@Disabled`), `:source-js` `desktopTest` 110 (1 skipped), `testReleaseUnitTest` 83. |
 | I3 Source adapter | todo | | |
 | I4 Store and UI | todo | | |
 | I5 Common core for iOS | todo | | Needs macOS. |
@@ -100,10 +100,12 @@ vague or wrong). Decisions taken without the maintainer, as asked:
 - **Crypto in pure Kotlin** instead of `cryptography-kotlin`: AES-CBC (PKCS#7), AES-GCM decryption and MD5 are
   small, need no provider registration and behave the same on JVM and iOS; checked against the JDK and Python
   `cryptography` vectors. The CryptoJS salt comes from `kotlin.random` (a salt need not be secret).
-- **Engine threads and limits:** each context has its own thread (desktop: 4 MiB JS stack + 4 MiB headroom); the
-  QuickJS runtime is created on that thread because QuickJS measures its stack limit from the creating thread.
-  Defaults per call: 180 s wall clock (including network waits; enforced on `Dispatchers.Default` so test
-  dispatchers do not fake it), 64 MiB heap, 4 MiB stack; cancelling the caller interrupts the script.
+- **Engine threads and limits:** each context has its own thread (desktop: 4 MiB JS stack + 4 MiB headroom) and
+  every call runs on it, because QuickJS checks its stack limit against the native stack of the thread it runs on
+  (quickjs-kt re-bases the limit at every entry into the engine, so the thread may also be replaced: since the I2b
+  review an idle engine thread ends after 30 s). Defaults per call: 180 s wall clock (including network waits;
+  enforced on `Dispatchers.Default` so test dispatchers do not fake it), 64 MiB heap, 4 MiB stack; cancelling the
+  caller interrupts the script.
   Out-of-memory: see the review fixes below.
 - **Fresh context for every call**, metadata calls included (Mangayomi keeps up to 6 metadata services alive);
   extensions cannot observe the difference. `JsExtension.metadata()` reads the four sync members in one context.
@@ -195,7 +197,8 @@ a frame that unwound), the failure is indistinguishable from `throw null` and re
 checked while JavaScript runs, i.e. still wall clock (a call that waited for the network would be interrupted at
 its next JS step), so there is no JS-time-only limit: the wall-clock call limit is now 180 s (the app's HTTP client
 allows 120 s per request). Response bodies are capped at 50 MiB (`JsHostLimits.maxResponseBodyBytes`, enforced
-while reading by `OkHttpHostHttp` and checked again by the bridge; a `BridgeError` the script can catch). A runtime
+while reading by `OkHttpHostHttp` and checked again by the bridge; a `BridgeError` the script can catch; since the
+I2b review the default is an eighth of the heap, see "Review fixes (I2b)"). A runtime
 created while the caller was cancelled is closed (it used to leak).
 
 **Mangayomi parity.** Source-supplied `Accept-Encoding` is dropped so OkHttp negotiates and decompresses; `getSrc`
@@ -291,8 +294,9 @@ binding rethrown as itself, the closed-instance `NullPointerException`, globals 
 Threading: one engine thread per instance with a 4 MiB native stack and a **1 MiB** JS stack limit (4× the old
 256 KiB, so recursion goes about four times deeper — a simple one reaches ~2000 frames; deeper recursion is a
 JavaScript error, never a crash); calls block the caller (waiting is not interruptible, the interrupt flag is restored) and are serialized,
-so the instance is now safe to share between threads. `close()` waits for queued calls, frees the runtime and
-ends the thread; `finalize()` frees a leaked instance (the old one only logged).
+so the instance is now safe to share between threads. `close()` cancels the call in progress and fails the queued
+ones with the closed-instance exception, frees the runtime and ends the thread; `finalize()` frees a leaked instance
+(the old one only logged) once no call and no `get` proxy uses it (details in "Review fixes (I2b)").
 
 **Deviations that cannot be avoided without changing scripts** (quickjs-kt evaluates every script with
 `JS_EVAL_FLAG_ASYNC` and awaits it):
@@ -300,16 +304,18 @@ ends the thread; `finalize()` frees a leaked instance (the old one only logged).
   (quickjs-android never ran them);
 - an unhandled promise rejection fails the call with its message (`Promise.reject(e); 5` threw nothing before);
 - `await` is reserved at the top level (`var await = 1` is a syntax error);
-- the completion value is taken from a `{ value }` object that quickjs-kt resolves as a promise, so an
-  `Object.prototype.then` defined by the script would intercept it;
+- the completion value is taken from a `{ value }` object that quickjs-kt resolves as a promise; the completion
+  helper of the I2b review converts it there (see "Review fixes (I2b)"), which also keeps an `Object.prototype.then`
+  of the script from intercepting it;
 - newer QuickJS (`2026-06-04` vs `2021-03-27`): error texts differ in places (`nope is not defined` instead of
   `'nope' is not defined`) and stack lines carry a column (`file.js:6:5`);
 - `throw {message: 'm'}` gives "[object Object]" (was "m"), `throw null` / `throw undefined` give "null";
 - for `int` / `int[]` binding parameters an integral double such as `1.0` is accepted (JavaScript cannot see
   QuickJS's int / float tag); a promise nested in an array is reported as "[object Promise]";
 - quickjs-kt cannot evaluate from inside a binding callback, so a Java method bound with `set` that calls back
-  into the same instance (`evaluate`, `execute`, a `get` proxy) gets `UnsupportedOperationException` instead of
-  re-entering; `compile` works there; `close()` from inside a binding throws `IllegalStateException`.
+  into the same instance (`evaluate`, `execute`, `compile`, a `get` proxy) gets `UnsupportedOperationException`
+  instead of re-entering (`compile` too since the I2b review: quickjs-kt re-based the stack limit at the binding's
+  depth); `close()` from inside a binding throws `IllegalStateException`.
 
 **Hardening and residual risk (PLAN.md 8.7 item 5).** Values a script passes to a `set` binding never reach
 quickjs-kt as JavaScript objects: generated script-side code converts them by the Java parameter type and encodes
@@ -318,8 +324,8 @@ pull) live under random names that the generated code captures and deletes from 
 `QuickJsErrorClassTest` passes an `Error` named `java.io.FileOutputStream` to every parameter kind of a bound
 interface and to every function reachable from the global object (the hidden `get` invoker included): no file is
 created. Evaluation semantics are untouched, so a script's own errors still reach quickjs-kt's native conversion:
-an unhandled rejection, an error thrown out of the script or one returned as (or inside) the completion value
-creates the file. Two `@Disabled` tests in `QuickJsErrorClassTest` document these paths (run once without the
+an unhandled rejection or an error thrown out of the script creates the file (one returned as, or inside, the
+completion value no longer does since the I2b review's completion helper, unless the helper cannot run). Two `@Disabled` tests in `QuickJsErrorClassTest` document these paths (run once without the
 annotation: both fail, the files appear in the temporary directory); enable them once quickjs-kt checks
 `Throwable` in `js_error_to_java_error`. Any `Throwable` quickjs-kt produces that way is reported as a
 `QuickJsException`, so an instantiated `Error` or `CancellationException` class does not escape as itself.
@@ -336,6 +342,187 @@ class was already final); **added** the `Companion` field and class `QuickJs$Com
 package-private `QuickJs$1` (quickjs-java's anonymous `get` invocation handler) and `QuickJsNativeLoader`
 (`System.loadLibrary("quickjs")`), which code outside the library could never reference. The raw and normalized
 diffs were kept in the session scratchpad (`abi.diff`, `abi.normalized.diff`), not committed.
+
+### Review fixes (I2b)
+
+Code review of `b019b0e402..712fa9294c` (the I1 / I2 review fixes and I2b) at max level; the ids in brackets are the
+review's finding ids. Decisions taken without the maintainer, as asked; runtime claims below were checked with
+probes (not committed) unless a test is named.
+
+**`:core:quickjs`: completion values [K1, B4, A1-5, B7, A1-1 in part].** quickjs-kt evaluates every script as an
+async global script and converts the `value` of the `{ value }` object its promise resolves to natively: objects
+through `JSON.stringify` (getters and `toJSON` ran, cyclic and BigInt-holding objects threw, a throwing getter with
+an error named after a non-`Throwable` class crashed the JVM), symbols and BigInts as "Unsupported js value type".
+The script is still evaluated as a global script (top-level `let` / `const` persist, file names and lines are the
+script's own), with one statement appended: `let {} = helper();`, a lexical declaration that binds nothing and so
+keeps the completion value, and that is a syntax error where a statement is expected (an incomplete `if (x)` /
+`while (x)` / `label:` stays an error instead of getting it as its body). The helper (`Completion.kt`, installed once
+per instance as a non-enumerable, non-writable, non-configurable global with a random per-process name) defines an
+`Object.prototype.then` getter that QuickJS reads on the `{ value }` object right after that statement; the getter
+removes itself (a microtask removes it at the latest), replaces `value` by `[token, value]` for primitives (number
+tags survive: `0.5 * 2` stays `Double`), `[token, copy]` for arrays (elements converted by quickjs-android's strict
+rules, nested values copied), `[token, undefined, message]` for "Cannot marshal value … to Java" and `[token]` for
+anything else (`null`), and returns `undefined`, so the object is never a thenable — an `Object.prototype.then` of
+the script no longer hangs the evaluation either. Result: objects, functions, Maps, Sets, promises, errors, cyclic
+and BigInt-holding values are `null` without running getters or `toJSON`; nested symbols / BigInts / objects /
+promises throw "Cannot marshal value … to Java" (`Symbol()`, `1`, `[object Object]`, `[object Promise]`); a getter
+throwing while an array is converted is a `QuickJsException` with its message (quickjs-android's behaviour); strings
+equal to quickjs-kt's promise placeholders and a thrown `'Unsupported js value type: x'` are kept; an `Error`
+returned as (or inside) the completion value no longer reaches quickjs-kt (no class instantiation,
+`QuickJsErrorClassTest`). Syntax errors are reported for the text alone: on a `SyntaxError` the text is compiled
+again without the statement (compiling runs nothing; a valid script stays valid with it). Tests:
+`QuickJsCompletionTest`. What a script can see: the hidden global function (`Object.getOwnPropertyNames`), the
+transient `then` getter between its last statement and the end of the evaluation, the appended statement in
+`compile()`'s bytecode. When the helper cannot run (the script froze or sealed `Object.prototype` or made its `then`
+non-configurable) quickjs-kt converts the raw value as before, except that its conversion failures give `null`
+(recognised by the frame that created the exception, `getEvaluateResult`, not by message), and nested objects still
+throw; getters and `toJSON` then run and the crash path below applies. Kuaikanmanhua (`window.__NUXT__ = …`, an
+object completion) and damconuong (its shims end with an object, the page bundle's completion can be a class or
+hold a throwing getter) get `null` again. Not restored, already listed above: promise jobs run, and an unhandled
+rejection fails the call — damconuong's `__noImport` returns `Promise.reject(…)`, so its key capture can now fail and
+return `null` instead of the key.
+
+**Crash paths left [A1-1] (PLAN.md 8.7 item 5).** Confirmed in child JVMs: a script that *throws* such a value, an
+unhandled *rejection* with it as reason, or a completion value while the helper cannot run, whose conversion meets
+a getter that throws an object named after a non-`Throwable` class (`{ get a() { throw { name:
+'java.lang.StringBuilder' }; } }`), makes quickjs-kt `Throw` a non-`Throwable` through JNI: the JVM dies (SIGSEGV).
+So a page script evaluated by an extension can crash the app — stronger than the accepted class instantiation, and
+fixed only by the same quickjs-kt native patch (`IsAssignableFrom(cls, Throwable)` in `js_error_to_java_error`).
+
+**Engine lifecycle race [B1, C3].** quickjs-kt's JNI layer keeps an instance counter, the cached `JavaVM`, about 30
+cached global class references (deleted by the last close) and the `Unit` / `UByteArray` references (replaced on every
+create) process-wide without a lock; creates / closes on different engine threads crashed the JVM. Both modules now
+create and close engines under the monitor of the `com.dokar.quickjs.QuickJs` class (shared without a module
+dependency; `:source-js` behind `expect fun quickJsLifecycle`, iOS: no lock) and keep a sentinel engine, created under
+that lock and never closed, so the counter never reaches zero. Deviation from the plan's "one process-wide sentinel":
+one per module (two engines), since the modules cannot share an object; the counter only has to stay above zero.
+Stress probe (8 threads × 15000 create / evaluate `[1, 2.5, 'x']` / close): 120000 correct, no failure, both without
+and with `-Xcheck:jni` (before: CheckJNI "Bad global or local ref" FATAL within 3 s, product-mode SIGSEGV in
+`getEvaluateResult` after ~26k instances); CheckJNI still prints quickjs-kt's general "JNI call made without checking
+exceptions" warnings (720000 in that run). Residual, not serialised (that would serialise every evaluation): the
+per-create replacement of the `Unit` / `UByteArray` references can race with an evaluation on another thread that
+converts such a value, and a lazily cached class reference can be created twice (a leaked global reference). Tests:
+`EngineLifecycleTest`, `QuickJsLifecycleTest` (the lock is held while creating / closing).
+
+**`close()` and hangs [A1-3, B3, D4, C6].** Every evaluation is a coroutine that `close()` cancels: quickjs-kt
+interrupts busy JavaScript and stops waiting for pending jobs, so the call ends with the closed-instance
+`NullPointerException` instead of blocking its caller and every later `close()` forever. Calls queued before
+`close()` fail the same way (C6: the KDoc claimed they ran first; quickjs-android had no queue, it ran on the calling
+thread). Hangs that stay until `close()` (deviations, quickjs-android ran no jobs): a promise job that keeps
+rescheduling itself, a top-level `await` of a promise that never settles. `Object.prototype.then` no longer hangs
+(completion helper). Test: `QuickJsCloseTest`.
+
+**Bindings [A1-4, A1-6, C4, A1-2, N2]** (`set` / `get`, which no extension uses; kept for ABI parity). `compile()`
+from inside a bound Java method is refused like `evaluate()` (quickjs-kt re-based the stack limit at the binding's
+depth, a native stack overflow; and the refused call cannot report a stale binding failure any more). The generated
+code takes the raw quickjs-kt binding first, through a bare identifier and `delete` in sloppy code, before reading any
+built-in, and reaches the global object as a sloppy function's `this` instead of through `globalThis` (a replaced
+`globalThis` Proxy or a patched `Array.isArray` getter could take the raw binding and call it with an `Error`);
+`set()` checks the name before defining the raw binding (which quickjs-kt kept registered with the bound object).
+Documented, not changed: bound methods run on the engine thread, not on the caller's (thread locals and locks of the
+calling thread are not visible; a method that waits for the calling thread deadlocks) [B6]; `throw { name: 'X',
+message: 'm' }` reports "[object Object]" and an error whose name contains a space keeps its prefix ("My Error: m";
+quickjs-android: "m" for both) [D6]; for `Object`-typed values of a binding or proxy an integral double arrives as
+`Integer` (JavaScript cannot see QuickJS's int / float tag) [D7].
+
+**Finalizer [K2, A1-7, D3].** The runtime references its `QuickJs` wrapper, so whatever reaches the runtime (a call
+in flight, held by the engine thread's queue; a `get` proxy's invocation handler) keeps the wrapper reachable and
+its finalizer cannot close the engine under them; the pair is still collected together (no `reachabilityFence`,
+which needs API 28). A proxy of an otherwise unreferenced instance no longer fails after a GC
+(`QuickJsFinalizerTest`); the review's stress probe (never-closed instances evaluating under GC pressure) gave 0
+failures in 9637 (before: 108 in 14690).
+
+**Threads [E2].** The engine thread of a `QuickJs` and of a `:source-js` context ends after 30 s without calls; the
+next call starts one of the same size (quickjs-kt re-bases the stack limit at every entry, so state and the JS stack
+limit carry over: `EngineThreadTest`, `JsEngineThreadTest`). The claim that QuickJS measures its stack limit from the
+creating thread (decisions above, `QuickJsEngine` KDoc) was wrong and is corrected.
+
+**Small [A1-8, Rec-4, Rec-5, Rec-8].** One `[versions]` entry for both quickjs-kt artifacts; the Android host test
+swap is one `buildSrc` function (`useQuickJsKtJvmInAndroidHostTests`); `QuickJsErrorClassTest` uses the module's
+`jsString`; number narrowing is one function; U+2028 / U+2029 are written as `\u` escapes in both JS string escapers.
+
+**`:source-js`: extension text [C1, A2-1, G1].** The text was syntax-checked as an async script (quickjs-kt's only
+grammar: `await` a keyword) but run as the body of a sync function (`await` an identifier): a regular expression in
+one was a division in the other, so a text could close the wrapper and run code at the top level, outside the entry
+(an error thrown there reached quickjs-kt, ran twice through the bytecode fallback and wiped the shared cache). The
+wrapper is now an `async function` (same grammar as the check), which the entry calls with `this` = the global object
+and awaits. Its body starts with `await undefined;` so a throw before the text's first `await` rejects a promise
+that already has a handler (an async function rejecting at once would be converted natively by quickjs-kt's
+rejection tracker). Deviations from Mangayomi's global script: top-level `var` / `function` declarations are the
+factory's own, not properties of `globalThis`; a leading `"use strict"` is not a directive (the text runs in sloppy
+mode); the text runs one microtask later; top-level `await` works. Tests: `ExtensionTextTest` (both escape texts, no
+code outside the entry, cache not wiped, `this`, declarations), `ErrorClassInjectionTest` (file payload).
+
+**Failures are `JsSourceException`s [C2, B5, A2-2, D5].** quickjs-kt throws an instance of whatever class an
+unhandled rejection names, so `getPopular()` could throw `java.lang.Error`, `kotlin.NotImplementedError` or
+`java.lang.StackOverflowError` as themselves, or be reported as `OutOfMemory` through a forged
+`JsEngineException$OutOfMemory`. `QuickJsEngine` turns every non-cancellation `Throwable` of the engine into a script
+error, the host catches `Throwable`, and anything else that fails a call (creating the engine, the host's own
+decoding) is a `BridgeError` on channel `engine`. The host bindings and the DOM's selector parser catch `Throwable`, so
+an `Error` of a service is a host failure the script can catch. Tests: `ForgedThrowableTest` (checks first that
+quickjs-kt really instantiates the classes, so it cannot pass vacuously), `forgedCancellationsAreScriptErrors` (now
+checks the script's message), `errorsOfHostServicesAreBridgeErrors`.
+
+**Bytecode [Rec-9, N1, E3, Rec-2].** Only a script error while loading cached bytecode falls back to the source;
+running out of memory or being interrupted is the call's failure and keeps the cache. The cache key covers the file
+name (it is in the bytecode's stack traces) and is computed once per `JsExtension`. `Sha256` stays; public
+`sha256Hex(text)` for I4.
+
+**How a call ends [A2-5, A2-4, A2-3, G2].** A call whose entry has reported its outcome returns it: the evaluation is
+then cancelled (interrupting stray JavaScript such as a busy job or timer) instead of running into the call timeout.
+`clearTimeout` also cancels a timer whose wait has ended but whose callback has not run. The promises of the host's
+own bridge (`Client` requests, `evaluateJavascriptViaWebview`, the unsupported async stubs) get a no-op rejection
+handler, so a request that fails while the source awaits something else can still be handled later and keeps its
+`BridgeError` channel; their functions start with an `await`, so the source's arguments are converted only once the
+handler is attached. An `async` `setTimeout` callback that rejects is logged like a throwing one, and an `async`
+`getSourcePreferences` counts as no preferences without failing the call. Deviation, documented in the contract: a
+promise the source creates itself that rejects while the source awaits something else, and that it handles only
+afterwards, still fails the call (quickjs-kt fails it on a rejection that has no handler once it has run all pending
+jobs). Test: `CallLifecycleTest`.
+
+**HTTP [C5, D2, E1, AL4, Rec-6].** `OkHttpHostHttp` resumes the call on every `Throwable` of its response handler
+(a cap of `Long.MAX_VALUE` overflowed, threw on OkHttp's thread and left the call hanging) and no longer uses the
+internal `okhttp3.internal.http.HttpMethod`; the too-large message comes from `HttpBridge`. The prelude slices the
+response and its body from the reply itself and the host builds the reply in one buffer of its final size: a body is
+in the JavaScript heap twice (reply and body) instead of three times. The default body cap is an eighth of the heap
+(8 MiB for 64 MiB; it was 50 MiB, which a body with one character above U+00FF could not reach before the heap
+ran out: 12 MiB failed): each copy takes up to two bytes per character, which leaves half the heap to the source
+(`JsHostLimits` KDoc; `aBodyAtTheDefaultCapFitsTheDefaultHeap` tests a worst-case body at the cap).
+
+**API for the adapter [AL1–AL8, E4].** `JsSourceException.NotImplemented(member)` for async members the source does
+not implement (the adapter no longer has to match the text); every `JsSourceException` carries `sourceId`; the
+`BridgeError.channel` values are documented. `metadata()` keeps the members that worked (a failing member gets its
+default with a warning; the single calls still throw; out of memory, timeouts and load failures still fail it) and
+its KDoc says to read it again after a preference change (headers and `supportsLatest` may depend on preferences).
+`search(filters = null)` reads the default filters with `getFilterList()` in the same context (one engine; a
+script failure there gives `[]` with a warning, out of memory fails the search). An unknown host channel is a host
+failure; the prelude takes the binding names from `JsSession`'s constants. `JsEngineThread` is internal;
+kotlinx-serialization-json and OkHttp are `api` dependencies.
+
+**Prototype lockdown [D1]** (kept, security). What it costs extensions: adding a property to `Object.prototype`
+throws in strict code (class bodies) and is silently dropped in sloppy code (the text's top level); assigning
+`constructor` or `then` on an object that inherits from `Promise.prototype` fails the same way (`defineProperty`
+works); existing `Object.prototype` properties stay writable. Test: `PrototypeLockdownTest`; also in the contract.
+
+**QuickJS out-of-memory crash (found in this round).** While testing these fixes, QuickJS (2026-06-04 through
+quickjs-kt 1.0.15) crashed the JVM (SIGSEGV in `JS_DefineProperty`, a `NULL` object, inside `executePendingJob`)
+whenever a source ran out of memory in an `Array.prototype.push` loop — depending only on the shape of the prelude's
+code: with plain instead of async methods in the `Client` class body (at every heap limit from 8 to 48 MiB) or with
+one envelope helper extracted from the entry (in `getFilterList`), and also when the prelude ran from source instead
+of bytecode. The `Client` layout that shipped passed a survey of 36 out-of-memory cases (three loops, twelve heap
+limits) in child JVMs, and the final prelude passes the 16 cases below; cause not found (QuickJS's out-of-memory
+paths: the same JavaScript runs in both shapes). `OutOfMemoryCrashTest` runs 16 such cases in child JVMs so a prelude change
+that brings the crash back fails one test with the case named. The envelope refactor [Rec-7] was therefore not done.
+Any QuickJS out-of-memory may still crash the app in code shapes not covered (risk for the maintainer, PLAN 8.7).
+
+**Not changed:** E5 (both CI test runs are deliberate), E6 (no single-flight for a cold compile: a rare duplicate
+compile), Rec-10 (load phase tracked in the prelude and in `JsSession`, each for its own side), Rec-11 (the
+`metadata` path and the single sync calls stay separate), Rec-13 (the `set` / `get` bridge is kept for ABI
+parity), and the `quickjs-kt` class instantiation itself (accepted risk; the three `@Disabled` / `@Ignore` tests stay).
+
+**Tests and CI.** `:core:quickjs` 38 tests (2 `@Disabled`; was 16), on desktop and the Android host;
+`:source-js` `desktopTest` 110 (1 skipped; was 87), `testReleaseUnitTest` 83 (was 67). CI runs
+`:core:quickjs:desktopTest` next to `:source-js:desktopTest`.
 
 ## Files moved out of upstream paths
 

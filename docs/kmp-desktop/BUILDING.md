@@ -44,13 +44,17 @@ added automatically on macOS hosts).
 ```
 
 The Android host unit tests run on `quickjs-kt`'s JVM artifact (host natives): the build swaps it in for the
-Android AAR, whose `libquickjs.so` only exists for Android ABIs. `desktopTest`-only tests (`OkHttpHostHttp`, JDK
-crypto checks, class injection) do not run there.
+Android AAR, whose `libquickjs.so` only exists for Android ABIs (`useQuickJsKtJvmInAndroidHostTests()` in
+`buildSrc`, shared with `:core:quickjs`). `desktopTest`-only tests (`OkHttpHostHttp`, JDK crypto checks, class
+injection, forged throwables, the engine lifecycle lock and idle threads, out-of-memory crashes) do not run there.
+`OutOfMemoryCrashTest` starts 16 child JVMs (one per scenario and heap limit, ~10 s), so a native crash fails that
+test instead of aborting the run.
 
 Tests: engine (`QuickJsEngineTest`), host core and limits (`HostCoreTest`), the error protocol
 (`ErrorProtocolTest`), Mangayomi parity details (`MangayomiParityTest`), bytecode cache and metadata
-(`HostEfficiencyTest`), result models (`ResultModelsTest`) and the bridge conformance suite (`conformance/*`)
-live in `src/commonTest` with in-test JavaScript providers and a fake `HostHttp`, so they will run unchanged on
+(`HostEfficiencyTest`), result models (`ResultModelsTest`), how the extension text is loaded
+(`ExtensionTextTest`), how a call ends (`CallLifecycleTest`), the prototype lockdown (`PrototypeLockdownTest`), the
+host channels (`SessionChannelTest`) and the bridge conformance suite (`conformance/*`) live in `src/commonTest` with in-test JavaScript providers and a fake `HostHttp`, so they will run unchanged on
 iOS; `src/desktopTest` adds `OkHttpHostHttp` against `MockWebServer`, the pure Kotlin crypto and SHA-256 checked
 against the JDK, and the class-injection regression test (`ErrorClassInjectionTest`, payloads confined to a
 temporary directory; one test is `@Ignore`d until `quickjs-kt` is fixed, see [`PROGRESS.md`](PROGRESS.md)). No
@@ -73,7 +77,12 @@ The JavaScript API Mihon extensions and `JavaScriptEngine` use, on `quickjs-kt` 
 ```
 
 `QuickJsErrorClassTest` writes only to a JUnit temporary directory; two of its tests are `@Disabled` until
-`quickjs-kt` stops instantiating Java classes named by JavaScript errors.
+`quickjs-kt` stops instantiating Java classes named by JavaScript errors. The other classes: parity
+(`QuickJsTest`), completion values (`QuickJsCompletionTest`), `close()` of a stuck call (`QuickJsCloseTest`), the
+finalizer (`QuickJsFinalizerTest`), the process-wide engine lifecycle lock (`EngineLifecycleTest`) and idle engine
+threads (`EngineThreadTest`); the classes that can hang on a regression have a JUnit timeout. CI runs
+`:core:quickjs:desktopTest` next to `:source-js:desktopTest` (both workflows, Linux) and the Android host run
+through `testReleaseUnitTest`.
 
 ## Package
 
@@ -101,9 +110,10 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | ProGuard | the `release` build type's ProGuard step is disabled: extensions are loaded reflectively against host classes (source API, OkHttp, kotlinx, compat layer) that shrinking would remove or rename. Enabling it needs keep rules for that shared surface |
 
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
-and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test` and
-`:source-js:desktopTest` first). The PR workflow has a separate `desktop` job (`:desktopApp:compileKotlin`,
-`:desktopApp:test`, then `:source-js:desktopTest`) that cannot block the Android build and, while the port is
+and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test`,
+`:core:quickjs:desktopTest` and `:source-js:desktopTest` first). The PR workflow has a separate `desktop` job
+(`:desktopApp:compileKotlin`, `:desktopApp:test`, then `:core:quickjs:desktopTest :source-js:desktopTest`) that
+cannot block the Android build and, while the port is
 experimental, does not fail the PR check (`continue-on-error`).
 
 Signing: none. macOS packages are neither signed nor notarized (Gatekeeper will warn; open them with

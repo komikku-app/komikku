@@ -52,4 +52,28 @@ itself attached when a Kotlin exception crossed into JavaScript.
 **Workarounds for hosts until a release:** none complete from JavaScript (path 2 is unconditional).
 Hosts can keep their own error and argument paths string-only, but unhandled rejections stay exposed.
 
+**Related crash (same function).** When the named class exists but is not a `Throwable`, the constructed
+object is passed to `(*env)->Throw` on the paths that throw directly — a getter that throws while
+`object_to_java_js_object` stringifies a value, or `JS_TAG_EXCEPTION` in `js_value_to_jobject` — and the
+JVM crashes (SIGSEGV in `ThreadGroup.uncaughtException` on the engine thread):
+
+```js
+throw { get a() { throw { name: "java.lang.StringBuilder", message: "x" }; } };
+// also: Promise.reject(<same object>); or that object as the evaluation's result
+```
+
+The suggested `IsAssignableFrom` check fixes this too.
+
+**Second issue: process-wide JNI state without a lock** (`jni_globals.c`, `jni_globals_generated.c`).
+`instance_count` and the cached `JavaVM` are changed without synchronisation in `cache_java_vm` /
+`clear_java_vm_cache`; `initGlobals` replaces the global references of `Unit` / `UByteArray` on every
+create (`DeleteGlobalRef` of the previous one); `releaseGlobals` deletes all cached class references
+(`clear_jni_refs_cache`) when the unsynchronised count reads zero. Engines created and closed at the same
+time on different threads (8 threads creating, evaluating `[1, 2.5, 'x']` and closing in a loop) abort
+under `-Xcheck:jni` within seconds ("Bad global or local ref passed to JNI" in `initGlobals`) and crash
+in product mode after ~26k instances (`jni_NewObject` from `getEvaluateResult` on a deleted class
+reference). Suggested fix: a mutex around the counter, the cache and the reference replacement (or create
+the references once and never delete them). Komikku works around it by serialising create / close on one
+lock and keeping one engine open for the process lifetime.
+
 Found while integrating quickjs-kt into Komikku (a manga reader); happy to test a patched build.

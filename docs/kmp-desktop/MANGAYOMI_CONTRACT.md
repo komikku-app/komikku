@@ -518,6 +518,23 @@ Declared values are defaults; the user's choice is stored per source and key and
   settles without running them, logs (instead of failing the call on) a callback's error, and adds
   `clearTimeout`.
 
+- **Komikku host deviations** (PROGRESS.md, "Review fixes (I2b)"):
+  - *Script mode:* the extension text runs as the body of an `async` function (after one `await`) that the entry
+    calls with `this` = the global object, not as a global script: top-level `var` / `function` declarations are
+    not properties of `globalThis`, a leading `"use strict"` is not a directive (the text runs in sloppy mode),
+    and top-level `await` works. The text is syntax-checked alone first, with the same grammar.
+  - *Rejections handled later:* quickjs-kt fails a call on a promise rejection that has no handler once all
+    pending jobs ran. Promises of the host's own bridge (`Client` requests, `evaluateJavascriptViaWebview`, the
+    unsupported async stubs) are marked handled, so a failed request may be awaited later; a promise the source
+    creates itself that rejects while it awaits something else, and that it handles only afterwards, fails the
+    call (Mangayomi ignores it). Async `setTimeout` callbacks and an async `getSourcePreferences` are logged /
+    ignored instead.
+  - *Prototype lockdown:* `Object.prototype` is not extensible and `Promise.prototype.constructor` / `then` are
+    locked: adding to `Object.prototype` throws in strict code (class bodies) and is dropped at the sloppy top
+    level, assigning `constructor` / `then` on an heir of `Promise.prototype` fails the same way.
+  - *Limits:* a call ends once it reported its result (stray jobs and timers are interrupted); response bodies
+    are capped at an eighth of the heap (8 MiB by default), larger ones are a `BridgeError` (channel `http`).
+
 ## 8. Mapping to Komikku (input for I3)
 
 | Mangayomi | Komikku |

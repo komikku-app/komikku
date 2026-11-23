@@ -473,6 +473,20 @@ desktop and Android. **Milestone I-B (after I6):** the same on an iPhone.
    JavaScript that an extension evaluates keeps that exposure. Told this, the maintainer chose to switch
    anyway. The fix is a one-line native change in quickjs-kt (`IsAssignableFrom(cls, Throwable)` in
    `js_error_to_java_error`); a disabled regression test marks the residual path.
+   **Residual risks found by the I2b review (2026-11-23), recorded, not decided:**
+   - *Crash, stronger than the instantiation:* when the class an error names is not a `Throwable`, quickjs-kt
+     `Throw`s the constructed object through JNI and the JVM dies (SIGSEGV). Komikku now keeps completion values
+     away from that conversion, but a script that throws such a value, an unhandled rejection with it as reason,
+     or a completion value while the completion helper cannot run (frozen `Object.prototype`), whose conversion
+     meets a throwing getter, still kills the process (confirmed). So **a page script evaluated by an extension
+     can crash the app**; only the same quickjs-kt patch fixes it.
+   - *Process-wide JNI state:* quickjs-kt's instance counter and cached class references are unsynchronised;
+     concurrent creates / closes crashed the JVM. Mitigated in Komikku (one lock on the `com.dokar.quickjs.QuickJs`
+     class for creating and closing in both modules, a sentinel engine that is never closed); the per-create
+     replacement of two cached references can still race with evaluations on other threads (not serialised).
+   - *Out of memory:* QuickJS crashed the JVM on out-of-memory depending only on the shape of the prelude's code;
+     the shipped prelude passes a child-JVM guard test (`OutOfMemoryCrashTest`), cause unknown, so other code
+     shapes (an extension's) may still crash on out-of-memory (PROGRESS.md, "Review fixes (I2b)").
 
 ### 8.8 Later options (not planned)
 

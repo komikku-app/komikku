@@ -1,6 +1,7 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-23, branch `claude/laughing-thompson-i2rd2h` at `712fa9294c` (plus this file).
+State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes are done; see
+"Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -12,7 +13,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
 - After each coding step: review it (`/code-review max <range>`), then have a sub-agent fix the
   findings, then re-report the findings with outcomes.
 - Commit and push after every step (and in small increments) so work survives usage-limit stops.
-  Push only to `claude/laughing-thompson-i2rd2h`. No Claude attribution in commits. No PR unless asked.
+  Push only to `claude/kmp-multiplatform-support`. No Claude attribution in commits. No PR unless asked.
 - Verification is compile/unit-test only: `spotlessApply` → `spotlessCheck`, module compile and test
   tasks, `:app:compileDebugKotlin`. No `assemble*`, no emulator, no `:desktopApp:run` until the
   maintainer asks. Use `--max-workers=2` (memory is tight) and `./gradlew --stop` between heavy runs.
@@ -57,44 +58,25 @@ and chose to switch anyway (PLAN 8.7 item 5). Fix = one native check
 (`IsAssignableFrom(cls, java/lang/Throwable)` in `js_error_to_java_error`); disabled regression tests
 mark the residual path in both modules.
 
-## In progress: max review of `b019b0e402..712fa9294c` (review fixes + I2b)
-
-Finders that finished:
-- **Conventions:** clean. Its only item (no `assembleDebug`) is overridden by the maintainer's
-  "compile checks only" rule, but run the light checks `:app:checkDebugDuplicateClasses` and
-  `:app:mergeDebugJavaResource` in the next fix round (the AAR swap could add duplicate classes/resources).
-- **Wrapper angle (2 confirmed by runtime probe):**
-  1. `core/quickjs/.../QuickJsRuntime.kt:339` — `evaluate`/`execute` returning an object: quickjs-kt
-     JSON-stringifies it before the wrapper drops it, so cyclic objects (`var window = this; window`),
-     BigInt or throwing getters now throw `QuickJsException` (old library returned `null` untouched);
-     `toJSON`/getters run as side effects. Kuaikanmanhua evaluates a whole `__NUXT__` object.
-  2. `core/quickjs/.../QuickJs.kt:91` — `finalize()` closes the engine while a `get` proxy is still in
-     use (the handler holds only the runtime, not the wrapper); old proxies kept the instance alive.
-- **Reuse / simplification (unverified candidates):** memory-limit heuristic written twice
-  (`JsExtensionHost.kt:238`, `QuickJsEngine.kt:89`); hand-written SHA-256 used only as a cache key
-  (`BytecodeCache.kt:43`); creation-failure cleanup copies `close()` and can leave `liveRuntimes` high
-  (`QuickJsEngine.kt:124`); quickjs-kt test swap duplicated in two build scripts; three JS string
-  escapers; hard-coded body-limit message in `OkHttpHostHttp.kt:61`; envelope building duplicated in
-  the prelude; `toJavaResult`/`arrayElement` duplicate number narrowing; bytecode fallback treats
-  OOM/interrupt as "bytecode failed" and wipes the shared cache (`JsExtensionHost.kt:143`); load phase
-  tracked twice (prelude `phase` vs `JsSession.loaded`); sync members have two call paths
-  (SYNC/GETTER vs METADATA); tests pin constants/compile counts; `set`/`get` bridge (~480 lines) has no
-  extension callers (keep for parity is the current lean).
-
-Finders cut off by the usage limit (resume them, their work is saved): **A** line-by-line, **B**
-removed behaviour / old-library parity (most important: promise jobs now run, unhandled rejections now
-throw, top-level `await` reserved — check keiyoushi code), **C** cross-file, **D** language pitfalls,
-**efficiency**, **altitude**. Agent IDs are in the scratchpad file
-`review-fix-i2b/candidates.md` (session-local); if they are gone, rerun those angles with
-`/code-review max b019b0e402..712fa9294c`.
-
-Then: dedup → verify in themed batches → gap sweep → `ReportFindings` → one Opus-high fix agent →
-re-report outcomes.
+### Review of `b019b0e402..712fa9294c` (I1/I2 review fixes + I2b) — done
+- Max-level review (finders, runtime verification, gap sweep): 2 known + ~60 candidates; fixed in the commits
+  after `cab5b6d` (each `fix(kmp)` / `test(kmp)` / `refactor(kmp)` / `ci(kmp)` / `docs(kmp)` commit names its
+  theme). What was fixed, what is documented as a deviation and what is left: PROGRESS.md "Review fixes (I2b)".
+- Highlights: `QuickJs` completion values are converted in JavaScript (objects no longer throw or run getters; no
+  JVM crash from completion values), `close()` ends stuck calls, quickjs-kt engine create/close serialised
+  process-wide with a sentinel (the concurrent-create JVM crash is gone under stress and `-Xcheck:jni`), proxies
+  keep their instance alive, idle engine threads end; `:source-js` wrapper escape closed, only
+  `JsSourceException`s leave a call, settled calls return, host promises handled, HTTP body cap tied to the heap,
+  adapter API (`NotImplemented`, `sourceId`, tolerant `metadata()`, `search(null)` in one context).
+- New residual risks for the maintainer (PLAN 8.7 item 5): a page script can still crash the app through
+  quickjs-kt's non-`Throwable` `Throw` (thrown values / rejections with throwing getters); a per-create JNI
+  reference race remains; QuickJS out-of-memory crashed the JVM depending on code shape (guarded by
+  `OutOfMemoryCrashTest`, cause unknown).
+- The light Android checks `:app:checkDebugDuplicateClasses` and `:app:mergeDebugJavaResource` pass.
 
 ## Left to do (in order)
 
-1. Finish the review above and fix its findings (include the two confirmed `core/quickjs` bugs and the
-   light duplicate-class/resource checks).
+1. Re-report the review's findings with their outcomes (coordinator), then decide on the residual risks above.
 2. **I3** source adapter: wrap `JsExtension` as `CatalogueSource`/`ConfigurableSource` (ids from the index
    id + fixed namespace, filters and preferences mapped both ways, cached `metadata()`, per-page headers,
    relative covers against `baseUrl`), Android + desktop. Review + fix.
@@ -104,6 +86,7 @@ re-report outcomes.
 4. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 5. Desktop parity gaps (PROGRESS list): global search, source/language toggles, library grouping/batch
    actions, scheduled updates/backups, delegated sources, AVIF/JXL, WebView/Cloudflare, signing, updater.
-6. Optional: report the quickjs-kt bug upstream (draft the report; the maintainer submits it).
+6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
+   the JNI state race added; the maintainer submits it).
 7. First real run by the maintainer: `./gradlew :desktopApp:run`, Android `assembleDebug` on a device
    (QuickJS switch is unverified on device and under R8).
