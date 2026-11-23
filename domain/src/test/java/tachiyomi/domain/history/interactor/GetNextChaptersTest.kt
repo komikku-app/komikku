@@ -304,11 +304,18 @@ class GetNextChaptersTest {
     }
 
     @Test
-    fun `missing chapter resumes from the first chapter`() = runTest {
+    fun `missing chapter resumes from the first unread chapter`() = runTest {
         setUp(numberSortManga, chapters)
 
-        getNextChapters.await(MANGA_ID, 999, onlyUnread = false).ids() shouldBe listOf(1L, 2, 3, 5, 6, 7)
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = false).ids() shouldBe listOf(3L, 5, 6, 7)
         getNextChapters.await(MANGA_ID, 999, onlyUnread = true).ids() shouldBe listOf(3L, 5, 7)
+    }
+
+    @Test
+    fun `missing chapter of a completely read manga has no next chapter`() = runTest {
+        setUp(numberSortManga, chapters.map { it.copy(read = true) })
+
+        getNextChapters.await(MANGA_ID, 999, onlyUnread = false) shouldBe emptyList()
     }
 
     companion object {
