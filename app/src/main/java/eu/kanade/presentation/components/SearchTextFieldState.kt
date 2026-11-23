@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.flow.collectLatest
 
 /**
  * A [TextFieldState] kept in two-way sync with an external search [query], so a state-based
@@ -44,7 +46,8 @@ fun rememberSearchTextFieldState(
             pendingQueries.clear()
             return@LaunchedEffect
         }
-        val echoIndex = pendingQueries.indexOf(newQuery)
+        // `null` (search closed) is never an echo: this field only sends strings.
+        val echoIndex = if (query != null) pendingQueries.indexOf(newQuery) else -1
         if (echoIndex >= 0) {
             // Our own value coming back (possibly skipping some, as state flows conflate).
             repeat(echoIndex + 1) { pendingQueries.removeFirst() }
@@ -56,14 +59,22 @@ fun rememberSearchTextFieldState(
 
     LaunchedEffect(state) {
         snapshotFlow { state.text.toString() }
-            .collect { text ->
+            .collectLatest { text ->
                 // Compare with what the caller will have once it catches up, not its stale query,
                 // so typing then undoing within one frame still sends the undo.
                 val knownQuery = pendingQueries.lastOrNull() ?: currentQuery.orEmpty()
-                if (text == knownQuery) return@collect
-                if (pendingQueries.size >= MAX_PENDING_QUERIES) pendingQueries.removeFirst()
-                pendingQueries.addLast(text)
-                currentOnQueryChange(text)
+                if (text != knownQuery) {
+                    if (pendingQueries.size >= MAX_PENDING_QUERIES) pendingQueries.removeFirst()
+                    pendingQueries.addLast(text)
+                    // Sent before the first suspension point, so a newer edit cancelling this
+                    // block never drops it.
+                    currentOnQueryChange(text)
+                }
+                // Edits like `a -> ab -> a` can settle without `query` ever changing, so the effect
+                // above never sees the echoes. Once the caller has had a couple of frames to
+                // recompose with what we sent, a query matching the text means it caught up.
+                repeat(ECHO_SETTLE_FRAMES) { withFrameNanos { } }
+                if (currentQuery.orEmpty() == state.text.toString()) pendingQueries.clear()
             }
     }
 
@@ -71,3 +82,4 @@ fun rememberSearchTextFieldState(
 }
 
 private const val MAX_PENDING_QUERIES = 64
+private const val ECHO_SETTLE_FRAMES = 2
