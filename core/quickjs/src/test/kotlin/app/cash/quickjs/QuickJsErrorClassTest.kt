@@ -99,6 +99,17 @@ class QuickJsErrorClassTest {
     }
 
     @Test
+    fun `errors returned as or inside the completion value never reach quickjs-kt`() {
+        QuickJs.create().use { js ->
+            js.definePayload()
+            js.evaluate("payload(DIR + '/returned')") shouldBe null
+            runCatching { js.evaluate("[1, payload(DIR + '/nested')]") }
+            runCatching { js.execute(js.compile("payload(DIR + '/compiled')", "c.js")) }
+        }
+        dir.list()!!.toList() shouldBe emptyList()
+    }
+
+    @Test
     @Disabled("quickjs-kt converts unhandled rejections natively (PLAN.md 8.7 item 5); enable once it is patched")
     fun `unhandled rejections do not instantiate Java classes`() {
         QuickJs.create().use { js ->
