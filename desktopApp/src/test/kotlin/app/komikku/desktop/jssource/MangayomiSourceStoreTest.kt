@@ -155,6 +155,12 @@ class MangayomiSourceStoreTest {
         val httpsOnly = newStore(File(storeDir.parentFile, "https-only"), allowUrl = { it.isHttps })
         shouldThrow<JsSourceStoreException> { httpsOnly.addRepository(url("/repo/index.json")) }.reason shouldBe Reason.INSECURE_URL
 
+        // A redirect to a URL the policy refuses is not followed.
+        routes["/moved/index.json"] = MockResponse.Builder().code(302).addHeader("Location", "http://example.invalid/index.json").build()
+        shouldThrow<JsSourceStoreException> { store.addRepository(url("/moved/index.json")) }.reason shouldBe Reason.INSECURE_URL
+        routes["/loop/index.json"] = MockResponse.Builder().code(302).addHeader("Location", url("/loop/index.json")).build()
+        shouldThrow<JsSourceStoreException> { store.addRepository(url("/loop/index.json")) }.reason shouldBe Reason.DOWNLOAD_FAILED
+
         route("/broken/index.json", """{"meta":{"name":"v2 store"}}""")
         shouldThrow<JsSourceStoreException> { store.addRepository(url("/broken/index.json")) }.reason shouldBe Reason.INVALID_INDEX
         shouldThrow<JsSourceStoreException> { store.addRepository(url("/missing/index.json")) }.reason shouldBe Reason.DOWNLOAD_FAILED
