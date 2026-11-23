@@ -28,6 +28,13 @@ interface LibraryUpdateRunner {
     sealed interface Target {
         data class Single(val mangaId: Long) : Target
         data class Category(val categoryId: Long) : Target
+
+        /**
+         * These library entries (Android's `LibraryUpdateJob.startNow(mangaIds = …)`: the library selection, or a
+         * page of a library grouped by something other than category). Like Android, of the update restrictions only
+         * "fetch once" (an entry with chapters and `ONLY_FETCH_ONCE`) applies.
+         */
+        data class Entries(val mangaIds: Set<Long>) : Target
         data object All : Target
     }
 
@@ -71,6 +78,14 @@ object LibraryUpdateSelection {
         val candidates = when (target) {
             is LibraryUpdateRunner.Target.Single -> return Result(library.filter { it.manga.id == target.mangaId }.take(1), emptyList())
             is LibraryUpdateRunner.Target.Category -> library.filter { target.categoryId in it.categories }
+            // Android's targeted update: only the "fetch once" restriction applies
+            is LibraryUpdateRunner.Target.Entries -> return Result(
+                library.filter {
+                    it.manga.id in target.mangaIds &&
+                        !(it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L)
+                }.distinctBy { it.manga.id },
+                emptyList(),
+            )
             LibraryUpdateRunner.Target.All -> {
                 val included = preferences.updateCategories().get().map { it.toLong() }.toSet()
                 val excluded = preferences.updateCategoriesExclude().get().map { it.toLong() }.toSet()

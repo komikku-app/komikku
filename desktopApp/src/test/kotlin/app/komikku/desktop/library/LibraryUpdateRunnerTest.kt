@@ -78,6 +78,9 @@ class LibraryUpdateRunnerTest {
             .toUpdate.map { it.manga.id } shouldBe listOf(2L)
         LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Single(5), prefs, Long.MAX_VALUE)
             .toUpdate.map { it.manga.id } shouldBe listOf(5L)
+        // Selected entries / a non-category group: Android's targeted update skips only "fetch once" entries
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Entries(setOf(3, 5, 6)), prefs, Long.MAX_VALUE)
+            .toUpdate.map { it.manga.id }.toSet() shouldBe setOf(3L, 5)
         prefs.updateCategoriesExclude().set(setOf("2"))
         LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.All, prefs, Long.MAX_VALUE)
             .toUpdate.map { it.manga.id } shouldBe listOf(1L)
