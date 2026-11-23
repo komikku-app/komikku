@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -140,7 +141,15 @@ class HistoryScreenModel(
     }
 
     suspend fun getNextChapter(): Chapter? {
-        return withIOContext { getNextChapters.await(onlyUnread = false).firstOrNull() }
+        return withIOContext {
+            // KMK -->
+            // Resume the top entry of the list the user sees, not the latest history in the database: the
+            // latter ignores the filters and the search query, so it can be a manga hidden from the list.
+            // Without filters or search, both are the same entry.
+            val latestHistory = state.first { !it.isLoading }.list.firstOrNull() ?: return@withIOContext null
+            getNextChapters.await(latestHistory.mangaId, latestHistory.chapterId, onlyUnread = false).firstOrNull()
+            // KMK <--
+        }
     }
 
     fun getNextChapterForManga(mangaId: Long, chapterId: Long) {
