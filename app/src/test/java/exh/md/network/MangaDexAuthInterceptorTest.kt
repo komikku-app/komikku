@@ -62,7 +62,15 @@ class MangaDexAuthInterceptorTest {
 
     @Test
     fun `refresh request is a public client refresh grant with no other fields or credentials`() {
-        val interceptor = loggedInInterceptor()
+        val interceptor = loggedInInterceptor(
+            oauth = MALOAuth(
+                tokenType = "Bearer",
+                refreshToken = "stored-refresh-token-a1b2c3",
+                accessToken = "expired-access-token",
+                expiresIn = 900,
+                createdAt = 0,
+            ),
+        )
 
         interceptor.intercept(chain(tokenStatus = 200, tokenBody = REFRESHED_TOKEN_BODY))
 
@@ -74,7 +82,7 @@ class MangaDexAuthInterceptorTest {
         sent.formFields() shouldBe listOf(
             "client_id" to "tachiyomisy",
             "grant_type" to "refresh_token",
-            "refresh_token" to "refresh-token",
+            "refresh_token" to "stored-refresh-token-a1b2c3",
         )
         // No Authorization header with the expired access token: only the User-Agent, and the POST() default
         // Cache-Control.
