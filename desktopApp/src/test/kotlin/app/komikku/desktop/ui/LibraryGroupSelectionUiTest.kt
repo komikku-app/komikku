@@ -6,6 +6,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
@@ -28,19 +29,24 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.FakeHttpSource
 import app.komikku.desktop.reader.FakeMangaServer
 import app.komikku.desktop.reader.TestLibrary
+import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.browse.SimpleSearchSource
 import app.komikku.desktop.window.DesktopShortcuts
+import app.komikku.shared.library.LibraryUpdateProgress
+import app.komikku.shared.library.LibraryUpdateRunner
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.model.SManga
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.category.repository.CategoryRepository
@@ -55,6 +61,7 @@ import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
@@ -79,6 +86,7 @@ class LibraryGroupSelectionUiTest {
     private lateinit var meshi: Manga
     private var reading = 0L
     private var later = 0L
+    private val runner = RecordingUpdateRunner()
 
     @BeforeAll
     fun boot() {
@@ -88,6 +96,7 @@ class LibraryGroupSelectionUiTest {
         Injekt.addSingletonFactory<SourceManager> {
             FixedSourceManager(listOf(FakeHttpSource(server.baseUrl), SimpleSearchSource(id = SECOND_SOURCE, name = "Second source")))
         }
+        Injekt.addSingletonFactory<LibraryUpdateRunner> { runner }
         Injekt.get<DownloadPreferences>().saveChaptersAsCBZ().set(false)
         runBlocking {
             val categories = Injekt.get<CategoryRepository>()
@@ -214,6 +223,83 @@ class LibraryGroupSelectionUiTest {
         waitForTag("library-item-${ajin.id}", present = false)
         runBlocking { Injekt.get<GetManga>().await(blue.id) }!!.favorite shouldBe true
         categoriesOf(frieren) shouldContainExactlyInAnyOrder setOf("Reading")
+    }
+
+    @Test
+    fun `update targets of group pages and selections, and an update already running`() = runDesktopComposeUiTest(width = 1200, height = 800) {
+        val preferences = Injekt.get<LibraryPreferences>()
+        setContent { DesktopToastHost { KomikkuApp(context = app, shortcuts = DesktopShortcuts(isMacOs = false)) } }
+        // Not Ajin / Blue Period: the batch-action test may have removed or moved them already
+        waitForTag("library-item-${frieren.id}")
+        try {
+            // A source page: Android SY's grouped update (restrictions apply), not the restriction-free entries
+            runOnIdle { preferences.groupLibraryBy().set(LibraryGroup.BY_SOURCE) }
+            waitForTag("library-tab-$SECOND_SOURCE")
+            onNodeWithTag("library-tab-$SECOND_SOURCE").performClick()
+            waitForTag("library-item-${meshi.id}")
+            onNodeWithTag("update-category").performClick()
+            runner.targets.last() shouldBe LibraryUpdateRunner.Target.Group(LibraryGroup.BY_SOURCE, setOf(frieren.id, meshi.id))
+
+            // A category filter with included categories shows one ungrouped page: its update is the ungrouped
+            // group's, not category 0's
+            runOnIdle {
+                preferences.groupLibraryBy().set(LibraryGroup.BY_DEFAULT)
+                preferences.filterCategoriesInclude().set(setOf(later.toString()))
+                preferences.filterCategories().set(true)
+            }
+            waitForTag("library-item-${frieren.id}", present = false)
+            waitForTag("library-item-${meshi.id}")
+            onNodeWithTag("update-category").performClick()
+            val ungrouped = runner.targets.last() as LibraryUpdateRunner.Target.Group
+            ungrouped.groupType shouldBe LibraryGroup.UNGROUPED
+            (meshi.id in ungrouped.mangaIds && frieren.id !in ungrouped.mangaIds) shouldBe true
+            runOnIdle {
+                preferences.filterCategories().set(false)
+                preferences.filterCategoriesInclude().set(emptySet())
+            }
+            waitForTag("library-item-${frieren.id}")
+
+            // "Update" on a selection while an update runs: the selection stays and the user is told
+            runner.running = true
+            select(frieren)
+            onNodeWithContentDescription(KMR.strings.action_update.localized()).performClick()
+            waitForText(MR.strings.update_already_running.localized())
+            runner.targets.last() shouldBe LibraryUpdateRunner.Target.Entries(setOf(frieren.id))
+            onNodeWithTag("library-selection-count").assertTextEquals("1")
+            runner.running = false
+            onNodeWithContentDescription(KMR.strings.action_update.localized()).performClick()
+            waitForTag("library-selection-toolbar", present = false)
+
+            // The selection bar stays on screen when the shown page is empty
+            select(frieren)
+            runOnIdle { preferences.filterBookmarked().set(TriState.ENABLED_IS) }
+            waitForTag("library-item-${frieren.id}", present = false)
+            onNodeWithTag("library-selection-bar").assertIsDisplayed()
+            onNodeWithContentDescription(MR.strings.action_cancel.localized()).performClick()
+            waitForTag("library-selection-toolbar", present = false)
+        } finally {
+            runner.running = false
+            preferences.filterBookmarked().set(TriState.DISABLED)
+            preferences.filterCategories().set(false)
+            preferences.filterCategoriesInclude().set(emptySet())
+            preferences.groupLibraryBy().set(LibraryGroup.BY_DEFAULT)
+        }
+    }
+
+    /** Records the started targets; reports "already running" while [running]. */
+    private class RecordingUpdateRunner : LibraryUpdateRunner {
+        val targets = mutableListOf<LibraryUpdateRunner.Target>()
+
+        @Volatile
+        var running = false
+        override val progress = MutableStateFlow<LibraryUpdateProgress?>(null)
+
+        override fun start(target: LibraryUpdateRunner.Target): Boolean {
+            targets += target
+            return !running
+        }
+
+        override fun cancel() = Unit
     }
 
     private fun ComposeUiTest.select(manga: Manga) {

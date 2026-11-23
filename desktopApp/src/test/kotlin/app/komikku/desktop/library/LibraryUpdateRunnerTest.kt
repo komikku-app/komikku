@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import tachiyomi.domain.library.model.GroupLibraryMode
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
@@ -84,6 +86,40 @@ class LibraryUpdateRunnerTest {
         prefs.updateCategoriesExclude().set(setOf("2"))
         LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.All, prefs, Long.MAX_VALUE)
             .toUpdate.map { it.manga.id } shouldBe listOf(1L)
+        prefs.updateCategoriesExclude().set(emptySet())
+    }
+
+    @Test
+    fun `a group page goes through the restrictions and groupLibraryUpdateType`() {
+        val library = listOf(
+            entry(1, listOf(1), lastRead = 10),
+            entry(2, listOf(2), lastRead = 20),
+            entry(3, listOf(1), status = SManga.COMPLETED),
+            entry(4, listOf(1), read = 2),
+            entry(6, listOf(1), strategy = UpdateStrategy.ONLY_FETCH_ONCE),
+        )
+        prefs.updateCategoriesExclude().set(emptySet())
+        prefs.autoUpdateMangaRestrictions().set(setOf(LibraryPreferences.MANGA_NON_COMPLETED, LibraryPreferences.MANGA_HAS_UNREAD))
+        val sourcePage = LibraryUpdateRunner.Target.Group(LibraryGroup.BY_SOURCE, setOf(1, 3, 4, 6))
+        val ungroupedPage = LibraryUpdateRunner.Target.Group(LibraryGroup.UNGROUPED, setOf(1, 3))
+        fun select(target: LibraryUpdateRunner.Target) = LibraryUpdateSelection.select(library, target, prefs, Long.MAX_VALUE)
+        try {
+            // ALL: the page's entries, with the restrictions (3 completed, 4 unread, 6 fetch once) and the update order
+            prefs.groupLibraryUpdateType().set(GroupLibraryMode.ALL)
+            select(sourcePage).toUpdate.map { it.manga.id } shouldBe listOf(1L)
+            select(sourcePage).skipped.map { it.manga.id }.toSet() shouldBe setOf(3L, 4, 6)
+            select(ungroupedPage).toUpdate.map { it.manga.id } shouldBe listOf(1L)
+            // GLOBAL (Android's default): the whole library, like "update library"
+            prefs.groupLibraryUpdateType().set(GroupLibraryMode.GLOBAL)
+            select(sourcePage).toUpdate.map { it.manga.id } shouldBe listOf(2L, 1)
+            // ALL_BUT_UNGROUPED: the group's entries, the whole library on the ungrouped page
+            prefs.groupLibraryUpdateType().set(GroupLibraryMode.ALL_BUT_UNGROUPED)
+            select(sourcePage).toUpdate.map { it.manga.id } shouldBe listOf(1L)
+            select(ungroupedPage).toUpdate.map { it.manga.id } shouldBe listOf(2L, 1)
+        } finally {
+            prefs.groupLibraryUpdateType().delete()
+            prefs.autoUpdateMangaRestrictions().delete()
+        }
     }
 
     @Test

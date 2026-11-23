@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.tabs
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
+import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
@@ -129,6 +131,7 @@ private fun LibraryPages(
     val pages = state.pages
     val index = state.selectedIndex
     val runner = remember { Injekt.get<LibraryUpdateRunner>() }
+    val context = remember { Injekt.get<Application>() }
     val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
     val showCounts by libraryPreferences.categoryNumberOfItems().collectAsState()
     val displayMode by libraryPreferences.displayMode().collectAsState()
@@ -180,20 +183,24 @@ private fun LibraryPages(
                     }
                     TextButton(
                         onClick = {
-                            // A group that is not a category (source, status, …): its entries, like Android's grouped update
+                            // A group that is not a category (source, status, …): Android SY's grouped update (the
+                            // group's entries or the whole library by `groupLibraryUpdateType`, with the restrictions)
                             val page = pages[index]
-                            runner.start(
+                            val started = runner.start(
                                 if (state.groupType == LibraryGroup.BY_DEFAULT) {
                                     LibraryUpdateRunner.Target.Category(page.category.id)
                                 } else {
-                                    LibraryUpdateRunner.Target.Entries(page.items.map { it.id }.toSet())
+                                    LibraryUpdateRunner.Target.Group(state.groupType, page.items.map { it.id }.toSet())
                                 },
                             )
+                            if (!started) context.toast(MR.strings.update_already_running)
                         },
                         modifier = Modifier.testTag("update-category"),
                     ) { Text(stringResource(MR.strings.action_update_category)) }
                     TextButton(
-                        onClick = { runner.start(LibraryUpdateRunner.Target.All) },
+                        onClick = {
+                            if (!runner.start(LibraryUpdateRunner.Target.All)) context.toast(MR.strings.update_already_running)
+                        },
                         modifier = Modifier.testTag("update-library-all"),
                     ) { Text(stringResource(MR.strings.action_update_library)) }
                 }
@@ -221,13 +228,14 @@ private fun LibraryPages(
             }
             val page = pages[index]
             if (page.items.isEmpty()) {
-                // Android's LibraryPagerEmptyScreen
+                // Android's LibraryPagerEmptyScreen; weighted like the grid so the selection bar below stays shown
                 EmptyScreen(
                     stringRes = when {
                         state.query.isNotEmpty() -> MR.strings.no_results_found
                         state.hasActiveFilters -> MR.strings.error_no_match
                         else -> MR.strings.information_no_manga_category
                     },
+                    modifier = Modifier.weight(1f),
                 )
             } else {
                 LibraryItems(
@@ -256,8 +264,13 @@ private fun LibraryPages(
                     onMarkAsUnreadClicked = { screenModel.markReadSelection(false) },
                     onDownloadClicked = screenModel::performDownloadAction,
                     onUpdateClicked = {
-                        runner.start(LibraryUpdateRunner.Target.Entries(state.selection))
-                        screenModel.clearSelection()
+                        // An explicit selection: Android's targeted update (no smart-update restrictions). While an
+                        // update runs, keep the selection and say so (Android's library snackbar message).
+                        if (runner.start(LibraryUpdateRunner.Target.Entries(state.selection))) {
+                            screenModel.clearSelection()
+                        } else {
+                            context.toast(MR.strings.update_already_running)
+                        }
                     },
                     onDeleteClicked = screenModel::openDeleteMangaDialog,
                 )

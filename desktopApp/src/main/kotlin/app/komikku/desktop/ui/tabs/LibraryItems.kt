@@ -121,7 +121,8 @@ private fun Modifier.libraryItemClicks(
         }
         .combinedClickable(
             onClick = { onClick(id, pressModifiers[0]).also { pressModifiers[0] = LibraryClickModifiers() } },
-            onLongClick = { onLongClick(id) },
+            // A long press ends the press too: forget its modifiers, or the next (touch) click would reuse them.
+            onLongClick = { onLongClick(id).also { pressModifiers[0] = LibraryClickModifiers() } },
         )
         .semantics { this.selected = selected }
 }

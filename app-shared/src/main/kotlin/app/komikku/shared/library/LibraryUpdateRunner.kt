@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import tachiyomi.domain.library.model.GroupLibraryMode
+import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
@@ -30,11 +32,20 @@ interface LibraryUpdateRunner {
         data class Category(val categoryId: Long) : Target
 
         /**
-         * These library entries (Android's `LibraryUpdateJob.startNow(mangaIds = …)`: the library selection, or a
-         * page of a library grouped by something other than category). Like Android, of the update restrictions only
-         * "fetch once" (an entry with chapters and `ONLY_FETCH_ONCE`) applies.
+         * These library entries (Android's `LibraryUpdateJob.startNow(mangaIds = …)`: an explicit library selection).
+         * Like Android, of the update restrictions only "fetch once" (an entry with chapters and `ONLY_FETCH_ONCE`)
+         * applies.
          */
         data class Entries(val mangaIds: Set<Long>) : Target
+
+        /**
+         * A page of a library grouped by something other than category ([groupType], a `LibraryGroup` constant;
+         * [mangaIds] are the page's entries): Android SY's grouped update (`LibraryUpdateJob.addMangaToQueue`, group
+         * branch). `LibraryPreferences.groupLibraryUpdateType()` decides between the whole library (as [All]: `GLOBAL`,
+         * or `ALL_BUT_UNGROUPED` on the ungrouped page) and the page's entries; all update restrictions and the
+         * update order apply, like a category update.
+         */
+        data class Group(val groupType: Int, val mangaIds: Set<Long>) : Target
         data object All : Target
     }
 
@@ -60,9 +71,9 @@ data class LibraryUpdateProgress(
 )
 
 /**
- * KMK: which library entries an update refreshes, from Android's `LibraryUpdateJob.addMangaToQueue`
- * (default grouping path): a category's entries, or for "all" the included / excluded update
- * categories; then the "smart update" restrictions and "only fetch once" strategy, in the job's order
+ * KMK: which library entries an update refreshes, from Android's `LibraryUpdateJob.addMangaToQueue`:
+ * a category's entries, for "all" the included / excluded update categories, a group page by
+ * `groupLibraryUpdateType`; then the "smart update" restrictions and "only fetch once" strategy, in the job's order
  * (due today, started, recently read, title).
  */
 object LibraryUpdateSelection {
@@ -86,14 +97,19 @@ object LibraryUpdateSelection {
                 }.distinctBy { it.manga.id },
                 emptyList(),
             )
-            LibraryUpdateRunner.Target.All -> {
-                val included = preferences.updateCategories().get().map { it.toLong() }.toSet()
-                val excluded = preferences.updateCategoriesExclude().get().map { it.toLong() }.toSet()
-                library.filter {
-                    (included.isEmpty() || it.categories.intersect(included).isNotEmpty()) &&
-                        it.categories.intersect(excluded).isEmpty()
+            is LibraryUpdateRunner.Target.Group -> {
+                val mode = preferences.groupLibraryUpdateType().get()
+                if (
+                    target.groupType == LibraryGroup.BY_DEFAULT ||
+                    mode == GroupLibraryMode.GLOBAL ||
+                    (mode == GroupLibraryMode.ALL_BUT_UNGROUPED && target.groupType == LibraryGroup.UNGROUPED)
+                ) {
+                    library.inUpdateCategories(preferences)
+                } else {
+                    library.filter { it.manga.id in target.mangaIds }
                 }
             }
+            LibraryUpdateRunner.Target.All -> library.inUpdateCategories(preferences)
         }.distinctBy { it.manga.id }
 
         val restrictions = preferences.autoUpdateMangaRestrictions().get()
@@ -116,6 +132,16 @@ object LibraryUpdateSelection {
             ),
             skipped = skipped,
         )
+    }
+
+    /** "All": the entries of the included update categories (all when none) that are in no excluded one. */
+    private fun List<LibraryManga>.inUpdateCategories(preferences: LibraryPreferences): List<LibraryManga> {
+        val included = preferences.updateCategories().get().map { it.toLong() }.toSet()
+        val excluded = preferences.updateCategoriesExclude().get().map { it.toLong() }.toSet()
+        return filter {
+            (included.isEmpty() || it.categories.intersect(included).isNotEmpty()) &&
+                it.categories.intersect(excluded).isEmpty()
+        }
     }
 }
 

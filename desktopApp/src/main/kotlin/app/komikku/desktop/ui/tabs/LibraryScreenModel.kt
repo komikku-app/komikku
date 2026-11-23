@@ -224,7 +224,9 @@ class LibraryScreenModel(
             // library (no flash of the empty-library screen while a query is cleared).
             isLibraryEmpty = items.isEmpty(),
             hasActiveFilters = hasActiveFilters,
-            groupType = display.groupType,
+            // The effective grouping of the pages (ungrouped under a category filter), not the preference: page titles
+            // and "Update category" go by what is shown.
+            groupType = groupType,
             itemsById = filteredById,
         )
     }
@@ -389,7 +391,11 @@ class LibraryScreenModel(
         val pages: List<LibraryPage> = emptyList(),
         val isLibraryEmpty: Boolean = true,
         val hasActiveFilters: Boolean = false,
-        /** `LibraryPreferences.groupLibraryBy()` ([LibraryGroup]); pages are groups when it is not by category. */
+        /**
+         * The grouping of [pages] ([LibraryGroup]): `LibraryPreferences.groupLibraryBy()`, or [LibraryGroup.UNGROUPED]
+         * while a category filter with included categories is active (Android's rule); pages are groups when it is
+         * not by category.
+         */
         val groupType: Int = LibraryGroup.BY_DEFAULT,
         /** The filtered library entries by id (Android's `LibraryData.favoritesById`). */
         val itemsById: Map<Long, LibraryItem> = emptyMap(),
