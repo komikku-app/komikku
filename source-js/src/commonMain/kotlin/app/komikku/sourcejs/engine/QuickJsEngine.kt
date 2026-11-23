@@ -59,7 +59,7 @@ class QuickJsEngine private constructor(
     override suspend fun close() {
         withContext(NonCancellable) {
             try {
-                withContext(thread.dispatcher) { quickJs.close() }
+                withContext(thread.dispatcher) { quickJsLifecycle { quickJs.close() } }
             } finally {
                 liveRuntimes.decrementAndFetch()
                 thread.dispatcher.close()
@@ -113,7 +113,7 @@ class QuickJsEngine private constructor(
             var created: QuickJs? = null
             try {
                 withContext(NonCancellable + thread.dispatcher) {
-                    val quickJs = QuickJs.create(thread.dispatcher)
+                    val quickJs = quickJsLifecycle { QuickJs.create(thread.dispatcher) }
                     created = quickJs
                     liveRuntimes.incrementAndFetch()
                     quickJs.memoryLimit = limits.memoryLimitBytes
@@ -125,7 +125,7 @@ class QuickJsEngine private constructor(
                 withContext(NonCancellable) {
                     try {
                         created?.let { quickJs ->
-                            withContext(thread.dispatcher) { quickJs.close() }
+                            withContext(thread.dispatcher) { quickJsLifecycle { quickJs.close() } }
                             liveRuntimes.decrementAndFetch()
                         }
                     } finally {

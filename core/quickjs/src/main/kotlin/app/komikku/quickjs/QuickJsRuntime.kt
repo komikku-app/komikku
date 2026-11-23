@@ -4,7 +4,6 @@ import app.cash.quickjs.QuickJsException
 import com.dokar.quickjs.binding.FunctionBinding
 import com.dokar.quickjs.binding.JsObject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
@@ -145,7 +144,7 @@ internal class QuickJsRuntime private constructor(
         }
         if (!closed.compareAndSet(false, true)) return
         try {
-            thread.run { engine.close() }
+            thread.run { EngineLifecycle.close(engine) }
         } catch (_: RejectedExecutionException) {
             // Already shut down.
         } finally {
@@ -155,7 +154,7 @@ internal class QuickJsRuntime private constructor(
 
     /** Frees a leaked instance (finalizer): never blocks the caller. */
     fun closeLeaked() {
-        if (closed.compareAndSet(false, true)) thread.runLastAndShutdown { engine.close() }
+        if (closed.compareAndSet(false, true)) thread.runLastAndShutdown { EngineLifecycle.close(engine) }
     }
 
     private fun invokeProxy(name: String, spec: MethodSpec, args: Array<out Any?>): Outcome {
@@ -348,7 +347,7 @@ internal class QuickJsRuntime private constructor(
         fun create(): QuickJsRuntime {
             val thread = EngineThread()
             val engine = try {
-                thread.run { Engine.create(Dispatchers.Default).apply { maxStackSize = MAX_JS_STACK_BYTES } }
+                thread.run { EngineLifecycle.create().apply { maxStackSize = MAX_JS_STACK_BYTES } }
             } catch (e: Throwable) {
                 thread.runLastAndShutdown {}
                 if (e is EngineException) throw OutOfMemoryError("Cannot create QuickJs instance").apply { initCause(e) }
