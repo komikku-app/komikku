@@ -22,6 +22,9 @@ const val KOMIKKU_SIGNATURE = "cbec121aa82ebb02aaa73806992e0368a97d47b5451ed6524
 const val REPO_SIGNATURE = "9add655a78e96c4ec7a53ef89dccb557cb5d767489fac5e785d671a5a75d4da2"
 
 // KMK -->
+// cuong-tran's second key
+const val ANIKKU_SIGNATURE = "a5e2027162d4b7294d54fd069af923eee4078cc097765d3a0d84a747d3a8356e"
+
 /** Signing key of a store migrated from the old repo preference, until its first refresh fills in the real one. */
 const val NO_SIGNING_KEY = "NO_SIGNING_KEY"
 
@@ -45,6 +48,32 @@ fun ExtensionStore.canBeRefreshedTo(fetched: ExtensionStore, savedStores: Collec
         ?: return true
     return storeAtNewUrl.signingKey == NO_SIGNING_KEY || storeAtNewUrl.signingKey == fetched.signingKey
 }
+
+/**
+ * GitHub owner of the repository hosting this store, or null when [ExtensionStore.indexUrl] isn't on GitHub.
+ *
+ * Recognized index URLs:
+ * - `https://raw.githubusercontent.com/<owner>/<repo>/...`
+ * - `https://github.com/<owner>/<repo>/raw/...` (or `/blob/`)
+ * - `https://<owner>.github.io/...`
+ */
+val ExtensionStore.githubOwner: String?
+    get() = GITHUB_URL_REGEXES.firstNotNullOfOrNull { it.find(indexUrl)?.groupValues?.get(1) }
+
+/** Avatar of the [githubOwner], used as the store icon. Only GitHub-hosted stores get one. */
+val ExtensionStore.githubAvatarUrl: String?
+    get() = githubOwner?.let { "https://github.com/$it.png?size=$GITHUB_AVATAR_SIZE" }
+
+private const val GITHUB_AVATAR_SIZE = 144
+
+// GitHub user and organization names only contain letters, digits and hyphens.
+private const val GITHUB_OWNER = "([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))"
+
+private val GITHUB_URL_REGEXES = listOf(
+    Regex("""^https://raw\.githubusercontent\.com/$GITHUB_OWNER/[^/]+/""", RegexOption.IGNORE_CASE),
+    Regex("""^https://github\.com/$GITHUB_OWNER/[^/]+/(?:raw|blob)/""", RegexOption.IGNORE_CASE),
+    Regex("""^https://$GITHUB_OWNER\.github\.io(?:/|$)""", RegexOption.IGNORE_CASE),
+)
 
 /**
  * Applies the index URL changes of a store refresh ([renamed]: old URL to new URL) to these URLs, so a
