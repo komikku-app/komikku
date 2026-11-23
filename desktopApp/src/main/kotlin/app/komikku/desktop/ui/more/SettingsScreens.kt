@@ -39,6 +39,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.download.service.DownloadPreferences
+import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_HAS_UNREAD
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_COMPLETED
@@ -46,6 +47,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_R
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -159,7 +161,10 @@ private fun appearancePreferences(): List<Preference> {
     )
 }
 
-/** Android `SettingsLibraryScreen`: categories, default category, update scope / restrictions, metadata. */
+/**
+ * Android `SettingsLibraryScreen`: categories, default category, update interval (P3) / scope / restrictions / grouped
+ * updates, metadata.
+ */
 @Composable
 private fun libraryPreferences(navigator: Navigator): List<Preference> {
     val library = remember { Injekt.get<LibraryPreferences>() }
@@ -188,6 +193,20 @@ private fun libraryPreferences(navigator: Navigator): List<Preference> {
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_library_update),
             preferenceItems = persistentListOf(
+                // P3: Android's update interval, run by the desktop scheduler while the app is open (Android's device
+                // restrictions — Wi-Fi, unmetered, charging — have no desktop counterpart and are not offered)
+                Preference.PreferenceItem.ListPreference(
+                    preference = library.autoUpdateInterval(),
+                    entries = persistentMapOf(
+                        0 to stringResource(MR.strings.update_never),
+                        12 to stringResource(MR.strings.update_12hour),
+                        24 to stringResource(MR.strings.update_24hour),
+                        48 to stringResource(MR.strings.update_48hour),
+                        72 to stringResource(MR.strings.update_72hour),
+                        168 to stringResource(MR.strings.update_weekly),
+                    ),
+                    title = stringResource(MR.strings.pref_library_update_interval),
+                ),
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = library.updateCategories(),
                     entries = categoryNames.associate { it.first.toString() to it.second }.toImmutableMap(),
@@ -202,6 +221,16 @@ private fun libraryPreferences(navigator: Navigator): List<Preference> {
                         MANGA_OUTSIDE_RELEASE_PERIOD to stringResource(MR.strings.pref_update_only_in_release_period),
                     ),
                     title = stringResource(MR.strings.pref_library_update_smart_update),
+                ),
+                // Android SY: what "update" on a page of a library grouped by something other than category updates
+                Preference.PreferenceItem.ListPreference(
+                    preference = library.groupLibraryUpdateType(),
+                    entries = persistentMapOf(
+                        GroupLibraryMode.GLOBAL to stringResource(SYMR.strings.library_group_updates_global),
+                        GroupLibraryMode.ALL_BUT_UNGROUPED to stringResource(SYMR.strings.library_group_updates_all_but_ungrouped),
+                        GroupLibraryMode.ALL to stringResource(SYMR.strings.library_group_updates_all),
+                    ),
+                    title = stringResource(SYMR.strings.library_group_updates),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = library.autoUpdateMetadata(),

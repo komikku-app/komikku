@@ -35,19 +35,24 @@ import app.komikku.desktop.backup.DesktopBackupJobs
 import app.komikku.desktop.backup.DesktopBackupService
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.ui.browse.BrowseScaffold
+import app.komikku.desktop.ui.relativeTimeSpanString
+import app.komikku.shared.settings.PreferenceRow
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -61,7 +66,8 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Desktop "Data and storage" (Android `SettingsDataScreen`, backup part): storage location, create
  * backup (options → save dialog → borrowed `BackupCreator`), restore backup (open dialog → validation:
- * missing sources / trackers → options → borrowed `BackupRestorer` with progress and the error log).
+ * missing sources / trackers → options → borrowed `BackupRestorer` with progress and the error log), automatic backup
+ * interval and the last automatic backup (P3, run by `app.komikku.desktop.scheduler.DesktopScheduler`).
  */
 class DataStorageScreenModel(
     private val backupService: DesktopBackupService = Injekt.get(),
@@ -69,6 +75,7 @@ class DataStorageScreenModel(
     val backupJobs: DesktopBackupJobs = Injekt.get(),
     private val fileDialogs: DesktopFileDialogs = Injekt.get(),
     val storagePreferences: StoragePreferences = Injekt.get(),
+    val backupPreferences: BackupPreferences = Injekt.get(),
 ) : StateScreenModel<DataStorageScreenModel.State>(State()) {
 
     @Immutable
@@ -148,6 +155,7 @@ class DataStorageScreen : Screen() {
         val job by model.backupJobs.status.collectAsState()
         val running = job is DesktopBackupJobs.Status.Running
         val storageDir by model.storagePreferences.baseStorageDirectory().collectAsState()
+        val lastAutoBackup by model.backupPreferences.lastAutoBackupTimestamp().collectAsState()
         val storageTitle = stringResource(MR.strings.pref_storage_location)
         val createTitle = stringResource(MR.strings.pref_create_backup)
         val restoreTitle = stringResource(MR.strings.pref_restore_backup)
@@ -178,6 +186,33 @@ class DataStorageScreen : Screen() {
                     LinkRow(Icons.Outlined.Restore, restoreTitle, null, "backup-restore", enabled = !running) {
                         model.pickRestoreFile(restoreTitle)
                     }
+                }
+                // P3: Android's automatic backups (desktop scheduler, while the app is open)
+                item {
+                    PreferenceRow(
+                        Preference.PreferenceItem.ListPreference(
+                            preference = model.backupPreferences.backupInterval(),
+                            entries = persistentMapOf(
+                                0 to stringResource(MR.strings.off),
+                                1 to stringResource(MR.strings.update_1hour),
+                                3 to stringResource(MR.strings.update_3hour),
+                                6 to stringResource(MR.strings.update_6hour),
+                                12 to stringResource(MR.strings.update_12hour),
+                                24 to stringResource(MR.strings.update_24hour),
+                                48 to stringResource(MR.strings.update_48hour),
+                                168 to stringResource(MR.strings.update_weekly),
+                            ),
+                            title = stringResource(MR.strings.pref_backup_interval),
+                        ),
+                    )
+                }
+                item {
+                    PreferenceRow(
+                        Preference.PreferenceItem.InfoPreference(
+                            stringResource(MR.strings.backup_info) + "\n\n" +
+                                stringResource(MR.strings.last_auto_backup_info, relativeTimeSpanString(lastAutoBackup)),
+                        ),
+                    )
                 }
                 when (val status = job) {
                     is DesktopBackupJobs.Status.Running -> item { WorkProgress(status, model::cancelJob) }

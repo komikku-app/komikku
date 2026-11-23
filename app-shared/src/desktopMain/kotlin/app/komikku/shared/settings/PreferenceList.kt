@@ -43,3 +43,9 @@ fun PreferenceList(
         }
     }
 }
+
+/** KMK: one item of the borrowed settings model outside a [PreferenceList] (e.g. inside another lazy list). */
+@Composable
+fun PreferenceRow(item: Preference.PreferenceItem<*, *>) {
+    PreferenceItem(item = item, highlightKey = null)
+}

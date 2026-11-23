@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import app.komikku.desktop.ui.relativeTimeSpanString
 import app.komikku.shared.library.LibraryUpdateProgress
 import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.navigation.AppNavigatorHost
@@ -59,12 +60,14 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.history.interactor.RemoveHistory
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.updates.interactor.GetUpdates
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
@@ -157,6 +160,7 @@ data object UpdatesScreen : Screen() {
             )
         }
         val updates by updatesFlow.collectAsState(initial = null)
+        val lastUpdated by remember { Injekt.get<LibraryPreferences>().lastUpdatedTimestamp() }.collectAsState()
         Column(Modifier.fillMaxSize()) {
             TopAppBar(
                 title = { Text(stringResource(MR.strings.label_recent_updates)) },
@@ -173,6 +177,14 @@ data object UpdatesScreen : Screen() {
                 return@Column
             }
             LazyColumn(Modifier.fillMaxSize().testTag("updates-list")) {
+                // Android's updatesLastUpdatedItem (P3: set by every library update, manual or scheduled)
+                item(key = "last-updated") {
+                    Text(
+                        stringResource(MR.strings.updates_last_update_info, relativeTimeSpanString(lastUpdated)),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 0.dp).testTag("updates-last-updated"),
+                    )
+                }
                 list.groupBy { it.dateFetch.toLocalDate() }.forEach { (day, items) ->
                     item(key = "day-$day") {
                         Text(dayLabel(day), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(16.dp, 12.dp, 16.dp, 4.dp))
