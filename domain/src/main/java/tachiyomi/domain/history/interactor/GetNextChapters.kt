@@ -87,6 +87,10 @@ class GetNextChapters(
         // - The current chapter if it isn't completely read
         // - The chapters after the current chapter if the current one is completely read
         val fromChapter = chapters.getOrNull(currChapterIndex)
+        // KMK -->
+        // Resume from the first chapter when the current one can't be found, e.g. it was deleted
+        if (currChapterIndex == -1) return nextChapters
+        // KMK <--
         return if (fromChapter != null && !fromChapter.read) {
             nextChapters
         } else {
