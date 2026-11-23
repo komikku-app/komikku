@@ -92,7 +92,8 @@ internal class JsSession(
     } catch (e: CancellationException) {
         if (isCancelled()) throw e
         fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: "cancelled"}", e))
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
+        // Errors too (a stack overflow, an out-of-memory error): nothing may be thrown into the engine.
         fail(HostFunctionFailure.Bridge(channel, "$channel failed: ${e.message ?: e::class.simpleName}", e))
     }
 
@@ -244,7 +245,7 @@ internal class JsSession(
                 } catch (e: CancellationException) {
                     if (currentCoroutineContext()[Job]?.isActive == false) throw e
                     throw httpFailure(request.method, request.url, e.message ?: "cancelled", e)
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     throw httpFailure(request.method, request.url, e.message ?: e::class.simpleName.orEmpty(), e)
                 }
                 if (response.body.size > limits.maxResponseBodyBytes) {

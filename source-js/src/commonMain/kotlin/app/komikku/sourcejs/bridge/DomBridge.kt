@@ -127,7 +127,8 @@ internal class DomBridge {
         if (queries.containsKey(css)) return queries[css]
         val parsed = try {
             QueryParser.parse(rewriteContains(css))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            // Any parser failure (a deeply nested selector can overflow the stack) is an invalid selector.
             null
         }
         queries[css] = parsed

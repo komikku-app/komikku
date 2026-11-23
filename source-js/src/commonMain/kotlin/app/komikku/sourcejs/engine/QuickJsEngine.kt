@@ -5,6 +5,7 @@ import com.dokar.quickjs.QuickJsException
 import com.dokar.quickjs.QuickJsInterruptedException
 import com.dokar.quickjs.binding.asyncFunction
 import com.dokar.quickjs.binding.function
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -68,12 +69,21 @@ class QuickJsEngine private constructor(
         }
     }
 
+    /**
+     * Runs [block] on the engine thread. Anything but cancellation leaves as a [JsEngineException]: besides QuickJS's
+     * own errors, quickjs-kt throws an instance of the Java class a JavaScript error names (PLAN.md 8.7 item 5), which
+     * may be any `Throwable` (a `java.lang.Error`, a forged [JsEngineException]); those are script errors.
+     */
     private suspend fun <T> onThread(block: suspend () -> T): T = try {
         withContext(thread.dispatcher) { block() }
     } catch (e: QuickJsInterruptedException) {
         throw JsEngineException.Interrupted(e.message ?: "interrupted")
     } catch (e: QuickJsException) {
         throw e.toEngineException()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        throw JsEngineException.Script(e.message ?: e::class.simpleName ?: "Unknown JavaScript error", null)
     }
 
     /**

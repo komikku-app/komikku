@@ -102,6 +102,10 @@ class JsExtensionHost internal constructor(
                 } catch (e: CancellationException) {
                     if (!currentCoroutineContext().isActive) throw e
                     mapOf(member to CallOutcome.Failed(scriptError(source, operation(session, operation), e.message ?: "cancelled", null)))
+                } catch (e: Throwable) {
+                    // Not the script's (creating the engine, the host's own decoding): still a JsSourceException.
+                    val detail = e.message ?: e::class.simpleName.orEmpty()
+                    mapOf(member to CallOutcome.Failed(JsSourceException.BridgeError(source.name, operation(session, operation), "engine", detail, e)))
                 }
             }
         }
@@ -159,7 +163,7 @@ class JsExtensionHost internal constructor(
         operation: String,
         useBytecode: Boolean,
     ): Map<String, CallOutcome> {
-        val escaped: Exception? = try {
+        val escaped: Throwable? = try {
             session.install(engine)
             load(engine, source, code, useBytecode)
             val sourceJson = source.toJsSourceObject().toString()
@@ -170,7 +174,7 @@ class JsExtensionHost internal constructor(
         } catch (e: CancellationException) {
             if (!currentCoroutineContext().isActive) throw e
             e
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e
         }
         val reported = session.outcome

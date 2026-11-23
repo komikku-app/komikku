@@ -163,8 +163,32 @@ class ErrorProtocolTest {
                     """,
                 ),
             )
-            assertFailsWith<JsSourceException.ScriptError>(name) { extension.getPopular(1) }
+            val error = assertFailsWith<JsSourceException.ScriptError>(name) { extension.getPopular(1) }
+            // The script's own error, not the host's "did not settle" or a timeout (desktopTest ForgedThrowableTest
+            // checks that quickjs-kt really instantiates the named class).
+            assertEquals("forged", error.jsMessage, name)
+            assertEquals("getPopular(1)", error.operation, name)
         }
+    }
+
+    @Test
+    fun errorsOfHostServicesAreBridgeErrors() = runTest {
+        // An Error, not an Exception (a service's TODO(), a stack overflow): still a host failure the script sees.
+        val http = FakeHostHttp { throw NotImplementedError("not yet") }
+        val extension = TestHost(http = http).extension(
+            provider(
+                """
+                async getPopular(page) { await new Client().get("https://example.org/x"); }
+                async getLatestUpdates(page) {
+                  try { await new Client().get("https://example.org/x"); } catch (e) { return { list: [{ name: e.message, link: "l" }] }; }
+                }
+                """,
+            ),
+        )
+        val error = assertFailsWith<JsSourceException.BridgeError> { extension.getPopular(1) }
+        assertEquals("http", error.channel)
+        assertEquals("HTTP GET https://example.org/x failed: not yet", error.detail)
+        assertEquals("HTTP GET https://example.org/x failed: not yet", extension.getLatestUpdates(1).list.single().name)
     }
 
     @Test
