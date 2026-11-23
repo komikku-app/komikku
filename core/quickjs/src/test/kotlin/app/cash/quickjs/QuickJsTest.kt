@@ -217,6 +217,49 @@ class QuickJsTest {
     }
 
     @Test
+    fun `refuses compile from inside a binding`() {
+        QuickJs.create().use { js ->
+            var failures = 0
+            js.set(
+                "reenter",
+                Reenter::class.java,
+                Reenter {
+                    // An earlier failure the script caught must not be reported for the refused compile.
+                    if (failures++ == 0) throw IllegalStateException("caught")
+                    js.compile("1", "c.js")
+                    "compiled"
+                },
+            )
+            js.evaluate("try { reenter.call() } catch (e) {}")
+            assertThrows<UnsupportedOperationException> { js.evaluate("reenter.call()") }
+            js.execute(js.compile("2", "c.js")) shouldBe 2
+        }
+    }
+
+    @Test
+    fun `a set that fails keeps no reference to its object`() {
+        QuickJs.create().use { js ->
+            js.evaluate("var taken = 1;")
+            val target = rejectedTarget(js)
+            for (attempt in 0 until 30) {
+                System.gc()
+                if (target.get() == null) break
+                Thread.sleep(20)
+            }
+            target.get() shouldBe null
+        }
+    }
+
+    private fun rejectedTarget(js: QuickJs): java.lang.ref.WeakReference<Reenter> {
+        // An object expression: a lambda without captures would be a never-collected singleton.
+        val target = object : Reenter {
+            override fun call(): String = ""
+        }
+        assertThrows<IllegalArgumentException> { js.set("taken", Reenter::class.java, target) }
+        return java.lang.ref.WeakReference(target)
+    }
+
+    @Test
     fun `calls JavaScript objects through get`() {
         QuickJs.create().use { js ->
             js.evaluate(

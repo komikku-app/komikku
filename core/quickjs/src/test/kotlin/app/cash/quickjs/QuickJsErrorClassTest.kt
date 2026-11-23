@@ -1,5 +1,6 @@
 package app.cash.quickjs
 
+import app.komikku.quickjs.jsString
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ class QuickJsErrorClassTest {
     /** Defines `DIR` and `payload(path)`, which returns an `Error` named after `java.io.FileOutputStream`. */
     private fun QuickJs.definePayload() {
         evaluate(
-            "var DIR = ${jsLiteral(dir.absolutePath)};" +
+            "var DIR = ${jsString(dir.absolutePath)};" +
                 "var payload = function (path) { var e = new Error(path); e.name = 'java.io.FileOutputStream'; return e; };",
         )
     }
@@ -59,6 +60,45 @@ class QuickJsErrorClassTest {
     }
 
     @Test
+    fun `raw bindings cannot be taken through a replaced globalThis or a patched intrinsic`() {
+        QuickJs.create().use { js ->
+            js.definePayload()
+            // Collects every hidden function the generated code touches while it installs the bindings.
+            js.evaluate(
+                """
+                var realGlobal = globalThis, realIsArray = Array.isArray, stolen = [];
+                function grab(v) { if (typeof v === 'function' && stolen.indexOf(v) < 0) stolen.push(v); }
+                Object.defineProperty(Array, 'isArray', {
+                  configurable: true,
+                  get: function () {
+                    var names = Object.getOwnPropertyNames(realGlobal);
+                    for (var i = 0; i < names.length; i++) if (names[i].indexOf('__kmk_qjs_') === 0) grab(realGlobal[names[i]]);
+                    return realIsArray;
+                  },
+                });
+                globalThis = new Proxy(realGlobal, {
+                  get: function (t, k) { var v = Reflect.get(t, k); if (typeof k === 'string' && k.indexOf('__kmk_qjs_') === 0) grab(v); return v; },
+                });
+                void 0;
+                """.trimIndent(),
+            )
+            js.set("host", Sink::class.java, Sink { _, _, _ -> })
+            js.evaluate("var target = { take: function () {} };")
+            js.get("target", Sink::class.java).take(null, null, null)
+            js.evaluate(
+                """
+                for (var i = 0; i < stolen.length; i++) {
+                  try { stolen[i](payload(DIR + '/a' + i), payload(DIR + '/b' + i)); } catch (e) {}
+                  try { stolen[i](0, 0, payload(DIR + '/c' + i)); } catch (e) {}
+                }
+                void 0;
+                """.trimIndent(),
+            )
+            dir.list()!!.toList() shouldBe emptyList()
+        }
+    }
+
+    @Test
     @Disabled("quickjs-kt converts unhandled rejections natively (PLAN.md 8.7 item 5); enable once it is patched")
     fun `unhandled rejections do not instantiate Java classes`() {
         QuickJs.create().use { js ->
@@ -84,5 +124,4 @@ class QuickJsErrorClassTest {
         fun take(text: String?, value: Any?, values: Array<Any?>?)
     }
 
-    private fun jsLiteral(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }

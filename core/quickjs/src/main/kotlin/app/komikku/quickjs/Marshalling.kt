@@ -231,23 +231,38 @@ function conv(k, v) {
 """
 
 /**
- * Installs the global object [name] whose methods ([specs]) call the raw binding `globalThis[rawName]`, which it
- * captures and deletes first. Its completion value is `false` when [name] already exists (nothing installed).
+ * Completion value `true` when the global object has a property [name]. A sloppy function's `this` is the global
+ * object itself, not the `globalThis` property (which a script can replace).
+ */
+internal fun globalExistsScript(name: String): String = "(function (name) { return name in this; })(${jsString(name)})"
+
+/**
+ * Takes the raw binding [rawName] off the global object before any other code runs: a bare identifier and `delete`
+ * in sloppy code reach the global object itself (not the replaceable `globalThis` property) and call nothing a
+ * script could have replaced. [body] is the strict function `(raw, global, …args)` that receives it.
+ */
+private fun withRawBinding(rawName: String, body: String, args: String): String = """
+(function () {
+var raw = $rawName;
+delete $rawName;
+return ($body)(raw, this, $args);
+})()
+"""
+
+/**
+ * Installs the global object [name] whose methods ([specs]) call the raw binding [rawName] (taken first, see
+ * [withRawBinding]). The caller checked that [name] does not exist yet.
  *
  * The raw binding is `raw(0, methodIndex, encodedArguments)` → `[0, result]` or `[1]` (Java exception pending), and
- * `raw(1, failureType, message)` → `[1]` (records the conversion failure).
+ * `raw(1, failureType, message)` → `[1]` (records the conversion failure); it only ever receives numbers and strings.
  */
 internal fun setScript(rawName: String, name: String, specs: List<MethodSpec>): String {
     val specLiteral = specs.joinToString(",", "[", "]") { spec ->
         val parameters = spec.parameters.joinToString(",", "[", "]") { it.js }
         "[${jsString(spec.method.name)},$parameters,${spec.method.isVarArgs},${spec.result.js}]"
     }
-    return """
-(function (rawName, name, specs) {
+    val body = """function (raw, global, name, specs) {
 $JS_HELPERS
-var raw = globalThis[rawName];
-delete globalThis[rawName];
-if (name in globalThis) return false;
 var defineProperty = Object.defineProperty, RangeErr = RangeError;
 var InternalErr = typeof InternalError === 'function' ? InternalError : Error;
 function call(op, a, s) { return raw(op, a, typeof s === 'string' ? s : ''); }
@@ -276,28 +291,26 @@ var proxy = {};
 for (var i = 0; i < specs.length; i++) {
   defineProperty(proxy, specs[i][0], { value: method(i, specs[i]), writable: true, configurable: true });
 }
-globalThis[name] = proxy;
+global[name] = proxy;
 return true;
-})(${jsString(rawName)}, ${jsString(name)}, $specLiteral)
-"""
+}"""
+    return withRawBinding(rawName, body, "${jsString(name)}, $specLiteral")
 }
 
 /**
  * Installs the hidden, non-configurable global function [invokerName]`(name, method, resultKind)` used by
- * `QuickJs.get` proxies: it takes the arguments from the raw binding `globalThis[pullName]` (captured and deleted
- * first), calls `globalThis[name][method]` and returns `'v' + encoded result`, or `'F<type><message>'` when the
+ * `QuickJs.get` proxies: it takes the arguments from the raw binding [pullName] (taken first, see [withRawBinding]),
+ * calls the global object's `[name][method]` and returns `'v' + encoded result`, or `'F<type><message>'` when the
  * result cannot be converted.
  */
-internal fun invokerScript(pullName: String, invokerName: String): String = """
-(function (pullName, invokerName) {
+internal fun invokerScript(pullName: String, invokerName: String): String {
+    val body = """function (pull, global, invokerName) {
 $JS_HELPERS
-var pull = globalThis[pullName];
-delete globalThis[pullName];
 var apply = Reflect.apply;
-Object.defineProperty(globalThis, invokerName, {
+Object.defineProperty(global, invokerName, {
   value: function (name, method, kind) {
     var args = pull();
-    var o = globalThis[name];
+    var o = global[name];
     var r = apply(o[method], o, args);
     try {
       return 'v' + conv(kind, r);
@@ -307,17 +320,18 @@ Object.defineProperty(globalThis, invokerName, {
     }
   },
 });
-})(${jsString(pullName)}, ${jsString(invokerName)});
-void 0;
-"""
+}"""
+    return withRawBinding(pullName, body, jsString(invokerName)) + "void 0;\n"
+}
 
 /**
- * Checks `QuickJs.get`'s preconditions: completion value `ok`, `missing`, `notobject`, or `nomethod:<i>` /
- * `notcallable:<i>` for the first of [methods] that is absent / not a function.
+ * Checks `QuickJs.get`'s preconditions on the global object (a sloppy function's `this`): completion value `ok`,
+ * `missing`, `notobject`, or `nomethod:<i>` / `notcallable:<i>` for the first of [methods] that is absent / not a
+ * function.
  */
 internal fun getCheckScript(name: String, methods: List<String>): String = """
 (function (name, methods) {
-  var o = globalThis[name];
+  var o = this[name];
   if (o === undefined) return 'missing';
   if (o === null || (typeof o !== 'object' && typeof o !== 'function')) return 'notobject';
   for (var i = 0; i < methods.length; i++) {

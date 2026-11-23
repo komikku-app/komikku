@@ -69,9 +69,13 @@ internal class QuickJsRuntime private constructor(
         evaluateToJava { engine.evaluate<Any?>(bytecode) }
     }
 
-    /** Compiles on the engine thread; allowed from inside a binding (quickjs-kt does not lock for it). */
+    /**
+     * Compiles on the engine thread. Refused from inside a binding like [evaluate]: quickjs-kt would re-base the
+     * stack limit at the binding's depth.
+     */
     fun compile(sourceCode: String, fileName: String): Outcome = onEngine {
         ensureOpen()
+        ensureNotInBinding()
         try {
             try {
                 Outcome.Value(engine.compile(markCompletion(sourceCode), fileName, false))
@@ -109,6 +113,8 @@ internal class QuickJsRuntime private constructor(
     /** `QuickJs.set` once the interface was validated: installs [name] with [specs] calling [target]. */
     fun set(name: String, target: Any, specs: List<MethodSpec>): Outcome {
         val outcome = call {
+            // Checked before the raw binding exists, which quickjs-kt would keep registered otherwise.
+            if (engine.evaluate<Any?>(globalExistsScript(name), "?") == true) return@call false
             val rawName = hiddenName()
             engine.defineBinding(rawName, FunctionBinding { args -> dispatch(target, specs, args) })
             engine.evaluate<Any?>(setScript(rawName, name, specs), "?")
@@ -260,11 +266,7 @@ internal class QuickJsRuntime private constructor(
      */
     private fun call(block: suspend () -> Any?): Outcome = onEngine {
         ensureOpen()
-        if (bindingDepth > 0) {
-            throw UnsupportedOperationException(
-                "QuickJs cannot evaluate JavaScript from inside a Java method bound with set() (quickjs-kt)",
-            )
-        }
+        ensureNotInBinding()
         pendingJavaException = null
         try {
             Outcome.Value(
@@ -307,6 +309,15 @@ internal class QuickJsRuntime private constructor(
 
     private fun ensureOpen() {
         if (closed.get()) throw closedException()
+    }
+
+    /** Engine thread. */
+    private fun ensureNotInBinding() {
+        if (bindingDepth > 0) {
+            throw UnsupportedOperationException(
+                "QuickJs cannot run JavaScript from inside a Java method bound with set() (quickjs-kt)",
+            )
+        }
     }
 
     /** Result of a call: a value, or a failure the public API turns into an exception on the caller's thread. */
