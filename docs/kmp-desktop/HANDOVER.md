@@ -15,8 +15,9 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21) and their review fixes: done, last Part A commit `b8b0b07`; extension info and the sources' right-click menu (P22): built, not reviewed, review range `b8b0b07..` the docs commit "Record the extension info (P22)"), then the maintainer's first real run of
-the workflow and of the app; see "Done" and "Left to do").
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21) and their review fixes: done, last Part A commit `b8b0b07`; extension info and the sources' right-click menu (P22) and its review fixes: done, last code fix `9ae0d0b`, last Part A
+commit the docs commit "Record the P22 review fixes"), then the maintainer's first real run of the workflow and of the
+app; see "Done", "Next session" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -436,7 +437,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   (warnings, package, version, language, age rating, Uninstall, the extension's incognito switch, its sources' switches
   and settings, enable / disable all, clear cookies) opened from the source options dialog, the sources' right-click menu
   (which also has SY's "Categories" now) and a click on an installed extension. No App info / WebView / repository
-  actions. Test `ExtensionDetailsUiTest` (2). Not reviewed yet.
+  actions. Test `ExtensionDetailsUiTest` (2).
+- **P22 review** (medium, `b8b0b07..c968ba3`, 4 findings) — all fixed in `c995099`, `19f2eeb`, `9ae0d0b` and the docs commit
+  after them (PROGRESS.md "Review fixes (P22)"): an extension update replaces its installed entry in one emission (the
+  open extension info no longer closes, the source manager no longer drops and re-adds the sources); "Clear cookies" in
+  the extension info clears through `DesktopWebView.clearCookies` for each source's base and home address (cookies for
+  the registrable domain such as `cf_clearance` included), on IO, with Android's "Cookies cleared" toast; Uninstall asks
+  first in the extension info and on the Extensions tab's rows. Android unchanged. Left open: cookies with their own
+  non-root `Path` stay (Android too); the off-UI-thread clearing has no test. Full `:desktopApp:test` on `9ae0d0b`: 80 classes, 367
+  tests, 0 failures.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -462,6 +471,33 @@ mark the residual path in both modules.
   reference race remains; QuickJS out-of-memory crashed the JVM depending on code shape (guarded by
   `OutOfMemoryCrashTest`, cause unknown).
 - The light Android checks `:app:checkDebugDuplicateClasses` and `:app:mergeDebugJavaResource` pass.
+
+## Next session (start here)
+
+- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the P22 review fixes" (last code
+  commit `9ae0d0b`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
+  `.github/workflows/build_ios_check.yml`, `docs/kmp-desktop/IOS_CI.md`): leave those files alone, merge (never rebase or
+  force) when a push is rejected.
+- **Last full `:desktopApp:test`:** on `9ae0d0b` (the code of HEAD): 80 classes, 367 tests, 0 failures, the
+  timing-sensitive classes (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`,
+  `MangayomiSourceStoreTest`) included and passing.
+- **Not reviewed:** nothing of P1–P22 is waiting for a review; the P22 review fixes (`c995099..` the docs commit) are not
+  reviewed themselves. Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
+- **Next items** (from PROGRESS "Remaining parity gaps", in this order: small and headless-testable first, then by user
+  impact, the big ones last):
+  1. Reader leftovers (gap 4): tap-zone / keyboard navigation settings, SY's shift / invert double pages and centre
+     margins, cropped borders, webtoon split / rotate of wide pages.
+  2. Manga details leftovers (gap 3): "Autofill from tracker" in edit info, then sharing (cover / link).
+  3. Small open points found in reviews: host-wide cookie removal for "Clear cookies" (non-root `Path` cookies, P22
+     review), the source feed's incognito toggle (gap 1), Android's obsolete filter in Browse → Migrate still keeping
+     JavaScript sources (P20 / P21 review; a one-line Android change, needs the coordinator's decision).
+  4. Recommendations (library selection and details, gaps 2 / 3), then SY's metadata / namespace-tag view and page
+     previews for the delegated sources (P4).
+  5. System integration (gap 5): minimise to tray, notification actions.
+  6. The large ones: merged entries and sources, SY's MangaDex screens / batch add, an embedded browser backend
+     (jcefmaven, PROGRESS P7 "What the embedded backend still needs").
+- Process per item: build in small pushed commits, record it in PROGRESS.md and here, then the coordinator's
+  `/code-review medium <range>` and a review-fix round (failing test first), as for P1–P22.
 
 ## Left to do (in order)
 
@@ -491,8 +527,8 @@ mark the residual path in both modules.
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
    configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
-   source categories) and their review fixes are done; P22 (extension info) is built; **next**: its review (`b8b0b07..`), then another item of PROGRESS "Remaining parity
-   gaps"; then the maintainer's
+   source categories) and their review fixes are done; P22 (extension info) and its review fixes are done; **next**: the
+   items in "Next session" above; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

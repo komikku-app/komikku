@@ -4026,6 +4026,49 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the h
 had no handler; it toggles now). Full `:desktopApp:test` on `73ef1c2`: 80 classes, 365 tests, 0 failures (the
 timing-sensitive classes included and passing).
 
+## Review fixes (P22)
+
+Review (medium, `b8b0b07..c968ba3`, 4 findings); all fixed, each with a test that failed on `c968ba3` first (finding 2 has
+no test of its own, see below).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | "Clear cookies" in the extension info called the borrowed `ExtensionDetailsScreenModel.clearCookies` (`cookieJar.remove(url)`: a `Max-Age=-1` cookie per name for the address's own host and default path), so cookies set with `Domain=` for the registrable domain (Cloudflare's `cf_clearance`) stayed, and nothing was shown | Fixed on desktop: `ExtensionCookies.clear` (in `ExtensionDetailsScreen.kt`) clears each HTTP source's base and home address through `DesktopWebView.clearCookies` (`removeBrowserCookies`: every jar cookie sent to the address, whatever its domain), then Android's "Cookies cleared" toast (`MR.strings.cookies_cleared`, existing) | `19f2eeb` |
+| 2 | The clearing ran on the UI thread | Fixed: `model.screenModelScope.launchIO { … }`, the toast through `withUIContext` | `19f2eeb` |
+| 3 | An update (`installApkFile`) did `unregister(pkg)` then `register(...)`: two `installedExtensionsFlow` emissions, the first without the extension, so the borrowed details model sent `Uninstalled` and the open extension info closed | Fixed: `installApkFile` sets both lists through one `replace(pkgName, installed, untrusted)` (one emission each, an existing entry keeps its position, blacklisted entries still dropped, a failed load still removes the entry) | `c995099` |
+| 4 | Uninstall deleted the APK at once with no confirmation (Android: the system's dialog) | Fixed: `ExtensionUninstallDialog` (title "Uninstall", text `KMR.strings.js_source_uninstall_confirm` "Uninstall %1$s? Library entries and downloads from it are kept." — existing, true for APK extensions too; Uninstall / Cancel) in the extension info and on the Extensions tab's Uninstall buttons (installed and untrusted rows, which also deleted at once) | `9ae0d0b` |
+
+Decisions:
+
+- Finding 1 goes through `DesktopWebView.clearCookies` rather than calling `removeBrowserCookies` directly: it is the same
+  call plus forgetting the host's remembered solver User-Agent and failed solve (P7 / P8), which belong to the cleared
+  clearance. The borrowed model's `clearCookies` is left as it is (Android uses it; no Android change).
+- Cookies with their own non-root `Path` (e.g. `Path=/manga`) are not sent to a source's base address, so neither
+  Android's clearing nor the desktop's removes them; left open (it needs a host-wide removal in `DesktopCookieManager`).
+- Finding 3, other observers of the gap: the desktop source manager (dropped and re-added the extension's sources, which
+  could disturb an open catalogue), the Extensions tab's list (`GetPlatformExtensionsByType`) and the library's source
+  badge (`LibraryItems`); all now get one emission. The other two-step paths are fine: `trust` moves the entry between
+  the untrusted and installed lists (different flows, never absent from the installed list while it was listed there),
+  `uninstall` and an update that turns out untrusted remove it from the installed list on purpose (the extension info
+  closes, correctly).
+
+**Android behaviour:** unchanged (only `desktopApp/` files changed).
+
+Tests (each failed on `c968ba3` first, at the expected step): `DesktopExtensionManagerTest` "updates to a newer version
+from the store" now records every `installedExtensionsFlow` value on an unconfined collector during the update (failed:
+an empty list was seen) and keeps an `ExtensionDetailsScreenModel` open across it (no `Uninstalled` event, the state
+moves from version 3 to 4); `ExtensionDetailsUiTest` +2 and one extended: "clear cookies …" (a host-only and a
+`Domain=example.org` cookie for the source, another site's cookie kept; failed: no "Cookies cleared"), "the Extensions tab
+asks before it uninstalls" (Cancel keeps it, Uninstall removes it) and the options-dialog test's Uninstall step (Cancel,
+then confirm; the dialog shows the extension's name). Not tested: that the clearing runs off the UI thread (it is a
+`launchIO`; a test would need a slow fake `DesktopWebView`).
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass (`:app:compileDebugKotlin` not run:
+nothing under `app/` or a shared module changed); `:desktopApp:test --tests '*ExtensionDetailsUiTest*' --tests
+'*DesktopExtensionManagerTest*' --tests '*ExtensionsUiTest*' --tests '*JsSourcesUiTest*' --tests '*SourcesUiTest*'` 17
+tests, 0 failures. Full `:desktopApp:test` on `9ae0d0b`: 80 classes, 367 tests, 0 failures (was 80 / 365; the timing-sensitive `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`, `MangayomiSourceStoreTest` included and passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
