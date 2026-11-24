@@ -102,6 +102,9 @@ class DesktopExtensionManager(
     /** Serializes installs, uninstalls, trust changes and the initial load (they all touch [apkDir]). */
     private val mutex = Mutex()
 
+    /** Guards the read-modify-write of the installed / untrusted entries ([updateInstalled], [updateUntrusted]). */
+    private val entriesLock = Any()
+
     private val installJobs = ConcurrentHashMap<String, Job>()
 
     private var availableSourcesData: Map<Long, StubSource> = emptyMap()
@@ -267,9 +270,19 @@ class DesktopExtensionManager(
     }
 
     private fun updatedInstalledExtensionsStatuses(availableExtensions: List<Extension.Available>) {
-        val installed = installedMap.value.toMutableMap()
+        // P23 review fix: computed from the current entries in one atomic step, so an install / update / uninstall
+        // (under the mutex) that lands meanwhile is not overwritten by a stale snapshot
+        updateInstalled { current -> statusesOf(current, availableExtensions) }
+        updatePendingUpdatesCount()
+    }
+
+    private fun statusesOf(
+        current: Map<String, Extension.Installed>,
+        availableExtensions: List<Extension.Available>,
+    ): Map<String, Extension.Installed> {
+        val installed = current.toMutableMap()
         var changed = false
-        for ((pkgName, extension) in installed) {
+        for ((pkgName, extension) in current) {
             val availableExt = extension.findAvailable(availableExtensions)
             if (availableExt == null && (!extension.isObsolete || extension.hasUpdate)) {
                 installed[pkgName] = extension.copy(isObsolete = true, hasUpdate = false)
@@ -287,8 +300,7 @@ class DesktopExtensionManager(
                 changed = true
             }
         }
-        if (changed) setInstalled(installed)
-        updatePendingUpdatesCount()
+        return if (changed) installed else current
     }
 
     // ---- install / update / uninstall ----------------------------------------------------------------
@@ -421,10 +433,8 @@ class DesktopExtensionManager(
                 }
             }
         }
-        val installedNext = if (listed != null) installedMap.value + (pkgName to listed) else installedMap.value - pkgName
-        val untrustedNext = if (untrusted != null) untrustedMap.value + (pkgName to untrusted) else untrustedMap.value - pkgName
-        if (installedNext != installedMap.value) setInstalled(installedNext)
-        if (untrustedNext != untrustedMap.value) setUntrusted(untrustedNext)
+        updateInstalled { if (listed != null) it + (pkgName to listed) else it - pkgName }
+        updateUntrusted { if (untrusted != null) it + (pkgName to untrusted) else it - pkgName }
     }
 
     override fun uninstallExtension(extension: Extension) {
@@ -449,7 +459,7 @@ class DesktopExtensionManager(
                 trusted.filterNot { it.startsWith("${extension.pkgName}:") }.toMutableSet()
                     .also { it += "${extension.pkgName}:${extension.versionCode}:${extension.signatureHash}" }
             }
-            setUntrusted(untrustedMap.value - extension.pkgName)
+            updateUntrusted { it - extension.pkgName }
             val apk = File(apkDir, "${extension.pkgName}.$APK_EXTENSION")
             (loadExtension(apk) as? LoadResult.Success)?.let { register(it.extension.withUpdateCheck()) }
             updatePendingUpdatesCount()
@@ -463,12 +473,12 @@ class DesktopExtensionManager(
             logcat { "Removing blacklisted extension: (name: ${extension.name}, pkgName: ${extension.pkgName})" }
             return
         }
-        setInstalled(installedMap.value + (extension.pkgName to extension))
+        updateInstalled { it + (extension.pkgName to extension) }
     }
 
     private fun unregister(pkgName: String) {
-        setInstalled(installedMap.value - pkgName)
-        setUntrusted(untrustedMap.value - pkgName)
+        updateInstalled { it - pkgName }
+        updateUntrusted { it - pkgName }
     }
 
     private fun Extension.Installed.withUpdateCheck(): Extension.Installed {
@@ -486,14 +496,34 @@ class DesktopExtensionManager(
             preferences.enableSourceBlacklist().get() &&
             exhPreferences.isHentaiEnabled().get()
 
-    private fun setInstalled(map: Map<String, Extension.Installed>) {
-        installedMap.value = map
-        installedList.value = map.values.toList()
+    private fun setInstalled(map: Map<String, Extension.Installed>) = updateInstalled { map }
+
+    private fun setUntrusted(map: Map<String, Extension.Untrusted>) = updateUntrusted { map }
+
+    /**
+     * P23 review fix: [transform] the current installed entries and publish the result (map and list) in one step, so
+     * a write computed from an older snapshot cannot overwrite a newer one (the status refresh runs outside [mutex]).
+     */
+    private fun updateInstalled(transform: (Map<String, Extension.Installed>) -> Map<String, Extension.Installed>) {
+        synchronized(entriesLock) {
+            val current = installedMap.value
+            val next = transform(current)
+            if (next != current) {
+                installedMap.value = next
+                installedList.value = next.values.toList()
+            }
+        }
     }
 
-    private fun setUntrusted(map: Map<String, Extension.Untrusted>) {
-        untrustedMap.value = map
-        untrustedList.value = map.values.toList()
+    private fun updateUntrusted(transform: (Map<String, Extension.Untrusted>) -> Map<String, Extension.Untrusted>) {
+        synchronized(entriesLock) {
+            val current = untrustedMap.value
+            val next = transform(current)
+            if (next != current) {
+                untrustedMap.value = next
+                untrustedList.value = next.values.toList()
+            }
+        }
     }
 
     private fun setAvailable(map: Map<String, Extension.Available>) {
