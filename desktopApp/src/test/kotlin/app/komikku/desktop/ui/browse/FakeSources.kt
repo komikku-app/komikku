@@ -132,10 +132,14 @@ class FakeCatalogueSource : CatalogueSource, ConfigurableSource {
  * A [SourceManager] over fixed sources, for UI tests; [setSources] replaces them (an extension installed / updated),
  * a lookup of an id in [failingIds] throws.
  */
-class FixedSourceManager(sources: List<Source>) : SourceManager {
+class FixedSourceManager(
+    sources: List<Source>,
+    /** Whether the sources are loaded; a test can start with `false` (extensions still loading) and set it later. */
+    val initialized: MutableStateFlow<Boolean> = MutableStateFlow(true),
+) : SourceManager {
     private val current = MutableStateFlow(sources.associateBy { it.id })
     private val map get() = current.value
-    override val isInitialized: StateFlow<Boolean> = MutableStateFlow(true)
+    override val isInitialized: StateFlow<Boolean> = initialized
     override val sources: Flow<List<Source>> = current.map { it.values.toList() }
 
     @Volatile var failingIds: Set<Long> = emptySet()

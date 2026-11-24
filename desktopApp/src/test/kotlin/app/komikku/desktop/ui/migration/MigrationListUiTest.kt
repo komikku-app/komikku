@@ -68,18 +68,39 @@ class MigrationListUiTest {
 
     private lateinit var app: Application
     private val preferences by lazy { Injekt.get<SourcePreferences>() }
+    private val allSources = listOf(ListSource(OLD), ListSource(NEW))
+    private val sourceManager = FixedSourceManager(allSources)
 
     @BeforeAll
     fun boot(@TempDir dir: File) {
         app = DesktopInjekt.init(dir)
-        Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(ListSource(OLD), ListSource(NEW))) }
+        Injekt.addSingletonFactory<SourceManager> { sourceManager }
         preferences.migrationFlags().set(MigrationFlag.entries.toSet())
     }
 
     @BeforeEach
     fun reset() {
+        sourceManager.setSources(allSources)
+        sourceManager.initialized.value = true
         // No migration sources yet: the configuration preselects the enabled sources
         preferences.migrationSources().delete()
+    }
+
+    /** Extensions still loading: no sources yet. */
+    private fun sourcesLoading() {
+        sourceManager.initialized.value = false
+        sourceManager.setSources(emptyList())
+    }
+
+    private fun sourcesLoaded() {
+        sourceManager.setSources(allSources)
+        sourceManager.initialized.value = true
+    }
+
+    /** Lets the screens' models start (they would read the sources now) before the sources are loaded. */
+    private fun ComposeUiTest.settle() {
+        Thread.sleep(1_000)
+        waitForIdle()
     }
 
     private fun ComposeUiTest.waitForTag(tag: String, present: Boolean = true) =
@@ -210,6 +231,68 @@ class MigrationListUiTest {
             val stack = navigator!!.items
             stack.size shouldBe 2
             (stack.last() as MangaDetailsScreen).mangaId shouldBe stored(NEW, "/vagabond")!!.id
+        }
+
+    @Test
+    fun `the configuration waits for the sources to be loaded`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        val entry = libraryEntry("pluto", "Pluto")
+        sourcesLoading()
+        show(MigrationConfigScreen(listOf(entry.id)))
+        settle()
+        onAllNodesWithTag("migration-config").fetchSemanticsNodes().isEmpty() shouldBe true
+        sourcesLoaded()
+        // Both sources listed and preselected (the enabled ones)
+        waitForTag("migration-config-up-$NEW")
+        waitForTag("migration-config-up-$OLD")
+        waitForTag("migration-config-continue")
+    }
+
+    @Test
+    fun `the list waits for the sources to be loaded before it matches`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        val monster = libraryEntry("monster", "Monster")
+        val akira = libraryEntry("akira", "Akira")
+        preferences.migrationSources().set(listOf(NEW))
+        sourcesLoading()
+        show(MigrationListScreen(listOf(monster.id, akira.id), extraSearchQuery = null))
+        settle()
+        onAllNodesWithTag("migration-list").fetchSemanticsNodes().isEmpty() shouldBe true
+        sourcesLoaded()
+        val monsterResult = hasAnyAncestor(hasTestTag("migration-result-${monster.id}"))
+        waitUntil(timeoutMillis = 15_000) {
+            onAllNodes(hasText(ListSource.nameOf(NEW), substring = true) and monsterResult).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    @Test
+    fun `leaving the list replaces only the migrated entry's details and keeps unrelated screens`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            val other = libraryEntry("blue-period", "Blue Period")
+            val migrated = libraryEntry("planetes", "Planetes")
+            // Details(other) under Details(migrated); the migration starts from the latter
+            show(MangaDetailsScreen(other.id), MangaDetailsScreen(migrated.id))
+            waitForTag("details-migrate")
+            onNodeWithTag("details-migrate").performClick()
+            continueToList(showsList = false)
+            waitForTag("migrate-search")
+            val newRow = hasAnyAncestor(hasTestTag("global-search-source-$NEW"))
+            waitUntil(timeoutMillis = 15_000) { onAllNodes(hasText("Planetes") and newRow).fetchSemanticsNodes().isNotEmpty() }
+            onAllNodes(hasText("Planetes") and newRow)[0].performClick()
+            waitUntil(timeoutMillis = 15_000) {
+                onAllNodes(hasTestTag("migration-list-migrate") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("migration-list-migrate").performClick()
+            val migrateLabel = MR.strings.migrationListScreen_migrateDialog_migrateLabel.localized()
+            waitForText(migrateLabel)
+            onNodeWithText(migrateLabel).performClick()
+
+            waitUntil(timeoutMillis = 15_000) { stored(NEW, "/planetes")?.favorite == true }
+            val target = stored(NEW, "/planetes")!!
+            waitUntil(timeoutMillis = 15_000) { navigator!!.items.none { it is MigrationListScreen } }
+            val stack = navigator!!.items
+            stack.size shouldBe 3
+            stack[0] shouldBe RootScreen
+            (stack[1] as MangaDetailsScreen).mangaId shouldBe other.id
+            (stack[2] as MangaDetailsScreen).mangaId shouldBe target.id
         }
 
     private companion object {
