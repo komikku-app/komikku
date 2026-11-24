@@ -3356,7 +3356,9 @@ Verification (after `3f0be05`, `--max-workers=2 --console=plain`): `spotlessAppl
 '*BulkFavoriteUiTest*'` 4 tests, 0 failures. Full `:desktopApp:test` on `3a7c807` (`./gradlew --stop` before): 70
 classes, 304 tests, 0 failures (`SourceFeedUiTest` 3, `BulkFavoriteUiTest` 4 new). After `e5482ab` (feeds):
 `spotlessApply`, `spotlessCheck` pass, `:desktopApp:test --tests '*FeedUiTest*' --tests '*SourceFeedUiTest*'` 12 tests,
-0 failures; the final full run is recorded in the next docs commit.
+0 failures. **Final full `:desktopApp:test`** on `857aa60` (code of `e5482ab`, `./gradlew --stop` before): 70 classes, 306
+tests, 0 failures (`DesktopBackupJobsTest` and `DesktopExtensionManagerTest` included and passing). Review range of P13
+rest + P14: `e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" (= `74366d9^..`).
 
 ## Remaining parity gaps
 

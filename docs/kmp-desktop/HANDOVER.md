@@ -14,7 +14,7 @@ P11, reader parity (neighbouring chapters in the viewers, wide pages, animated p
 done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way: saved searches in the desktop catalogue
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) are
-built, not yet reviewed; next: the review `/code-review medium 74366d9^..<last P14 docs commit>` and its fix round; then
+built, not yet reviewed; next: the review `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" and its fix round; then
 the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -333,7 +333,8 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   rule and dialog) in the catalogue, global search, the Feed tab and the source feed; "Search globally" from the library
   search; the extension's name after the source's in global search rows. Desktop deviation: outside the selection mode a
   long press starts selecting (Android adds / removes that one entry). Test `BulkFavoriteUiTest` (4), feed tests +1 each.
-  **Pending:** `/code-review medium 74366d9^..<last P14 docs commit>` (Part B of this round) and its fix round.
+  Full `:desktopApp:test` on `857aa60`: 70 classes, 306 tests, 0 failures.
+  **Pending:** `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" (Part B of this round) and its fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -385,7 +386,7 @@ mark the residual path in both modules.
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
    favourites, search globally from the library, extension names in global search) are built; **pending**:
-   `/code-review medium 74366d9^..<last P14 docs commit>` and its fix round; then the maintainer's
+   `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" and its fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
