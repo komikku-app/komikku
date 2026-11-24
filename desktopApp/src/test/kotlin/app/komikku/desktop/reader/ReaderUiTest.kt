@@ -17,7 +17,9 @@ import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
@@ -54,6 +56,8 @@ class ReaderUiTest {
         app = DesktopInjekt.init(dataDir)
         Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(FakeHttpSource(server.baseUrl))) }
         TestLibrary.insertManga(FakeHttpSource.ID, "/manga/ui", "UI manga", favorite = true)
+        // Single pages: the default page layout (automatic) shows double pages in a landscape window (P11)
+        Injekt.get<ReaderPreferences>().pageLayout().set(PagerConfig.PageLayout.SINGLE_PAGE)
     }
 
     @AfterAll

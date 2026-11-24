@@ -62,9 +62,14 @@ object TestImages {
 
 /**
  * A [MockWebServer] serving a manga's chapters: `/chapter/<n>` returns the image paths of that chapter
- * (one per line), `/img/<chapter>/<page>.png` a generated PNG whose height is `100 + page`.
+ * (one per line), `/img/<chapter>/<page>.png` a generated PNG whose height is `100 + page` (80 wide), or 200 × 100 for
+ * the [widePages].
  */
-class FakeMangaServer(private val pagesPerChapter: Int = 3) : AutoCloseable {
+class FakeMangaServer(
+    private val pagesPerChapter: Int = 3,
+    /** Page numbers (1-based) served as a wide 200 × 100 image instead (P11 wide pages). */
+    private val widePages: Set<Int> = emptySet(),
+) : AutoCloseable {
     val server = MockWebServer()
     val requests = CopyOnWriteArrayList<String>()
 
@@ -84,7 +89,7 @@ class FakeMangaServer(private val pagesPerChapter: Int = 3) : AutoCloseable {
                         val page = path.substringAfterLast('/').removeSuffix(".png").toInt()
                         MockResponse.Builder().code(200)
                             .addHeader("Content-Type", "image/png")
-                            .body(Buffer().write(TestImages.encode(80, 100 + page)))
+                            .body(Buffer().write(if (page in widePages) TestImages.encode(200, 100) else TestImages.encode(80, 100 + page)))
                             .build()
                     }
                     else -> MockResponse.Builder().code(404).build()
