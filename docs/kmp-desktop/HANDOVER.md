@@ -481,23 +481,25 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
-- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the small open points from
-  reviews (P23)" (last code commit `d8c9fb3`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
+- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the P23 review fixes" (last
+  code commit `0b55233`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
   `.github/workflows/build_ios_check.yml`, `docs/kmp-desktop/IOS_CI.md`): leave those files alone, merge (never rebase or
   force) when a push is rejected.
-- **Last full `:desktopApp:test`:** on `d8c9fb3` (the code of HEAD): 81 classes, 369 tests, 0 failures (was 80 / 367: `LibraryCategoriesUiTest` 1, `BrowseMigrateUiTest` +1), the
-  timing-sensitive classes (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`,
-  `MangayomiSourceStoreTest`) included and passing; `:desktop:android-compat:test` 7 classes, 35 tests, 0 failures.
-- **Not reviewed:** the P22 review fixes and P23, review range `c968ba3..` the P23 docs commit (the P22 review fixes
-  `c968ba3..c83e30d`, P23 `c83e30d..` the P23 docs commit). Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
+- **Last full `:desktopApp:test`:** on `0b55233` (the code of HEAD): 81 classes, 371 tests, 0 failures (was 81 / 369: `BrowseMigrateUiTest` +1,
+  `ExtensionDetailsUiTest` +1), the timing-sensitive classes (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`,
+  `ReaderNavigationTest`, `MangayomiSourceStoreTest`) included and passing; `:desktop:android-compat:test` 7 classes,
+  36 tests, 0 failures (was 35: `CookieManagerTest` +1).
+- **Reviewed:** `c968ba3..80d94dd` (the P22 review fixes and P23); its six findings are fixed (PROGRESS "Review fixes
+  (P23)"). **Not reviewed:** those review fixes, `80d94dd..` the P23 review-fix docs commit. Open from them: no
+  deterministic race test for the extension manager's atomic entry updates; the "no repository → not obsolete" test was
+  not run failing-first. Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
 - **Next items** (from PROGRESS "Remaining parity gaps", in this order: small and headless-testable first, then by user
   impact, the big ones last):
   1. Reader leftovers (gap 4): tap-zone / keyboard navigation settings, SY's shift / invert double pages and centre
      margins, cropped borders, webtoon split / rotate of wide pages.
   2. Manga details leftovers (gap 3): "Autofill from tracker" in edit info, then sharing (cover / link).
   3. Small open points: the source feed's incognito toggle (gap 1); Android's own "Clear cookies" (extension info,
-     WebView) still misses non-root `Path` and parent-domain cookies (Mihon's `cookieJar.remove`); Android's Migrate tab
-     does not mark obsolete JavaScript sources; a test that the extension info's clearing runs off the UI thread.
+     WebView) still misses non-root `Path` and parent-domain cookies (Mihon's `cookieJar.remove`); a test that the extension info's clearing runs off the UI thread.
   4. Recommendations (library selection and details, gaps 2 / 3), then SY's metadata / namespace-tag view and page
      previews for the delegated sources (P4).
   5. System integration (gap 5): minimise to tray, notification actions.

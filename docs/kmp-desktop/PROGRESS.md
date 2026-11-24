@@ -4106,6 +4106,31 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the h
 `ReaderNavigationTest`, `MangayomiSourceStoreTest` included and passing); `:desktop:android-compat:test` 7 classes, 35
 tests, 0 failures.
 
+## Review fixes (P23)
+
+Findings of the review of `c968ba3..80d94dd` (the P22 review fixes and P23), each its own commit.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | Android's Browse → Migrate obsolete filter (`isStub || installedExtension?.isObsolete == true`, P23 point 2) hid an installed JavaScript source gone from every repository (`JsSourceStatus.OBSOLETE`), which the old `isObsolete != false` filter listed | Fixed: the helper moved to `app-shared` (`List<JsSourceItem>.obsoleteSourceIds()`, `MangayomiSourceStore.obsoleteSourceIds()`: the store's obsolete installed ids as a flow, none without a store) and Android's `MigrateSourceScreen` collects it (KMK blocks) for the filter and the "Obsolete" label (`Source.isObsolete(obsoleteJs)`), as the desktop pane does. **Android behaviour change** (bug fix): such sources are listed and labelled "Obsolete" again. Compile-checked on Android | `bed82d9` |
+| 2 | `MangayomiSourceStore.items`: `listingKnown = urls.all { … }` is true for an empty repository list, so with no repository every installed JavaScript source was `OBSOLETE` ("Obsolete" in the JavaScript sources list, offered by both Migrate filters). No test pinned it; the store's doc ("become obsolete when nothing else offers them") did not say it was intended | Fixed (decided): not obsolete without any repository (`urls.isNotEmpty() && …`), so removing the last repository does not flag working sources for migration; with other repositories left, a source none of them offers is obsolete as before. Applies to Android's JavaScript sources screen too (shared store). `MangayomiSourceStoreTest` "obsolete only once every repository was read" extended (both repositories removed → `UP_TO_DATE`); not run failing-first (time) | `3661bfd` |
+| 3 | `DesktopExtensionManager`: `replace()` writes the installed entries under `mutex`, but `updatedInstalledExtensionsStatuses()` (after `findAvailableExtensions`) did a read-modify-write without it, so a refresh could write a stale snapshot over a concurrent install / update | Fixed: every write of the installed and untrusted entries goes through `updateInstalled` / `updateUntrusted`, which transform the *current* map and publish map and list under one lock (`entriesLock`, no suspension inside); the status refresh is a pure function of the current entries. No deterministic race test (it needs an interleaving hook); `DesktopExtensionManagerTest` passes | `d665cb2` |
+| 4 | `ExtensionCookies.clear` swallowed each address's failure and the button always toasted "Cookies cleared" | Fixed: `clear` returns `Result(cleared, failed)`; the screen shows "Cookies cleared" only when nothing failed, else the new `KMR.strings.cookies_clear_failed` ("Could not clear the cookies of %1$s", the failed addresses). Test: `ExtensionDetailsUiTest` "a failed address is reported and does not stop the others" | `bedb922` |
+| 5 | `DesktopCookieManager.removeForHost` takes the host and its parent domains only, so clearing for `example.com` left `www.example.com`'s cookies | Fixed (decided): `removeForHost(url, includeSubdomains = false)`; `true` also takes cookies whose domain is a subdomain of the host. Only the extension info's clearing passes it (`ExtensionCookies` → `DesktopWebView.clearCookies(url, includeSubdomains = true)` → `AndroidCookieJar.removeHostCookies`); the WebView dialog's own "Clear cookies" is unchanged. Sibling hosts, look-alike domains (`notexample.com`) and other sites stay. Tests: `CookieManagerTest` +1, `ExtensionDetailsUiTest` "clear cookies …" extended (a `cdn.` subdomain cookie removed) | `0b55233` |
+| 6 | `MigrateSourcePane`'s default `remember { obsoleteJsSourceIds() }` could build the JavaScript source store (`Injekt.get`) on the UI thread during composition | Fixed with 1: the shared `MangayomiSourceStore.obsoleteSourceIds()` is `flow { … }.flowOn(Dispatchers.IO)`, so the store is resolved when collected, on IO; the desktop pane's default and Android use it. Test: `BrowseMigrateUiTest` "… resolve the store off the collecting thread and are empty without one" | `bed82d9` |
+
+Tests: `BrowseMigrateUiTest` +1, `ExtensionDetailsUiTest` +1 and "clear cookies …" extended, `CookieManagerTest` +1,
+`MangayomiSourceStoreTest` "obsolete only once every repository was read" extended. Failing first: not run against the
+old code (time box); the new `ExtensionCookies.clear(urls, …)`, `obsoleteSourceIds { … }` and `includeSubdomains` cases
+use new API and could not compile against it.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the full run): targeted runs of
+`BrowseMigrateUiTest`, `MangayomiSourceStoreTest`, `DesktopExtensionManagerTest`, `ExtensionDetailsUiTest`,
+`DesktopWebViewTest` and `CookieManagerTest` pass; one run on `0b55233` of `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin`, `:desktopApp:test` (81 classes, 371 tests, 0 failures, the
+timing-sensitive classes included) and `:desktop:android-compat:test` (7 classes, 36 tests, 0 failures): all pass.
+Skipped (time): none.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
