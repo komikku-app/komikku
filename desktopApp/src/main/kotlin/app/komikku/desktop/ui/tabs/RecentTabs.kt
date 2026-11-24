@@ -105,7 +105,9 @@ private fun Cover(cover: MangaCover) {
 fun LibraryUpdateBanner(runner: LibraryUpdateRunner = remember { Injekt.get() }) {
     val progress by runner.progress.collectAsState()
     val p = progress ?: return
-    if (p.finished && p.failed.isEmpty() && p.newChapters == 0) return
+    // A finished update that refreshed nothing stays visible when it skipped what was asked for (e.g. selected entries of
+    // SY's excluded sources), so it does not look like an empty run
+    if (p.finished && p.failed.isEmpty() && p.newChapters == 0 && !(p.total == 0 && p.skipped > 0)) return
     Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth().testTag("library-update-progress")) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -132,6 +134,9 @@ private fun LibraryUpdateProgress.summary(): String = buildString {
     if (current.isNotEmpty()) append(" · " + current.joinToString())
     if (newChapters > 0) append(" · +$newChapters")
     if (failed.isNotEmpty()) append(" · ✕ ${failed.size}")
+    if (skipped > 0) append(" · " + pluralStringResource(MR.plurals.migrationListScreen_migrateDialog_skipText, skipped, skipped))
+    // Android SY never updates galleries of these sources (E-Hentai, Pururin, NHentai delegates)
+    if (excluded > 0) append(" · " + stringResource(MR.strings.skipped_reason_not_always_update))
 }
 
 /** Updates destination: recent chapters grouped by day; opens the reader or the manga; library refresh. */

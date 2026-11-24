@@ -224,9 +224,67 @@ class LibraryUpdateRunnerTest {
         }
         LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Category(1), prefs, Long.MAX_VALUE)
             .toUpdate.map { it.manga.id } shouldBe listOf(1L)
-        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Entries(setOf(1, 2)), prefs, Long.MAX_VALUE)
-            .toUpdate.map { it.manga.id } shouldBe listOf(1L)
+        // Explicitly selected: not updated either, but reported as skipped (like a restriction would be)
+        LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Entries(setOf(1, 2)), prefs, Long.MAX_VALUE).let {
+            it.toUpdate.map { e -> e.manga.id } shouldBe listOf(1L)
+            it.excluded.map { e -> e.manga.id } shouldBe listOf(2L)
+            it.skipped shouldBe emptyList()
+        }
         LibraryUpdateSelection.select(library, LibraryUpdateRunner.Target.Single(2), prefs, Long.MAX_VALUE)
             .toUpdate.map { it.manga.id } shouldBe listOf(2L)
+    }
+
+    @Test
+    fun `selected entries of excluded sources count as skipped, not as an empty update`() = runBlocking {
+        prefs.autoUpdateMangaRestrictions().set(emptySet())
+        val runner = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            getLibrary = { listOf(entry(2, source = PURURIN_SOURCE_ID)) },
+            preferences = prefs,
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { error("must not be updated") },
+        )
+        runner.start(LibraryUpdateRunner.Target.Entries(setOf(2))) shouldBe true
+        val progress = withTimeout(10_000) { runner.progress.first { it?.finished == true }!! }
+        progress.total shouldBe 0
+        progress.skipped shouldBe 1
+        progress.excluded shouldBe 1
+        Unit
+    }
+
+    @Test
+    fun `the excluded sources are read once the sources are ready, for every target`() = runBlocking {
+        prefs.autoUpdateMangaRestrictions().set(emptySet())
+        prefs.updateCategories().set(emptySet())
+        prefs.updateCategoriesExclude().set(emptySet())
+        // The source manager publishes the delegated (NHentai) ids only once it loaded the extensions
+        var published: List<Long> = emptyList()
+        val ready = CompletableDeferred<Unit>()
+        val updated = mutableListOf<Long>()
+        fun runner() = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            getLibrary = { listOf(entry(1, listOf(1)), entry(2, listOf(1), source = 77)) },
+            preferences = prefs,
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { manga ->
+                synchronized(updated) { updated += manga.id }
+                0
+            },
+            awaitReady = { ready.await() },
+            excludedSources = { published },
+        )
+        val targets = listOf(
+            LibraryUpdateRunner.Target.All,
+            LibraryUpdateRunner.Target.Category(1),
+            LibraryUpdateRunner.Target.Entries(setOf(1, 2)),
+            LibraryUpdateRunner.Target.Group(LibraryGroup.BY_SOURCE, setOf(1, 2)),
+        )
+        val runners = targets.map { target -> runner().also { it.start(target) shouldBe true } }
+        delay(100)
+        published = listOf(77L)
+        ready.complete(Unit)
+        runners.forEach { withTimeout(10_000) { it.progress.first { p -> p?.finished == true } } }
+        updated.toSet() shouldBe setOf(1L)
+        Unit
     }
 }

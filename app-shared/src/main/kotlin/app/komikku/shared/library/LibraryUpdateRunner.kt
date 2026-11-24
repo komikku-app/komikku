@@ -67,6 +67,11 @@ data class LibraryUpdateProgress(
     val newChapters: Int = 0,
     val failed: List<Pair<Manga, String>> = emptyList(),
     val skipped: Int = 0,
+    /**
+     * Of [skipped]: explicitly selected entries ([LibraryUpdateRunner.Target.Entries]) of SY's
+     * `LIBRARY_UPDATE_EXCLUDED_SOURCES`, which are never updated.
+     */
+    val excluded: Int = 0,
     val finished: Boolean = false,
     val cancelled: Boolean = false,
 )
@@ -74,32 +79,50 @@ data class LibraryUpdateProgress(
 /**
  * KMK: which library entries an update refreshes, from Android's `LibraryUpdateJob.addMangaToQueue`:
  * a category's entries, for "all" the included / excluded update categories, a group page by
- * `groupLibraryUpdateType`; without SY's `LIBRARY_UPDATE_EXCLUDED_SOURCES` (all but a single entry's refresh); then the
+ * `groupLibraryUpdateType`; without SY's `LIBRARY_UPDATE_EXCLUDED_SOURCES` (all but a single entry's refresh; explicitly
+ * selected ones are reported in [Result.excluded]); then the
  * "smart update" restrictions and "only fetch once" strategy, in the job's order (due today, started, recently read,
  * title).
  */
 object LibraryUpdateSelection {
 
-    data class Result(val toUpdate: List<LibraryManga>, val skipped: List<LibraryManga>)
+    /**
+     * [excluded]: entries of a [LibraryUpdateRunner.Target.Entries] selection whose source is excluded from updates (not
+     * in [skipped]); for the other targets such entries are dropped silently, like Android SY.
+     */
+    data class Result(
+        val toUpdate: List<LibraryManga>,
+        val skipped: List<LibraryManga>,
+        val excluded: List<LibraryManga> = emptyList(),
+    )
 
+    /**
+     * [excludedSources]: SY's `LIBRARY_UPDATE_EXCLUDED_SOURCES`, which holds the delegated NHentai ids only once the
+     * source manager published them; the runner reads it after its `awaitReady`.
+     */
     fun select(
         library: List<LibraryManga>,
         target: LibraryUpdateRunner.Target,
         preferences: LibraryPreferences,
         fetchWindowUpperBound: Long,
+        excludedSources: Collection<Long> = LIBRARY_UPDATE_EXCLUDED_SOURCES,
     ): Result {
+        val excludedIds = excludedSources.toSet()
         val candidates = when (target) {
             is LibraryUpdateRunner.Target.Single -> return Result(library.filter { it.manga.id == target.mangaId }.take(1), emptyList())
             is LibraryUpdateRunner.Target.Category -> library.filter { target.categoryId in it.categories }
             // Android's targeted update: only the "fetch once" restriction applies
-            is LibraryUpdateRunner.Target.Entries -> return Result(
-                library.filter {
-                    it.manga.id in target.mangaIds &&
-                        it.manga.source !in LIBRARY_UPDATE_EXCLUDED_SOURCES &&
-                        !(it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L)
-                }.distinctBy { it.manga.id },
-                emptyList(),
-            )
+            is LibraryUpdateRunner.Target.Entries -> {
+                val (excluded, selected) = library
+                    .filter { it.manga.id in target.mangaIds }
+                    .distinctBy { it.manga.id }
+                    .partition { it.manga.source in excludedIds }
+                return Result(
+                    toUpdate = selected.filterNot { it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L },
+                    skipped = emptyList(),
+                    excluded = excluded,
+                )
+            }
             is LibraryUpdateRunner.Target.Group -> {
                 val mode = preferences.groupLibraryUpdateType().get()
                 if (
@@ -116,7 +139,7 @@ object LibraryUpdateSelection {
         }.distinctBy { it.manga.id }
             // Android SY's `LibraryUpdateJob.updateChapterList`: galleries of these sources (E-Hentai, Pururin, the
             // NHentai delegates) are never updated, and not counted as skipped
-            .filterNot { it.manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES }
+            .filterNot { it.manga.source in excludedIds }
 
         val restrictions = preferences.autoUpdateMangaRestrictions().get()
         val (toUpdate, skipped) = candidates.partition {
@@ -177,6 +200,8 @@ class CoroutineLibraryUpdateRunner(
      * published (total 0) while it waits; cancelling the update ends the wait.
      */
     private val awaitReady: suspend () -> Unit = {},
+    /** SY's excluded sources, read after [awaitReady] for every target (the desktop publishes them with the sources). */
+    private val excludedSources: () -> Collection<Long> = { LIBRARY_UPDATE_EXCLUDED_SOURCES },
 ) : LibraryUpdateRunner {
 
     private val _progress = MutableStateFlow<LibraryUpdateProgress?>(null)
@@ -192,8 +217,14 @@ class CoroutineLibraryUpdateRunner(
         job = scope.launch {
             try {
                 awaitReady()
-                val selection = LibraryUpdateSelection.select(getLibrary(), target, preferences, fetchWindowUpperBound())
-                _progress.update { it?.copy(total = selection.toUpdate.size, skipped = selection.skipped.size) }
+                val selection = LibraryUpdateSelection.select(getLibrary(), target, preferences, fetchWindowUpperBound(), excludedSources())
+                _progress.update {
+                    it?.copy(
+                        total = selection.toUpdate.size,
+                        skipped = selection.skipped.size + selection.excluded.size,
+                        excluded = selection.excluded.size,
+                    )
+                }
                 val semaphore = Semaphore(parallelism)
                 coroutineScope {
                     selection.toUpdate.forEach { item ->
