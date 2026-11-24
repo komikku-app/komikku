@@ -378,6 +378,13 @@ run {
         "eu/kanade/presentation/browse/components/GlobalSearchResultItems.kt",
     )
 
+    // Saved searches in the catalogue (P13): SY's loader (saved row + filter JSON → query and filter list) and the
+    // create / delete dialogs of Android's browse screen.
+    shared(
+        "eu/kanade/domain/source/interactor/GetExhSavedSearch.kt",
+        "eu/kanade/presentation/browse/components/BrowseSourceDialogs.kt",
+    )
+
     // Enabled-sources query (uses `:source-local`, a desktop-only dependency of `:app-shared`), source
     // filter screen model and global search screen models (P1). Desktop counterparts in
     // app-shared/src/desktopMain: LocaleHelper (language names and order without Android's locale list),

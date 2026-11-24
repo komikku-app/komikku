@@ -41,6 +41,7 @@ import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
 import eu.kanade.domain.source.interactor.ToggleLanguage
@@ -114,6 +115,7 @@ import uy.kohesive.injekt.api.addFactory
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
+import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.io.File
 
 /**
@@ -304,6 +306,9 @@ class DesktopDomainModule(
         addFactory { SetReadStatus(get(), get(), get(), get(), get()) }
         addFactory { SetMangaViewerFlags(get()) }
         addFactory { GetIncognitoState(get(), get(), get()) }
+        // Saved searches (P13): same filter serialisation as Android (SYDomainModule)
+        addFactory { FilterSerializer() }
+        addFactory { GetExhSavedSearch(get(), get(), get()) }
         addFactory { UpdateMangaFromRemote(get(), get(), get(), get(), get(), get(), get()) }
 
         // Library update (6L.2): shared coroutine runner, one per process

@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
@@ -26,19 +30,23 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,32 +62,49 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
+import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
+import tachiyomi.domain.source.interactor.DeleteSavedSearchById
+import tachiyomi.domain.source.interactor.InsertSavedSearch
+import tachiyomi.domain.source.model.EXHSavedSearch
+import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.EmptyScreenAction
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 /**
  * Popular / latest / search listing of one source, as a cover grid. With [initialQuery] (global search: "open this
@@ -96,6 +121,9 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
         // P7: Android's WebView action (`BrowseSourceScreen.onWebViewClick`)
         val webView = rememberWebViewLauncher()
         val onWebViewClick = (source as? HttpSource)?.let { http -> { webView.open(http.getHomeUrl(), http.id) } }
+        val context = LocalContext.current
+        var savingSearch by remember { mutableStateOf(false) }
+        var deletingSearch by remember { mutableStateOf<EXHSavedSearch?>(null) }
         BrowseScaffold(
             title = source?.name.orEmpty(),
             onBack = navigator::pop,
@@ -117,6 +145,12 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     (source as? MangayomiJsSource)?.descriptor?.notes?.takeIf { it.isNotBlank() }?.let { JsSourceNotesBanner(it) }
+                    SavedSearchesRow(
+                        savedSearches = state.savedSearches,
+                        onApply = { model.applySavedSearch(it) { context.toast(SYMR.strings.save_search_invalid) } },
+                        onSave = { savingSearch = true },
+                        onDelete = { deletingSearch = it },
+                    )
                     CatalogueContent(
                         state = state,
                         supportsLatest = source.supportsLatest,
@@ -129,6 +163,21 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
             }
         }
         WebViewDialogs(webView)
+        // P13: Android's saved search dialogs (BrowseSourceDialogs), a duplicate or blank name is rejected there
+        if (savingSearch) {
+            SavedSearchCreateDialog(
+                onDismissRequest = { savingSearch = false },
+                currentSavedSearches = state.savedSearches.map { it.name }.toImmutableList(),
+                saveSearch = model::saveSearch,
+            )
+        }
+        deletingSearch?.let { search ->
+            SavedSearchDeleteDialog(
+                onDismissRequest = { deletingSearch = null },
+                name = search.name,
+                deleteSavedSearch = { model.deleteSearch(search.id) },
+            )
+        }
     }
 }
 
@@ -139,6 +188,10 @@ class CatalogueScreenModel(
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     getIncognitoState: GetIncognitoState = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
+    private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
+    private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
+    private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
+    private val filterSerializer: FilterSerializer = Injekt.get(),
 ) : StateScreenModel<CatalogueScreenModel.State>(
     State(mode = initialQuery?.takeIf { it.isNotBlank() }?.let { Mode.Search(it) } ?: Mode.Popular),
 ) {
@@ -156,6 +209,10 @@ class CatalogueScreenModel(
         val hasNextPage: Boolean = true,
         val isLoading: Boolean = false,
         val error: String? = null,
+        /** The filters a search runs with (P13: restored by a saved search; the source's defaults until then). */
+        val filters: FilterList = FilterList(),
+        /** The source's saved searches, sorted by name like Android's filter sheet. */
+        val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
     )
 
     val source: Source? = sourceManager.get(sourceId)
@@ -164,7 +221,12 @@ class CatalogueScreenModel(
 
     init {
         if (source is CatalogueSource) {
+            mutableState.update { it.copy(filters = source.getFilterList()) }
             loadMore()
+            getExhSavedSearch.subscribe(sourceId, source::getFilterList)
+                .map { it.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, EXHSavedSearch::name)) }
+                .onEach { searches -> mutableState.update { it.copy(savedSearches = searches.toImmutableList()) } }
+                .launchIn(screenModelScope)
             // Same as Android's BrowseSourceScreenModel: a source opened outside incognito mode becomes the last used
             // one. A source that is not installed (nothing to browse) is not recorded.
             getIncognitoState.subscribe(sourceId)
@@ -175,8 +237,61 @@ class CatalogueScreenModel(
 
     fun setMode(mode: Mode) {
         job?.cancel()
-        mutableState.value = State(mode = mode)
+        mutableState.update { State(mode = mode, filters = it.filters, savedSearches = it.savedSearches) }
         loadMore()
+    }
+
+    /** Sets the filters the next search runs with (the desktop has no filter sheet yet; tests and saved searches). */
+    fun setFilters(filters: FilterList) {
+        mutableState.update { it.copy(filters = filters) }
+    }
+
+    /**
+     * Same as Android's `BrowseSourceScreenModel.onSavedSearch`: reloads the saved search, refuses one whose filters no
+     * longer match the source's, otherwise searches its query with its filters (the source's defaults when it has none).
+     */
+    fun applySavedSearch(loaded: EXHSavedSearch, onInvalid: () -> Unit) {
+        val source = source as? CatalogueSource ?: return
+        screenModelScope.launch {
+            val search = getExhSavedSearch.awaitOne(loaded.id, source::getFilterList) ?: loaded
+            if (search.filterList == null && state.value.filters.isNotEmpty()) {
+                onInvalid()
+                return@launch
+            }
+            mutableState.update { it.copy(filters = search.filterList ?: source.getFilterList()) }
+            setMode(Mode.Search(search.query.orEmpty()))
+        }
+    }
+
+    /** Same as Android's `BrowseSourceScreenModel.saveSearch`: the current search query (if any) and filters. */
+    fun saveSearch(name: String) {
+        val source = source as? CatalogueSource ?: return
+        val current = state.value
+        screenModelScope.launch {
+            withContext(NonCancellable) {
+                val query = (current.mode as? Mode.Search)?.query?.takeUnless { it.isBlank() }?.trim()
+                val filterList = current.filters.ifEmpty { source.getFilterList() }
+                withIOContext {
+                    insertSavedSearch.await(
+                        SavedSearch(
+                            id = -1,
+                            source = source.id,
+                            name = name.trim(),
+                            query = query,
+                            filtersJson = runCatching {
+                                filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) }
+                            }.getOrNull(),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    fun deleteSearch(savedSearchId: Long) {
+        screenModelScope.launch {
+            withContext(NonCancellable) { withIOContext { deleteSavedSearchById.await(savedSearchId) } }
+        }
     }
 
     fun loadMore() {
@@ -191,7 +306,7 @@ class CatalogueScreenModel(
                     when (val mode = current.mode) {
                         Mode.Popular -> source.getPopularManga(page)
                         Mode.Latest -> source.getLatestUpdates(page)
-                        is Mode.Search -> source.getSearchManga(page, mode.query, source.getFilterList())
+                        is Mode.Search -> source.getSearchManga(page, mode.query, current.filters)
                     }
                 }
                 // Same as the Android browse paging source: store the entries so they have ids
@@ -212,6 +327,40 @@ class CatalogueScreenModel(
     }
 }
 
+/** P13: the source's saved searches (Android lists them in the filter sheet): apply, save the current one, delete. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SavedSearchesRow(
+    savedSearches: ImmutableList<EXHSavedSearch>,
+    onApply: (EXHSavedSearch) -> Unit,
+    onSave: () -> Unit,
+    onDelete: (EXHSavedSearch) -> Unit,
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        itemVerticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(SYMR.strings.saved_searches), style = MaterialTheme.typography.labelLarge)
+        IconButton(onClick = onSave, modifier = Modifier.testTag("catalogue-save-search")) {
+            Icon(Icons.Outlined.BookmarkAdd, contentDescription = stringResource(SYMR.strings.save_search))
+        }
+        savedSearches.forEach { search ->
+            InputChip(
+                selected = false,
+                onClick = { onApply(search) },
+                label = { Text(search.name) },
+                trailingIcon = {
+                    IconButton(onClick = { onDelete(search) }, modifier = Modifier.testTag("saved-search-delete-${search.name}")) {
+                        Icon(Icons.Outlined.Close, contentDescription = stringResource(SYMR.strings.save_search_delete))
+                    }
+                },
+            )
+        }
+    }
+}
+
 @Composable
 private fun CatalogueContent(
     state: CatalogueScreenModel.State,
@@ -222,6 +371,8 @@ private fun CatalogueContent(
     onWebViewClick: (() -> Unit)?,
 ) {
     var query by rememberSaveable { mutableStateOf((state.mode as? CatalogueScreenModel.Mode.Search)?.query.orEmpty()) }
+    // P13: an applied saved search shows its query in the search field
+    LaunchedEffect(state.mode) { (state.mode as? CatalogueScreenModel.Mode.Search)?.let { query = it.query } }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
