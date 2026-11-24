@@ -60,6 +60,9 @@ import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.tabs.SourceIcons
+import app.komikku.shared.jssource.JsSourceItem
+import app.komikku.shared.jssource.MangayomiSourceStore
+import app.komikku.sourcejs.repo.JsSourceStatus
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -72,7 +75,11 @@ import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.model.Source
@@ -97,12 +104,16 @@ private const val MIGRATION_GUIDE_URL = "https://komikku-app.github.io/docs/guid
  * source's library entries ([MigrateMangaScreen]), a long press copies the source id like Android.
  *
  * Desktop deviation: the obsolete filter does not leave out SY's built-in E-Hentai sources (the desktop has none).
+ *
+ * [obsoleteJsSources]: the ids of installed JavaScript sources gone from every repository (P23); they are filtered and
+ * labelled like an obsolete extension.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MigrateSourcePane(
     model: MigrateSourceScreenModel,
     installedExtensions: StateFlow<List<Extension.Installed>> = remember { SourceIcons.installedExtensions() },
+    obsoleteJsSources: Flow<Set<Long>> = remember { obsoleteJsSourceIds() },
 ) {
     val state by model.state.collectAsState()
     val navigator = LocalNavigator.currentOrThrow
@@ -111,6 +122,7 @@ fun MigrateSourcePane(
     val clipboard = LocalClipboardManager.current
     var obsoleteOnly by rememberSaveable { mutableStateOf(false) }
     val installed by installedExtensions.collectAsState()
+    val obsoleteJs by obsoleteJsSources.collectAsState(emptySet())
 
     LaunchedEffect(model) {
         model.channel.collect { event ->
@@ -170,14 +182,15 @@ fun MigrateSourcePane(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).testTag("migrate-sources-search"),
             )
-            // Obsolete only: sources that are not installed and those whose extension is obsolete. A source without
-            // an APK extension (a Mangayomi JavaScript source) is installed and not obsolete. Re-run when the
-            // installed extensions change.
-            val shown = remember(state.items, obsoleteOnly, installed) {
+            // Obsolete only: sources that are not installed, those whose extension is obsolete and installed
+            // JavaScript sources gone from every repository (P23). Any other source without an APK extension (a
+            // Mangayomi JavaScript source still offered) is installed and not obsolete. Re-run when the installed
+            // extensions or JavaScript sources change.
+            val shown = remember(state.items, obsoleteOnly, installed, obsoleteJs) {
                 if (!obsoleteOnly) {
                     state.items
                 } else {
-                    state.items.filter { (source, _) -> source.isStub || installed.extensionOf(source.id)?.isObsolete == true }
+                    state.items.filter { (source, _) -> source.isStub || installed.isObsolete(source.id, obsoleteJs) }
                 }
             }
             LazyColumn(modifier = Modifier.fillMaxSize().testTag("migrate-sources-list")) {
@@ -185,7 +198,7 @@ fun MigrateSourcePane(
                     MigrateSourceItem(
                         source = source,
                         count = count,
-                        isObsolete = remember(source.id, installed) { installed.extensionOf(source.id)?.isObsolete == true },
+                        isObsolete = remember(source.id, installed, obsoleteJs) { installed.isObsolete(source.id, obsoleteJs) },
                         icon = remember(source.id, installed) { SourceIcons.of(source.id, installed) },
                         modifier = Modifier.combinedClickable(
                             onClick = { navigator.push(MigrateMangaScreen(source.id)) },
@@ -197,6 +210,20 @@ fun MigrateSourcePane(
         }
     }
 }
+
+/** Whether [sourceId]'s APK extension is obsolete or it is a JavaScript source in [obsoleteJs]. */
+private fun List<Extension.Installed>.isObsolete(sourceId: Long, obsoleteJs: Set<Long>): Boolean =
+    sourceId in obsoleteJs || extensionOf(sourceId)?.isObsolete == true
+
+/**
+ * P23: the source ids of the installed JavaScript sources gone from every repository ([JsSourceStatus.OBSOLETE], set
+ * only once every repository's index was read), from the store's list; none without a store.
+ */
+internal fun obsoleteJsSourceIds(store: MangayomiSourceStore? = MangayomiSourceStore.getOrNull()): Flow<Set<Long>> =
+    store?.items?.map { it.obsoleteSourceIds() }?.distinctUntilChanged() ?: flowOf(emptySet())
+
+internal fun List<JsSourceItem>.obsoleteSourceIds(): Set<Long> =
+    filter { it.installed != null && it.status == JsSourceStatus.OBSOLETE }.mapTo(HashSet()) { it.sourceId }
 
 /** The installed APK extension that provides [sourceId] (like Android's `Source.installedExtension`). */
 private fun List<Extension.Installed>.extensionOf(sourceId: Long): Extension.Installed? =

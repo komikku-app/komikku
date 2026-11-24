@@ -27,6 +27,11 @@ import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.browse.SimpleSearchSource
+import app.komikku.shared.jssource.InstalledJsSource
+import app.komikku.shared.jssource.JsSourceItem
+import app.komikku.sourcejs.JsSourceDescriptor
+import app.komikku.sourcejs.repo.JsSourceOffer
+import app.komikku.sourcejs.repo.JsSourceStatus
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
@@ -94,6 +99,7 @@ class BrowseMigrateUiTest {
     @BeforeEach
     fun reset() {
         migrateTestExtensions.value = emptyList()
+        migrateTestObsoleteJs.value = emptySet()
         failingReads.set(0)
         Injekt.get<SetMigrateSorting>().await(SetMigrateSorting.Mode.ALPHABETICAL, SetMigrateSorting.Direction.ASCENDING)
     }
@@ -212,9 +218,37 @@ class BrowseMigrateUiTest {
                 .fetchSemanticsNodes().size shouldBe 1
             migrateTestExtensions.value = listOf(extension(BETA, obsolete = false))
             waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB") }
+            // P23: an installed JavaScript source gone from every repository is obsolete too, filter and label
+            migrateTestObsoleteJs.value = setOf(ALPHA)
+            waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB", "migrate-source-$ALPHA") }
+            val alphaRow = hasAnyAncestor(hasTestTag("migrate-source-$ALPHA"))
+            onAllNodes(hasText(MR.strings.ext_obsolete.localized()) and alphaRow, useUnmergedTree = true)
+                .fetchSemanticsNodes().size shouldBe 1
+            migrateTestObsoleteJs.value = emptySet()
+            waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB") }
             onNodeWithTag("migrate-sources-obsolete").performClick()
             waitForOrder(*sourceRows)
         }
+
+    @Test
+    fun `only installed JavaScript sources gone from every repository count as obsolete`() {
+        fun item(id: Long, installed: Boolean, offered: Boolean, status: JsSourceStatus?): JsSourceItem {
+            val descriptor = JsSourceDescriptor(id = id, name = "JS $id", version = "1.0")
+            return JsSourceItem(
+                installed = if (installed) InstalledJsSource(descriptor, "https://repo.example.org/index.json", "aa", 0, 0) else null,
+                offer = if (offered) JsSourceOffer(descriptor, "https://repo.example.org/index.json") else null,
+                status = status,
+            )
+        }
+        val gone = item(1, installed = true, offered = false, status = JsSourceStatus.OBSOLETE)
+        val items = listOf(
+            gone,
+            item(2, installed = true, offered = true, status = JsSourceStatus.UP_TO_DATE),
+            item(3, installed = true, offered = true, status = JsSourceStatus.UPDATE_AVAILABLE),
+            item(4, installed = false, offered = true, status = null),
+        )
+        items.obsoleteSourceIds() shouldBe setOf(gone.sourceId)
+    }
 
     @Test
     fun `a failed read of the sources ends the loading and can be retried`() =
@@ -262,6 +296,9 @@ class BrowseMigrateUiTest {
 /** The installed extensions the panes of these tests see. */
 private val migrateTestExtensions = MutableStateFlow(emptyList<Extension.Installed>())
 
+/** The obsolete JavaScript sources the panes of these tests see (P23). */
+private val migrateTestObsoleteJs = MutableStateFlow(emptySet<Long>())
+
 /** How many of the next reads of the sources with library entries fail. */
 private val failingReads = AtomicInteger(0)
 
@@ -270,7 +307,7 @@ private object MigrateHost : Screen() {
     @Composable
     override fun Content() {
         val model = rememberScreenModel { MigrateSourceScreenModel() }
-        MigrateSourcePane(model, migrateTestExtensions)
+        MigrateSourcePane(model, migrateTestExtensions, migrateTestObsoleteJs)
     }
 }
 
@@ -288,6 +325,6 @@ private object FailingMigrateHost : Screen() {
             }
             MigrateSourceScreenModel(getSourcesWithFavoriteCount = GetSourcesWithFavoriteCount(failing, Injekt.get()))
         }
-        MigrateSourcePane(model, migrateTestExtensions)
+        MigrateSourcePane(model, migrateTestExtensions, migrateTestObsoleteJs)
     }
 }
