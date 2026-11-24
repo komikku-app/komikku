@@ -129,6 +129,12 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   sources" in Settings → Browse; MDList login by OAuth paste through the MangaDex source; desktop library updates skip
   `LIBRARY_UPDATE_EXCLUDED_SOURCES`. Headless tests `DelegatedSourcesTest` and additions to `TrackingTest`,
   `LibraryUpdateRunnerTest`, `SettingsUiTest`. No metadata view / page previews / MangaDex screens on desktop yet.
+- **P4 review** (medium, 8 findings) — fixed in `9734788`, `7aee688`, `9c1a2d2` (PROGRESS.md "Review fixes (P4)"): MDList
+  logout through the MangaDex source and the interceptor reset, MDList login gated on a usable MangaDex source (specific
+  reason, refused before the browser step), `Throwable`-safe delegation and per-source guards in the source manager, the
+  borrowed `MdList` no longer caches a missing MangaDex source (KMK, Android too), the excluded update sources read after
+  the sources are ready, selected excluded entries reported as skipped. Left: the cause of a failed MDList code exchange
+  stays in the borrowed helper's log (the desktop says to restart from the browser step).
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -167,12 +173,13 @@ mark the residual path in both modules.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
    its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done; P3
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
-   delegated sources) is done. **Next:** review P4 (`/code-review medium ddfd839..<last P4 commit>`). Known gaps: P4's
+   delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). **Next:** P5 (AVIF / JXL), see
+   PROGRESS "Remaining parity gaps". Known gaps: P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
    against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   Then AVIF / JXL, WebView / Cloudflare, notifications / tray, signing, updater.
+   Then WebView / Cloudflare, notifications / tray, signing, updater.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).

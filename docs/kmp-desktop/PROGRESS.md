@@ -1848,7 +1848,8 @@ for the library search by tags, NHentai / MangaDex / LANraragi ids, `LIBRARY_UPD
   paste the `tachiyomisy://mangadex-auth?code=…` redirect); the code goes to the enabled MangaDex source's `login(code)`
   (Android's `MangaDexLoginActivity`), so it needs the MangaDex extension installed.
 - Library updates skip `LIBRARY_UPDATE_EXCLUDED_SOURCES` (Pururin, NHentai delegates, E-Hentai ids) for every target but
-  a single entry's refresh, like Android SY's `LibraryUpdateJob.updateChapterList` (not counted as skipped).
+  a single entry's refresh, like Android SY's `LibraryUpdateJob.updateChapterList` (not counted as skipped; explicitly
+  selected entries are, since the P4 review).
 
 **Decisions / deviations:**
 - A delegate that throws while being created leaves the plain extension source in place (logged); Android does not guard.
@@ -1857,8 +1858,8 @@ for the library search by tags, NHentai / MangaDex / LANraragi ids, `LIBRARY_UPD
   stays Android-only.
 - The `DELEGATED_SOURCES` list is mirrored, not shared: it lives in the Android source manager's companion (with
   reflection over Android-only classes); moving it would change Android code for no behaviour gain.
-- MDList logout on desktop is the tracker's generic logout (clears the stored token); Android's MangaDex settings logout
-  also revokes the token on the server.
+- MDList logout goes through the enabled MangaDex source's logout like Android's MangaDex settings (revokes the session
+  on the server) and always resets the tracker's interceptor (P4 review); without a MangaDex source it is local only.
 
 **Known gaps:** no SY metadata / namespace-tag view and no page previews on the desktop details screen (the metadata is
 stored and searchable); no batch add / "open URL" import screen (URL import works through a source's search box); no
@@ -1881,6 +1882,32 @@ Verification (after `a204b58`): `spotlessCheck`, `:app:compileDebugKotlin`, `:ap
 `:desktopApp:compileKotlin` pass; `:desktopApp:test` 42 classes, 150 tests, 0 failures (was 41 / 144 after the P3 review:
 `DelegatedSourcesTest` 5, `LibraryUpdateRunnerTest` +1; `TrackingTest` / `SettingsUiTest` steps added to existing tests).
 Android code unchanged (all borrowed files are `desktopCopy`); Android UI not run.
+
+### Review fixes (P4)
+
+Review of `ddfd839..642de81` (medium, 8 findings), fixed in `9734788`, `7aee688`, `9c1a2d2`. Tests were written against
+the fixed code; by reading, they fail on the unfixed one for findings 1 (the interceptor still holds the token), 2 (no
+availability state, the code exchange is attempted), 3 (the `NoClassDefFoundError` escapes `wrap` / the collector), 5
+(the entry is dropped, `skipped` 0) and 6 (the cached `null` throws `MangaDexNotFoundException` on the second search).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | MDList logout only deleted the token preference; `MangaDexAuthInterceptor` kept `token` / `oauth` in memory and a refresh wrote it back | fixed (desktop only): `DesktopTrackerLogin.logout` logs MDList out through `MdUtil.getEnabledMangaDex()?.logout()` (Android's `MangaDexLoginHelper.logout`, revokes the session), errors logged, then always `interceptor.setAuth(null)` and the tracker's `logout()`; the settings model runs it off the UI thread. Test `TrackingTest` (`MDList logout forgets the session …`) | `9734788` |
+| 2 | MDList login offered without a usable MangaDex source | fixed: `DesktopTrackerLogin.sourceAvailable` (MDList: `MdUtil.getEnabledMangaDex` — installed, language and source enabled, delegated sources on; enhanced trackers: as before). The settings model recomputes it on sources / enabled languages / disabled sources / delegated-sources changes; the row is disabled with a specific reason (new `KMR.strings.desktop_mdlist_needs_source`) until a source exists, also before the first check; `startLogin` and the paste step refuse with that reason before the browser / code exchange. Test `TrackingTest` (`MDList login needs an enabled MangaDex source …`) | `9734788` |
+| 3 | `DesktopDelegatedSources.wrap` caught only `Exception`; an `Error` from borrowed Android code ended `DesktopSourceManager`'s collector | fixed: `wrap` catches `Throwable` (rethrows `CancellationException`), the class-name match inside the guard; the manager guards each extension's source list, each source (blacklist check, wrap, stub) and each JavaScript source separately, and the id publishing, so one failing source is left out (logged) and the manager still initializes. Test `DelegatedSourcesTest` (`a delegate or a source failing with an Error …`) | `7aee688` |
+| 4 | `LIBRARY_UPDATE_EXCLUDED_SOURCES` holds the NHentai ids only after the source manager published them | already ordered at `642de81` (the selection ran after `awaitReady` and read the global at call time); made explicit: `CoroutineLibraryUpdateRunner(excludedSources = …)` is a provider read after `awaitReady`, passed into `LibraryUpdateSelection.select`, for every target. Test `LibraryUpdateRunnerTest` (`the excluded sources are read once the sources are ready, for every target`: All, Category, Entries, Group). Left: when `awaitReady` times out (2 min) the ids may still be missing, as before | `9c1a2d2` |
+| 5 | Explicitly selected excluded entries vanished without feedback | fixed: `Target.Entries` partitions them into `Result.excluded`; the progress counts them in `skipped` and `excluded`; the banner shows the skipped count (`MR.plurals.migrationListScreen_migrateDialog_skipText`) and the reason (`MR.strings.skipped_reason_not_always_update`), and stays visible for a run that skipped everything. Other targets drop them silently like Android SY. Tests `LibraryUpdateRunnerTest` | `9c1a2d2` |
+| 6 | Borrowed `MdList` cached `MdUtil.getEnabledMangaDex()` with `by lazy`, `null` included | fixed in `app` (KMK-marked, so both platforms): a found source is cached as before (Android's non-null behaviour unchanged), a `null` is not and the lookup is retried on the next use. Test `DelegatedSourcesTest` (`MDList finds a MangaDex source that loads after its first use`) | `7aee688` |
+| 7 | The cause of a failed MDList login was swallowed | partly: the cause is caught and only logged inside the borrowed `MangaDexLoginHelper.login` (returns `false`), so the desktop cannot surface it without changing Android code; the desktop says that an authorization works once and the login must be restarted from the browser step (new `KMR.strings.desktop_mdlist_login_failed`); a missing source has its own message (finding 2) | `9734788` |
+| 8 | Stale "MDList login not on desktop" comments | fixed: desktop `TrackerManager`, `DesktopDelegatedSources` KDoc, `borrowed-app-sources.gradle.kts` (two places), `DelegatedSourcesTest` | `9734788`, `7aee688` |
+
+New strings: `KMR.strings.desktop_mdlist_needs_source`, `desktop_mdlist_login_failed` (base only). Android behaviour
+changed only where intended: `MdList` no longer caches a missing MangaDex source (finding 6).
+
+Verification after the fixes: `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`,
+`:desktopApp:compileKotlin` pass; `:desktopApp:test` 42 classes, 156 tests, 0 failures (was 42 / 150: `TrackingTest` +2,
+`DelegatedSourcesTest` +2, `LibraryUpdateRunnerTest` +2). Not run: the Android UI, a real MangaDex login / logout, a real
+window.
 
 ## Remaining parity gaps
 
