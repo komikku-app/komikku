@@ -11,12 +11,14 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.presentation.manga.DownloadAction
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.manga.MangaInfoEdits
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.util.removeCovers
 import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
@@ -78,7 +80,8 @@ class MangaDetailsScreenModel(
     private val readerLauncher: ReaderLauncher = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
-    private val coverActions: MangaCoverActions = MangaCoverActions(),
+    private val coverCache: CoverCache = Injekt.get(),
+    private val coverActions: MangaCoverActions = MangaCoverActions(coverCache),
     private val fileDialogs: DesktopFileDialogs = Injekt.get(),
 ) : StateScreenModel<MangaDetailsScreenModel.State>(State()) {
 
@@ -344,15 +347,18 @@ class MangaDetailsScreenModel(
      * Adds to / removes from the library like Android's `toggleFavorite`: before adding, library entries that look like
      * the same title ([GetDuplicateLibraryManga]: same title from another entry, or bound to the same tracker entry)
      * open [Dialog.DuplicateManga] unless [checkDuplicate] is off ("Add anyway"); then the default category preference
-     * (a chosen category, "default" (0) or ask when categories exist). Tracker binding and download deletion are not on
-     * desktop.
+     * (a chosen category, "default" (0) or ask when categories exist). Removing drops the entry's custom cover like on
+     * Android. Tracker binding and download deletion are not on desktop.
      */
     fun toggleFavorite(checkDuplicate: Boolean = true) {
         val manga = state.value.manga ?: return
         screenModelScope.launch {
             withIOContext {
                 if (manga.favorite) {
-                    updateManga.awaitUpdateFavorite(manga.id, false)
+                    // Android: removing also drops the entry's cached and custom covers (`Manga.removeCovers`)
+                    if (updateManga.awaitUpdateFavorite(manga.id, false) && manga.removeCovers(coverCache) != manga) {
+                        updateManga.awaitUpdateCoverLastModified(manga.id)
+                    }
                     return@withIOContext
                 }
                 if (checkDuplicate) {

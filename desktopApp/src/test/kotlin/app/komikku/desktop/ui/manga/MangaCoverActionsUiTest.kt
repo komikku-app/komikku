@@ -202,6 +202,12 @@ class MangaCoverActionsUiTest {
         coverCache.getCustomCoverFile(manga.id).exists() shouldBe false
         onNodeWithText(MR.strings.action_close.localized()).performClick()
         waitForTag("cover-dialog", present = false)
+
+        // Removing the entry from the library drops a custom cover again (Android `removeCovers`)
+        coverCache.getCustomCoverFile(manga.id).writeBytes(jpeg)
+        onNodeWithTag("details-favorite").performClick()
+        waitUntil(timeoutMillis = 10_000) { !stored(manga).favorite }
+        waitUntil(timeoutMillis = 10_000) { !coverCache.getCustomCoverFile(manga.id).exists() }
     }
 
     @Test
