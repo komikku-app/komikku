@@ -13,6 +13,13 @@ import tachiyomi.domain.release.service.ReleaseService
 class ReleaseServiceImpl(
     private val networkService: NetworkHelper,
     private val json: Json,
+    // KMK -->
+    /**
+     * Picks a release's download link (`null` = the release has nothing for this build and is skipped). Android uses
+     * the APK matching the build type / ABI; the desktop app passes its own installer selection.
+     */
+    private val downloadLinkSelector: ((release: GithubRelease, isFoss: Boolean) -> String?)? = null,
+    // KMK <--
 ) : ReleaseService {
 
     override suspend fun latest(arguments: GetApplicationRelease.Arguments): Release? {
@@ -74,6 +81,9 @@ class ReleaseServiceImpl(
     // KMK <--
 
     private fun getDownloadLink(release: GithubRelease, isFoss: Boolean): String? {
+        // KMK -->
+        downloadLinkSelector?.let { return it(release, isFoss) }
+        // KMK <--
         val map = release.assets.associate { asset ->
             BUILD_TYPES.find { "-$it" in asset.name } to asset.downloadLink
         }
