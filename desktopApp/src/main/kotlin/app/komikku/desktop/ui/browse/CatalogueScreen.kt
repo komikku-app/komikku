@@ -95,6 +95,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -265,7 +267,7 @@ class CatalogueScreenModel(
             else -> Mode.Popular
         },
         // A saved search to open: its listing starts once it is loaded
-        isLoading = savedSearchId != null,
+        openingSavedSearch = savedSearchId != null,
     ),
 ) {
 
@@ -287,6 +289,11 @@ class CatalogueScreenModel(
         val hasNextPage: Boolean = true,
         val isLoading: Boolean = false,
         val error: String? = null,
+        /**
+         * A feed row's saved search is being opened (`CatalogueScreen(savedSearchId)`): no listing yet, it starts once
+         * the search is loaded. Tracked apart from [isLoading]: anything that supersedes the opening clears it.
+         */
+        val openingSavedSearch: Boolean = false,
         /** Whether the filter panel (Android's filter sheet) is shown. */
         val filterPanelOpen: Boolean = false,
         /**
@@ -348,6 +355,7 @@ class CatalogueScreenModel(
      * panel, if open, shows the source's defaults again.
      */
     fun setMode(mode: Mode) {
+        // No cancelApply(): the new listing starts right away (and ends a pending saved-search opening)
         applyJob?.cancel()
         startListing(mode)
         if (mode !is Mode.Search && state.value.filterPanelOpen) loadEditingFilters(applied = null)
@@ -369,6 +377,7 @@ class CatalogueScreenModel(
                 hasNextPage = true,
                 isLoading = false,
                 error = null,
+                openingSavedSearch = false,
                 queryEvent = if (queryApplied) it.queryEvent + 1 else it.queryEvent,
             )
         }
@@ -410,7 +419,7 @@ class CatalogueScreenModel(
     fun applyFilters(onError: (String) -> Unit) {
         val source = catalogueSource ?: return
         val filters = state.value.editingFilters ?: return
-        applyJob?.cancel()
+        cancelApply()
         applyJob = screenModelScope.launch {
             val defaults = sourceCall { source.getFilterList() }.getOrElse {
                 onError(it.errorText())
@@ -428,7 +437,7 @@ class CatalogueScreenModel(
      */
     fun applySavedSearch(loaded: EXHSavedSearch, onInvalid: () -> Unit, onError: (String) -> Unit) {
         val source = catalogueSource ?: return
-        applyJob?.cancel()
+        cancelApply()
         applyJob = screenModelScope.launch {
             val (defaults, search) = sourceCall {
                 source.getFilterList() to (getExhSavedSearch.awaitOne(loaded.id, source::getFilterList) ?: loaded)
@@ -458,7 +467,7 @@ class CatalogueScreenModel(
                 source.getFilterList() to getExhSavedSearch.awaitOne(savedSearchId, source::getFilterList)
             }.getOrElse { null to null }
             if (defaults == null || search == null) {
-                mutableState.update { it.copy(isLoading = false) }
+                mutableState.update { it.copy(openingSavedSearch = false) }
                 loadMore()
                 return@launch
             }
@@ -526,7 +535,7 @@ class CatalogueScreenModel(
         if (state.value.filterPanelOpen) loadEditingFilters(state.value.editingFilters)
         val mode = state.value.mode as? Mode.Search ?: return
         val applied = mode.filters ?: return
-        applyJob?.cancel()
+        cancelApply()
         applyJob = screenModelScope.launch {
             val (filters, defaults) = sourceCall { freshFilters(source, applied) to source.getFilterList() }
                 .getOrElse { return@launch }
@@ -534,10 +543,23 @@ class CatalogueScreenModel(
         }
     }
 
+    /**
+     * Cancels the running apply (P13 review fixes). When that was the opening of a feed row's saved search, which has
+     * no listing yet, the current listing (popular / latest) starts now: an apply that then fails or is refused leaves
+     * the catalogue usable instead of loading forever, and one that succeeds replaces the listing.
+     */
+    private fun cancelApply() {
+        applyJob?.cancel()
+        if (state.value.openingSavedSearch) {
+            mutableState.update { it.copy(openingSavedSearch = false) }
+            loadMore()
+        }
+    }
+
     fun loadMore() {
         val source = catalogueSource ?: return
         val current = state.value
-        if (current.isLoading || !current.hasNextPage) return
+        if (current.isLoading || current.openingSavedSearch || !current.hasNextPage) return
         mutableState.update { it.copy(isLoading = true, error = null) }
         listingJob = screenModelScope.launch {
             try {
@@ -597,6 +619,8 @@ class CatalogueScreenModel(
     } catch (e: CancellationException) {
         throw e
     } catch (e: Throwable) {
+        // A superseded call (its job cancelled while the source was busy) ends here instead of acting on the failure
+        currentCoroutineContext().ensureActive()
         xLogE("Source call of ${source?.id} failed", e)
         Result.failure(e)
     }
@@ -752,7 +776,7 @@ private fun CatalogueContent(
             )
         }
         when {
-            state.manga.isEmpty() && state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            state.manga.isEmpty() && (state.isLoading || state.openingSavedSearch) -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
             state.manga.isEmpty() && state.error != null ->

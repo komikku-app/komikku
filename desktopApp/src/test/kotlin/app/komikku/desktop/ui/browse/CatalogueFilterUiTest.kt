@@ -77,6 +77,7 @@ class CatalogueFilterUiTest {
         source.version = 1
         source.throwFilters = false
         source.blockNext.set(null)
+        source.blockFrom.set(null)
         source.blocked = false
         runBlocking {
             Injekt.get<GetSavedSearchBySourceId>().await(ChangingFiltersSource.ID)
@@ -92,9 +93,9 @@ class CatalogueFilterUiTest {
 
     private fun ComposeUiTest.hasText(text: String) = onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
 
-    private fun ComposeUiTest.catalogue() = setContent {
+    private fun ComposeUiTest.catalogue(screen: CatalogueScreen = CatalogueScreen(ChangingFiltersSource.ID)) = setContent {
         CompositionLocalProvider(LocalContext provides app) {
-            DesktopTheme { DesktopToastHost { Navigator(CatalogueScreen(ChangingFiltersSource.ID)) } }
+            DesktopTheme { DesktopToastHost { Navigator(screen) } }
         }
     }
 
@@ -237,6 +238,36 @@ class CatalogueFilterUiTest {
     }
 
     @Test
+    fun `a saved search being opened from the feed and superseded by a failing apply leaves the catalogue usable`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            saveSearch("Pending", query = "pend", completed = false)
+            val id = runBlocking { Injekt.get<GetSavedSearchBySourceId>().await(ChangingFiltersSource.ID).single().id }
+            // The feed row's saved search is still being loaded (its filter list is slow)…
+            val gate = CountDownLatch(1)
+            source.blockFrom.set("openSavedSearch" to gate)
+            catalogue(CatalogueScreen(ChangingFiltersSource.ID, savedSearchId = id))
+            waitUntil(timeoutMillis = 5_000) { source.blocked }
+
+            // …when the user applies the filter panel, and that fails
+            onNodeWithTag("catalogue-filter").performClick()
+            waitForText("Completed")
+            source.throwFilters = true
+            onNodeWithTag("catalogue-apply-filters").performClick()
+            waitForText("android/webkit/WebView")
+
+            // The catalogue is not stuck loading: it lists the source's popular entries (while the superseded
+            // opening is still blocked: the gate times out after 10 s)
+            waitForText("Changing popular", timeoutMillis = 5_000)
+            // The superseded opening's slow call then fails too (the filter list throws now): it does nothing
+            gate.countDown()
+            waitForIdle()
+            Thread.sleep(500)
+            waitForIdle()
+            hasText("Found pend") shouldBe false
+            hasText("Changing popular") shouldBe true
+        }
+
+    @Test
     fun `unsubmitted search text survives opening an entry and coming back`() = runDesktopComposeUiTest(width = 1280, height = 900) {
         catalogue()
         waitForText("Changing popular")
@@ -272,6 +303,9 @@ private class ChangingFiltersSource : CatalogueSource {
     @Volatile var blocked = false
     val blockNext = AtomicReference<CountDownLatch?>(null)
 
+    /** Blocks the next filter list call made from a function of this name (a frame's class name), on its gate. */
+    val blockFrom = AtomicReference<Pair<String, CountDownLatch>?>(null)
+
     private class Completed : Filter.CheckBox("Completed")
     private class Version(version: Int) : Filter.Header("Version $version")
 
@@ -285,6 +319,13 @@ private class ChangingFiltersSource : CatalogueSource {
         blockNext.getAndSet(null)?.let { gate ->
             blocked = true
             gate.await(10, TimeUnit.SECONDS)
+        }
+        blockFrom.get()?.let { block ->
+            val (caller, gate) = block
+            if (Thread.currentThread().stackTrace.any { caller in it.className } && blockFrom.compareAndSet(block, null)) {
+                blocked = true
+                gate.await(10, TimeUnit.SECONDS)
+            }
         }
         if (throwFilters) throw NoClassDefFoundError("android/webkit/WebView")
         return FilterList(Completed(), Version(version), EmptySelect(), Order(), Colour(), Author())
