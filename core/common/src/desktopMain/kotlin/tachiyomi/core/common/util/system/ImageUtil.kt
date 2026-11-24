@@ -184,7 +184,14 @@ object ImageUtil {
             }
             at(0, 0xFF, 0x0A) || (at(0, 0x00, 0x00, 0x00, 0x0C) && ascii(4, "JXL ")) -> Detected(ImageType.JXL, false)
             ascii(4, "ftyp") -> {
-                val brands = (8 until header.size - 3 step 4)
+                // The whole `ftyp` box (size at offset 0; 1 = 64-bit size after the type, 0 = to the end), up to the
+                // [HEADER_SIZE] bytes read: an AVIF's `avif` brand can come late among the compatible brands
+                // (major `mif1`, compatible `mif1 heic miaf MA1B avif`), and AVIF brands win over HEIF ones.
+                val boxSize = ((header[0].toLong() and 0xff) shl 24) or ((header[1].toLong() and 0xff) shl 16) or
+                    ((header[2].toLong() and 0xff) shl 8) or (header[3].toLong() and 0xff)
+                val start = if (boxSize == 1L) 16 else 8
+                val end = if (boxSize < start + 4L) header.size else min(boxSize, header.size.toLong()).toInt()
+                val brands = (start until end - 3 step 4)
                     .map { String(header, it, 4, Charsets.US_ASCII) }
                     .filterIndexed { index, _ -> index != 1 } // skip minor_version
                 when {
@@ -197,7 +204,8 @@ object ImageUtil {
         }
     }
 
-    private const val HEADER_SIZE = 32
+    // The bytes read for detection, enough for an `ftyp` box with many compatible brands (was 32)
+    private const val HEADER_SIZE = 256
     private val HEIF_BRANDS = setOf("heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1")
     private val HEIF_SEQUENCE_BRANDS = setOf("hevc", "hevx", "msf1")
 }
