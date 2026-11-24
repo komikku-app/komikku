@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search, app lock, notifications / tray, source migration), then the maintainer's first real run of
+from P15 on (settings search: built; app lock, notifications / tray, source migration), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -343,6 +343,12 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   ends the bulk selection (global search needed no change: no search runs while selecting). Full `:desktopApp:test` on
   `f9e36c8`: 70 classes, 313 tests, 1 failure (`ReaderNavigationTest`, passes alone: timing under load).
 
+- **P15** settings search (`3682e16` … , PROGRESS.md "P15 — settings search"): Android's search (rules, breadcrumbs,
+  highlighted index) moved into the shared `SettingsSearch.kt` (`desktopCopy`, Android calls it, unchanged); desktop
+  Settings has the search button, results replace the search with their page, which scrolls to and highlights the item
+  (`PreferenceList(highlightKey)`). Index in Android's order; tracking and data and storage indexed by their rows' titles
+  (opened at the top). Test `SettingsSearchUiTest` (3). Not reviewed yet.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -393,7 +399,7 @@ mark the residual path in both modules.
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
-   **next**: P15 onwards in this order — settings search, app lock (PIN / password at start-up, no biometrics),
+   P15 (settings search) is built; **next**: in this order — app lock (PIN / password at start-up, no biometrics),
    notifications and a tray icon for library updates / downloads, source migration (single entry from the details
    first); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,

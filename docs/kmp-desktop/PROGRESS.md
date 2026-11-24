@@ -3394,6 +3394,49 @@ failures), so it is recorded as timing-dependent under the full run's load (a th
 `DesktopBackupJobsTest` / `DesktopExtensionManagerTest`, which passed in this run). Was 70 / 306 on `857aa60`: +7 cases
 above.
 
+## P15 — settings search
+
+Built in `3682e16` (Android refactor), `ec91298` (desktop), `104a9ac` (tests) and this docs commit.
+
+### Built
+
+- **Shared with Android:** the platform-neutral part of Android's settings search moved into the new KMK file
+  `eu/kanade/presentation/more/settings/screen/SettingsSearch.kt` (`desktopCopy`: it uses the `desktopCopy`
+  `Preference.kt`): `searchSettings` (Android's rules: enabled items with a title, those of enabled groups too, no info
+  items, title or subtitle containing the query ignoring case, at most ten, page order), `settingsBreadcrumb` (page >
+  group, reversed right to left) and `findHighlightedIndex` (the item's index in Android's `PreferenceScreen` list).
+  Android's `SettingsSearchScreen` and `PreferenceScreen` call them (KMK blocks; behaviour unchanged).
+- **Desktop:** a search button in the Settings top bar (`settings-search`, Android's `SettingsMainScreen` action) opens
+  `SettingsSearchScreen` (`ui/more/SettingsSearchScreen.kt`): a focused query field with clear, nothing below while empty,
+  Android's "No results found", else the results (title, breadcrumbs). A result **replaces** the search with its page like
+  Android's `navigator.replace`, so Back leads to Settings. The desktop `PreferenceList` (app-shared) takes a
+  `highlightKey`: it scrolls to the item after 0.5 s and the borrowed widget blinks it like Android's (afterwards nothing
+  is highlighted, like Android's reset of `SearchableSettings.highlightKey`); `SettingsCategoryScreen(category,
+  highlightKey)` passes it.
+- **Index** in Android's order: Appearance, Library, Reader, Downloads, Tracking, Browse, Data and storage, Advanced (the
+  category items come from the same composables as the screens, `settingsCategoryPreferences`). Not searched, like
+  Android: About.
+
+### Decisions / deviations
+
+- The tracking and data and storage screens are not built from the settings model, so their index entries are their
+  rows' titles (tracking: the two switches and each tracker by name under "Services"; data and storage: storage location,
+  the backup rows, the storage usage rows). Their results open the screen at its top, without a highlight.
+- No Security / Connections / E-Hentai / MangaDex pages (not on desktop; Security comes with P16).
+
+### Tests
+
+`SettingsSearchUiTest` (3): from Settings, "pure black" → Android's title with "Appearance > Theme", a tracker name found
+under Tracking, no results; the last item of Advanced (delegated sources) opens its page scrolled to it, Back leads to
+Settings; without a search the same item is below the fold (control); the shared rules (disabled items and groups, info
+items, subtitles, case, the limit of ten, breadcrumbs both ways, the highlighted index).
+
+Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin` pass; `:desktopApp:test --tests '*SettingsSearchUiTest*' --tests '*SettingsUiTest*' --tests
+'*AdvancedSettingsUiTest*'` 7 tests, 0 failures. Found while building: ktlint refuses comments in the import list
+(`import-ordering`, no autocorrection), so the shared import of Android's `PreferenceScreen` has no KMK markers (its uses
+are marked).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3420,7 +3463,7 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
    7z chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
-   them), OAuth via redirect (paste only), app security / lock, settings search. Settings → Advanced is done (P12: log
+   them), OAuth via redirect (paste only), app security / lock. Settings search is done (P15). Settings → Advanced is done (P12: log
    folder and level, reindex downloads, clear database, cookies, default and per-site user agents, the solver and
    delegated sources moved there, DNS over HTTPS; the chapter cache in Data and storage); left from it: "Clear WebView
    data" (no embedded browser), the SY developer switches, data saver. WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and
