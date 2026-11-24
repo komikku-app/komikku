@@ -125,8 +125,8 @@ data class ReaderDisplay(
  * [ReaderDisplay.fit], zoom (Ctrl + wheel, +/-/0, double-click) and pan (drag, wheel when the page is taller than the
  * window). Click zones turn pages; the neighbours are loaded and decoded ahead.
  *
- * Wide pages (P11, Android `PagerPageHolder`): decoded sizes go to the model ([onPageSize]); double pages show a wide
- * page alone ([ReaderModel.State.spreadAt]); "Split wide pages" shows one half per item (the second half is an
+ * Wide pages (P11, Android `PagerPageHolder`): decoded sizes go to the model ([onPageSize]); the model's spreads say
+ * what is shown ([ReaderModel.State.shownPages]; a wide page alone); "Split wide pages" shows one half per item (the second half is an
  * `InsertPage`; left half first left to right, right half first otherwise, swapped by "Invert"); "Rotate wide pages to
  * fit" turns a wide page shown alone by 90° (−90° with "Flip").
  */
@@ -141,7 +141,8 @@ fun PagedViewer(
     onPageSize: (ReaderPage, Int, Int) -> Unit = { _, _, _ -> },
 ) {
     val item = state.currentItem
-    LaunchedEffect(state.currentIndex, state.viewerChapters) { zoom.reset() }
+    // A new page resets the zoom; a rebuilt item list on the same item (neighbour loaded, chapter switched) does not
+    LaunchedEffect(item) { zoom.reset() }
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -187,9 +188,10 @@ fun PagedViewer(
         ) {
             when (item) {
                 is ReaderPage -> {
-                    val spread = state.spreadAt(state.currentIndex, display.doublePages(viewport)).ifEmpty { listOf(item) }
+                    val spread = state.shownPages.ifEmpty { listOf(item) }
                     val pages = if (state.readingMode == ReadingMode.RIGHT_TO_LEFT) spread.reversed() else spread
                     val slotWidth = viewport.width / pages.size
+                    val decodeWidth = slotDecodeWidth(viewport.width, pages.size)
                     Row(
                         modifier = Modifier.graphicsLayer {
                             scaleX = zoom.scale
@@ -200,10 +202,10 @@ fun PagedViewer(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         pages.forEach { page ->
-                            val imagePage = (page as? InsertPage)?.parent ?: page
+                            val imagePage = imagePage(page)
                             val tag = if (page is InsertPage) "page-${page.index}-second-half" else "page-${page.index}"
                             Box(Modifier.testTag(tag)) {
-                                ReaderPageSlot(imagePage, maxWidth = (slotWidth * 2).coerceAtLeast(1), display.colorFilter, onRetry = { onRetry(imagePage) }) { decoded ->
+                                ReaderPageSlot(imagePage, maxWidth = decodeWidth, display.colorFilter, onRetry = { onRetry(imagePage) }) { decoded ->
                                     LaunchedEffect(decoded) { onPageSize(imagePage, decoded.source.width, decoded.source.height) }
                                     val half = when {
                                         page is InsertPage -> splitSide(state.readingMode, display.invertSplit, first = false)
@@ -232,13 +234,12 @@ fun PagedViewer(
                 null -> {}
             }
         }
-        // Preload (load + decode) the neighbouring pages; their sizes tell the model about wide pages ahead.
-        listOf(state.currentIndex - 1, state.currentIndex + 1, state.currentIndex + 2)
-            .mapNotNull { (state.items.getOrNull(it) as? ReaderPage)?.let { page -> (page as? InsertPage)?.parent ?: page } }
-            .distinct()
-            .forEach { page ->
+        // Preload (load + decode) the pages of the neighbouring spreads at their slots' widths, not the shown ones;
+        // their sizes tell the model about wide pages ahead.
+        state.preloadPages(viewport.width)
+            .forEach { (page, width) ->
                 key(page) {
-                    val image = rememberPageImage(page, viewport.width * 2)
+                    val image = rememberPageImage(page, width)
                     if (image is PageImageState.Ready) {
                         LaunchedEffect(image) { onPageSize(page, image.page.source.width, image.page.source.height) }
                     }

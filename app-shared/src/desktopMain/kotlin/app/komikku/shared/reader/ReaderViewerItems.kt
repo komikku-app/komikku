@@ -45,4 +45,41 @@ object ReaderViewerItems {
         is ChapterTransition -> items.indexOfFirst { it is ChapterTransition && it == item }
         null -> -1
     }
+
+    /**
+     * The spreads of [items] (P11 review fixes): with [doublePages] a page and the next item are shown together when
+     * both are [pairable] pages of the same chapter, paired from the chapter's first page and again after every page
+     * shown alone (SY's double pages: a wide page or a split half is shown alone); else every item alone. Transitions
+     * are always alone. Forward and backward page turns, progress and preloading all go by these, so going back shows
+     * the same spreads as going forward.
+     */
+    fun spreads(items: List<ReaderItem>, doublePages: Boolean, pairable: (ReaderPage) -> Boolean): List<IntRange> {
+        val spreads = ArrayList<IntRange>(items.size)
+        var i = 0
+        while (i < items.size) {
+            val page = items[i] as? ReaderPage
+            val next = items.getOrNull(i + 1) as? ReaderPage
+            val pair = doublePages && page != null && next != null && next.chapter == page.chapter && pairable(page) && pairable(next)
+            spreads += if (pair) i..i + 1 else i..i
+            i += if (pair) 2 else 1
+        }
+        return spreads
+    }
+
+    /** The position in [spreads] (in order, covering every item) of the spread holding [index]; `-1` for none. */
+    fun spreadIndexOf(spreads: List<IntRange>, index: Int): Int {
+        if (spreads.isEmpty() || index < 0 || index > spreads.last().last) return -1
+        var low = 0
+        var high = spreads.lastIndex
+        while (low <= high) {
+            val mid = (low + high) ushr 1
+            val spread = spreads[mid]
+            when {
+                index < spread.first -> high = mid - 1
+                index > spread.last -> low = mid + 1
+                else -> return mid
+            }
+        }
+        return -1
+    }
 }

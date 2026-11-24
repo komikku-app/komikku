@@ -124,6 +124,50 @@ class ReaderWidePagesUiTest {
         waitForTag("reader", present = false)
     }
 
+    private fun read() = runBlocking { Injekt.get<ChapterRepository>().getChapterById(chapter.id)!!.read }
+
+    private fun ComposeUiTest.open(page: Int, indicator: String) {
+        setContent { KomikkuApp(context = app) }
+        runOnIdle { Injekt.get<ReaderLauncher>().open(manga.id, chapter.id, page) }
+        waitForTag("paged-viewer")
+        waitForText(indicator)
+    }
+
+    @Test
+    fun `double pages mark the chapter read on a last two-page spread`() = runDesktopComposeUiTest(width = 1000, height = 700) {
+        preferences.pageLayout().set(PagerConfig.PageLayout.DOUBLE_PAGES)
+        open()
+        waitForTag("page-tile-0")
+        next()
+        waitForText("3 / 5")
+        waitUntil(timeoutMillis = 15_000) { shown("page-2") && !shown("page-3") }
+        next()
+        waitForText("4 / 5")
+        waitUntil(timeoutMillis = 15_000) { shown("page-3") && shown("page-4") }
+        // Android's pager: the spread's first page with its extra page, the last page counts as read
+        waitUntil(timeoutMillis = 10_000) { read() }
+        lastPageRead() shouldBe 3L
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+        waitForTag("reader", present = false)
+    }
+
+    @Test
+    fun `double pages opened on a spread's second page show that spread, backwards the forward spreads`() =
+        runDesktopComposeUiTest(width = 1000, height = 700) {
+            preferences.pageLayout().set(PagerConfig.PageLayout.DOUBLE_PAGES)
+            // Page 5 is the second page of the spread 4 + 5 (after the wide page 3 shown alone)
+            open(page = 4, indicator = "4 / 5")
+            waitUntil(timeoutMillis = 15_000) { shown("page-3") && shown("page-4") }
+            previous()
+            waitForText("3 / 5")
+            waitUntil(timeoutMillis = 15_000) { shown("page-2") && !shown("page-3") && !shown("page-1") }
+            previous()
+            waitForText("1 / 5")
+            waitUntil(timeoutMillis = 15_000) { shown("page-0") && shown("page-1") }
+            onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+            waitForTag("reader", present = false)
+        }
+
     @Test
     fun `split wide pages shows both halves in turn`() = runDesktopComposeUiTest(width = 1000, height = 700) {
         preferences.dualPageSplitPaged().set(true)

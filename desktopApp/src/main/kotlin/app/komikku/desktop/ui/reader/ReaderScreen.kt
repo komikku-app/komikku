@@ -102,13 +102,13 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
     // Double pages: horizontal paged modes only; a page turn moves by the pages shown (a wide page is shown alone)
     val doublePages = !webtoon && state.readingMode.direction == ReadingMode.Direction.Horizontal &&
         display.viewer.doublePages(PixelSize(viewportWidth.toInt(), viewportHeight.toInt()))
-    val step = state.spreadAt(state.currentIndex, doublePages).size.coerceAtLeast(1)
-    val backStep = state.previousStep(state.currentIndex, doublePages)
+    // The model's spreads follow the resolved layout (one rule for page turns, progress and preloading)
+    LaunchedEffect(model, doublePages) { model.setDoublePages(doublePages) }
 
     fun perform(action: ReaderAction) {
         when (action) {
-            ReaderAction.Next -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageDown, viewportHeight) } else model.next(step)
-            ReaderAction.Previous -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageUp, viewportHeight) } else model.previous(backStep)
+            ReaderAction.Next -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageDown, viewportHeight) } else model.next()
+            ReaderAction.Previous -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageUp, viewportHeight) } else model.previous()
             // The webtoon list follows the model's jump
             ReaderAction.First -> model.moveToFirstPage()
             ReaderAction.Last -> model.moveToLastPage()
