@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
@@ -19,6 +20,7 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
+import app.komikku.desktop.ui.browse.CatalogueScreen
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.migration.MigrationConfigScreen
 import app.komikku.desktop.ui.migration.MigrationListScreen
@@ -257,6 +259,27 @@ class MigrateMangaUiTest {
         stored(OLD, "/broken-entry")!!.favorite shouldBe true
         stored(NEW, "/broken-entry")?.favorite shouldBe false
     }
+
+    @Test
+    fun `a source's own search from the migration search picks the match too`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            val current = libraryEntry("hyouka", "Hyouka")
+            openMigrationSearch(current)
+            newSourceResult(current, "Hyouka", pick = false)
+            // P20, Android's `MigrateSourceSearchScreen`: the row header opens the source's own search with the query
+            val newRow = hasAnyAncestor(hasTestTag("global-search-source-$NEW"))
+            onAllNodes(hasText(MigrationSource.nameOf(NEW), substring = true) and newRow)[0].performClick()
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is CatalogueScreen }
+            val result = hasText("Hyouka") and !hasSetTextAction()
+            waitUntil(timeoutMillis = 15_000) { onAllNodes(result).fetchSemanticsNodes().isNotEmpty() }
+            onAllNodes(result)[0].performClick()
+            // Back on the list with the pick as the match
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is MigrationListScreen }
+            val match = hasAnyAncestor(hasTestTag("migration-result-${current.id}"))
+            waitUntil(timeoutMillis = 15_000) {
+                onAllNodes(hasText(MigrationSource.nameOf(NEW), substring = true) and match).fetchSemanticsNodes().isNotEmpty()
+            }
+        }
 
     @Test
     fun `without any installed migration source the search says so and leads to the configuration`() =
