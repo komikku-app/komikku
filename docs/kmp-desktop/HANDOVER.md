@@ -8,7 +8,7 @@ sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review 
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, is built but never executed (its review
-`/code-review medium c712c3f^..<P9 docs commit>` and fix round are pending; the exact range is in "Done"); next: the P9
+`/code-review medium c712c3f^..a2ab74b` and fix round are pending; the exact range is in "Done"); next: the P9
 review, then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -215,7 +215,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   (the plugin has none); secrets and how to make them in BUILDING.md "Signing". Test: `DesktopAppUpdateCheckerTest`
   "the release pipeline's asset names …". **Never executed**; what the maintainer must do for the first run: PROGRESS
   P9 "What the maintainer must do before the first run".
-- **P9 review** — pending: `/code-review medium c712c3f^..<P9 docs commit>` (the docs commit that records P9), then a
+- **P9 review** — pending: `/code-review medium c712c3f^..a2ab74b`, then a
   fix round.
 
 ### Security decision on record
@@ -260,7 +260,7 @@ mark the residual path in both modules.
    check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) and its review
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) and its review fixes are done (last
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) is built, never
-   executed: **next** its review `/code-review medium c712c3f^..<P9 docs commit>` and fix round; then the maintainer's
+   executed: **next** its review `/code-review medium c712c3f^..a2ab74b` and fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` on the Android draft, certificates for signing), and the first real run
    of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
