@@ -7,7 +7,7 @@ fixes, parity step P3, scheduled library updates and backups, with its review fi
 sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, is built (its review
-`/code-review medium 1be55e8^..<P8 docs commit>` and fix round are pending); next: the P8 review, signing, the release
+`/code-review medium 1be55e8^..5fd575b` and fix round are pending); next: the P8 review, signing, the release
 pipeline for desktop installers, and the maintainer's first real run; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -195,7 +195,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   "Test connection" and the privacy note. With it, browse, library updates, global search and downloads get past
   challenges; "Open in WebView" stays the manual fallback (the solver shows no pages). Tests `FlareSolverrBackendTest`
   (9, `MockWebServer` as the solver), `FlareSolverrSettingsUiTest` (1). Not run against a real solver.
-- **P8 review** — pending: `/code-review medium 1be55e8^..<P8 docs commit>`, then a fix round.
+- **P8 review** — pending: `/code-review medium 1be55e8^..5fd575b`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -238,7 +238,7 @@ mark the residual path in both modules.
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
    check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) and its review
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) is built: the review
-   `/code-review medium 1be55e8^..<P8 docs commit>` and its fix round are next. **Then, in order:** signing /
+   `/code-review medium 1be55e8^..5fd575b` and its fix round are next. **Then, in order:** signing /
    notarization of the installers; the release pipeline
    for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
    names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline

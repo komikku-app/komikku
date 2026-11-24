@@ -2390,7 +2390,7 @@ a real Cloudflare site, the Android app (compile only; nothing Android changed).
 
 ## P8 — automatic Cloudflare solving through a FlareSolverr-compatible service
 
-Commits `1be55e8` (backend, settings, wiring), `29f0fef` (tests) and this section's docs commit. Next in HANDOVER's order
+Commits `1be55e8` (backend, settings, wiring), `29f0fef` (tests) and `5fd575b` (this section). Next in HANDOVER's order
 after the P7 review fixes. **Outcome:** with the address of a FlareSolverr-compatible service the user runs (Settings →
 Browse → "Cloudflare solver (FlareSolverr)"), the desktop's `CloudflareInterceptor` gets past challenges without the
 manual step, in every flow that uses `NetworkHelper.client` (browse, library updates, global search, downloads); empty
