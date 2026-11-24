@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.DeleteSavedSearchById
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchBySourceId
@@ -167,6 +168,25 @@ class SourceFeedUiTest {
         waitForCatalogue()
         waitForText("L search typed")
         catalogueQuery() shouldBe "typed"
+    }
+
+    @Test
+    fun `entries of the source feed are added to the library in bulk`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        openSourceFeed()
+        waitForText("L latest 2")
+        waitForText("L popular")
+        onNodeWithTag("bulk-select").performClick()
+        onNodeWithText("L latest 2").performClick()
+        onNodeWithText("L popular").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("2").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithTag("bulk-add").performClick()
+        waitUntil(timeoutMillis = 10_000) { favorite("L latest 2") && favorite("L popular") }
+        favorite("L latest 1") shouldBe false
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("bulk-select").fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    private fun favorite(title: String) = runBlocking {
+        Injekt.get<GetManga>().await("/landing/${title.lowercase().replace(' ', '-')}", LandingSource.ID)?.favorite == true
     }
 
     @Test

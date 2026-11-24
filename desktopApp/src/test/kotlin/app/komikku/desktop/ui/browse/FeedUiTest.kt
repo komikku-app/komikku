@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.interactor.DeleteFeedSavedSearchById
 import tachiyomi.domain.source.interactor.DeleteSavedSearchById
 import tachiyomi.domain.source.interactor.GetFeedSavedSearchGlobal
@@ -234,6 +235,28 @@ class FeedUiTest {
         waitForText(KMR.strings.too_many_in_feed.text())
         shows(MR.strings.action_ok.text()) shouldBe false
         feeds().size shouldBe 20
+    }
+
+    @Test
+    fun `entries of several rows are added to the library in bulk`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        feedRow(ID_A)
+        feedRow(ID_B)
+        openFeed()
+        waitForText("A latest 2")
+        waitForText("B popular")
+        onNodeWithTag("bulk-select").performClick()
+        onNodeWithText("A latest 2").performClick()
+        onNodeWithText("B popular").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("2").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithTag("bulk-add").performClick()
+        // No categories: added at once
+        waitUntil(timeoutMillis = 10_000) { favorite(ID_A, "A latest 2") && favorite(ID_B, "B popular") }
+        favorite(ID_A, "A latest 1") shouldBe false
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("feed-add").fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    private fun favorite(sourceId: Long, title: String) = runBlocking {
+        Injekt.get<GetManga>().await("/feed/$sourceId/${title.lowercase().replace(' ', '-')}", sourceId)?.favorite == true
     }
 
     @Test
