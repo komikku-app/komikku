@@ -1909,6 +1909,54 @@ Verification after the fixes: `spotlessApply`, `spotlessCheck`, `:app:compileDeb
 `DelegatedSourcesTest` +2, `LibraryUpdateRunnerTest` +2). Not run: the Android UI, a real MangaDex login / logout, a real
 window.
 
+## P5 — AVIF / JPEG XL images (evaluation, unsupported-format state)
+
+Chosen from "Remaining parity gaps" (reader item 4 and covers). **Outcome: no acceptable decoder; the desktop detects
+AVIF / JPEG XL / HEIF and shows a clear "unsupported image format" state** for reader pages and manga covers.
+
+**What Android does:** covers and pages in AVIF / JPEG XL / HEIF go through `TachiyomiImageDecoder` (Coil) and the
+reader's decoder, both on `tachiyomiorg/image-decoder`, a JNI library with libavif / libjxl / libheif built for the four
+Android ABIs only, on Android's `Bitmap`; not usable on a desktop JVM.
+
+**Desktop pipeline today:** covers through Coil 3 (`DesktopImageLoader`, Coil's Skia decoder), reader pages through
+`SkiaPageDecoder` (Skiko 0.150.2 `Image.makeFromEncoded` / `Codec`). The reader already gated AVIF / JXL / HEIF by their
+magic bytes (desktop `ImageUtil`) into `UnsupportedPageFormatException`; covers failed with Skia's generic error and
+stayed blank.
+
+**Decoders evaluated (none added):**
+
+| Candidate | Licence / version | Natives (OS / CPU) | Verdict |
+|-----------|-------------------|--------------------|---------|
+| Skia in Skiko 0.150.2 (already on the classpath) | Apache-2.0 / BSD | Linux / macOS / Windows x64 + arm64 (Skiko runtime) | built without Skia's AVIF / JPEG XL / HEIF codecs: real AVIF and JXL samples fail in `Image.makeFromEncoded` and `Codec.makeFromData` (test below) |
+| NightMonkeys `com.github.gotson.nightmonkeys:imageio-jxl` / `imageio-heif` (ImageIO plugins, libjxl / libheif) | MIT; 1.1.0 (Aug 2025), maintained | none bundled: needs the system's libjxl / libheif (the `imageio-heif` jar, 390 KB, has no `.so` / `.dylib` / `.dll`) | blocked twice: its decoder classes are Java 22 FFM classes (`META-INF/versions/22/…` in a multi-release jar) while the desktop builds and ships JDK 21 (`BUILDING.md`, jlink runtime), and the native libraries would have to be installed by the user on every OS |
+| Android's `tachiyomiorg/image-decoder` | Apache-2.0 | Android ABIs only | Android-only (JNI + `android.graphics.Bitmap`) |
+| Maven Central search for AVIF / JPEG XL artifacts (`search.maven.org`: "avif", "jxl", "jpegxl", "libheif") | — | — | only Android AARs (`org.aomedia.avif.android:avif`, Glide / penfeizhou AVIF integrations, vendor SDKs) and the NightMonkeys plugins; no pure-Java JPEG XL decoder (jxlatte is not on Maven Central) |
+| FFmpeg through bytedeco JavaCV | LGPL / GPL builds | Linux / macOS / Windows x64 (+ arm64 on Linux / macOS) | not pursued: tens of MB of natives per platform for still images, AVIF / JPEG XL support of its build unverified (JPEG XL needs libjxl) |
+
+**Unblocking options for the maintainer:** a Skiko build with Skia's AVIF / JPEG XL codecs enabled (the test
+`Skia on desktop cannot decode AVIF or JPEG XL` fails once a Skiko update brings them, then the format gates can go); or
+moving the desktop runtime to JDK 22+ and bundling libjxl / libheif per OS for NightMonkeys (licences: libjxl BSD-3,
+libheif LGPL-3, libde265 LGPL-3 for HEIF).
+
+**Desktop changes** (`ccd825a`):
+- `app.komikku.shared.coil.UnsupportedImageFormatDecoder` (Coil `Decoder.Factory`, registered in `DesktopImageLoader`):
+  an AVIF / JPEG XL / HEIF image (magic bytes, `SkiaPageDecoder.UNSUPPORTED`) fails with `UnsupportedPageFormatException`
+  (format name) instead of Skia's generic decode error; other formats go to Coil's Skia decoder as before.
+- `app.komikku.desktop.ui.CoverImage`: the library, catalogue, global search, manga details and updates covers show the format's name
+  ("AVIF") on such a cover instead of staying blank; other failures keep the plain background.
+- Reader page placeholder: "AVIF images can't be shown on desktop yet" (new `KMR.strings.desktop_unsupported_image_format`)
+  instead of "The image couldn't be loaded (AVIF)"; still no retry button for it.
+- Not covered: other images (extension / JavaScript source icons, which are PNG in practice), animated AVIF, HEIF samples (no encoder available here; HEIF is detected by its `ftyp` brand like before).
+
+Tests: `UnsupportedImageFormatTest` (5): real 8×8 AVIF (Pillow / libavif) and JPEG XL (ffmpeg / libjxl) samples embedded
+as Base64 (314 and 64 bytes): detection, Skia's missing codecs, the reader decoder's `UnsupportedPageFormatException` with
+the format (`decode` and `readSize`), the desktop image loader's error result for both (a PNG still decodes), and the
+cover label in a headless Compose test.
+
+Verification (after `ccd825a`): `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`,
+`:desktopApp:compileKotlin` pass; `:desktopApp:test` 43 classes, 161 tests, 0 failures (was 42 / 156 after the P4 review).
+Not run in a real window; no real AVIF / JPEG XL cover from a source was loaded.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -1924,7 +1972,7 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 3. **Manga details:** duplicate detection on add, merged entries, metadata editing, cover actions, sharing,
    recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the metadata, P4).
 4. **Reader:** neighbouring chapters appended in viewers, animated GIF / WebP playback, AVIF / JPEG XL / HEIF
-   pages, automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
+   pages and covers (P5: no acceptable decoder, shown as an unsupported format; blocker in "P5"), automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
    chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
    them), WebView (Cloudflare) login, OAuth via

@@ -135,6 +135,10 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   borrowed `MdList` no longer caches a missing MangaDex source (KMK, Android too), the excluded update sources read after
   the sources are ready, selected excluded entries reported as skipped. Left: the cause of a failed MDList code exchange
   stays in the borrowed helper's log (the desktop says to restart from the browser step).
+- **P5** AVIF / JPEG XL (PROGRESS.md "P5 — AVIF / JPEG XL images"): no acceptable desktop decoder (Skiko's Skia has no
+  such codecs; NightMonkeys needs Java 22 FFM and system libjxl / libheif; the rest is Android-only), so the desktop
+  detects AVIF / JPEG XL / HEIF and shows the format on covers (`CoverImage`, Coil `UnsupportedImageFormatDecoder`) and an
+  "can't be shown on desktop yet" reader page. Test `UnsupportedImageFormatTest` with real embedded samples.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -173,8 +177,9 @@ mark the residual path in both modules.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
    its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done; P3
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
-   delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). **Next:** P5 (AVIF / JXL), see
-   PROGRESS "Remaining parity gaps". Known gaps: P4's
+   delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) is recorded as
+   blocked (unsupported-format state only). **Next:** review P5 if wanted, then the next item of PROGRESS "Remaining
+   parity gaps". Known gaps: P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
    against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
