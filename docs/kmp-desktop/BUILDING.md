@@ -153,12 +153,23 @@ experimental, does not fail the PR check (`continue-on-error`).
 `build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — **never
 executed yet**:
 
-- **Jobs:** `plan` (no permissions: decides the mode and tag), `package` (`contents: read`; one job per runner:
-  `ubuntu-24.04` x64, `windows-2022` x64, `macos-15` arm64, `macos-15-intel` x64), `release` (`contents: write`; only
-  when the mode is not `none`).
+- **Jobs:** `plan` (`contents: read`: decides the mode and tag and, in a release mode, checks that the release tag
+  points to the run's commit), `package` (`contents: read`; one job per runner: `ubuntu-24.04` x64, `windows-2022`
+  x64, `macos-15` arm64, `macos-15-intel` x64), `release` (`contents: write`; only when the mode is not `none`).
+- **Concurrency:** no workflow-level group. A newer run of the same ref cancels an older run's `package` job per runner
+  (that older run then ends cancelled); the `release` job has its own group per release tag that never cancels, so an
+  upload in progress always finishes and two runs for one tag upload one after the other (of several runs waiting for
+  that group, GitHub keeps only the newest).
 - **Build:** `./gradlew :desktopApp:packageDistributionForCurrentOS -Penable-updater` (the update check on, stable
-  channel), after the tests on Linux. The version is `./gradlew -q :desktopApp:printVersionName` (the Android
-  `versionName`); with a release mode the release tag must be `v<that version>`, checked before the build.
+  channel), after the tests on Linux. The version is the `desktopVersionName=<v>` line of
+  `./gradlew -q :desktopApp:printVersionName` (the full Android `versionName`); it must be `x.y.z` without a suffix
+  (a `-rc1` style name fails before the build: the packages would use the part before `-`, the asset names and the
+  update check the whole name), and with a release mode the release tag must be `v<that version>`, checked before the
+  build.
+- **Release commit:** in a release mode the release tag must point to the commit the run builds (`plan` fetches the tag
+  and compares `refs/tags/<tag>^{commit}` with the run's commit), because master keeps the released `versionName`
+  until the next bump. Manual runs: "Use workflow from" the tag `v<x>` (or a branch whose head is that commit). Tag
+  `desktop-v<x>`: it must be on the same commit as `v<x>`, otherwise the run fails with both commits named.
 - **Asset names** (`.github/scripts/desktop_release_assets.sh`, the same on a developer machine:
   `.github/scripts/desktop_release_assets.sh desktopApp/build/compose/binaries/main <version> <windows|macos|linux> <x64|arm64> <out dir>`):
 
@@ -169,7 +180,7 @@ executed yet**:
   | macOS arm64 / x64 | `Komikku-<v>-macos-arm64.dmg` / `Komikku-<v>-macos-x64.dmg` |
 
   plus `Komikku-<v>-<os>-<arch>-SHA256SUMS.txt` per job; the release gets one `Komikku-<v>-desktop-SHA256SUMS.txt`
-  (`sha256sum -c` format). `DesktopAppUpdateCheckerTest` ("the release pipeline's asset names …") checks that the update
+  (`sha256sum -c` format; every line `<hash>  <name>`, also where Git Bash writes `<hash> *<name>`, sorted by name). `DesktopAppUpdateCheckerTest` ("the release pipeline's asset names …") checks that the update
   check picks exactly these per OS and architecture next to the Android APKs. The Windows / macOS app-image folders
   are no longer uploaded (the installers contain them).
 - **Workflow artifacts** always: `Komikku-desktop-<os>-<ARCH>-<sha>` with the assets of one job.
@@ -180,14 +191,21 @@ executed yet**:
   | Run workflow (manual) | input `release_mode`: `none` (default), `existing`, `draft` | input `release_tag` (`v<versionName>`) |
   | Tag `desktop-v<versionName>` | repository variable `DESKTOP_RELEASE_MODE` (unset = `none`) | `v<versionName>` |
 
-  `existing`: the release must exist (draft or published); a draft gets the files (same-named desktop files replaced),
-  a published release only gets files it does not have yet (an existing name fails, nothing is replaced). `draft`: the
-  draft with that tag gets the files; if there is none, one is created **as a draft** for the existing tag (a missing
-  tag or a published release fails). The workflow never publishes, edits or deletes a release and only uploads files
-  named `Komikku-<version>-…`, which no Android asset is named like (`Komikku-v<x>.apk`, `Komikku-<abi>-v<x>.apk`).
+  The upload is `.github/scripts/desktop_release_upload.sh` (with `gh`). The release is looked up in the API's list of
+  releases (drafts included); a failing request fails the job and never counts as "no release", and more than one
+  release with the tag fails too. `existing`: the release must exist (draft or published). `draft`: the draft with that
+  tag gets the files; only if the tag has no release at all is one created **as a draft** (a published release fails).
+  A draft gets every file (same-named desktop files replaced). A published release only gets the files it is missing;
+  a file it already has is compared by SHA-256 (the asset's `digest`, or the downloaded file when the API gives none):
+  identical files are skipped, a different one fails the job before anything is uploaded. The checksum file goes last.
+  **Resuming a partly failed upload:** "Re-run failed jobs" on the same run (it reuses the run's artifacts, so the
+  uploaded files are identical and skipped); a new run rebuilds the installers, which are not byte-identical, so it
+  stops at the first desktop file already on the published release (delete the partial desktop files by hand first).
+  The workflow never publishes, edits or deletes a release and only uploads files named `Komikku-<version>-…`, which
+  no Android asset is named like (`Komikku-v<x>.apk`, `Komikku-<abi>-v<x>.apk`).
 - **Which release:** the existing `v<versionName>` release of `komikku-app/komikku`, the one P6's stable check reads
   and compares with the app's version. The usual order: push `v<x>` → the Android release workflow creates its draft
-  → run the desktop builder on the same commit with `release_mode: existing`, `release_tag: v<x>` → check the draft →
+  → run the desktop builder from the tag `v<x>` with `release_mode: existing`, `release_tag: v<x>` → check the draft →
   publish it by hand. The preview channel (`komikku-app/komikku-preview`, `r<n>`, `-Pdesktop-preview`) is not covered:
   it is another repository (a token with access to it would be needed).
 

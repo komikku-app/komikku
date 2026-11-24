@@ -2644,8 +2644,9 @@ executed** (no runner here, no certificates).
 2. First run without a release: Actions → "Desktop builder" → Run workflow with `release_mode: none`; check the four
    artifacts (names, the DMG / MSI / DEB install, the `.tar.gz` holds one folder with `bin/` and `lib/`), and the tests
    on Linux.
-3. For a release: push `v<x>` as usual (Android draft), then run the desktop builder on that commit with
-   `release_mode: existing` and `release_tag: v<x>`; review the draft (APKs untouched, desktop files and the checksum
+3. For a release: push `v<x>` as usual (Android draft), then run the desktop builder from the tag `v<x>` ("Use
+   workflow from", since the review fixes the tag must point to the run's commit) with `release_mode: existing` and
+   `release_tag: v<x>`; review the draft (APKs untouched, desktop files and the checksum
    file added) and publish it by hand. Optionally set `DESKTOP_RELEASE_MODE=existing` so that a `desktop-v<x>` tag does
    the same.
 4. Signing (optional, both independent): add the macOS secrets (Developer ID certificate `.p12` + password + identity,
@@ -2658,6 +2659,64 @@ Verification (after `6b0cdf9`, `--max-workers=2 --console=plain`, `./gradlew --s
 `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 51
 classes, 227 tests, 0 failures (was 226: the asset-name test). Not run: the workflow itself, any packaging task, the
 signing / notarization tools, `gh release` against GitHub.
+
+### Review fixes (P9)
+
+Review `/code-review medium c712c3f^..a2ab74b` (range `6112d7b..fa491eb`), 7 findings (4 important, 3 nits), all fixed in
+`32fd74c` (workflow, scripts, version task) and this docs commit. CI files only: still never executed.
+
+1. **Nothing tied the uploaded installers to the release tag's commit** (the only guard compared the tag with
+   `versionName`, which stays the same on master after a release): in a release mode `plan` now checks out the run's
+   commit (depth 1), fetches `refs/tags/<tag>` and fails before any build unless `<tag>^{commit}` equals the run's commit
+   (`$GITHUB_SHA^{commit}`; annotated tags work). A missing tag fails there too. **Decision for `desktop-v<x>`:** both
+   tags must be on the same commit (the run builds the `desktop-v<x>` commit, the release is `v<x>`), otherwise the run
+   fails naming both commits. Manual runs are started from the tag ("Use workflow from"). `plan` now has
+   `contents: read` (was none).
+2. **Any failure of `gh release view` read as "no such release"** and, in `draft` mode, led to `gh release create
+   --draft`: the upload moved into `.github/scripts/desktop_release_upload.sh`, which lists the releases through
+   `gh api --paginate repos/<repo>/releases` (drafts included for the job's token) and filters by `tag_name`; a failing
+   request fails the job, more than one release with the tag fails, and a draft is created only when the listing
+   succeeded and has none.
+3. **A partly failed upload to a published release could not be resumed**: for a published release the script lists
+   the assets, compares every desktop file that is already there by SHA-256 (the API's `digest` `sha256:<hex>`, else the
+   downloaded asset is hashed), skips identical ones, fails on any different one **before** uploading anything, uploads
+   the missing installers without `--clobber` and the merged checksum file last. Drafts keep `--clobber` (checksum file
+   last as well). **Note:** a resume means "Re-run failed jobs" of the same run (same artifacts); a new run rebuilds
+   installers that are not byte-identical and stops at the first existing name (documented in BUILDING.md).
+4. **The workflow-level `cancel-in-progress` group also cancelled a run in its release job**: the workflow-level group
+   is gone; `package` has a job-level group per ref **and runner** (`…-package-<ref>-<matrix.os>`, cancelling; without
+   the runner the matrix jobs would cancel each other), `release` a group per release tag (`…-release-<tag>`,
+   `cancel-in-progress: false`, across refs). A newer run can therefore only cancel an older run's packaging, never its
+   upload. **Trade-off:** an older run whose packaging was cancelled ends cancelled (its release job is skipped), and
+   of several runs waiting for one tag's release group GitHub keeps only the newest pending one.
+5. **A `versionName` with a suffix (`1.15.0-rc1`) passed packaging and failed only in the asset script after the full
+   build** (nit): **decision:** suffixes are unsupported for desktop releases; the version step fails at once with
+   "desktop releases do not support a suffix" (any mode, since the asset script would fail anyway), the asset script's
+   message says the same, and `printVersionName`'s description / comment now say it prints the full Android
+   `versionName` while the packages use the part before `-`.
+6. **The version was the last stdout line of a Gradle run** (nit): `printVersionName` prints
+   `desktopVersionName=<v>`; the step takes exactly one such line (none or several fail, with the output shown) and
+   validates `x.y.z`.
+7. **Git Bash's `sha256sum` may write `<hash> *<name>`** (nit): the asset script normalises every line to
+   `<hash>  <name>` (lower-case hash, CR removed), sorts by name and fails unless there is exactly one well-formed line
+   per asset; the release job's merge normalises again and sorts by name (not by `sort -k 2`).
+
+Checked locally (scratchpad harness, not committed): YAML parses (PyYAML 6.0.3); structural check (no workflow-level
+`concurrency`, `release` group not cancelling, `package` group with `matrix.os`, every job with `permissions`, `uses`
+pinned to SHAs, no `inputs` / `secrets` / `github.event` expressions in `run`); `actionlint` 1.7.12 (with
+`macos-15-intel` declared) and its shellcheck: only the two pre-existing notes remain (SC2046 on the keychain list,
+SC2012 on `ls` for `signtool`); `shellcheck` on both scripts: clean; `bash -n` on both. Simulations: the asset script
+with a stand-in `sha256sum` writing `*` names and CRLF, upper-case hashes, garbage output (fails) and a suffixed
+version (fails); the merge step on three jobs' outputs; the tag check in a local repository (annotated tag on the run's
+commit passes, another commit fails, a missing tag fails, `desktop-v<x>` on another commit than `v<x>` fails, on the
+same passes); the version step with a stand-in `./gradlew` (plain, a warning line and CRLF, suffix, no marker, two
+markers, tag mismatch / match) and the real `./gradlew -q :desktopApp:printVersionName` (`desktopVersionName=1.14.1`);
+the upload script with a stub `gh` on PATH: listing fails in `draft` mode (fails, no create), no release with
+`existing` (fails) / `draft` (creates one draft, installers then checksum file), existing draft (no create,
+`--clobber`), published with `draft` (fails), two releases with the tag (fails), published fresh (all, checksum last),
+an upload broken after four files and resumed (the four skipped as identical, the rest and the checksum file uploaded),
+an identical file without `digest` (downloaded and hashed, skipped), a different file with and without `digest` (fails,
+nothing uploaded), the asset listing failing (fails), everything already there (nothing uploaded).
 
 ## Remaining parity gaps
 
