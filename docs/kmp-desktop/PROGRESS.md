@@ -3053,6 +3053,36 @@ Verification (after `768ccec`, `--max-workers=2 --console=plain`, `./gradlew --s
 folder opened in a file manager, the continue reading button and badges seen), a real extension's icon in the source
 badge (the stub-source warning is what the test sees), DNS over HTTPS against a real resolver, macOS / Windows.
 
+### Review fixes (P12)
+
+Review `/code-review medium 0d88469..9bec249` (`9e4c28a^..9bec249`, range `0d88469..e3833b8` with the handover), 6
+findings (2 important, 4 nits), all fixed in `246200c` (reader), `1824d14` (library), `0f596c4` (settings and
+start-up) and this docs commit. Android code unchanged.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | The wait added in `768ccec` did not close the reader's double-load race: `preload()` checked the chapter state and then launched the load, so `loadAdjacent` could find the chapter not yet `Loading` and load it a second time (a second `Loaded(pages)` replacing the pages the viewer items held) | fixed: chapter page lists are **single-flight per chapter**. `ReaderModel.loadPages` keeps one registry of in-flight loads (`Deferred`, keyed by the `ReaderChapter`), registered synchronously (a lazily started `async`, put in the registry before it starts) and removed when it completes; the initial load, `preload`, `loadAdjacent` (through `loadChapter`) and the chapter switch (`syncChapter`) all go through it and join the same load. `preload` registers its load before it launches anything, so an adjacent load arriving next joins it; the `stateFlow` wait is gone. A failed load leaves the registry, so the next request retries. Test `ReaderChapterLoadTest` (2, a source whose page list waits on a gate per chapter): "opening the next chapter while its preload is suspended joins the preload" and "a preload and a page turn past the transition load the chapter once" — the second caller arrives while the first load is suspended in the source (the test waits until it has joined, `joinedChapterLoads`), then one page-list request and the items hold the very pages the chapter has (by identity). Not shown failing on the old code: the old window lies between `preload()`'s check and its coroutine's first step, which a test cannot hold open without a dispatcher hook (with the load held in the source the old `Loading` wait works); the tests pin the new invariant instead | `246200c` |
+| 2 | `SourceIconBadge` remembered `SourceIcons.of(source.id)` keyed on the id only, so a `null` remembered before the extensions loaded stayed | fixed: the badge collects the installed-extensions `StateFlow` (`SourceIcons.installedExtensions()`, the extension manager's, empty without one; a parameter for tests) and keys the icon on the source id, the installed list and `isStub`; `SourceIcons.of(id, installed)` clears its cache when the list changes (synchronised). The badge kind is in its state description (missing / icon / local / default). Test `LibraryExtrasUiTest` "the source badge shows an extension's icon once the extensions are loaded" (missing first, an extension with an icon emitted, then the icon) | `1824d14` |
+| 3 | The continue-reading click ran `getNextUnreadChapter` in a bare `launch` (nit) | fixed: non-cancellation throwables are caught, logged (`xLogE`) and shown as a toast (the message, else `MR.strings.unknown_error`). No test (needs a failing database under the library screen) | `1824d14` |
+| 4 | "Clear database" ran blocking JDBC on the UI thread (nit) | fixed: `ClearDatabaseScreenModel.removeMangaBySourceId` runs the queries in `withContext(NonCancellable + Dispatchers.IO)` (still not cancellable once started) with `State.Ready.isClearing` set meanwhile: Delete, the dialog's buttons and switch disabled, a progress indicator in the confirm button, the dialog not dismissable; a second click while clearing starts nothing; a failure is logged and shown. The existing `AdvancedSettingsUiTest` "clear database …" case covers the flow | `0f596c4` |
+| 5 | The per-site User-Agent list in Settings → Advanced was read once (nit) | fixed: `CloudflareHostState.userAgentOverridesFlow` (a `StateFlow` backing the overrides; `update` sets it before saving) is collected by the settings group; the remove buttons no longer bump a version counter. `AdvancedSettingsUiTest` now stores an override while the screen is shown and finds it listed, then removes it | `0f596c4` |
+| 6 | The log file sink and the uncaught-exception handler were installed after `DesktopInjekt.init()` (nit) | fixed: `main` resolves the data folder without Injekt (`DesktopDirs.dataDir`, what `init` uses by default), installs the log file and its crash handler right after the logger, then calls `DesktopInjekt.init(dataDir)`; the log level preference is applied once Injekt is up. A failure inside `init()` leaves `main` through the JVM's uncaught-exception dispatch, i.e. the installed handler, which writes it to the file. No test (`main` is not run headless; the handler itself is covered by `DesktopLogFileTest`) | `0f596c4` |
+
+**`DesktopExtensionManagerTest` "a new manager loads the installed extensions from disk"** (timed out once after 30 s
+in a full P12 run): looked at again, cause not evident, nothing changed. Checked: the reloaded manager's start
+(`initExtensions` under its own mutex) does no network request and awaits nothing but the database (`storeRepository.getAll`)
+and the per-APK jar lock of the shared `ExtensionRuntime` (`DexJarConverter.jarFor`, `synchronized` per SHA-256); the
+APK's jar is already in the cache from test 3, and the earlier tests collect their install / update flows to the end
+(`toList()`), so no conversion of the same APK is running when the new manager starts; the test runs on
+`Dispatchers.IO`, which other test classes could not exhaust. The one failure came in the same loaded run as the reader
+race above; the case passed alone and in every full run since (see the verification). If it recurs, the next step is a
+thread dump at the timeout (e.g. `withTimeout` → `ThreadMXBean.dumpAllThreads` in the test).
+
+Verification: pending (run after this docs commit; recorded in the next one).
+
+**P13 (feed and saved searches) not started**: the coordinator narrowed the round to these review fixes.
+
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:

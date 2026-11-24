@@ -10,9 +10,9 @@ step P8, automatic Cloudflare solving through a FlareSolverr-compatible service,
 step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
 P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
 P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done
-(last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, is built (its review
-`/code-review medium 0d88469..9bec249` (`9e4c28a^..9bec249`) and fix round are pending); next: the P12 review, then the
-maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
+(last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, with its review fixes, is
+done (last Part A commit `0f596c4`); P13 (feed and saved searches) is not started; next: P13 (or the coordinator's pick),
+then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -276,7 +276,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   source icon badge (and their display settings). Not done: "Clear WebView data" (no embedded browser), language flag
   icons (Android drawables), continue reading by Android's chapter filters (the desktop details' rule instead). Tests
   `AdvancedSettingsUiTest` (3), `DesktopLogFileTest` (2), `LibraryExtrasUiTest` (3), settings tests updated.
-- **P12 review** — pending: `/code-review medium 0d88469..9bec249` (`9e4c28a^..9bec249`), then a fix round.
+- **P12 review** (medium, `0d88469..9bec249`, 6 findings) — all fixed in `246200c`, `1824d14`, `0f596c4` and the docs
+  commits after them (PROGRESS.md "Review fixes (P12)"): the reader loads a chapter's page list single-flight (one
+  in-flight load per chapter, registered before it starts, joined by preloads, adjacent loads and chapter switches); the
+  source badge collects the installed extensions; the continue-reading click catches, logs and shows failures; "Clear
+  database" runs on IO (non-cancellable) with progress and disabled buttons; the per-site user agents are a `StateFlow`
+  collected by the settings; the log file and crash handler are installed before `DesktopInjekt.init()`. The once-seen
+  `DesktopExtensionManagerTest` timeout: cause not evident, what was checked is recorded. Last Part A commit `0f596c4`.
+- **P13** feed and saved searches — not started (round narrowed by the coordinator). Scope as asked: saved searches in
+  the desktop catalogue (Android's `saved_search` storage, backups carry them), then the global Feed tab in Browse, then
+  the per-source feed; borrow Android's screen models / interactors / `EXHSavedSearch` / `FilterSerializer`.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -323,7 +332,8 @@ mark the residual path in both modules.
    are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
    actions) and its review fixes are done (last Part A commit `fe75585`). P11 (reader: neighbouring chapters, wide
    pages, animated pages) and its review fixes are done (see "P11 review"; last Part A commit `0d88469`). P12 (Settings
-   → Advanced, chapter cache, library extras) is built: **next** its review and fix round; then the maintainer's
+   → Advanced, chapter cache, library extras) and its review fixes are done (last Part A commit `0f596c4`); **next** P13
+   (feed and saved searches, PROGRESS "Remaining parity gaps" item 1; not started); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
