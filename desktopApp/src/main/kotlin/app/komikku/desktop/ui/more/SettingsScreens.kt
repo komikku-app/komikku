@@ -29,6 +29,7 @@ import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.webview.DesktopCloudflarePreferences
 import app.komikku.desktop.webview.FlareSolverrBackend
+import app.komikku.desktop.webview.MaskedAddressPreference
 import app.komikku.shared.settings.PreferenceList
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -50,6 +51,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
@@ -404,15 +406,18 @@ private fun cloudflarePreferences(): Preference.PreferenceGroup {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var testing by remember { mutableStateOf(false) }
-    val url by preferences.flareSolverrUrl().collectAsState()
+    // P8 review: the password of a `user:password@` address is never rendered (subtitle and edit field).
+    val address = remember { MaskedAddressPreference(preferences.flareSolverrUrl()) }
+    val url by address.collectAsState()
     val invalid = stringResource(KMR.strings.desktop_flaresolverr_invalid)
     return Preference.PreferenceGroup(
         title = stringResource(KMR.strings.desktop_flaresolverr_title),
         preferenceItems = persistentListOf(
             Preference.PreferenceItem.EditTextPreference(
-                preference = preferences.flareSolverrUrl(),
+                preference = address,
                 title = stringResource(KMR.strings.desktop_flaresolverr_url),
-                subtitle = url.ifBlank { stringResource(MR.strings.off) },
+                // The widget formats the subtitle: a `%` of the address (an encoded character) stays a `%`.
+                subtitle = url.ifBlank { stringResource(MR.strings.off) }.replace("%", "%%"),
                 onValueChanged = { value ->
                     DesktopCloudflarePreferences.isValidFlareSolverrUrl(value).also { valid ->
                         if (!valid) context.toast(invalid)
@@ -434,7 +439,14 @@ private fun cloudflarePreferences(): Preference.PreferenceGroup {
                         testing = true
                         scope.launch {
                             try {
-                                val result = withIOContext { backend.testConnection() }
+                                val result = try {
+                                    withIOContext { backend.testConnection() }
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    // P8 review: nothing escapes into the composition's scope.
+                                    FlareSolverrBackend.ConnectionTest.Failed(e.message ?: e::class.simpleName.orEmpty())
+                                }
                                 context.toast(flareSolverrTestMessage(context, result))
                             } finally {
                                 testing = false

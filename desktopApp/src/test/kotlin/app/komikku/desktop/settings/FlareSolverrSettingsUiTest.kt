@@ -36,7 +36,8 @@ import java.io.File
 
 /**
  * P8 settings, headless: Settings → Browse has the FlareSolverr group (address, "Test connection", the privacy note);
- * the app's backend is the FlareSolverr one, and "Test connection" reports a missing address and a ready service.
+ * the app's backend is the FlareSolverr one, and "Test connection" reports a missing address and a ready service; the
+ * address' password is never shown (P8 review).
  */
 @OptIn(ExperimentalTestApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -87,6 +88,26 @@ class FlareSolverrSettingsUiTest {
         onNodeWithText(test).performClick()
         waitForText(stringResource(KMR.strings.desktop_flaresolverr_ok, "3.3.21"))
         solver.requestCount shouldBe 1
+        solver.takeRequest()
+
+        // P8 review: an address with credentials never shows its password (also with a `%` in the address, which the
+        // subtitle's formatting used to trip over), and the test still sends it.
+        solver.enqueue(MockResponse.Builder().code(200).body("""{"msg": "FlareSolverr is ready!", "version": "3.3.22"}""").build())
+        val address = "http://user:secret@${solver.hostName}:${solver.port}/a%2Fb/"
+        val masked = "http://user:••••@${solver.hostName}:${solver.port}/a%2Fb/"
+        Injekt.get<DesktopCloudflarePreferences>().flareSolverrUrl().set(address)
+        waitForText(masked)
+        onAllNodesWithText("secret", substring = true).fetchSemanticsNodes().isEmpty() shouldBe true
+        onNodeWithText(test).performClick()
+        waitForText(stringResource(KMR.strings.desktop_flaresolverr_ok, "3.3.22"))
+        val sent = solver.takeRequest()
+        sent.url.encodedPath shouldBe "/a%2Fb/"
+        sent.headers["Authorization"] shouldBe okhttp3.Credentials.basic("user", "secret")
+
+        // The edit field shows the masked address too.
+        onNodeWithText(stringResource(KMR.strings.desktop_flaresolverr_url)).performClick()
+        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText(masked, substring = true).fetchSemanticsNodes().size >= 2 }
+        onAllNodesWithText("secret", substring = true).fetchSemanticsNodes().isEmpty() shouldBe true
     }
 
     private fun ComposeUiTest.waitForTag(tag: String) {
