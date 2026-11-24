@@ -23,9 +23,19 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 
-/** KMK: cache key of a desktop cover: its URL plus the last modification time (like `MangaCoverKeyer`). */
-class DesktopMangaCoverKeyer : Keyer<MangaCover> {
-    override fun key(data: MangaCover, options: Options): String = "${data.url};${data.lastModified}"
+/**
+ * KMK: memory cache key of a desktop cover, like Android's `MangaCoverKeyer`: with a custom cover in [coverCache] (which
+ * the fetcher serves first) the entry's id plus the last modification time, otherwise its URL plus that time. A custom
+ * cover that is deleted without bumping `coverLastModified` (the shared `removeMangas` / `removeCovers`) therefore
+ * changes the key and is not served from the memory cache any more.
+ */
+class DesktopMangaCoverKeyer(private val coverCache: CoverCache? = null) : Keyer<MangaCover> {
+    override fun key(data: MangaCover, options: Options): String =
+        if (coverCache?.getCustomCoverFile(data.mangaId)?.exists() == true) {
+            "${data.mangaId};${data.lastModified}"
+        } else {
+            "${data.url};${data.lastModified}"
+        }
 }
 
 /**
@@ -47,7 +57,7 @@ class DesktopMangaCoverFetcher(
     private val coverCache: CoverCache? = null,
 ) : Fetcher {
 
-    private val diskCacheKey: String get() = options.diskCacheKey ?: cover.url.orEmpty()
+    private val diskCacheKey: String get() = diskCacheKey(cover, options)
 
     override suspend fun fetch(): FetchResult {
         coverCache?.getCustomCoverFile(cover.mangaId)?.takeIf { it.exists() }?.let { return fileLoader(it) }
@@ -116,6 +126,11 @@ class DesktopMangaCoverFetcher(
         mimeType = "image/*",
         dataSource = dataSource,
     )
+
+    companion object {
+        /** The disk cache key of a source cover ([options]' own key, else its URL), also read by the details' "Save". */
+        fun diskCacheKey(cover: MangaCover, options: Options? = null): String = options?.diskCacheKey ?: cover.url.orEmpty()
+    }
 
     class Factory(
         private val callFactoryLazy: Lazy<Call.Factory>,

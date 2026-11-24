@@ -1,8 +1,10 @@
 package app.komikku.desktop.ui.manga
 
+import app.komikku.shared.coil.DesktopMangaCoverFetcher
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -10,6 +12,8 @@ import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Image
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
@@ -33,6 +37,12 @@ class MangaCoverActions(
     private val updateManga: UpdateManga = Injekt.get(),
     private val localCoverManager: LocalCoverManager = Injekt.get(),
     private val imageLoader: () -> ImageLoader = { SingletonImageLoader.get(PlatformContext.INSTANCE) },
+    /**
+     * Whether this machine's image stack decodes the image file, the check before a picked file becomes the cover:
+     * Skia as the cover loader uses it (Coil's Skia decoder), which may or may not decode AVIF / JPEG XL / HEIF
+     * depending on the OS (P5). Replaceable in tests.
+     */
+    private val decodes: (File) -> Boolean = ::decodesWithSkia,
 ) {
 
     fun hasCustomCover(manga: Manga): Boolean = manga.hasCustomCover(coverCache)
@@ -57,10 +67,19 @@ class MangaCoverActions(
         }
         val loader = imageLoader()
         val diskCache = loader.diskCache ?: return null
-        diskCache.openSnapshot(url)?.use { return block(it.data.toFile()) }
-        val result = loader.execute(ImageRequest.Builder(PlatformContext.INSTANCE).data(manga.asMangaCover()).build())
+        val cover = manga.asMangaCover()
+        // The key the cover fetcher stores the source's cover under
+        val key = DesktopMangaCoverFetcher.diskCacheKey(cover)
+        diskCache.openSnapshot(key)?.use { return block(it.data.toFile()) }
+        // A cover can be in the memory cache only: load it again through the fetcher so that it lands on disk
+        val request = ImageRequest.Builder(PlatformContext.INSTANCE)
+            .data(cover)
+            .memoryCachePolicy(CachePolicy.WRITE_ONLY)
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .build()
+        val result = loader.execute(request)
         if (result !is SuccessResult) return null
-        return diskCache.openSnapshot(url)?.use { block(it.data.toFile()) }
+        return diskCache.openSnapshot(key)?.use { block(it.data.toFile()) }
     }
 
     /** The image type's extension of [file], `null` when it is not an image this app knows. */
@@ -76,10 +95,15 @@ class MangaCoverActions(
         return saved ?: throw IOException("No cover image for ${manga.title}")
     }
 
-    /** Android `MangaCoverScreenModel.editCover` with a file instead of a content URI. */
+    /**
+     * Android `MangaCoverScreenModel.editCover` with a file instead of a content URI. Throws, storing nothing, when the
+     * entry cannot get a cover (Android's `editCover` would silently do nothing), when the file is no image this app
+     * knows, or when this machine cannot decode it (e.g. AVIF / JPEG XL / HEIF without a codec, P5).
+     */
     suspend fun setCover(manga: Manga, image: File) {
-        if (!canEditCover(manga)) return
+        if (!canEditCover(manga)) throw IOException("${manga.title} cannot get a custom cover: not in the library")
         if (imageExtension(image) == null) throw IOException("Not an image: ${image.name}")
+        if (!decodes(image)) throw IOException("The image cannot be decoded on this machine: ${image.name}")
         image.inputStream().use { manga.editCover(localCoverManager, it, updateManga, coverCache) }
     }
 
@@ -90,7 +114,19 @@ class MangaCoverActions(
     }
 
     companion object {
-        /** What "Edit cover" offers in the file chooser. */
+        /**
+         * What "Edit cover" offers in the file chooser. AVIF / JPEG XL / HEIF stay offered since Skia may decode them
+         * through the OS (macOS / Windows unverified, P5); a picked file is only accepted when it decodes ([setCover]).
+         */
         val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif", "avif", "jxl", "heif", "heic")
+
+        /** Decodes [file] fully with Skia, like Coil's Skia decoder for covers; `false` on any failure. */
+        fun decodesWithSkia(file: File): Boolean = try {
+            Image.makeFromEncoded(file.readBytes()).use { image ->
+                Bitmap.makeFromImage(image).use { it.width > 0 && it.height > 0 }
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 }

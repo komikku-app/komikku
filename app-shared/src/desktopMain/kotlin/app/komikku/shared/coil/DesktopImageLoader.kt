@@ -42,7 +42,7 @@ object DesktopImageLoader {
             .components {
                 add(OkHttpNetworkFetcherFactory(callFactory = { callFactoryLazy.value }))
                 add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager, coverCache))
-                add(DesktopMangaCoverKeyer())
+                add(DesktopMangaCoverKeyer(coverCache))
                 // AVIF / JPEG XL / HEIF: Skia first, then a clear "unsupported format" error instead of its generic one (P5)
                 add(UnsupportedImageFormatDecoder.Factory())
             }

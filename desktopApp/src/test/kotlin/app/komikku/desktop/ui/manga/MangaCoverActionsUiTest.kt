@@ -20,6 +20,7 @@ import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.shared.coil.DesktopImageLoader
 import cafe.adriel.voyager.navigator.Navigator
+import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -29,6 +30,7 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.network.NetworkHelper
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import mockwebserver3.Dispatcher
@@ -47,6 +49,7 @@ import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.source.local.LocalSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
@@ -54,6 +57,7 @@ import uy.kohesive.injekt.api.get
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import javax.imageio.ImageIO
 
 /**
@@ -114,8 +118,8 @@ class MangaCoverActionsUiTest {
     @AfterAll
     fun stop() = server.close()
 
-    private fun image(format: String): ByteArray {
-        val image = BufferedImage(4, 6, BufferedImage.TYPE_INT_RGB).apply { setRGB(1, 1, 0xFF0000) }
+    private fun image(format: String, width: Int = 4): ByteArray {
+        val image = BufferedImage(width, 6, BufferedImage.TYPE_INT_RGB).apply { setRGB(1, 1, 0xFF0000) }
         return ByteArrayOutputStream().also { ImageIO.write(image, if (format == "jpg") "jpeg" else format, it) }.toByteArray()
     }
 
@@ -217,6 +221,85 @@ class MangaCoverActionsUiTest {
         onNodeWithTag("details-cover").performClick()
         waitForTag("cover-save")
         onAllNodesWithTag("cover-edit").fetchSemanticsNodes().size shouldBe 0
+    }
+
+    // Review fixes (P10): cache keys, saving a cover that is only in the memory cache, refused covers
+
+    private fun loader(name: String) = DesktopImageLoader.create(
+        PlatformContext.INSTANCE,
+        Injekt.get<NetworkHelper>(),
+        Injekt.get<SourceManager>(),
+        dir.resolve("cache-$name"),
+        Injekt.get<CoverCache>(),
+    )
+
+    private fun ImageLoader.width(entry: Manga) = runBlocking {
+        (execute(ImageRequest.Builder(PlatformContext.INSTANCE).data(entry.asMangaCover()).build()) as SuccessResult).image.width
+    }
+
+    @Test
+    fun `a custom cover deleted without a new cover time is not served from the memory cache`() {
+        val coverCache = Injekt.get<CoverCache>()
+        val entry = TestLibrary.insertManga(SOURCE_ID, "/keyed", "Keyed")
+        runBlocking {
+            Injekt.get<MangaRepository>().update(MangaUpdate(entry.id, thumbnailUrl = server.url("/keyed.png").toString()))
+        }
+        val loader = loader("keyer")
+        coverCache.getCustomCoverFile(entry.id).writeBytes(image("jpg", width = 8))
+        loader.width(stored(entry)) shouldBe 8
+        // Like the shared `removeMangas`: the custom cover goes, `coverLastModified` stays
+        coverCache.deleteCustomCover(entry.id)
+        loader.width(stored(entry)) shouldBe 4
+    }
+
+    @Test
+    fun `save loads a cover that is only in the memory cache`() {
+        val entry = TestLibrary.insertManga(SOURCE_ID, "/memory", "Memory only")
+        runBlocking {
+            Injekt.get<MangaRepository>().update(MangaUpdate(entry.id, thumbnailUrl = server.url("/memory.png").toString()))
+        }
+        val loader = loader("memory")
+        val cover = stored(entry).asMangaCover()
+        runBlocking {
+            loader.execute(
+                ImageRequest.Builder(PlatformContext.INSTANCE).data(cover).diskCachePolicy(CachePolicy.DISABLED).build(),
+            ) as SuccessResult
+        }
+        loader.diskCache!!.openSnapshot(cover.url!!) shouldBe null
+        val target = dir.resolve("memory-saved.png")
+        val actions = MangaCoverActions(imageLoader = { loader })
+        runBlocking { actions.saveCover(stored(entry)) { target } } shouldBe true
+        target.readBytes().toList() shouldBe png.toList()
+    }
+
+    @Test
+    fun `save copies a local entry's cover file`() {
+        val file = dir.resolve("local-cover.jpg").apply { writeBytes(jpeg) }
+        val entry = TestLibrary.insertManga(LocalSource.ID, "local-folder", "Local")
+        runBlocking { Injekt.get<MangaRepository>().update(MangaUpdate(entry.id, thumbnailUrl = file.absolutePath)) }
+        val target = dir.resolve("local-saved.jpg")
+        runBlocking { MangaCoverActions().saveCover(stored(entry)) { target } } shouldBe true
+        target.readBytes().toList() shouldBe jpeg.toList()
+    }
+
+    @Test
+    fun `a cover this machine cannot decode or an entry outside the library is refused`() {
+        val coverCache = Injekt.get<CoverCache>()
+        val entry = TestLibrary.insertManga(SOURCE_ID, "/refused", "Refused")
+        val picked = dir.resolve("undecodable.jpg").apply { writeBytes(jpeg) }
+        val before = stored(entry).coverLastModified
+        shouldThrow<IOException> {
+            runBlocking { MangaCoverActions(decodes = { false }).setCover(stored(entry), picked) }
+        }
+        coverCache.getCustomCoverFile(entry.id).exists() shouldBe false
+        stored(entry).coverLastModified shouldBe before
+        // Not in the library: Android's `editCover` would do nothing; here the caller gets a failure
+        shouldThrow<IOException> { runBlocking { MangaCoverActions().setCover(stored(browsed), picked) } }
+        coverCache.getCustomCoverFile(browsed.id).exists() shouldBe false
+        // The real check: Skia decodes the JPEG, not a PNG signature followed by garbage
+        MangaCoverActions.decodesWithSkia(picked) shouldBe true
+        val broken = dir.resolve("broken.png").apply { writeBytes(png.copyOf(16) + ByteArray(64)) }
+        MangaCoverActions.decodesWithSkia(broken) shouldBe false
     }
 
     private companion object {
