@@ -3093,7 +3093,7 @@ badge's icon appearing, the clear-database progress), a real start-up failure wr
 
 Item 1 of the round (saved searches in the desktop catalogue) is done, with its review fixes (a filter panel); the global
 Feed tab is done ("Feed tab (P13 continued)" below), with its review fixes; the per-source feed and "add to feed" from the
-catalogue are done ("Source feed (P13 rest)" below). **P13 is complete** (left: bulk favourites from feed entries, P14).
+catalogue are done ("Source feed (P13 rest)" below). **P13 is complete** (bulk favourites from feed entries: P14).
 
 **What Android does:** SY's browse screen lists the source's saved searches (`saved_search` table) in the filter sheet,
 sorted by name; tapping one reloads it (`GetExhSavedSearch`: query + filter JSON deserialised onto a fresh
@@ -3287,7 +3287,7 @@ confirmation (`SourceFeedAddDialog`), then a `global = false` row of the source 
 the global feed adds saved searches through its own add dialog). The chip's delete stays its trailing icon, the add button
 is its leading icon (so a click in the middle still applies the search).
 
-**Not done:** bulk favourites from feed entries (P14 does them for global search and the catalogue), SY's MangaDex random
+**Not done:** (bulk favourites from feed entries came with P14), SY's MangaDex random
 / follows entries of the sheet, the source feed's incognito toggle (Android's KMK toolbar action), WebView from the source
 feed (in the catalogue), "feed" opened from the details' source (the desktop details have no source link).
 
@@ -3308,12 +3308,13 @@ Verification (after `76f0940`, `--max-workers=2 --console=plain`): `spotlessAppl
 
 ## P14 — browse leftovers
 
-Built in `3eeca76` (Android refactor), `7a3e9ca` (desktop), `3f0be05` (tests) and the docs commits after them. Not
-reviewed yet.
+Built in `3eeca76` (Android refactor), `7a3e9ca` (desktop), `3f0be05` (tests), `5b1841e` / `e5482ab` (the feeds) and the
+docs commits after them. Not reviewed yet.
 
 ### Built
 
-- **Bulk favourites** (Komikku's selection mode of browse results) in the desktop catalogue and in global search: Komikku's
+- **Bulk favourites** (Komikku's selection mode of browse results) in the desktop catalogue, in global search, in the Feed
+  tab and in the source feed (P13; Android has it in all four): Komikku's
   `BulkFavoriteScreenModel` is borrowed (`desktopCopy`: it uses `desktopCopy` sources — `AddTracks`, `CoverCache`,
   `UpdateMangaFromRemote`, `MangaExtensions`), so the rules are Android's: "Add to library" checks the selected entries one
   by one for library duplicates (`GetDuplicateLibraryManga`, P10) — one selected entry: P10's duplicate dialog (add anyway
@@ -3322,8 +3323,9 @@ reviewed yet.
   when there are no categories or the default is "Default", else the borrowed `ChangeCategoryDialog` with the entries'
   common categories checked and mixed ones excluded), default chapter flags, enhanced trackers and "fetch on add" like
   Android. Desktop UI (`ui/browse/BulkFavorite.kt`): a "Bulk selection mode" toolbar button (spinner while adding), the
-  selection bar (count, select all, select inverse, add to library; in the catalogue in the top bar with "back" ending the
-  selection, in global search in place of the search toolbar), selected covers marked (tinted, check mark). Clicks:
+  selection bar (count, select all, select inverse, add to library; in the catalogue and the source feed in the top bar
+  with "back" ending the selection, in global search in place of the search toolbar, in the Feed tab in its action row;
+  "select all" takes every loaded result of every row), selected covers marked (tinted, check mark). Clicks:
   while selecting a click toggles an entry, a long press opens its details (Android's); outside the selection mode a long
   press starts it with that entry — **deviation**: Android's long press adds / removes that one entry at once (with its
   remove confirmation); the desktop keeps the long press for selecting, like its library.
@@ -3338,8 +3340,8 @@ reviewed yet.
 another module), and its comments name `BulkSelectionToolbar` / `DuplicateMangaDialog` by their full names instead of
 importing them (they are Android-only composables).
 
-**Not done:** migration from the duplicate dialog (no migration on desktop), bulk favourites from the feeds (global and
-source feed: Android has them there too; the rows are the same card row, left for time), removing an entry by long press.
+**Not done:** migration from the duplicate dialog (no migration on desktop), removing an entry by long press, "Allow all"
+and the single-entry duplicate path exercised by a test.
 
 ### Tests
 
@@ -3347,22 +3349,25 @@ source feed: Android has them there too; the rows are the same card row, left fo
 (both stored as favourites, the third not, the selection ends); global search "select all" → the duplicate dialog with the
 bulk choices → "Skip all" → the category dialog → the two non-duplicates in the chosen category, the duplicate not added;
 the library search's "Search globally" opens global search with the query; `globalSearchRowTitle` with no / the same /
-another extension name.
+another extension name. `FeedUiTest` and `SourceFeedUiTest` +1 each: entries of two rows added in bulk.
 
 Verification (after `3f0be05`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
 `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
-'*BulkFavoriteUiTest*'` 4 tests, 0 failures.
+'*BulkFavoriteUiTest*'` 4 tests, 0 failures. Full `:desktopApp:test` on `3a7c807` (`./gradlew --stop` before): 70
+classes, 304 tests, 0 failures (`SourceFeedUiTest` 3, `BulkFavoriteUiTest` 4 new). After `e5482ab` (feeds):
+`spotlessApply`, `spotlessCheck` pass, `:desktopApp:test --tests '*FeedUiTest*' --tests '*SourceFeedUiTest*'` 12 tests,
+0 failures; the final full run is recorded in the next docs commit.
 
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
 1. **Browse:** the global Feed tab, the per-source feed, saved searches in the catalogue, the filter panel and adding a
-   saved search to a source's feed are done (P13; left from them: bulk favourites from feed entries, the source feed's
-   incognito toggle, SY's MangaDex random / follows entries), migration (out of scope so far). Global search, source / language
+   saved search to a source's feed are done (P13; left from them: the source feed's incognito toggle, SY's MangaDex
+   random / follows entries), migration (out of scope so far). Global search, source / language
    toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
-   library search and the extension name in global search rows are done (P14); left: bulk favourites from the feeds, SY
-   source categories and data-saver exclusion.
+   library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); left:
+   SY source categories and data-saver exclusion.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,

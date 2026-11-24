@@ -13,9 +13,9 @@ P11, reader parity (neighbouring chapters in the viewers, wide pages, animated p
 (last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, with its review fixes, is
 done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way: saved searches in the desktop catalogue
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
-commit: the "Record the full desktop suite after the P13 Feed tab review fixes" docs commit); next: the per-source feed
-and the rest of P13, P14; then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to
-do").
+commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) are
+built, not yet reviewed; next: the review `/code-review medium 74366d9^..<last P14 docs commit>` and its fix round; then
+the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -319,7 +319,21 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   tab's model created on first show, Android's "hide feed tab" / "feed tab in front" followed and offered in Settings →
   Browse; loaded rows kept across reorders / deletes, only new rows load; the add dialog's OK needs a source. **Android
   behaviour change** (bug fix, coordinator's decision): `isFeedFull` is `count >= MaxFeedItems`, the global feed refuses
-  the 21st row. Full `:desktopApp:test` on `2d22abc`: 68 classes, 297 tests, 0 failures.
+  the 21st row. Full `:desktopApp:test` on `2d22abc`: 68 classes, 297 tests, 0 failures. Last Part A commit `e4f266a`.
+- **P13 rest** (`74366d9` … , PROGRESS.md "Source feed (P13 rest)"): the source's landing page (Android's
+  `SourceFeedScreen`: latest / popular / the source's own feed saved searches, search field into the catalogue, order /
+  delete, filter button → the catalogue's filter panel), opened from the sources list while SY's "new source navigation"
+  is on (Android's default; switch in Settings → Browse); "add to the source's feed" on each saved search of the
+  catalogue's filter panel (Android's confirmation and limit). Android's `SourceFeedScreenModel` builds its rows with the
+  shared `sourceFeedRows` / `fetchSourceFeedPage` (`FeedItems.kt`); **two small Android behaviour changes**: the source
+  feed's limit is `isFeedFull` (`>=`), a row with a missing saved search is skipped instead of failing. Test
+  `SourceFeedUiTest` (4).
+- **P14** browse leftovers (`3eeca76` … , PROGRESS.md "P14 — browse leftovers"): bulk favourites (Komikku's borrowed
+  `BulkFavoriteScreenModel`: duplicate check with P10's dialog plus "Allow all" / "Skip all" / "Skip it", Android's category
+  rule and dialog) in the catalogue, global search, the Feed tab and the source feed; "Search globally" from the library
+  search; the extension's name after the source's in global search rows. Desktop deviation: outside the selection mode a
+  long press starts selecting (Android adds / removes that one entry). Test `BulkFavoriteUiTest` (4), feed tests +1 each.
+  **Pending:** `/code-review medium 74366d9^..<last P14 docs commit>` (Part B of this round) and its fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -369,8 +383,9 @@ mark the residual path in both modules.
    → Advanced, chapter cache, library extras) and its review fixes are done (last Part A commit `0f596c4`); **next** P13
    (feed and saved searches, PROGRESS "Remaining parity gaps" item 1): saved searches in the catalogue are built
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
-   review fixes are done; **next**: the per-source feed and "add to feed" from the catalogue, then P14 (browse
-   leftovers); then the maintainer's
+   review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
+   favourites, search globally from the library, extension names in global search) are built; **pending**:
+   `/code-review medium 74366d9^..<last P14 docs commit>` and its fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
@@ -378,8 +393,7 @@ mark the residual path in both modules.
    `GetApplicationRelease.isNewVersion` still throws on an odd tag), P5's (macOS / Windows
    Skia behaviour for AVIF / JPEG XL unverified, see the CI test output; no real AVIF cover loaded), P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
-   against real extension APKs or servers), and: no bulk favourites in global search, no "search
-   globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
+   against real extension APKs or servers), and: no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
    P7's / P8's (no embedded browser: jcefmaven backend, PROGRESS P7 "What the embedded backend still needs"; without a
    FlareSolverr-compatible service automatic flows hitting a challenge need the manual step; the FlareSolverr backend
