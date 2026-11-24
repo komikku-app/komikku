@@ -8,7 +8,7 @@ sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review 
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, is built but never executed (its review
-`/code-review medium c712c3f^..a2ab74b` and fix round are pending; the exact range is in "Done"); next: the P9
+`/code-review medium c712c3f^..a2ab74b` and fix round are pending); next: the P9
 review, then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
