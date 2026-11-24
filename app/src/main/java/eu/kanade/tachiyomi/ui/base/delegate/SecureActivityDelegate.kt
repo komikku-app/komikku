@@ -9,7 +9,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
-import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
 import eu.kanade.tachiyomi.ui.security.UnlockActivity
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
@@ -21,22 +20,22 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 
 interface SecureActivityDelegate {
     fun registerSecureActivity(activity: AppCompatActivity)
 
     companion object {
         // SY -->
-        const val LOCK_SUNDAY = 0x40
-        const val LOCK_MONDAY = 0x20
-        const val LOCK_TUESDAY = 0x10
-        const val LOCK_WEDNESDAY = 0x8
-        const val LOCK_THURSDAY = 0x4
-        const val LOCK_FRIDAY = 0x2
-        const val LOCK_SATURDAY = 0x1
-        const val LOCK_ALL_DAYS = 0x7F
+        // KMK --> the values of the shared AppLockRules
+        const val LOCK_SUNDAY = AppLockRules.LOCK_SUNDAY
+        const val LOCK_MONDAY = AppLockRules.LOCK_MONDAY
+        const val LOCK_TUESDAY = AppLockRules.LOCK_TUESDAY
+        const val LOCK_WEDNESDAY = AppLockRules.LOCK_WEDNESDAY
+        const val LOCK_THURSDAY = AppLockRules.LOCK_THURSDAY
+        const val LOCK_FRIDAY = AppLockRules.LOCK_FRIDAY
+        const val LOCK_SATURDAY = AppLockRules.LOCK_SATURDAY
+        const val LOCK_ALL_DAYS = AppLockRules.LOCK_ALL_DAYS
+        // KMK <--
         // SY <--
 
         /**
@@ -62,30 +61,13 @@ interface SecureActivityDelegate {
 
         // SY -->
         private fun canLockNow(preferences: SecurityPreferences): Boolean {
-            val today: Calendar = Calendar.getInstance()
-            val timeRanges = preferences.authenticatorTimeRanges().get()
-                .mapNotNull { TimeRange.fromPreferenceString(it) }
-            val canLockNow = if (timeRanges.isNotEmpty()) {
-                val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
-                timeRanges.any { now in it }
-            } else {
-                true
-            }
-
-            val lockedDays = preferences.authenticatorDays().get()
-            val canLockToday = lockedDays == LOCK_ALL_DAYS ||
-                when (today.get(Calendar.DAY_OF_WEEK)) {
-                    Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
-                    Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
-                    Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
-                    Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
-                    Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
-                    Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
-                    Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
-                    else -> false
-                }
-
-            return canLockNow && canLockToday
+            // KMK --> the shared AppLockRules (also used by the desktop app lock)
+            return AppLockRules.canLockNow(
+                timeRanges = preferences.authenticatorTimeRanges().get(),
+                lockedDays = preferences.authenticatorDays().get(),
+                now = Calendar.getInstance(),
+            )
+            // KMK <--
         }
         // SY <--
 
@@ -102,11 +84,14 @@ interface SecureActivityDelegate {
             if (!AuthenticatorUtil.isAuthenticating && !requireUnlock) {
                 requireUnlock =
                     /* SY --> */ canLockNow(preferences) &&
-                    /* SY <-- */ when (val lockDelay = preferences.lockAppAfter().get()) {
-                        -1 -> false // Never
-                        0 -> true // Always
-                        else -> lastClosedPref.get() + lockDelay * 60_000 <= System.currentTimeMillis()
-                    }
+                    /* SY <-- */
+                    // KMK --> the shared AppLockRules.isLockDue (Never / Always / after the delay)
+                    AppLockRules.isLockDue(
+                        lockAppAfter = preferences.lockAppAfter().get(),
+                        lastClosed = lastClosedPref.get(),
+                        nowMillis = System.currentTimeMillis(),
+                    )
+                // KMK <--
             }
 
             lastClosedPref.delete()

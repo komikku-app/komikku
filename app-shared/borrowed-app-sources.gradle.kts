@@ -490,6 +490,11 @@ run {
     desktopCopy(
         "eu/kanade/tachiyomi/ui/browse/BulkFavoriteScreenModel.kt",
     )
+    // App lock (P16): AppLockRules.kt holds the platform-neutral rules of Android's SecureActivityDelegate (SY's lock
+    // times and days, "Lock when idle"), which Android's delegate and the desktop app lock both use.
+    shared(
+        "eu/kanade/tachiyomi/ui/base/delegate/AppLockRules.kt",
+    )
     // Settings search (P15): SettingsSearch.kt holds the platform-neutral part of Android's SettingsSearchScreen (what a
     // query finds, the breadcrumbs) and PreferenceScreen (the highlighted item's index), which both call; it uses the
     // desktopCopy Preference.kt, hence a copy.
