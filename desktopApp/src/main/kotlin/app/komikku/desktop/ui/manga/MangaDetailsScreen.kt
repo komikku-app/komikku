@@ -146,6 +146,8 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
             }
             is MangaDetailsScreenModel.Dialog.EditMangaInfo -> EditMangaInfoDialog(
                 manga = dialog.manga,
+                saving = dialog.saving,
+                error = dialog.error,
                 onDismissRequest = model::dismissDialog,
                 onSave = model::updateMangaInfo,
             )

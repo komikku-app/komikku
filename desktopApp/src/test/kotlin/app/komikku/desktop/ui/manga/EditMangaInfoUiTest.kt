@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -25,20 +26,27 @@ import eu.kanade.tachiyomi.source.model.SManga
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
+import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
+import tachiyomi.domain.manga.repository.CustomMangaRepository
 import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.source.local.LocalSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.io.IOException
 
 /**
  * P10, headless: SY's "Edit info" on the desktop details. Saving stores the entry's custom info (the shared
@@ -53,6 +61,8 @@ class EditMangaInfoUiTest {
     private lateinit var app: Application
     private lateinit var manga: Manga
     private lateinit var browsed: Manga
+    private lateinit var failing: Manga
+    private lateinit var local: Manga
 
     @BeforeAll
     fun boot() {
@@ -76,6 +86,27 @@ class EditMangaInfoUiTest {
         }
         browsed = TestLibrary.insertManga(SOURCE_ID, "/browsed", "Browsed", favorite = false)
         TestLibrary.insertChapters(browsed, "/browsed/1" to "Chapter 1")
+        failing = TestLibrary.insertManga(SOURCE_ID, "/failing", "Failing")
+        TestLibrary.insertChapters(failing, "/failing/1" to "Chapter 1")
+        local = TestLibrary.insertManga(LocalSource.ID, "local-folder", "Local title")
+        TestLibrary.insertChapters(local, "local-folder/1" to "Chapter 1")
+        runBlocking {
+            Injekt.get<MangaRepository>().update(
+                MangaUpdate(local.id, author = "Old author", status = SManga.COMPLETED.toLong(), initialized = true),
+            )
+        }
+        // Saving the custom info of [failing] fails (a full disk, say); the other entries use the real store
+        val real = Injekt.get<CustomMangaRepository>()
+        Injekt.addSingletonFactory {
+            SetCustomMangaInfo(
+                object : CustomMangaRepository by real {
+                    override fun set(mangaInfo: CustomMangaInfo) {
+                        if (mangaInfo.id == failing.id) throw IOException("No space left")
+                        real.set(mangaInfo)
+                    }
+                },
+            )
+        }
     }
 
     private fun custom() = Injekt.get<GetCustomMangaInfo>().get(manga.id)
@@ -163,6 +194,43 @@ class EditMangaInfoUiTest {
         details(browsed)
         waitForTag("details-favorite")
         onAllNodesWithTag("details-edit-info").fetchSemanticsNodes().size shouldBe 0
+    }
+
+    @Test
+    fun `a failed save keeps the dialog with the input and shows the error`() = runDesktopComposeUiTest(width = 1200, height = 1000) {
+        details(failing)
+        waitForTag("details-edit-info")
+        onNodeWithTag("details-edit-info").performClick()
+        waitForTag("edit-info-dialog")
+        onNodeWithTag("edit-info-title").performTextInput("Never stored")
+        onNodeWithTag("edit-info-save").performClick()
+        waitForTag("edit-info-error")
+        onNodeWithTag("edit-info-dialog").assertExists()
+        fieldText("edit-info-title") shouldBe "Never stored"
+        Injekt.get<GetCustomMangaInfo>().get(failing.id).shouldBeNull()
+        onNodeWithTag("edit-info-save").assertIsEnabled()
+    }
+
+    @Test
+    fun `a local entry's edit shows the stored row and keeps the default status`() = runBlocking<Unit> {
+        val model = MangaDetailsScreenModel(local.id)
+        val getManga = Injekt.get<GetManga>()
+        awaitCondition { model.state.value.manga != null }
+        model.showEditMangaInfoDialog()
+        model.updateMangaInfo("Local title", "New author", null, null, null, null, null)
+        awaitCondition { model.state.value.dialog == null }
+        val row = getManga.await(local.id)!!
+        row.author shouldBe "New author"
+        row.status shouldBe SManga.COMPLETED.toLong()
+        // What is shown is the stored row as the subscription brings it, not a copy made before the save
+        awaitCondition { model.state.value.manga == getManga.await(local.id) }
+        delay(300)
+        model.state.value.manga shouldBe getManga.await(local.id)
+        model.state.value.manga!!.status shouldBe SManga.COMPLETED.toLong()
+    }
+
+    private suspend fun awaitCondition(condition: suspend () -> Boolean) {
+        withTimeout(10_000) { while (!condition()) delay(20) }
     }
 
     private companion object {

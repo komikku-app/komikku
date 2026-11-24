@@ -19,6 +19,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import eu.kanade.tachiyomi.util.lang.chop
 import exh.util.trimOrNull
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
@@ -45,11 +47,14 @@ import tachiyomi.source.local.isLocal
  * Desktop counterpart of SY's `EditMangaDialog` (P10): title, author, artist, thumbnail URL, description, tags (remove,
  * add comma-separated), status, "Reset tags" and "Reset info"; the original values are the fields' labels. What it
  * starts with and what a save stores come from the shared [MangaInfoEdits] (Android's dialog is built from Android
- * views). Not on desktop: "Autofill from tracker" and the cover preview.
+ * views). Not on desktop: "Autofill from tracker" and the cover preview. While [saving] the save button is off; a failed
+ * save shows [error] and keeps the input (the dialog stays open).
  */
 @Composable
 internal fun EditMangaInfoDialog(
     manga: Manga,
+    saving: Boolean,
+    error: String?,
     onDismissRequest: () -> Unit,
     onSave: (
         title: String?,
@@ -101,6 +106,13 @@ internal fun EditMangaInfoDialog(
                     singleLine = false,
                 )
                 StatusChoice(statusIndex) { statusIndex = it }
+                error?.let {
+                    Text(
+                        stringResource(KMR.strings.desktop_edit_info_failed, it),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("edit-info-error"),
+                    )
+                }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("edit-info-tags")) {
                     tags.forEachIndexed { index, tag ->
                         // A click removes the tag, like the close icon of Android's chips
@@ -158,6 +170,7 @@ internal fun EditMangaInfoDialog(
         },
         confirmButton = {
             TextButton(
+                enabled = !saving,
                 onClick = {
                     onSave(title, author, artist, thumbnailUrl, description, tags, MangaInfoEdits.statusAt(statusIndex))
                 },

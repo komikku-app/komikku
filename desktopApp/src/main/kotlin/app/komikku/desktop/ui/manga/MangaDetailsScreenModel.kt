@@ -114,8 +114,11 @@ class MangaDetailsScreenModel(
         /** Android `MangaScreenModel.Dialog.DuplicateManga`: library entries with the same title (or tracked alike). */
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
 
-        /** SY's "Edit info" for a library entry (Android `MangaScreenModel.Dialog.EditMangaInfo`). */
-        data class EditMangaInfo(val manga: Manga) : Dialog
+        /**
+         * SY's "Edit info" for a library entry (Android `MangaScreenModel.Dialog.EditMangaInfo`); [saving] while a save
+         * runs, [error] the last failed save's message (the dialog keeps the input).
+         */
+        data class EditMangaInfo(val manga: Manga, val saving: Boolean = false, val error: String? = null) : Dialog
 
         /**
          * The cover, large, with Android's cover actions (`MangaCoverDialog`): save, edit (library and local entries)
@@ -414,8 +417,12 @@ class MangaDetailsScreenModel(
     /**
      * Android `MangaScreenModel.updateMangaInfo` with the shared [MangaInfoEdits]: a local entry gets the new values in
      * the database and its `ComicInfo.xml`; a source entry stores them as its custom info (`edits.json`, which backups
-     * carry), blank values meaning the source's. The shown entry is replaced by a copy (the custom info is read when a
-     * `Manga` is made), since the database row of a source entry does not change.
+     * carry), blank values meaning the source's.
+     *
+     * The dialog stays open (busy) until the save is done: closed on success, kept with the user's input and the error
+     * on failure. What is shown afterwards: a local entry's database row comes back through the subscription (nothing is
+     * set here, so a fresher row is never overwritten by a copy made before the save); a source entry's row does not
+     * change, so the shown entry is replaced by a copy of the current one, which reads the new custom info when made.
      */
     fun updateMangaInfo(
         title: String?,
@@ -426,30 +433,44 @@ class MangaDetailsScreenModel(
         tags: List<String>?,
         status: Long?,
     ) {
-        dismissDialog()
+        val dialog = state.value.dialog as? Dialog.EditMangaInfo ?: return
+        if (dialog.saving) return
         val manga = state.value.manga ?: return
+        mutableState.update { it.copy(dialog = dialog.copy(saving = true, error = null)) }
         screenModelScope.launch {
-            val edited = try {
+            try {
                 withIOContext {
                     if (manga.isLocal()) {
                         val (edited, update) = MangaInfoEdits.localInfoEdit(manga, title, author, artist, thumbnailUrl, description, tags, status)
                         (sourceManager.get(LocalSource.ID) as? LocalSource)?.updateMangaInfo(edited.toSManga())
                         updateManga.await(update)
-                        edited
                     } else {
                         setCustomMangaInfo.set(
                             MangaInfoEdits.customInfoEdit(manga, title, author, artist, thumbnailUrl, description, tags, status),
                         )
-                        manga.copy(lastUpdate = manga.lastUpdate + 1)
                     }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 xLogE("Failed to edit the entry's info", e)
+                mutableState.update { state ->
+                    val current = state.dialog as? Dialog.EditMangaInfo ?: return@update state
+                    state.copy(dialog = current.copy(saving = false, error = e.message ?: e::class.simpleName.orEmpty()))
+                }
                 return@launch
             }
-            mutableState.update { if (it.manga?.id == edited.id) it.copy(manga = edited) else it }
+            mutableState.update { state ->
+                val shown = state.manga
+                state.copy(
+                    dialog = state.dialog.takeUnless { it is Dialog.EditMangaInfo },
+                    manga = if (shown != null && shown.id == manga.id && !shown.isLocal()) {
+                        shown.copy(lastUpdate = shown.lastUpdate + 1)
+                    } else {
+                        shown
+                    },
+                )
+            }
         }
     }
 

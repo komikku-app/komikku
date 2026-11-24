@@ -294,6 +294,7 @@
     <string name="desktop_flaresolverr_error_answer">FlareSolverr error (HTTP %1$d): %2$s</string>
     <string name="desktop_flaresolverr_unreadable_answer">FlareSolverr gave no readable answer (HTTP %1$d)</string>
     <string name="desktop_flaresolverr_no_solution">FlareSolverr answered without a solution (HTTP %1$d)</string>
+    <string name="desktop_edit_info_failed">Couldn\'t save the info: %1$s</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>
