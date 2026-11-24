@@ -2127,6 +2127,11 @@ Review `/code-review medium 9f4a7ec^..ff465c0`, 8 findings (4 important, 1 pre-e
 
 Tests after the fixes: `DesktopAppUpdateCheckerTest` 13 (was 9), `AppUpdateUiTest` 3 (was 2).
 
+Verification (after `921518b`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 45 classes, 179 tests, 0 failures (was
+174). `:domain` untouched, so its tests were not run. Not verified: a real CI run of `build_desktop.yml` with
+`fetch-depth: 0`, a full (non-shallow) clone building with `-Pdesktop-preview`.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
