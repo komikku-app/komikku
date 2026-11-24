@@ -53,6 +53,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.feedItemTitles
 import eu.kanade.tachiyomi.ui.browse.feed.feedSourceOptions
 import eu.kanade.tachiyomi.ui.browse.feed.fetchFeedPage
@@ -357,12 +358,18 @@ class FeedPaneModel(
     fun mangaFlow(manga: Manga) = getManga.subscribe(manga.url, manga.source)
 }
 
-/** P13: the Feed tab of desktop Browse (Android's `feedTab`): rows, add / delete / reorder, refresh. */
+/**
+ * P13: the Feed tab of desktop Browse (Android's `feedTab`): rows, add / delete / reorder, refresh; P14: bulk favourites
+ * of the rows' entries ([bulkModel]).
+ */
 @Composable
-fun FeedPane(model: FeedPaneModel) {
+fun FeedPane(model: FeedPaneModel, bulkModel: BulkFavoriteScreenModel) {
     val navigator = LocalNavigator.currentOrThrow
     val context = LocalContext.current
     val state by model.state.collectAsState()
+    val bulkState by bulkModel.state.collectAsState()
+    val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
+    val allResults = { state.rows.orEmpty().flatMap { it.results.orEmpty() } }
     var ordering by rememberSaveable { mutableStateOf(false) }
     val tooManyFeeds = stringResource(KMR.strings.too_many_in_feed)
     val internalError = stringResource(MR.strings.internal_error)
@@ -379,8 +386,21 @@ fun FeedPane(model: FeedPaneModel) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (bulkState.selectionMode) {
+                IconButton(onClick = { bulkModel.toggleSelectionMode(false) }) {
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(MR.strings.action_cancel))
+                }
+                Text("${bulkState.selection.size}", style = MaterialTheme.typography.titleLarge)
+            }
             Spacer(modifier = Modifier.weight(1f))
-            if (ordering) {
+            if (bulkState.selectionMode) {
+                BulkSelectionActions(
+                    state = bulkState,
+                    onSelectAll = { allResults().forEach(bulkModel::select) },
+                    onReverseSelection = { bulkModel.reverseSelection(allResults()) },
+                    onAddToLibrary = { bulkModel.addFavorite() },
+                )
+            } else if (ordering) {
                 IconButton(onClick = { ordering = false }, modifier = Modifier.testTag("feed-sort-done")) {
                     Icon(
                         Icons.Outlined.Close,
@@ -389,6 +409,7 @@ fun FeedPane(model: FeedPaneModel) {
                     )
                 }
             } else {
+                BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
                 IconButton(onClick = model::openAddDialog, modifier = Modifier.testTag("feed-add")) {
                     Icon(Icons.Outlined.Add, contentDescription = stringResource(MR.strings.action_add))
                 }
@@ -436,7 +457,9 @@ fun FeedPane(model: FeedPaneModel) {
                                 getManga = { manga ->
                                     produceState(manga, manga.id) { model.mangaFlow(manga).collect { if (it != null) value = it } }
                                 },
-                                onClick = { navigator.push(MangaDetailsScreen(it.id)) },
+                                onClick = bulkClicks::onClick,
+                                selection = bulkState.selection,
+                                onLongClick = bulkClicks::onLongClick,
                             )
                         }
                     }
@@ -471,6 +494,7 @@ fun FeedPane(model: FeedPaneModel) {
         )
         null -> Unit
     }
+    BulkFavoriteDialogs(bulkModel, bulkState.dialog)
 }
 
 /**

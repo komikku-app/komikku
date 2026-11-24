@@ -47,6 +47,7 @@ import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.SourceFeedRow
 import eu.kanade.tachiyomi.ui.browse.feed.fetchSourceFeedPage
 import eu.kanade.tachiyomi.ui.browse.feed.sourceFeedRows
@@ -105,11 +106,31 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
         val source = model.source
         var ordering by rememberSaveable { mutableStateOf(false) }
         val savedSearchRows = state.rows.orEmpty().mapNotNull { it.row as? SourceFeedRow.SavedSearchRow }
+        // P14: bulk favourites of the rows' entries
+        val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkState by bulkModel.state.collectAsState()
+        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
+        val allResults = { state.rows.orEmpty().flatMap { it.results.orEmpty() } }
         BrowseScaffold(
-            title = source?.name.orEmpty(),
-            onBack = { if (ordering) ordering = false else navigator.pop() },
+            title = if (bulkState.selectionMode) "${bulkState.selection.size}" else source?.name.orEmpty(),
+            onBack = {
+                when {
+                    bulkState.selectionMode -> bulkModel.toggleSelectionMode(false)
+                    ordering -> ordering = false
+                    else -> navigator.pop()
+                }
+            },
             actions = {
                 if (source !is CatalogueSource) return@BrowseScaffold
+                if (bulkState.selectionMode) {
+                    BulkSelectionActions(
+                        state = bulkState,
+                        onSelectAll = { allResults().forEach(bulkModel::select) },
+                        onReverseSelection = { bulkModel.reverseSelection(allResults()) },
+                        onAddToLibrary = { bulkModel.addFavorite() },
+                    )
+                    return@BrowseScaffold
+                }
                 if (ordering) {
                     IconButton(onClick = { ordering = false }, modifier = Modifier.testTag("source-feed-sort-done")) {
                         Icon(
@@ -120,6 +141,7 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
                     }
                     return@BrowseScaffold
                 }
+                BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
                 IconButton(
                     onClick = { navigator.push(CatalogueScreen(sourceId, openFilters = true)) },
                     modifier = Modifier.testTag("source-feed-filter"),
@@ -160,11 +182,12 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
                     when {
                         rows == null && state.failed -> EmptyScreen(MR.strings.internal_error)
                         rows == null -> LoadingScreen()
-                        else -> SourceFeedRows(rows, model, navigator)
+                        else -> SourceFeedRows(rows, model, navigator, bulkClicks, bulkState.selection)
                     }
                 }
             }
         }
+        BulkFavoriteDialogs(bulkModel, bulkState.dialog)
         state.deleting?.let { feed ->
             SourceFeedDeleteDialog(
                 onDismissRequest = model::dismissDialog,
@@ -198,7 +221,13 @@ private fun SourceFeedSearchField(onSearch: (String) -> Unit) {
 }
 
 @Composable
-private fun SourceFeedRows(rows: ImmutableList<SourceFeedScreenModel.Row>, model: SourceFeedScreenModel, navigator: Navigator) {
+private fun SourceFeedRows(
+    rows: ImmutableList<SourceFeedScreenModel.Row>,
+    model: SourceFeedScreenModel,
+    navigator: Navigator,
+    bulkClicks: BulkClicks,
+    selection: List<Manga>,
+) {
     val sourceId = model.sourceId
     LazyColumn(modifier = Modifier.fillMaxSize().testTag("source-feed-rows")) {
         items(rows, key = { "source-feed-${it.row.id}" }) { row ->
@@ -231,7 +260,9 @@ private fun SourceFeedRows(rows: ImmutableList<SourceFeedScreenModel.Row>, model
                         getManga = { manga ->
                             produceState(manga, manga.id) { model.mangaFlow(manga).collect { if (it != null) value = it } }
                         },
-                        onClick = { navigator.push(MangaDetailsScreen(it.id)) },
+                        onClick = bulkClicks::onClick,
+                        selection = selection,
+                        onLongClick = bulkClicks::onLongClick,
                     )
                 }
             }

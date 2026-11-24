@@ -17,6 +17,7 @@ import app.komikku.shared.jssource.MangayomiSourceStore
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -86,7 +87,8 @@ data object BrowseHomeScreen : Screen() {
 @Composable
 private fun BrowseHomeScreen.FeedTab() {
     val model = rememberScreenModel { FeedPaneModel() }
-    FeedPane(model)
+    val bulkModel = rememberScreenModel(tag = "feed-bulk") { BulkFavoriteScreenModel() }
+    FeedPane(model, bulkModel)
 }
 
 /**
