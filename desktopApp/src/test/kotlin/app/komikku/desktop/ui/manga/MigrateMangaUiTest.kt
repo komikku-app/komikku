@@ -75,6 +75,8 @@ class MigrateMangaUiTest {
         }
         // Android's default: every flag
         Injekt.get<SourcePreferences>().migrationFlags().set(MigrationFlag.entries.toSet())
+        // P19: the migration search searches the migration sources only (the configuration screen sets them)
+        Injekt.get<SourcePreferences>().migrationSources().set(listOf(OLD, NEW))
     }
 
     private fun ComposeUiTest.waitForTag(tag: String, present: Boolean = true) =
@@ -83,6 +85,13 @@ class MigrateMangaUiTest {
     private fun ComposeUiTest.details(manga: Manga) = setContent {
         CompositionLocalProvider(LocalContext provides app) {
             DesktopTheme { DesktopToastHost { Navigator(MangaDetailsScreen(manga.id)) } }
+        }
+    }
+
+    /** The migration search over the entry's details (P19: the details' "Migrate" opens the configuration first). */
+    private fun ComposeUiTest.migrationSearch(manga: Manga) = setContent {
+        CompositionLocalProvider(LocalContext provides app) {
+            DesktopTheme { DesktopToastHost { Navigator(listOf(MangaDetailsScreen(manga.id), MigrateSearchScreen(manga.id))) } }
         }
     }
 
@@ -101,7 +110,6 @@ class MigrateMangaUiTest {
     }
 
     private fun ComposeUiTest.pickNewSourceResult(title: String, openDialog: Boolean = true) {
-        onNodeWithTag("details-migrate").performClick()
         waitForTag("migrate-search")
         val newRow = hasAnyAncestor(hasTestTag("global-search-source-$NEW"))
         waitUntil(timeoutMillis = 15_000) { onAllNodes(hasText(title) and newRow).fetchSemanticsNodes().isNotEmpty() }
@@ -118,8 +126,7 @@ class MigrateMangaUiTest {
     fun `migrate moves the read state, categories and notes to the other source's entry`() =
         runDesktopComposeUiTest(width = 1280, height = 900) {
             val current = libraryEntry("frieren", "Frieren")
-            details(current)
-            waitForTag("details-migrate")
+            migrationSearch(current)
             pickNewSourceResult("Frieren")
             onNodeWithText(MR.strings.migrate.localized()).performClick()
 
@@ -140,8 +147,7 @@ class MigrateMangaUiTest {
     @Test
     fun `copy keeps the old entry in the library`() = runDesktopComposeUiTest(width = 1280, height = 900) {
         val current = libraryEntry("dungeon-meshi", "Dungeon Meshi")
-        details(current)
-        waitForTag("details-migrate")
+        migrationSearch(current)
         pickNewSourceResult("Dungeon Meshi")
         onNodeWithText(MR.strings.copy.localized()).performClick()
         waitUntil(timeoutMillis = 15_000) { stored(NEW, "/dungeon-meshi")?.favorite == true }
@@ -152,8 +158,7 @@ class MigrateMangaUiTest {
     fun `the entry itself is no migration target and the search has no pinned or all filter`() =
         runDesktopComposeUiTest(width = 1280, height = 900) {
             val current = libraryEntry("vinland-saga", "Vinland Saga")
-            details(current)
-            waitForTag("details-migrate")
+            migrationSearch(current)
             pickNewSourceResult("Vinland Saga", openDialog = false)
             // Its own source's row finds the entry itself, which is left out (and so "no results" there)
             val oldRow = hasAnyAncestor(hasTestTag("global-search-source-$OLD"))
@@ -169,8 +174,7 @@ class MigrateMangaUiTest {
     @Test
     fun `a failed migration is reported and the search stays`() = runDesktopComposeUiTest(width = 1280, height = 900) {
         val current = libraryEntry("broken-entry", BROKEN)
-        details(current)
-        waitForTag("details-migrate")
+        migrationSearch(current)
         pickNewSourceResult(BROKEN)
         onNodeWithText(MR.strings.migrate.localized()).performClick()
         val message = KMR.strings.desktop_migration_failed.localized().replace("%1\$s", BROKEN)

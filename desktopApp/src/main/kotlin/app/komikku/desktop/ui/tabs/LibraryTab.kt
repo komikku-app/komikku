@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.GlobalSearchScreen
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.desktop.ui.migration.MigrationConfigScreen
 import app.komikku.desktop.ui.more.CategoriesScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.shared.library.LibraryUpdateRunner
@@ -53,12 +54,14 @@ import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogE
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -140,6 +143,7 @@ private fun LibraryPages(
     val index = state.selectedIndex
     val runner = remember { Injekt.get<LibraryUpdateRunner>() }
     val context = remember { Injekt.get<Application>() }
+    val navigator = LocalNavigator.currentOrThrow
     val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
     val showCounts by libraryPreferences.categoryNumberOfItems().collectAsState()
     val displayMode by libraryPreferences.displayMode().collectAsState()
@@ -249,7 +253,6 @@ private fun LibraryPages(
             }
             // P14: Android's "Search globally" for the library search's query (its first grid item while searching)
             if (state.query.isNotEmpty()) {
-                val navigator = LocalNavigator.currentOrThrow
                 TextButton(
                     onClick = { navigator.push(GlobalSearchScreen(state.query)) },
                     modifier = Modifier.padding(horizontal = 8.dp).testTag("library-global-search"),
@@ -322,6 +325,16 @@ private fun LibraryPages(
                         }
                     },
                     onDeleteClicked = screenModel::openDeleteMangaDialog,
+                    // P19: Android's — merged entries left out, nothing left → "No valid entry selected"
+                    onMigrateClicked = {
+                        val selection = state.selectedManga.filterNot { it.source == MERGED_SOURCE_ID }.map { it.id }
+                        screenModel.clearSelection()
+                        if (selection.isEmpty()) {
+                            context.toast(SYMR.strings.no_valid_entry)
+                        } else {
+                            navigator.push(MigrationConfigScreen(selection))
+                        }
+                    },
                 )
             }
         }

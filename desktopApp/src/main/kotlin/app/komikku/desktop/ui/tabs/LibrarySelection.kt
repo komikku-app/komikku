@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -88,6 +89,8 @@ internal fun LibrarySelectionBar(
     onDownloadClicked: (DownloadAction) -> Unit,
     onUpdateClicked: () -> Unit,
     onDeleteClicked: () -> Unit,
+    /** P19: Android's "Migrate" (the migration configuration, then the list) for the selection. */
+    onMigrateClicked: () -> Unit = {},
 ) {
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth().testTag("library-selection-bar")) {
         Row(
@@ -111,6 +114,7 @@ internal fun LibrarySelectionBar(
                 }
             }
             SelectionAction(stringResource(KMR.strings.action_update), Icons.Outlined.Refresh, onUpdateClicked)
+            SelectionAction(stringResource(MR.strings.migrate), Icons.Outlined.SwapCalls, onMigrateClicked)
             SelectionAction(stringResource(MR.strings.action_delete), Icons.Outlined.Delete, onDeleteClicked)
         }
     }

@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.browse.CoverItem
 import app.komikku.desktop.ui.browse.GlobalSearchScreen
+import app.komikku.desktop.ui.migration.MigrationConfigScreen
 import app.komikku.desktop.webview.WebViewDialogs
 import app.komikku.desktop.webview.rememberWebViewLauncher
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -86,7 +87,7 @@ import java.util.Date
  * single and multi selection actions. Opening a chapter starts the reader. The shared Android manga
  * screen replaces this in Phase 6.2.
  */
-class MangaDetailsScreen(private val mangaId: Long) : Screen() {
+class MangaDetailsScreen(internal val mangaId: Long) : Screen() {
 
     @Composable
     override fun Content() {
@@ -115,9 +116,9 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                         Icon(Icons.Outlined.Edit, contentDescription = stringResource(SYMR.strings.action_edit_info))
                     }
                 }
-                // P18: Android's "Migrate" for library entries (the migration search, then Mihon's dialog)
+                // P18 / P19: Android's "Migrate" for library entries (the migration configuration, then the list)
                 if (manga?.favorite == true) {
-                    IconButton(onClick = { navigator.push(MigrateSearchScreen(manga.id)) }, modifier = Modifier.testTag("details-migrate")) {
+                    IconButton(onClick = { navigator.push(MigrationConfigScreen(manga.id)) }, modifier = Modifier.testTag("details-migrate")) {
                         Icon(Icons.Outlined.SwapCalls, contentDescription = stringResource(MR.strings.migrate))
                     }
                 }

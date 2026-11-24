@@ -14,6 +14,7 @@ import app.komikku.desktop.ui.browse.CatalogueScreen
 import app.komikku.desktop.ui.browse.GlobalSearchContent
 import app.komikku.desktop.ui.browse.GlobalSearchToolbar
 import app.komikku.desktop.ui.browse.globalSearchRowTitle
+import app.komikku.desktop.ui.migration.MigrationListScreen
 import app.komikku.desktop.ui.tabs.SourceIcons
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -45,8 +46,9 @@ import uy.kohesive.injekt.api.get
  * library, Migrate replaces it) and after it the new entry's details replace this screen, like Android. A row header
  * opens that source's catalogue with the query (Android: its own source search screen for the migration).
  *
- * Not built: Android's migration list (several entries, automatic matching), its configuration screen (sources and
- * flags), the pick from a source's own search.
+ * P19: opened from the migration list ([MigrationListScreen], its "search manually" or at once for one entry), a pick
+ * becomes that entry's match in the list and the list is shown again, like Android. Not built: the pick from a source's
+ * own search.
  */
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
@@ -86,7 +88,17 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                 state = shown,
                 getManga = { model.getManga(it) },
                 onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery)) },
-                onClickItem = { if (it.id != mangaId) model.setMigrateDialog(mangaId, it) },
+                onClickItem = { target ->
+                    if (target.id == mangaId) return@GlobalSearchContent
+                    // P19, like Android: opened from the migration list, the pick becomes the entry's match there
+                    val list = navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull()
+                    if (list == null) {
+                        model.setMigrateDialog(mangaId, target)
+                    } else {
+                        list.addMatchOverride(current = mangaId, target = target.id)
+                        navigator.popUntil { it === list }
+                    }
+                },
                 onLongClickItem = { navigator.push(MangaDetailsScreen(it.id)) },
                 selection = emptyList(),
                 rowTitle = { source ->
@@ -124,8 +136,8 @@ internal fun SearchScreenModel.State.withoutEntry(mangaId: Long): SearchScreenMo
 
 /**
  * Android's `MigrateSearchScreenModel`: the entry's title as the query, the migration sources (`migrationSources`, in
- * their order) searched. Desktop deviation: Android's migration configuration screen fills those sources before a
- * search; the desktop has none yet, so without them the global search's sources are searched.
+ * their order) searched; the migration configuration screen ([app.komikku.desktop.ui.migration.MigrationConfigScreen])
+ * fills them before a search is opened.
  */
 class MigrateSearchScreenModel(
     val mangaId: Long,
@@ -154,7 +166,8 @@ class MigrateSearchScreenModel(
         shouldPinnedSourcesHidden()
     }
 
+    // P19: Android's — only the migration sources (the configuration screen sets them before a search is opened)
     override fun getEnabledSources(): List<Source> {
-        return migrationSources.mapNotNull { sourceManager.get(it) }.ifEmpty { super.getEnabledSources() }
+        return migrationSources.mapNotNull { sourceManager.get(it) }
     }
 }
