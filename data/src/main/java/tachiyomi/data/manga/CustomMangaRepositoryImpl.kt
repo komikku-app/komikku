@@ -60,6 +60,9 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             editJson.delete()
             editJson.writeText(Json.encodeToString(MangaList(jsonElements)))
         }
+        // KMK --> the last custom info was removed: drop the file too, or it would come back at the next start
+        if (jsonElements.isEmpty()) editJson.delete()
+        // KMK <--
     }
 
     @Serializable
