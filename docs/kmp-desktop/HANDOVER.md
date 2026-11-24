@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18): built, not reviewed; next their review, the migration list), then the maintainer's first real run of
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `02609c0`; next the migration list (P19)), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -379,6 +379,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   configuration screen. Full `:desktopApp:test` on `550f9fa`: 75 classes, 338 tests, 0 failures. Not reviewed yet;
   review range of P17 + P18: `56d2012..` the docs commit "Record the desktop
   single-entry migration (P18)".
+- **P17 / P18 review** (medium, `56d2012..d0b24d0`, 7 findings) — 6 fixed in `ac0c6de`, `9504aaf`, `02609c0` and the docs
+  commit after them, 1 no change (PROGRESS.md "Review fixes (P17 / P18)"): no migration of an entry onto itself (dropped
+  from the results, the click ignored, and the borrowed use case returns at once — **Android behaviour change**, bug fix);
+  the use case returns whether it migrated and the dialog takes an optional `onFailure` (desktop: a message, the search
+  stays; Android unchanged apart from a log line); Android's migration search has no pinned / all chips, the desktop's
+  neither; each library update run has a `runId` and each backup result is notified once; no "null" chapter in download
+  error titles. No change: the tray labels (the desktop has no app language change). Found in the full run: a test race in
+  `DesktopNotificationsTest` (events emitted before the collectors subscribed). Full `:desktopApp:test` on `02609c0`: 75
+  classes, 344 tests, 0 failures. Last Part A commit `02609c0`.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -431,8 +440,8 @@ mark the residual path in both modules.
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
-   entry migration) are built; **next**: the review of P17 / P18 (`56d2012..`), then the migration list and its
-   configuration screen; then the maintainer's
+   entry migration) and their review fixes are done (last Part A commit `02609c0`); **next**: the migration list and its
+   configuration screen (P19); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

@@ -3660,6 +3660,43 @@ classes, 338 tests, 0 failures (was 73 / 330 on `39b70ae`: `DesktopNotifications
 `DesktopExtensionManagerTest` and `ReaderNavigationTest` included and passing). Review range of P17 + P18: `56d2012..` the
 docs commit "Record the desktop single-entry migration (P18)".
 
+### Review fixes (P17 / P18)
+
+Review `/code-review medium 56d2012..d0b24d0`, 7 findings: 6 fixed in `ac0c6de`, `9504aaf`, `02609c0` and this docs commit,
+1 no change. Failing tests first: each new case was run on the unfixed code (the fixes set aside, the tests and the new
+string kept) and failed for the reported reason — `DesktopNotificationsTest` "a download error without a chapter names the
+entry only" (`Beta: null`), "a second update that ends like the first one is notified too" (timed out: the second run was
+never notified), "a backup result is notified once …" (2 notifications instead of 1); `MigrateMangaUiTest` "the entry
+itself is no migration target …" (the entry stayed in its own source's row), "a failed migration is reported …" (the
+details of the target opened), "the migration use case does not migrate an entry onto itself" (`kotlin.Unit` instead of
+`false`); they pass now.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | An entry could be migrated onto itself (it is in its own source's row; `MigrateMangaUseCase` with current == target deletes the downloads and re-favourites) | fixed: the desktop search drops the entry from the results (`SearchScreenModel.State.withoutEntry`) and ignores a click on it; the borrowed use case returns at once when `current.id == target.id` (KMK). **Android behaviour change** (bug fix): Android reaches it when the entry's own source is among the migration sources | `ac0c6de`, `9504aaf` |
+| 2 | `followBackups` only skipped the start-up status: an automatic backup sets `Running` and puts the previous status object back, which was notified again | fixed: the last notified result instance is remembered (`Created` / `Restored` / `Failed`), so a status put back is not news; a new result is | `02609c0` |
+| 3 | Download error title `"<entry>: null"` without a chapter | fixed: the non-null parts joined with ": " like `DesktopDownloadEvents`' toast | `02609c0` |
+| 4 | The "already notified" check was by identity on a conflating `StateFlow`: a fast second run with an equal finished progress never reached the collector | fixed: `LibraryUpdateProgress.runId` (new, default 0), a new one per `CoroutineLibraryUpdateRunner.start`, and the notifications compare run ids. UI consumers checked: the updates tab's progress bar (`RecentTabs`) and the scheduled update (`DesktopScheduledJobs`, waits for `finished`) do not compare progress values; the runner's own `compareAndSet` on the started value is unaffected | `02609c0` |
+| 5 | `MigrateMangaUseCase` swallows failures and returns early without the target source; the dialog still called `onComplete` and the desktop opened the target as if migrated | fixed: the use case returns whether it migrated (`false` on the early returns and on a failure, now logged with `xLogE`) and the dialog gets an optional `onFailure` (KMK), called instead of `onComplete` when nothing was migrated; the desktop passes it (message "Could not migrate <entry>", the search stays). Android passes no `onFailure` and ignores the result: unchanged apart from the log line | `ac0c6de`, `9504aaf` |
+| 6 | The Pinned / All chips did nothing on the migration search and changed the global search's stored filter | fixed like Android: its migration search hides them (`GlobalSearchToolbar(hideSourceFilter = true)`), so the desktop's does too (`GlobalSearchToolbar(hideSourceFilter)`); "has results" stays | `9504aaf` |
+| 7 | The tray menu labels are read once in `DisposableEffect(trayIcon, window)` and keep the old language after an app language change | no change: the desktop has no app language change. Nothing in `desktopApp/src/main` sets `StringDesc.localeType` or `Locale.setDefault`, and there is no language entry in the desktop settings (`grep -rn "pref_app_language\|localeType\|Locale.setDefault" desktopApp/src/main` finds nothing); the labels are `StringResource.localized()` for the JVM's locale, fixed for the process like the window title (`title = MR.strings.app_name.localized()` in `Main.kt`). To revisit when a desktop language setting exists | — |
+
+Found in the first full run on the real tree (after the rebase onto the iOS commits; `:desktopApp:test --rerun` on
+`d0b24d0`: 75 classes, 338 tests, 1 failure): `DesktopNotificationsTest` "downloader errors and warnings, …" timed out — the
+test emitted a download event before the notifications' collector subscribed to the `MutableSharedFlow` (no replay), so
+the event was lost (a backup status set that early would have been read as the start-up status). Test fix in `02609c0`:
+`@BeforeEach` waits for the collectors' subscriptions. App code unaffected (in `main()` the notifications start before any
+window or job exists).
+
+Tests: `DesktopNotificationsTest` 5 → 8, `MigrateMangaUiTest` 3 → 6.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests
+'*DesktopNotificationsTest*' --tests '*MigrateMangaUiTest*' --tests '*LibraryUpdateRunnerTest*' --tests '*GlobalSearchUiTest*'`
+25 tests, 0 failures (after updating the notification test's simulated runs to carry run ids). Full `:desktopApp:test` on
+`02609c0`: 75 classes, 344 tests, 0 failures (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`
+included and passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
