@@ -2,6 +2,7 @@ package app.komikku.desktop.ui.manga
 
 import android.app.Application
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -13,12 +14,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.unit.toSize
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.browse.FixedSourceManager
 import cafe.adriel.voyager.navigator.Navigator
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -120,6 +123,43 @@ class DuplicateMangaUiTest {
         onNodeWithTag("details-favorite").performClick()
         waitUntil(timeoutMillis = 10_000) { favorite(unique) }
         onAllNodesWithTag("duplicate-dialog").fetchSemanticsNodes().size shouldBe 0
+    }
+
+    @Test
+    fun `the bulk choices fit a narrow dialog`() = runDesktopComposeUiTest(width = 320, height = 900) {
+        setContent {
+            CompositionLocalProvider(LocalContext provides app) {
+                DesktopTheme {
+                    DuplicateMangaDialog(
+                        targetManga = target,
+                        duplicates = emptyList(),
+                        onDismissRequest = {},
+                        onConfirm = {},
+                        onOpenManga = {},
+                        onAllowAllDuplicate = {},
+                        onSkipAllDuplicate = {},
+                        onSkipDuplicate = {},
+                    )
+                }
+            }
+        }
+        waitForTag("duplicate-dialog")
+        // Unclipped bounds (boundsInRoot is clipped by the parents, so a clipped button would look in place)
+        fun bounds(tag: String) = onNodeWithTag(tag).fetchSemanticsNode().let { node ->
+            Rect(node.positionInRoot, node.size.toSize())
+        }
+        val dialog = bounds("duplicate-dialog")
+        // Every action is shown whole inside the dialog: none pushed out of it or squeezed until its label breaks over
+        // several lines (a single-line text button is 40 dp high; the test density is 1)
+        listOf("duplicate-skip", "duplicate-skip-all", "duplicate-allow-all", "duplicate-cancel", "duplicate-add-anyway").forEach { tag ->
+            val button = bounds(tag)
+            withClue("$tag $button in $dialog") {
+                (button.width > 0f) shouldBe true
+                (button.height <= 48f) shouldBe true
+                (button.left >= dialog.left && button.right <= dialog.right) shouldBe true
+                (button.top >= dialog.top && button.bottom <= dialog.bottom) shouldBe true
+            }
+        }
     }
 
     private companion object {

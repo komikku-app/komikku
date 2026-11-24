@@ -3,7 +3,7 @@ package app.komikku.desktop.ui.manga
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -43,7 +44,8 @@ import uy.kohesive.injekt.api.get
  * sizing; the detection itself is the shared `GetDuplicateLibraryManga`.
  *
  * P14: for bulk favourites (several selected entries, Android's `bulkFavoriteManga` mode) also "Allow all" / "Skip all"
- * / "Skip it" ([onAllowAllDuplicate], [onSkipAllDuplicate], [onSkipDuplicate]; each closes the dialog first).
+ * / "Skip it" ([onAllowAllDuplicate], [onSkipAllDuplicate], [onSkipDuplicate]; each closes the dialog first). They
+ * wrap onto further lines when the dialog is too narrow for them all (long translations).
  */
 @Composable
 internal fun DuplicateMangaDialog(
@@ -109,7 +111,8 @@ internal fun DuplicateMangaDialog(
             ) { Text(stringResource(MR.strings.action_add_anyway)) }
         },
         dismissButton = {
-            Row {
+            // The bulk choices wrap onto further lines instead of squeezing (or pushing out) the last buttons
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                 listOfNotNull(
                     onSkipDuplicate?.let { Triple(it, KMR.strings.action_skip_duplicate_manga, "duplicate-skip") },
                     onSkipAllDuplicate?.let { Triple(it, KMR.strings.action_skip_all_duplicate_manga, "duplicate-skip-all") },
@@ -123,7 +126,9 @@ internal fun DuplicateMangaDialog(
                         modifier = Modifier.testTag(tag),
                     ) { Text(stringResource(label)) }
                 }
-                TextButton(onClick = onDismissRequest) { Text(stringResource(MR.strings.action_cancel)) }
+                TextButton(onClick = onDismissRequest, modifier = Modifier.testTag("duplicate-cancel")) {
+                    Text(stringResource(MR.strings.action_cancel))
+                }
             }
         },
     )
