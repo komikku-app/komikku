@@ -6,8 +6,10 @@ import app.komikku.sourcejs.mihon.MangayomiJsSource
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.HttpSource
+import exh.log.xLogE
 import exh.source.BlacklistedSources
 import exh.source.ExhPreferences
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -82,30 +84,46 @@ class DesktopSourceManager(
                     .collectLatest { (extensions, initialized, isHentaiEnabled, js) ->
                         val map = linkedMapOf<Long, Source>(LocalSource.ID to localSource)
                         extensions.forEach { extension ->
-                            extension.sources
-                                .filterNot { isHentaiEnabled && it.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES }
-                                // SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi), like Android
-                                .map { DesktopDelegatedSources.wrap(it, context) }
-                                .forEach {
-                                    map[it.id] = it
-                                    registerStubSource(StubSource.from(it))
+                            val sources = guarded("the sources of ${extension.pkgName}") { extension.sources } ?: return@forEach
+                            sources.forEach { source ->
+                                // One source failing (borrowed Android code can throw Errors on desktop) leaves it out
+                                // instead of ending this collector, which would leave the manager uninitialized
+                                guarded("source ${source::class.qualifiedName} of ${extension.pkgName}") {
+                                    if (isHentaiEnabled && source.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) return@guarded
+                                    // SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi), like Android
+                                    val wrapped = DesktopDelegatedSources.wrap(source, context)
+                                    val stub = StubSource.from(wrapped)
+                                    map[wrapped.id] = wrapped
+                                    registerStubSource(stub)
                                 }
+                            }
                         }
                         // Mangayomi JavaScript sources (extension sources win an id clash). Their stubs keep the
                         // "[JS]" name, so an uninstalled source keeps its download folder.
                         js.forEach {
-                            if (it.id in map) return@forEach
-                            map[it.id] = it
-                            registerStubSource(
-                                if (it is MangayomiJsSource) StubSource(id = it.id, lang = it.lang, name = it.stubName) else StubSource.from(it),
-                            )
+                            guarded("JavaScript source ${it::class.qualifiedName}") {
+                                if (it.id in map) return@guarded
+                                val stub = if (it is MangayomiJsSource) StubSource(id = it.id, lang = it.lang, name = it.stubName) else StubSource.from(it)
+                                map[it.id] = it
+                                registerStubSource(stub)
+                            }
                         }
-                        DesktopDelegatedSources.publishSourceIds(map.values)
+                        guarded("publishing the delegated source ids") { DesktopDelegatedSources.publishSourceIds(map.values) }
                         sourcesMap.value = map
                         if (initialized) _isInitialized.value = true
                     }
             }
         }
+    }
+
+    /** [block]'s result, or `null` (logged) when it throws anything but a cancellation. */
+    private inline fun <T> guarded(what: String, block: () -> T): T? = try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        xLogE("Could not load $what", e)
+        null
     }
 
     private data class Loaded(

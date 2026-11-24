@@ -8,7 +8,9 @@ import app.komikku.desktop.reader.TestLibrary
 import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.extension.all.mangadex.MangaDex
 import eu.kanade.tachiyomi.extension.all.nhentai.NHentai
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -24,7 +26,9 @@ import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.isMetadataSource
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.flow.Flow
@@ -140,7 +144,7 @@ class DelegatedSourcesTest {
         delegate.matchesUri("https://mangadex.org/title/0aaa0000-1111-2222-3333-444455556666/some-title".toUri()) shouldBe true
         delegate.mapUrlToMangaUrl("https://mangadex.org/title/0aaa0000-1111-2222-3333-444455556666/some-title".toUri()) shouldBe
             "/manga/0aaa0000-1111-2222-3333-444455556666"
-        // Not logged in to MDList (the borrowed tracker, no desktop login yet)
+        // Not logged in to MDList (the borrowed tracker; the desktop logs in through Settings → Tracking)
         delegate.isLogged() shouldBe false
     }
 
@@ -199,6 +203,56 @@ class DelegatedSourcesTest {
                 "Plain result for https://nhentai.net/g/1/"
         } finally {
             preference.set(true)
+        }
+    }
+
+    /** An extension source whose code fails like borrowed Android code can on desktop (a missing Android class). */
+    private class BrokenSource : eu.kanade.tachiyomi.source.online.HttpSource() {
+        override val name: String get() = throw NoClassDefFoundError("android/webkit/WebView")
+        override val lang = "en"
+        override val baseUrl = "http://localhost:2"
+        override val supportsLatest = false
+    }
+
+    @Test
+    fun `a delegate or a source failing with an Error does not stop the other sources from loading`(@TempDir dir: File) {
+        // A delegate that cannot start (an Error, not an Exception) keeps the plain extension source
+        val failing = DesktopDelegatedSources.Delegate("Broken", FakeHttpSource::class.qualifiedName!!) { _, _ ->
+            throw NoClassDefFoundError("android/webkit/WebView")
+        }
+        DesktopDelegatedSources.wrap(plainSource, app, listOf(failing)) shouldBeSameInstanceAs plainSource
+
+        // A source that throws an Error is left out; the others load and the manager becomes initialized
+        val other = DesktopSourceManager(
+            context = app,
+            fileSystem = Injekt.get(),
+            coverManager = Injekt.get(),
+            stubSourceRepository = Injekt.get(),
+            allowHiddenFiles = { false },
+            extensionManager = FixedExtensions(listOf(BrokenSource(), plainSource)),
+        )
+        try {
+            runBlocking { withTimeout(10_000) { other.isInitialized.first { it } } }
+            other.get(plainSource.id) shouldBeSameInstanceAs plainSource
+        } finally {
+            // The SY id lookups are process-wide: give them back to this class's manager
+            DesktopDelegatedSources.publishSourceIds(manager.getAll())
+        }
+    }
+
+    @Test
+    fun `MDList finds a MangaDex source that loads after its first use`() = runBlocking<Unit> {
+        val mdList = MdList(TrackerManager.MDLIST)
+        val disabled = Injekt.get<SourcePreferences>().disabledSources()
+        try {
+            // No usable MangaDex source at first use (on desktop: not loaded yet; here: disabled)
+            disabled.set(setOf(mangaDexSource.id.toString()))
+            shouldThrow<MdList.MangaDexNotFoundException> { mdList.search("query") }
+            // Usable now: the tracker reaches it (the offline test double then fails, but not for a missing source)
+            disabled.set(emptySet())
+            runCatching { mdList.search("query") }.exceptionOrNull()?.javaClass shouldNotBe MdList.MangaDexNotFoundException::class.java
+        } finally {
+            disabled.set(emptySet())
         }
     }
 }

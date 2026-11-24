@@ -228,8 +228,8 @@ run {
     )
 
     // Trackers, their models / APIs, tracker preferences and the track interactors (8.3). Desktop
-    // counterparts in app-shared/src/desktopMain: TrackerManager (same trackers + test hook, MangaDex's
-    // MdList is a "not available on desktop" stub because it needs the SY MangaDex source),
+    // counterparts in app-shared/src/desktopMain: TrackerManager (same trackers + test hook; MDList is the borrowed
+    // tracker since P4, below with the MangaDex delegate it needs),
     // DelayedTrackingUpdateJob (coroutine retry instead of WorkManager), R.drawable (tracker logo ids).
     desktopCopy(
         "eu/kanade/tachiyomi/data/track/BaseTracker.kt",
@@ -418,8 +418,9 @@ run {
     )
 
     // The MangaDex delegate (P4) with its API layer and the MDList tracker it logs in / syncs through (replaces the
-    // desktop MDList stub). Not borrowed: MangaDexLoginActivity (the desktop has no MDList login yet), the follows /
-    // similar screens and their paging sources.
+    // desktop MDList stub). Not borrowed: MangaDexLoginActivity (the desktop logs in through Settings → Tracking, an
+    // OAuth paste handed to the MangaDex source's login, `DesktopTrackerLogin`), the follows / similar screens and their
+    // paging sources.
     desktopCopy(
         "eu/kanade/tachiyomi/data/track/mdlist/MdList.kt",
         "eu/kanade/tachiyomi/source/online/all/MangaDex.kt",

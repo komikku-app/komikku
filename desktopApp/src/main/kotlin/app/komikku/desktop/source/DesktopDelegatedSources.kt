@@ -20,6 +20,7 @@ import exh.source.lanraragiSourceIds
 import exh.source.mangaDexSourceIds
 import exh.source.metadataDelegatedSourceIds
 import exh.source.nHentaiSourceIds
+import kotlinx.coroutines.CancellationException
 
 /**
  * KMK: the desktop's SY delegated (enhanced) sources, Android's `AndroidSourceManager.toInternalSource` /
@@ -29,8 +30,9 @@ import exh.source.nHentaiSourceIds
  * id, name and language, so library entries, backups and the "use the enhanced source" setting
  * (`DelegateSourcePreferences.delegateSources()`) behave as on Android.
  *
- * MangaDex works without an account: its MDList login (Android's `MangaDexLoginActivity`) and the follows / similar
- * screens are not on desktop yet. Not on desktop: SY's built-in E-Hentai / ExHentai and merged sources.
+ * MangaDex works without an account; its MDList login (Android's `MangaDexLoginActivity`) is the desktop's Settings →
+ * Tracking OAuth paste (`DesktopTrackerLogin`). Not on desktop yet: MangaDex's settings, follows and similar screens,
+ * SY's built-in E-Hentai / ExHentai and merged sources.
  */
 object DesktopDelegatedSources {
 
@@ -54,20 +56,28 @@ object DesktopDelegatedSources {
     /** The delegate for [source]'s class, if any. */
     fun delegateFor(source: Source): Delegate? {
         val name = source::class.qualifiedName ?: return null
-        return delegates.firstOrNull {
-            name == it.originalSourceQualifiedClassName || (it.factory && name.startsWith(it.originalSourceQualifiedClassName))
-        }
+        return delegates.firstOrNull { it.matches(name) }
     }
 
-    /** [source] wrapped over its delegate when it has one (Android's `toInternalSource`), otherwise [source] itself. */
-    fun wrap(source: Source, context: Context): Source {
+    private fun Delegate.matches(name: String) =
+        name == originalSourceQualifiedClassName || (factory && name.startsWith(originalSourceQualifiedClassName))
+
+    /**
+     * [source] wrapped over its delegate when it has one (Android's `toInternalSource`), otherwise [source] itself.
+     * [delegates] is for tests.
+     */
+    fun wrap(source: Source, context: Context, delegates: List<Delegate> = this.delegates): Source {
         if (source !is HttpSource) return source
-        val delegate = delegateFor(source) ?: return source
-        xLogD("Delegating source: %s -> %s!", source::class.qualifiedName, delegate.sourceName)
         return try {
+            val name = source::class.qualifiedName ?: return source
+            val delegate = delegates.firstOrNull { it.matches(name) } ?: return source
+            xLogD("Delegating source: %s -> %s!", name, delegate.sourceName)
             EnhancedHttpSource(source, delegate.create(source, context))
-        } catch (e: Exception) {
-            // Not guarded on Android; here a delegate that cannot start keeps the plain extension source usable
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            // Not guarded on Android; here a delegate that cannot start keeps the plain extension source usable. Errors
+            // too: borrowed Android code can fail with NoClassDefFoundError / ExceptionInInitializerError on desktop
             xLogE("Could not delegate ${source::class.qualifiedName}", e)
             source
         }

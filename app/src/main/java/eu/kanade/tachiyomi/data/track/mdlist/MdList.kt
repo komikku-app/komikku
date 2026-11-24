@@ -28,7 +28,14 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
             .toImmutableList()
     }
 
-    private val mdex by lazy { MdUtil.getEnabledMangaDex() }
+    // KMK -->
+    // Cached like `by lazy` once found, but a `null` is not cached: sources still loading (the desktop loads them
+    // asynchronously) or MangaDex installed / enabled later kept MDList unusable until a restart
+    @Volatile
+    private var cachedMdex: eu.kanade.tachiyomi.source.online.all.MangaDex? = null
+    private val mdex: eu.kanade.tachiyomi.source.online.all.MangaDex?
+        get() = cachedMdex ?: MdUtil.getEnabledMangaDex()?.also { cachedMdex = it }
+    // KMK <--
 
     val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
 
