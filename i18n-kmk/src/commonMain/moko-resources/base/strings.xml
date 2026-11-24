@@ -274,6 +274,7 @@
     <string name="desktop_webview_stored_cookies">Stored now: %1$s</string>
     <string name="desktop_webview_cookie_invalid">Not a usable name=value cookie: %1$s</string>
     <string name="desktop_webview_cookies_saved">Cookies saved for %1$s</string>
+    <string name="cookies_clear_failed">Could not clear the cookies of %1$s</string>
     <string name="desktop_webview_cookies_skipped">Skipped cookies that can\'t be used: %1$s</string>
     <string name="desktop_webview_user_agent_default">Also use this user agent as the default for all sources (extension sources after a restart)</string>
     <string name="desktop_webview_timed_out">The browser for %1$s timed out without passing the check</string>

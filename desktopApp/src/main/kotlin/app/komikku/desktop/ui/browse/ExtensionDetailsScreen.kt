@@ -63,6 +63,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import tachiyomi.core.common.i18n.stringResource as contextString
 
 /**
  * P22: Android's extension info (`ExtensionDetailsScreen`) on the borrowed [ExtensionDetailsScreenModel]: the redundant /
@@ -105,8 +106,17 @@ class ExtensionDetailsScreen(internal val pkgName: String) : Screen() {
                         onClick = {
                             val extension = state.extension ?: return@IconButton
                             model.screenModelScope.launchIO {
-                                ExtensionCookies.clear(extension)
-                                withUIContext { context.toast(MR.strings.cookies_cleared) }
+                                val result = ExtensionCookies.clear(extension)
+                                // P23 review fix: "Cookies cleared" only when every address was cleared
+                                withUIContext {
+                                    if (result.failed.isEmpty()) {
+                                        context.toast(MR.strings.cookies_cleared)
+                                    } else {
+                                        context.toast(
+                                            context.contextString(KMR.strings.cookies_clear_failed, result.failed.joinToString()),
+                                        )
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier.testTag("extension-details-clear-cookies"),
@@ -267,29 +277,39 @@ internal fun ExtensionUninstallDialog(name: String, onConfirm: () -> Unit, onDis
  * through [DesktopWebView.clearCookies] (Android's WebView "Clear cookies" on desktop): every jar cookie of its host is
  * removed whatever its path (P23) and the domain cookies that apply to the host (Cloudflare's `cf_clearance` for the
  * registrable domain), together with the host's remembered solver User-Agent and failed solve; other sites' cookies
- * stay. Blocking; returns how many cookies were removed.
+ * stay. Blocking; returns how many cookies were removed and the addresses that could not be cleared (P23 review fix).
  */
 internal object ExtensionCookies {
+    /** [cleared] cookies removed; [failed]: the addresses whose clearing threw (logged). */
+    data class Result(val cleared: Int, val failed: List<String>)
+
     fun clear(
         extension: Extension.Installed,
-        webView: DesktopWebView = Injekt.get(),
-    ): Int {
+        clearUrl: (String) -> Int = { Injekt.get<DesktopWebView>().clearCookies(it) },
+    ): Result {
         val urls = extension.sources
             .filterIsInstance<HttpSource>()
             .flatMap { source -> listOf(runCatching { source.baseUrl }.getOrNull(), runCatching { source.getHomeUrl() }.getOrNull()) }
             .filterNotNull()
             .filter { it.isNotEmpty() }
             .distinct()
+        return clear(urls, clearUrl)
+    }
+
+    /** Clears each of [urls] with [clearUrl]; one that fails does not stop the others. */
+    fun clear(urls: List<String>, clearUrl: (String) -> Int): Result {
+        val failed = mutableListOf<String>()
         val cleared = urls.sumOf { url ->
             try {
-                webView.clearCookies(url)
+                clearUrl(url)
             } catch (e: Exception) {
                 xLogE("Failed to clear cookies for $url", e)
+                failed += url
                 0
             }
         }
-        xLogD("Cleared $cleared cookies for: ${urls.joinToString()}")
-        return cleared
+        xLogD("Cleared $cleared cookies for: ${urls.joinToString()}" + if (failed.isEmpty()) "" else "; failed: ${failed.joinToString()}")
+        return Result(cleared, failed)
     }
 }
 

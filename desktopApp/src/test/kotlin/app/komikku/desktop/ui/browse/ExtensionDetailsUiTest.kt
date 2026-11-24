@@ -210,6 +210,18 @@ class ExtensionDetailsUiTest {
         }
 
     @Test
+    fun `a failed address is reported and does not stop the others`() {
+        val tried = mutableListOf<String>()
+        val result = ExtensionCookies.clear(listOf("https://a.example.org", "https://b.example.org", "https://c.example.org")) { url ->
+            tried += url
+            if (url.startsWith("https://b.")) throw IllegalStateException("jar") else 2
+        }
+        tried.size shouldBe 3
+        result shouldBe ExtensionCookies.Result(cleared = 4, failed = listOf("https://b.example.org"))
+        ExtensionCookies.clear(listOf("https://a.example.org")) { 1 } shouldBe ExtensionCookies.Result(1, emptyList())
+    }
+
+    @Test
     fun `the extensions tab asks before it uninstalls`() =
         runDesktopComposeUiTest(width = 1200, height = 1000) {
             openBrowse()
