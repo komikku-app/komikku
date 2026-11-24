@@ -3471,8 +3471,9 @@ Built in `8603bab` (Android refactor), `5752965` (desktop), `d8c42bb` (tests) an
 - **No biometrics / OS authenticator** (Windows Hello, macOS Touch ID or PAM are not reachable from a plain JVM app
   without native code); the app's own secret instead. A forgotten secret cannot be recovered (deleting the app-state
   preference by hand clears it); the info row says so.
-- A "Require unlock" without a secret (an Android backup restored on desktop) counts as off and is switched off at start,
-  like Android does when the device has no authenticator.
+- ~~A "Require unlock" without a secret (an Android backup restored on desktop) counts as off and is switched off at start,
+  like Android does when the device has no authenticator.~~ Superseded by the review fixes: the lock is on while its
+  secret is stored and leaves Android's "Require unlock" alone ("Review fixes (P15 / P16)", finding 2).
 - "Idle" means the window was **minimised**, not merely unfocused (switching to another window and back would otherwise
   ask for the secret each time with "Always").
 - SY's lock times / days from a restored Android backup are followed, but there is no editor for them on desktop yet.
@@ -3503,6 +3504,41 @@ Full `:desktopApp:test` on `d8c42bb` (code of P15 and P16, `./gradlew --stop` be
 failures (was 70 / 313 on `f9e36c8`: `SettingsSearchUiTest` 3, `DesktopAppLockTest` 5, `AppLockUiTest` 2 new;
 `DesktopBackupJobsTest`, `DesktopExtensionManagerTest` and `ReaderNavigationTest` included and passing). Review range of
 P15 + P16: `925e360..` the docs commit "Record the desktop app lock (P16)".
+
+### Review fixes (P15 / P16)
+
+Review `/code-review medium 925e360..c2589d7`, 8 findings: 8 fixed in `005e5a0` … `3238154`, tests in `39b70ae`, and this
+docs commit. Failing tests first: each new case was run on the unfixed code and failed for the reported reason —
+`AppLockUiTest` "dialogs and toasts of the app are neither shown nor usable while locked" (the open "Change PIN or
+password" dialog stayed in the semantics over the lock screen) and "menus and dialogs inside the gate are hidden while
+locked …" (an expanded `DropdownMenu` stayed readable), `DesktopAppLockTest` "a restored require-unlock can neither switch
+the lock off nor on" (the lock switched `use_biometric_lock` off), "the wait after wrong entries survives a restart and a
+clock set back" (a new start accepted the secret at once) and "a lock time range across midnight …" (22:00 – 06:00 did not
+match 23:00), `SettingsSearchUiTest` "a result's highlight is used once …" (the page scrolled back to the item after it
+was shown again) and "the highlighted index skips disabled groups …" (5 instead of 1); they pass now. The toast part of
+the first test was not reached on the unfixed code (the dialog assertion failed first); the snackbar host sat outside the
+gate there (`KomikkuApp`).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | The lock screen is a Surface in the window content: dialogs / popups of the gated content and the toast host's snackbars stay over it and usable | fixed. Checked first: Compose Multiplatform 1.12.2 puts `Dialog` / `Popup` (so `AlertDialog`, `DropdownMenu`, tooltips, context menus) into scene layers above the window content (`ComposeFeatureFlags.layerType`, `compose.layers.type`, default `OnSameCanvas`; `CanvasLayersComposeSceneImpl.isInteractive` lets a layer with `consumePointerInputOutside` take the clicks of everything under it). The app opens no other window of its own (one `Window` in `Main.kt`, the reader in it, WebView = the system browser); the only separate windows are the native file choosers (`AwtFileDialogs`). Fix: `AppLockGate` gives its content a `LockAwareSceneContext` (new `ui/security/LockAwareSceneContext.kt`): every layer the app creates is wrapped, and while locked it composes nothing, takes no focus / keys, consumes no clicks (no dismiss by a click on the lock screen), has no bounds and no scrim; the lock state is read in the same recomposition as the lock screen and applied in a `SideEffect` before the frame is drawn. The callers' state stays: a dialog or menu that was open is back on unlock (decision: state remembered *inside* a dialog's content is reset; hoisted state — e.g. the secret dialog's fields — is kept). `LocalComposeSceneContext` is Kotlin-internal in Compose UI, so it is read through its JVM accessor; when that fails the gate does not compose the content while locked (state lost, nothing shown). The toast host moved inside the gate (snackbars under the lock screen, cleared from the semantics). A native file chooser open when the app locks is closed as cancelled and none opens while locked (`whileUnlocked`) | `e65c8ed` |
+| 2 | The on / off state was the backed-up `use_biometric_lock` (read once), the secret an app-state key: a restore could switch the lock off | fixed: the lock is on while its secret is stored (app-state, never in backups or restores), so a restore can neither switch it off nor on. **Decision:** the desktop neither reads nor writes Android's "Require unlock"; it stays Android's setting, carried by backups between Android devices unchanged (a desktop backup carries whatever a restored Android backup put there). "Lock when idle" and SY's lock times / days are still the backed-up Android preferences and follow a restore | `035f15a` |
+| 3 | `failures` / `blockedUntil` were in memory: a restart reset the throttle | fixed: both are app-state preferences (`desktop_app_lock_failures`, `desktop_app_lock_blocked_until`), read at each check; a stored end further away than the current failure count's wait (the clock was set back since) is replaced by that wait from now, so a clock set back can neither shorten the wait nor extend it beyond the current wait (at most 5 min). A clock set *forward* still shortens it (no monotonic clock survives a restart) | `7180b25` |
+| 4 | `PreferenceList` seeded the highlight with a plain `remember` from the screen argument: every re-entry scrolled and blinked again | fixed: `PreferenceList(onHighlightConsumed)` is called once the highlight starts; `SettingsCategoryScreen` keeps the key in a field it clears there (Android resets `SearchableSettings.highlightKey`), so the page is shown again where it was left | `6467cc1` |
+| 5 | `findHighlightedIndex` counted disabled groups, which Android's `PreferenceScreen` and the desktop `PreferenceList` skip | fixed: verified both lists (`if (!preference.enabled) return@…` before the header / items / spacer; ungrouped items are always rendered, disabled or not); a disabled group adds nothing now. **Android behaviour change** (bug fix): a search result below a disabled group is scrolled to, not past | `34ada5e` |
+| 6 | A lock time range across midnight never matched | checked: SY's picker (`BiometricTimesScreen.showTimePicker`) takes a start and then an end time with no ordering or check and stores `TimeRange(start, end)`, so 22:00 – 06:00 is stored as start > end. Fixed in the shared `AppLockRules.canLockNow`: such a range matches `time >= start \|\| time <= end`. **Android behaviour change** (bug fix). Not changed: SY's `TimeRange.conflictsWith` (the editor's overlap check) has the same blind spot for such ranges | `005e5a0` |
+| 7 | `remember(query, index, isLtr)` never hit (a new index list each recomposition) | fixed: keyed on `query` and `isLtr`, the index read through `rememberUpdatedState`. Building the index still composes each page's preference function (their `remember`s and `collectAsState`s) while a query is entered, like Android's `SettingsSearchScreen` (it calls every screen's `getPreferences()`); not reduced further: the pages' items are built by those composables, and the cost is one composition of each page's model without lists or images | `a64dc69` |
+| 8 | The wait's seconds were put in with `replace("%d", …)` | fixed: the refused attempt is kept as state and its text built with `stringResource(KMR.strings.desktop_app_lock_wait, seconds)` (both the lock screen and the secret dialogs), so a translation's `%1$d` works. No failing test (the base string reads the same either way) | `3238154` |
+
+Tests: `AppLockUiTest` 2 → 4, `DesktopAppLockTest` 5 → 8 (one case renamed for finding 2), `SettingsSearchUiTest` 3 → 5.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests
+'*DesktopAppLockTest*' --tests '*AppLockUiTest*' --tests '*SettingsSearchUiTest*'` 17 tests, 0 failures. Full
+`:desktopApp:test` on `39b70ae`: 73 classes, 330 tests, 0 failures (was 73 / 323 on `d8c42bb`: +7 cases above;
+`DesktopBackupJobsTest`, `DesktopExtensionManagerTest` and `ReaderNavigationTest` included and passing). Found while
+fixing: ktlint's `standard:filename` wants a file with one class named after it (`LockAwareSceneContext.kt`); Compose's
+`LocalComposeSceneContext` is Kotlin-`internal` (not only opt-in), hence the JVM accessor.
 
 ## Remaining parity gaps
 
