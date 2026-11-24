@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
@@ -37,11 +39,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.desktop.webview.WebViewDialogs
+import app.komikku.desktop.webview.rememberWebViewLauncher
 import app.komikku.shared.jssource.JsSourceNotesBanner
 import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -55,6 +60,8 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -70,6 +77,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -85,10 +93,18 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
         val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery) }
         val state by model.state.collectAsState()
         val source = model.source
+        // P7: Android's WebView action (`BrowseSourceScreen.onWebViewClick`)
+        val webView = rememberWebViewLauncher()
+        val onWebViewClick = (source as? HttpSource)?.let { http -> { webView.open(http.getHomeUrl(), http.id) } }
         BrowseScaffold(
             title = source?.name.orEmpty(),
             onBack = navigator::pop,
             actions = {
+                if (onWebViewClick != null) {
+                    IconButton(onClick = onWebViewClick, modifier = Modifier.testTag("catalogue-webview")) {
+                        Icon(Icons.Outlined.Public, contentDescription = stringResource(MR.strings.action_open_in_web_view))
+                    }
+                }
                 if (source is ConfigurableSource) {
                     IconButton(onClick = { navigator.push(SourcePreferencesScreen(sourceId)) }) {
                         Icon(Icons.Outlined.Settings, contentDescription = stringResource(MR.strings.label_settings))
@@ -107,10 +123,12 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
                         onMode = model::setMode,
                         onLoadMore = model::loadMore,
                         onClick = { navigator.push(MangaDetailsScreen(it.id)) },
+                        onWebViewClick = onWebViewClick,
                     )
                 }
             }
         }
+        WebViewDialogs(webView)
     }
 }
 
@@ -201,6 +219,7 @@ private fun CatalogueContent(
     onMode: (CatalogueScreenModel.Mode) -> Unit,
     onLoadMore: () -> Unit,
     onClick: (Manga) -> Unit,
+    onWebViewClick: (() -> Unit)?,
 ) {
     var query by rememberSaveable { mutableStateOf((state.mode as? CatalogueScreenModel.Mode.Search)?.query.orEmpty()) }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -241,7 +260,14 @@ private fun CatalogueContent(
                 CircularProgressIndicator()
             }
             state.manga.isEmpty() && state.error != null ->
-                EmptyScreen(message = stringResource(KMR.strings.desktop_source_error, state.error))
+                EmptyScreen(
+                    message = stringResource(KMR.strings.desktop_source_error, state.error),
+                    // Android's browse error actions (retry, WebView), e.g. to pass a Cloudflare check (P7)
+                    actions = listOfNotNull(
+                        EmptyScreenAction(MR.strings.action_retry, Icons.Outlined.Refresh, onLoadMore),
+                        onWebViewClick?.let { EmptyScreenAction(MR.strings.action_open_in_web_view, Icons.Outlined.Public, it) },
+                    ).toImmutableList(),
+                )
             state.manga.isEmpty() && !state.hasNextPage -> EmptyScreen(stringRes = MR.strings.no_results_found)
             else -> LazyVerticalGrid(
                 columns = GridCells.Adaptive(140.dp),

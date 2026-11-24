@@ -268,6 +268,12 @@
     <string name="desktop_cloudflare_no_browser">%1$s is protected by Cloudflare and the desktop app has no built-in browser to pass its check. Use “Open in WebView” on the source or entry, pass the check in your browser, then paste its cookies and user agent there</string>
     <!-- Do not translate "WebView" -->
     <string name="desktop_cloudflare_failed">Failed to bypass Cloudflare on %1$s. Try again, or use “Open in WebView” to pass the check by hand</string>
+    <string name="desktop_webview_manual_title">Cookies for %1$s</string>
+    <string name="desktop_webview_manual_help">The desktop app has no built-in browser, so the page opens in your browser. Pass the Cloudflare check or log in there, then copy the site\'s cookies from the browser\'s developer tools (Network tab: the Cookie request header) and paste them here. Cloudflare\'s cookie only works with the user agent of the browser that got it: paste that browser\'s user agent below, or set your browser\'s user agent to the one below before passing the check.</string>
+    <string name="desktop_webview_cookies_label">Cookies (name=value; name2=value2)</string>
+    <string name="desktop_webview_stored_cookies">Stored now: %1$s</string>
+    <string name="desktop_webview_cookie_invalid">Not a name=value cookie: %1$s</string>
+    <string name="desktop_webview_cookies_saved">Cookies saved for %1$s</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>

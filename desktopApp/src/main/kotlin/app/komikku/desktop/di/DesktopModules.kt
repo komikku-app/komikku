@@ -17,6 +17,7 @@ import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.updater.DesktopUpdaterConfig
+import app.komikku.desktop.webview.DesktopWebView
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.download.DesktopDownloadEvents
 import app.komikku.shared.download.DownloadNotificationSink
@@ -192,6 +193,8 @@ class DesktopAppModule(
         addSingletonFactory<ProtoBuf> { ProtoBuf }
 
         addSingletonFactory { NetworkHelper(app, get()) }
+        // "Open in WebView" (P7): embedded browser backend or the system browser + pasted cookies.
+        addSingletonFactory { DesktopWebView(get(), get(), get()) }
         addSingletonFactory { JavaScriptEngine(app) }
 
         addSingletonFactory { StorageManager(app, get()) }

@@ -7,10 +7,12 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.downloadedFilter
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
@@ -199,6 +201,20 @@ class MangaDetailsScreenModel(
         val manga = state.value.manga ?: return
         if (chapters.isEmpty()) return
         downloadManager.deleteChapters(chapters, manga, sourceManager.getOrStub(manga.source), ignoreCategoryExclusion = true)
+    }
+
+    /**
+     * The entry's page on its source, for "Open in WebView" (Android `MangaScreen.getMangaUrl`); `null` for a source that
+     * is not an `HttpSource` (local, missing) or fails to build it.
+     */
+    fun mangaUrl(): Pair<String, Long>? {
+        val manga = state.value.manga ?: return null
+        val source = sourceManager.get(manga.source) as? HttpSource ?: return null
+        return try {
+            source.getMangaUrl(manga.toSManga()) to source.id
+        } catch (_: Exception) {
+            null
+        }
     }
 
     /** Download menu (Android `runDownloadAction`). */

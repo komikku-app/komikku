@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material.icons.outlined.Sync
@@ -58,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.browse.CoverItem
 import app.komikku.desktop.ui.browse.GlobalSearchScreen
+import app.komikku.desktop.webview.WebViewDialogs
+import app.komikku.desktop.webview.rememberWebViewLauncher
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -88,10 +91,18 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
         val model = rememberScreenModel { MangaDetailsScreenModel(mangaId) }
         val state by model.state.collectAsState()
         val manga = state.manga
+        // P7: Android's "Open in WebView" (`MangaScreen.openMangaInWebView`)
+        val webView = rememberWebViewLauncher()
         BrowseScaffold(
             title = manga?.title.orEmpty(),
             onBack = navigator::pop,
             actions = {
+                val mangaUrl = remember(manga?.url, manga?.source) { model.mangaUrl() }
+                if (mangaUrl != null) {
+                    IconButton(onClick = { webView.open(mangaUrl.first, mangaUrl.second) }, modifier = Modifier.testTag("details-webview")) {
+                        Icon(Icons.Outlined.Public, contentDescription = stringResource(MR.strings.action_open_in_web_view))
+                    }
+                }
                 IconButton(onClick = model::refresh, enabled = !state.isRefreshing) {
                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(KMR.strings.desktop_refresh))
                 }
@@ -117,6 +128,7 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
             }
             null -> {}
         }
+        WebViewDialogs(webView)
     }
 }
 
