@@ -15,7 +15,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import org.jsoup.Jsoup
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import java.io.IOException
@@ -32,19 +31,9 @@ actual class CloudflareInterceptor actual constructor(
     private val executor = ContextCompat.getMainExecutor(context)
 
     override fun shouldIntercept(response: Response): Boolean {
-        // Check if Cloudflare anti-bot is on
-        return if (response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK) {
-            val document = Jsoup.parse(
-                response.peekBody(Long.MAX_VALUE).string(),
-                response.request.url.toString(),
-            )
-
-            // solve with webview only on captcha, not on geo block
-            document.getElementById("challenge-error-title") != null ||
-                document.getElementById("challenge-error-text") != null
-        } else {
-            false
-        }
+        // KMK --> the detection is shared with the desktop interceptor (src/main CloudflareChallenge.kt), unchanged
+        return CloudflareChallenge.isChallenge(response)
+        // KMK <--
     }
 
     override fun intercept(
@@ -151,8 +140,9 @@ actual class CloudflareInterceptor actual constructor(
     }
 }
 
-private val ERROR_CODES = listOf(403, 503)
-private val SERVER_CHECK = arrayOf("cloudflare-nginx", "cloudflare")
-private val COOKIE_NAMES = listOf("cf_clearance")
+// KMK --> shared with the desktop interceptor (src/main CloudflareChallenge.kt)
+private val ERROR_CODES = CloudflareChallenge.ERROR_CODES
+private val COOKIE_NAMES = CloudflareChallenge.COOKIE_NAMES
+// KMK <--
 
 private class CloudflareBypassException : Exception()

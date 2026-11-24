@@ -264,6 +264,10 @@
     <string name="desktop_mdlist_login_failed">Could not log in to MangaDex. An authorization works only once: open the login page again, authorize, and paste the new address</string>
     <string name="desktop_unsupported_image_format">%1$s images can't be shown on desktop yet</string>
     <string name="desktop_date_hint">YYYY-MM-DD, empty to remove</string>
+    <!-- Do not translate "WebView" -->
+    <string name="desktop_cloudflare_no_browser">%1$s is protected by Cloudflare and the desktop app has no built-in browser to pass its check. Use “Open in WebView” on the source or entry, pass the check in your browser, then paste its cookies and user agent there</string>
+    <!-- Do not translate "WebView" -->
+    <string name="desktop_cloudflare_failed">Failed to bypass Cloudflare on %1$s. Try again, or use “Open in WebView” to pass the check by hand</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>

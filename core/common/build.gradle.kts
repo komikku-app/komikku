@@ -45,6 +45,8 @@ kotlin {
                 // Android API surface on desktop (Context, Uri, CookieManager, UniFile, xlog, …).
                 // `api`: core:common's public API exposes these types to every desktop consumer.
                 api(projects.desktop.androidCompat)
+                // Desktop-only messages (the Cloudflare interceptor's, P7); Android's code uses MR / SYMR only.
+                implementation(projects.i18nKmk)
             }
         }
     }
