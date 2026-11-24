@@ -3540,6 +3540,67 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the h
 fixing: ktlint's `standard:filename` wants a file with one class named after it (`LockAwareSceneContext.kt`); Compose's
 `LocalComposeSceneContext` is Kotlin-`internal` (not only opt-in), hence the JVM accessor.
 
+## P17 — notifications and system tray
+
+Built in `482bdaa` (shared progress), `c636822` (desktop), `22af0a7` (tests) and this docs commit.
+
+### Built
+
+- **Android's notifiers read first:** `LibraryUpdateNotifier` (progress with the titles being updated, "New chapters found"
+  as a group summary with one entry's title or a count and the titles, per-entry notifications with actions, "N updates
+  failed", the queue-size warning), `DownloadNotifier` (progress, paused, errors and warnings; completion only dismisses
+  the progress), `BackupNotifier` (manual backup created / failed, restore completed / failed; `BackupCreateJob` posts
+  nothing for automatic backups), `AppUpdateNotifier` ("New version available!" with the version). Titles are hidden by
+  `SecurityPreferences.hideNotificationContent` in the library update and download *progress* notifications only.
+- **Interface** `DesktopNotifier` (`notification/DesktopNotifier.kt`: `show(DesktopNotification)` → shown or not,
+  `status(text)` for running work) with `DesktopNotification(channel, title, text, level)`; channels stand for Android's.
+- **Rules** `DesktopNotifications` (`notification/DesktopNotifications.kt`, started by `main()` for the app's lifetime):
+  follows the library update runner's progress (the shared `LibraryUpdateProgress` now lists the `updated` entries with
+  their new chapter count), the downloader's events (`DesktopDownloadEvents`), the backup jobs' status and the app update
+  check's `available` release, and posts Android's texts: new chapters after a finished update (not cancelled, not a
+  single entry's refresh: Android's manga screen refresh posts nothing; one entry → its title, several → the count and up
+  to five titles), "N updates failed", the progress title ("Updating library… (40%)") as the tray tooltip while an update
+  runs, downloader errors ("<entry>: <chapter>" + the error) and warnings, backup created (file name) / failed, restore
+  completed (duration and errors) / failed, an app update once per version.
+- **Tray** `DesktopTray` (`notification/DesktopTray.kt`, AWT `SystemTray` / `TrayIcon`): an icon (the packaging icon
+  `desktopApp/icons/komikku.png`, copied into the resources by `processResources`) with a menu "Open Komikku" / "Exit",
+  a click (and, where the platform reports it, a click on a notification) brings the window back from minimised; the
+  notifications are its balloons (`displayMessage`, level → info / warning / error). Optional: Settings → Appearance
+  "Show an icon in the system tray" (desktop key `desktop_tray_icon`, default on), installed and removed by the window.
+  Without a tray — off, `SystemTray.isSupported()` false, a headless JVM, or any AWT failure (logged) — nothing is
+  installed and `show` returns false: no system notifications, the app's own banners and snackbars as before.
+- Settings → Security and privacy: Android's "Hide notification content".
+
+### Decisions / deviations
+
+- **Entry titles are left out while "Hide notification content" is on or the app is locked** (P16): a desktop
+  notification shows over every window, so a locked app does not name its entries. Stricter than Android in two ways:
+  Android does not look at its lock, and its downloader *error* notification names the entry even with the setting on.
+- Notifications only through the tray icon (AWT has no other notification API); no fallback to `notify-send` /
+  Windows toasts / macOS `NSUserNotification` (native code). Without a tray the desktop behaves as before P17.
+- No actions on the notifications (mark as read, download, view chapters, pause / resume, open the error log): AWT
+  balloons have none; a click opens the window. No per-entry notifications with covers, no queue-size warning
+  notification for library updates (the desktop does not compute it), no download progress notification (the queue
+  screen shows it), no restore progress.
+- Closing the window still quits the app (no "minimise to tray"); the scheduled work runs only while the app is open (P3).
+
+### Tests
+
+`DesktopNotificationsTest` (5, a recording `DesktopNotifier`): a finished update's new chapters (titles, one-entry text)
+and errors and the tray status while it runs; nothing after a cancelled update or a single entry's refresh; titles left
+out with "Hide notification content" and while locked (downloader error too), back once unlocked; downloader errors /
+warnings (pause / completion nothing), backup created, restore completed (duration) and failed, an app update once per
+version; `DesktopTray` with no tray, "supported" in a headless JVM (creating the icon fails → no tray, no crash) and a
+throwing support check.
+
+Not verified: a real tray icon, balloons and clicks on Windows / macOS / Linux desktops (headless tests cannot create a
+`TrayIcon`), the window coming back from the tray.
+
+Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests '*DesktopNotificationsTest*'` 5
+tests, then `--tests '*SettingsUiTest*' --tests '*SettingsSearchUiTest*' --tests '*AppLockUiTest*' --tests
+'*DesktopShellTest*' --tests '*LibraryUpdateRunnerTest*' --tests '*DesktopInjektTest*'` 29 tests, 0 failures.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3565,8 +3626,9 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    webtoon split / rotate, cropped borders, animated AVIF / HEIF. Also: AVIF / JPEG XL / HEIF pages and covers (P5: no
    acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
    7z chapters exercised from the UI.
-5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
-   them), OAuth via redirect (paste only). Settings search is done (P15); the app lock with a PIN / password is done
+5. **System integration:** notifications through an optional tray icon are done (P17; left: notification actions,
+   native notifications without a tray, minimise to tray; scheduled updates / backups run only while the app is open,
+   P3), OAuth via redirect (paste only). Settings search is done (P15); the app lock with a PIN / password is done
    (P16; left: an OS authenticator / biometrics, an editor for SY's lock times and days, secure screen). Settings → Advanced is done (P12: log
    folder and level, reindex downloads, clear database, cookies, default and per-site user agents, the solver and
    delegated sources moved there, DNS over HTTPS; the chapter cache in Data and storage); left from it: "Clear WebView

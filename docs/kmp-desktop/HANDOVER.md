@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; next notifications / tray, source migration), then the maintainer's first real run of
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17): built; next source migration), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -365,6 +365,13 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   resource. **Two Android behaviour changes** (bug fixes): lock time ranges across midnight match, the settings search's
   highlighted index skips disabled groups. Full `:desktopApp:test` on `39b70ae`: 73 classes, 330 tests, 0 failures.
 
+- **P17** notifications and tray (`482bdaa` … , PROGRESS.md "P17 — notifications and system tray"): Android's notifiers'
+  texts (new chapters after a library update, update errors, downloader errors / warnings, backup / restore results, an
+  app update) through a `DesktopNotifier` interface; the AWT system tray icon (`DesktopTray`, Settings → Appearance,
+  default on; open / exit menu, update progress as tooltip) shows them and degrades to "no notifications" without a tray
+  or headless; entry titles left out with Android's "Hide notification content" (now in Settings → Security) **or while
+  the app is locked**. Test `DesktopNotificationsTest` (5). No real tray run. Not reviewed yet.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -415,9 +422,8 @@ mark the residual path in both modules.
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
-   P15 (settings search) and P16 (app lock) and their review fixes are done; **next**, in this order —
-   notifications and a tray icon for library updates / downloads, source migration (single entry from the details
-   first); then the maintainer's
+   P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) is built;
+   **next**: source migration (P18, single entry from the details first), the review of P17 / P18; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
