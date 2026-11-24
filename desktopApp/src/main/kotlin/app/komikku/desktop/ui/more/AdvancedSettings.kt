@@ -22,10 +22,6 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
-import eu.kanade.tachiyomi.util.system.toast
-import exh.log.EHLogLevel
-import exh.pref.DelegateSourcePreferences
-import exh.source.ExhPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_360
 import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
 import eu.kanade.tachiyomi.network.PREF_DOH_ALIDNS
@@ -38,6 +34,10 @@ import eu.kanade.tachiyomi.network.PREF_DOH_NJALLA
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
+import eu.kanade.tachiyomi.util.system.toast
+import exh.log.EHLogLevel
+import exh.pref.DelegateSourcePreferences
+import exh.source.ExhPreferences
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList

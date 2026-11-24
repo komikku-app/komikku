@@ -532,6 +532,9 @@ class ReaderModel(
                 val current = _state.value.currentChapter
                 if (current != null) progressSaver.saveHistory(current.chapter.id!!, _state.value.incognito)
                 progressSaver.restartReadTimer()
+                // A preload of this chapter still running: let it finish instead of loading the chapter a second time
+                // (two page lists for one chapter would leave the items with pages the chapter no longer has)
+                chapter.stateFlow.first { it != ReaderChapter.State.Loading }
                 loadChapter(chapter, null, start)
             } catch (e: CancellationException) {
                 throw e
@@ -802,8 +805,12 @@ internal fun anchorIndex(items: List<ReaderItem>, item: ReaderItem?): Int? {
     ReaderViewerItems.indexOf(items, item).takeIf { it >= 0 }?.let { return it }
     if (item !is ReaderPage) return null
     val page = imagePage(item)
-    ReaderViewerItems.indexOf(items, page).takeIf { it >= 0 }?.let { return it }
     val key = pageKey(page)
+    // A second half of a reloaded page: the second half of the page with its key, if that is split too
+    if (item is InsertPage) {
+        items.indexOfFirst { it is InsertPage && pageKey(it.parent) == key }.takeIf { it >= 0 }?.let { return it }
+    }
+    ReaderViewerItems.indexOf(items, page).takeIf { it >= 0 }?.let { return it }
     return items.indexOfFirst { it is ReaderPage && it !is InsertPage && pageKey(it) == key }.takeIf { it >= 0 }
 }
 

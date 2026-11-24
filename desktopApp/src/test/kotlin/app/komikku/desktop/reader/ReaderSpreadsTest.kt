@@ -1,6 +1,7 @@
 package app.komikku.desktop.reader
 
 import app.komikku.desktop.ui.reader.ReaderModel
+import app.komikku.desktop.ui.reader.anchorIndex
 import app.komikku.desktop.ui.reader.pageKey
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
@@ -66,6 +67,22 @@ class ReaderSpreadsTest {
             splitPages = setOf(pageKey(one.page(1))),
         )
         split.spreadPages() shouldBe listOf(listOf("1.1"), listOf("1.1b"), listOf("1.2", "1.3"))
+    }
+
+    @Test
+    fun `rebuilt lists re-anchor by identity, a second half by its page`() {
+        val one = chapter(1, 3)
+        val half = InsertPage(one.page(2))
+        val split = listOf(one.page(1), one.page(2), half, one.page(3))
+        anchorIndex(split, half) shouldBe 2
+        // The split is gone: its page
+        anchorIndex(one.pages!!, half) shouldBe 1
+        // The chapter's pages were loaded again (new page objects): the second half of the page with the same key
+        val reloaded = chapter(1, 3)
+        val newHalf = InsertPage(reloaded.page(2))
+        anchorIndex(listOf(reloaded.page(1), reloaded.page(2), newHalf, reloaded.page(3)), half) shouldBe 2
+        anchorIndex(reloaded.pages!!, one.page(3)) shouldBe 2
+        anchorIndex(reloaded.pages!!, ChapterTransition.Next(one, null)) shouldBe null
     }
 
     @Test
