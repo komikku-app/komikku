@@ -250,6 +250,26 @@ class SourceFeedUiTest {
     }
 
     @Test
+    fun `order mode ends when its last saved-search row is deleted`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        feedRow(savedSearch("Only", query = "only").id)
+        openSourceFeed()
+        waitForText("L search only")
+        onNodeWithTag("source-feed-sort").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("feed-order").fetchSemanticsNodes().isNotEmpty() }
+
+        onNodeWithTag("feed-delete-${sourceFeeds().single().id}").performClick()
+        waitForText(SYMR.strings.feed_delete.text())
+        onNode(hasText(MR.strings.action_delete.text()) and hasAnyAncestor(isDialog())).performClick()
+        waitUntil(timeoutMillis = 5_000) { sourceFeeds().isEmpty() }
+        // Nothing left to order: the feed's rows and search field again, not a blank order list
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("source-feed-rows").fetchSemanticsNodes().isNotEmpty() }
+        onAllNodesWithTag("feed-order").fetchSemanticsNodes().isEmpty() shouldBe true
+        onAllNodesWithTag("source-feed-sort-done").fetchSemanticsNodes().isEmpty() shouldBe true
+        onAllNodesWithTag("source-feed-query").fetchSemanticsNodes().isNotEmpty() shouldBe true
+        waitForText("L popular")
+    }
+
+    @Test
     fun `a saved search is added to the source's feed from the catalogue's filter panel within Android's limit`() =
         runDesktopComposeUiTest(width = 1280, height = 1000) {
             savedSearch("Panel search", query = "panel")

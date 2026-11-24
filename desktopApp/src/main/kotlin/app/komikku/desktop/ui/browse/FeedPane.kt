@@ -396,6 +396,9 @@ fun FeedPane(model: FeedPaneModel, bulkModel: BulkFavoriteScreenModel) {
     val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
     val allResults = { state.rows.orEmpty().flatMap { it.results.orEmpty() } }
     var ordering by rememberSaveable { mutableStateOf(false) }
+    // The last row deleted (or gone): nothing left to order, so order mode ends
+    val nothingToOrder = state.rows?.isEmpty() == true
+    LaunchedEffect(ordering, nothingToOrder) { if (ordering && nothingToOrder) ordering = false }
     val tooManyFeeds = stringResource(KMR.strings.too_many_in_feed)
     val internalError = stringResource(MR.strings.internal_error)
     LaunchedEffect(model) {

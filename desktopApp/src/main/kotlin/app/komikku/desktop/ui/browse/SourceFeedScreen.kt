@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -106,6 +107,9 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
         val source = model.source
         var ordering by rememberSaveable { mutableStateOf(false) }
         val savedSearchRows = state.rows.orEmpty().mapNotNull { it.row as? SourceFeedRow.SavedSearchRow }
+        // The last saved-search row deleted (or gone): nothing left to order, so order mode ends
+        val nothingToOrder = state.rows != null && savedSearchRows.isEmpty()
+        LaunchedEffect(ordering, nothingToOrder) { if (ordering && nothingToOrder) ordering = false }
         // P14: bulk favourites of the rows' entries
         val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkState by bulkModel.state.collectAsState()

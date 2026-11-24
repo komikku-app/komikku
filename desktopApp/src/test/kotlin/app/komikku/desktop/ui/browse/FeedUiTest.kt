@@ -333,6 +333,23 @@ class FeedUiTest {
     }
 
     @Test
+    fun `order mode ends when its last row is deleted`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        feedRow(ID_A)
+        openFeed()
+        waitForText("A latest 1")
+        onNodeWithTag("feed-sort").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("feed-order").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithTag("feed-delete-${feeds().single().id}").performClick()
+        waitForText(SYMR.strings.feed_delete.text())
+        onNodeWithText(MR.strings.action_delete.text()).performClick()
+        waitUntil(timeoutMillis = 5_000) { feeds().isEmpty() }
+        // The empty feed with its toolbar (add), not order mode
+        waitForText(SYMR.strings.feed_tab_empty.text())
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("feed-add").fetchSemanticsNodes().isNotEmpty() }
+        onAllNodesWithTag("feed-sort-done").fetchSemanticsNodes().isEmpty() shouldBe true
+    }
+
+    @Test
     fun `reordering and deleting keep the loaded rows, adding loads only the new row`() =
         runDesktopComposeUiTest(width = 1280, height = 1000) {
             feedRow(ID_A)
