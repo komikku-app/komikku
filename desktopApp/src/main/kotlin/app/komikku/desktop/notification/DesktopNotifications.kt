@@ -62,8 +62,10 @@ class DesktopNotifications(
     }
 
     private suspend fun followLibraryUpdates() {
-        // The run notified last: a finished progress stays in the flow until the next update starts
-        var notified: LibraryUpdateProgress? = libraryUpdates.value?.takeIf { it.finished }
+        // The run notified last: a finished progress stays in the flow until the next update starts. Review fix (P17):
+        // by its run id, not by identity — a state flow conflates equal values, and a fast second run's finished progress
+        // can equal the first one's except for its id (`LibraryUpdateProgress.runId`)
+        var notified: Long? = libraryUpdates.value?.takeIf { it.finished }?.runId
         libraryUpdates.collect { progress ->
             when {
                 progress == null -> notifier.status(null)
@@ -73,8 +75,8 @@ class DesktopNotifications(
                         percent.format(if (progress.total == 0) 0f else progress.done.toFloat() / progress.total),
                     ),
                 )
-                progress !== notified -> {
-                    notified = progress
+                progress.runId != notified -> {
+                    notified = progress.runId
                     notifier.status(null)
                     onLibraryUpdateFinished(progress)
                 }
@@ -128,7 +130,10 @@ class DesktopNotifications(
             is DownloadEvent.Error -> notifier.show(
                 DesktopNotification(
                     channel = DesktopNotification.Channel.Downloader,
-                    title = event.mangaTitle?.takeUnless { hideContent }?.plus(": ${event.chapter}") ?: downloader,
+                    // Review fix (P17): the entry and the chapter joined as the downloader's toast does (no "null")
+                    title = event.mangaTitle?.takeUnless { hideContent }
+                        ?.let { title -> listOfNotNull(title, event.chapter).joinToString(": ") }
+                        ?: downloader,
                     text = event.message ?: context.stringResource(MR.strings.download_notifier_unknown_error),
                     level = DesktopNotification.Level.Error,
                 ),
@@ -146,10 +151,15 @@ class DesktopNotifications(
     }
 
     private suspend fun followBackups() {
-        // A result already there when the app starts following is not news
-        val initial = backupStatus.value
+        // A result already there when the app starts following is not news. Review fix (P17): each result instance is
+        // notified once — an automatic backup sets `Running` and then puts the previous status object back
+        // (`DesktopBackupJobs.createAutomatic`), which must not notify that result again
+        var notified: DesktopBackupJobs.Status = backupStatus.value
         backupStatus.collect { status ->
-            if (status === initial) return@collect
+            if (status === notified) return@collect
+            if (status is DesktopBackupJobs.Status.Created || status is DesktopBackupJobs.Status.Restored || status is DesktopBackupJobs.Status.Failed) {
+                notified = status
+            }
             when (status) {
                 is DesktopBackupJobs.Status.Created -> notifier.show(
                     DesktopNotification(

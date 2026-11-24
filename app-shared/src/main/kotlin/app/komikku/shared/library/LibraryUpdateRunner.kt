@@ -76,6 +76,12 @@ data class LibraryUpdateProgress(
     val excluded: Int = 0,
     val finished: Boolean = false,
     val cancelled: Boolean = false,
+    /**
+     * Which update this is (P17 review fix): every [LibraryUpdateRunner.start] gets a new one, so two runs never have
+     * equal progress values — a state flow conflates equal values, and a fast second run's finished progress could
+     * otherwise equal the first one's and never reach a collector (the notifications).
+     */
+    val runId: Long = 0,
 )
 
 /**
@@ -211,11 +217,13 @@ class CoroutineLibraryUpdateRunner(
 
     private var job: Job? = null
 
+    private var lastRunId = 0L
+
     @Synchronized
     override fun start(target: LibraryUpdateRunner.Target): Boolean {
         if (job?.isActive == true) return false
         onStarted(target)
-        _progress.value = LibraryUpdateProgress(target = target, total = 0)
+        _progress.value = LibraryUpdateProgress(target = target, total = 0, runId = ++lastRunId)
         job = scope.launch {
             try {
                 awaitReady()

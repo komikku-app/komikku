@@ -4,6 +4,7 @@ import android.app.Application
 import app.komikku.desktop.backup.DesktopBackupJobs
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.shared.download.DownloadEvent
+import app.komikku.shared.library.CoroutineLibraryUpdateRunner
 import app.komikku.shared.library.LibraryUpdateProgress
 import app.komikku.shared.library.LibraryUpdateRunner
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
@@ -15,9 +16,12 @@ import io.kotest.matchers.string.shouldNotContain
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -27,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
+import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.release.model.Release
 import tachiyomi.i18n.MR
@@ -35,6 +40,8 @@ import uy.kohesive.injekt.api.get
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.Collections
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 
 /**
  * P17: Android's notifiers' rules on desktop ([DesktopNotifications]) with a recording [DesktopNotifier]: new chapters
@@ -87,6 +94,16 @@ class DesktopNotificationsTest {
             backupStatus = backups,
             appUpdates = updates,
         ).start(CoroutineScope(Dispatchers.Default))
+        // Found in a full run under load: a download event emitted (or a backup status set) before the collectors
+        // subscribed was lost (a shared flow without replay) or read as the start-up status. Wait for them.
+        runBlocking {
+            withTimeout(5_000) {
+                downloads.subscriptionCount.first { it > 0 }
+                backups.subscriptionCount.first { it > 0 }
+                library.subscriptionCount.first { it > 0 }
+                updates.subscriptionCount.first { it > 0 }
+            }
+        }
     }
 
     @AfterEach
@@ -106,6 +123,8 @@ class DesktopNotificationsTest {
     /** Lets the collectors run, for checks that nothing (more) was shown. */
     private fun settle() = Thread.sleep(200)
 
+    private var runs = 0L
+
     private fun finished(
         target: LibraryUpdateRunner.Target = LibraryUpdateRunner.Target.All,
         cancelled: Boolean = false,
@@ -120,6 +139,8 @@ class DesktopNotificationsTest {
             failed = listOf(manga(99, "Broken entry") to "HTTP 500"),
             finished = true,
             cancelled = cancelled,
+            // Each finished progress stands for another run, as the runner numbers them
+            runId = ++runs,
         )
 
     @Test
@@ -209,6 +230,80 @@ class DesktopNotificationsTest {
         updates.value = release.copy(info = "other notes")
         settle()
         notifier.shown shouldHaveSize 5
+    }
+
+    @Test
+    fun `a backup result is notified once, also when an automatic backup puts it back`() {
+        val created = DesktopBackupJobs.Status.Created(File("komikku_2026-11-24.tachibk"))
+        backups.value = DesktopBackupJobs.Status.Running(DesktopBackupJobs.Kind.Create)
+        backups.value = created
+        awaitShown(1)
+        // `DesktopBackupJobs.createAutomatic()`: Running, then the previous status object back
+        backups.value = DesktopBackupJobs.Status.Running(DesktopBackupJobs.Kind.Create)
+        settle()
+        backups.value = created
+        settle()
+        notifier.shown shouldHaveSize 1
+        // A new result is news again
+        backups.value = DesktopBackupJobs.Status.Failed(DesktopBackupJobs.Kind.Create, "Disk full")
+        awaitShown(2)
+    }
+
+    @Test
+    fun `a download error without a chapter names the entry only`() {
+        downloads.tryEmit(DownloadEvent.Error("Timeout", chapter = null, mangaTitle = "Beta", mangaId = 2))
+        awaitShown(1)
+        notifier.shown[0].title shouldBe "Beta"
+    }
+
+    @Test
+    fun `a second update that ends like the first one is notified too`() {
+        val entry = LibraryManga(
+            manga = manga(1, "Alpha"),
+            categories = listOf(0),
+            totalChapters = 5,
+            readCount = 5,
+            bookmarkCount = 0,
+            bookmarkReadCount = 0,
+            chapterFlags = 0,
+            latestUpload = 0,
+            chapterFetchedAt = 0,
+            lastRead = 0,
+        )
+        val runner = CoroutineLibraryUpdateRunner(
+            scope = CoroutineScope(Dispatchers.Default),
+            getLibrary = { listOf(entry) },
+            preferences = Injekt.get(),
+            fetchWindowUpperBound = { Long.MAX_VALUE },
+            updateManga = { 1 },
+        )
+        val collectorThread = Executors.newSingleThreadExecutor()
+        val following = DesktopNotifications(
+            context = app,
+            notifier = notifier,
+            securityPreferences = security,
+            isLocked = { false },
+            libraryUpdates = runner.progress,
+            downloadEvents = MutableSharedFlow(),
+            backupStatus = MutableStateFlow(DesktopBackupJobs.Status.Idle),
+            appUpdates = MutableStateFlow(null),
+        ).start(CoroutineScope(collectorThread.asCoroutineDispatcher()))
+        try {
+            runner.start(LibraryUpdateRunner.Target.Entries(setOf(1))) shouldBe true
+            awaitShown(1)
+            // The collector does not run while the second update starts and ends: it only sees its finished progress
+            val gate = CountDownLatch(1)
+            collectorThread.execute { gate.await() }
+            // (the first run's job ends just after its finished progress)
+            runBlocking { withTimeout(5_000) { while (!runner.start(LibraryUpdateRunner.Target.Entries(setOf(1)))) delay(10) } }
+            runBlocking { withTimeout(5_000) { runner.progress.first { it?.finished == true } } }
+            gate.countDown()
+            awaitShown(2)
+            notifier.shown[1].text shouldBe "Alpha"
+        } finally {
+            runBlocking { following.cancelAndJoin() }
+            collectorThread.shutdownNow()
+        }
     }
 
     @Test
