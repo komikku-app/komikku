@@ -108,6 +108,12 @@ class DesktopExtensionManager(
 
     private var subLanguagesEnabledOnFirstRun = preferences.enabledLanguages().isSet()
 
+    /**
+     * APK hash per installed package, to prune the converted-jar cache. Declared before `init`: the initial load
+     * launched there can run on another thread before the rest of the constructor (a null map otherwise).
+     */
+    private val loadedApkHashes = ConcurrentHashMap<String, String>()
+
     init {
         scope.launch {
             mutex.withLock { initExtensions() }
@@ -131,9 +137,6 @@ class DesktopExtensionManager(
         )
         runtime.pruneJarCache(loadedApkHashes.values.toSet())
     }
-
-    /** APK hash per installed package, to prune the converted-jar cache. */
-    private val loadedApkHashes = ConcurrentHashMap<String, String>()
 
     private suspend fun loadExtension(apk: File): LoadResult {
         val extension = when (val result = runtime.inspect(apk)) {
