@@ -192,9 +192,12 @@ private fun MigrateSourceList(
                     items = list
                         // KMK -->
                         .filter {
+                            // P23: obsolete = a stub (not installed) or an installed extension marked obsolete; a
+                            // healthy source without an APK extension (a JavaScript or built-in source) is not
+                            // (`isObsolete != false` kept them)
                             !filterObsoleteSource ||
                                 (
-                                    it.first.installedExtension?.isObsolete != false &&
+                                    (it.first.isStub || it.first.installedExtension?.isObsolete == true) &&
                                         (!isHentaiEnabled || it.first.id !in eHentaiSourceIds)
                                     )
                         },
