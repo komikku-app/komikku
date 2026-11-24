@@ -444,8 +444,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   the extension info clears through `DesktopWebView.clearCookies` for each source's base and home address (cookies for
   the registrable domain such as `cf_clearance` included), on IO, with Android's "Cookies cleared" toast; Uninstall asks
   first in the extension info and on the Extensions tab's rows. Android unchanged. Left open: cookies with their own
-  non-root `Path` stay (Android too); the off-UI-thread clearing has no test. Full `:desktopApp:test` on `9ae0d0b`: 80 classes, 367
+  non-root `Path` stay (Android too; desktop fixed in P23); the off-UI-thread clearing has no test. Full `:desktopApp:test` on `9ae0d0b`: 80 classes, 367
   tests, 0 failures.
+- **P23** small open points from reviews (`83a12f0` … , PROGRESS.md "P23 — small open points from reviews"): "Clear
+  cookies" on desktop (WebView dialog, extension info) is host-wide (`DesktopCookieManager.removeForHost`: every path,
+  parent-domain cookies of the host, other hosts kept); Android's obsolete-only filter in Browse → Migrate keeps only
+  stubs and obsolete extensions (**Android behaviour change**, bug fix, compile-checked only); Android's
+  `MigrateSearchScreen` dialog branch verified unreachable (no change); an installed JavaScript source gone from every
+  repository is obsolete in the desktop Migrate tab's filter and label; a test for the library categories' bottom
+  padding. Not reviewed yet.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -474,23 +481,23 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
-- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the P22 review fixes" (last code
-  commit `9ae0d0b`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
+- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the small open points from
+  reviews (P23)" (last code commit `d8c9fb3`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
   `.github/workflows/build_ios_check.yml`, `docs/kmp-desktop/IOS_CI.md`): leave those files alone, merge (never rebase or
   force) when a push is rejected.
-- **Last full `:desktopApp:test`:** on `9ae0d0b` (the code of HEAD): 80 classes, 367 tests, 0 failures, the
+- **Last full `:desktopApp:test`:** on `d8c9fb3` (the code of HEAD): 81 classes, 369 tests, 0 failures (was 80 / 367: `LibraryCategoriesUiTest` 1, `BrowseMigrateUiTest` +1), the
   timing-sensitive classes (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`,
-  `MangayomiSourceStoreTest`) included and passing.
-- **Not reviewed:** nothing of P1–P22 is waiting for a review; the P22 review fixes (`c995099..` the docs commit) are not
-  reviewed themselves. Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
+  `MangayomiSourceStoreTest`) included and passing; `:desktop:android-compat:test` 7 classes, 35 tests, 0 failures.
+- **Not reviewed:** the P22 review fixes and P23, review range `c968ba3..` the P23 docs commit (the P22 review fixes
+  `c968ba3..c83e30d`, P23 `c83e30d..` the P23 docs commit). Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
 - **Next items** (from PROGRESS "Remaining parity gaps", in this order: small and headless-testable first, then by user
   impact, the big ones last):
   1. Reader leftovers (gap 4): tap-zone / keyboard navigation settings, SY's shift / invert double pages and centre
      margins, cropped borders, webtoon split / rotate of wide pages.
   2. Manga details leftovers (gap 3): "Autofill from tracker" in edit info, then sharing (cover / link).
-  3. Small open points found in reviews: host-wide cookie removal for "Clear cookies" (non-root `Path` cookies, P22
-     review), the source feed's incognito toggle (gap 1), Android's obsolete filter in Browse → Migrate still keeping
-     JavaScript sources (P20 / P21 review; a one-line Android change, needs the coordinator's decision).
+  3. Small open points: the source feed's incognito toggle (gap 1); Android's own "Clear cookies" (extension info,
+     WebView) still misses non-root `Path` and parent-domain cookies (Mihon's `cookieJar.remove`); Android's Migrate tab
+     does not mark obsolete JavaScript sources; a test that the extension info's clearing runs off the UI thread.
   4. Recommendations (library selection and details, gaps 2 / 3), then SY's metadata / namespace-tag view and page
      previews for the delegated sources (P4).
   5. System integration (gap 5): minimise to tray, notification actions.
@@ -527,7 +534,7 @@ mark the residual path in both modules.
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
    configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
-   source categories) and their review fixes are done; P22 (extension info) and its review fixes are done; **next**: the
+   source categories) and their review fixes are done; P22 (extension info) and its review fixes and P23 (small open points from reviews, not reviewed) are done; **next**: the
    items in "Next session" above; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the

@@ -3953,14 +3953,14 @@ descending (finding 7); after a failed read Browse → Migrate shows its empty s
 Not changed on Android: its obsolete filter (`MigrateSourceScreen`, `isObsolete != false`) also keeps healthy JavaScript
 sources and built-in sources without an extension other than E-Hentai's; left as it is (not part of this review; the
 same one-line change would fix it). An obsolete JavaScript source (gone from every repository, `JsSourceStatus.OBSOLETE`)
-is not "obsolete" in the desktop filter either: it has no APK extension; open.
+is not "obsolete" in the desktop filter either: it has no APK extension; open. (Both fixed in P23.)
 
 Tests: `MigrateMangaUiTest` +1 (a long press in the source's own search opens the details twice, no selection button,
 the list below kept), `SourceCategoriesUiTest` +2 (a `lastused` category next to the last used row; the last row's rename
 / delete buttons above the "Add" button after scrolling to the end, which fails without the padding: checked by removing
 it), `BrowseMigrateUiTest` +2 (the obsolete filter with no APK extension, then an extension turning obsolete and back
 while shown; a failed read → error → Retry → the list) and its descending order changed. The library categories screen's
-padding is compile-checked only.
+padding is compile-checked only (test added in P23).
 
 Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): the new tests failed on the old
 code (7 failures in `BrowseMigrateUiTest`, `SourceCategoriesUiTest`, `MigrateMangaUiTest`, among them the expected
@@ -4044,7 +4044,7 @@ Decisions:
   call plus forgetting the host's remembered solver User-Agent and failed solve (P7 / P8), which belong to the cleared
   clearance. The borrowed model's `clearCookies` is left as it is (Android uses it; no Android change).
 - Cookies with their own non-root `Path` (e.g. `Path=/manga`) are not sent to a source's base address, so neither
-  Android's clearing nor the desktop's removes them; left open (it needs a host-wide removal in `DesktopCookieManager`).
+  Android's clearing nor the desktop's removes them; left open (it needs a host-wide removal in `DesktopCookieManager`) — fixed on desktop in P23, Android's unchanged).
 - Finding 3, other observers of the gap: the desktop source manager (dropped and re-added the extension's sources, which
   could disturb an open catalogue), the Extensions tab's list (`GetPlatformExtensionsByType`) and the library's source
   badge (`LibraryItems`); all now get one emission. The other two-step paths are fine: `trust` moves the entry between
@@ -4068,6 +4068,43 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the h
 nothing under `app/` or a shared module changed); `:desktopApp:test --tests '*ExtensionDetailsUiTest*' --tests
 '*DesktopExtensionManagerTest*' --tests '*ExtensionsUiTest*' --tests '*JsSourcesUiTest*' --tests '*SourcesUiTest*'` 17
 tests, 0 failures. Full `:desktopApp:test` on `9ae0d0b`: 80 classes, 367 tests, 0 failures (was 80 / 365; the timing-sensitive `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`, `MangayomiSourceStoreTest` included and passing).
+
+## P23 — small open points from reviews
+
+Open points left by the P19–P22 reviews, each its own commit with a test (failing first where it could compile against
+the old code).
+
+| # | Point | Outcome | Commit |
+|---|-------|---------|--------|
+| 1 | Cookies with their own non-root `Path` (e.g. `Path=/manga`) stayed after "Clear cookies": `removeFor` / `removeBrowserCookies` only take the cookies sent to the address itself | Fixed: `DesktopCookieManager.removeForHost(url)` removes every cookie of the address's host whatever its path, `Secure` flag or name — host-only cookies of that host and domain cookies of the host or a parent domain (RFC 6265 domain matching); a sibling host's own cookies, the host's subdomains and other sites stay. `AndroidCookieJar.removeHostCookies` (desktop `BrowserCookies.kt`) uses it (the jar's own `remove` without the desktop `CookieManager`). `DesktopWebView.clearCookies` uses it, so the WebView dialog's "Clear cookies" and the extension info's (`ExtensionCookies.clear`, through `DesktopWebView.clearCookies`) are host-wide now. Settings → Advanced "Clear cookies" clears the whole jar (`removeAll`), nothing per site there; the Cloudflare interceptor's and the manual paste's removals stay by name for the address (they replace specific cookies) | `83a12f0` |
+| 2 | Android's obsolete-only filter in Browse → Migrate (`MigrateSourceScreen`, `isObsolete != false`) kept healthy sources without an APK extension (JavaScript sources, built-in sources) | Fixed in the existing KMK block: kept only `isStub` or an installed extension with `isObsolete == true` (the desktop rule of the P20 / P21 review fix 3); SY's exclusion of its E-Hentai sources while E-Hentai is on is kept. The labels were already right ("Not installed" for stubs, "Obsolete" for an obsolete extension). **Android behaviour change** (bug fix, decided): the filter no longer lists healthy JavaScript and built-in sources. Compile-checked only (`:app:compileDebugKotlin`; Android UI has no headless tests) | `38167b3` |
+| 3 | Android's `MigrateSearchScreen` dialog branch (`migrateListScreen == null` → `setMigrateDialog`, the `MigrateMangaDialog`), whose desktop twin was deleted in the P19 review fixes | **No change needed, verified unreachable on Android.** The only push sites are both in `MigrationListScreen` (the single-entry manual search `LaunchedEffect`, and "Search manually" of a row), each pushing the search on top of that list, so a `MigrationListScreen` is always in `navigator.items` below it. The list cannot leave the stack while the search is shown: Voyager composes only the top screen, so the list's `LaunchedEffect`s that pop it do not run then. `MigrationConfigScreen`'s former single-entry push to the search is commented out (KMK); `MigrateSourceSearchScreen` (from the search's source header) adds its pick to the list too. Mihon's code left as it is | — |
+| 4 | An installed JavaScript source gone from every repository (`JsSourceStatus.OBSOLETE`) was neither kept by the desktop Migrate tab's obsolete filter nor labelled "Obsolete" | Fixed: `MigrateSourcePane` takes the obsolete JavaScript source ids (`obsoleteJsSourceIds()`: the store's `items`, installed with status `OBSOLETE`, as Komikku source ids; none without a store) and treats them like an obsolete extension for the filter and the label, re-run when they change. The store sets `OBSOLETE` only once every added repository's index was read, so before the first refresh such a source is not marked. Android's tab does not use it (its sources list has no JavaScript store status there); left open | `aa0585a` |
+| 5 | The library `CategoriesScreen`'s bottom padding (P20 / P21 review fix 5) was only compile-checked | Test added: `LibraryCategoriesUiTest` (25 categories, scrolled to the end: the last row's up / down / hide / rename / delete buttons end above the "Add" button). Checked that it fails with the padding set to 0 (the up button overlapped the button) | `d8c9fb3` |
+
+Tests: `CookieManagerTest` +1 (host-wide removal: root, `Path=/manga`, a `Secure` cookie on another path, a parent-domain
+cookie on the root and on another path removed — 5; a sibling host, a subdomain, another site with the same names, a
+look-alike domain `notexample.com` kept); `DesktopWebViewTest` "clear cookies …" extended (a `Path=/reader` cookie
+removed, a sibling host's own cookie kept; count 2 → 3); `ExtensionDetailsUiTest` "clear cookies …" extended (a
+`Path=/manga` cookie of the source's host removed); `BrowseMigrateUiTest` +1 and one extended (an obsolete JavaScript
+source shown by the filter and labelled, gone again when it is offered again; `obsoleteSourceIds` only takes installed
+items with status `OBSOLETE`); `LibraryCategoriesUiTest` (1, new).
+
+Failing first: the extended `DesktopWebViewTest` and `ExtensionDetailsUiTest` cases were run on `c83e30d` and failed for
+the reported reason (`expected:<3> but was:<2>`; `List should be empty but has 1 elements, first being: page=4;
+path=/manga`). The new `CookieManagerTest` and `BrowseMigrateUiTest` cases use the new API (`removeForHost`, the pane's
+new parameter, `obsoleteSourceIds`) and could not compile against the old code; the categories test was checked against
+a temporarily removed padding instead.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass;
+`:desktop:android-compat:test --tests '*CookieManagerTest*'` 8 tests and `:desktopApp:test --tests '*DesktopWebViewTest*'
+--tests '*ExtensionDetailsUiTest*' --tests '*BrowseMigrateUiTest*' --tests '*BrowseMigrateTabUiTest*' --tests
+'*LibraryCategoriesUiTest*'` 21 tests, 0 failures. Full run on `d8c9fb3` (with `spotlessCheck`,
+`:app:verifyBorrowedSources` and `:desktopApp:compileKotlin` in the same run): `:desktopApp:test` 81 classes, 369 tests,
+0 failures (was 80 / 367; the timing-sensitive `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`,
+`ReaderNavigationTest`, `MangayomiSourceStoreTest` included and passing); `:desktop:android-compat:test` 7 classes, 35
+tests, 0 failures.
 
 ## Remaining parity gaps
 
