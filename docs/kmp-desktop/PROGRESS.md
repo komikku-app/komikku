@@ -3697,25 +3697,104 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the h
 `02609c0`: 75 classes, 344 tests, 0 failures (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`
 included and passing).
 
+## P19 — migration list and configuration
+
+Built in `3cb9765` (borrowing), `12d2889` (configuration, list, entry points), `bc052ac` (tests), `5118ee7` / `4c9db7f`
+(migration from the duplicate dialog and its tests), `c88b273` (library selection test) and this docs commit.
+
+### Built
+
+- **Android's logic borrowed, not rewritten** (`desktopCopy`, `app-shared/borrowed-app-sources.gradle.kts`): Mihon's /
+  Komikku's `MigrationListScreenModel` (automatic matching per entry through the migration sources in their order, or the
+  one with most chapters with "prioritise by chapters", deep search, the extra query, SY's `ThrottleManager`; hide
+  unmatched / without updates; cancel, skip, migrate / copy now, migrate / copy all with progress and cancel, the match
+  from the manual search; ends by navigating back), `MigratingManga`, `BaseSmartSearchEngine` / `SmartSourceSearchEngine`,
+  the list's dialogs (`MigrationMangaDialog`, `MigrationProgressDialog`, `MigrationExitDialog`), the options sheet
+  `MigrationConfigScreenSheet` (what to migrate, remove downloads, extra query, hide unmatched / without updates, Komikku's
+  smart search for one entry, deep search, prioritise by chapters; the list's settings button shows it without the
+  start-only items), `ChapterNumberFormatter`, and the configuration's screen model: `MigrationConfigScreen`'s private
+  `ScreenModel` and `MigrationSource` moved unchanged into the new KMK file `MigrationConfigScreenModel.kt` (Android's
+  screen uses it; behaviour unchanged). Desktop counterparts in `app-shared/src/desktopMain`: `AdaptiveSheet` (Android's
+  dialog around presentation-core's sheet, always the tablet form) and `getNameForMangaInfo` (`DesktopSourceExtensions.kt`,
+  same body). `string-similarity` added to `:app-shared`'s desktop dependencies.
+- **Desktop screens** (`desktopApp/…/ui/migration/`): `MigrationConfigScreen(mangaIds)` — selected sources first, then the
+  available ones (a click toggles), select pinned / none (buttons) and enabled / all (menu), Android's source search ("," for
+  several, a source id), "Continue" → the options sheet → the list replaces it; `MigrationListScreen(mangaIds,
+  extraSearchQuery, isSmartSearchSingleEntry)` — per entry the current entry (cover, title, source, latest chapter, chapter
+  count) → the match (searching / no match / the match), cancel while searching, a menu with search manually, skip, migrate
+  now, copy now; top bar settings, copy all, migrate all (enabled once every search ended and one matched); back asks first
+  (Android's exit dialog, also on Escape).
+- **Entry points like Android:** the details' "Migrate" (P18) now opens the configuration; the library selection bar has
+  "Migrate" (merged entries left out, nothing left → SY's "No valid entry selected"); the duplicate dialog (details, bulk
+  favourites) migrates a duplicate onto the entry being added on a click (Mihon's dialog; bulk favourites go on with the
+  rest) and opens it on a long press.
+- **P18's migration search** now searches the migration sources only (Android's; the fallback to the global search's
+  sources is gone) and, when a migration list is in the stack, its pick becomes that entry's match there and the list is
+  shown again (Android's `addMatchOverride` + `popUntil`). One entry without "smart search for one entry" (Android's
+  default) starts no automatic search: the list opens the migration search at once. When the list ends, one entry opened
+  from its details gets the new entry's details in place of the old one's (and of the migration screens); otherwise back
+  to where it started.
+
+### Decisions / deviations
+
+- The selected sources are ordered with move up / down buttons (disabled while the source search filters the list), not
+  Android's drag handle (the `reorderable` library is not on the desktop classpath).
+- The list's rows are a desktop layout (small covers in a row, the result next to it, Android's texts); the "no match"
+  state shows Android's text without its error cover drawable.
+- Not built: Browse → Migrate (Android's source list with library counts and the per-source entry list with selection;
+  `MigrateSourceScreenModel` / `MigrateMangaScreenModel` need `GetSourcesWithFavoriteCount`, the app's search debounce
+  constant and `mihon.core.common.utils`, not borrowed yet), migration from the library update errors screen (no such
+  screen on desktop), SY merged sources, the pick from a source's own search (`MigrateSourceSearchScreen`).
+- Android behaviour: unchanged (the screen model moved file; Android's `MigrationConfigScreen` drops the imports that moved
+  with it).
+
+### Tests
+
+`MigrationListUiTest` (2): several entries — the configuration preselects both sources, moving the new one up stores
+`[NEW, OLD]`, the options sheet's Continue opens the list, the old source finds each entry itself (no match), the new one
+the known titles, a title nobody finds has no match, skip takes an entry out, migrate all with Android's confirmation
+migrates the matched one only and returns to where it started; one entry from its details — the migration search opens at
+once, its pick is the match in the list, copy all keeps the old entry, the new entry's details replace the old ones (stack
+checked). `MigrateMangaUiTest` (P18) now opens the migration search directly over the details (+1: migrating a duplicate
+from the duplicate dialog of the entry being added), `DuplicateMangaUiTest` (+1: a click on a duplicate offers the
+migration; opening it is a long press now), `LibraryGroupSelectionUiTest` (the selection's Migrate opens the
+configuration).
+
+Found while testing: the list must remember "manual search pushed" with `rememberSaveable` (as Android does) — it is not
+composed while the migration search is on top, a plain `remember` reopened the search after every pick.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` (after the screen model move) pass;
+`:desktopApp:test --tests '*MigrationListUiTest*' --tests '*MigrateMangaUiTest*'` 9 tests, `--tests '*MigrateMangaUiTest*'
+--tests '*DuplicateMangaUiTest*' --tests '*BulkFavoriteUiTest*'` 18 tests, `--tests '*LibraryGroupSelectionUiTest*'` 3
+tests, 0 failures. Full `:desktopApp:test` on `c88b273` (with `spotlessCheck`, `:app:verifyBorrowedSources` and
+`:desktopApp:compileKotlin` in the same run): 76 classes, 348 tests, 1 failure — `MangayomiSourceStoreTest` "a failed
+update keeps the installed version working" (line 502, `sources.value` not yet the updated source instance); not touched
+by P19, it passes alone (`--tests '*MangayomiSourceStoreTest*'`: 16 tests, 0 failures), so it is timing under load like the
+three known ones, and is new on that list. `DesktopBackupJobsTest`, `DesktopExtensionManagerTest` and `ReaderNavigationTest`
+passed.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
 1. **Browse:** the global Feed tab, the per-source feed, saved searches in the catalogue, the filter panel and adding a
    saved search to a source's feed are done (P13; left from them: the source feed's incognito toggle, SY's MangaDex
-   random / follows entries). Migration of one entry from its details is done (P18); left: the migration list and its
-   configuration screen, migrating from the duplicate dialog. Global search, source / language
+   random / follows entries). Migration of one entry from its details is done (P18), the migration list, its configuration screen and
+   migrating from the duplicate dialog are done (P19); left: Browse → Migrate (sources with library entries), merged
+   sources. Global search, source / language
    toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
    library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); left:
    SY source categories and data-saver exclusion.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
-2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
+2. **Library:** grouping and selection / batch actions are done (P2), migrate from the selection too (P19); left from
+   them: merge,
    recommendations, SY clean titles / MangaDex follow / reset info from the selection. The "continue reading" button,
    "Open random entry" and the source-icon badge are done (P12); left: language flag icons (Android drawables).
    Scheduled automatic library updates are done (P3; no device restrictions on desktop).
 3. **Manga details:** duplicate detection on add, metadata editing and cover actions are done (P10); left from them:
-   migrate from the duplicate dialog, "Autofill from tracker" in edit info, sharing the cover. Also: merged entries,
+   "Autofill from tracker" in edit info, sharing the cover (migrating from the duplicate dialog: done, P19). Also: merged entries,
    sharing, recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the
    metadata, P4).
 4. **Reader:** neighbouring chapters in the viewers, wide pages (alone in double pages, split, rotated) and
