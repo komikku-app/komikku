@@ -23,7 +23,8 @@ import java.io.File
  *
  * Not yet ported from Android: `CoverCache` (library covers / custom covers outside the disk cache),
  * page previews and cover-based colors. Android's `TachiyomiImageDecoder` (AVIF / JXL / HEIF) has no desktop decoder:
- * those images fail with [UnsupportedImageFormatDecoder]'s error (PROGRESS "P5").
+ * those images go to Skia and, when it cannot decode them, fail with [UnsupportedImageFormatDecoder]'s error
+ * (PROGRESS "P5").
  */
 object DesktopImageLoader {
 
@@ -39,7 +40,7 @@ object DesktopImageLoader {
                 add(OkHttpNetworkFetcherFactory(callFactory = { callFactoryLazy.value }))
                 add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager))
                 add(DesktopMangaCoverKeyer())
-                // AVIF / JPEG XL / HEIF: a clear "unsupported format" error instead of Skia's generic one (P5)
+                // AVIF / JPEG XL / HEIF: Skia first, then a clear "unsupported format" error instead of its generic one (P5)
                 add(UnsupportedImageFormatDecoder.Factory())
             }
             .diskCache {

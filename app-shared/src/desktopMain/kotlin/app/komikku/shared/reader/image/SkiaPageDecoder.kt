@@ -21,8 +21,9 @@ import kotlin.coroutines.coroutineContext
 /**
  * KMK: desktop [PageImageDecoder] on Skia (Skiko). Decodes JPEG, PNG, WebP, GIF and BMP / ICO; animated
  * GIF / WebP show their **first frame only** ([DecodedPage.animated] is set). AVIF, JPEG XL and HEIF
- * are not decoded by Skia on desktop and fail with [UnsupportedPageFormatException] (detected from
- * the magic bytes with the desktop `ImageUtil`).
+ * (detected from the magic bytes with the desktop `ImageUtil`) are left to Skia too, which may decode
+ * them where its build or the OS codecs allow (unverified on macOS / Windows, PROGRESS "P5"); when it
+ * cannot, they fail with [UnsupportedPageFormatException] naming the format instead of a generic error.
  *
  * The encoded image is decoded once at full size, then drawn into strips of at most
  * [DecodeRequest.maxTileHeight] rows at the requested width (mipmapped linear filtering), so the
@@ -32,26 +33,28 @@ import kotlin.coroutines.coroutineContext
  */
 class SkiaPageDecoder(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(2),
+    /** The Skia decode step, replaceable in tests to simulate a platform without a codec. */
+    private val decodeImage: (ByteArray) -> Image = { Image.makeFromEncoded(it) },
+    /** The Skia codec step (size and frame count), replaceable in tests like [decodeImage]. */
+    private val openCodec: (ByteArray) -> Codec = { Codec.makeFromData(Data.makeFromBytes(it)) },
 ) : PageImageDecoder<ImageBitmap> {
 
     override suspend fun readSize(open: () -> InputStream): PixelSize = withContext(dispatcher) {
         val bytes = open().use { it.readBytes() }
-        checkSupported(bytes)
-        Codec.makeFromData(Data.makeFromBytes(bytes)).use { PixelSize(it.width, it.height) }
+        mapUnsupported(bytes) { openCodec(bytes).use { PixelSize(it.width, it.height) } }
     }
 
     override suspend fun decode(open: () -> InputStream, request: DecodeRequest): DecodedPage<ImageBitmap> =
         withContext(dispatcher) {
             val bytes = open().use { it.readBytes() }
             coroutineContext.ensureActive()
-            checkSupported(bytes)
             val frames = try {
-                Codec.makeFromData(Data.makeFromBytes(bytes)).use { it.frameCount }
+                openCodec(bytes).use { it.frameCount }
             } catch (_: IllegalArgumentException) {
                 1
             }
             val image = try {
-                Image.makeFromEncoded(bytes)
+                mapUnsupported(bytes) { decodeImage(bytes) }
             } catch (e: IllegalArgumentException) {
                 throw IllegalStateException("Could not decode the image", e)
             }
@@ -82,14 +85,26 @@ class SkiaPageDecoder(
             }
         }
 
-    private fun checkSupported(bytes: ByteArray) {
-        val type = ImageUtil.findImageType(bytes.inputStream())
-        if (type in UNSUPPORTED) throw UnsupportedPageFormatException(type!!.name)
+    /** Runs the Skia [step]; when it fails for an AVIF / JPEG XL / HEIF image, the failure names the format. */
+    private inline fun <T> mapUnsupported(bytes: ByteArray, step: () -> T): T = try {
+        step()
+    } catch (e: IllegalArgumentException) {
+        throw unsupportedFormat(ImageUtil.findImageType(bytes.inputStream()), e) ?: e
     }
 
     companion object {
-        /** Formats Skia on desktop cannot decode. */
+        /**
+         * Formats Android decodes through its own decoder and the desktop's Skia may not (no codec in the Linux
+         * Skiko build; macOS / Windows unverified). Skia always gets the first try; this set only names its failures.
+         */
         val UNSUPPORTED = setOf(ImageUtil.ImageType.AVIF, ImageUtil.ImageType.JXL, ImageUtil.ImageType.HEIF)
+
+        /**
+         * The [UnsupportedPageFormatException] for a failed decode ([cause]) of an image of the detected [type] when
+         * it is one of the [UNSUPPORTED] formats, else `null` (the caller keeps its own error).
+         */
+        fun unsupportedFormat(type: ImageUtil.ImageType?, cause: Throwable): UnsupportedPageFormatException? =
+            if (type != null && type in UNSUPPORTED) UnsupportedPageFormatException(type.name, cause) else null
     }
 }
 

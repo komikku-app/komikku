@@ -39,5 +39,11 @@ data class DecodedPage<T>(
     val byteCount: Long get() = decoded.width.toLong() * decoded.height * 4
 }
 
-/** The page uses an image format this platform cannot decode (e.g. AVIF / JPEG XL / HEIF on desktop). */
-class UnsupportedPageFormatException(val format: String) : Exception("Unsupported image format: $format")
+/**
+ * The page uses an image format this platform cannot decode (e.g. AVIF / JPEG XL / HEIF when the desktop's Skia has
+ * no codec for it); [cause] is the platform decoder's failure.
+ */
+class UnsupportedPageFormatException(
+    val format: String,
+    cause: Throwable? = null,
+) : Exception("Unsupported image format: $format", cause)
