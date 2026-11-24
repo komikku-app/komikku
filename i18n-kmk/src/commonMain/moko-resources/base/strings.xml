@@ -242,4 +242,45 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <!-- Onboarding storage folder -->
+    <string name="onboarding_storage_folder_info">%1$s needs a folder for downloads, backups, and other files.</string>
+    <string name="onboarding_storage_folder_create">Create folder</string>
+    <string name="onboarding_storage_pick_info">Pick any folder you like. To make a new one, use the \"New folder\" button in the system dialog.</string>
+    <string name="onboarding_storage_pick_existing_title">Use an existing folder</string>
+    <string name="onboarding_storage_folder_name_label">Folder name</string>
+    <string name="onboarding_storage_folder_name_hint">Folder name</string>
+    <string name="onboarding_storage_reset_selection">Change folder</string>
+    <!-- Notifikasi singkat setelah tombol ditekan -->
+    <string name="storage_notice_folder_created_title">Folder ready</string>
+    <string name="storage_notice_folder_created_desc">The folder %1$s is in Documents. On the next screen, choose it and allow access so Komikku can read and write your files.</string>
+    <string name="storage_notice_folder_exists_title">Folder already exists</string>
+    <string name="storage_notice_folder_exists_desc">The folder %1$s already exists in Documents. On the next screen, choose it and allow access so Komikku can read and write your files.</string>
+    <!-- Storage settings sheet -->
+    <string name="settings_storage_folder_info">Rename the current folder, or pick a different location.</string>
+    <string name="settings_storage_folder_info_manual">This folder was picked manually, so it cannot be renamed here. Pick a different location if needed.</string>
+    <string name="settings_storage_folder_info_missing">No folder is available at the stored location. Create the automatic folder again, or pick one manually.</string>
+    <string name="settings_storage_rename">Rename folder</string>
+    <string name="settings_storage_pick_manually_info">Choose a different folder, for example one you manage yourself.</string>
+    <string name="settings_storage_use_automatic_info">Creates the Komikku folder in Documents and asks you to pick it next.</string>
+    <string name="settings_storage_current_folder">Current folder</string>
+    <string name="settings_storage_mode_automatic">Automatic</string>
+    <string name="settings_storage_mode_manual">Manual</string>
+    <string name="settings_storage_switch_manual_title">Switch to a manual folder?</string>
+    <string name="settings_storage_switch_manual_desc">You will pick the folder yourself. Your current folder and its files stay as they are.</string>
+    <string name="settings_storage_switch_automatic_title">Switch back to the automatic folder?</string>
+    <string name="settings_storage_switch_automatic_desc">Komikku will reuse the folder it already manages in Documents, or create it if it is missing.</string>
+    <string name="settings_storage_switch_continue">Continue</string>
+    <string name="settings_storage_rename_failed_title">Rename failed</string>
+    <string name="settings_storage_rename_failed">The folder could not be renamed. Pick a location manually instead.</string>
+    <string name="settings_storage_renamed">Folder renamed</string>
+    <string name="settings_storage_renamed_desc">The folder is now %1$s in Documents. On the next screen, choose it and allow access so Komikku can read and write your files.</string>
+    <string name="settings_storage_pick_manually">Pick location manually</string>
+    <string name="settings_storage_use_automatic">Use automatic folder</string>
+    <string name="settings_storage_create_failed">Could not create the folder in Documents. Pick a location manually instead.</string>
+    <string name="settings_storage_create_failed_picking">Komikku could not create the folder in Documents. Pick a folder there instead.</string>
+    <string name="settings_storage_notice_create_failed_desc">The folder could not be created. Pick a folder in Documents instead, and allow access so Komikku can read and write your files.</string>
+    <string name="settings_storage_create_failed_title">Folder not created</string>
+    <string name="settings_storage_notice_countdown">Closing in %1$d s</string>
+    <string name="settings_storage_notice_recreated_title">New folder created</string>
+    <string name="settings_storage_notice_recreated_desc">The old folder could not be renamed, so %1$s is a new folder. On the next screen, choose it and allow access so Komikku can read and write your files.</string>
 </resources>

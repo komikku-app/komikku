@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +59,13 @@ import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
+import eu.kanade.presentation.more.storage.FolderPickerHint
+import eu.kanade.presentation.more.storage.OpenDocumentTreeWithHint
+import eu.kanade.presentation.more.storage.PickStart
+import eu.kanade.presentation.more.storage.StorageFolderSheet
+import eu.kanade.presentation.more.storage.adoptPickedFolder
+import eu.kanade.presentation.more.storage.ensureStorageMarker
+import eu.kanade.presentation.more.storage.isAutoStorageFolder
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
@@ -165,10 +173,14 @@ object SettingsDataScreen : SearchableSettings {
                     context.toast(MR.strings.file_picker_uri_permission_unsupported)
                 }
 
+                // KMK -->
                 UniFile.fromUri(context, uri)?.let {
-                    storageDirPref.set("") // Trigger recompose
+                    // A single write: a temporary empty value would make readers see an invalid folder
                     storageDirPref.set(it.uri.toString())
+                    // The grant is fresh here, so it is the moment to finish preparing the folder
+                    adoptPickedFolder(context, uri)
                 }
+                // KMK <--
             }
         }
     }
@@ -208,25 +220,72 @@ object SettingsDataScreen : SearchableSettings {
         storagePreferences: StoragePreferences,
     ): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
+        val storagePref = storagePreferences.baseStorageDirectory()
         val pickStorageLocation = storageLocationPicker(storagePreferences.baseStorageDirectory())
+        // Launcher with a starting hint, so the picker opens directly at Documents
+        val pickStorageLocationAt = rememberLauncherForActivityResult(
+            contract = OpenDocumentTreeWithHint(),
+        ) { uri ->
+            // KMK -->
+            if (uri != null) {
+                val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                try {
+                    context.contentResolver.takePersistableUriPermission(uri, flags)
+                } catch (e: SecurityException) {
+                    logcat(LogPriority.ERROR, e)
+                    context.toast(MR.strings.file_picker_uri_permission_unsupported)
+                }
+                UniFile.fromUri(context, uri)?.let { folder ->
+                    storagePref.set(folder.uri.toString())
+                    // The marker is only for automatic-path folders, not user-picked ones
+                    if (folder.isAutoStorageFolder()) ensureStorageMarker(context, folder)
+                }
+            }
+            // KMK <--
+        }
 
         // KMK -->
-        val storagePref = storagePreferences.baseStorageDirectory()
+        val storageDir by storagePref.collectAsState()
+        var showFolderSheet by rememberSaveable { mutableStateOf(false) }
+
+        if (showFolderSheet) {
+            StorageFolderSheet(
+                storagePref = storagePref,
+                onDismiss = { showFolderSheet = false },
+                onPickManually = { startInDocuments ->
+                    showFolderSheet = false
+                    try {
+                        allowAccessStorage(context, storagePref) {
+                            // Every entry point opens inside Documents, so the user lands on the
+                            // managed folder instead of the storage root
+                            val hint = when (startInDocuments) {
+                                // A folder reached by its own URI is used as is, so a rename cannot
+                                // send the picker to a different place
+                                is PickStart.AtUri -> startInDocuments.uri
+                                is PickStart.InFolder ->
+                                    FolderPickerHint.uriFor(startInDocuments.folderName)
+                                PickStart.Documents, PickStart.Root ->
+                                    FolderPickerHint.uriFor(null)
+                            }
+                            logcat { "Opening folder picker at $hint (start: $startInDocuments)" }
+                            pickStorageLocationAt.launch(hint)
+                        }
+                    } catch (_: Exception) {
+                        context.toast(MR.strings.file_picker_error)
+                    }
+                },
+            )
+        }
         // KMK <--
 
         return Preference.PreferenceItem.TextPreference(
             title = stringResource(MR.strings.pref_storage_location),
             subtitle = storageLocationText(/* KMK --> */storagePref/* KMK <-- */),
             onClick = {
-                try {
-                    // KMK -->
-                    allowAccessStorage(context, storagePref) {
-                        // KMK <--
-                        pickStorageLocation.launch(null)
-                    }
-                } catch (_: Exception) {
-                    context.toast(MR.strings.file_picker_error)
-                }
+                // KMK -->
+                showFolderSheet = true
+                // KMK <--
             },
         )
     }
