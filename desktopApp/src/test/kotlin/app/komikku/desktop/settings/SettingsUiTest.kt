@@ -106,6 +106,23 @@ class SettingsUiTest {
         waitUntil(timeoutMillis = 5_000) { !Injekt.get<DownloadPreferences>().saveChaptersAsCBZ().get() }
         back()
 
+        // Browse → Feed: Android's "feed tab in front" and "hide feed tab" (P13 review fixes)
+        waitForTag("settings-browse")
+        onNodeWithTag("settings-browse").performClick()
+        waitForTag("settings-Browse")
+        val feedTabInFront = Injekt.get<UiPreferences>().feedTabInFront()
+        onNodeWithTag("settings-Browse").performScrollToNode(hasText(SYMR.strings.pref_feed_position.localized()))
+        onNodeWithText(SYMR.strings.pref_feed_position.localized()).performClick()
+        waitUntil(timeoutMillis = 5_000) { feedTabInFront.get() }
+        feedTabInFront.set(false)
+        val hideFeedTab = Injekt.get<UiPreferences>().hideFeedTab()
+        hideFeedTab.get() shouldBe false
+        onNodeWithTag("settings-Browse").performScrollToNode(hasText(SYMR.strings.pref_hide_feed.localized()))
+        onNodeWithText(SYMR.strings.pref_hide_feed.localized()).performClick()
+        waitUntil(timeoutMillis = 5_000) { hideFeedTab.get() }
+        hideFeedTab.set(false)
+        back()
+
         // Advanced → Developer tools: SY's delegated sources toggle (P4; there like on Android since P12), on by default
         waitForTag("settings-advanced")
         onNodeWithTag("settings-advanced").performClick()

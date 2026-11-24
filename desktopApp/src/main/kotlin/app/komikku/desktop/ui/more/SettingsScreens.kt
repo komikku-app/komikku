@@ -360,6 +360,8 @@ private fun downloadPreferences(): List<Preference> {
 private fun browsePreferences(): List<Preference> {
     val sources = remember { Injekt.get<SourcePreferences>() }
     val base = remember { Injekt.get<BasePreferences>() }
+    val ui = remember { Injekt.get<UiPreferences>() }
+    val hideFeedTab by ui.hideFeedTab().collectAsState()
     return listOf(
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_sources),
@@ -371,6 +373,23 @@ private fun browsePreferences(): List<Preference> {
                     subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
                 ),
                 // P4's delegated sources toggle and P8's Cloudflare solver are in Settings → Advanced (P12, Android's place)
+            ),
+        ),
+        // P13: Android's feed group (the Feed tab of Browse)
+        Preference.PreferenceGroup(
+            title = stringResource(SYMR.strings.feed),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(ui.hideFeedTab(), stringResource(SYMR.strings.pref_hide_feed)),
+                Preference.PreferenceItem.SwitchPreference(
+                    ui.feedTabInFront(),
+                    stringResource(SYMR.strings.pref_feed_position),
+                    subtitle = stringResource(SYMR.strings.pref_feed_position_summery),
+                    enabled = !hideFeedTab,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    sources.hideInLibraryFeedItems(),
+                    stringResource(MR.strings.pref_hide_in_library_items),
+                ),
             ),
         ),
         Preference.PreferenceGroup(

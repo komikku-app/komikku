@@ -64,19 +64,20 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.util.lang.launchNonCancellable
@@ -108,6 +109,10 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * P13: the global feed of desktop Browse, Android's `FeedScreenModel` on the same `feed_saved_search` rows and the
  * shared feed logic (`FeedItems.kt`: titles, the sources to add a row for, a row's first page, the row limit). Rows load
  * one at a time like Android's (one-thread dispatcher); a failing row shows its error (Android shows it as empty).
+ *
+ * The rows are built again (source, titles) whenever the feed rows or the source manager's sources change, and on
+ * Refresh; a row whose feed row, saved search and source are unchanged keeps what it loaded (or its running load), so
+ * only new or changed rows load. Refresh loads every row again.
  */
 class FeedPaneModel(
     private val sourceManager: SourceManager = Injekt.get(),
@@ -135,11 +140,21 @@ class FeedPaneModel(
         val results: List<Manga>? = null,
         /** Why the row could not be loaded (then [results] is empty). */
         val error: String? = null,
-    )
+    ) {
+        /** Whether this row loads the same page as a row of [feed], [savedSearch] and [source] would. */
+        fun loadsSameAs(feed: FeedSavedSearch, savedSearch: SavedSearch?, source: Source?): Boolean =
+            this.feed.id == feed.id &&
+                this.feed.source == feed.source &&
+                this.feed.savedSearch == feed.savedSearch &&
+                this.savedSearch == savedSearch &&
+                this.source === source
+    }
 
     data class State(
         /** The rows in feed order; null until the feed is read. */
         val rows: ImmutableList<Row>? = null,
+        /** The feed's rows could not be built (the last attempt failed); [rows] keeps what was shown before. */
+        val failed: Boolean = false,
         val dialog: Dialog? = null,
     )
 
@@ -162,48 +177,93 @@ class FeedPaneModel(
 
     private val hideInLibraryFeedItems = sourcePreferences.hideInLibraryFeedItems()
 
-    /** The rows' loads; a new feed list (added, deleted, reordered row) or a refresh starts them again. */
-    private var loadJob: Job? = null
+    /** The running load of each row, by feed row id. Only touched on the model's (main) dispatcher. */
+    private val rowJobs = mutableMapOf<Long, Job>()
+
+    /** One build of the rows at a time (the feed / source changes and Refresh). */
+    private val buildMutex = Mutex()
+
+    /** The feed rows last read, built again on Refresh. */
+    private var lastFeeds: List<FeedSavedSearch>? = null
 
     init {
-        getFeedSavedSearchGlobal.subscribe()
-            .distinctUntilChanged()
-            .onEach { feeds ->
-                sourceManager.isInitialized.first { it }
-                val rows = pairFeedWithSavedSearches(feeds, getSavedSearchGlobalFeed.await()).map { (feed, savedSearch) ->
-                    val source = sourceManager.get(feed.source)
-                    val (title, subtitle) = feedItemTitles(feed, savedSearch, source)
-                    Row(feed = feed, savedSearch = savedSearch, source = source, title = title, subtitle = subtitle)
+        screenModelScope.launch {
+            sourceManager.isInitialized.first { it }
+            combine(
+                getFeedSavedSearchGlobal.subscribe().distinctUntilChanged(),
+                // An extension installed, updated or removed: its rows get their (new) source
+                sourceManager.sources,
+            ) { feeds, _ -> feeds }
+                .catch { e ->
+                    xLogE("Failed to read the feed", e)
+                    onBuildFailed()
                 }
-                mutableState.update { it.copy(rows = rows.toImmutableList()) }
-                loadRows(rows)
-            }
-            .catch {
-                xLogE("Failed to read the feed", it)
-                _events.send(Event.FailedFetchingSources)
-            }
-            .launchIn(screenModelScope)
-    }
-
-    /** Android's refresh (`FeedScreenModel.init`): every row loads again. */
-    fun refresh() {
-        val rows = state.value.rows?.map { it.copy(results = null, error = null) } ?: return
-        mutableState.update { it.copy(rows = rows.toImmutableList()) }
-        loadRows(rows)
-    }
-
-    private fun loadRows(rows: List<Row>) {
-        loadJob?.cancel()
-        loadJob = screenModelScope.launch {
-            rows.map { row -> async { loadRow(row) } }.awaitAll()
+                .collect { feeds -> buildRows(feeds, reload = false) }
         }
     }
 
+    /** Android's refresh (`FeedScreenModel.init`): the rows are built again (sources looked up afresh) and all load. */
+    fun refresh() {
+        screenModelScope.launch {
+            val feeds = lastFeeds ?: return@launch
+            buildRows(feeds, reload = true)
+        }
+    }
+
+    /**
+     * Builds the rows of [feeds] and starts the loads of the new or changed ones (of all with [reload]). A failure (e.g.
+     * extension code throwing while a title is made) shows the error state and keeps the feed followed.
+     */
+    private suspend fun buildRows(feeds: List<FeedSavedSearch>, reload: Boolean) = buildMutex.withLock {
+        try {
+            lastFeeds = feeds
+            val savedSearches = withIOContext { getSavedSearchGlobalFeed.await() }
+            // No suspension from here on: the rows, the kept loads and the state change together
+            val previous = if (reload) emptyMap() else state.value.rows.orEmpty().associateBy { it.feed.id }
+            val kept = mutableSetOf<Long>()
+            val rows = pairFeedWithSavedSearches(feeds, savedSearches).map { (feed, savedSearch) ->
+                val source = sourceManager.get(feed.source)
+                val (title, subtitle) = feedItemTitles(feed, savedSearch, source)
+                val old = previous[feed.id]?.takeIf {
+                    it.loadsSameAs(feed, savedSearch, source) && (it.results != null || rowJobs[feed.id]?.isActive == true)
+                }
+                if (old != null) kept += feed.id
+                Row(
+                    feed = feed,
+                    savedSearch = savedSearch,
+                    source = source,
+                    title = title,
+                    subtitle = subtitle,
+                    results = old?.results,
+                    error = old?.error,
+                )
+            }
+            (rowJobs.keys - kept).forEach { rowJobs.remove(it)?.cancel() }
+            mutableState.update { it.copy(rows = rows.toImmutableList(), failed = false) }
+            rows.filter { it.feed.id !in kept }.forEach { row ->
+                // Registered before it runs: a load that finishes without suspending must find itself
+                val job = screenModelScope.launch(start = CoroutineStart.LAZY) { loadRow(row) }
+                rowJobs[row.feed.id] = job
+                job.start()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            xLogE("Failed to build the feed rows", e)
+            onBuildFailed()
+        }
+    }
+
+    private suspend fun onBuildFailed() {
+        mutableState.update { it.copy(failed = true) }
+        _events.send(Event.FailedFetchingSources)
+    }
+
     private suspend fun loadRow(row: Row) {
-        val loaded = try {
+        val (results, error) = try {
             val source = row.source
             if (source == null) {
-                row.copy(results = emptyList(), error = null)
+                emptyList<Manga>() to null
             } else {
                 val page = withContext(coroutineDispatcher) {
                     fetchFeedPage(source, row.savedSearch, filterSerializer)
@@ -214,21 +274,28 @@ class FeedPaneModel(
                         .let { networkToLocalManga(it) }
                         .filter { !hideInLibraryFeedItems.get() || !it.favorite }
                 }
-                row.copy(results = manga, error = null)
+                manga to null
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             // Extension code can throw errors too (e.g. a missing Android class): the row's error
             xLogE("Failed to load the feed row of source ${row.feed.source}", e)
-            row.copy(results = emptyList(), error = e.message ?: e::class.simpleName.orEmpty())
+            emptyList<Manga>() to (e.message ?: e::class.simpleName.orEmpty())
         }
+        // Only while this is still the row's load (a newer build may have replaced it)
+        if (rowJobs[row.feed.id] !== currentCoroutineContext()[Job]) return
+        rowJobs.remove(row.feed.id)
         mutableState.update { state ->
-            state.copy(rows = state.rows?.map { if (it.feed.id == loaded.feed.id) loaded else it }?.toImmutableList())
+            state.copy(
+                rows = state.rows
+                    ?.map { if (it.feed.id == row.feed.id) it.copy(results = results, error = error) else it }
+                    ?.toImmutableList(),
+            )
         }
     }
 
-    /** Android's "Add": refused once the feed holds more than its limit (`MaxFeedItems`). */
+    /** Android's "Add": refused once the feed holds its limit (`MaxFeedItems`). */
     fun openAddDialog() {
         screenModelScope.launch {
             if (isFeedFull(withIOContext { countFeedSavedSearchGlobal.await() })) {
@@ -335,6 +402,7 @@ fun FeedPane(model: FeedPaneModel) {
         }
         val rows = state.rows
         when {
+            rows == null && state.failed -> EmptyScreen(MR.strings.internal_error)
             rows == null -> LoadingScreen()
             rows.isEmpty() -> EmptyScreen(SYMR.strings.feed_tab_empty)
             ordering -> FeedOrderList(
@@ -382,7 +450,7 @@ fun FeedPane(model: FeedPaneModel) {
             onDismiss = model::dismissDialog,
             onClickAdd = { source ->
                 model.dismissDialog()
-                if (source != null) model.openAddSearchDialog(source)
+                model.openAddSearchDialog(source)
             },
         )
         is FeedPaneModel.Dialog.AddFeedSearch -> FeedAddSearchDialog(
@@ -455,7 +523,7 @@ private fun FeedOrderList(
 private fun FeedAddSourceDialog(
     sources: ImmutableList<Source>,
     onDismiss: () -> Unit,
-    onClickAdd: (Source?) -> Unit,
+    onClickAdd: (Source) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
     val sourceList = remember(sources, query) {
@@ -469,6 +537,7 @@ private fun FeedAddSourceDialog(
         }.toImmutableList()
     }
     var selected by remember(sourceList) { mutableStateOf<Int?>(null) }
+    val selectedSource = selected?.let { sourceList.getOrNull(it) }
     AlertDialog(
         title = { Text(text = stringResource(SYMR.strings.feed)) },
         text = {
@@ -491,7 +560,8 @@ private fun FeedAddSourceDialog(
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onClickAdd(selected?.let { sourceList.getOrNull(it) }) }) {
+            // Nothing to add until a source is picked
+            TextButton(onClick = { selectedSource?.let(onClickAdd) }, enabled = selectedSource != null) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },

@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 
@@ -122,12 +123,24 @@ class FakeCatalogueSource : CatalogueSource, ConfigurableSource {
     }
 }
 
-/** A [SourceManager] over fixed sources, for UI tests. */
+/**
+ * A [SourceManager] over fixed sources, for UI tests; [setSources] replaces them (an extension installed / updated),
+ * a lookup of an id in [failingIds] throws.
+ */
 class FixedSourceManager(sources: List<Source>) : SourceManager {
-    private val map = sources.associateBy { it.id }
+    private val current = MutableStateFlow(sources.associateBy { it.id })
+    private val map get() = current.value
     override val isInitialized: StateFlow<Boolean> = MutableStateFlow(true)
-    override val sources: Flow<List<Source>> = MutableStateFlow(sources)
-    override fun get(sourceKey: Long): Source? = map[sourceKey]
+    override val sources: Flow<List<Source>> = current.map { it.values.toList() }
+
+    @Volatile var failingIds: Set<Long> = emptySet()
+    fun setSources(sources: List<Source>) {
+        current.value = sources.associateBy { it.id }
+    }
+    override fun get(sourceKey: Long): Source? {
+        check(sourceKey !in failingIds) { "Lookup of source $sourceKey failed" }
+        return map[sourceKey]
+    }
     override fun getOrStub(sourceKey: Long): Source = map[sourceKey] ?: StubSource(id = sourceKey, lang = "", name = "")
     override fun getAll(): List<Source> = map.values.toList()
     override fun getOnlineSources(): List<HttpSource> = map.values.filterIsInstance<HttpSource>()

@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
@@ -21,6 +23,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -51,6 +54,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Headless UI tests of the desktop Feed tab (P13): the rows of the shared `feed_saved_search` table (latest / popular /
@@ -66,16 +70,26 @@ class FeedUiTest {
     private val popularSource = FeedSource(ID_B, "Feed source B", supportsLatest = false)
     private val brokenSource = FeedSource(ID_C, "Feed source C", supportsLatest = true, error = "Feed boom")
 
+    /** Installed later (or never) by the tests. */
+    private val laterSource = FeedSource(ID_D, "Feed source D", supportsLatest = true)
+    private val baseSources = listOf(latestSource, popularSource, brokenSource)
+    private val sourceManager = FixedSourceManager(baseSources)
+
     @BeforeAll
     fun boot(@TempDir dataDir: File) {
         app = DesktopInjekt.init(dataDir)
-        Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(latestSource, popularSource, brokenSource)) }
+        Injekt.addSingletonFactory<SourceManager> { sourceManager }
     }
 
     @BeforeEach
     fun clear() = runBlocking {
+        sourceManager.setSources(baseSources)
+        sourceManager.failingIds = emptySet()
+        (baseSources + laterSource).forEach { it.calls.set(0) }
+        Injekt.get<UiPreferences>().hideFeedTab().set(false)
+        Injekt.get<UiPreferences>().feedTabInFront().set(false)
         Injekt.get<GetFeedSavedSearchGlobal>().await().forEach { Injekt.get<DeleteFeedSavedSearchById>().await(it.id) }
-        listOf(ID_A, ID_B, ID_C).forEach { id ->
+        listOf(ID_A, ID_B, ID_C, ID_D).forEach { id ->
             Injekt.get<GetSavedSearchBySourceId>().await(id).forEach { Injekt.get<DeleteSavedSearchById>().await(it.id) }
         }
     }
@@ -88,11 +102,26 @@ class FeedUiTest {
 
     private fun ComposeUiTest.shows(text: String) = onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
 
-    private fun ComposeUiTest.openFeed() {
+    private fun ComposeUiTest.openBrowse() {
         setContent { KomikkuApp(context = app) }
         onNodeWithText(MR.strings.browse.text()).performClick()
-        waitForText(SYMR.strings.feed.text())
+        waitForText(MR.strings.label_extensions.text())
+    }
+
+    /** The Feed tab's label (exact match: the sources' names contain "Feed" too). */
+    private fun ComposeUiTest.feedTabs() = onAllNodesWithText(SYMR.strings.feed.text()).fetchSemanticsNodes()
+
+    private fun ComposeUiTest.openFeed() {
+        openBrowse()
+        waitUntil(timeoutMillis = 10_000) { feedTabs().isNotEmpty() }
         onNodeWithText(SYMR.strings.feed.text()).performClick()
+    }
+
+    /** Lets pending loads run (a load that should not happen would have happened by then). */
+    private fun ComposeUiTest.settle() {
+        waitForIdle()
+        Thread.sleep(500)
+        waitForIdle()
     }
 
     private fun savedSearch(sourceId: Long, name: String, query: String): Long = runBlocking {
@@ -197,24 +226,145 @@ class FeedUiTest {
         waitForText("A search q")
         shows("B popular") shouldBe false
 
-        // Android's limit: no more rows once there are more than MaxFeedItems (20); a row is unique per source and
-        // saved search, so the extra rows are saved searches of source B
-        repeat(20) { feedRow(ID_B, savedSearch(ID_B, "B saved $it", query = "b$it")) }
-        waitUntil(timeoutMillis = 10_000) { feeds().size == 21 }
+        // Android's limit: no more rows once there are MaxFeedItems (20); a row is unique per source and saved search,
+        // so the extra rows are saved searches of source B (the boundary itself: FeedItemsTest)
+        repeat(19) { feedRow(ID_B, savedSearch(ID_B, "B saved $it", query = "b$it")) }
+        waitUntil(timeoutMillis = 10_000) { feeds().size == 20 }
         onNodeWithTag("feed-add").performClick()
         waitForText(KMR.strings.too_many_in_feed.text())
         shows(MR.strings.action_ok.text()) shouldBe false
-        feeds().size shouldBe 21
+        feeds().size shouldBe 20
     }
+
+    @Test
+    fun `the add dialog's OK is disabled until a source is selected`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        openFeed()
+        waitForText(SYMR.strings.feed_tab_empty.text())
+        onNodeWithTag("feed-add").performClick()
+        waitForText("Feed source B")
+        onNodeWithText(MR.strings.action_ok.text()).assertIsNotEnabled()
+        onNode(hasText("Feed source B", substring = true) and hasAnyAncestor(isDialog())).performClick()
+        onNodeWithText(MR.strings.action_ok.text()).assertIsEnabled()
+        // A search that hides the selected source clears the selection again
+        onNodeWithTag("feed-add-search").performTextInput("nothing like this")
+        waitUntil(timeoutMillis = 5_000) { !shows("Feed source B (") }
+        onNodeWithText(MR.strings.action_ok.text()).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `a row whose source is installed later loads and opens`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        sourceManager.setSources(baseSources)
+        feedRow(ID_A)
+        feedRow(ID_D)
+        openFeed()
+        waitForText("A latest 1")
+        // Not installed: the row is titled by the source id and has no results (like Android)
+        waitForText(ID_D.toString())
+        waitForText(MR.strings.no_results_found.text())
+
+        sourceManager.setSources(baseSources + laterSource)
+        waitForText("D latest 1")
+        waitForText("Feed source D")
+        // The other row was not loaded again
+        latestSource.calls.get() shouldBe 1
+        onAllNodesWithText("Feed source D").onFirst().performClick()
+        waitUntil(timeoutMillis = 10_000) { onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
+        waitForText("D latest 1")
+    }
+
+    @Test
+    fun `a feed that fails to be read shows an error and keeps following the rows`() =
+        runDesktopComposeUiTest(width = 1280, height = 1000) {
+            // Building the rows throws (here: the lookup of a row's source)
+            sourceManager.failingIds = setOf(ID_E)
+            feedRow(ID_A)
+            feedRow(ID_E)
+            openFeed()
+            waitForText(MR.strings.internal_error.text())
+
+            // Later changes of the feed are still followed
+            sourceManager.failingIds = emptySet()
+            feedRow(ID_B)
+            waitForText("B popular")
+            waitForText("A latest 1")
+            waitForText(ID_E.toString())
+        }
+
+    @Test
+    fun `reordering and deleting keep the loaded rows, adding loads only the new row`() =
+        runDesktopComposeUiTest(width = 1280, height = 1000) {
+            feedRow(ID_A)
+            feedRow(ID_B)
+            openFeed()
+            waitForText("A latest 1")
+            waitForText("B popular")
+            settle()
+            latestSource.calls.get() shouldBe 1
+            popularSource.calls.get() shouldBe 1
+
+            onNodeWithTag("feed-sort").performClick()
+            val rowB = feeds().single { it.source == ID_B }
+            onNodeWithTag("feed-up-${rowB.id}").performClick()
+            waitUntil(timeoutMillis = 5_000) { feeds().map { it.source } == listOf(ID_B, ID_A) }
+            val rowA = feeds().single { it.source == ID_A }
+            onNodeWithTag("feed-delete-${rowA.id}").performClick()
+            waitForText(SYMR.strings.feed_delete.text())
+            onNodeWithText(MR.strings.action_delete.text()).performClick()
+            waitUntil(timeoutMillis = 5_000) { feeds().map { it.source } == listOf(ID_B) }
+            onNodeWithTag("feed-sort-done").performClick()
+            waitForText("B popular")
+
+            feedRow(ID_C)
+            waitForText("Feed boom")
+            settle()
+            popularSource.calls.get() shouldBe 1
+            latestSource.calls.get() shouldBe 1
+            brokenSource.calls.get() shouldBe 1
+
+            // Refresh loads every row again
+            onNodeWithTag("feed-refresh").performClick()
+            waitUntil(timeoutMillis = 5_000) { popularSource.calls.get() == 2 && brokenSource.calls.get() == 2 }
+        }
+
+    @Test
+    fun `the feed loads only once its tab is shown and follows Android's hide and position settings`() =
+        runDesktopComposeUiTest(width = 1280, height = 1000) {
+            feedRow(ID_A)
+            openBrowse()
+            settle()
+            // Browse opens on Sources: the feed's rows are not loaded yet
+            latestSource.calls.get() shouldBe 0
+            onNodeWithText(SYMR.strings.feed.text()).performClick()
+            waitForText("A latest 1")
+            latestSource.calls.get() shouldBe 1
+
+            // Feed first (Android's "feed tab in front")
+            Injekt.get<UiPreferences>().feedTabInFront().set(true)
+            waitUntil(timeoutMillis = 5_000) {
+                val feed = feedTabs().map { it.boundsInRoot.left }
+                val sources = onAllNodesWithText(MR.strings.label_sources.text()).fetchSemanticsNodes().map { it.boundsInRoot.left }
+                feed.isNotEmpty() && sources.isNotEmpty() && feed.first() < sources.first()
+            }
+
+            // Hidden (Android's "hide feed tab")
+            Injekt.get<UiPreferences>().hideFeedTab().set(true)
+            waitUntil(timeoutMillis = 5_000) { feedTabs().isEmpty() }
+            waitForText(MR.strings.label_extensions.text())
+        }
 
     companion object {
         const val ID_A = 9021L
         const val ID_B = 9022L
         const val ID_C = 9023L
+        const val ID_D = 9024L
+        const val ID_E = 9025L
     }
 }
 
-/** A catalogue source for the feed: "<A|B|C> latest n" / "… popular" / "… search <query>", or always [error]. */
+/**
+ * A catalogue source for the feed: "<A|B|C|D> latest n" / "… popular" / "… search <query>", or always [error]. [calls]
+ * counts its listing requests.
+ */
 private class FeedSource(
     override val id: Long,
     override val name: String,
@@ -223,9 +373,12 @@ private class FeedSource(
 ) : CatalogueSource {
     override val lang: String = "en"
 
+    val calls = AtomicInteger()
+
     private val letter = name.last()
 
     private fun page(vararg titles: String): MangasPage {
+        calls.incrementAndGet()
         error?.let { throw java.io.IOException(it) }
         return MangasPage(
             titles.map { t ->
