@@ -11,6 +11,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.log.DesktopLogFile
 import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.ui.DesktopTheme
@@ -25,13 +26,20 @@ import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.desktop.window.rememberPersistedWindowState
 import app.komikku.shared.coil.DesktopImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.network.NetworkHelper
+import exh.source.ExhPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.util.system.DesktopLogcatLogger
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -46,6 +54,14 @@ import java.awt.Dimension
 fun main() {
     DesktopLogcatLogger.install()
     val app = DesktopInjekt.init()
+    // P12: the log file Settings → Advanced opens, at SY's log level (applied at once when it changes)
+    DesktopLogFile.install(DesktopLogFile.directoryFor(app.dataDir))
+    val startScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    Injekt.get<ExhPreferences>().logLevel(BuildConfig.DEBUG).changes()
+        .onEach(DesktopLogFile::applyLevel)
+        .launchIn(startScope)
+    // Android `MainActivity`: "Clear chapter cache on app launch"
+    if (Injekt.get<LibraryPreferences>().autoClearChapterCache().get()) startScope.launch { Injekt.get<ChapterCache>().clear() }
     // Android's start-up app update check (P6; only with the updater build flag). It must run before
     // `scheduler.start()`: the scheduler's catch-up then waits for it and does not ask GitHub a second time.
     Injekt.get<DesktopAppUpdateChecker>().checkOnStart(CoroutineScope(SupervisorJob() + Dispatchers.IO))

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChromeReaderMode
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.GetApp
@@ -24,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import app.komikku.desktop.source.DesktopDelegatedSources
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.webview.DesktopCloudflarePreferences
@@ -46,7 +46,6 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.util.system.toast
-import exh.pref.DelegateSourcePreferences
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -93,6 +92,7 @@ class SettingsHomeScreen : Screen() {
             Entry(MR.strings.pref_category_tracking, Icons.Outlined.Sync, "tracking") { TrackingSettingsScreen() },
             Entry(MR.strings.browse, Icons.Outlined.Explore, "browse") { SettingsCategoryScreen(SettingsCategory.Browse) },
             Entry(MR.strings.label_data_storage, Icons.Outlined.Storage, "data") { DataStorageScreen() },
+            Entry(MR.strings.pref_category_advanced, Icons.Outlined.Code, "advanced") { SettingsCategoryScreen(SettingsCategory.Advanced) },
             Entry(MR.strings.pref_category_about, Icons.Outlined.Info, "about") { SettingsCategoryScreen(SettingsCategory.About) },
         )
         BrowseScaffold(title = stringResource(MR.strings.label_settings), onBack = navigator::pop) {
@@ -113,6 +113,7 @@ enum class SettingsCategory(val title: StringResource) {
     Reader(MR.strings.pref_category_reader),
     Downloads(MR.strings.pref_category_downloads),
     Browse(MR.strings.browse),
+    Advanced(MR.strings.pref_category_advanced),
     About(MR.strings.pref_category_about),
 }
 
@@ -129,6 +130,7 @@ class SettingsCategoryScreen(private val category: SettingsCategory) : Screen() 
             SettingsCategory.Reader -> readerPreferences()
             SettingsCategory.Downloads -> downloadPreferences()
             SettingsCategory.Browse -> browsePreferences()
+            SettingsCategory.Advanced -> advancedPreferences(navigator)
             SettingsCategory.About -> aboutPreferences()
         }
         BrowseScaffold(title = stringResource(category.title), onBack = navigator::pop) {
@@ -358,7 +360,6 @@ private fun downloadPreferences(): List<Preference> {
 private fun browsePreferences(): List<Preference> {
     val sources = remember { Injekt.get<SourcePreferences>() }
     val base = remember { Injekt.get<BasePreferences>() }
-    val delegates = remember { Injekt.get<DelegateSourcePreferences>() }
     return listOf(
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_sources),
@@ -369,19 +370,9 @@ private fun browsePreferences(): List<Preference> {
                     stringResource(MR.strings.pref_incognito_mode),
                     subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
                 ),
-                // P4: SY's delegated sources toggle (Android: Settings → Advanced, which the desktop has no screen for)
-                Preference.PreferenceItem.SwitchPreference(
-                    delegates.delegateSources(),
-                    stringResource(SYMR.strings.toggle_delegated_sources),
-                    subtitle = stringResource(
-                        SYMR.strings.toggle_delegated_sources_summary,
-                        stringResource(MR.strings.app_name),
-                        DesktopDelegatedSources.delegates.map { it.sourceName }.distinct().joinToString(),
-                    ),
-                ),
+                // P4's delegated sources toggle and P8's Cloudflare solver are in Settings → Advanced (P12, Android's place)
             ),
         ),
-        cloudflarePreferences(),
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_nsfw_content),
             preferenceItems = persistentListOf(
@@ -397,10 +388,11 @@ private fun browsePreferences(): List<Preference> {
 
 /**
  * P8: the automatic Cloudflare backend, a FlareSolverr-compatible service the user runs (desktop only; Android has no
- * such setting). Empty address = off (the manual "Open in WebView" flow); "Test connection" asks the service.
+ * such setting). Empty address = off (the manual "Open in WebView" flow); "Test connection" asks the service. In
+ * Settings → Advanced next to the network group since P12.
  */
 @Composable
-private fun cloudflarePreferences(): Preference.PreferenceGroup {
+internal fun cloudflarePreferences(): Preference.PreferenceGroup {
     val preferences = remember { Injekt.get<DesktopCloudflarePreferences>() }
     val backend = remember { Injekt.get<FlareSolverrBackend>() }
     val context = LocalContext.current

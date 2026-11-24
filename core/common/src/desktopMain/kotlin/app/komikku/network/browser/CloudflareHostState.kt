@@ -102,6 +102,14 @@ class CloudflareHostState(
         if (host in overrides) update { it - host }
     }
 
+    /** Every stored override by host (P12: listed in Settings → Advanced, where they can be removed). */
+    fun userAgentOverrides(): Map<String, UserAgentOverride> = overrides
+
+    /** Removes every host's override (P12: Settings → Advanced). */
+    fun clearUserAgents() {
+        if (overrides.isNotEmpty()) update { emptyMap() }
+    }
+
     private fun update(change: (Map<String, UserAgentOverride>) -> Map<String, UserAgentOverride>) {
         synchronized(this) {
             overrides = change(overrides)

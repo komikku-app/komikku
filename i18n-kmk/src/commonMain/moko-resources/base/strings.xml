@@ -295,6 +295,15 @@
     <string name="desktop_flaresolverr_unreadable_answer">FlareSolverr gave no readable answer (HTTP %1$d)</string>
     <string name="desktop_flaresolverr_no_solution">FlareSolverr answered without a solution (HTTP %1$d)</string>
     <string name="desktop_edit_info_failed">Couldn\'t save the info: %1$s</string>
+    <!-- Desktop Settings → Advanced (P12) -->
+    <string name="desktop_open_log_folder">Open the log folder</string>
+    <string name="desktop_open_log_folder_summary">The app\'s log and crash reports are kept in %1$s</string>
+    <string name="desktop_folder_not_opened">Couldn\'t open the folder: %1$s</string>
+    <string name="desktop_site_user_agents">User agents of sites</string>
+    <string name="desktop_site_user_agents_info">Kept for a site while the Cloudflare cookie it was saved with (by the solver or \"Open in WebView\") is in the cookies. Removing one makes the site\'s requests use the source\'s user agent again.</string>
+    <string name="desktop_site_user_agents_empty">None saved</string>
+    <string name="desktop_clear_site_user_agents">Remove all user agents of sites</string>
+    <string name="desktop_site_user_agents_cleared">User agents of sites removed</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>

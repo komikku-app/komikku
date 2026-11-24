@@ -28,8 +28,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.backup.DesktopBackupJobs
@@ -49,12 +55,17 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
+import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import logcat.LogPriority
+import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -64,6 +75,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
+import tachiyomi.core.common.i18n.stringResource as localized
 
 /**
  * Desktop "Data and storage" (Android `SettingsDataScreen`, backup part): storage location, create
@@ -239,6 +251,8 @@ class DataStorageScreen : Screen() {
                     }
                     else -> {}
                 }
+                // P12: Android's "Storage usage" group (chapter cache and its clearing on start)
+                item { StorageUsage() }
             }
         }
 
@@ -273,6 +287,56 @@ class DataStorageScreen : Screen() {
             )
             else -> {}
         }
+    }
+}
+
+/**
+ * Android `SettingsDataScreen.getDataGroup` (P12): "Clear chapter cache" with the cache's used size (Android's toasts),
+ * "Clear chapter cache on app launch" (the desktop clears it at start like `MainActivity`). The SY page preview cache
+ * does not exist on the desktop.
+ */
+@Composable
+private fun StorageUsage() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val chapterCache = remember { Injekt.get<ChapterCache>() }
+    val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
+    var sizeVersion by remember { mutableIntStateOf(0) }
+    val usedSize by produceState("…", sizeVersion) { value = withIOContext { chapterCache.readableSize } }
+    Column(Modifier.testTag("storage-usage")) {
+        Text(
+            stringResource(MR.strings.pref_storage_usage),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+        )
+        PreferenceRow(
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(MR.strings.pref_clear_chapter_cache),
+                subtitle = stringResource(MR.strings.used_cache, usedSize),
+                onClick = {
+                    scope.launch {
+                        try {
+                            val deletedFiles = withIOContext { chapterCache.clear() }
+                            context.toast(context.localized(MR.strings.cache_deleted, deletedFiles))
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Throwable) {
+                            logcat(LogPriority.ERROR, e)
+                            context.toast(MR.strings.cache_delete_error)
+                        } finally {
+                            sizeVersion++
+                        }
+                    }
+                },
+            ),
+        )
+        PreferenceRow(
+            Preference.PreferenceItem.SwitchPreference(
+                preference = libraryPreferences.autoClearChapterCache(),
+                title = stringResource(MR.strings.pref_auto_clear_chapter_cache),
+            ),
+        )
     }
 }
 
