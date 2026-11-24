@@ -65,6 +65,8 @@ data class LibraryUpdateProgress(
     val done: Int = 0,
     val current: List<String> = emptyList(),
     val newChapters: Int = 0,
+    /** The entries that got new chapters, with how many (P17: Android's "New chapters found" notification lists them). */
+    val updated: List<Pair<Manga, Int>> = emptyList(),
     val failed: List<Pair<Manga, String>> = emptyList(),
     val skipped: Int = 0,
     /**
@@ -256,7 +258,9 @@ class CoroutineLibraryUpdateRunner(
         _progress.update { it?.copy(current = it.current + manga.title) }
         try {
             val added = updateManga(manga)
-            _progress.update { it?.copy(newChapters = it.newChapters + added) }
+            _progress.update {
+                it?.copy(newChapters = it.newChapters + added, updated = if (added > 0) it.updated + (manga to added) else it.updated)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
