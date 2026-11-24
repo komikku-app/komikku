@@ -2959,6 +2959,12 @@ like Android's joined pages); when a wide page is found and the shown spread cha
 progress is reported again for the new spread. Turning past the end while a switch is pending is retried once after the
 switch instead of being dropped.
 
+Verification (after `490d3d7`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass;
+`:desktopApp:test` 60 classes, 269 tests, 0 failures (was 58 / 256 after P11: `ReaderNavigationTest` 4 and
+`ReaderSpreadsTest` 3 new, `ReaderWidePagesUiTest` 4 → 6, `ReaderAnimatedPagesTest` 3 → 7). Not run: a real window
+(page turns, zoom across a chapter switch and animations only headless), animated WebP, macOS / Windows.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
