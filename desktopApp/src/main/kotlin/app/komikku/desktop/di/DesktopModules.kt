@@ -45,12 +45,17 @@ import eu.kanade.domain.extension.interactor.RefreshExtensionStores
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.interactor.CreateSourceCategory
+import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
+import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
+import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.domain.source.interactor.SetMigrateSorting
+import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
@@ -292,6 +297,12 @@ class DesktopDomainModule(
         addFactory { GetSourcesWithFavoriteCount(get(), get()) }
         addFactory { SetMigrateSorting(get()) }
         addFactory { GetFavorites(get()) }
+        // SY source categories (P21, Android: SYDomainModule)
+        addFactory { GetSourceCategories(get()) }
+        addFactory { CreateSourceCategory(get()) }
+        addFactory { RenameSourceCategory(get(), get()) }
+        addFactory { DeleteSourceCategory(get()) }
+        addFactory { SetSourceCategories(get()) }
         // Sources tab, source filter, pins and global search (P1): the Android interactors (borrowed)
         addFactory { GetEnabledSources(get(), get()) }
         addFactory { GetLanguagesWithSources(get(), get()) }

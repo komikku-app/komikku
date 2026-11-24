@@ -546,6 +546,16 @@ run {
         "eu/kanade/domain/source/interactor/GetSourcesWithFavoriteCount.kt",
         "eu/kanade/tachiyomi/ui/browse/migration/sources/MigrateSourceScreenModel.kt",
     )
+    // SY source categories (P21): the categories of the sources tab (create, rename, delete; a source in several) and their
+    // screen model; preferences only, so they compile for both.
+    shared(
+        "eu/kanade/domain/source/interactor/CreateSourceCategory.kt",
+        "eu/kanade/domain/source/interactor/DeleteSourceCategory.kt",
+        "eu/kanade/domain/source/interactor/GetSourceCategories.kt",
+        "eu/kanade/domain/source/interactor/RenameSourceCategory.kt",
+        "eu/kanade/domain/source/interactor/SetSourceCategories.kt",
+        "eu/kanade/tachiyomi/ui/category/sources/SourceCategoryScreenModel.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
