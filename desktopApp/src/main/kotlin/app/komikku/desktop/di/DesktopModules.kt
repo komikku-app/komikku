@@ -56,6 +56,7 @@ import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.SetSourceCategories
+import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
@@ -308,6 +309,8 @@ class DesktopDomainModule(
         addFactory { GetLanguagesWithSources(get(), get()) }
         addFactory { ToggleLanguage(get()) }
         addFactory { ToggleSource(get()) }
+        // P22: the extension info screen's incognito switch (Android: DomainModule)
+        addFactory { ToggleIncognito(get()) }
         addFactory { ToggleSourcePin(get()) }
         addFactory { UpdateManga(get(), get()) }
         // SY delegated sources (P4): the metadata hooks of `MetadataSource` (Android: SYDomainModule)

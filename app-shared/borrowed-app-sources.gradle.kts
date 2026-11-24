@@ -556,6 +556,15 @@ run {
         "eu/kanade/domain/source/interactor/SetSourceCategories.kt",
         "eu/kanade/tachiyomi/ui/category/sources/SourceCategoryScreenModel.kt",
     )
+    // Extension info (P22): the extension's sources with their switches, incognito, uninstall, clear cookies. The toggle
+    // is preferences only; the screen model uses app's ExtensionManager and LocaleHelper (desktop counterparts in
+    // app-shared/src/desktopMain), hence a copy.
+    shared(
+        "eu/kanade/domain/source/interactor/ToggleIncognito.kt",
+    )
+    desktopCopy(
+        "eu/kanade/tachiyomi/ui/browse/extension/details/ExtensionDetailsScreenModel.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
