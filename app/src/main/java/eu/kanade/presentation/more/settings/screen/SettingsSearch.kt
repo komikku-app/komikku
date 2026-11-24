@@ -97,11 +97,13 @@ fun settingsBreadcrumb(path: String, node: String?, isLtr: Boolean): String {
 
 /**
  * The index of the item titled [highlightKey] among the lazy list items Android's `PreferenceScreen` makes of these
- * preferences (a group: its header, its items, a spacer), or -1.
+ * preferences (a group: its header, its items, a spacer; a disabled group: nothing, it is not shown), or -1.
+ * Android's former copy counted disabled groups too, so a disabled group above the item scrolled past it.
  */
 fun List<Preference>.findHighlightedIndex(highlightKey: String): Int {
     return flatMap {
         if (it is Preference.PreferenceGroup) {
+            if (!it.enabled) return@flatMap emptyList()
             buildList<String?> {
                 add(null) // Header
                 addAll(it.preferenceItems.map { groupItem -> groupItem.title })
