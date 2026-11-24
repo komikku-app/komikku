@@ -7,6 +7,8 @@ import app.komikku.network.browser.BrowserBackends
 import app.komikku.network.browser.BrowserCondition
 import app.komikku.network.browser.BrowserSession
 import app.komikku.network.browser.BrowserSessionResult
+import app.komikku.network.browser.browserCookies
+import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import logcat.LogPriority
@@ -87,15 +89,16 @@ actual class CloudflareInterceptor(
                 // Another request solved this host's challenge while this one waited.
                 request
             } else {
-                solve(backend, request, host)
+                solve(backend, request, host, staleClearance = current?.value ?: sentClearance)
             }
         }
         return chain.proceed(retry)
     }
 
     /** Runs the browser for [request]; returns the request to send again, or throws a [CloudflareBypassException]. */
-    private fun solve(backend: BrowserBackend, request: Request, host: String): Request {
-        cookieManager.remove(request.url, CloudflareChallenge.COOKIE_NAMES, 0)
+    private fun solve(backend: BrowserBackend, request: Request, host: String, staleClearance: String?): Request {
+        // Android: `cookieManager.remove(request.url, COOKIE_NAMES, 0)`; on desktop that misses a site-wide cookie.
+        cookieManager.removeBrowserCookies(request.url, CloudflareChallenge.COOKIE_NAMES)
         val userAgent = request.header("User-Agent")?.takeIf { it.isNotBlank() } ?: defaultUserAgentProvider()
         val result = try {
             backend.run(
@@ -104,8 +107,9 @@ actual class CloudflareInterceptor(
                     headers = CloudflareChallenge.browserHeaders(request.headers)
                         .filterKeys { !it.equals("User-Agent", ignoreCase = true) },
                     userAgent = userAgent,
-                    cookies = cookieManager.get(request.url),
-                    until = BrowserCondition.cookieSet(request.url, CloudflareChallenge.CLEARANCE_COOKIE),
+                    cookies = cookieManager.browserCookies(request.url),
+                    // A new clearance: not the one that was refused (Android's `it != oldCookie`).
+                    until = BrowserCondition.cookieSet(request.url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
                     timeout = timeout,
                 ),
             )
@@ -118,7 +122,7 @@ actual class CloudflareInterceptor(
         cookieManager.storeBrowserCookies(result.cookies)
 
         val solved = result.outcome == BrowserSessionResult.Outcome.CONDITION_MET &&
-            cookieManager.get(request.url).any { it.name == CloudflareChallenge.CLEARANCE_COOKIE }
+            cookieManager.get(request.url).any { it.name == CloudflareChallenge.CLEARANCE_COOKIE && it.value != staleClearance }
         if (!solved) {
             logcat(LogPriority.WARN) { "Cloudflare challenge for $host not solved by ${backend.name}: ${result.outcome}" }
             throw failure(

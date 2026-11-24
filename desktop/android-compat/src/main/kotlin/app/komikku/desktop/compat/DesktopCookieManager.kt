@@ -92,6 +92,35 @@ class DesktopCookieManager(
             .joinToString("; ") { "${it.name}=${it.value}" }
     }
 
+    /**
+     * The stored cookies sent to [url], with all their attributes (domain, path, expiry, …), unlike [getCookie]'s
+     * `name=value` header. Empty for an invalid address.
+     */
+    fun cookiesFor(url: String): List<Cookie> {
+        val httpUrl = url.toHttpUrlOrNull() ?: return emptyList()
+        return synchronized(lock) {
+            removeExpired()
+            cookies.values.filter { it.matches(httpUrl) }
+        }
+    }
+
+    /**
+     * Removes the stored cookies sent to [url] whose name is in [names] (all of them when `null`), whatever their domain
+     * and path; returns how many were removed. A `Max-Age=0` [setCookie] only removes the cookie with the address's own
+     * host and default path.
+     */
+    fun removeFor(url: String, names: Collection<String>? = null): Int {
+        val httpUrl = url.toHttpUrlOrNull() ?: return 0
+        val removed = synchronized(lock) {
+            removeExpired()
+            val matching = cookies.filterValues { it.matches(httpUrl) && (names == null || it.name in names) }.keys
+            matching.forEach { cookies.remove(it) }
+            matching.size
+        }
+        if (removed > 0) changed(persistent = true)
+        return removed
+    }
+
     override fun removeSessionCookies(callback: ValueCallback<Boolean>?) {
         val removed = synchronized(lock) { cookies.values.removeAll { !it.persistent } }
         callback?.onReceiveValue(removed)
