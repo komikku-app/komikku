@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.more.CategoriesScreen
+import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.shared.library.LibraryUpdateRunner
 import app.komikku.shared.navigation.AppNavigatorHost
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -45,8 +48,10 @@ import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
+import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
@@ -135,6 +140,9 @@ private fun LibraryPages(
     val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
     val showCounts by libraryPreferences.categoryNumberOfItems().collectAsState()
     val displayMode by libraryPreferences.displayMode().collectAsState()
+    val showContinueReading by libraryPreferences.showContinueReadingButton().collectAsState()
+    val readerLauncher = remember { Injekt.get<ReaderLauncher>() }
+    val scope = rememberCoroutineScope()
     var showSettings by remember { mutableStateOf(false) }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val landscape = maxWidth > maxHeight
@@ -173,6 +181,16 @@ private fun LibraryPages(
                         singleLine = true,
                         modifier = Modifier.weight(1f).testTag("library-search"),
                     )
+                    // Android's "Open random entry" (P12): a random entry of the shown page
+                    IconButton(
+                        onClick = {
+                            val item = screenModel.getRandomLibraryItemForCurrentCategory()
+                            if (item != null) onOpen(item.id) else context.toast(MR.strings.information_no_entries_found)
+                        },
+                        modifier = Modifier.testTag("library-random"),
+                    ) {
+                        Icon(Icons.Outlined.Shuffle, contentDescription = stringResource(MR.strings.action_open_random_manga))
+                    }
                     // Filter / sort / display settings (8.5); highlighted while a filter is active, like Android
                     IconButton(onClick = { showSettings = true }, modifier = Modifier.testTag("library-settings")) {
                         Icon(
@@ -254,6 +272,18 @@ private fun LibraryPages(
                     },
                     onLongClick = { screenModel.toggleRangeSelection(page.category, it) },
                     modifier = Modifier.weight(1f),
+                    // Android's "continue reading" button (P12): the next unread chapter in the reader
+                    onContinueReading = { item: LibraryItem ->
+                        scope.launch {
+                            val chapter = screenModel.getNextUnreadChapter(item.libraryManga.manga)
+                            if (chapter != null) {
+                                readerLauncher.open(chapter.mangaId, chapter.id)
+                            } else {
+                                context.toast(MR.strings.no_next_chapter)
+                            }
+                        }
+                        Unit
+                    }.takeIf { showContinueReading },
                 )
             }
             if (state.selectionMode) {

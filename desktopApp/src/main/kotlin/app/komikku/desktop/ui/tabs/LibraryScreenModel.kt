@@ -45,8 +45,11 @@ import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
@@ -100,6 +103,7 @@ class LibraryScreenModel(
     private val getSearchTitles: GetSearchTitles = Injekt.get(),
     private val context: Application = Injekt.get(),
     private val batchActions: LibraryBatchActions = LibraryBatchActions(),
+    private val getNextChapters: GetNextChapters = Injekt.get(),
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
     /** Android's `lastSelectionCategory`: the page of the last (range) selection, for Shift-click ranges. */
@@ -238,6 +242,16 @@ class LibraryScreenModel(
     fun selectCategory(categoryId: Long) {
         mutableState.update { it.copy(selectedCategoryId = categoryId) }
     }
+
+    /** Android `getRandomLibraryItemForCurrentCategory` (P12): a random entry of the shown page, `null` when empty. */
+    fun getRandomLibraryItemForCurrentCategory(): LibraryItem? = state.value.selectedPage?.items?.randomOrNull()
+
+    /**
+     * The chapter Android's library "continue reading" button opens (P12): the entry's next unread chapter, by the
+     * rule of the desktop details' "Continue reading" (`GetNextChapters`, unread only).
+     */
+    suspend fun getNextUnreadChapter(manga: Manga): Chapter? =
+        withIOContext { getNextChapters.await(manga.id, onlyUnread = true).firstOrNull() }
 
     // Selection (Android's LibraryScreenModel, logic shared through LibraryActions.kt)
 

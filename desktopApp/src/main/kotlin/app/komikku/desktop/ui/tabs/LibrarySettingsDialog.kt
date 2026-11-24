@@ -65,8 +65,9 @@ import tachiyomi.presentation.core.util.collectAsState
 /**
  * Desktop counterpart of Android's `LibrarySettingsDialog` (Filter / Sort / Display tabs), driven by the
  * borrowed [LibrarySettingsScreenModel] so every change goes to the same preferences / category flags as on
- * Android (and round-trips through backups), including the SY "Group" tab (P2). Not on desktop: the "continue reading"
- * button, the source / language-icon badges and the category-tabs switch (desktop always shows tabs).
+ * Android (and round-trips through backups), including the SY "Group" tab (P2), the "continue reading" button and the
+ * source badge (P12). Not on desktop: the language-icon badge (no flag icons; the language shows as text) and the
+ * category-tabs switch (desktop always shows tabs).
  *
  * @param category the shown category (per-category sort, Android's `categorizedDisplaySettings` rules).
  * @param landscape whether the window is wider than tall (landscape / portrait column preference).
@@ -325,6 +326,11 @@ private fun DisplayPage(screenModel: LibrarySettingsScreenModel, landscape: Bool
     CheckboxItem(label = stringResource(MR.strings.action_display_unread_badge), pref = prefs.unreadBadge())
     CheckboxItem(label = stringResource(MR.strings.action_display_local_badge), pref = prefs.localBadge())
     CheckboxItem(label = stringResource(MR.strings.action_display_language_badge), pref = prefs.languageBadge())
+    CheckboxItem(label = stringResource(KMR.strings.action_display_source_badge), pref = prefs.sourceBadge())
+    CheckboxItem(
+        label = stringResource(MR.strings.action_display_show_continue_reading_button),
+        pref = prefs.showContinueReadingButton(),
+    )
     HeadingItem(MR.strings.tabs_header)
     CheckboxItem(label = stringResource(KMR.strings.action_show_hidden_categories), pref = prefs.showHiddenCategories())
     CheckboxItem(label = stringResource(MR.strings.action_display_show_number_of_items), pref = prefs.categoryNumberOfItems())
