@@ -2967,8 +2967,8 @@ Verification (after `490d3d7`, `--max-workers=2 --console=plain`, `./gradlew --s
 
 ## P12 — advanced settings and library extras
 
-Commits `9e4c28a` … (`9e4c28a` / `3747944` Settings → Advanced, `c655b67` / `41c5236` library extras) and this docs
-commit; after the P11 review fixes (last Part A commit `0d88469`). Both items asked for from "Remaining parity gaps" 2
+Commits `9e4c28a` … (`9e4c28a` / `3747944` / `0420506` Settings → Advanced, `c655b67` / `41c5236` library extras,
+`768ccec` a reader fix found in the verification) and the docs commits; after the P11 review fixes (last Part A commit `0d88469`). Both items asked for from "Remaining parity gaps" 2
 and 5 are built; Android code unchanged.
 
 ### Built
@@ -3020,6 +3020,18 @@ and 5 are built; Android code unchanged.
 - The log file is installed only by `main` (tests keep stderr only). "Open the log folder" reports the path in a toast
   when the system has no file manager to open (headless, some Linux desktops).
 
+### Found in the P12 verification (reader, P11 area)
+
+The first full suite after P12 failed once in `ReaderNavigationTest` "entering the previous chapter backwards …"
+(landed on 1.3 instead of its second half): the preload started by reaching the "previous" transition and the
+`loadAdjacent` of the next page turn loaded the same chapter twice, so the chapter ended with another page list than
+the items held, and the re-anchoring found the second half's page by key but not the half. Fixed in `768ccec`:
+`loadAdjacent` waits for a running preload of its chapter (`stateFlow` past `Loading`) instead of loading it a second
+time, and `anchorIndex` maps a second half to the second half of the page with its key before falling back to the
+page. Test `ReaderSpreadsTest` "rebuilt lists re-anchor by identity, a second half by its page". The same run timed
+out once in `DesktopExtensionManagerTest` "a new manager loads the installed extensions from disk" (30 s, unrelated
+code; passed alone and in the next full run, see the verification below).
+
 ### Tests
 
 - `AdvancedSettingsUiTest` (3): clear cookies (the jar is empty, Android's toast), the default user agent's reset,
@@ -3033,6 +3045,13 @@ and 5 are built; Android code unchanged.
   empty page; the source badge follows its preference.
 - `SettingsUiTest` / `FlareSolverrSettingsUiTest`: the delegated sources toggle and the solver group are found in
   Advanced now.
+
+Verification (after `768ccec`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass;
+`:desktopApp:test` 63 classes, 278 tests, 0 failures (was 60 / 269 after the P11 review fixes: `AdvancedSettingsUiTest`
+3, `DesktopLogFileTest` 2, `LibraryExtrasUiTest` 3 new, `ReaderSpreadsTest` 3 → 4). Not run: a real window (the log
+folder opened in a file manager, the continue reading button and badges seen), a real extension's icon in the source
+badge (the stub-source warning is what the test sees), DNS over HTTPS against a real resolver, macOS / Windows.
 
 ## Remaining parity gaps
 
