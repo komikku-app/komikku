@@ -2295,6 +2295,99 @@ runs): `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin` (with `:core:
 `:core:common:desktopTest` 3 classes, 9 tests, 0 failures (unchanged). Not run: a real window, a real Cloudflare site,
 any embedded browser, the Android app (compile only; Android's interceptor code is moved, not changed).
 
+### Review fixes (P7)
+
+Review `/code-review medium 2093b68^..efae9ab`, 10 findings (8 important, 2 nits), all fixed in `ed37378` (interceptor:
+1, 2, 4), `fc72df6` (cookies, User-Agent, dialog, details: 3, 5–10) and the commit with this section (a follow-up to
+4 for redirects, below, and these notes). New tests were written with the
+fixes (they use the new API, so they were not run against the old code); each targets the defect as described.
+
+1. **A failed solve was repeated by every request queued on the host's lock** (`CloudflareInterceptor`, up to 30 s
+   each). New `CloudflareHostState` (`core:common` desktop, `app.komikku.network.browser`; shared by all interceptors
+   and "Open in WebView" through `CloudflareHosts.state`): a failed solve (`NOT_SOLVED` / `TIMED_OUT` / `BROWSER_FAILED`)
+   is remembered per host for `FAILURE_MEMORY` = 45 s (injectable clock), bound to the clearance the jar held after it.
+   Waiters and requests right after it fail at once with a new `CloudflareBypassException` of the same reason and
+   message (the original as cause). It ends after the 45 s, when a new `cf_clearance` is in the jar, after a successful
+   solve, or by `clearFailure` (a manual save or "Clear cookies" in the dialog). `NO_BROWSER` is not remembered (it is
+   immediate anyway). Test: "a failed solve is not repeated by the requests behind it and right after it" (3 parallel
+   requests → 1 browser run, a follower fails without a run, cleared / new clearance / expiry each allow the next run).
+2. **Waiters and later requests used their original User-Agent** although the solver switched to its own. The state
+   keeps a User-Agent override per host, bound to a SHA-256 hash of the clearance it came with (no cookie values are
+   stored next to it). The interceptor applies it before every request to that host while that clearance is in the jar
+   (also when a source sets its own `User-Agent` header), on the waiter path and to the retry; another host whose
+   current clearance is the same (a site-wide `cf_clearance`) uses it too. A solve with the source's own User-Agent
+   removes the override. **Persisted** (not only in memory): the desktop app keeps the overrides in the
+   `desktop_cloudflare_user_agents` preference (`DesktopCloudflare.installHostState`, run when `NetworkHelper` is
+   created, in the app module and in `DesktopServices`), so they live as long as the cookies in `cookies.json`; the
+   `core:common` default and the tests keep them in memory. Test: "the solver's user agent is used for the waiters and
+   the host's later requests".
+3. **Pasted cookies were domain cookies on the registrable domain**, so a later host-only `Set-Cookie` of the site became
+   a second entry and the stale pasted one could be sent first. `ManualCookies.toCookies` now stores pasted cookies
+   host-only for the entered host; only Cloudflare's own (`cf_*`, `__cf*`, `_cf*`: `cf_clearance`, `__cf_bm`, `_cfuvid`)
+   go to the registrable domain (host-only for IPs / hosts without a public suffix, as before). Pasted cookies are stored
+   through the new `storePastedCookies` → `DesktopCookieManager.setPastedCookies`, which marks them (persisted as
+   `"pasted": true` in `cookies.json`); when the site later sets a cookie of the same name for an address the pasted one
+   is sent to (parent domain, or host-only vs. domain on the same host), the pasted one is removed. Ordinary cookies of
+   the same name on different domains are left alone (RFC 6265). The `LIFETIME` comment says this now. Tests:
+   `CookieManagerTest` "a cookie the site sets replaces a pasted one …", `DesktopWebViewTest` "a pasted cookie gives way to
+   the one the site sets later", the reworked `toCookies` checks.
+4. **The clearance was compared for the original URL, not the challenged one** (after redirects). The interceptor now
+   takes the challenged request from `response.request` (the last hop): its host is locked, its jar clearance compared
+   with the one the network request sent, its cookies removed and the browser session runs for that URL; the retry is
+   the original request (OkHttp follows the redirect again with the new cookie). Test: "a challenge on a redirect target
+   is solved for that address" (localhost → 127.0.0.1, the first host holding a clearance of its own: before, no
+   browser run and the 403 was returned).
+5. **One cookie value with a comma, backslash or inner quote rejected the whole paste.** Values may now hold anything a
+   `Cookie` header carries except `;`, control characters and non-ASCII (OkHttp refuses those in header values, which
+   would fail every request to the site). `ManualCookies.parse` returns `Parsed(pairs, skipped)`: an unusable entry
+   (no `=`, a bad name, a bad value) is skipped by name (entries without `=` as text, cut at 40 characters; values are
+   never echoed), the rest is stored, and the dialog shows "Skipped cookies that can't be used: …"
+   (`KMR.strings.desktop_webview_cookies_skipped`); only a paste with nothing usable is refused (`InvalidCookie` lists
+   what was skipped; `desktop_webview_cookie_invalid` reworded to "Not a usable name=value cookie"). Tests: "unusable
+   entries are skipped …", the `ManualCookies` forms.
+6. **The pasted User-Agent only went to `default_user_agent`**, so sources with their own User-Agent header ignored it
+   until a restart. `saveManual` stores it as the host's override (finding 2's mechanism, persisted), bound to the
+   pasted clearance (or the one already in the jar; with no clearance at all it applies to the host until "Clear
+   cookies" or a save with the source's own User-Agent), so the next request of that source to that host sends it at
+   once. The dialog's field shows what is sent now (`ManualEntry.userAgent`; the source's own in `sourceUserAgent`).
+   The default preference is written only when the new "Also use this user agent as the default for all sources"
+   checkbox (`desktop_webview_user_agent_default`, default off) is ticked; only then "Requires app restart" is shown. The
+   help text says the app sends the pasted User-Agent to the site at once. "Clear cookies" removes the override too.
+   Test: "a pasted user agent is sent at once to a source with its own user agent header" (no restart, default
+   untouched, preference without the cookie value, the dialog shows it, cleared with the cookies).
+7. **Details cached a null address and called the extension during composition.** The WebView button shows whenever an
+   entry is loaded (it always has a source id); on click `WebViewLauncher.open(sourceId) { model.mangaUrl() }` resolves
+   the address on an IO thread (inside the cancellable progress state), so a source that loads later works; no address
+   → "This entry has no web address …" (`desktop_webview_no_address`). Test: `WebViewLauncherTest` "the address is
+   resolved off the calling thread …".
+8. **A throwing `webView.open` left the modal progress dialog up forever.** The launcher catches `Throwable` (cancellation
+   rethrown), resets to `Idle` and shows "Could not open <host>: <message>" (`desktop_webview_failed`). The progress dialog
+   has a Cancel button and is dismissable: `cancel()` resets the state and cancels the job; the session runs in
+   `runInterruptible(Dispatchers.IO)`, so the blocking backend call is interrupted (a backend must stop on interrupt).
+   Tests: "a failing open ends the progress state with an error", "a running session can be cancelled".
+9. **"Cookies saved" after any embedded session**: now only when the session returned cookies; a timeout without cookies
+   says so (`desktop_webview_timed_out`), otherwise "The browser returned no cookies" (`desktop_webview_no_cookies`).
+   Test: "an embedded session reports saved cookies, a timeout or nothing".
+10. **A blank User-Agent field blocked saving cookies**: blank now keeps the current User-Agent (`SaveResult.UserAgentBlank`
+    removed; Android's blank-check string is no longer used here).
+
+Decisions: the failure memory is 45 s (middle of the asked 30–60 s); overrides are persisted rather than in memory only
+(the clearances they belong to persist too); the override is keyed by host with a clearance-hash fallback rather than by
+cookie domain. Left: a request to host A that redirects to a protected host B goes out to B with the source's User-Agent when A has no
+override of its own (an application interceptor cannot change redirect hops); B's challenge is then answered by
+resending with B's override when B's clearance is in the jar (one extra round trip, no browser run; test "a clearance
+reached through a redirect is resent with its user agent instead of solved again").
+
+Tests after the fixes: `DesktopCloudflareInterceptorTest` 15 (was 11), `DesktopWebViewTest` 10 (was 7), new
+`WebViewLauncherTest` 5, `WebViewUiTest` 1 (unchanged, still passes with the new dialog), `CookieManagerTest` 7 (was 6).
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): after `fc72df6`:
+`spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`
+pass; `:desktopApp:test` 49 classes, 209 tests, 0 failures (was 48 / 198); `:core:common:desktopTest` 3 classes, 9 tests,
+0 failures; `:desktop:android-compat:test` 7 classes, 34 tests, 0 failures. After the redirect follow-up in this docs
+commit: `spotlessCheck` and the `app.komikku.desktop.webview.*` tests (4 classes, 31 tests) pass. Not run: a real window,
+a real Cloudflare site, the Android app (compile only; nothing Android changed).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:

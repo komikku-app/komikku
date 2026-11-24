@@ -372,6 +372,26 @@ class DesktopCloudflareInterceptorTest {
         jar.get(server.url("/")).map { it.value } shouldBe listOf("first-host")
     }
 
+    @Test
+    fun `a clearance reached through a redirect is resent with its user agent instead of solved again`() {
+        val target = server.url("/new").newBuilder().host(if (server.hostName == "127.0.0.1") "localhost" else "127.0.0.1").build()
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse = when {
+                request.url.encodedPath == "/old" -> MockResponse.Builder().code(302).addHeader("Location", target.toString()).build()
+                "cf_clearance=solved" in request.headers["Cookie"].orEmpty() && request.headers["User-Agent"] == BROWSER_UA ->
+                    MockResponse.Builder().code(200).body("ok").build()
+                else -> challenge()
+            }
+        }
+        // The target was solved earlier with the browser's User-Agent; the first host has no override of its own.
+        jar.storeBrowserCookies(listOf(FakeBrowserBackend.clearance(sessionFor(target))))
+        hosts.setUserAgent(target.host, BROWSER_UA, "solved")
+
+        client().newCall(GET(server.url("/old").toString())).execute().use { it.code shouldBe 200 }
+
+        backend.sessions.shouldBeEmpty()
+    }
+
     private fun sessionFor(url: okhttp3.HttpUrl) = app.komikku.network.browser.BrowserSession(
         url = url,
         userAgent = DEFAULT_UA,

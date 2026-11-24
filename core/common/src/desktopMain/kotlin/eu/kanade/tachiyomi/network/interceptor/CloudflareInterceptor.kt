@@ -99,9 +99,14 @@ actual class CloudflareInterceptor(
 
         val retry = synchronized(hostLocks.computeIfAbsent(host) { Any() }) {
             val current = currentClearance(challengedUrl)
+            val clearanceUserAgent = current?.let { clearance -> hosts.userAgentFor(host) { clearance } }
             if (current != null && current != sentClearance) {
                 // Another request solved this host's challenge while this one waited: send it with that clearance's
                 // User-Agent too.
+                request.withUserAgentFor(challengedUrl, hosts)
+            } else if (clearanceUserAgent != null && clearanceUserAgent != request.header("User-Agent")) {
+                // The clearance is there but went out with another User-Agent than the one it belongs to (a redirect
+                // from a host without the override): send it again with that one, no browser needed.
                 request.withUserAgentFor(challengedUrl, hosts)
             } else {
                 // A solve that failed a moment ago fails the same way at once (no second browser run per waiter).
