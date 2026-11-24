@@ -102,8 +102,9 @@ class BrowseMigrateUiTest {
 
     /** The rows with these tags from top to bottom (the ones shown). */
     private fun ComposeUiTest.order(vararg tags: String): List<String> = tags
-        .filter { onAllNodesWithTag(it).fetchSemanticsNodes().isNotEmpty() }
-        .sortedBy { onNodeWithTag(it).fetchSemanticsNode().boundsInRoot.top }
+        .mapNotNull { tag -> onAllNodesWithTag(tag).fetchSemanticsNodes().firstOrNull()?.let { tag to it.boundsInRoot.top } }
+        .sortedBy { it.second }
+        .map { it.first }
 
     private fun ComposeUiTest.waitForOrder(vararg tags: String) =
         waitUntil(timeoutMillis = 15_000) { order(*tags) == tags.toList() }
