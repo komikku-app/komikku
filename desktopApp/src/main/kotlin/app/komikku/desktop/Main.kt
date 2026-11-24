@@ -45,11 +45,11 @@ import java.awt.Dimension
 fun main() {
     DesktopLogcatLogger.install()
     val app = DesktopInjekt.init()
-    // Scheduled library updates and automatic backups while the app runs (P3); the first check catches up on what
-    // was missed while it was closed.
-    // Android's start-up app update check (P6; only with the updater build flag), before the scheduler so its
-    // catch-up does not check again
+    // Android's start-up app update check (P6; only with the updater build flag). It must run before
+    // `scheduler.start()`: the scheduler's catch-up then waits for it and does not ask GitHub a second time.
     Injekt.get<DesktopAppUpdateChecker>().checkOnStart(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+    // Scheduled library updates, automatic backups and app update checks while the app runs (P3); the first check
+    // catches up on what was missed while it was closed.
     val scheduler = Injekt.get<DesktopScheduler>().also { it.start() }
 
     application {

@@ -15,8 +15,8 @@ import tachiyomi.data.release.GithubRelease
  *   builds). Otherwise the stable channel: releases of `komikku-app/komikku` tagged `v<version name>`, compared with
  *   the app's own `komikku.version`.
  *
- * A release only counts when it carries an installer for this OS ([installerLink]); Android's APK-only releases are
- * skipped.
+ * A release only counts when its tag can be compared with this build's version ([isComparableTag]) and it carries an
+ * installer for this OS and CPU architecture ([installerLink]); Android's APK-only releases are skipped.
  */
 data class DesktopUpdaterConfig(
     val enabled: Boolean,
@@ -26,6 +26,8 @@ data class DesktopUpdaterConfig(
     /** The commit count of a preview build (0 = unknown). */
     val commitCount: Int,
     val os: DesktopOs,
+    /** The JVM's CPU architecture (`os.arch`); `null` = unknown, then only the OS is matched. */
+    val arch: DesktopArch? = DesktopArch.current(),
 ) {
 
     val repository: String
@@ -47,10 +49,37 @@ data class DesktopUpdaterConfig(
     val currentReleaseUrl: String
         get() = "https://github.com/$repository/releases/tag/" + if (isPreview) "r$commitCount" else "v$versionName"
 
-    /** The download link of the installer for [os] in [release], or `null` when the release has none. */
+    /**
+     * The download link of the installer for [os] and [arch] in [release], or `null` when the release has none. An
+     * asset name that states no architecture counts for any; one that states another architecture does not count.
+     * The Linux package format (`.deb` / `.rpm` / `.AppImage`) is not distinguished: the first matching asset wins.
+     */
     fun installerLink(release: GithubRelease): String? = release.assets
-        .firstOrNull { asset -> os.installerExtensions.any { asset.name.endsWith(it, ignoreCase = true) } }
+        .firstOrNull { asset ->
+            os.installerExtensions.any { asset.name.endsWith(it, ignoreCase = true) } &&
+                DesktopArch.of(asset.name).let { it == null || arch == null || it == arch }
+        }
         ?.downloadLink
+
+    /**
+     * Whether `GetApplicationRelease` can compare [tag] with this build's version without failing: preview, a whole
+     * number after removing everything but digits and dots (`r1234`); stable, as many or more dot-separated numbers as
+     * [versionName] (`v1.14.0`). The interactor would throw on any other tag and fail the whole check.
+     */
+    fun isComparableTag(tag: String): Boolean {
+        val digits = tag.replace(NON_VERSION_CHARS, "")
+        return if (isPreview) {
+            digits.toIntOrNull() != null
+        } else {
+            val parts = digits.split(".")
+            parts.all { it.toIntOrNull() != null } &&
+                parts.size >= versionName.replace(NON_VERSION_CHARS, "").split(".").size
+        }
+    }
+
+    /** The desktop `ReleaseService` selection: [installerLink] of a release whose tag [isComparableTag]. */
+    fun downloadLink(release: GithubRelease): String? =
+        if (isComparableTag(release.version)) installerLink(release) else null
 
     companion object {
         const val STABLE_REPOSITORY = "komikku-app/komikku"
@@ -59,6 +88,9 @@ data class DesktopUpdaterConfig(
         /** `x.y.z` (what jpackage accepts; `GetApplicationRelease` compares the numbers part by part). */
         private val RELEASE_VERSION = Regex("""\d+(\.\d+)*""")
 
+        /** What `GetApplicationRelease.isNewVersion` removes from a tag before comparing. */
+        private val NON_VERSION_CHARS = Regex("""[^\d.]""")
+
         fun fromSystemProperties(): DesktopUpdaterConfig = DesktopUpdaterConfig(
             enabled = System.getProperty("komikku.updater").toBoolean(),
             isPreview = System.getProperty("komikku.preview").toBoolean(),
@@ -66,6 +98,34 @@ data class DesktopUpdaterConfig(
             commitCount = System.getProperty("komikku.commitCount")?.toIntOrNull() ?: 0,
             os = DesktopOs.current(),
         )
+    }
+}
+
+/**
+ * The CPU architectures desktop installers are built for, with the spellings asset names commonly use. Matched as
+ * separate words in the name (`Komikku-1.14.0-arm64.dmg`, `komikku_1.14.0_amd64.deb`, `komikku-1.14.0.x86_64.rpm`).
+ */
+enum class DesktopArch(spellings: List<String>) {
+    X64(listOf("x64", "amd64", "x86_64", "x86-64")),
+    Arm64(listOf("arm64", "aarch64")),
+    ;
+
+    /** A spelling between non-alphanumeric characters (or the ends of the name), ignoring case. */
+    private val pattern = Regex(
+        spellings.joinToString("|", prefix = "(?<![a-z0-9])(", postfix = ")(?![a-z0-9])") { Regex.escape(it) },
+        RegexOption.IGNORE_CASE,
+    )
+
+    companion object {
+        /** The architecture an asset name states, or `null` when it states none. */
+        fun of(assetName: String): DesktopArch? = entries.firstOrNull { it.pattern.containsMatchIn(assetName) }
+
+        /** [os.arch][System.getProperty] as a [DesktopArch], or `null` for another architecture. */
+        fun current(osArch: String = System.getProperty("os.arch").orEmpty()): DesktopArch? = when (osArch.lowercase()) {
+            "amd64", "x86_64", "x64", "x86-64" -> X64
+            "aarch64", "arm64" -> Arm64
+            else -> null
+        }
     }
 }
 

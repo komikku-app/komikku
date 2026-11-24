@@ -38,7 +38,8 @@ import kotlin.time.Duration.Companion.hours
  *   waits a whole interval (the scheduler's rule for work cancelled on its own).
  *
  * - **App update check** (P6, only with [appUpdateChecker]) — Android `AppUpdateJob`: every 3 days while the updater
- *   is enabled (see `appUpdateCheckTask`).
+ *   is enabled, from the last check that got an answer; a failed check retries 10 minutes later (see
+ *   `appUpdateCheckTask`).
  *
  * When the scheduler stops (app exit), each task stops the work it started and waits for its end.
  */
@@ -56,7 +57,7 @@ fun desktopScheduler(
     tasks = listOfNotNull(
         libraryUpdateTask(libraryPreferences, schedulerPreferences, libraryUpdateRunner, now),
         automaticBackupTask(backupPreferences, backupJobs),
-        appUpdateChecker?.let { appUpdateCheckTask(it, schedulerPreferences, now) },
+        appUpdateChecker?.let { appUpdateCheckTask(it, schedulerPreferences) },
     ),
     now = now,
     wakeUps = merge(

@@ -313,11 +313,11 @@ class DesktopDomainModule(
         addSingletonFactory { DesktopSchedulerPreferences(get()) }
         addSingletonFactory { desktopScheduler(get(), get(), get(), get(), get(), appUpdateChecker = get()) }
 
-        // App update check (P6): Android's interactor on the GitHub releases, desktop installers only
+        // App update check (P6): Android's interactor on the GitHub releases, desktop installers with a comparable tag only
         addSingletonFactory { DesktopUpdaterConfig.fromSystemProperties() }
         addSingletonFactory<ReleaseService> {
             val config = get<DesktopUpdaterConfig>()
-            ReleaseServiceImpl(get(), get(), downloadLinkSelector = { release, _ -> config.installerLink(release) })
+            ReleaseServiceImpl(get(), get(), downloadLinkSelector = { release, _ -> config.downloadLink(release) })
         }
         addFactory { GetApplicationRelease(get(), get()) }
         addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get()) }

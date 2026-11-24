@@ -399,7 +399,12 @@ private fun aboutPreferences(): List<Preference> {
     var checking by remember { mutableStateOf(false) }
     val unknownError = stringResource(MR.strings.unknown_error)
     val config = checker.config
-    val version = if (config.isPreview) "${BuildConfig.VERSION_NAME} (r${config.commitCount})" else BuildConfig.VERSION_NAME
+    // The commit count only when the preview build has one (a build without it would show "r0")
+    val version = if (config.isPreview && config.commitCount > 0) {
+        "${BuildConfig.VERSION_NAME} (r${config.commitCount})"
+    } else {
+        BuildConfig.VERSION_NAME
+    }
     return buildList {
         add(
             Preference.PreferenceItem.TextPreference(
@@ -429,6 +434,8 @@ private fun aboutPreferences(): List<Preference> {
                                     when (val result = checker.check(forceCheck = true)) {
                                         is DesktopAppUpdateChecker.Check.NewUpdate -> Unit // the update dialog shows it
                                         DesktopAppUpdateChecker.Check.NoNewUpdate,
+                                        // A forced check is never throttled
+                                        DesktopAppUpdateChecker.Check.Throttled,
                                         DesktopAppUpdateChecker.Check.Disabled,
                                         -> context.toast(MR.strings.update_check_no_new_updates)
                                         is DesktopAppUpdateChecker.Check.Failed -> context.toast(

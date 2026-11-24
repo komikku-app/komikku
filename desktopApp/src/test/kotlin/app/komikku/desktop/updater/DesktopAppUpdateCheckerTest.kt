@@ -9,7 +9,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.core.common.preference.DesktopPreferenceStore
@@ -22,10 +24,12 @@ import tachiyomi.domain.release.service.ReleaseService
 import java.io.File
 import java.io.IOException
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * P6: the desktop update check on Android's [GetApplicationRelease] with a fake release source shaped like the GitHub
- * releases API (newest first), filtered through the desktop installer selection like the app's `ReleaseServiceImpl`.
+ * releases API (newest first), filtered through the desktop selection (comparable tag, installer) like the app's
+ * `ReleaseServiceImpl`.
  */
 class DesktopAppUpdateCheckerTest {
 
@@ -44,7 +48,7 @@ class DesktopAppUpdateCheckerTest {
             requested += arguments.repository
             failure?.let { throw it }
             return releases[arguments.repository].orEmpty().mapNotNull { release ->
-                val link = config().installerLink(release) ?: return@mapNotNull null
+                val link = config().downloadLink(release) ?: return@mapNotNull null
                 Release(release.version, release.info, release.releaseLink, link, release.preRelease, release.draft)
             }
         }
@@ -68,11 +72,21 @@ class DesktopAppUpdateCheckerTest {
     /** Android's throttle key, read by [GetApplicationRelease]. */
     private fun interactorLastCheck() = store.getLong(Preference.appStateKey("last_app_check"), 0L)
 
-    private fun stable(version: String = "1.13.6", enabled: Boolean = true, os: DesktopOs = DesktopOs.Linux) =
-        DesktopUpdaterConfig(enabled = enabled, isPreview = false, versionName = version, commitCount = 0, os = os)
+    private fun stable(
+        version: String = "1.13.6",
+        enabled: Boolean = true,
+        os: DesktopOs = DesktopOs.Linux,
+        arch: DesktopArch? = DesktopArch.X64,
+    ) = DesktopUpdaterConfig(enabled = enabled, isPreview = false, versionName = version, commitCount = 0, os = os, arch = arch)
 
-    private fun preview(commitCount: Int, enabled: Boolean = true) =
-        DesktopUpdaterConfig(enabled = enabled, isPreview = true, versionName = "1.13.6", commitCount = commitCount, os = DesktopOs.Linux)
+    private fun preview(commitCount: Int, enabled: Boolean = true) = DesktopUpdaterConfig(
+        enabled = enabled,
+        isPreview = true,
+        versionName = "1.13.6",
+        commitCount = commitCount,
+        os = DesktopOs.Linux,
+        arch = DesktopArch.X64,
+    )
 
     private fun checker(config: DesktopUpdaterConfig): Pair<DesktopAppUpdateChecker, FakeReleases> {
         val fake = FakeReleases { config }
@@ -140,19 +154,63 @@ class DesktopAppUpdateCheckerTest {
     }
 
     @Test
-    fun `a network failure is reported and does not start the throttle`() = runTest {
+    fun `a network failure is reported, not recorded as a check, and retried after the short delay`() = runTest {
         val (checker, fake) = checker(stable("1.13.6"))
         fake.failure = IOException("offline")
 
         val result = checker.check().shouldBeInstanceOf<DesktopAppUpdateChecker.Check.Failed>()
         result.error.message shouldBe "offline"
         checker.available.value.shouldBeNull()
+        // No answer: the last check time stays unset, so automatic checks are not blocked for days
+        schedulerPreferences.lastAppUpdateCheck().get() shouldBe 0L
 
-        // The next automatic check contacts GitHub again
+        // Right after it (e.g. the scheduler's catch-up after the start-up check): the same failure, nothing contacted
         fake.failure = null
         fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
-        checker.check().shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
+        checker.check() shouldBe result
+        fake.requested.size shouldBe 1
+
+        // A forced check always contacts GitHub; after the short delay an automatic one does too
+        checker.check(forceCheck = true).shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
         fake.requested.size shouldBe 2
+        schedulerPreferences.lastAppUpdateCheck().get() shouldBe clock
+
+        // (The throttles of the found update moved back)
+        schedulerPreferences.lastAppUpdateCheck().set(0L)
+        interactorLastCheck().set(0L)
+        val (later, laterFake) = checker(stable("1.13.6"))
+        laterFake.failure = IOException("offline")
+        later.check().shouldBeInstanceOf<DesktopAppUpdateChecker.Check.Failed>()
+        clock += DesktopAppUpdateChecker.FAILURE_RETRY_DELAY.inWholeMilliseconds
+        laterFake.failure = null
+        laterFake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
+        later.check().shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
+        laterFake.requested.size shouldBe 2
+    }
+
+    @Test
+    fun `an up-to-date app does not ask GitHub at every start`() = runTest {
+        val (checker, fake) = checker(stable("1.14.0"))
+        fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
+
+        checker.checkOnStart(CoroutineScope(Dispatchers.Unconfined))!!.join()
+        fake.requested.size shouldBe 1
+        schedulerPreferences.lastAppUpdateCheck().get() shouldBe clock
+        // The interactor's own throttle did not start (no update found)
+        interactorLastCheck().get() shouldBe 0L
+
+        // The next start a day later: not contacted
+        clock += 1.days.inWholeMilliseconds
+        val (nextStart, nextFake) = checker(stable("1.14.0"))
+        nextFake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
+        nextStart.checkOnStart(CoroutineScope(Dispatchers.Unconfined))!!.join()
+        nextFake.requested.shouldBeEmpty()
+        nextStart.check() shouldBe DesktopAppUpdateChecker.Check.Throttled
+
+        // Two days after the last answer: contacted again
+        clock += 1.days.inWholeMilliseconds
+        nextStart.check() shouldBe DesktopAppUpdateChecker.Check.NoNewUpdate
+        nextFake.requested.size shouldBe 1
     }
 
     @Test
@@ -161,7 +219,7 @@ class DesktopAppUpdateCheckerTest {
         fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
         checker.check().shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
 
-        checker.check() shouldBe DesktopAppUpdateChecker.Check.NoNewUpdate
+        checker.check() shouldBe DesktopAppUpdateChecker.Check.Throttled
         fake.requested.size shouldBe 1
 
         checker.check(forceCheck = true).shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
@@ -191,28 +249,91 @@ class DesktopAppUpdateCheckerTest {
     fun `the scheduled check runs every three days while enabled and counts the start-up check`() = runTest {
         val (checker, fake) = checker(stable("1.13.6"))
         fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
-        val task = appUpdateCheckTask(checker, schedulerPreferences, now = { clock })
+        val task = appUpdateCheckTask(checker, schedulerPreferences)
         task.intervalMillis() shouldBe 3.days.inWholeMilliseconds
+        task.retryDelay shouldBe DesktopAppUpdateChecker.FAILURE_RETRY_DELAY
 
         checker.checkOnStart(CoroutineScope(Dispatchers.Unconfined))!!.join()
         task.lastRun() shouldBe clock
         checker.available.value?.version shouldBe "v1.14.0"
 
-        // Within the interactor's two days (its own clock): throttled, nothing contacted, still a run
+        // Within the interactor's two days (its own clock, it found an update): an answer without contacting GitHub,
+        // recorded as a run
         clock += 3.days.inWholeMilliseconds
         fake.failure = IOException("offline")
         task.run() shouldBe DesktopScheduler.Outcome.Done
         task.lastRun() shouldBe clock
         fake.requested.size shouldBe 1
 
-        // After the throttle (the interactor's key moved back): contacted, the failure waits a whole interval
+        // After the throttles (the interactor's key moved back): contacted, the failure is not a run and retries soon
         interactorLastCheck().set(0L)
+        val lastAnswer = clock
         clock += 3.days.inWholeMilliseconds
-        task.run() shouldBe DesktopScheduler.Outcome.Failed
+        task.run() shouldBe DesktopScheduler.Outcome.Busy
         fake.requested.size shouldBe 2
+        task.lastRun() shouldBe lastAnswer
 
         val (off, _) = checker(stable(enabled = false))
         appUpdateCheckTask(off, schedulerPreferences).intervalMillis() shouldBe 0L
+    }
+
+    @Test
+    fun `an offline start does not block the scheduled check for days`() = runBlocking<Unit> {
+        val (checker, fake) = checker(stable("1.13.6"))
+        fake.failure = IOException("offline")
+        val scheduler = DesktopScheduler(
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            tasks = listOf(appUpdateCheckTask(checker, schedulerPreferences)),
+            now = { clock },
+        )
+
+        // The start-up check fails, then the scheduler's catch-up: no second request, a short retry
+        checker.checkOnStart(CoroutineScope(Dispatchers.Unconfined))!!.join()
+        scheduler.checkNow() shouldBe listOf(APP_UPDATE_CHECK_TASK)
+        withTimeout(10_000) { scheduler.awaitRunning() }
+        fake.requested.size shouldBe 1
+        schedulerPreferences.lastAppUpdateCheck().get() shouldBe 0L
+
+        // Back online: the retry 10 minutes later finds the update
+        fake.failure = null
+        fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(desktopRelease("v1.14.0"))
+        clock += 5.minutes.inWholeMilliseconds
+        scheduler.checkNow().shouldBeEmpty()
+        clock += 5.minutes.inWholeMilliseconds
+        scheduler.checkNow() shouldBe listOf(APP_UPDATE_CHECK_TASK)
+        withTimeout(10_000) { scheduler.awaitRunning() }
+        fake.requested.size shouldBe 2
+        checker.available.value?.version shouldBe "v1.14.0"
+        schedulerPreferences.lastAppUpdateCheck().get() shouldBe clock
+    }
+
+    @Test
+    fun `a release with a tag that cannot be compared is skipped, not failing the check`() = runTest {
+        val (checker, fake) = checker(stable("1.13.6"))
+        fake.releases[DesktopUpdaterConfig.STABLE_REPOSITORY] = listOf(
+            desktopRelease("desktop-v2"),
+            desktopRelease("v1.15"),
+            desktopRelease("nightly"),
+            desktopRelease("v1.14.0"),
+        )
+        val result = checker.check(forceCheck = true).shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
+        result.release.version shouldBe "v1.14.0"
+
+        val config = stable("1.13.6")
+        config.isComparableTag("v1.14.0") shouldBe true
+        config.isComparableTag("v1.14.0.1") shouldBe true
+        config.isComparableTag("v1.15") shouldBe false
+        config.isComparableTag("1.x.0") shouldBe false
+        config.isComparableTag("v1..0") shouldBe false
+        val preview = preview(1234)
+        preview.isComparableTag("r1240") shouldBe true
+        preview.isComparableTag("r1.2") shouldBe false
+        preview.isComparableTag("r99999999999") shouldBe false
+
+        val (previewChecker, previewFake) = checker(preview)
+        previewFake.releases[DesktopUpdaterConfig.PREVIEW_REPOSITORY] = listOf(desktopRelease("r12.4"), desktopRelease("r1240"))
+        previewChecker.check(forceCheck = true).shouldBeInstanceOf<DesktopAppUpdateChecker.Check.NewUpdate>()
+            .release.version shouldBe "r1240"
     }
 
     @Test
@@ -223,10 +344,49 @@ class DesktopAppUpdateCheckerTest {
         stable(os = DesktopOs.Linux).installerLink(release) shouldBe "https://github.com/download/v1.14.0/komikku_1.14.0_amd64.deb"
         stable().installerLink(githubRelease("v1.14.0", "Komikku-v1.14.0.apk")).shouldBeNull()
 
+        // Linux package format is not distinguished: the first Linux asset wins
+        stable(os = DesktopOs.Linux).installerLink(githubRelease("v1.14.0", "komikku-1.14.0.x86_64.rpm", "komikku_1.14.0_amd64.deb")) shouldBe
+            "https://github.com/download/v1.14.0/komikku-1.14.0.x86_64.rpm"
+
         DesktopOs.current("Windows 11") shouldBe DesktopOs.Windows
         DesktopOs.current("Mac OS X") shouldBe DesktopOs.MacOs
         DesktopOs.current("Linux") shouldBe DesktopOs.Linux
         stable("1.13.6").currentReleaseUrl shouldBe "https://github.com/komikku-app/komikku/releases/tag/v1.13.6"
         preview(1234).currentReleaseUrl shouldBe "https://github.com/komikku-app/komikku-preview/releases/tag/r1234"
+    }
+
+    @Test
+    fun `the installer matches the CPU architecture when the asset name states one`() {
+        val release = githubRelease(
+            "v1.14.0",
+            "Komikku-1.14.0-arm64.dmg",
+            "Komikku-1.14.0-x64.dmg",
+            "komikku_1.14.0_arm64.deb",
+            "komikku_1.14.0_amd64.deb",
+            "Komikku-1.14.0-aarch64.msi",
+            "Komikku-1.14.0-x86_64.msi",
+        )
+        fun link(os: DesktopOs, arch: DesktopArch?) = stable(os = os, arch = arch).installerLink(release)?.substringAfterLast('/')
+        link(DesktopOs.MacOs, DesktopArch.Arm64) shouldBe "Komikku-1.14.0-arm64.dmg"
+        link(DesktopOs.MacOs, DesktopArch.X64) shouldBe "Komikku-1.14.0-x64.dmg"
+        link(DesktopOs.Linux, DesktopArch.Arm64) shouldBe "komikku_1.14.0_arm64.deb"
+        link(DesktopOs.Linux, DesktopArch.X64) shouldBe "komikku_1.14.0_amd64.deb"
+        link(DesktopOs.Windows, DesktopArch.Arm64) shouldBe "Komikku-1.14.0-aarch64.msi"
+        link(DesktopOs.Windows, DesktopArch.X64) shouldBe "Komikku-1.14.0-x86_64.msi"
+        // Unknown architecture of this JVM: only the OS counts
+        link(DesktopOs.MacOs, null) shouldBe "Komikku-1.14.0-arm64.dmg"
+
+        // Only another architecture: no installer for this build; no architecture in the name: counts for any
+        stable(os = DesktopOs.MacOs, arch = DesktopArch.X64).installerLink(githubRelease("v1.14.0", "Komikku-1.14.0-ARM64.dmg")).shouldBeNull()
+        stable(os = DesktopOs.MacOs, arch = DesktopArch.Arm64).installerLink(githubRelease("v1.14.0", "Komikku-1.14.0.dmg")) shouldBe
+            "https://github.com/download/v1.14.0/Komikku-1.14.0.dmg"
+        // Part of a longer word is no architecture
+        DesktopArch.of("Komikku-x640.dmg").shouldBeNull()
+        DesktopArch.of("komikku-1.14.0.x86-64.rpm") shouldBe DesktopArch.X64
+
+        DesktopArch.current("amd64") shouldBe DesktopArch.X64
+        DesktopArch.current("x86_64") shouldBe DesktopArch.X64
+        DesktopArch.current("aarch64") shouldBe DesktopArch.Arm64
+        DesktopArch.current("ppc64le").shouldBeNull()
     }
 }
