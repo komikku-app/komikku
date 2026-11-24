@@ -6,7 +6,7 @@ and source toggles, with its review fixes, parity step P2, library grouping and 
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
 sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
 update check, with its review fixes, are done, and parity step P7, WebView / Cloudflare, is built (its review
-`/code-review medium 2093b68^..<P7 docs commit>` and fix round are pending); next: the P7 review, signing, the release
+`/code-review medium 2093b68^..e43620e` and fix round are pending); next: the P7 review, signing, the release
 pipeline for desktop installers, and the maintainer's first real run; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -176,7 +176,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   User-Agent (`default_user_agent`, restart for extension sources). Tests `DesktopCloudflareInterceptorTest` (11),
   `DesktopWebViewTest` (7), `WebViewUiTest` (1), `CookieManagerTest` +1. Extensions using `android.webkit.WebView` still
   fail at that call (`NoClassDefFoundError`; what is needed is in PROGRESS).
-- **P7 review** — pending: `/code-review medium 2093b68^..<P7 docs commit>`, then a fix round.
+- **P7 review** — pending: `/code-review medium 2093b68^..e43620e`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -218,7 +218,7 @@ mark the residual path in both modules.
    delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) and its review
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
    check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) is built: the
-   review `/code-review medium 2093b68^..<P7 docs commit>` and its fix round are next. **Then, in order:** signing /
+   review `/code-review medium 2093b68^..e43620e` and its fix round are next. **Then, in order:** signing /
    notarization of the installers; the release pipeline
    for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
    names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline
