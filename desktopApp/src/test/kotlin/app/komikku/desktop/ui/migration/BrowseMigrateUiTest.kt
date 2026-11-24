@@ -32,14 +32,17 @@ import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -81,6 +84,7 @@ class BrowseMigrateUiTest {
 
     @BeforeEach
     fun reset() {
+        migrateTestExtensions.value = emptyList()
         Injekt.get<SetMigrateSorting>().await(SetMigrateSorting.Mode.ALPHABETICAL, SetMigrateSorting.Direction.ASCENDING)
     }
 
@@ -182,6 +186,42 @@ class BrowseMigrateUiTest {
             listOf(eta, theta, zeta).forEach { waitForTag("migration-item-${it.id}") }
         }
 
+    @Test
+    fun `the obsolete filter keeps only sources that are not installed or have an obsolete extension`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            show()
+            waitForOrder(*sourceRows)
+            onNodeWithTag("migrate-sources-obsolete").performClick()
+            // Alpha and Beta have no APK extension (like a Mangayomi JavaScript source): not obsolete
+            waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB") }
+            // Beta's extension turns obsolete while the tab is shown: the filter and the label follow
+            migrateTestExtensions.value = listOf(extension(BETA, obsolete = true))
+            waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB", "migrate-source-$BETA") }
+            val betaRow = hasAnyAncestor(hasTestTag("migrate-source-$BETA"))
+            onAllNodes(hasText(MR.strings.ext_obsolete.localized()) and betaRow, useUnmergedTree = true)
+                .fetchSemanticsNodes().size shouldBe 1
+            migrateTestExtensions.value = listOf(extension(BETA, obsolete = false))
+            waitUntil(timeoutMillis = 15_000) { order(*sourceRows) == listOf("migrate-source-$STUB") }
+            onNodeWithTag("migrate-sources-obsolete").performClick()
+            waitForOrder(*sourceRows)
+        }
+
+    private fun extension(sourceId: Long, obsolete: Boolean) = Extension.Installed(
+        name = "Beta",
+        pkgName = "app.komikku.test.beta",
+        versionName = "1.0",
+        versionCode = 1,
+        libVersion = 1.4,
+        lang = "en",
+        isNsfw = false,
+        signatureHash = "test",
+        pkgFactory = null,
+        sources = listOf(StubSource(sourceId, "en", "Beta source")),
+        icon = null,
+        isObsolete = obsolete,
+        isShared = false,
+    )
+
     private companion object {
         const val ALPHA = 9_071L
         const val BETA = 9_072L
@@ -191,11 +231,14 @@ class BrowseMigrateUiTest {
     }
 }
 
+/** The installed extensions the panes of these tests see. */
+private val migrateTestExtensions = MutableStateFlow(emptyList<Extension.Installed>())
+
 /** Hosts the Migrate tab's pane like the Browse screen does. */
 private object MigrateHost : Screen() {
     @Composable
     override fun Content() {
         val model = rememberScreenModel { MigrateSourceScreenModel() }
-        MigrateSourcePane(model)
+        MigrateSourcePane(model, migrateTestExtensions)
     }
 }

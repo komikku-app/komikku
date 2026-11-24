@@ -63,13 +63,14 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
-import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreenModel
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaEvent
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.model.Source
@@ -96,14 +97,17 @@ private const val MIGRATION_GUIDE_URL = "https://komikku-app.github.io/docs/guid
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MigrateSourcePane(model: MigrateSourceScreenModel) {
+fun MigrateSourcePane(
+    model: MigrateSourceScreenModel,
+    installedExtensions: StateFlow<List<Extension.Installed>> = remember { SourceIcons.installedExtensions() },
+) {
     val state by model.state.collectAsState()
     val navigator = LocalNavigator.currentOrThrow
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val clipboard = LocalClipboardManager.current
     var obsoleteOnly by rememberSaveable { mutableStateOf(false) }
-    val installed by remember { SourceIcons.installedExtensions() }.collectAsState()
+    val installed by installedExtensions.collectAsState()
 
     LaunchedEffect(model) {
         model.channel.collect { event ->
@@ -157,13 +161,22 @@ fun MigrateSourcePane(model: MigrateSourceScreenModel) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).testTag("migrate-sources-search"),
             )
-            val shown = state.items.filter { (source, _) -> !obsoleteOnly || source.installedExtension?.isObsolete != false }
+            // Obsolete only: sources that are not installed and those whose extension is obsolete. A source without
+            // an APK extension (a Mangayomi JavaScript source) is installed and not obsolete. Re-run when the
+            // installed extensions change.
+            val shown = remember(state.items, obsoleteOnly, installed) {
+                if (!obsoleteOnly) {
+                    state.items
+                } else {
+                    state.items.filter { (source, _) -> source.isStub || installed.extensionOf(source.id)?.isObsolete == true }
+                }
+            }
             LazyColumn(modifier = Modifier.fillMaxSize().testTag("migrate-sources-list")) {
                 items(shown, key = { (source, _) -> "migrate-${source.id}" }) { (source, count) ->
                     MigrateSourceItem(
                         source = source,
                         count = count,
-                        isObsolete = remember(source.id, installed) { source.installedExtension?.isObsolete == true },
+                        isObsolete = remember(source.id, installed) { installed.extensionOf(source.id)?.isObsolete == true },
                         icon = remember(source.id, installed) { SourceIcons.of(source.id, installed) },
                         modifier = Modifier.combinedClickable(
                             onClick = { navigator.push(MigrateMangaScreen(source.id)) },
@@ -175,6 +188,10 @@ fun MigrateSourcePane(model: MigrateSourceScreenModel) {
         }
     }
 }
+
+/** The installed APK extension that provides [sourceId] (like Android's `Source.installedExtension`). */
+private fun List<Extension.Installed>.extensionOf(sourceId: Long): Extension.Installed? =
+    find { ext -> ext.sources.any { it.id == sourceId } }
 
 @Composable
 private fun MigrateSourceItem(
