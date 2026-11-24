@@ -28,9 +28,12 @@ import eu.kanade.tachiyomi.util.chapter.removeDuplicates
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -213,6 +216,16 @@ class ReaderModel(
     }
     private val mutex = Mutex()
 
+    /**
+     * The page-list loads in flight, one per chapter (single flight): the initial load, a preload, an adjacent chapter
+     * opened and a chapter switch all go through [loadPages] and join the same load, so a chapter never gets a second
+     * page list while the items hold the pages of the first one (P12 review).
+     */
+    private val chapterLoads = mutableMapOf<ReaderChapter, Deferred<Unit>>()
+
+    /** How many callers joined a load already in flight (tests). */
+    internal val joinedChapterLoads = MutableStateFlow(0)
+
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
@@ -335,8 +348,29 @@ class ReaderModel(
         }
     }
 
+    /**
+     * The load of [chapter]'s page list ([ChapterLoader.loadChapter], which returns at once for a loaded chapter): the
+     * one in flight when there is one, else a new one, registered before it starts. [page] counts only for a new load
+     * (only the first load of the opened chapter passes one).
+     */
+    private fun loadPages(chapter: ReaderChapter, page: Int? = null): Deferred<Unit> = synchronized(chapterLoads) {
+        chapterLoads[chapter]?.let { running ->
+            joinedChapterLoads.update { it + 1 }
+            return running
+        }
+        val load = scope.async(start = CoroutineStart.LAZY) { loader.loadChapter(chapter, page) }
+        chapterLoads[chapter] = load
+        load.invokeOnCompletion {
+            synchronized(chapterLoads) { if (chapterLoads[chapter] === load) chapterLoads.remove(chapter) }
+        }
+        load.start()
+        load
+    }
+
+    private fun isLoadingPages(chapter: ReaderChapter): Boolean = synchronized(chapterLoads) { chapter in chapterLoads }
+
     private suspend fun loadChapter(chapter: ReaderChapter, page: Int?, start: ChapterStart) = mutex.withLock {
-        loader.loadChapter(chapter, page)
+        loadPages(chapter, page).await()
         val newChapters = viewerChaptersOf(chapter)
         var replaced: ViewerChapters? = null
         commit { state ->
@@ -426,7 +460,7 @@ class ReaderModel(
             val target = (_state.value.currentItem as? ReaderPage)?.chapter ?: return
             val left = _state.value.currentChapter ?: return
             if (target == left || target !in chapterList) return
-            loader.loadChapter(target)
+            loadPages(target).await()
             val newChapters = viewerChaptersOf(target)
             var replaced: ViewerChapters? = null
             commit { state ->
@@ -532,9 +566,7 @@ class ReaderModel(
                 val current = _state.value.currentChapter
                 if (current != null) progressSaver.saveHistory(current.chapter.id!!, _state.value.incognito)
                 progressSaver.restartReadTimer()
-                // A preload of this chapter still running: let it finish instead of loading the chapter a second time
-                // (two page lists for one chapter would leave the items with pages the chapter no longer has)
-                chapter.stateFlow.first { it != ReaderChapter.State.Loading }
+                // A preload of this chapter still running is joined (loadPages), never loaded a second time
                 loadChapter(chapter, null, start)
             } catch (e: CancellationException) {
                 throw e
@@ -560,10 +592,12 @@ class ReaderModel(
      * items (Android: `ReloadViewerChapters`).
      */
     private fun preload(chapter: ReaderChapter) {
-        if (chapter.state is ReaderChapter.State.Loaded || chapter.state == ReaderChapter.State.Loading) return
+        if (chapter.state is ReaderChapter.State.Loaded || isLoadingPages(chapter)) return
+        // Registered now, before anything runs, so that an adjacent load arriving next joins it
+        val load = loadPages(chapter)
         scope.launch {
             try {
-                loader.loadChapter(chapter)
+                load.await()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
