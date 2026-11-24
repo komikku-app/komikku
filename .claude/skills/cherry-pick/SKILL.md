@@ -53,7 +53,9 @@ already in the tree stay out of it (step 0).
      about such a commit can't go in the log (`mark` finds no row), so give it in the report.
 4. Read the row's **Notes** whatever its status. They can hold a decision made earlier for this commit, such as
    "fold in … from …" or "don't pick just for …". Follow it as part of this pick and say that you did. If a note
-   contradicts the request, ask.
+   contradicts the request, ask. Read the other copy's row too (an `↳ tachiyomiSY` row's mihon row), since notes
+   usually sit on the mihon row. An `Early pick <date>:` note names a later upstream commit already picked here whose
+   lines this commit rewrites: step 3 carries its change over.
 5. Not already on this branch: `git log --oneline --grep=<full-hash> master..HEAD` is empty.
 6. If tracked files already have uncommitted changes, staged or not, list them, stash them with
    `git stash push -m "unrelated to <short-hash>"` and note the stash's commit (`git rev-parse refs/stash`).
@@ -89,9 +91,9 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
     (`MetadataSource`, `UrlImportableSource`, …) that mihon's `6dfa10ffac` doesn't have, and only SY's copy applies to
     `master` cleanly.
   - When picking SY's copy, bring back the parts of mihon's commit that SY left out and that apply here, such as the
-    `CHANGELOG.md` entry (SY has no changelog): `git diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, as
-    `c290472012` (Add option for bookmarked chapters to download dropdown) did. Step 4 has the message rules for an SY
-    copy.
+    `CHANGELOG.md` entry (SY has no changelog):
+    `git diff --no-color --no-ext-diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, as `c290472012` (Add
+    option for bookmarked chapters to download dropdown) did. Step 4 has the message rules for an SY copy.
 - Sort the touched files:
   - **Present here:** adapt them (step 3).
   - **Gone here** (Komikku removed it, or never had it, such as `fastlane/`): drop it.
@@ -107,8 +109,44 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
   - **Strings:** `i18n/` (`MR`) for mihon, `i18n-sy/` (`SYMR`) for SY. Translation commits from Weblate also change
     non-base locales; that is the only kind of pick that may (AGENTS.md "Internationalization").
 - For each file present here, see how ours already differs from upstream's parent: `git diff <hash>~1 HEAD -- <file>`.
-  Every difference is SY code (`// SY`, `// EXH`), Komikku code (`// KMK`), or something upstream has and Komikku
-  dropped or reworked on purpose. Keep all of them. `git log --oneline -5 -- <file>` shows why a line is ours.
+  Every difference is SY code (`// SY`, `// EXH`), Komikku code (`// KMK`), something upstream has and Komikku
+  dropped or reworked on purpose, or a later upstream commit picked early (below). Keep all of them.
+  `git log --oneline -5 -- <file>` shows why a line is ours.
+- **Later upstream commits picked early.** Komikku can already have an upstream commit that comes after this one
+  upstream, such as a fix picked before the refactor it follows. List the later upstream commits that touch this
+  commit's files, new ones included, on both upstreams (step 6's `<range>`), and keep the ones picked here:
+
+  ```bash
+  git log --reverse --format=%H <range> -- <files it touched, including new ones> | while read -r c; do
+    git log --format="%h (%s) carries ${c:0:10}" --grep="$c" HEAD
+  done
+  ```
+
+  Git keeps such a pick's change only where this commit leaves its lines alone. Where this commit moves, deletes or
+  rewrites them, the early pick's lines conflict and taking upstream's side drops them, and code moved into a new file
+  arrives in its older form, with no conflict at all. Example: mihon `553762fae8` (Fix reading history being double
+  counted) was picked into `MangaRestorer`, but upstream it comes after `306befb214` (Restrict raw
+  database access to the data module), which moves `restoreHistory` into a new `RestoreRepositoryImpl` without the
+  fix. SY picked them in the same order and its copy `09228c00cc` lost the fix. Step 3 carries such a change over.
+- **Earlier upstream commits it jumps ahead of.** The other side of the same problem: this pick can change lines that
+  earlier upstream commits, not picked here yet, wrote or rewrote upstream. Each of them rewrites those lines when it
+  is picked later, and loses this pick's change there. List them. When the commit has a copy on the other upstream (a
+  mihon row with a `↳ tachiyomiSY` row), give both hashes, whichever copy you pick: Komikku's files follow SY's, so
+  SY's history finds commits mihon's misses (mihon `553762fae8` alone finds only `306befb214`). A commit with no
+  copy, such as an SY-only one, takes just its own hash:
+
+  ```bash
+  python3 .claude/skills/cherry-pick/find_rewriters.py <hash> [<other-copy-hash>]
+  ```
+
+  It traces the lines the commit changes back with `git log -L`, and also lists the commit that created a file it
+  changes when that file doesn't exist here (not a rename, which git follows). It leaves out commits without a row and
+  commits Komikku has: an `O` / `X` row, or a `cherry picked from` line on `HEAD` unless the row has a `Partial` or
+  `Folded` note (the part left out can still rewrite those lines). It prints the row to note: the mihon row for SY's
+  copy of a mihon commit. They are no prerequisites as long as the lines they rewrite exist here
+  (Prerequisites, below, covers code that doesn't), so they don't stop the pick; step 4 notes their rows so whoever
+  picks them later keeps this change. Example: for `553762fae8` (Fix reading history being double counted) and its SY
+  copy, it lists `306befb214`, and mihon `8e0c911f93` and `c114028a33` through their SY copies.
 - **Prerequisites.** Do this before picking, for every part you would keep:
   - **Context:** if the diff's context refers to code that doesn't exist here, find the earlier upstream commits that
     added it: `git log --oneline -10 <hash>~ -- <file>` lists the last commits that touched the file upstream before
@@ -213,7 +251,19 @@ found that is ours. Change only what this list covers:
   `komikku-app.github.io`, GitHub `komikku-app/komikku`). Copy them from current files; never type them from memory.
   Package names stay: Komikku keeps `mihon.*` and `tachiyomi.*` packages.
 - **Parts SY's copy left out** (step 1, Which copy to pick): when picking SY's copy, apply them from mihon's commit with
-  `git diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, the `CHANGELOG.md` entry included.
+  `git diff --no-color --no-ext-diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, the `CHANGELOG.md` entry
+  included.
+- **Upstream commits picked early** (step 1): where this commit moves, deletes or rewrites their lines, take upstream's
+  side there like any other conflict, then bring each one's change back where this commit puts the code. Take it from
+  the later upstream commit itself, which upstream wrote for the new layout:
+  `git diff --no-color --no-ext-diff <later>~1 <later> -- <files this pick adds or rewrites> | git apply -3` (plain
+  output even when the user's config colors diffs). Upstream commits between the two
+  that Komikku doesn't have yet can stop it applying; then port the change by hand, keeping this pick's version of the
+  lines those commits change. The carried lines are upstream's, so they go in unwrapped; the early pick's own `// KMK`
+  adaptations follow the rest of the file's Komikku code. Check the result: every line the later commit adds to those
+  files (`git diff --no-color <later>~1 <later> -- <file>`) is in the staged file (`git show :<file>`), not in the
+  staged diff, which leaves out the lines this pick doesn't touch. A line that a commit in between changed shows in
+  its ported form; say which.
 - **Gone files:** remove them with `git rm`, including modify/delete conflicts. These and the adaptations above are the
   only things you change without asking. Leaving out any other part needs the user's OK first (step 1, Prerequisites).
 
@@ -252,7 +302,9 @@ step 1.
   `Fixes mihonapp/mihon#3051` in `c237b645aa`). Drop a `# Conflicts:` block that SY committed in its message. If the pick
   folds in a change from another upstream commit (a Notes plan, or something the user approved), add one line to the
   end of the body, before the `(cherry picked from commit …)` lines, naming that commit by hash and PR, e.g.
-  `Also includes <change> from upstream <hash> (mihonapp/mihon#N).` Don't hard-wrap it.
+  `Also includes <change> from upstream <hash> (mihonapp/mihon#N).` Don't hard-wrap it. For an upstream commit picked
+  early and carried over by step 3, write `Keeps <change> from upstream <hash>, picked earlier as <pick-hash>.`
+  instead.
 - **`(cherry picked from commit …)` lines** end the body, with the full hashes, followed only by the user's co-author
   trailer when the pick needs one (Commit, below). A mihon pick ends with mihon's line. A pick of SY's copy ends with
   two lines, with nothing between them: mihon's next to last and SY's last.
@@ -275,6 +327,18 @@ step 1.
     whole commit.
   - When the pick folds in part of another upstream commit (Body, above) and that commit has more to pick later, mark
     its row `--status '?' --note 'Folded <YYYY-MM-DD>: <part> into the pick of <hash>.'`.
+  - For each row under `== Rows to note` in step 1's `find_rewriters.py` output (each row once, though both copies'
+    lists can name it), add a note, without `--status`:
+    `--note 'Early pick <YYYY-MM-DD>: <hash> (<subject>) is already here and this commit rewrites the lines it changed
+    in <file> (<function or block>). Keep its change (cherry-pick skill step 3).'`, where `<hash>` is the upstream
+    commit being picked (mihon's for SY's copy). Name it by its upstream hash, not by the pick's, which changes on
+    every amend or rebase. `mark` appends to a row that already has notes, and `update` keeps them.
+  - If `== Rows to note` counts more than five, don't note them all on your own: a pick far ahead of upstream can list
+    dozens, mostly broad refactors Komikku may never pick (SY's `7af7a1c136` lists about 20), and each note is a row
+    the pick commit touches, so branches picking nearby commits conflict on `cherrypick_log.md`. Before committing,
+    show the list with what each one rewrites, and ask with AskUserQuestion which to note: all of them, only the ones
+    that rewrite the same function or block as this pick (your pick, named), or none. Say in the report which rows were
+    left without a note.
   - `update` always keeps a `?` with either note, even when it finds `O` evidence: it can't see a left-out part under
     `partial_ignore_paths` (a SQLDelight migration). Picking the rest later marks the row `O` here. With any note other
     than these or `AI checked`, `update` re-checks the row and can reset it.
@@ -368,6 +432,9 @@ copy of a mihon commit):
   "revert"), but decide from the code. Example: `f8e82b9322` (Potentially fix 'database is locked' crash) makes the
   driver creation from `8c480c6355` (Switch to AndroidX bundled sqlite driver) a synchronized singleton, five days
   later; Komikku picked both.
+
+A candidate already picked here (its row is `O`) is one of step 1's early picks, not a fix to recommend: say that
+step 3 carried its change over, or that this commit leaves its lines alone.
 
 For each fix, give its hash, date and title, the bug it fixes, its status in `cherrypick_log.md`, and whether it
 applies on its own or needs earlier commits (name them). Don't pick them; recommend an order.
@@ -518,8 +585,9 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the new hash and subject, whether it is signed, and whether it carries the user's co-author trailer and why;
 - every line that differs from upstream's patch and why (`git range-diff <hash>~1..<hash> <new>~1..<new>` shows them),
   KMK blocks included;
-- the log rows marked `O` (or `?` with a `Partial` note), and the rows of other commits marked `?` with a `Folded`
-  note;
+- the log rows marked `O` (or `?` with a `Partial` note), the rows of other commits marked `?` with a `Folded`
+  note, the rows given an `Early pick` note (step 1, Earlier upstream commits it jumps ahead of), and the listed rows
+  left without one;
 - the verification results;
 - the later fixes, from step 6;
 - the review, from step 7: whether `code-review` ran (at which effort) or the review was by hand, and how many
