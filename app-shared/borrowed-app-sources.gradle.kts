@@ -484,6 +484,12 @@ run {
     desktopCopy(
         "eu/kanade/tachiyomi/ui/browse/feed/FeedItems.kt",
     )
+    // Bulk favourites (P14): Komikku's selection mode of browse results (duplicate check, category dialog, adding); it
+    // uses desktopCopy sources (AddTracks, CoverCache, UpdateMangaFromRemote, MangaExtensions), hence a copy. Its members
+    // are public (were `internal`, which the desktop app cannot call); the dialogs are the desktop's own.
+    desktopCopy(
+        "eu/kanade/tachiyomi/ui/browse/BulkFavoriteScreenModel.kt",
+    )
     shared(
         "eu/kanade/presentation/browse/FeedAddSearchDialog.kt",
         "eu/kanade/presentation/browse/components/SourceFeedAddDialog.kt",

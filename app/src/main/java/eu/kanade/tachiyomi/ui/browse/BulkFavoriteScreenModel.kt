@@ -11,8 +11,6 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.track.interactor.AddTracks
-import eu.kanade.presentation.components.BulkSelectionToolbar
-import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.collections.immutable.ImmutableList
@@ -114,9 +112,9 @@ class BulkFavoriteScreenModel(
     }
 
     /**
-     * Called when user click on [BulkSelectionToolbar]'s `Favorite` button.
+     * Called when user click on [eu.kanade.presentation.components.BulkSelectionToolbar]'s `Favorite` button.
      * It will then look for any duplicated mangas.
-     * - If there is any, it will show the [DuplicateMangaDialog].
+     * - If there is any, it will show the [eu.kanade.presentation.manga.DuplicateMangaDialog].
      * - If not then it will call the [addFavoriteDuplicate].
      */
     fun addFavorite(startIdx: Int = 0) {
@@ -144,7 +142,7 @@ class BulkFavoriteScreenModel(
      * @param skipAllDuplicates if true, skip all duplicates and add all selected mangas to library.
      * if false, allow all duplicates and add all selected mangas to library
      */
-    internal fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
+    fun addFavoriteDuplicate(skipAllDuplicates: Boolean = false) {
         screenModelScope.launch {
             val mangaList = if (skipAllDuplicates) getNotDuplicateLibraryMangas() else state.value.selection
             if (mangaList.isEmpty()) {
@@ -208,7 +206,7 @@ class BulkFavoriteScreenModel(
         return null
     }
 
-    internal fun removeDuplicateSelectedManga(index: Int) {
+    fun removeDuplicateSelectedManga(index: Int) {
         mutableState.update { state ->
             val newSelection = state.selection.mutate { list ->
                 list.removeAt(index)
@@ -224,7 +222,7 @@ class BulkFavoriteScreenModel(
      * @param addCategories the categories to add for all mangas.
      * @param removeCategories the categories to remove in all mangas.
      */
-    internal fun setMangasCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
+    fun setMangasCategories(mangaList: List<Manga>, addCategories: List<Long>, removeCategories: List<Long>) {
         screenModelScope.launchNonCancellable {
             startRunning()
             mangaList.fastForEach { manga ->
@@ -332,7 +330,7 @@ class BulkFavoriteScreenModel(
      *
      * @param manga the manga to update.
      */
-    internal fun changeMangaFavorite(manga: Manga) {
+    fun changeMangaFavorite(manga: Manga) {
         val source = sourceManager.getOrStub(manga.source)
 
         screenModelScope.launch {
@@ -371,7 +369,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    internal fun addFavorite(manga: Manga) {
+    fun addFavorite(manga: Manga) {
         screenModelScope.launch {
             val categories = getCategories()
             val defaultCategoryId = libraryPreferences.defaultCategory().get()
@@ -418,7 +416,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
+    fun showMigrateDialog(manga: Manga, duplicate: Manga) {
         setDialog(Dialog.Migrate(target = manga, current = duplicate))
     }
 
@@ -428,7 +426,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    internal fun dismissDialog() {
+    fun dismissDialog() {
         mutableState.update {
             it.copy(dialog = null)
         }
@@ -440,7 +438,7 @@ class BulkFavoriteScreenModel(
         }
     }
 
-    internal fun stopRunning() {
+    fun stopRunning() {
         mutableState.update {
             it.copy(isRunning = false)
         }
