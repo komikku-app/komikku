@@ -72,6 +72,10 @@ class LibraryUpdateErrorScreenModel(
 
             val newItems = state.items.toMutableList().apply {
                 val firstSelection = none { it.selected }
+                // The list can change between two selections (reload, filter, sort), so read the first and last
+                // selected index from it rather than trusting the ones stored at the last selection
+                selectedPositions[0] = indexOfFirst { it.selected }
+                selectedPositions[1] = indexOfLast { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedErrorIds.addOrRemove(item.error.errorId, selected)
 

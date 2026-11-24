@@ -317,7 +317,12 @@ class HistoryScreenModel(
 
             val selection = state.selection.mutate { list ->
                 state.list.run {
-                    val firstSelection = list.isEmpty()
+                    // The list can change between two selections (reload, search, filter), so read the first and
+                    // last selected index from it rather than trusting the ones stored at the last selection. A
+                    // selection whose items are all out of the list counts as a first one.
+                    selectedPositions[0] = indexOfFirst { it.chapterId in list }
+                    selectedPositions[1] = indexOfLast { it.chapterId in list }
+                    val firstSelection = selectedPositions[0] < 0
                     if (selected) list.add(item.chapterId) else list.remove(item.chapterId)
 
                     if (firstSelection) {
