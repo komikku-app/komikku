@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -40,9 +39,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
-import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
@@ -245,79 +242,8 @@ fun FeedAddDialog(
     )
 }
 
-@Composable
-fun FeedAddSearchDialog(
-    source: Source,
-    savedSearches: ImmutableList<SavedSearch?>,
-    onDismiss: () -> Unit,
-    onClickAdd: (Source, SavedSearch?) -> Unit,
-) {
-    var selected by remember { mutableStateOf<Int?>(null) }
-    AlertDialog(
-        title = {
-            Text(text = source.name)
-        },
-        text = {
-            val context = LocalContext.current
-            val savedSearchStrings = remember {
-                savedSearches.map {
-                    it?.name
-                        // KMK -->
-                        ?: if (source.supportsLatest) {
-                            // KMK <--
-                            context.stringResource(MR.strings.latest)
-                            // KMK -->
-                        } else {
-                            context.stringResource(MR.strings.popular)
-                        }
-                    // KMK <--
-                }.toImmutableList()
-            }
-            RadioSelectorSearchable(
-                options = savedSearches,
-                optionStrings = savedSearchStrings,
-                selected = selected,
-            ) {
-                selected = it
-            }
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = { onClickAdd(source, selected?.let { savedSearches[it] }) },
-                // KMK -->
-                enabled = selected != null,
-                // KMK <--
-            ) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
-        },
-    )
-}
-
-@Composable
-fun <T> RadioSelectorSearchable(
-    options: ImmutableList<T>,
-    optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
-    selected: Int?,
-    onSelectOption: (Int) -> Unit = {},
-) {
-    Column(Modifier.verticalScroll(rememberScrollState())) {
-        optionStrings.forEachIndexed { index, option ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clickable { onSelectOption(index) },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                RadioButton(selected == index, onClick = null)
-                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
-                Text(option, maxLines = 1)
-            }
-        }
-    }
-}
+// KMK --> FeedAddSearchDialog and RadioSelectorSearchable<T> moved to FeedAddSearchDialog.kt (shared with the desktop)
+// KMK <--
 
 // KMK -->
 @Composable

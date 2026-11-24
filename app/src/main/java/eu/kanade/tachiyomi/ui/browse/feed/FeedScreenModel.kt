@@ -11,8 +11,6 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -30,9 +28,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import mihon.domain.manga.model.toDomainManga
-import tachiyomi.core.common.util.QuerySanitizer.sanitize
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
@@ -184,23 +180,15 @@ open class FeedScreenModel(
     }
     // KMK <--
 
+    // KMK --> bodies moved to FeedItems.kt (shared with the desktop feed)
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchGlobal.await() > MaxFeedItems
+        return isFeedFull(countFeedSavedSearchGlobal.await())
     }
 
     private fun getEnabledSources(): ImmutableList<Source> {
-        val languages = sourcePreferences.enabledLanguages().get()
-        val pinnedSources = sourcePreferences.pinnedSources().get()
-        val disabledSources = sourcePreferences.disabledSources().get()
-            .mapNotNull { it.toLongOrNull() }
-
-        val list = sourceManager.getVisibleSources()
-            .filter { it.lang in languages }
-            .filterNot { it.id in disabledSources }
-            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { "(${it.lang}) ${it.name}" })
-
-        return list.sortedBy { it.id.toString() !in pinnedSources }.toImmutableList()
+        return feedSourceOptions(sourceManager, sourcePreferences)
     }
+    // KMK <--
 
     private suspend fun getSourceSavedSearches(sourceId: Long): ImmutableList<SavedSearch> {
         return getSavedSearchBySourceId.await(sourceId).toImmutableList()
@@ -235,10 +223,9 @@ open class FeedScreenModel(
     // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<Pair<FeedSavedSearch, SavedSearch?>> {
-        val savedSearches = getSavedSearchGlobalFeed.await()
-            .associateBy { it.id }
-        return feedSavedSearch
-            .map { it to savedSearches[it.savedSearch] }
+        // KMK -->
+        return pairFeedWithSavedSearches(feedSavedSearch, getSavedSearchGlobalFeed.await())
+        // KMK <--
     }
 
     /**
@@ -250,16 +237,17 @@ open class FeedScreenModel(
         source: Source?,
         results: List<DomainManga>?,
     ): FeedItemUI {
+        // KMK -->
+        val (title, subtitle) = feedItemTitles(feed, savedSearch, source)
+        // KMK <--
         return FeedItemUI(
             feed,
             savedSearch,
             source,
-            savedSearch?.name ?: (source?.name ?: feed.source.toString()),
-            if (savedSearch != null) {
-                source?.name ?: feed.source.toString()
-            } else {
-                LocaleHelper.getLocalizedDisplayName(source?.lang)
-            },
+            // KMK -->
+            title,
+            subtitle,
+            // KMK <--
             results,
         )
     }
@@ -278,23 +266,9 @@ open class FeedScreenModel(
                     val page = try {
                         if (itemUI.source != null) {
                             withContext(coroutineDispatcher) {
-                                if (itemUI.savedSearch == null) {
-                                    // KMK -->
-                                    if (itemUI.source.supportsLatest) {
-                                        // KMK <--
-                                        itemUI.source.getLatestUpdates(1)
-                                        // KMK -->
-                                    } else {
-                                        itemUI.source.getPopularManga(1)
-                                    }
-                                    // KMK <--
-                                } else {
-                                    itemUI.source.getSearchManga(
-                                        1,
-                                        itemUI.savedSearch.query?.sanitize().orEmpty(),
-                                        getFilterList(itemUI.savedSearch, itemUI.source),
-                                    )
-                                }
+                                // KMK -->
+                                fetchFeedPage(itemUI.source, itemUI.savedSearch, filterSerializer)
+                                // KMK <--
                             }.mangas
                         } else {
                             emptyList()
@@ -329,18 +303,8 @@ open class FeedScreenModel(
     }
 
     private val filterSerializer = FilterSerializer()
-
-    private fun getFilterList(savedSearch: SavedSearch, source: Source): FilterList {
-        val filters = savedSearch.filtersJson ?: return FilterList()
-        return runCatching {
-            val originalFilters = source.getFilterList()
-            filterSerializer.deserialize(
-                filters = originalFilters,
-                json = Json.decodeFromString(filters),
-            )
-            originalFilters
-        }.getOrElse { FilterList() }
-    }
+    // KMK --> getFilterList moved to FeedItems.kt (feedFilterList)
+    // KMK <--
 
     @Composable
     fun getManga(initialManga: DomainManga): State<DomainManga> {
@@ -399,4 +363,5 @@ data class FeedScreenState(
         get() = items?.fastAny { it.results == null } != false
 }
 
-const val MaxFeedItems = 20
+// KMK --> MaxFeedItems moved to FeedItems.kt
+// KMK <--

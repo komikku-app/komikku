@@ -59,31 +59,8 @@ fun SourceFeedAddDialog(
     )
 }
 
-@Composable
-fun SourceFeedDeleteDialog(
-    onDismissRequest: () -> Unit,
-    deleteFeed: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = deleteFeed) {
-                Text(text = stringResource(MR.strings.action_delete))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = stringResource(SYMR.strings.feed_delete))
-        },
-    )
-}
+// KMK --> SourceFeedDeleteDialog moved to SourceFeedDeleteDialog.kt (shared with the desktop)
+// KMK <--
 
 // KMK -->
 private val PaddingSize = 16.dp
