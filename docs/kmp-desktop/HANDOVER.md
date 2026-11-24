@@ -11,8 +11,9 @@ step P9, the desktop release pipeline and signing hooks, with its review fixes, 
 P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
 P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done
 (last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, with its review fixes, is
-done (last Part A commit `0f596c4`); P13 (feed and saved searches) is not started; next: P13 (or the coordinator's pick),
-then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
+done (last Part A commit `0f596c4`); P13 (feed and saved searches) is started: saved searches in the desktop catalogue
+are done, not yet reviewed, the full desktop suite not yet run; next: that run and its review, then the Feed tab, then
+the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -283,9 +284,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   database" runs on IO (non-cancellable) with progress and disabled buttons; the per-site user agents are a `StateFlow`
   collected by the settings; the log file and crash handler are installed before `DesktopInjekt.init()`. The once-seen
   `DesktopExtensionManagerTest` timeout: cause not evident, what was checked is recorded. Last Part A commit `0f596c4`.
-- **P13** feed and saved searches — not started (round narrowed by the coordinator). Scope as asked: saved searches in
-  the desktop catalogue (Android's `saved_search` storage, backups carry them), then the global Feed tab in Browse, then
-  the per-source feed; borrow Android's screen models / interactors / `EXHSavedSearch` / `FilterSerializer`.
+- **P13** feed and saved searches — item 1 done (PROGRESS.md "P13 — feed and saved searches"): the desktop catalogue
+  lists the source's saved searches (a "Saved Searches" row; no filter sheet on desktop yet), applies one (query and
+  filters), saves the current search under a name with Android's dialog (blank / duplicate names rejected) and deletes
+  one with Android's dialog. Same `saved_search` storage and `FilterSerializer` JSON as Android (`GetExhSavedSearch.kt`,
+  `BrowseSourceDialogs.kt` now shared borrowed sources; `FilterSerializer` / `GetExhSavedSearch` in the desktop DI), so
+  backups carry them. Test `CatalogueSavedSearchUiTest` (1). Verification: `spotlessApply`, `spotlessCheck`, `:desktopApp:compileKotlin`,
+  `:app:verifyBorrowedSources`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests '*CatalogueSavedSearchUiTest*'
+  --tests '*BrowseCatalogueUiTest*'` 2 tests, 0 failures. Not run: the full `:desktopApp:test` suite, a real window.
+  Commit `2a42392` (review range `2a42392^..` the docs commit after it).
+  Not done: filter sheet, the global Feed tab in Browse, the per-source feed.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -333,7 +341,9 @@ mark the residual path in both modules.
    actions) and its review fixes are done (last Part A commit `fe75585`). P11 (reader: neighbouring chapters, wide
    pages, animated pages) and its review fixes are done (see "P11 review"; last Part A commit `0d88469`). P12 (Settings
    → Advanced, chapter cache, library extras) and its review fixes are done (last Part A commit `0f596c4`); **next** P13
-   (feed and saved searches, PROGRESS "Remaining parity gaps" item 1; not started); then the maintainer's
+   (feed and saved searches, PROGRESS "Remaining parity gaps" item 1): saved searches in the catalogue are built
+   (see "Done"); **pending**: a full `:desktopApp:test` run (not run for P13), then `/code-review medium <first>^..<last>`
+   of the P13 commits with its fix round, then the global Feed tab in Browse and the per-source feed; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

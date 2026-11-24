@@ -3089,11 +3089,43 @@ badge's icon appearing, the clear-database progress), a real start-up failure wr
 **P13 (feed and saved searches) not started**: the coordinator narrowed the round to these review fixes.
 
 
+## P13 — feed and saved searches
+
+Item 1 of the round (saved searches in the desktop catalogue) is done; the Feed tab and the per-source feed are **not
+started**.
+
+**What Android does:** SY's browse screen lists the source's saved searches (`saved_search` table) in the filter sheet,
+sorted by name; tapping one reloads it (`GetExhSavedSearch`: query + filter JSON deserialised onto a fresh
+`getFilterList()` by `FilterSerializer`), refuses it with "Saved search invalid, filters have changed" when the filters
+no longer load, and searches its query with its filters; "save" asks for a name (`SavedSearchCreateDialog`, blank or
+duplicate names rejected with a toast) and stores the current query and filters; a long press asks to delete it.
+
+**Desktop:** `CatalogueScreen` shows a "Saved Searches" row above the listing (the desktop has no filter sheet yet):
+a save button (Android's create dialog), one chip per saved search (click applies it: query shown in the search field,
+filters used by the search) with a delete icon (Android's delete dialog). `CatalogueScreenModel` holds the search
+filters (`State.filters`, the source's defaults until a saved search sets them; searches now run with them instead of a
+fresh `getFilterList()`) and the saved searches; `applySavedSearch` / `saveSearch` / `deleteSearch` follow
+`BrowseSourceScreenModel.onSavedSearch` / `saveSearch` / `deleteSearch`. Same storage and serialisation as Android:
+`GetExhSavedSearch.kt` and `BrowseSourceDialogs.kt` are now `shared` borrowed sources, `FilterSerializer` and
+`GetExhSavedSearch` are registered in `DesktopDomainModule` (the saved search interactors and repository were already in
+the shared DI), so backups carry the searches through the existing `SavedSearchBackupCreator` / restorer.
+
+Not done: a filter sheet (filters can only be set by a saved search on desktop), adding a saved search to the feed, the
+global Feed tab in Browse, the per-source feed (`SourceFeedScreen`). Test: `CatalogueSavedSearchUiTest` (save → listed
+and stored with query and filter JSON → duplicate name rejected → apply restores query and filters, including a
+non-default check box filter stored like Android stores it → delete).
+
+Verification (`2a42392`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`, `:desktopApp:compileKotlin`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests '*CatalogueSavedSearchUiTest*'
+--tests '*BrowseCatalogueUiTest*'` 2 tests, 0 failures. The full `:desktopApp:test` suite was **not** run for this step
+(time limit); not run in a real window.
+
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
-1. **Browse:** source feeds / saved searches UI, migration (out of scope so far). Global search, source / language
+1. **Browse:** source feeds (saved searches in the catalogue are done, P13; no filter sheet yet), migration (out of scope so far). Global search, source / language
    toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
    library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
