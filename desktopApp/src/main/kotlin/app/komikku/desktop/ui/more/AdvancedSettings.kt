@@ -26,7 +26,20 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.log.EHLogLevel
 import exh.pref.DelegateSourcePreferences
 import exh.source.ExhPreferences
+import eu.kanade.tachiyomi.network.PREF_DOH_360
+import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
+import eu.kanade.tachiyomi.network.PREF_DOH_ALIDNS
+import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
+import eu.kanade.tachiyomi.network.PREF_DOH_CONTROLD
+import eu.kanade.tachiyomi.network.PREF_DOH_DNSPOD
+import eu.kanade.tachiyomi.network.PREF_DOH_GOOGLE
+import eu.kanade.tachiyomi.network.PREF_DOH_MULLVAD
+import eu.kanade.tachiyomi.network.PREF_DOH_NJALLA
+import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
+import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
+import eu.kanade.tachiyomi.network.PREF_DOH_SHECAN
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import okhttp3.Headers
@@ -42,11 +55,11 @@ import tachiyomi.core.common.i18n.stringResource as localized
 /**
  * KMK: desktop Settings → Advanced (P12), Android `SettingsAdvancedScreen` in its order with what exists on the desktop:
  * the log ("Open the log folder" for Android's "Dump crash logs", SY's log level applied at once), Data (re-index
- * downloads, clear database), Networking (clear cookies, the default user agent and its reset, the user agents kept per
- * site by the Cloudflare flows of P7 / P8, the FlareSolverr solver of P8) and SY's Developer tools (delegated sources,
- * moved here from Browse like on Android). Not on the desktop: "Clear WebView data" (no embedded browser; pasted
- * cookies go with "Clear cookies", the per-site user agents are listed), DNS over HTTPS (not wired on the desktop's
- * client), notifications / battery / onboarding / debug info, hardware bitmaps, extension installers, data saver.
+ * downloads, clear database), Networking (clear cookies, DNS over HTTPS, the default user agent and its reset, the user
+ * agents kept per site by the Cloudflare flows of P7 / P8, the FlareSolverr solver of P8) and SY's Developer tools
+ * (delegated sources, moved here from Browse like on Android). Not on the desktop: "Clear WebView data" (no embedded
+ * browser; pasted cookies go with "Clear cookies", the per-site user agents are listed), notifications / battery /
+ * onboarding / debug info, hardware bitmaps, extension installers, data saver.
  */
 @Composable
 internal fun advancedPreferences(navigator: Navigator): List<Preference> {
@@ -104,7 +117,7 @@ private fun dataGroup(navigator: Navigator): Preference.PreferenceGroup {
 }
 
 /**
- * Android `getNetworkGroup` without WebView data / DNS over HTTPS: clear cookies, the default user agent (validated like
+ * Android `getNetworkGroup` without WebView data: clear cookies, DNS over HTTPS, the default user agent (validated like
  * Android, used by extension sources after a restart) and its reset; then the per-site user agents.
  */
 @Composable
@@ -124,6 +137,32 @@ private fun networkGroup(): Preference.PreferenceGroup {
                 onClick = {
                     Injekt.get<NetworkHelper>().cookieJar.removeAll()
                     context.toast(MR.strings.cookies_cleared)
+                },
+            ),
+        )
+        // Android's DNS over HTTPS list: the shared `NetworkHelper` applies it to the desktop's client at start too
+        add(
+            Preference.PreferenceItem.ListPreference(
+                preference = networkPreferences.dohProvider(),
+                entries = persistentMapOf(
+                    -1 to stringResource(MR.strings.disabled),
+                    PREF_DOH_CLOUDFLARE to "Cloudflare",
+                    PREF_DOH_GOOGLE to "Google",
+                    PREF_DOH_ADGUARD to "AdGuard",
+                    PREF_DOH_QUAD9 to "Quad9",
+                    PREF_DOH_ALIDNS to "AliDNS",
+                    PREF_DOH_DNSPOD to "DNSPod",
+                    PREF_DOH_360 to "360",
+                    PREF_DOH_QUAD101 to "Quad 101",
+                    PREF_DOH_MULLVAD to "Mullvad",
+                    PREF_DOH_CONTROLD to "Control D",
+                    PREF_DOH_NJALLA to "Njalla",
+                    PREF_DOH_SHECAN to "Shecan",
+                ),
+                title = stringResource(MR.strings.pref_dns_over_https),
+                onValueChanged = {
+                    context.toast(MR.strings.requires_app_restart)
+                    true
                 },
             ),
         )

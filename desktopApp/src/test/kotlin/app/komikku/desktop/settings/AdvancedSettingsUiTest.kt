@@ -21,6 +21,7 @@ import app.komikku.network.browser.CloudflareHosts
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.source.model.Page
 import exh.log.EHLogLevel
 import exh.source.ExhPreferences
@@ -110,6 +111,14 @@ class AdvancedSettingsUiTest {
         clickInAdvanced(MR.strings.pref_clear_cookies.localized())
         waitUntil(timeoutMillis = 5_000) { jar.loadForRequest(url).isEmpty() }
         waitForText(MR.strings.cookies_cleared.localized())
+
+        // DNS over HTTPS: Android's list (applied by the shared network client at the next start)
+        val doh = Injekt.get<NetworkPreferences>().dohProvider()
+        clickInAdvanced(MR.strings.pref_dns_over_https.localized())
+        waitForText("Quad9")
+        onNodeWithText("Quad9").performClick()
+        waitUntil(timeoutMillis = 5_000) { doh.get() == PREF_DOH_QUAD9 }
+        doh.set(-1)
 
         // The default user agent and its reset
         onNodeWithTag("settings-Advanced").performScrollToNode(hasText("Custom/1.0"))
