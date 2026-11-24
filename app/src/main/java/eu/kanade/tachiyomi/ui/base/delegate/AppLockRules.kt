@@ -24,13 +24,21 @@ object AppLockRules {
 
     /**
      * SY's `canLockNow`: [now] is inside one of the lock [timeRanges] (none = any time) and on one of the [lockedDays].
-     * A time range is stored like SY's `TimeRange.toPreferenceString`: "<start minute>,<end minute>" of the day.
+     * A time range is stored like SY's `TimeRange.toPreferenceString`: "<start minute>,<end minute>" of the day. A range
+     * whose start is after its end (SY's picker stores e.g. 22:00 - 06:00 like that) runs across midnight: from its start
+     * to the end of the day and from the start of the day to its end (SY's `TimeRange.contains` never matched it).
      */
     fun canLockNow(timeRanges: Set<String>, lockedDays: Int, now: Calendar): Boolean {
         val ranges = timeRanges.mapNotNull(::parseTimeRange)
         val canLockNow = if (ranges.isNotEmpty()) {
             val time = now.get(Calendar.HOUR_OF_DAY).hours + now.get(Calendar.MINUTE).minutes
-            ranges.any { time in it }
+            ranges.any { range ->
+                if (range.start <= range.endInclusive) {
+                    time in range
+                } else {
+                    time >= range.start || time <= range.endInclusive
+                }
+            }
         } else {
             true
         }
