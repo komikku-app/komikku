@@ -2830,6 +2830,82 @@ Verification (after `6f3f43a`, `--max-workers=2 --console=plain`, `./gradlew --s
 `:data:desktopTest --tests "*CustomMangaRepositoryImplTest"` 2 tests, 0 failures. Not run: a real window, Android's
 edit-info dialog on a device, an AVIF / JXL / HEIF cover picked on macOS / Windows.
 
+## P11 — reader: neighbouring chapters, wide pages, animated pages
+
+Commits `b4d2c57` … `d253e83` (`b4d2c57` / `237ece4` neighbouring chapters, `abd9347` / `fc69d37` wide pages,
+`29dd5bd` / `d253e83` animated pages) and this docs commit. All three items asked for from "Remaining parity gaps" 4
+are built; Android code unchanged.
+
+### Built
+
+- **Neighbouring chapters in both viewers** (`ReaderModel`, new `app.komikku.shared.reader.ReaderViewerItems`): the
+  items are built like Android's `PagerViewerAdapter.setChapters` / `WebtoonAdapter.setChapters` (the same rule in
+  both): the previous chapter's pages once loaded, the "previous" transition, the current pages, the "next"
+  transition, the next chapter's pages once loaded. A transition is left out only when the neighbour is loaded,
+  nothing is missing in between (`calculateChapterGap`) and transitions are not forced (`alwaysShowChapterTransition`,
+  default on, or the viewer is on that transition). Preloading as Android's viewers: the next chapter within the last
+  five pages of the current one, a neighbour when its transition is reached; a finished preload adds its pages
+  (Android `ReloadViewerChapters`) and the viewer stays on its item. Reaching a page of a neighbour makes it the
+  current chapter (Android `loadNewChapter`: history of the left chapter saved, read timer restarted, references
+  moved so the chapter two steps away is recycled). Progress / read / delete-after-reading / download-ahead stay the
+  existing per-page rules (`onPageSelected` for the page's own chapter, so the last page of a chapter marks it read
+  on the way into the next). The chapter list (skip read / filtered / duplicates, downloaded only) is the shared
+  `ReaderChapterList` as before. Moving past a transition whose neighbour is not loaded yet still loads it (old
+  path). The slider and first / last page address the current chapter's pages (`moveToPage`); the webtoon list
+  scrolls only on reader-set positions (`State.jump`: a chapter opened, a jump) and otherwise keeps its place by item
+  keys (transition keys now name their chapters; aspect ratios keyed per chapter page).
+- **Wide pages in the paged viewer** (Android `PagerPageHolder`, SY's double pages): the viewer reports decoded sizes
+  (`ReaderModel.onPageSize`, also for the preloaded neighbours) and the model keeps the wide ones (width > height,
+  `ImageUtil.isWideImage`). Double pages show a wide page alone and never pair a page with a wide one
+  (`State.spreadAt`); page turns move by the pages shown, backwards too (`previousStep`). "Split wide pages"
+  (`dualPageSplitPaged`, which turns double pages off like Android's `PagerConfig`) shows a wide page as two items:
+  the page (first half) and an `InsertPage` after it (second half; Android `onPageSplit`), the left half first left to
+  right and the right half first otherwise, swapped by "Invert split page placement"; the second half saves no
+  progress (Android). "Rotate wide pages to fit" (`dualPageRotateToFit`, wins over splitting as in Mihon's `process`)
+  turns a wide page shown alone by 90° (−90° with "Flip orientation"). The page layout now has Android's three
+  choices in the reader settings (single, double, **automatic = double while the window is wider than high**), plus
+  the split / rotate options and their inverts.
+- **Animated GIF / WebP pages** (no new dependency): `SkiaPageDecoder` decodes every frame with Skia's `Codec`
+  (frame by frame into one bitmap, the previous frame as Skia's prior frame unless it is restored, durations of ≤ 10 ms
+  as 100 ms) at the decoded size into `DecodedPage.frames` (new, `AnimationFrame`), when the frames fit
+  `DecodeRequest.maxAnimationBytes` (128 MB) and one strip; `PageTiles` loops through them while the page is composed,
+  in both viewers. Larger animations keep the first frame as before.
+
+### Decisions / deviations
+
+- **Ported, not shared with Android:** the adapters' item rule lives in `ReaderViewerItems` (desktop source set);
+  Android's adapters keep their own copies (view code with `DiffUtil`, and the pager's insert / joined pages
+  interleaved with it). Changing them was not needed for the desktop and would change Android code without a device
+  run.
+- **Desktop default changes:** with the default page layout (automatic) a landscape reader window now shows double
+  pages (Android's meaning of automatic: double in landscape; the desktop used single pages for it before). Single
+  pages are one click away in the reader settings.
+- **Rotate to fit without split:** Komikku's Android pager runs the rotate / split step only when "Split wide pages"
+  is on (SY branch in `PagerPageHolder`), so there "Rotate wide pages to fit" alone has no effect; the desktop applies
+  it to a wide page shown alone, like Mihon's `process` (rotation before splitting).
+- **Not ported:** SY's "Shift one page over" / "Invert double pages" / centre margins, webtoon split / rotate
+  (`dualPageSplitWebtoon`, `dualPageRotateToFitWebtoon`), cropped borders, the joined double-page bitmap (the desktop
+  draws two pages side by side), Android's animation repeat count (the desktop loops), animated AVIF / HEIF.
+- A preloaded neighbour that stops being a neighbour before its load finishes keeps its page loader until the reader
+  closes (Android has the same window).
+
+### Tests
+
+- `ReaderNeighbourChaptersTest` (4, model): chapter 2's pages follow its transition after the preload; turning through
+  them switches the current chapter (items rebuilt around the page, chapter 3 preloaded, chapter 1's history saved and
+  read flag set, progress saved for chapter 2) and back; first-page jump on the current chapter; "skip read" makes
+  chapter 3 the next one; without forced transitions loaded neighbours follow each other directly; a shown
+  transition stays when its neighbour finishes loading.
+- `ReaderUiTest` +1: the webtoon list scrolls on into the next chapter, which becomes the current one (history of the
+  left chapter written before close).
+- `ReaderWidePagesUiTest` (4): double pages 1 + 2, wide 3 alone, 4 + 5, and back; split halves in turn (the first about
+  square, the second half keeps the progress on page 3); rotation makes the wide page taller than wide; split sides
+  and the automatic layout rules.
+- `ReaderAnimatedPagesTest` (3): an animated GIF (written with ImageIO) decoded into three frames with their colours
+  and 70 ms durations; the memory limit and still images keep one frame; the paged viewer cycles through the frames.
+- `FakeMangaServer` serves wide and animated pages on request; `ReaderUiTest` pins single pages (the automatic
+  default is double in its landscape window).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2846,9 +2922,11 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    migrate from the duplicate dialog, "Autofill from tracker" in edit info, sharing the cover. Also: merged entries,
    sharing, recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the
    metadata, P4).
-4. **Reader:** neighbouring chapters appended in viewers, animated GIF / WebP playback, AVIF / JPEG XL / HEIF
-   pages and covers (P5: no acceptable decoder, shown as an unsupported format; blocker in "P5"), automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
-   chapters exercised from the UI.
+4. **Reader:** neighbouring chapters in the viewers, wide pages (alone in double pages, split, rotated) and
+   animated GIF / WebP playback are done (P11); left from them: SY's shift / invert double pages and centre margins,
+   webtoon split / rotate, cropped borders, animated AVIF / HEIF. Also: AVIF / JPEG XL / HEIF pages and covers (P5: no
+   acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
+   7z chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
    them), OAuth via redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs,
    cookies, User-Agent). WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and

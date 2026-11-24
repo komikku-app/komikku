@@ -8,8 +8,9 @@ sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review 
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
-P10, manga details parity (duplicates on add, edit info, cover actions), is built (its review
-`/code-review medium 8704044^..6578115` and fix round are pending); next: the P10 review, then the
+P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
+P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), is built (its review
+`/code-review medium b4d2c57^..d253e83` and fix round are pending); next: the P11 review, then the
 maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -246,7 +247,17 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   open until saved, shows a failure with the input kept, and no longer overwrites a local entry's fresh row. **Two
   Android behaviour changes** (bug fixes, decided by the coordinator): a local entry saved with the "Default" status
   keeps its status (`MangaInfoEdits.localInfoEdit`), and removing the last custom info deletes `edits.json`
-  (`CustomMangaRepositoryImpl`, KMK block).
+  (`CustomMangaRepositoryImpl`, KMK block). Last Part A commit `fe75585`.
+- **P11** reader parity (`b4d2c57` … `d253e83`, PROGRESS.md "P11 — reader: neighbouring chapters, wide pages, animated
+  pages"): the viewers hold the neighbouring chapters' pages like Android's adapters (new desktop
+  `ReaderViewerItems`; preload near the end and on transitions; reaching a neighbour's page switches the current
+  chapter with history / read timer like Android's `loadNewChapter`; skip preferences through `ReaderChapterList` as
+  before); wide pages in the paged viewer (alone in double pages, "Split wide pages" with an `InsertPage` second
+  half, "Rotate wide pages to fit", their inverts, page layout single / double / automatic by window orientation);
+  animated GIF / WebP pages played from Skia's codec frames (memory limit 128 MB, else the first frame). Android code
+  unchanged. **Desktop default change:** automatic layout = double pages in a landscape window. Tests
+  `ReaderNeighbourChaptersTest` (4), `ReaderUiTest` (+1), `ReaderWidePagesUiTest` (4), `ReaderAnimatedPagesTest` (3).
+- **P11 review** — pending: `/code-review medium b4d2c57^..d253e83`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -291,7 +302,8 @@ mark the residual path in both modules.
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) and its review fixes are done (last
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) and its review fixes
    are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
-   actions) is built: **next** its review `/code-review medium 8704044^..6578115` and fix round; then the maintainer's
+   actions) and its review fixes are done (last Part A commit `fe75585`). P11 (reader: neighbouring chapters, wide
+   pages, animated pages) is built: **next** its review `/code-review medium b4d2c57^..d253e83` and fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
