@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
@@ -207,6 +208,7 @@ fun PagedViewer(
                             Box(Modifier.testTag(tag)) {
                                 ReaderPageSlot(imagePage, maxWidth = decodeWidth, display.colorFilter, onRetry = { onRetry(imagePage) }) { decoded ->
                                     LaunchedEffect(decoded) { onPageSize(imagePage, decoded.source.width, decoded.source.height) }
+                                    val frames = rememberAnimationFrames(imagePage, decoded, decodeWidth, shown = true)
                                     val half = when {
                                         page is InsertPage -> splitSide(state.readingMode, display.invertSplit, first = false)
                                         pageKey(page) in state.splitPages -> splitSide(state.readingMode, display.invertSplit, first = true)
@@ -221,7 +223,7 @@ fun PagedViewer(
                                     val slot = PixelSize(slotWidth, viewport.height)
                                     val (w, h) = PageScaling.displaySize(shownSize(decoded.decoded, half, rotation), slot, display.fit)
                                     contentSize = (w * pages.size) to h
-                                    with(density) { WidePageTiles(decoded, display.colorFilter, w.toDp(), h.toDp(), half, rotation) }
+                                    with(density) { WidePageTiles(decoded, frames, display.colorFilter, w.toDp(), h.toDp(), half, rotation) }
                                 }
                             }
                         }
@@ -274,6 +276,8 @@ fun WebtoonViewer(
         if (state.items.isNotEmpty()) listState.scrollToItem(state.currentIndex)
     }
     val items by rememberUpdatedState(state.items)
+    // Items on screen (not those the lazy list composes ahead): only they play animated pages
+    val visibleKeys by remember(listState) { derivedStateOf { listState.layoutInfo.visibleItemsInfo.mapTo(HashSet()) { it.key } } }
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
@@ -314,7 +318,15 @@ fun WebtoonViewer(
                 when (item) {
                     is ReaderPage -> {
                         val key = itemKey(i, item)
-                        ReaderPageSlotWebtoon(item, contentWidthPx, display, aspects[key], onAspect = { aspects[key] = it }, onRetry = { onRetry(item) })
+                        ReaderPageSlotWebtoon(
+                            item,
+                            contentWidthPx,
+                            display,
+                            aspects[key],
+                            shown = key in visibleKeys,
+                            onAspect = { aspects[key] = it },
+                            onRetry = { onRetry(item) },
+                        )
                     }
                     is ChapterTransition -> ChapterTransitionContent(
                         item,
@@ -333,6 +345,7 @@ private fun ReaderPageSlotWebtoon(
     widthPx: Int,
     display: ReaderDisplay,
     knownAspect: Float?,
+    shown: Boolean,
     onAspect: (Float) -> Unit,
     onRetry: () -> Unit,
 ) {
@@ -341,7 +354,8 @@ private fun ReaderPageSlotWebtoon(
             is PageImageState.Ready -> {
                 val aspect = image.page.decoded.aspect
                 if (knownAspect != aspect) LaunchedEffect(aspect) { onAspect(aspect) }
-                PageTiles(image.page, display.colorFilter, Modifier.fillMaxWidth())
+                val frames = rememberAnimationFrames(page, image.page, widthPx, shown)
+                PageTiles(image.page, display.colorFilter, Modifier.fillMaxWidth(), frames)
             }
             else -> {
                 val height = with(LocalDensity.current) {
@@ -376,6 +390,7 @@ fun shownSize(size: PixelSize, half: PageHalf?, rotation: Float): PixelSize = wh
 @Composable
 private fun WidePageTiles(
     page: app.komikku.shared.reader.image.DecodedPage<androidx.compose.ui.graphics.ImageBitmap>,
+    frames: List<app.komikku.shared.reader.image.AnimationFrame<androidx.compose.ui.graphics.ImageBitmap>>,
     colorFilter: ColorFilter?,
     width: androidx.compose.ui.unit.Dp,
     height: androidx.compose.ui.unit.Dp,
@@ -388,16 +403,17 @@ private fun WidePageTiles(
             contentAlignment = if (half == PageHalf.Left) Alignment.TopStart else Alignment.TopEnd,
         ) {
             val align = if (half == PageHalf.Left) Alignment.Start else Alignment.End
-            PageTiles(page, colorFilter, Modifier.wrapContentWidth(align, unbounded = true).requiredSize(width * 2, height))
+            PageTiles(page, colorFilter, Modifier.wrapContentWidth(align, unbounded = true).requiredSize(width * 2, height), frames)
         }
         rotation != 0f -> Box(Modifier.requiredSize(width, height), contentAlignment = Alignment.Center) {
             PageTiles(
                 page,
                 colorFilter,
                 Modifier.wrapContentSize(unbounded = true).requiredSize(height, width).graphicsLayer { rotationZ = rotation },
+                frames,
             )
         }
-        else -> PageTiles(page, colorFilter, Modifier.requiredSize(width, height))
+        else -> PageTiles(page, colorFilter, Modifier.requiredSize(width, height), frames)
     }
 }
 

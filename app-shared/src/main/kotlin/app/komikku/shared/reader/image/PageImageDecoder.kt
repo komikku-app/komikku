@@ -13,6 +13,13 @@ interface PageImageDecoder<T> {
     suspend fun readSize(open: () -> InputStream): PixelSize
 
     suspend fun decode(open: () -> InputStream, request: DecodeRequest): DecodedPage<T>
+
+    /**
+     * The frames of an animated [page] (P11) as [decode] gave it for [request], for playback, decoded only when asked
+     * (for a page that is shown); empty when the platform does not play animations or they do not fit.
+     */
+    suspend fun decodeFrames(open: () -> InputStream, page: DecodedPage<T>, request: DecodeRequest): List<AnimationFrame<T>> =
+        emptyList()
 }
 
 /**
@@ -24,8 +31,8 @@ data class DecodeRequest(
     val maxTileHeight: Int = PageScaling.DEFAULT_MAX_TILE_HEIGHT,
     val maxPixels: Long = 40_000_000L,
     /**
-     * Memory limit for the frames of an animated page (P11); a larger animation (or one taller than a strip) shows its
-     * first frame only, like before.
+     * Memory limit for the frames of an animated page (P11, [PageImageDecoder.decodeFrames]); a larger animation (or
+     * one taller than a strip) shows its first frame only.
      */
     val maxAnimationBytes: Long = 128L * 1024 * 1024,
 )
@@ -35,19 +42,17 @@ data class AnimationFrame<T>(val image: T, val durationMillis: Int)
 
 /**
  * @param source the encoded image's size; [decoded] the size of the strips stacked together.
- * @param animated `true` when the image has several frames.
- * @param frames all frames of an animated page when they were decoded for playback (P11), else empty: [tiles] then
- *   hold the first frame only.
+ * @param animated `true` when the image has several frames ([tiles] hold the first one; the others come from
+ *   [PageImageDecoder.decodeFrames]).
  */
 data class DecodedPage<T>(
     val source: PixelSize,
     val decoded: PixelSize,
     val tiles: List<T>,
     val animated: Boolean = false,
-    val frames: List<AnimationFrame<T>> = emptyList(),
 ) {
-    /** Approximate memory of the decoded pixels (RGBA), frames included. */
-    val byteCount: Long get() = decoded.width.toLong() * decoded.height * 4 * (1 + frames.size)
+    /** Approximate memory of the decoded pixels (RGBA). */
+    val byteCount: Long get() = decoded.width.toLong() * decoded.height * 4
 }
 
 /**

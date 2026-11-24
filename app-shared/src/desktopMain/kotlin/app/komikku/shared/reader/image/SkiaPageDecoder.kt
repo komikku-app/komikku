@@ -2,6 +2,7 @@ package app.komikku.shared.reader.image
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -22,10 +23,9 @@ import java.io.InputStream
 import kotlin.coroutines.coroutineContext
 
 /**
- * KMK: desktop [PageImageDecoder] on Skia (Skiko). Decodes JPEG, PNG, WebP, GIF and BMP / ICO; animated
- * GIF / WebP (P11) also get all their frames at the decoded size ([DecodedPage.frames], Skia's `Codec` frame by frame
- * with its frame dependencies and durations) when they fit [DecodeRequest.maxAnimationBytes] and one strip; otherwise
- * the first frame only ([DecodedPage.animated] is set either way). AVIF, JPEG XL and HEIF
+ * KMK: desktop [PageImageDecoder] on Skia (Skiko). Decodes JPEG, PNG, WebP, GIF and BMP / ICO; an animated
+ * GIF / WebP (P11) is decoded as its first frame at once ([DecodedPage.animated] set), its other frames only on
+ * request ([decodeFrames], for a page that is shown) on a slot of their own. AVIF, JPEG XL and HEIF
  * (detected from the magic bytes with the desktop `ImageUtil`) are left to Skia too, which may decode
  * them where its build or the OS codecs allow (unverified on macOS / Windows, PROGRESS "P5"); when it
  * cannot, they fail with [UnsupportedPageFormatException] naming the format instead of a generic error.
@@ -38,6 +38,11 @@ import kotlin.coroutines.coroutineContext
  */
 class SkiaPageDecoder(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(2),
+    /**
+     * Where the frames of animated pages are decoded ([decodeFrames]): one slot of its own, so that an animation never
+     * holds up the page decodes on [dispatcher].
+     */
+    private val animationDispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1),
     /** The Skia decode step, replaceable in tests to simulate a platform without a codec. */
     private val decodeImage: (ByteArray) -> Image = { Image.makeFromEncoded(it) },
     /** The Skia codec step (size and frame count), replaceable in tests like [decodeImage]. */
@@ -86,8 +91,7 @@ class SkiaPageDecoder(
                         surface.makeImageSnapshot().toComposeImageBitmap()
                     }
                 }
-                val animation = if (frames > 1 && fitsAnimation(target, frames, request)) decodeFrames(bytes, target) else emptyList()
-                DecodedPage(source = source, decoded = target, tiles = tiles, animated = frames > 1, frames = animation)
+                DecodedPage(source = source, decoded = target, tiles = tiles, animated = frames > 1)
             }
         }
 
@@ -96,13 +100,33 @@ class SkiaPageDecoder(
             target.width.toLong() * target.height * 4 * frames <= request.maxAnimationBytes
 
     /**
-     * Every frame of an animated image at [target] size. Frames are decoded in order into one bitmap: a frame that
-     * builds on the previous one gets it as Skia's prior frame (unless that one is restored afterwards, then Skia
-     * decodes the frames it needs itself). Durations of 10 ms or less become 100 ms, as browsers and Android's
-     * decoders do. Empty when Skia cannot decode a frame (the first frame is shown then).
+     * Every frame of the animated [page] (decoded by [decode] with [request]) at its decoded size, when they fit
+     * [DecodeRequest.maxAnimationBytes] and one strip, else empty (the first frame stays). Frames are decoded in order
+     * into one bitmap: a frame that builds on the previous one gets it as Skia's prior frame (unless that one is
+     * restored afterwards, then Skia decodes the frames it needs itself). Durations of 10 ms or less become 100 ms, as
+     * browsers and Android's decoders do. Cancellable between frames; any failure other than a cancellation (a frame
+     * Skia cannot decode, an allocation failure) gives an empty list, so the page keeps its first frame.
      */
-    private suspend fun decodeFrames(bytes: ByteArray, target: PixelSize): List<AnimationFrame<ImageBitmap>> = try {
+    override suspend fun decodeFrames(
+        open: () -> InputStream,
+        page: DecodedPage<ImageBitmap>,
+        request: DecodeRequest,
+    ): List<AnimationFrame<ImageBitmap>> = withContext(animationDispatcher) {
+        try {
+            val bytes = open().use { it.readBytes() }
+            coroutineContext.ensureActive()
+            readFrames(bytes, page.decoded, request)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Throwable) {
+            // Also an OutOfMemoryError: the frames are dropped, the page keeps its first frame
+            emptyList()
+        }
+    }
+
+    private suspend fun readFrames(bytes: ByteArray, target: PixelSize, request: DecodeRequest): List<AnimationFrame<ImageBitmap>> =
         openCodec(bytes).use { codec ->
+            if (codec.frameCount <= 1 || !fitsAnimation(target, codec.frameCount, request)) return emptyList()
             val infos = codec.framesInfo
             Bitmap().use { bitmap ->
                 if (!bitmap.allocPixels(ImageInfo.makeN32Premul(codec.width, codec.height))) return emptyList()
@@ -133,9 +157,6 @@ class SkiaPageDecoder(
                 }
             }
         }
-    } catch (e: IllegalArgumentException) {
-        emptyList()
-    }
 
     /** Runs the Skia [step]; when it fails for an AVIF / JPEG XL / HEIF image, the failure names the format. */
     private inline fun <T> mapUnsupported(bytes: ByteArray, step: () -> T): T = try {
@@ -158,6 +179,29 @@ class SkiaPageDecoder(
         fun unsupportedFormat(type: ImageUtil.ImageType?, cause: Throwable): UnsupportedPageFormatException? =
             if (type != null && type in UNSUPPORTED) UnsupportedPageFormatException(type.name, cause) else null
     }
+}
+
+/**
+ * KMK: the frames of animated pages (P11), bounded by their bytes (default 192 MB), one frame set per page: frames for
+ * another width replace the page's earlier ones.
+ */
+class AnimationFrameCache(maxBytes: Long = 192L * 1024 * 1024) {
+    private class Entry(val width: Int, val frames: List<AnimationFrame<ImageBitmap>>, val bytes: Long)
+
+    private val cache = ByteSizedLruCache<String, Entry>(maxBytes, sizeOf = { it.bytes })
+
+    /** The frames of the page [pageKey] decoded for the width [width], if they are kept. */
+    operator fun get(pageKey: String, width: Int): List<AnimationFrame<ImageBitmap>>? =
+        cache[pageKey]?.takeIf { it.width == width }?.frames
+
+    fun put(pageKey: String, width: Int, frames: List<AnimationFrame<ImageBitmap>>, frameSize: PixelSize) =
+        cache.put(pageKey, Entry(width, frames, frameSize.width.toLong() * frameSize.height * 4 * frames.size))
+
+    val size: Int get() = cache.size
+
+    val currentBytes: Long get() = cache.currentBytes
+
+    fun clear() = cache.clear()
 }
 
 /** KMK: in-memory LRU of decoded pages, bounded by decoded bytes (default 256 MB). */

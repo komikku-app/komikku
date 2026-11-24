@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.komikku.shared.reader.image.AnimationFrame
+import app.komikku.shared.reader.image.AnimationFrameCache
 import app.komikku.shared.reader.image.DecodeRequest
 import app.komikku.shared.reader.image.DecodedPage
 import app.komikku.shared.reader.image.DecodedPageCache
@@ -45,10 +46,11 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 
-/** Decoder + decoded-page LRU shared by all reader screens of the process. */
+/** Decoder + decoded-page LRU (+ the frames of shown animated pages) shared by all reader screens of the process. */
 object ReaderImages {
     val decoder = SkiaPageDecoder()
     val cache = DecodedPageCache()
+    val animations = AnimationFrameCache()
 
     fun key(page: ReaderPage, maxWidth: Int) =
         DecodedPageCache.Key("${page.chapter.chapter.id}-${page.index}", maxWidth)
@@ -72,7 +74,7 @@ fun rememberPageImage(page: ReaderPage, maxWidth: Int): PageImageState {
         page.chapter.pageLoader?.loadPage(page)
     }
     val status by page.statusFlow.collectAsState()
-    val bucket = ((maxWidth.coerceAtLeast(1) + 255) / 256) * 256
+    val bucket = decodeBucket(maxWidth)
     val decoded by produceState<PageImageState>(PageImageState.Loading, page, status, bucket) {
         if (status != Page.State.Ready) {
             value = if (status is Page.State.Error) PageImageState.Failed((status as Page.State.Error).error) else PageImageState.Loading
@@ -97,15 +99,58 @@ fun rememberPageImage(page: ReaderPage, maxWidth: Int): PageImageState {
     return decoded
 }
 
+/** The decode width for a slot [maxWidth] pixels wide, in steps of 256 so that small window resizes reuse the cache. */
+fun decodeBucket(maxWidth: Int): Int = ((maxWidth.coerceAtLeast(1) + 255) / 256) * 256
+
 /**
- * Decoded strips stacked vertically, each filling the width; an animated page with decoded frames plays them instead
- * (P11, Android plays animated GIF / WebP pages too), looping, while composed.
+ * The frames of the animated [page] decoded as [decoded] for a slot [maxWidth] wide (P11 review fixes): decoded only
+ * while [shown] (never for preloaded pages), after the first frame is already on screen, on the decoder's animation
+ * slot, cancelled when the page leaves the screen; kept in [ReaderImages.animations] (one frame set per page). Empty
+ * until then, for still pages and when the frames do not fit (the first frame stays).
  */
 @Composable
-fun PageTiles(page: DecodedPage<ImageBitmap>, colorFilter: ColorFilter?, modifier: Modifier = Modifier) {
+fun rememberAnimationFrames(
+    page: ReaderPage,
+    decoded: DecodedPage<ImageBitmap>,
+    maxWidth: Int,
+    shown: Boolean,
+): List<AnimationFrame<ImageBitmap>> {
+    val bucket = decodeBucket(maxWidth)
+    val frames by produceState(emptyList<AnimationFrame<ImageBitmap>>(), page, decoded, bucket, shown) {
+        if (!shown || !decoded.animated) {
+            value = emptyList()
+            return@produceState
+        }
+        val key = ReaderImages.key(page, bucket).pageKey
+        ReaderImages.animations[key, bucket]?.let {
+            value = it
+            return@produceState
+        }
+        val stream = page.stream ?: return@produceState
+        val result = ReaderImages.decoder.decodeFrames(stream, decoded, DecodeRequest(maxWidth = bucket))
+        if (result.size > 1) {
+            ReaderImages.animations.put(key, bucket, result, decoded.decoded)
+            value = result
+        }
+    }
+    return frames
+}
+
+/**
+ * Decoded strips stacked vertically, each filling the width; with [frames] (an animated page that is shown,
+ * [rememberAnimationFrames]) the frames play instead (P11, Android plays animated GIF / WebP pages too), looping,
+ * while composed.
+ */
+@Composable
+fun PageTiles(
+    page: DecodedPage<ImageBitmap>,
+    colorFilter: ColorFilter?,
+    modifier: Modifier = Modifier,
+    frames: List<AnimationFrame<ImageBitmap>> = emptyList(),
+) {
     Column(modifier = modifier, verticalArrangement = Arrangement.Top) {
-        if (page.frames.size > 1) {
-            AnimatedFrames(page.frames, colorFilter)
+        if (frames.size > 1) {
+            AnimatedFrames(frames, colorFilter)
             return@Column
         }
         page.tiles.forEachIndexed { i, tile ->
