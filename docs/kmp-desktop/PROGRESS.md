@@ -3306,6 +3306,53 @@ Verification (after `76f0940`, `--max-workers=2 --console=plain`): `spotlessAppl
 --tests '*JsSourcesUiTest*' --tests '*JsSourceBrowseUiTest*' --tests '*WebViewUiTest*' --tests '*CatalogueFilterUiTest*'
 --tests '*SettingsUiTest*'` pass (after the two fixes above, re-run for the affected classes).
 
+## P14 — browse leftovers
+
+Built in `3eeca76` (Android refactor), `7a3e9ca` (desktop), `3f0be05` (tests) and the docs commits after them. Not
+reviewed yet.
+
+### Built
+
+- **Bulk favourites** (Komikku's selection mode of browse results) in the desktop catalogue and in global search: Komikku's
+  `BulkFavoriteScreenModel` is borrowed (`desktopCopy`: it uses `desktopCopy` sources — `AddTracks`, `CoverCache`,
+  `UpdateMangaFromRemote`, `MangaExtensions`), so the rules are Android's: "Add to library" checks the selected entries one
+  by one for library duplicates (`GetDuplicateLibraryManga`, P10) — one selected entry: P10's duplicate dialog (add anyway
+  / open / cancel); several: the same dialog with Android's bulk choices "Allow all" / "Skip all" / "Skip it" (new
+  optional buttons of the desktop `DuplicateMangaDialog`) — then Android's categories rule (the default category, none
+  when there are no categories or the default is "Default", else the borrowed `ChangeCategoryDialog` with the entries'
+  common categories checked and mixed ones excluded), default chapter flags, enhanced trackers and "fetch on add" like
+  Android. Desktop UI (`ui/browse/BulkFavorite.kt`): a "Bulk selection mode" toolbar button (spinner while adding), the
+  selection bar (count, select all, select inverse, add to library; in the catalogue in the top bar with "back" ending the
+  selection, in global search in place of the search toolbar), selected covers marked (tinted, check mark). Clicks:
+  while selecting a click toggles an entry, a long press opens its details (Android's); outside the selection mode a long
+  press starts it with that entry — **deviation**: Android's long press adds / removes that one entry at once (with its
+  remove confirmation); the desktop keeps the long press for selecting, like its library.
+- **Search globally from the library:** while the library search has a query, Android's "Search globally for …" button
+  (`MR.strings.action_global_search_query`, Android's first grid item) sits above the entries and opens global search with
+  the query.
+- **Extension name in global search rows:** a row's title is the source's name followed by its extension's name when that
+  differs (Android's KMK title; `globalSearchRowTitle`, from the installed extensions as the library's source badge reads
+  them).
+
+**Android changes (no behaviour change):** `BulkFavoriteScreenModel`'s `internal` members are public (the desktop app is
+another module), and its comments name `BulkSelectionToolbar` / `DuplicateMangaDialog` by their full names instead of
+importing them (they are Android-only composables).
+
+**Not done:** migration from the duplicate dialog (no migration on desktop), bulk favourites from the feeds (global and
+source feed: Android has them there too; the rows are the same card row, left for time), removing an entry by long press.
+
+### Tests
+
+`BulkFavoriteUiTest` (4): catalogue selection (mark, count, unselect / reselect) and "Add to library" without categories
+(both stored as favourites, the third not, the selection ends); global search "select all" → the duplicate dialog with the
+bulk choices → "Skip all" → the category dialog → the two non-duplicates in the chosen category, the duplicate not added;
+the library search's "Search globally" opens global search with the query; `globalSearchRowTitle` with no / the same /
+another extension name.
+
+Verification (after `3f0be05`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*BulkFavoriteUiTest*'` 4 tests, 0 failures.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3313,8 +3360,9 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 1. **Browse:** the global Feed tab, the per-source feed, saved searches in the catalogue, the filter panel and adding a
    saved search to a source's feed are done (P13; left from them: bulk favourites from feed entries, the source feed's
    incognito toggle, SY's MangaDex random / follows entries), migration (out of scope so far). Global search, source / language
-   toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
-   library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
+   toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
+   library search and the extension name in global search rows are done (P14); left: bulk favourites from the feeds, SY
+   source categories and data-saver exclusion.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
