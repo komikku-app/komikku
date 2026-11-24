@@ -38,20 +38,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.webview.DesktopWebView
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsEvent
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogD
+import exh.log.xLogE
+import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * P22: Android's extension info (`ExtensionDetailsScreen`) on the borrowed [ExtensionDetailsScreenModel]: the redundant /
@@ -89,7 +99,15 @@ class ExtensionDetailsScreen(internal val pkgName: String) : Screen() {
                         Icon(Icons.Outlined.RemoveDone, contentDescription = stringResource(MR.strings.action_disable_all))
                     }
                     IconButton(
-                        onClick = model::clearCookies,
+                        // P22 review: the desktop's own clearing (whatever the cookies' domain), on IO, with a
+                        // message; not the borrowed model's `clearCookies` (it expires only host-only, default-path cookies)
+                        onClick = {
+                            val extension = state.extension ?: return@IconButton
+                            model.screenModelScope.launchIO {
+                                ExtensionCookies.clear(extension)
+                                withUIContext { context.toast(MR.strings.cookies_cleared) }
+                            }
+                        },
                         modifier = Modifier.testTag("extension-details-clear-cookies"),
                     ) {
                         Icon(Icons.Outlined.Cookie, contentDescription = stringResource(MR.strings.pref_clear_cookies))
@@ -210,6 +228,36 @@ private fun ExtensionDetails(
             confirmButton = { TextButton(onClick = { nsfwWarning = false }) { Text(stringResource(MR.strings.action_ok)) } },
             onDismissRequest = { nsfwWarning = false },
         )
+    }
+}
+
+/**
+ * P22 review: Android's "Clear cookies" of the extension info for the desktop. Each source's base and home address goes
+ * through [DesktopWebView.clearCookies] (Android's WebView "Clear cookies" on desktop): every jar cookie sent to it is
+ * removed whatever its `Domain` (Cloudflare's `cf_clearance` for the registrable domain), together with the host's
+ * remembered solver User-Agent and failed solve. Blocking; returns how many cookies were removed.
+ */
+internal object ExtensionCookies {
+    fun clear(
+        extension: Extension.Installed,
+        webView: DesktopWebView = Injekt.get(),
+    ): Int {
+        val urls = extension.sources
+            .filterIsInstance<HttpSource>()
+            .flatMap { source -> listOf(runCatching { source.baseUrl }.getOrNull(), runCatching { source.getHomeUrl() }.getOrNull()) }
+            .filterNotNull()
+            .filter { it.isNotEmpty() }
+            .distinct()
+        val cleared = urls.sumOf { url ->
+            try {
+                webView.clearCookies(url)
+            } catch (e: Exception) {
+                xLogE("Failed to clear cookies for $url", e)
+                0
+            }
+        }
+        xLogD("Cleared $cleared cookies for: ${urls.joinToString()}")
+        return cleared
     }
 }
 

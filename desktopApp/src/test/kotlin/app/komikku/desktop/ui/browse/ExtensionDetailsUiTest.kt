@@ -22,11 +22,15 @@ import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
+import eu.kanade.tachiyomi.network.NetworkHelper
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import okhttp3.Cookie
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -160,6 +164,36 @@ class ExtensionDetailsUiTest {
             waitForText(PKG)
         }
 
+    @Test
+    fun `clear cookies removes the cookies the sources get whatever their domain and says so`() =
+        runDesktopComposeUiTest(width = 1200, height = 1000) {
+            val jar = Injekt.get<NetworkHelper>().cookieJar
+            val site = SITE.toHttpUrl()
+            val other = "https://other.example.net/".toHttpUrl()
+            jar.removeAll()
+            // A host-only cookie and a `Domain=` one for the registrable domain (Cloudflare's); another site's cookie stays
+            jar.saveFromResponse(
+                site,
+                listOfNotNull(
+                    Cookie.parse(site, "session=1; Path=/"),
+                    Cookie.parse(site, "cf_clearance=2; Domain=example.org; Path=/"),
+                ),
+            )
+            jar.saveFromResponse(other, listOfNotNull(Cookie.parse(other, "keep=3; Path=/")))
+            jar.get(site).map { it.name }.toSet() shouldBe setOf("session", "cf_clearance")
+
+            openBrowse()
+            onNodeWithTag("source-$FIRST").performTouchInput { longClick() }
+            waitForTag("source-options-extension-info")
+            onNodeWithTag("source-options-extension-info").performClick()
+            waitForTag("extension-details-clear-cookies")
+            onNodeWithTag("extension-details-clear-cookies").performClick()
+
+            waitForText(MR.strings.cookies_cleared.localized())
+            jar.get(site).shouldBeEmpty()
+            jar.get(other).map { it.name } shouldBe listOf("keep")
+        }
+
     private class FakeExtensions : PlatformExtensionManager {
         val installed = MutableStateFlow(emptyList<Extension.Installed>())
         override val isInitialized: StateFlow<Boolean> = MutableStateFlow(true)
@@ -184,5 +218,6 @@ class ExtensionDetailsUiTest {
         const val SECOND = 9_092L
         const val LONE = 9_093L
         const val PKG = "eu.kanade.tachiyomi.extension.en.greek"
+        const val SITE = "https://simple.example.org/"
     }
 }
