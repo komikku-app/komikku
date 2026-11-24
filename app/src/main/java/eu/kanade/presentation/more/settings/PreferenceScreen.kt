@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import eu.kanade.presentation.more.settings.screen.SearchableSettings
+import eu.kanade.presentation.more.settings.screen.findHighlightedIndex
 import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import kotlinx.coroutines.delay
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
@@ -82,16 +83,5 @@ fun PreferenceScreen(
     }
 }
 
-private fun List<Preference>.findHighlightedIndex(highlightKey: String): Int {
-    return flatMap {
-        if (it is Preference.PreferenceGroup) {
-            buildList<String?> {
-                add(null) // Header
-                addAll(it.preferenceItems.map { groupItem -> groupItem.title })
-                add(null) // Spacer
-            }
-        } else {
-            listOf(it.title)
-        }
-    }.indexOfFirst { it == highlightKey }
-}
+// KMK --> List<Preference>.findHighlightedIndex(highlightKey) is shared (SettingsSearch.kt, also used by the desktop app)
+// KMK <--

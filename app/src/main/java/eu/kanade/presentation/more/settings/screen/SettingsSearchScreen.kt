@@ -165,52 +165,15 @@ private fun SearchResult(
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
 
     val index = getIndex()
+    // KMK --> the search itself is the shared searchSettings (SettingsSearch.kt, also used by the desktop app)
     val result by produceState<List<SearchResultItem>?>(initialValue = null, searchKey) {
-        value = index.asSequence()
-            .flatMap { settingsData ->
-                settingsData.contents.asSequence()
-                    // Only search from enabled prefs and one with valid title
-                    .filter { it.enabled && it.title.isNotBlank() }
-                    // Flatten items contained inside *enabled* PreferenceGroup
-                    .flatMap { p ->
-                        when (p) {
-                            is Preference.PreferenceGroup -> {
-                                if (p.enabled) {
-                                    p.preferenceItems.asSequence()
-                                        .filter { it.enabled && it.title.isNotBlank() }
-                                        .map { p.title to it }
-                                } else {
-                                    emptySequence()
-                                }
-                            }
-                            is Preference.PreferenceItem<*, *> -> sequenceOf(null to p)
-                        }
-                    }
-                    // Don't show info preference
-                    .filterNot { it.second is Preference.PreferenceItem.InfoPreference }
-                    // Filter by search query
-                    .filter { (_, p) ->
-                        val inTitle = p.title.contains(searchKey, true)
-                        val inSummary = p.subtitle?.contains(searchKey, true) ?: false
-                        inTitle || inSummary
-                    }
-                    // Map result data
-                    .map { (categoryTitle, p) ->
-                        SearchResultItem(
-                            route = settingsData.route,
-                            title = p.title,
-                            breadcrumbs = getLocalizedBreadcrumb(
-                                path = settingsData.title,
-                                node = categoryTitle,
-                                isLtr = isLtr,
-                            ),
-                            highlightKey = p.title,
-                        )
-                    }
-            }
-            .take(10) // Just take top 10 result for quicker result
-            .toList()
+        value = searchSettings(
+            pages = index.map { SettingsSearchPage(it.title, it.route, it.contents) },
+            searchKey = searchKey,
+            isLtr = isLtr,
+        ).map { SearchResultItem(route = it.route, title = it.title, breadcrumbs = it.breadcrumbs, highlightKey = it.highlightKey) }
     }
+    // KMK <--
 
     Crossfade(targetState = result) {
         when {
@@ -271,19 +234,8 @@ private fun getIndex() = settingScreens
         )
     }
 
-private fun getLocalizedBreadcrumb(path: String, node: String?, isLtr: Boolean): String {
-    return if (node == null) {
-        path
-    } else {
-        if (isLtr) {
-            // This locale reads left to right.
-            "$path > $node"
-        } else {
-            // This locale reads right to left.
-            "$node < $path"
-        }
-    }
-}
+// KMK --> getLocalizedBreadcrumb(path, node, isLtr) is the shared settingsBreadcrumb (SettingsSearch.kt)
+// KMK <--
 
 private val settingScreens = listOf(
     SettingsAppearanceScreen,

@@ -490,6 +490,12 @@ run {
     desktopCopy(
         "eu/kanade/tachiyomi/ui/browse/BulkFavoriteScreenModel.kt",
     )
+    // Settings search (P15): SettingsSearch.kt holds the platform-neutral part of Android's SettingsSearchScreen (what a
+    // query finds, the breadcrumbs) and PreferenceScreen (the highlighted item's index), which both call; it uses the
+    // desktopCopy Preference.kt, hence a copy.
+    desktopCopy(
+        "eu/kanade/presentation/more/settings/screen/SettingsSearch.kt",
+    )
     shared(
         "eu/kanade/presentation/browse/FeedAddSearchDialog.kt",
         "eu/kanade/presentation/browse/components/SourceFeedAddDialog.kt",
