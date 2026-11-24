@@ -3972,6 +3972,60 @@ index). Full `:desktopApp:test` on `23e8082`: 79 classes, 363 tests, 0 failures 
 `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`, `MangayomiSourceStoreTest` included and
 passing).
 
+## P22 — extension info and the sources' right-click menu
+
+Built in `8377af6` (borrowing), `49f61ad` (screen and entries), `73ef1c2` (tests) and this docs commit.
+
+**Why this item:** of "Remaining parity gaps" it was small, fully testable headlessly and fit the time left after the
+P20 / P21 review fixes: P21 had left out the options dialog's extension info entry (and kept "Categories" out of the
+right-click menu), and the desktop had no extension info at all, so a source's enable switches per extension and the
+per-extension incognito mode (which the desktop reader already honours through `GetIncognitoState`) could not be set.
+
+### Built
+
+- **Android's logic borrowed, not rewritten:** `ToggleIncognito` (`shared`, Android compiles it from `:app-shared` now,
+  unchanged) and `ExtensionDetailsScreenModel` (`desktopCopy`: it uses app's `ExtensionManager` and `LocaleHelper`; the
+  desktop has the `ExtensionManager` typealias and its own `LocaleHelper`): the extension by package, its sources
+  (enabled first, then by name or language), the source switches, enable / disable all, incognito, uninstall, clear
+  cookies, the `Uninstalled` event. `ToggleIncognito` in the desktop DI.
+- **Desktop** `ExtensionDetailsScreen(pkgName)` (`ui/browse/`, Android's `ExtensionDetailsScreen`): SY's redundant and
+  Android's obsolete warnings, icon, name, package, version, language, the age rating for NSFW extensions (click →
+  Android's warning), Uninstall (the screen closes when the extension is gone, like Android), the extension's incognito
+  switch, the sources with their switches (row or switch toggles) and a settings button for configurable ones; enable
+  all, disable all and clear cookies in the top bar.
+- **Entries:** the sources tab's options dialog has "Extension info" for a source of an installed APK extension (not the
+  local source; Android's rule without the E-Hentai ids, which the desktop has no built-in sources for); the right-click
+  menu has "Categories" (when categories exist) and "Extension info" too; a click on an installed extension in the
+  Extensions tab opens it (Android's row click).
+
+### Decisions / deviations
+
+- No "App info" (Android's system settings of a shared extension), no "Open in WebView" and "Open repository" actions
+  (the WebView action is the catalogue's on desktop); the warnings are plain error-coloured text, not Android's
+  `WarningBanner` (app UI).
+- The source switch also reacts to a click on the switch itself (Android: the row; the switch has no handler there).
+- JavaScript (Mangayomi) sources have no APK extension and so no extension info entry; their own screen is the JS
+  sources tab.
+- Android behaviour: unchanged (`ToggleIncognito` is compiled by `:app-shared` instead of `app`, same source).
+
+### Not built
+
+SY's data-saver exclusion entry (no data saver on desktop), the update / trust actions inside the extension info (they
+stay in the Extensions tab's row).
+
+### Tests
+
+`ExtensionDetailsUiTest` (2), through the whole app with a fake `PlatformExtensionManager`: long press → "Extension info"
+→ package and version shown, the NSFW warning, a source switched off (Android's `disabledSources`), disable all, enable
+all, incognito on (`incognitoExtensions`), Uninstall closes the screen; no entry for a source without an APK extension;
+the right-click menu's "Categories" puts the source into a category and its "Extension info" opens the screen.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests
+'*ExtensionDetailsUiTest*'` 2 tests, 0 failures (the first run found the source switch without toggle semantics while it
+had no handler; it toggles now). Full `:desktopApp:test` on `73ef1c2`: 80 classes, 365 tests, 0 failures (the
+timing-sensitive classes included and passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3983,7 +4037,8 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    (P20); left: merged sources. Global search, source / language
    toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
    library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); SY source
-   categories are done (P21); left: data-saver exclusion (no data saver on desktop).
+   categories are done (P21), the extension info with its entries in the sources tab and the Extensions tab (P22); left:
+   data-saver exclusion (no data saver on desktop).
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2), migrate from the selection too (P19); left from

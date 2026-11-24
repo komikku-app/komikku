@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21) and their review fixes: done, last Part A commit: the docs commit "Record the P20 / P21 review fixes"), then the maintainer's first real run of
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21) and their review fixes: done, last Part A commit `b8b0b07`; extension info and the sources' right-click menu (P22): built, not reviewed, review range `b8b0b07..` the docs commit "Record the extension info (P22)"), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -431,6 +431,12 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   (`loadFailed`, `retry()`, desktop Retry); stubs first in both sort directions. **Three Android behaviour changes** (bug
   fixes): no crash for a `lastused` category, stubs first when descending, no endless spinner after a read error. Open:
   Android's obsolete filter still keeps JavaScript sources.
+- **P22** extension info (`8377af6` … , PROGRESS.md "P22 — extension info and the sources' right-click menu"): Android's
+  `ExtensionDetailsScreenModel` (`desktopCopy`) and `ToggleIncognito` (`shared`) borrowed; a desktop `ExtensionDetailsScreen`
+  (warnings, package, version, language, age rating, Uninstall, the extension's incognito switch, its sources' switches
+  and settings, enable / disable all, clear cookies) opened from the source options dialog, the sources' right-click menu
+  (which also has SY's "Categories" now) and a click on an installed extension. No App info / WebView / repository
+  actions. Test `ExtensionDetailsUiTest` (2). Not reviewed yet.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -485,7 +491,7 @@ mark the residual path in both modules.
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
    configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
-   source categories) and their review fixes are done; **next**: another item of PROGRESS "Remaining parity
+   source categories) and their review fixes are done; P22 (extension info) is built; **next**: its review (`b8b0b07..`), then another item of PROGRESS "Remaining parity
    gaps"; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
