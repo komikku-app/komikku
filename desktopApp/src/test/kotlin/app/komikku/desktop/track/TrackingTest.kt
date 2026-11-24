@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.anilist.AnilistApi
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeListApi
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -240,5 +241,37 @@ class TrackingTest {
         model.loginWithCredentials(silent, "user", "pass")
         awaitCondition("login finished") { !model.state.value.busy && model.state.value.error != null }
         model.state.value.error shouldBe app.stringResource(KMR.strings.login_failed)
+    }
+
+    @Test
+    @Order(10)
+    fun `MDList logout forgets the session the MangaDex interceptor holds in memory`() = runBlocking<Unit> {
+        val mdList = Injekt.get<TrackerManager>().mdList
+        // Logged in (what MangaDexLoginHelper.login stores): the interceptor holds the token in memory too
+        mdList.interceptor.setAuth(MALOAuth(tokenType = "Bearer", refreshToken = "refresh", accessToken = "access", expiresIn = 3600))
+        mdList.isLoggedIn shouldBe true
+        val model = TrackingSettingsScreenModel()
+        model.askLogout(mdList)
+        model.logout(mdList)
+        awaitCondition("logout finished") { model.state.value.dialog == null && !model.state.value.busy }
+        mdList.isLoggedIn shouldBe false
+        // A later request (or token refresh) must not send or write back the old session
+        mdList.interceptor.token shouldBe null
+    }
+
+    @Test
+    @Order(11)
+    fun `MDList login needs an enabled MangaDex source and says so`() = runBlocking<Unit> {
+        val mdList = Injekt.get<TrackerManager>().mdList
+        val model = TrackingSettingsScreenModel()
+        // No MangaDex source here: the row is not offered (like an enhanced tracker without its source)
+        awaitCondition("availability computed") { model.state.value.availabilityKnown }
+        (mdList.id in model.state.value.needsSource) shouldBe true
+        (Injekt.get<TrackerManager>().myAnimeList.id in model.state.value.needsSource) shouldBe false
+        // A pasted redirect without a usable source reports the reason instead of a generic failure
+        val method = DesktopTrackerLogin.method(mdList) as TrackerLoginMethod.OAuthPaste
+        model.loginWithRedirect(mdList, method, "tachiyomisy://mangadex-auth?code=abc", invalidMessage = "invalid")
+        awaitCondition("login finished") { !model.state.value.busy && model.state.value.error != null }
+        model.state.value.error shouldBe app.stringResource(KMR.strings.desktop_mdlist_needs_source)
     }
 }

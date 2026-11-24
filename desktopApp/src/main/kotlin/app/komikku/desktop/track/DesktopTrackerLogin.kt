@@ -1,6 +1,7 @@
 package app.komikku.desktop.track
 
 import app.komikku.shared.track.OAuthRedirect
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
@@ -12,8 +13,10 @@ import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeListApi
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.shikimori.ShikimoriApi
+import exh.log.xLogE
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
+import kotlinx.coroutines.CancellationException
 import tachiyomi.domain.source.service.SourceManager
 
 /**
@@ -73,6 +76,39 @@ object DesktopTrackerLogin {
         }
         tracker.login("", credential)
         return tracker.isLoggedIn
+    }
+
+    /**
+     * Whether [tracker] has what it logs in through: an enhanced tracker a source it accepts ([enhancedAvailable]), MDList
+     * an enabled MangaDex source (installed extension, language and source enabled, delegated sources on), which its
+     * login and sync go through. Other trackers need nothing.
+     */
+    fun sourceAvailable(tracker: Tracker, sourceManager: SourceManager, sourcePreferences: SourcePreferences): Boolean = when (tracker) {
+        is MdList -> MdUtil.getEnabledMangaDex(sourcePreferences, sourceManager) != null
+        is EnhancedTracker -> enhancedAvailable(tracker, sourceManager)
+        else -> true
+    }
+
+    /**
+     * Logs out of [tracker]. MDList like Android's MangaDex settings (`MangaDexLoginHelper.logout` through the enabled
+     * MangaDex source: revokes the session at MangaDex), and in any case also locally: the tracker's
+     * `MangaDexAuthInterceptor` keeps the token in memory, and a later request or token refresh would send or write it
+     * back after only the preference was cleared (no MangaDex source, MangaDex unreachable).
+     */
+    suspend fun logout(tracker: Tracker, sourceManager: SourceManager, sourcePreferences: SourcePreferences) {
+        if (tracker !is MdList) {
+            tracker.logout()
+            return
+        }
+        try {
+            MdUtil.getEnabledMangaDex(sourcePreferences, sourceManager)?.logout()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            xLogE("MDList: could not revoke the MangaDex session", e)
+        }
+        tracker.interceptor.setAuth(null)
+        tracker.logout()
     }
 
     /** Android: an enhanced tracker can be enabled when a source it accepts is installed. */

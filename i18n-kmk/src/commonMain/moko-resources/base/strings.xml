@@ -259,6 +259,8 @@
     <string name="desktop_tracker_redirect_invalid">This is not a login result for %1$s</string>
     <string name="desktop_tracker_not_available">Not available on desktop</string>
     <string name="desktop_tracker_needs_source">Install the matching extension to use this tracker</string>
+    <string name="desktop_mdlist_needs_source">Needs an enabled MangaDex source: install the MangaDex extension, enable its language and the source, and turn on delegated sources</string>
+    <string name="desktop_mdlist_login_failed">Could not log in to MangaDex. An authorization works only once: open the login page again, authorize, and paste the new address</string>
     <string name="desktop_date_hint">YYYY-MM-DD, empty to remove</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>

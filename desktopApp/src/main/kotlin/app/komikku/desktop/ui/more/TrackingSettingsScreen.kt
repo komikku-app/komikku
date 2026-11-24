@@ -40,14 +40,19 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.track.mdlist.MdList
+import exh.pref.DelegateSourcePreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tachiyomi.core.common.util.lang.withIOContext
@@ -68,6 +73,8 @@ class TrackingSettingsScreenModel(
     val trackerManager: TrackerManager = Injekt.get(),
     val trackPreferences: TrackPreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    private val delegateSourcePreferences: DelegateSourcePreferences = Injekt.get(),
     private val app: Application = Injekt.get(),
 ) : StateScreenModel<TrackingSettingsScreenModel.State>(State()) {
 
@@ -77,6 +84,9 @@ class TrackingSettingsScreenModel(
         val dialog: Dialog? = null,
         val busy: Boolean = false,
         val error: String? = null,
+        /** Trackers whose source is missing ([DesktopTrackerLogin.sourceAvailable]); kept current with the sources. */
+        val needsSource: Set<Long> = emptySet(),
+        val availabilityKnown: Boolean = false,
     )
 
     sealed interface Dialog {
@@ -93,11 +103,34 @@ class TrackingSettingsScreenModel(
                 mutableState.update { it.copy(loggedIn = trackers.mapTo(mutableSetOf()) { tracker -> tracker.id }) }
             }
         }
+        // Desktop sources load asynchronously, and MangaDex's availability also follows the language / source toggles
+        screenModelScope.launch {
+            combine(
+                sourceManager.sources,
+                sourcePreferences.enabledLanguages().changes(),
+                sourcePreferences.disabledSources().changes(),
+                delegateSourcePreferences.delegateSources().changes(),
+            ) { _, _, _, _ -> }
+                .collectLatest {
+                    val missing = withIOContext {
+                        trackerManager.trackers
+                            .filterNot { DesktopTrackerLogin.sourceAvailable(it, sourceManager, sourcePreferences) }
+                            .mapTo(mutableSetOf()) { it.id }
+                    }
+                    mutableState.update { it.copy(needsSource = missing, availabilityKnown = true) }
+                }
+        }
     }
 
-    fun enhancedAvailable(tracker: Tracker) = DesktopTrackerLogin.enhancedAvailable(tracker, sourceManager)
+    private fun needsSourceMessage(tracker: Tracker) =
+        app.contextString(if (tracker is MdList) KMR.strings.desktop_mdlist_needs_source else KMR.strings.desktop_tracker_needs_source)
 
     fun startLogin(tracker: Tracker) {
+        // Checked before the browser step: an authorization for MDList would be wasted without a MangaDex source
+        if (tracker is MdList && !DesktopTrackerLogin.sourceAvailable(tracker, sourceManager, sourcePreferences)) {
+            mutableState.update { it.copy(error = needsSourceMessage(tracker)) }
+            return
+        }
         when (val method = DesktopTrackerLogin.method(tracker)) {
             TrackerLoginMethod.Credentials -> mutableState.update { it.copy(dialog = Dialog.Credentials(tracker), error = null) }
             is TrackerLoginMethod.OAuthPaste -> {
@@ -119,15 +152,22 @@ class TrackingSettingsScreenModel(
             mutableState.update { it.copy(error = invalidMessage) }
             return
         }
-        login { DesktopTrackerLogin.loginWithRedirect(tracker, method, pasted) }
+        if (tracker is MdList && !DesktopTrackerLogin.sourceAvailable(tracker, sourceManager, sourcePreferences)) {
+            mutableState.update { it.copy(error = needsSourceMessage(tracker)) }
+            return
+        }
+        // MDList: MangaDexLoginHelper.login (Android code) logs the cause and returns false; an authorization code works
+        // once, so the message says to start again from the browser step
+        val failed = if (tracker is MdList) KMR.strings.desktop_mdlist_login_failed else KMR.strings.login_failed
+        login(failed) { DesktopTrackerLogin.loginWithRedirect(tracker, method, pasted) }
     }
 
-    private fun login(block: suspend () -> Boolean) {
+    private fun login(failed: StringResource = KMR.strings.login_failed, block: suspend () -> Boolean) {
         mutableState.update { it.copy(busy = true, error = null) }
         screenModelScope.launch {
             val error = try {
                 // A login that ends without an exception but still logged out
-                if (withIOContext { block() }) null else app.contextString(KMR.strings.login_failed)
+                if (withIOContext { block() }) null else app.contextString(failed)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -140,8 +180,14 @@ class TrackingSettingsScreenModel(
     fun askLogout(tracker: Tracker) = mutableState.update { it.copy(dialog = Dialog.Logout(tracker)) }
 
     fun logout(tracker: Tracker) {
-        tracker.logout()
-        dismiss()
+        mutableState.update { it.copy(busy = true) }
+        screenModelScope.launch {
+            try {
+                withIOContext { DesktopTrackerLogin.logout(tracker, sourceManager, sourcePreferences) }
+            } finally {
+                dismiss()
+            }
+        }
     }
 
     fun dismiss() = mutableState.update { it.copy(dialog = null, error = null, busy = false) }
@@ -179,7 +225,7 @@ class TrackingSettingsScreen : Screen() {
                     )
                 }
                 items(model.trackerManager.trackers, key = { it.id }) { tracker ->
-                    TrackerLoginRow(tracker, tracker.id in state.loggedIn, model)
+                    TrackerLoginRow(tracker, tracker.id in state.loggedIn, state, model)
                 }
             }
         }
@@ -203,17 +249,25 @@ class TrackingSettingsScreen : Screen() {
 }
 
 @Composable
-private fun TrackerLoginRow(tracker: Tracker, loggedIn: Boolean, model: TrackingSettingsScreenModel) {
+private fun TrackerLoginRow(
+    tracker: Tracker,
+    loggedIn: Boolean,
+    state: TrackingSettingsScreenModel.State,
+    model: TrackingSettingsScreenModel,
+) {
     val method = DesktopTrackerLogin.method(tracker)
+    // Enhanced trackers and MDList need a source; until the first check finished they are not offered
+    val needsSourceCheck = method == TrackerLoginMethod.Enhanced || tracker is MdList
+    val hasSource = !needsSourceCheck || (state.availabilityKnown && tracker.id !in state.needsSource)
     val available = when (method) {
         TrackerLoginMethod.Unsupported -> false
-        TrackerLoginMethod.Enhanced -> loggedIn || model.enhancedAvailable(tracker)
-        else -> true
+        else -> loggedIn || hasSource
     }
     val subtitle = when {
         loggedIn -> tracker.getUsername().takeIf { it.isNotBlank() && method != TrackerLoginMethod.Enhanced }
         method == TrackerLoginMethod.Unsupported -> stringResource(KMR.strings.desktop_tracker_not_available)
-        method == TrackerLoginMethod.Enhanced && !available -> stringResource(KMR.strings.desktop_tracker_needs_source)
+        !available && tracker is MdList -> stringResource(KMR.strings.desktop_mdlist_needs_source)
+        !available -> stringResource(KMR.strings.desktop_tracker_needs_source)
         method == TrackerLoginMethod.Enhanced -> stringResource(MR.strings.enhanced_services)
         else -> null
     }
