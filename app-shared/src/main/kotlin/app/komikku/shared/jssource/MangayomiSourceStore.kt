@@ -32,11 +32,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -716,6 +718,16 @@ class MangayomiSourceStore(
                 emitAll(sources.filterNotNull())
             }
         }
+
+        /**
+         * KMK: the ids of the installed JavaScript sources gone from every repository ([obsoleteSourceIds] of [items]),
+         * none without a store. The store is resolved and built on [Dispatchers.IO] when the flow is collected, not on
+         * the caller's thread (a screen's composition), P23 review fix.
+         */
+        fun obsoleteSourceIds(store: () -> MangayomiSourceStore? = ::getOrNull): Flow<Set<Long>> = flow {
+            val items = store()?.items ?: return@flow emit(emptySet())
+            emitAll(items.map { it.obsoleteSourceIds() })
+        }.distinctUntilChanged().flowOn(Dispatchers.IO)
 
         /** The app's store (DI), or `null` when it cannot be built (logged), for the screens that show it. */
         fun getOrNull(): MangayomiSourceStore? = try {

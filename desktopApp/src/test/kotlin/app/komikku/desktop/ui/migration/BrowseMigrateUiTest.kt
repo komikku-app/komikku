@@ -29,6 +29,8 @@ import app.komikku.desktop.ui.browse.FixedSourceManager
 import app.komikku.desktop.ui.browse.SimpleSearchSource
 import app.komikku.shared.jssource.InstalledJsSource
 import app.komikku.shared.jssource.JsSourceItem
+import app.komikku.shared.jssource.MangayomiSourceStore
+import app.komikku.shared.jssource.obsoleteSourceIds
 import app.komikku.sourcejs.JsSourceDescriptor
 import app.komikku.sourcejs.repo.JsSourceOffer
 import app.komikku.sourcejs.repo.JsSourceStatus
@@ -45,7 +47,9 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -248,6 +252,20 @@ class BrowseMigrateUiTest {
             item(4, installed = false, offered = true, status = null),
         )
         items.obsoleteSourceIds() shouldBe setOf(gone.sourceId)
+    }
+
+    @Test
+    fun `the obsolete JavaScript source ids resolve the store off the collecting thread and are empty without one`() {
+        val caller = Thread.currentThread()
+        var resolvedOn: Thread? = null
+        val ids = runBlocking {
+            MangayomiSourceStore.obsoleteSourceIds {
+                resolvedOn = Thread.currentThread()
+                null
+            }.first()
+        }
+        ids shouldBe emptySet()
+        (resolvedOn != null && resolvedOn !== caller) shouldBe true
     }
 
     @Test

@@ -22,6 +22,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import app.komikku.shared.jssource.MangayomiSourceStore
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.BaseSourceItem
@@ -121,6 +123,9 @@ private fun MigrateSourceList(
     val lazyListState = rememberLazyListState()
     var filterObsoleteSource by rememberSaveable { mutableStateOf(false) }
     val isHentaiEnabled = remember { Injekt.get<ExhPreferences>().isHentaiEnabled().get() }
+    // P23 review fix: installed JavaScript sources gone from every repository count as obsolete (the store is
+    // resolved off the main thread when collected)
+    val obsoleteJs by remember { MangayomiSourceStore.obsoleteSourceIds() }.collectAsState(emptySet())
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
         onChangeSearchQuery("")
@@ -192,12 +197,12 @@ private fun MigrateSourceList(
                     items = list
                         // KMK -->
                         .filter {
-                            // P23: obsolete = a stub (not installed) or an installed extension marked obsolete; a
-                            // healthy source without an APK extension (a JavaScript or built-in source) is not
-                            // (`isObsolete != false` kept them)
+                            // P23: obsolete = a stub (not installed), an installed extension marked obsolete or an
+                            // installed JavaScript source gone from every repository; a healthy source without an APK
+                            // extension (a JavaScript or built-in source) is not (`isObsolete != false` kept them)
                             !filterObsoleteSource ||
                                 (
-                                    (it.first.isStub || it.first.installedExtension?.isObsolete == true) &&
+                                    (it.first.isStub || it.first.isObsolete(obsoleteJs)) &&
                                         (!isHentaiEnabled || it.first.id !in eHentaiSourceIds)
                                     )
                         },
@@ -212,6 +217,9 @@ private fun MigrateSourceList(
                         // KMK <--
                         source = source,
                         count = count,
+                        // KMK -->
+                        isObsolete = source.isObsolete(obsoleteJs),
+                        // KMK <--
                         onClickItem = { onClickItem(source) },
                         onLongClickItem = { onLongClickItem(source) },
                     )
@@ -243,6 +251,9 @@ private fun MigrateSourceList(
 private fun MigrateSourceItem(
     source: Source,
     count: Long,
+    // KMK -->
+    isObsolete: Boolean,
+    // KMK <--
     onClickItem: () -> Unit,
     onLongClickItem: () -> Unit,
     modifier: Modifier = Modifier,
@@ -295,7 +306,7 @@ private fun MigrateSourceItem(
                             color = MaterialTheme.colorScheme.error,
                         )
                         // KMK -->
-                    } else if (source.installedExtension?.isObsolete == true) {
+                    } else if (isObsolete) {
                         Text(
                             modifier = Modifier.secondaryItemAlpha(),
                             text = stringResource(MR.strings.ext_obsolete),
@@ -311,3 +322,9 @@ private fun MigrateSourceItem(
         },
     )
 }
+
+// KMK -->
+/** An installed extension marked obsolete, or an installed JavaScript source in [obsoleteJs] (P23). */
+private fun Source.isObsolete(obsoleteJs: Set<Long>): Boolean =
+    id in obsoleteJs || installedExtension?.isObsolete == true
+// KMK <--

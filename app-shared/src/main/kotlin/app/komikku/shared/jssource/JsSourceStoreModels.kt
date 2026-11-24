@@ -78,6 +78,13 @@ data class JsSourceItem(
 }
 
 /**
+ * KMK: the Komikku source ids of the installed sources gone from every repository ([JsSourceStatus.OBSOLETE]), for the
+ * Browse → Migrate obsolete filter and label (Android and desktop, P23).
+ */
+fun List<JsSourceItem>.obsoleteSourceIds(): Set<Long> =
+    filter { it.installed != null && it.status == JsSourceStatus.OBSOLETE }.mapTo(HashSet()) { it.sourceId }
+
+/**
  * A downloaded, not yet installed text for [offer], shown to the user before installing: its [host] (the server that
  * served it, after redirects), [sha256] and size. [requestedHost] is the host of the offer's code URL (another one when
  * that URL redirected). [installed] is the version it would replace (an update).
