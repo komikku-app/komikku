@@ -63,6 +63,9 @@ fun ChapterNavigator(
     // SY <--
     totalPages: Int,
     onPageIndexChange: (Int) -> Unit,
+    // KMK -->
+    modifier: Modifier = Modifier,
+    // KMK <--
 ) {
     // SY -->
     if (isVerticalSlider) {
@@ -75,6 +78,9 @@ fun ChapterNavigator(
             currentPageText = currentPageText,
             totalPages = totalPages,
             onPageIndexChange = onPageIndexChange,
+            // KMK -->
+            modifier = modifier,
+            // KMK <--
         )
         return
     }
@@ -100,7 +106,7 @@ fun ChapterNavigator(
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = horizontalPadding),
             verticalAlignment = Alignment.CenterVertically,
@@ -201,6 +207,9 @@ fun ChapterNavigatorVert(
     // SY <--
     totalPages: Int,
     onPageIndexChange: (Int) -> Unit,
+    // KMK -->
+    modifier: Modifier = Modifier,
+    // KMK <--
 ) {
     val isTabletUi = isTabletUi()
     val verticalPadding = if (isTabletUi) 24.dp else 8.dp
@@ -208,7 +217,7 @@ fun ChapterNavigatorVert(
     val haptic = LocalHapticFeedback.current
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .padding(vertical = verticalPadding, horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
