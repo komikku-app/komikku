@@ -18,10 +18,13 @@ import uy.kohesive.injekt.api.get
  * before. It uses the Android-only LocaleHelper (desktop counterpart in app-shared/src/desktopMain), hence a desktop copy.
  */
 
+// KMK -->
+// Was `private class ScreenModel` inside MigrationConfigScreen
 class MigrationConfigScreenModel(
+    // KMK <--
     val sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
-) : StateScreenModel<MigrationConfigScreenModel.State>(State()) {
+) : StateScreenModel</* KMK --> */ MigrationConfigScreenModel /* KMK <-- */.State>(State()) {
 
     // KMK -->
     private val pinnedSources by lazy { sourcePreferences.pinnedSources().get().mapNotNull { it.toLongOrNull() } }
@@ -148,7 +151,10 @@ class MigrationConfigScreenModel(
     }
 }
 
+// KMK -->
+// Was `MigrationConfigScreen.MigrationSource` (nested in the screen)
 data class MigrationSource(
+    // KMK <--
     val source: Source,
     val isSelected: Boolean,
     // KMK -->
