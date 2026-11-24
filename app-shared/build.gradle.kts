@@ -72,6 +72,9 @@ kotlin {
                 // Borrowed ChapterCache (desktopCopy, reader page cache)
                 implementation(libs.disklrucache)
 
+                // Borrowed migration list's smart search (P19)
+                implementation(libs.stringSimilarity)
+
                 // Borrowed Downloader (ComicInfo.xml) (8.1)
                 implementation(kotlinx.serialization.xml)
                 implementation(kotlinx.serialization.xml.core.jvm)

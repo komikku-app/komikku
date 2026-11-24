@@ -45,30 +45,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.fastForEachIndexed
-import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AnimatedFloatingSearchBox
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SOURCE_SEARCH_BOX_HEIGHT
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.update
 import mihon.feature.migration.list.MigrationListScreen
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.source.model.Source
-import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -80,8 +71,6 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.shouldExpandFAB
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 /**
  * Screen that allows the user to configure which sources should be used when migrating manga.
@@ -99,7 +88,9 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
 
-        val screenModel = rememberScreenModel { ScreenModel() }
+        val screenModel = rememberScreenModel {
+            /* KMK --> */ MigrationConfigScreenModel() /* KMK <-- */
+        }
         val state by screenModel.state.collectAsState()
 
         // KMK -->
@@ -168,20 +159,20 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                                 AppBar.Action(
                                     title = stringResource(MR.strings.migrationConfigScreen_selectPinnedLabel),
                                     icon = Icons.Outlined.PushPin,
-                                    onClick = { screenModel.toggleSelection(ScreenModel.SelectionConfig.Pinned) },
+                                    onClick = { screenModel.toggleSelection(/* KMK --> */ MigrationConfigScreenModel /* KMK <-- */.SelectionConfig.Pinned) },
                                 ),
                                 AppBar.Action(
                                     title = stringResource(MR.strings.migrationConfigScreen_selectNoneLabel),
                                     icon = Icons.Outlined.Deselect,
-                                    onClick = { screenModel.toggleSelection(ScreenModel.SelectionConfig.None) },
+                                    onClick = { screenModel.toggleSelection(/* KMK --> */ MigrationConfigScreenModel /* KMK <-- */.SelectionConfig.None) },
                                 ),
                                 AppBar.OverflowAction(
                                     title = stringResource(MR.strings.migrationConfigScreen_selectEnabledLabel),
-                                    onClick = { screenModel.toggleSelection(ScreenModel.SelectionConfig.Enabled) },
+                                    onClick = { screenModel.toggleSelection(/* KMK --> */ MigrationConfigScreenModel /* KMK <-- */.SelectionConfig.Enabled) },
                                 ),
                                 AppBar.OverflowAction(
                                     title = stringResource(MR.strings.migrationConfigScreen_selectAllLabel),
-                                    onClick = { screenModel.toggleSelection(ScreenModel.SelectionConfig.All) },
+                                    onClick = { screenModel.toggleSelection(/* KMK --> */ MigrationConfigScreenModel /* KMK <-- */.SelectionConfig.All) },
                                 ),
                             ),
                         )
@@ -399,148 +390,7 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
         )
     }
 
-    private class ScreenModel(
-        val sourcePreferences: SourcePreferences = Injekt.get(),
-        private val sourceManager: SourceManager = Injekt.get(),
-    ) : StateScreenModel<ScreenModel.State>(State()) {
-
-        // KMK -->
-        private val pinnedSources by lazy { sourcePreferences.pinnedSources().get().mapNotNull { it.toLongOrNull() } }
-        private val disabledSources by lazy { sourcePreferences.disabledSources().get().mapNotNull { it.toLongOrNull() } }
-        // KMK <--
-
-        private val sourcesComparator = { includedSources: /* KMK --> */ Map<Long, Int> /* KMK <-- */ ->
-            compareBy<MigrationSource>(
-                // KMK -->
-                // { !it.isSelected },
-                { includedSources[it.source.id] ?: Int.MAX_VALUE },
-                // KMK <--
-                { with(it) { "$name ($shortLanguage)" } },
-            )
-        }
-
-        init {
-            screenModelScope.launchIO {
-                initSources()
-                mutableState.update { it.copy(isLoading = false) }
-            }
-        }
-
-        private fun updateSources(action: (List<MigrationSource>) -> List<MigrationSource>) {
-            mutableState.update { state ->
-                val updatedSources = action(state.sources)
-                val includedSources = updatedSources.mapNotNull { if (!it.isSelected) null else it.id }
-                    // KMK -->
-                    .mapIndexed { index, id -> id to index }.toMap()
-                // KMK <--
-                state.copy(sources = updatedSources.sortedWith(sourcesComparator(includedSources)))
-            }
-            saveSources()
-        }
-
-        private fun initSources() {
-            val languages = sourcePreferences.enabledLanguages().get()
-            val includedSources = sourcePreferences.migrationSources().get()
-                // KMK -->
-                .mapIndexed { index, id -> id to index }.toMap()
-            // KMK <--
-            val sources = sourceManager
-                // KMK -->
-                .getVisibleSources()
-                // KMK <--
-                .asSequence()
-                .filterIsInstance<HttpSource>()
-                .filter { it.lang in languages }
-                .map {
-                    val source = Source(
-                        id = it.id,
-                        lang = it.lang,
-                        name = it.name,
-                        supportsLatest = false,
-                        isStub = false,
-                    )
-                    MigrationSource(
-                        source = source,
-                        isSelected = when {
-                            includedSources.isNotEmpty() -> source.id in includedSources
-                            pinnedSources.isNotEmpty() -> source.id in pinnedSources
-                            else -> source.id !in disabledSources
-                        },
-                    )
-                }
-                .toList()
-
-            mutableState.update { state ->
-                state.copy(sources = sources.sortedWith(sourcesComparator(includedSources)))
-            }
-        }
-
-        fun toggleSelection(id: Long) {
-            updateSources { sources ->
-                sources.map { source ->
-                    source.copy(isSelected = if (source.source.id == id) !source.isSelected else source.isSelected)
-                }
-            }
-        }
-
-        fun toggleSelection(config: SelectionConfig) {
-            val isSelected: (Long) -> Boolean = {
-                when (config) {
-                    SelectionConfig.All -> true
-                    SelectionConfig.None -> false
-                    SelectionConfig.Pinned -> it in pinnedSources
-                    SelectionConfig.Enabled -> it !in disabledSources
-                }
-            }
-            updateSources { sources ->
-                sources.map { source ->
-                    source.copy(isSelected = isSelected(source.source.id))
-                }
-            }
-        }
-
-        fun orderSource(from: Int, to: Int) {
-            updateSources {
-                it.toMutableList()
-                    .apply {
-                        add(to, removeAt(from))
-                    }
-                    .toList()
-            }
-        }
-
-        fun saveSources() {
-            state.value.sources
-                .filter { source -> source.isSelected }
-                .map { source -> source.source.id }
-                .let { sources -> sourcePreferences.migrationSources().set(sources) }
-        }
-
-        data class State(
-            val isLoading: Boolean = true,
-            val sources: List<MigrationSource> = emptyList(),
-        )
-
-        enum class SelectionConfig {
-            All,
-            None,
-            Pinned,
-            Enabled,
-        }
-    }
-
-    data class MigrationSource(
-        val source: Source,
-        val isSelected: Boolean,
-        // KMK -->
-        val shortLanguage: String = LocaleHelper.getShortDisplayName(source.lang),
-        val upperShortLanguage: String = shortLanguage.uppercase(),
-        // KMK <--
-    ) {
-        val id: Long
-            inline get() = source.id
-
-        val name: String
-            inline get() = source.name
-    }
+    // KMK -->
+    // The screen model and `MigrationSource` moved to MigrationConfigScreenModel.kt (borrowed by the desktop app, P19)
+    // KMK <--
 }

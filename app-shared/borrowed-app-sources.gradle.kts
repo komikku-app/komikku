@@ -515,6 +515,25 @@ run {
         "mihon/feature/common/utils/MigrationFlag.kt",
         "mihon/feature/migration/dialog/MigrateMangaDialog.kt",
     )
+    // Migration list (P19): Mihon's / Komikku's configuration (the sources and their order: MigrationConfigScreenModel.kt,
+    // moved out of MigrationConfigScreen; the options sheet), the list's screen model with its automatic matching (smart
+    // search engines, SY's throttle) and its dialogs. They use desktopCopy sources (MigrateMangaUseCase,
+    // UpdateMangaFromRemote, LocaleHelper), hence copies. Desktop counterparts in app-shared/src/desktopMain: AdaptiveSheet
+    // (the sheet as a centred dialog) and `getNameForMangaInfo` (DesktopSourceExtensions.kt). The screens are the desktop's
+    // own (Android's use R drawables, the reorderable list and the Android app bar).
+    desktopCopy(
+        "eu/kanade/presentation/util/ChapterNumberFormatter.kt",
+        "exh/util/ThrottleManager.kt",
+        "mihon/feature/migration/config/MigrationConfigScreenModel.kt",
+        "mihon/feature/migration/config/MigrationConfigScreenSheet.kt",
+        "mihon/feature/migration/list/MigrationListScreenModel.kt",
+        "mihon/feature/migration/list/components/MigrationExitDialog.kt",
+        "mihon/feature/migration/list/components/MigrationMangaDialog.kt",
+        "mihon/feature/migration/list/components/MigrationProgressDialog.kt",
+        "mihon/feature/migration/list/models/MigratingManga.kt",
+        "mihon/feature/migration/list/search/BaseSmartSearchEngine.kt",
+        "mihon/feature/migration/list/search/SmartSourceSearchEngine.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()
