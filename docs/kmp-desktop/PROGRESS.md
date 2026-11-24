@@ -3078,7 +3078,13 @@ APK's jar is already in the cache from test 3, and the earlier tests collect the
 race above; the case passed alone and in every full run since (see the verification). If it recurs, the next step is a
 thread dump at the timeout (e.g. `withTimeout` → `ThreadMXBean.dumpAllThreads` in the test).
 
-Verification: pending (run after this docs commit; recorded in the next one).
+Verification (after `850e5b6`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass;
+`:desktopApp:test` 64 classes, 281 tests, 0 failures (was 63 / 278 after P12: `ReaderChapterLoadTest` 2 new,
+`LibraryExtrasUiTest` 3 → 4; `AdvancedSettingsUiTest` extended), `DesktopExtensionManagerTest` included and passing. The
+first targeted run of `ReaderChapterLoadTest` failed in the test itself (a page list read by the other case came from
+the chapter cache without asking the source; the cache is now cleared before each case). Not run: a real window (the
+badge's icon appearing, the clear-database progress), a real start-up failure written to the log file.
 
 **P13 (feed and saved searches) not started**: the coordinator narrowed the round to these review fixes.
 
