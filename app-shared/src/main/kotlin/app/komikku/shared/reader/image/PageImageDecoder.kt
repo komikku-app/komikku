@@ -23,20 +23,31 @@ data class DecodeRequest(
     val maxWidth: Int,
     val maxTileHeight: Int = PageScaling.DEFAULT_MAX_TILE_HEIGHT,
     val maxPixels: Long = 40_000_000L,
+    /**
+     * Memory limit for the frames of an animated page (P11); a larger animation (or one taller than a strip) shows its
+     * first frame only, like before.
+     */
+    val maxAnimationBytes: Long = 128L * 1024 * 1024,
 )
+
+/** KMK: one frame of an animated page (P11): [image] at the page's decoded size, shown for [durationMillis]. */
+data class AnimationFrame<T>(val image: T, val durationMillis: Int)
 
 /**
  * @param source the encoded image's size; [decoded] the size of the strips stacked together.
- * @param animated `true` when the image has several frames; only the first one is decoded.
+ * @param animated `true` when the image has several frames.
+ * @param frames all frames of an animated page when they were decoded for playback (P11), else empty: [tiles] then
+ *   hold the first frame only.
  */
 data class DecodedPage<T>(
     val source: PixelSize,
     val decoded: PixelSize,
     val tiles: List<T>,
     val animated: Boolean = false,
+    val frames: List<AnimationFrame<T>> = emptyList(),
 ) {
-    /** Approximate memory of the decoded pixels (RGBA). */
-    val byteCount: Long get() = decoded.width.toLong() * decoded.height * 4
+    /** Approximate memory of the decoded pixels (RGBA), frames included. */
+    val byteCount: Long get() = decoded.width.toLong() * decoded.height * 4 * (1 + frames.size)
 }
 
 /**

@@ -6,11 +6,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import org.jetbrains.skia.AnimationDisposalMode
+import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Codec
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.FilterMipmap
 import org.jetbrains.skia.FilterMode
 import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.MipmapMode
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
@@ -20,7 +23,9 @@ import kotlin.coroutines.coroutineContext
 
 /**
  * KMK: desktop [PageImageDecoder] on Skia (Skiko). Decodes JPEG, PNG, WebP, GIF and BMP / ICO; animated
- * GIF / WebP show their **first frame only** ([DecodedPage.animated] is set). AVIF, JPEG XL and HEIF
+ * GIF / WebP (P11) also get all their frames at the decoded size ([DecodedPage.frames], Skia's `Codec` frame by frame
+ * with its frame dependencies and durations) when they fit [DecodeRequest.maxAnimationBytes] and one strip; otherwise
+ * the first frame only ([DecodedPage.animated] is set either way). AVIF, JPEG XL and HEIF
  * (detected from the magic bytes with the desktop `ImageUtil`) are left to Skia too, which may decode
  * them where its build or the OS codecs allow (unverified on macOS / Windows, PROGRESS "P5"); when it
  * cannot, they fail with [UnsupportedPageFormatException] naming the format instead of a generic error.
@@ -81,9 +86,56 @@ class SkiaPageDecoder(
                         surface.makeImageSnapshot().toComposeImageBitmap()
                     }
                 }
-                DecodedPage(source = source, decoded = target, tiles = tiles, animated = frames > 1)
+                val animation = if (frames > 1 && fitsAnimation(target, frames, request)) decodeFrames(bytes, target) else emptyList()
+                DecodedPage(source = source, decoded = target, tiles = tiles, animated = frames > 1, frames = animation)
             }
         }
+
+    private fun fitsAnimation(target: PixelSize, frames: Int, request: DecodeRequest): Boolean =
+        target.height <= request.maxTileHeight &&
+            target.width.toLong() * target.height * 4 * frames <= request.maxAnimationBytes
+
+    /**
+     * Every frame of an animated image at [target] size. Frames are decoded in order into one bitmap: a frame that
+     * builds on the previous one gets it as Skia's prior frame (unless that one is restored afterwards, then Skia
+     * decodes the frames it needs itself). Durations of 10 ms or less become 100 ms, as browsers and Android's
+     * decoders do. Empty when Skia cannot decode a frame (the first frame is shown then).
+     */
+    private suspend fun decodeFrames(bytes: ByteArray, target: PixelSize): List<AnimationFrame<ImageBitmap>> = try {
+        openCodec(bytes).use { codec ->
+            val infos = codec.framesInfo
+            Bitmap().use { bitmap ->
+                if (!bitmap.allocPixels(ImageInfo.makeN32Premul(codec.width, codec.height))) return emptyList()
+                (0 until codec.frameCount).map { i ->
+                    coroutineContext.ensureActive()
+                    val info = infos[i]
+                    val prior = if (i > 0 && info.requiredFrame != -1 && infos[i - 1].disposalMethod != AnimationDisposalMode.RESTORE_PREVIOUS) {
+                        i - 1
+                    } else {
+                        -1
+                    }
+                    if (prior == -1) bitmap.erase(0)
+                    codec.readPixels(bitmap, i, prior)
+                    val frame = Image.makeFromBitmap(bitmap).use { image ->
+                        Surface.makeRasterN32Premul(target.width, target.height).use { surface ->
+                            surface.canvas.drawImageRect(
+                                image,
+                                Rect.makeWH(codec.width.toFloat(), codec.height.toFloat()),
+                                Rect.makeWH(target.width.toFloat(), target.height.toFloat()),
+                                FilterMipmap(FilterMode.LINEAR, MipmapMode.LINEAR),
+                                null,
+                                true,
+                            )
+                            surface.makeImageSnapshot().toComposeImageBitmap()
+                        }
+                    }
+                    AnimationFrame(frame, info.duration.takeIf { it > 10 } ?: 100)
+                }
+            }
+        }
+    } catch (e: IllegalArgumentException) {
+        emptyList()
+    }
 
     /** Runs the Skia [step]; when it fails for an AVIF / JPEG XL / HEIF image, the failure names the format. */
     private inline fun <T> mapUnsupported(bytes: ByteArray, step: () -> T): T = try {

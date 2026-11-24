@@ -19,7 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -28,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.komikku.shared.reader.image.AnimationFrame
 import app.komikku.shared.reader.image.DecodeRequest
 import app.komikku.shared.reader.image.DecodedPage
 import app.komikku.shared.reader.image.DecodedPageCache
@@ -36,6 +40,7 @@ import app.komikku.shared.reader.image.UnsupportedPageFormatException
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -92,10 +97,17 @@ fun rememberPageImage(page: ReaderPage, maxWidth: Int): PageImageState {
     return decoded
 }
 
-/** Decoded strips stacked vertically, each filling the width. */
+/**
+ * Decoded strips stacked vertically, each filling the width; an animated page with decoded frames plays them instead
+ * (P11, Android plays animated GIF / WebP pages too), looping, while composed.
+ */
 @Composable
 fun PageTiles(page: DecodedPage<ImageBitmap>, colorFilter: ColorFilter?, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.Top) {
+        if (page.frames.size > 1) {
+            AnimatedFrames(page.frames, colorFilter)
+            return@Column
+        }
         page.tiles.forEachIndexed { i, tile ->
             Image(
                 bitmap = tile,
@@ -106,6 +118,24 @@ fun PageTiles(page: DecodedPage<ImageBitmap>, colorFilter: ColorFilter?, modifie
             )
         }
     }
+}
+
+@Composable
+private fun AnimatedFrames(frames: List<AnimationFrame<ImageBitmap>>, colorFilter: ColorFilter?) {
+    var index by remember(frames) { mutableIntStateOf(0) }
+    LaunchedEffect(frames) {
+        while (true) {
+            delay(frames[index].durationMillis.toLong())
+            index = (index + 1) % frames.size
+        }
+    }
+    Image(
+        bitmap = frames[index].image,
+        contentDescription = null,
+        contentScale = ContentScale.FillWidth,
+        colorFilter = colorFilter,
+        modifier = Modifier.fillMaxWidth().testTag("page-frame-$index"),
+    )
 }
 
 /** Loading indicator (with download progress) / error with retry for a page that has no image yet. */
