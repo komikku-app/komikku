@@ -405,11 +405,24 @@ private fun browsePreferences(): List<Preference> {
     val base = remember { Injekt.get<BasePreferences>() }
     val ui = remember { Injekt.get<UiPreferences>() }
     val hideFeedTab by ui.hideFeedTab().collectAsState()
+    val navigator = LocalNavigator.currentOrThrow
+    // P21: SY's source categories (Android's place: right after the sources' other entries)
+    val sourceCategories by sources.sourcesTabCategories().collectAsState()
     return listOf(
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.label_sources),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(sources.hideInLibraryItems(), stringResource(MR.strings.pref_hide_in_library_items)),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.action_edit_categories),
+                    subtitle = pluralStringResource(MR.plurals.num_categories, sourceCategories.size, sourceCategories.size),
+                    onClick = { navigator.push(SourceCategoriesScreen()) },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    sources.sourcesTabCategoriesFilter(),
+                    stringResource(SYMR.strings.pref_source_source_filtering),
+                    subtitle = stringResource(SYMR.strings.pref_source_source_filtering_summery),
+                ),
                 // P13: SY's "new source navigation": a source opens its feed (landing page) instead of its catalogue
                 Preference.PreferenceItem.SwitchPreference(
                     ui.useNewSourceNavigation(),

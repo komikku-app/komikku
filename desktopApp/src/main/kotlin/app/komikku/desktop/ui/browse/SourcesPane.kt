@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.FilterList
@@ -28,10 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +49,8 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
@@ -54,6 +60,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -67,6 +74,7 @@ import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -90,9 +98,16 @@ class SourcesPaneModel(
     private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    getSourceCategories: GetSourceCategories = Injekt.get(),
+    private val setSourceCategories: SetSourceCategories = Injekt.get(),
 ) : StateScreenModel<SourcesPaneModel.State>(State()) {
 
     init {
+        // P21: SY's source categories, for the source's "Categories" dialog
+        getSourceCategories.subscribe()
+            .onEach { categories -> mutableState.update { it.copy(categories = categories) } }
+            .catch { xLogE("Failed to read the source categories", it) }
+            .launchIn(screenModelScope)
         // A failure (e.g. a malformed SY source category entry) shows an error instead of "no sources"; the flow is
         // subscribed again on the next change of what it reads, so a fixed preference brings the list back.
         getEnabledSources.subscribe()
@@ -138,7 +153,18 @@ class SourcesPaneModel(
     }
 
     fun closeDialog() {
-        mutableState.update { it.copy(dialog = null) }
+        mutableState.update { it.copy(dialog = null, categoriesDialog = null) }
+    }
+
+    /** P21: SY's "Categories" of the source options dialog. */
+    fun showCategoriesDialog(source: Source) {
+        mutableState.update { it.copy(dialog = null, categoriesDialog = source) }
+    }
+
+    /** P21: the source in exactly these SY source categories (Android's `SetSourceCategories`). */
+    fun setCategories(source: Source, categories: List<String>) {
+        screenModelScope.launchIO { setSourceCategories.await(source, categories) }
+        closeDialog()
     }
 
     sealed interface Item {
@@ -153,6 +179,10 @@ class SourcesPaneModel(
         /** Why the enabled sources could not be read, if they could not. */
         val error: String? = null,
         val dialog: Source? = null,
+        /** P21: the source whose SY categories are being chosen. */
+        val categoriesDialog: Source? = null,
+        /** P21: SY's source categories, by name. */
+        val categories: List<String> = emptyList(),
     )
 
     companion object {
@@ -237,6 +267,15 @@ internal fun SourcesPane(model: SourcesPaneModel) {
                 model.closeDialog()
             },
             onClickDisable = { model.disable(source) },
+            onClickSetCategories = { model.showCategoriesDialog(source) }.takeIf { state.categories.isNotEmpty() },
+            onDismiss = model::closeDialog,
+        )
+    }
+    state.categoriesDialog?.let { source ->
+        SourceCategoriesDialog(
+            source = source,
+            categories = state.categories,
+            onConfirm = { model.setCategories(source, it) },
             onDismiss = model::closeDialog,
         )
     }
@@ -329,12 +368,13 @@ private fun SourcesList(
     }
 }
 
-/** Android's `SourceOptionsDialog` without the SY categories / data saver and extension info entries. */
+/** Android's `SourceOptionsDialog` without the SY data saver and extension info entries (P21: with SY's categories). */
 @Composable
 private fun SourceOptionsDialog(
     source: Source,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
+    onClickSetCategories: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -352,9 +392,52 @@ private fun SourceOptionsDialog(
                         modifier = Modifier.clickable(onClick = onClickDisable).fillMaxWidth().padding(vertical = 16.dp),
                     )
                 }
+                // P21: like Android, only when there are source categories
+                if (onClickSetCategories != null) {
+                    Text(
+                        text = stringResource(MR.strings.categories),
+                        modifier = Modifier
+                            .clickable(onClick = onClickSetCategories)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .testTag("source-options-categories"),
+                    )
+                }
             }
         },
         onDismissRequest = onDismiss,
         confirmButton = {},
+    )
+}
+
+/** P21: Android's `SourceCategoriesDialog` (SY): the source's categories as checkboxes, OK sets them. */
+@Composable
+private fun SourceCategoriesDialog(
+    source: Source,
+    categories: List<String>,
+    onConfirm: (List<String>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val chosen = remember(source) { mutableStateListOf<String>().also { it += source.categories } }
+    AlertDialog(
+        title = { Text(text = source.visualName) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                categories.forEach { category ->
+                    LabeledCheckbox(
+                        label = category,
+                        checked = category in chosen,
+                        onCheckedChange = { if (it) chosen += category else chosen -= category },
+                        modifier = Modifier.testTag("source-categories-$category"),
+                    )
+                }
+            }
+        },
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = { onConfirm(chosen.toList()) }, modifier = Modifier.testTag("source-categories-ok")) {
+                Text(text = stringResource(MR.strings.action_ok))
+            }
+        },
     )
 }
