@@ -1,19 +1,28 @@
 package app.komikku.desktop.ui.manga
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.ui.browse.CatalogueScreen
 import app.komikku.desktop.ui.browse.GlobalSearchContent
 import app.komikku.desktop.ui.browse.GlobalSearchToolbar
 import app.komikku.desktop.ui.browse.globalSearchRowTitle
+import app.komikku.desktop.ui.migration.MigrationConfigScreen
 import app.komikku.desktop.ui.migration.MigrationListScreen
 import app.komikku.desktop.ui.tabs.SourceIcons
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -25,30 +34,30 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
-import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import mihon.feature.migration.dialog.MigrateMangaDialog
-import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
- * P18: Android's single-entry migration from the manga details (`MigrateSearchScreen` with `MigrateSearchScreenModel`):
- * the entry's title searched in the migration sources like the global search (the current source's row marked "▶"), a
- * result opens Mihon's "what to include" dialog (the borrowed `MigrateMangaDialog`: chapters' read state and history,
- * categories, tracks, custom cover, notes, delete downloads, extras by `MigrationFlag`; Copy keeps the old entry in the
- * library, Migrate replaces it) and after it the new entry's details replace this screen, like Android. A row header
- * opens that source's catalogue with the query (Android: its own source search screen for the migration).
+ * P18 / P19: Android's migration search (`MigrateSearchScreen` with `MigrateSearchScreenModel`), opened from the migration
+ * list ([MigrationListScreen]: its "search manually", or at once for one entry): the entry's title searched in the
+ * migration sources like the global search (the current source's row marked "▶", the entry itself left out); a pick
+ * becomes that entry's match in the list and the list is shown again, like Android. A row header opens that source's
+ * catalogue with the query (Android: its own source search screen for the migration). Not built: the pick from a
+ * source's own search.
  *
- * P19: opened from the migration list ([MigrationListScreen], its "search manually" or at once for one entry), a pick
- * becomes that entry's match in the list and the list is shown again, like Android. Not built: the pick from a source's
- * own search.
+ * Review fix (P19): the screen is only reached from the list, so Android's own "what to include" dialog for a pick
+ * without a list is gone; when none of the migration sources is installed any more, the search says so and offers the
+ * migration configuration for the list's entries (Android shows an empty search).
  */
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
@@ -62,13 +71,28 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
         }
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { MigrateSearchScreenModel(mangaId) }
+        if (!model.hasMigrationSources) {
+            NoMigrationSources(
+                onBack = navigator::pop,
+                onChooseSources = {
+                    // The list's entries again from the configuration (the list is below this search)
+                    val list = navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull()
+                    if (list == null) {
+                        navigator.replace(MigrationConfigScreen(mangaId))
+                    } else {
+                        navigator.popUntil { it === list }
+                        navigator.replace(MigrationConfigScreen(list.mangaIds))
+                    }
+                },
+            )
+            return
+        }
         val state by model.state.collectAsState()
         // Like the global search: the pinned / all filter reaches the state from its preference after the first search
         LaunchedEffect(state.sourceFilter) { model.search() }
         val hasPinnedSources = remember(state.sourceFilter) { model.hasPinnedSources() }
         val extensions by remember { SourceIcons.installedExtensions() }.collectAsState()
         val fromSource = state.from?.source
-        val context = LocalContext.current
         // Review fix (P18): the entry itself is no migration target (its own source's row lists it)
         val shown = remember(state) { state.withoutEntry(mangaId) }
         Column(modifier = Modifier.fillMaxSize().testTag("migrate-search")) {
@@ -90,14 +114,10 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                 onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery)) },
                 onClickItem = { target ->
                     if (target.id == mangaId) return@GlobalSearchContent
-                    // P19, like Android: opened from the migration list, the pick becomes the entry's match there
-                    val list = navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull()
-                    if (list == null) {
-                        model.setMigrateDialog(mangaId, target)
-                    } else {
-                        list.addMatchOverride(current = mangaId, target = target.id)
-                        navigator.popUntil { it === list }
-                    }
+                    // P19, like Android: the pick becomes the entry's match in the migration list below
+                    val list = navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull() ?: return@GlobalSearchContent
+                    list.addMatchOverride(current = mangaId, target = target.id)
+                    navigator.popUntil { it === list }
                 },
                 onLongClickItem = { navigator.push(MangaDetailsScreen(it.id)) },
                 selection = emptyList(),
@@ -106,20 +126,26 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                 },
             )
         }
-        when (val dialog = state.dialog) {
-            is SearchScreenModel.Dialog.Migrate -> MigrateMangaDialog(
-                current = dialog.current,
-                target = dialog.target,
-                onClickTitle = { navigator.push(MangaDetailsScreen(dialog.target.id)) },
-                onDismissRequest = model::clearDialog,
-                onComplete = { navigator.replace(MangaDetailsScreen(dialog.target.id)) },
-                // Review fix (P18): the borrowed use case reports a failed migration; stay here and say so
-                onFailure = {
-                    model.clearDialog()
-                    context.toast(context.stringResource(KMR.strings.desktop_migration_failed, dialog.current.title))
-                },
+    }
+}
+
+/** Review fix (P19): none of the migration sources is installed (an extension removed after configuring). */
+@Composable
+private fun NoMigrationSources(onBack: () -> Unit, onChooseSources: () -> Unit) {
+    BrowseScaffold(title = stringResource(MR.strings.action_migrate), onBack = onBack) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp).testTag("migrate-search-no-sources"),
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = stringResource(KMR.strings.desktop_migration_no_sources),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
             )
-            null -> {}
+            Button(onClick = onChooseSources, modifier = Modifier.testTag("migrate-search-choose-sources")) {
+                Text(stringResource(SYMR.strings.select_sources))
+            }
         }
     }
 }
@@ -147,6 +173,9 @@ class MigrateSearchScreenModel(
 ) : SearchScreenModel() {
 
     private val migrationSources by lazy { sourcePreferences.migrationSources().get() }
+
+    /** Review fix (P19): whether any of the migration sources is installed (else the search has no rows at all). */
+    val hasMigrationSources: Boolean by lazy { getEnabledSources().isNotEmpty() }
 
     override val sortComparator = { map: Map<Source, SearchItemResult> ->
         compareBy<Source>(

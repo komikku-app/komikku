@@ -366,4 +366,5 @@
     <string name="desktop_tray_exit">Exit</string>
     <string name="desktop_notification_open">Click to open Komikku</string>
     <string name="desktop_migration_failed">Could not migrate %1$s</string>
+    <string name="desktop_migration_no_sources">None of the sources chosen for migration is installed. Choose the sources to search again.</string>
 </resources>
