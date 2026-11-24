@@ -1933,8 +1933,8 @@ stayed blank.
 | Maven Central search for AVIF / JPEG XL artifacts (`search.maven.org`: "avif", "jxl", "jpegxl", "libheif") | — | — | only Android AARs (`org.aomedia.avif.android:avif`, Glide / penfeizhou AVIF integrations, vendor SDKs) and the NightMonkeys plugins; no pure-Java JPEG XL decoder (jxlatte is not on Maven Central) |
 | FFmpeg through bytedeco JavaCV | LGPL / GPL builds | Linux / macOS / Windows x64 (+ arm64 on Linux / macOS) | not pursued: tens of MB of natives per platform for still images, AVIF / JPEG XL support of its build unverified (JPEG XL needs libjxl) |
 
-**Unblocking options for the maintainer:** a Skiko build with Skia's AVIF / JPEG XL codecs enabled (the test
-`Skia on desktop cannot decode AVIF or JPEG XL` fails once a Skiko update brings them, then the format gates can go); or
+**Unblocking options for the maintainer:** a Skiko build with Skia's AVIF / JPEG XL codecs enabled (since the P5 review
+Skia always gets the first try, so such an update needs no code change; see "Review fixes (P5)"); or
 moving the desktop runtime to JDK 22+ and bundling libjxl / libheif per OS for NightMonkeys (licences: libjxl BSD-3,
 libheif LGPL-3, libde265 LGPL-3 for HEIF).
 
@@ -1942,6 +1942,7 @@ libheif LGPL-3, libde265 LGPL-3 for HEIF).
 - `app.komikku.shared.coil.UnsupportedImageFormatDecoder` (Coil `Decoder.Factory`, registered in `DesktopImageLoader`):
   an AVIF / JPEG XL / HEIF image (magic bytes, `SkiaPageDecoder.UNSUPPORTED`) fails with `UnsupportedPageFormatException`
   (format name) instead of Skia's generic decode error; other formats go to Coil's Skia decoder as before.
+  (Since the review fixes: Skia tries first, the format error only replaces its failure; see "Review fixes (P5)".)
 - `app.komikku.desktop.ui.CoverImage`: the library, catalogue, global search, manga details and updates covers show the format's name
   ("AVIF") on such a cover instead of staying blank; other failures keep the plain background.
 - Reader page placeholder: "AVIF images can't be shown on desktop yet" (new `KMR.strings.desktop_unsupported_image_format`)
@@ -1956,6 +1957,30 @@ cover label in a headless Compose test.
 Verification (after `ccd825a`): `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`,
 `:desktopApp:compileKotlin` pass; `:desktopApp:test` 43 classes, 161 tests, 0 failures (was 42 / 156 after the P4 review).
 Not run in a real window; no real AVIF / JPEG XL cover from a source was loaded.
+
+### Review fixes (P5)
+
+Review of `18a7cbc..5b0d41e` (medium, 4 findings), fixed in `26ad164`, `eb6c2d9`, `ac074ee`. The new `CoverImage`
+sizing test was run against the unfixed `CoverImage` and fails there; the other tests were written against the fixed
+code.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | `UnsupportedImageFormatDecoder` rejected every AVIF / JXL / HEIF image by its magic bytes before Coil's Skia decoder, although Skia on macOS / Windows might decode some through OS codecs | fixed: Skia gets the first try everywhere. The Coil factory wraps Coil's `SkiaImageDecoder` (injectable `delegate`) for these types only and maps its failure (any `Exception`, not cancellation) to `UnsupportedPageFormatException(format, cause)`; other formats take Coil's normal chain. `SkiaPageDecoder` no longer gates by type: `readSize` / `decode` run Skia (`openCodec` / `decodeImage`, injectable) and only an `IllegalArgumentException` for an image detected as AVIF / JXL / HEIF becomes the format error (`SkiaPageDecoder.unsupportedFormat`); others keep "Could not decode the image". `UnsupportedPageFormatException` carries the cause | `26ad164` |
+| 2 | `Skia on desktop cannot decode AVIF or JPEG XL` would fail on a runner whose Skia decodes them | fixed: the platform tests accept "decodes to 8×8" or "`UnsupportedPageFormatException` naming the format" for the reader (`decode`, `readSize`) and the desktop Coil loader, and print the outcome per OS; the mapping is tested with an injected failing Skia step (reader decoder and Coil factory; a PNG stays a plain decode error / goes to Coil's own decoder); the cover label test uses the failing loader | `26ad164` |
+| 3 | `CoverImage`'s `Box` + `matchParentSize()` collapsed to zero when the caller did not fix both dimensions | fixed: `Box(propagateMinConstraints = true)` with the image as the sizing child, the label `wrapContentSize`-centred; call sites unchanged. Test `a cover sized by one dimension takes the image's height` (fails on the old code) | `eb6c2d9` |
+| 4 | Desktop detection read 32 bytes, so an AVIF with a late `avif` brand (major `mif1`, compatible `mif1 heic miaf MA1B avif`) was labelled HEIF | fixed (desktop): up to 256 bytes read; the `ftyp` box's own size bounds the brand scan (64-bit size and size 0 handled), AVIF brands win over HEIF ones, brands of later boxes no longer count. Android unchanged: its `ImageUtil.getImageType` passes 32 bytes to the native `tachiyomi.decoder.ImageDecoder.findType`, so it likely has the same limit (not verified; native code). Test `ImageUtilTest` (`scans every compatible brand of the ftyp box …`) | `ac074ee` |
+
+**macOS / Windows behaviour is unverified and decided at run time:** whether Skiko's Skia decodes AVIF / JPEG XL / HEIF
+there (through its own codecs or the OS's) is not known; only Linux was checked (it cannot). The app no longer
+assumes either way: a decodable image is shown, an undecodable one shows the format. The test output
+(`Skia on <OS>: AVIF decoded / unsupported`) of the Windows / macOS CI runners will tell. P5's "Unblocking options"
+above still apply to Linux; the test that was to fail on a Skiko with these codecs is gone (it was OS-dependent).
+
+Verification after the fixes: `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin`
+pass; `:desktopApp:test` 43 classes, 163 tests, 0 failures (was 43 / 161: `UnsupportedImageFormatTest` 5 → 7);
+`:core:common:desktopTest` 3 classes, 9 tests, 0 failures (`ImageUtilTest` +1). Not run: a real window, real AVIF /
+JPEG XL covers from a source, macOS / Windows.
 
 ## Remaining parity gaps
 

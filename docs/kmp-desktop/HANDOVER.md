@@ -1,10 +1,12 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-23, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
+State as of 2026-11-24, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
-fixes, parity step P3, scheduled library updates and backups, with its review fixes, and parity step P4, SY delegated
-sources, are done; next is the review of P4; see "Done" and "Left to do").
+fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
+sources, with its review fixes, and parity step P5, AVIF / JPEG XL, with its review fixes, are done; next are the
+remaining parity gaps WebView / Cloudflare, signing, updater, and the maintainer's first real run; see "Done" and
+"Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -139,6 +141,11 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   such codecs; NightMonkeys needs Java 22 FFM and system libjxl / libheif; the rest is Android-only), so the desktop
   detects AVIF / JPEG XL / HEIF and shows the format on covers (`CoverImage`, Coil `UnsupportedImageFormatDecoder`) and an
   "can't be shown on desktop yet" reader page. Test `UnsupportedImageFormatTest` with real embedded samples.
+- **P5 review** (medium, 4 findings) — all fixed in `26ad164`, `eb6c2d9`, `ac074ee` (PROGRESS.md "Review fixes (P5)"):
+  Skia gets the first try for AVIF / JPEG XL / HEIF (covers and reader), only its failure becomes the format error
+  (macOS / Windows behaviour unverified, decided at run time); OS-independent tests with an injected failing decode
+  step; `CoverImage` sizes like a bare `AsyncImage`; desktop `ftyp` detection scans the whole box (up to 256 bytes),
+  AVIF brands first (Android's native detection left unchanged).
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -177,14 +184,16 @@ mark the residual path in both modules.
 4. **Desktop parity gaps** (PROGRESS "Remaining parity gaps"): P1 (global search, source / language toggles, pins) and
    its review fixes are done; P2 (library grouping, selection and batch actions) and its review fixes are done; P3
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
-   delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) is recorded as
-   blocked (unsupported-format state only). **Next:** review P5 if wanted, then the next item of PROGRESS "Remaining
-   parity gaps". Known gaps: P4's
+   delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) and its review
+   fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). **Next**, in
+   order: WebView / Cloudflare (desktop `CloudflareInterceptor` is a pass-through), signing / notarization of the
+   installers, the desktop updater; then the maintainer's first real run (item 7). Known gaps: P5's (macOS / Windows
+   Skia behaviour for AVIF / JPEG XL unverified, see the CI test output; no real AVIF cover loaded), P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
    against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   Then WebView / Cloudflare, notifications / tray, signing, updater.
+   After WebView / Cloudflare, signing and updater: notifications / tray.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
