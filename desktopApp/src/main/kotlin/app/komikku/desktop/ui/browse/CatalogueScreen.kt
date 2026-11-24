@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
@@ -80,12 +81,14 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
+import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.feed.isFeedFull
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterItem
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogE
@@ -110,9 +113,12 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
+import tachiyomi.domain.source.interactor.CountFeedSavedSearchBySourceId
 import tachiyomi.domain.source.interactor.DeleteSavedSearchById
+import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.model.EXHSavedSearch
+import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
@@ -130,19 +136,21 @@ import tachiyomi.core.common.i18n.stringResource as contextString
  * Popular / latest / search listing of one source, as a cover grid. With [initialQuery] (global search: "open this
  * source's own search") it starts with that search, like Android's `BrowseSourceScreen(sourceId, query)`; with
  * [savedSearchId] (a feed row) with that saved search, with [latest] (a feed row) with the latest updates when the
- * source has them, like Android's `BrowseSourceScreen(sourceId, listingQuery, savedSearch)`.
+ * source has them, like Android's `BrowseSourceScreen(sourceId, listingQuery, savedSearch)`; with [openFilters] (the
+ * source feed's filter button) with the filter panel open.
  */
 class CatalogueScreen(
     private val sourceId: Long,
     private val initialQuery: String? = null,
     private val savedSearchId: Long? = null,
     private val latest: Boolean = false,
+    private val openFilters: Boolean = false,
 ) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery, savedSearchId, latest) }
+        val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery, savedSearchId, latest, openFilters) }
         val state by model.state.collectAsState()
         val source = model.source
         // P7: Android's WebView action (`BrowseSourceScreen.onWebViewClick`)
@@ -151,6 +159,7 @@ class CatalogueScreen(
         val context = LocalContext.current
         var savingSearch by remember { mutableStateOf(false) }
         var deletingSearch by remember { mutableStateOf<EXHSavedSearch?>(null) }
+        val tooManyInFeed = stringResource(KMR.strings.too_many_in_feed)
         val onSourceError: (String) -> Unit = { context.toast(context.contextString(KMR.strings.desktop_source_error, it)) }
         // Back from the source's settings: its filters may have changed (a JavaScript source's follow its preferences)
         LaunchedEffect(model) { model.onResumed() }
@@ -220,6 +229,7 @@ class CatalogueScreen(
                                 model.applySavedSearch(it, onInvalid = { context.toast(SYMR.strings.save_search_invalid) }, onError = onSourceError)
                             },
                             onDeleteSavedSearch = { deletingSearch = it },
+                            onAddSavedSearchToFeed = { model.askAddToFeed(it, onFull = { context.toast(tooManyInFeed) }) },
                             onClose = model::closeFilters,
                         )
                     }
@@ -242,6 +252,14 @@ class CatalogueScreen(
                 deleteSavedSearch = { model.deleteSearch(search.id) },
             )
         }
+        // P13: Android's "add to feed" confirmation (the source feed's filter sheet), into this source's own feed
+        state.addingToFeed?.let { search ->
+            SourceFeedAddDialog(
+                onDismissRequest = model::dismissAddToFeed,
+                name = search.name,
+                addFeed = { model.addToFeed(search) },
+            )
+        }
     }
 }
 
@@ -250,6 +268,7 @@ class CatalogueScreenModel(
     initialQuery: String? = null,
     savedSearchId: Long? = null,
     latest: Boolean = false,
+    openFilters: Boolean = false,
     sourceManager: SourceManager = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     getIncognitoState: GetIncognitoState = Injekt.get(),
@@ -259,6 +278,8 @@ class CatalogueScreenModel(
     private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
     private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
     private val filterSerializer: FilterSerializer = Injekt.get(),
+    private val countFeedSavedSearchBySourceId: CountFeedSavedSearchBySourceId = Injekt.get(),
+    private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
 ) : StateScreenModel<CatalogueScreenModel.State>(
     State(
         mode = when {
@@ -307,6 +328,8 @@ class CatalogueScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         /** Bumped whenever the model sets the search query itself (a saved search applied): the search field shows it. */
         val queryEvent: Int = 0,
+        /** The saved search the user is asked to add to the source's feed. */
+        val addingToFeed: EXHSavedSearch? = null,
     ) {
         /** The search runs with filters other than the source's defaults. */
         val filtersActive: Boolean get() = (mode as? Mode.Search)?.filters != null
@@ -347,6 +370,7 @@ class CatalogueScreenModel(
             getIncognitoState.subscribe(sourceId)
                 .onEach { incognito -> if (!incognito) sourcePreferences.lastUsedSource().set(sourceId) }
                 .launchIn(screenModelScope)
+            if (openFilters) openFilters()
         }
     }
 
@@ -511,6 +535,40 @@ class CatalogueScreenModel(
         }
     }
 
+    /**
+     * Android's "add to feed" of a saved search (`SourceFeedScreenModel.onSavedSearchAddToFeed`): refused with [onFull]
+     * once the source's feed holds its limit, else asks for confirmation ([State.addingToFeed]).
+     */
+    fun askAddToFeed(search: EXHSavedSearch, onFull: () -> Unit) {
+        val source = catalogueSource ?: return
+        screenModelScope.launch {
+            if (isFeedFull(withIOContext { countFeedSavedSearchBySourceId.await(source.id) })) {
+                onFull()
+                return@launch
+            }
+            mutableState.update { it.copy(addingToFeed = search) }
+        }
+    }
+
+    fun dismissAddToFeed() {
+        mutableState.update { it.copy(addingToFeed = null) }
+    }
+
+    /** Adds [search] to the source's own feed (Android's `SourceFeedScreenModel.createFeed`, not the global feed). */
+    fun addToFeed(search: EXHSavedSearch) {
+        val source = catalogueSource ?: return
+        dismissAddToFeed()
+        screenModelScope.launch {
+            withContext(NonCancellable) {
+                withIOContext {
+                    insertFeedSavedSearch.await(
+                        FeedSavedSearch(id = -1, source = source.id, savedSearch = search.id, global = false, feedOrder = 0),
+                    )
+                }
+            }
+        }
+    }
+
     fun deleteSearch(savedSearchId: Long) {
         screenModelScope.launch {
             withContext(NonCancellable) { withIOContext { deleteSavedSearchById.await(savedSearchId) } }
@@ -644,6 +702,7 @@ private fun CatalogueFilterPanel(
     onSave: () -> Unit,
     onSavedSearch: (EXHSavedSearch) -> Unit,
     onDeleteSavedSearch: (EXHSavedSearch) -> Unit,
+    onAddSavedSearchToFeed: (EXHSavedSearch) -> Unit,
     onClose: () -> Unit,
 ) {
     Column(modifier = Modifier.width(360.dp).fillMaxHeight().testTag("catalogue-filter-panel")) {
@@ -670,7 +729,12 @@ private fun CatalogueFilterPanel(
         val updateFilters = { filters?.let(onUpdate) ?: Unit }
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item(key = "saved-searches") {
-                SavedSearchesRow(savedSearches = savedSearches, onApply = onSavedSearch, onDelete = onDeleteSavedSearch)
+                SavedSearchesRow(
+                    savedSearches = savedSearches,
+                    onApply = onSavedSearch,
+                    onDelete = onDeleteSavedSearch,
+                    onAddToFeed = onAddSavedSearchToFeed,
+                )
             }
             when {
                 error != null -> item(key = "error") {
@@ -690,13 +754,17 @@ private fun CatalogueFilterPanel(
     }
 }
 
-/** P13: the source's saved searches (Android lists them at the top of the filter sheet): apply, delete. */
+/**
+ * P13: the source's saved searches (Android lists them at the top of the filter sheet): apply, add to the source's feed
+ * (Android's source feed sheet: long press), delete (Android's browse sheet: long press).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SavedSearchesRow(
     savedSearches: ImmutableList<EXHSavedSearch>,
     onApply: (EXHSavedSearch) -> Unit,
     onDelete: (EXHSavedSearch) -> Unit,
+    onAddToFeed: (EXHSavedSearch) -> Unit,
 ) {
     if (savedSearches.isEmpty()) return
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -711,6 +779,11 @@ private fun SavedSearchesRow(
                     selected = false,
                     onClick = { onApply(search) },
                     label = { Text(search.name) },
+                    leadingIcon = {
+                        IconButton(onClick = { onAddToFeed(search) }, modifier = Modifier.testTag("saved-search-feed-${search.name}")) {
+                            Icon(Icons.Outlined.DynamicFeed, contentDescription = stringResource(KMR.strings.desktop_saved_search_add_to_feed))
+                        }
+                    },
                     trailingIcon = {
                         IconButton(onClick = { onDelete(search) }, modifier = Modifier.testTag("saved-search-delete-${search.name}")) {
                             Icon(Icons.Outlined.Close, contentDescription = stringResource(SYMR.strings.save_search_delete))

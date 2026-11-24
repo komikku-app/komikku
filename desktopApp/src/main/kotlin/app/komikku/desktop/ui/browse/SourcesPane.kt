@@ -48,6 +48,7 @@ import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.log.xLogE
@@ -70,6 +71,7 @@ import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -198,6 +200,8 @@ class SourcesPaneModel(
 internal fun SourcesPane(model: SourcesPaneModel) {
     val navigator = LocalNavigator.currentOrThrow
     val state by model.state.collectAsState()
+    // P13: like Android's sources tab, a source opens its feed (landing page) while SY's "new source navigation" is on
+    val useNewSourceNavigation by remember { Injekt.get<UiPreferences>().useNewSourceNavigation() }.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -217,7 +221,7 @@ internal fun SourcesPane(model: SourcesPaneModel) {
             state.items.isEmpty() -> EmptyScreen(stringRes = KMR.strings.desktop_no_sources)
             else -> SourcesList(
                 items = state.items,
-                onClick = { navigator.push(CatalogueScreen(it.id)) },
+                onClick = { navigator.push(if (useNewSourceNavigation) SourceFeedScreen(it.id) else CatalogueScreen(it.id)) },
                 onClickSettings = { navigator.push(SourcePreferencesScreen(it.id)) },
                 onClickPin = model::togglePin,
                 onLongClick = model::showSourceDialog,

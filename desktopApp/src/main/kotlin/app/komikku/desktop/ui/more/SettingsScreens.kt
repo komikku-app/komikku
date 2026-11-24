@@ -367,6 +367,12 @@ private fun browsePreferences(): List<Preference> {
             title = stringResource(MR.strings.label_sources),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(sources.hideInLibraryItems(), stringResource(MR.strings.pref_hide_in_library_items)),
+                // P13: SY's "new source navigation": a source opens its feed (landing page) instead of its catalogue
+                Preference.PreferenceItem.SwitchPreference(
+                    ui.useNewSourceNavigation(),
+                    stringResource(SYMR.strings.pref_source_navigation),
+                    subtitle = stringResource(SYMR.strings.pref_source_navigation_summery),
+                ),
                 Preference.PreferenceItem.SwitchPreference(
                     base.incognitoMode(),
                     stringResource(MR.strings.pref_incognito_mode),

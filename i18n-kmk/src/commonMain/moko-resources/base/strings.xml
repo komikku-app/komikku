@@ -304,6 +304,7 @@
     <string name="desktop_site_user_agents_empty">None saved</string>
     <string name="desktop_clear_site_user_agents">Remove all user agents of sites</string>
     <string name="desktop_site_user_agents_cleared">User agents of sites removed</string>
+    <string name="desktop_saved_search_add_to_feed">Add to the source\'s feed</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>

@@ -406,7 +406,7 @@ fun FeedPane(model: FeedPaneModel) {
             rows == null -> LoadingScreen()
             rows.isEmpty() -> EmptyScreen(SYMR.strings.feed_tab_empty)
             ordering -> FeedOrderList(
-                rows = rows,
+                rows = rows.map { it.feed to it.title }.toImmutableList(),
                 onMove = model::changeOrder,
                 onDelete = model::openDeleteDialog,
             )
@@ -473,10 +473,13 @@ fun FeedPane(model: FeedPaneModel) {
     }
 }
 
-/** Android's feed order screen: the rows' titles with move up / down (instead of dragging) and delete. */
+/**
+ * Android's feed order screen (global feed and a source's): the rows' titles with move up / down (instead of dragging)
+ * and delete. [rows]: each feed row with its title.
+ */
 @Composable
-private fun FeedOrderList(
-    rows: ImmutableList<FeedPaneModel.Row>,
+internal fun FeedOrderList(
+    rows: ImmutableList<Pair<FeedSavedSearch, String>>,
     onMove: (FeedSavedSearch, Int) -> Unit,
     onDelete: (FeedSavedSearch) -> Unit,
 ) {
@@ -485,28 +488,28 @@ private fun FeedOrderList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
     ) {
-        itemsIndexed(rows, key = { _, row -> "feed-order-${row.feed.id}" }) { index, row ->
+        itemsIndexed(rows, key = { _, row -> "feed-order-${row.first.id}" }) { index, (feed, title) ->
             ElevatedCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = row.title, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+                    Text(text = title, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
                     IconButton(
-                        onClick = { onMove(row.feed, index - 1) },
+                        onClick = { onMove(feed, index - 1) },
                         enabled = index > 0,
-                        modifier = Modifier.testTag("feed-up-${row.feed.id}"),
+                        modifier = Modifier.testTag("feed-up-${feed.id}"),
                     ) {
                         Icon(Icons.Outlined.ArrowUpward, contentDescription = stringResource(KMR.strings.action_move_up))
                     }
                     IconButton(
-                        onClick = { onMove(row.feed, index + 1) },
+                        onClick = { onMove(feed, index + 1) },
                         enabled = index < rows.lastIndex,
-                        modifier = Modifier.testTag("feed-down-${row.feed.id}"),
+                        modifier = Modifier.testTag("feed-down-${feed.id}"),
                     ) {
                         Icon(Icons.Outlined.ArrowDownward, contentDescription = stringResource(KMR.strings.action_move_down))
                     }
-                    IconButton(onClick = { onDelete(row.feed) }, modifier = Modifier.testTag("feed-delete-${row.feed.id}")) {
+                    IconButton(onClick = { onDelete(feed) }, modifier = Modifier.testTag("feed-delete-${feed.id}")) {
                         Icon(Icons.Outlined.Delete, contentDescription = stringResource(MR.strings.action_delete))
                     }
                 }
