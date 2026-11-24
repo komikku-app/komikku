@@ -13,9 +13,10 @@ P11, reader parity (neighbouring chapters in the viewers, wide pages, animated p
 (last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, with its review fixes, is
 done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way: saved searches in the desktop catalogue
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
-commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) are
-built, not yet reviewed; next: the review `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" and its fix round; then
-the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
+commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
+are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
+from P15 on (settings search, app lock, notifications / tray, source migration), then the maintainer's first real run of
+the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -334,7 +335,13 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   search; the extension's name after the source's in global search rows. Desktop deviation: outside the selection mode a
   long press starts selecting (Android adds / removes that one entry). Test `BulkFavoriteUiTest` (4), feed tests +1 each.
   Full `:desktopApp:test` on `857aa60`: 70 classes, 306 tests, 0 failures.
-  **Pending:** `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" (Part B of this round) and its fix round.
+- **P13 rest / P14 review** (medium, `e4f266a..9186dbf`, 6 findings) — all fixed in `1d15044`, `18fb8d0`, `bb716c6`,
+  `96f73db`, `ce70339`, `f9e36c8` and the docs commit after them (PROGRESS.md "Review fixes (P13 rest / P14)"): three
+  unused Android imports dropped (`spotlessCheck` had passed with them); the Feed tab and the source feed follow their
+  rows again on Refresh after a read failure; the duplicate dialog's bulk choices wrap (`FlowRow`); "select inverse"
+  compares by id (**Android behaviour change**, bug fix); order mode ends with nothing to order; a new catalogue listing
+  ends the bulk selection (global search needed no change: no search runs while selecting). Full `:desktopApp:test` on
+  `f9e36c8`: 70 classes, 313 tests, 1 failure (`ReaderNavigationTest`, passes alone: timing under load).
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -385,8 +392,10 @@ mark the residual path in both modules.
    (feed and saved searches, PROGRESS "Remaining parity gaps" item 1): saved searches in the catalogue are built
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
-   favourites, search globally from the library, extension names in global search) are built; **pending**:
-   `/code-review medium e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" and its fix round; then the maintainer's
+   favourites, search globally from the library, extension names in global search) and their review fixes are done;
+   **next**: P15 onwards in this order — settings search, app lock (PIN / password at start-up, no biometrics),
+   notifications and a tray icon for library updates / downloads, source migration (single entry from the details
+   first); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

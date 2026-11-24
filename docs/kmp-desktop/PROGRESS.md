@@ -3360,6 +3360,40 @@ classes, 304 tests, 0 failures (`SourceFeedUiTest` 3, `BulkFavoriteUiTest` 4 new
 tests, 0 failures (`DesktopBackupJobsTest` and `DesktopExtensionManagerTest` included and passing). Review range of P13
 rest + P14: `e4f266a..` the docs commit "Record the full desktop suite after P13 rest and P14" (= `74366d9^..`).
 
+### Review fixes (P13 rest / P14)
+
+Review `/code-review medium e4f266a..9186dbf`, 6 findings, all fixed in `1d15044`, `18fb8d0`, `bb716c6`, `96f73db`,
+`ce70339`, `f9e36c8` and this docs commit. Failing tests first: each new case was run on the unfixed code and failed for
+the reported reason — `BulkFavoriteUiTest` "select inverse compares the entries by id" (the changed entry stayed selected:
+`[9041001, 9041002]` instead of `[9041002]`) and "a new listing in the catalogue ends the selection" (timeout: the
+selection bar stayed after a new search), `FeedUiTest` "a feed whose rows cannot be read recovers on Refresh" and
+`SourceFeedUiTest` "a source feed that fails to be read recovers on Refresh" (timeouts: Refresh did nothing), `FeedUiTest`
+/ `SourceFeedUiTest` "order mode ends when its last … row is deleted" (timeouts: order mode stayed),
+`DuplicateMangaUiTest` "the bulk choices fit a narrow dialog" (in a 320 dp window the Row squeezed "Cancel" to 43 dp, its
+label broken over two lines, 76 dp high); they pass now.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | Three imports of Android's `SourceFeedScreenModel` unused after the move to `FeedItems.kt` (`Source`, `QuerySanitizer.sanitize`, `SavedSearch`) | fixed: all three were really unused (no other reference in the file) and are removed. `spotlessCheck` had been passing with them: ktlint 1.8.0 (this build's `spotless` setup) did not flag or remove them — `:app:spotlessKotlin --rerun` left the file unchanged | `1d15044` |
+| 2 | The source feed's (and the Feed tab's) `.catch` ended the feed subscription after a flow error and `refresh()` returned while `lastFeeds` was null: "Internal error" for good | fixed in both models: the subscription is a job of its own (`subscribe(reloadFirst)`); a read failure still shows the error state and ends it, and `refresh()` subscribes again when it is no longer active (its first build loads every row), otherwise rebuilds as before. Class docs say so. `FlakyFeedRepository` (test helper) fails the next subscriptions of the real repository | `ce70339` |
+| 3 | The duplicate dialog's bulk variant put four text buttons in one non-wrapping `Row` in the dismiss slot | fixed: the dismiss slot is a `FlowRow` (end-aligned, 8 dp apart): the bulk choices and "Cancel" wrap onto further lines instead of being squeezed or pushed out; "Cancel" has a test tag | `96f73db` |
+| 4 | `BulkFavoriteScreenModel.reverseSelection` compared whole entries (`selection.contains`), `toggleSelection` by id | fixed: compared by id (a set of the selected ids). **Android behaviour change** (bug fix): Android's "select inverse" in the catalogue, global search and the feeds no longer keeps an entry selected whose row changed after it was selected | `18fb8d0` |
+| 5 | Order mode stayed on after the last saved-search row was deleted (blank body) | fixed: order mode ends once the rows are known and there is nothing to order; the Feed tab the same (its body showed the empty feed, but the toolbar stayed in order mode without "Add") | `f9e36c8` |
+| 6 | A catalogue selection survived another listing (search, Popular / Latest, applied filters, saved search) | fixed: `CatalogueScreenModel.State.listing` is bumped by every new listing (`startListing`), and the screen ends the selection mode (which clears the selection) when it changes. Global search checked: no change needed — while selecting, its search toolbar (query field, pinned / all and "has results" chips) is replaced by the selection bar (`GlobalSearchScreen`: `if (bulkState.selectionMode) { … } else { GlobalSearchToolbar(…) }`), so no new search can run during a selection, and ending the selection clears it | `bb716c6` |
+
+Tests: `BulkFavoriteUiTest` 4 → 6, `FeedUiTest` 8 → 10, `SourceFeedUiTest` 4 → 6, `DuplicateMangaUiTest` 3 → 4.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*SourceFeedUiTest*' --tests '*FeedUiTest*' --tests '*BulkFavoriteUiTest*' --tests '*DuplicateMangaUiTest*' --tests
+'*CatalogueFilterUiTest*' --tests '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'` 35 tests, 0 failures.
+Full `:desktopApp:test` on `f9e36c8` (`./gradlew --stop` before): 70 classes, 313 tests, 1 failure —
+`ReaderNavigationTest` "next then previous across a chapter boundary leaves the chapter of the shown page current"
+(`expected:<1.3> but was:<P2>`); the reader is not touched by this round, and the class rerun alone passes (4 tests, 0
+failures), so it is recorded as timing-dependent under the full run's load (a third such class next to
+`DesktopBackupJobsTest` / `DesktopExtensionManagerTest`, which passed in this run). Was 70 / 306 on `857aa60`: +7 cases
+above.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
