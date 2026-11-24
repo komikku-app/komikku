@@ -3774,6 +3774,40 @@ by P19, it passes alone (`--tests '*MangayomiSourceStoreTest*'`: 16 tests, 0 fai
 three known ones, and is new on that list. `DesktopBackupJobsTest`, `DesktopExtensionManagerTest` and `ReaderNavigationTest`
 passed.
 
+### Review fixes (P19)
+
+Review `/code-review medium 506da59..2c18c9d`, 8 findings, all fixed in `692412e` … `8fc858f` and this docs commit. Failing
+tests first: the new cases were run on the unfixed code (`2c18c9d` with only the tests and the `FixedSourceManager`
+`initialized` switch) and failed for the reported reasons — `MigrationListUiTest` "the configuration waits for the sources
+to be loaded" and "the list waits for the sources to be loaded before it matches" (the screens were shown, with their
+models reading the empty source list, while the sources were still loading), "leaving the list replaces only the migrated
+entry's details and keeps unrelated screens" (stack of 2 instead of 3: the unrelated details were removed);
+`MigrateMangaUiTest` "migrate now … shows the new entry's details" and "copy now … shows the copy's details" (the old
+entry's details came back), "a failed migration is reported and the entry stays in the list" (no message, the list
+closed), "without any installed migration source the search says so …" (blank search); they pass now.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | The configuration and the list read the sources once, in their models, without waiting for `isInitialized` | fixed: both desktop screens show the loading screen until `SourceManager.isInitialized` and create their models only then (like `MigrateSearchScreen`, `GlobalSearchScreen`) | `d8ab0c0`, `6334b75` |
+| 2 | `leaveMigration` removed every details / migration screen in the stack | fixed: only the list, the screens above it, its own configuration screen if right below (same entries), and, for one entry, its details right below (replaced by the new entry's) are touched; everything else stays | `6334b75` |
+| 3 | After "Migrate now" / "Copy now" on the only entry, the item is gone before the back event, so the old details came back | fixed: the borrowed model remembers the last successful target (`lastMigratedTargetId`, KMK) and the list uses it before the first item's match. **Decided:** "Copy now" shows the copy's details too, like Android's "Copy" for the whole list (the screen the user came from is about the entry being worked on, the old entry stays reachable from the library) | `b2304dc`, `6334b75` |
+| 4 | The Continue button could cover the last row's move buttons | fixed: the list has 88 dp bottom content padding (button 56 + margins), as Android's scaffold adds the button's height to its inner padding | `d8ab0c0` |
+| 5 | `migrateMangas` / `migrateNow` ignored the use case's result | fixed in the borrowed model (KMK): a failure (`false` or an exception) is sent on `migrationFailedEvent`; "Migrate / copy now" keeps the entry; "Migrate / copy all" keeps only the failed entries (the others are done) and does not navigate back, so no details swap. The desktop list shows `desktop_migration_failed` per failure. **Android behaviour change** (decided, bug fix): the same model rules apply on Android and its list shows the same text as a long toast (the string's `desktop_` prefix kept: Weblate keys) and also uses the last migrated target for one entry (finding 3 is Android's too) | `b2304dc`, `6334b75` |
+| 6 | Blank migration search when none of the stored migration sources resolves | fixed with an explicit state (closest to Android, which shows an empty search): "None of the sources chosen for migration is installed …" (new `KMR.desktop_migration_no_sources`) and "Select sources", which closes the search and the list and opens the configuration for the list's entries | `95504fb` |
+| 7 | The search's own dialog branch (`list == null`) was unreachable, yet tested | fixed: the branch and its dialog are gone (a pick without a list below does nothing); `MigrateMangaUiTest` now goes details → "Migrate" → configuration → options sheet → list → the migration search that opens at once → pick → the list's "Migrate now" / "Copy now" / "Migrate" for migrate, copy, self-target and failure; the duplicate dialog and the use-case cases stay (real entry points) | `95504fb`, `8fc858f` |
+| 8 | The moved configuration model's changed declarations were unmarked | fixed: the class header (was `private class ScreenModel` in the screen), its `StateScreenModel` type argument and `MigrationSource` (was nested) are in KMK markers; Android's screen file was already marked where it changed (`rememberScreenModel { /* KMK --> */ MigrationConfigScreenModel() /* KMK <-- */ }`, the four `SelectionConfig` references, the closing comment block); only removed imports carry no marker | `692412e` |
+
+Tests: `MigrationListUiTest` 2 → 5, `MigrateMangaUiTest` 7 → 8 (four cases moved to the real flow, one new); the test
+`FixedSourceManager` has an `initialized` switch.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests
+'*MigrateMangaUiTest*' --tests '*MigrationListUiTest*' --tests '*DuplicateMangaUiTest*' --tests '*LibraryGroupSelectionUiTest*'`
+21 tests, 0 failures after one test fix (the failure case waited for two failure toasts at once; the toast host shows one
+at a time, so it now waits for the first to go). Full `:desktopApp:test` on `8fc858f`: 76 classes,
+352 tests, 0 failures (was 76 / 348 on `c88b273`; `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`,
+`ReaderNavigationTest` and `MangayomiSourceStoreTest` included and passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:

@@ -397,8 +397,17 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   the details and the library selection go through them, the migration search uses the migration sources only and hands
   its pick back to the list, a click on a duplicate in the duplicate dialog migrates it (details, bulk favourites). Not
   built: Browse → Migrate, merged sources. Tests `MigrationListUiTest` (2), `MigrateMangaUiTest` +1, `DuplicateMangaUiTest`
-  +1, `LibraryGroupSelectionUiTest` extended. Not reviewed yet; review range `506da59..` the docs commit "Record the
-  desktop migration list (P19)".
+  +1, `LibraryGroupSelectionUiTest` extended. Review range `506da59..2c18c9d`.
+- **P19 review** (medium, `506da59..2c18c9d`, 8 findings) — all fixed in `692412e` … `8fc858f` and the docs commit after
+  them (PROGRESS.md "Review fixes (P19)"): the configuration and the list wait for the sources before creating their
+  models; leaving the list closes only its own screens (and swaps the migrated entry's details right below it); after
+  "Migrate / Copy now" on the only entry the new entry's details are shown (Copy too, like Android's "Copy"); room under
+  the configuration's last row for its Continue button; failed migrations reported, failed entries kept, no details swap
+  (**Android behaviour change**: the borrowed model's rules and a toast on Android's list too); an explicit "no migration
+  sources" state in the migration search with a way to the configuration; the search's unreachable own dialog removed
+  and its tests moved to the real details → configuration → list → search flow; KMK markers on the moved configuration
+  model's declarations. Full `:desktopApp:test` on `8fc858f`: 76 classes, 352 tests, 0 failures. Last Part A commit: the
+  docs commit "Record the P19 review fixes".
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -452,8 +461,8 @@ mark the residual path in both modules.
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
-   configuration, migration from the duplicate dialog) is built; **next**: its review (`506da59..`), then Browse → Migrate
-   or another item of PROGRESS "Remaining parity gaps"; then the maintainer's
+   configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate): see
+   "Done"; **next**: its review, then another item of PROGRESS "Remaining parity gaps"; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
