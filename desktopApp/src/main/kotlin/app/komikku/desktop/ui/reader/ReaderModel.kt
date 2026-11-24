@@ -4,6 +4,7 @@ import android.app.Application
 import app.komikku.shared.reader.ReaderChapterList
 import app.komikku.shared.reader.ReaderProgressChapter
 import app.komikku.shared.reader.ReaderProgressSaver
+import app.komikku.shared.reader.ReaderViewerItems
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.model.readerOrientation
@@ -60,8 +61,12 @@ import uy.kohesive.injekt.api.get
  * `ReaderChapter` models, the shared [ReaderChapterList] (which chapters, in which order) and
  * [ReaderProgressSaver] (last page, read flag, duplicates, history, bookmarks).
  *
- * The viewer shows one chapter at a time as [State.items]: a "previous chapter" transition, the pages,
- * a "next chapter" transition. Moving past a transition loads the neighbouring chapter.
+ * The viewers show [State.items], built like Android's viewer adapters ([ReaderViewerItems], P11): the previous
+ * chapter's pages once loaded, the "previous chapter" transition, the current chapter's pages, the "next chapter"
+ * transition and the next chapter's pages once loaded. The next chapter is preloaded within the last five pages, a
+ * neighbour also when its transition is reached (Android `requestPreloadChapter`); a page of a neighbour becomes the
+ * current chapter when it is reached (Android `loadNewChapter`: history of the left chapter saved, read timer
+ * restarted). Moving past a transition whose neighbour is not loaded yet loads it.
  * Downloads (8.1, Android rules): "download ahead" (`autoDownloadWhileReading`) once a downloaded chapter is
  * past 25 % and the next one is downloaded too, and "delete after reading" (`removeAfterReadSlots`):
  * completed chapters are queued with `DownloadManager.enqueueChaptersToDelete` and deleted on [close].
@@ -100,10 +105,21 @@ class ReaderModel(
         val isLoadingAdjacent: Boolean = false,
         val error: Throwable? = null,
         val incognito: Boolean = false,
+        /**
+         * Changed when the position is set by the reader (a chapter opened, a chapter or page jump) rather than reached
+         * by the viewer, so that the webtoon list scrolls there; the viewers keep their place on other item changes.
+         */
+        val jump: Int = 0,
     ) {
         val currentChapter: ReaderChapter? get() = viewerChapters?.currChapter
         val pages: List<ReaderPage> get() = currentChapter?.pages.orEmpty()
         val currentItem: ReaderItem? get() = items.getOrNull(currentIndex)
+
+        /** The index in [items] of the current chapter's page [pageIndex] (0-based), `-1` when not there. */
+        fun indexOfPage(pageIndex: Int): Int {
+            val chapter = currentChapter ?: return -1
+            return items.indexOfFirst { it is ReaderPage && it.chapter == chapter && it.index == pageIndex }
+        }
 
         /** 1-based page number shown in the UI (the nearest page on a transition item). */
         val currentPageNumber: Int
@@ -220,32 +236,96 @@ class ReaderModel(
 
     private suspend fun loadChapter(chapter: ReaderChapter, page: Int?, start: ChapterStart) = mutex.withLock {
         loader.loadChapter(chapter, page)
-        val pos = chapterList.indexOf(chapter)
-        val newChapters = ViewerChapters(chapter, chapterList.getOrNull(pos - 1), chapterList.getOrNull(pos + 1))
+        val newChapters = viewerChaptersOf(chapter)
         val pages = chapter.pages.orEmpty()
-        val items = buildList {
-            add(ChapterTransition.Prev(chapter, newChapters.prevChapter))
-            addAll(pages)
-            add(ChapterTransition.Next(chapter, newChapters.nextChapter))
-        }
         val pageIndex = when (start) {
             ChapterStart.Requested -> chapter.requestedPage.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
             ChapterStart.First -> 0
             ChapterStart.Last -> pages.lastIndex
         }
+        val target = pages.getOrNull(pageIndex)
+        val items = ReaderViewerItems.build(newChapters, forceTransition = alwaysShowTransition())
+        // Android: add the new references first to avoid recycling a chapter that stays
         newChapters.ref()
         _state.value.viewerChapters?.unref()
         _state.update {
             it.copy(
                 viewerChapters = newChapters,
                 items = items,
-                currentIndex = pageIndex + 1,
+                currentIndex = ReaderViewerItems.indexOf(items, target).coerceAtLeast(0),
                 bookmarked = chapter.chapter.bookmark,
                 isLoading = false,
                 error = null,
+                jump = it.jump + 1,
             )
         }
-        (items[pageIndex + 1] as? ReaderPage)?.let(::onPageSelected)
+        target?.let(::onPageSelected)
+    }
+
+    private fun viewerChaptersOf(chapter: ReaderChapter): ViewerChapters {
+        val pos = chapterList.indexOf(chapter)
+        return ViewerChapters(chapter, chapterList.getOrNull(pos - 1), chapterList.getOrNull(pos + 1))
+    }
+
+    /** Android's viewers: `alwaysShowChapterTransition`, or the viewer is on a transition (it stays while it is shown). */
+    private fun forceTransition(current: ReaderItem?): Boolean =
+        current is ChapterTransition || alwaysShowTransition()
+
+    private fun alwaysShowTransition(): Boolean = readerPreferences.alwaysShowChapterTransition().get()
+
+    /** Rebuilds [State.items] for the current chapters (a neighbour was loaded), staying on the current item. */
+    private suspend fun refreshItems() = mutex.withLock {
+        val chapters = _state.value.viewerChapters ?: return@withLock
+        _state.update { state ->
+            val current = state.currentItem
+            val items = ReaderViewerItems.build(chapters, forceTransition(current))
+            val index = ReaderViewerItems.indexOf(items, current).takeIf { it >= 0 } ?: state.currentIndex.coerceIn(0, items.lastIndex)
+            state.copy(items = items, currentIndex = index)
+        }
+    }
+
+    /** The chapter being made current by [switchChapter], so that several pages reached meanwhile switch once. */
+    @Volatile
+    private var switchingTo: ReaderChapter? = null
+
+    /**
+     * Android `loadNewChapter`: a page of a neighbouring chapter was reached, so that chapter becomes the current one
+     * (history of the left chapter saved, read timer restarted, the items rebuilt around it; the viewer stays on the
+     * item it is on).
+     */
+    private fun switchChapter(chapter: ReaderChapter) {
+        if (switchingTo == chapter) return
+        switchingTo = chapter
+        scope.launch {
+            try {
+                val left = _state.value.currentChapter
+                if (left != null && left != chapter) progressSaver.saveHistory(left.chapter.id!!, _state.value.incognito)
+                progressSaver.restartReadTimer()
+                mutex.withLock {
+                    val state = _state.value
+                    if (state.currentChapter == chapter || chapter !in chapterList) return@withLock
+                    loader.loadChapter(chapter)
+                    val newChapters = viewerChaptersOf(chapter)
+                    newChapters.ref()
+                    state.viewerChapters?.unref()
+                    _state.update {
+                        val current = it.currentItem
+                        val items = ReaderViewerItems.build(newChapters, forceTransition(current))
+                        val index = ReaderViewerItems.indexOf(items, current).takeIf { i -> i >= 0 }
+                            ?: ReaderViewerItems.indexOf(items, chapter.pages?.getOrNull(chapter.requestedPage)).coerceAtLeast(0)
+                        it.copy(viewerChapters = newChapters, items = items, currentIndex = index, bookmarked = chapter.chapter.bookmark)
+                    }
+                }
+                (_state.value.currentItem as? ReaderPage)?.let(::preloadIfInRange)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e)
+                _state.update { it.copy(error = e) }
+            } finally {
+                if (switchingTo == chapter) switchingTo = null
+            }
+        }
     }
 
     /** Called when [index] of [State.items] becomes the current item (page turn, scroll, slider). */
@@ -255,14 +335,32 @@ class ReaderModel(
         if (clamped == state.currentIndex && state.items.isNotEmpty()) return
         _state.update { it.copy(currentIndex = clamped) }
         when (val item = state.items.getOrNull(clamped)) {
-            is ReaderPage -> onPageSelected(item)
+            is ReaderPage -> {
+                onPageSelected(item)
+                if (item.chapter != state.currentChapter) switchChapter(item.chapter)
+            }
             is ChapterTransition -> item.to?.let { preload(it) }
             null -> {}
         }
     }
 
+    /** Moves to [item] if it is in [State.items] (the webtoon list reports the item it shows on top). */
+    fun moveToItem(item: ReaderItem) {
+        val index = ReaderViewerItems.indexOf(_state.value.items, item)
+        if (index >= 0) moveTo(index)
+    }
+
+    /** Moves to the current chapter's page [pageIndex] (0-based; slider, first / last page) and lets the viewers follow. */
+    fun moveToPage(pageIndex: Int) {
+        val index = _state.value.indexOfPage(pageIndex)
+        if (index < 0) return
+        moveTo(index)
+        _state.update { it.copy(jump = it.jump + 1) }
+    }
+
     /**
-     * Next item ([step] = 2 for double pages); on the "next chapter" transition, opens the next chapter.
+     * Next item ([step] = 2 for double pages); at the end of the items (the "next chapter" transition while the next
+     * chapter is not loaded yet), opens the next chapter.
      */
     fun next(step: Int = 1) {
         val state = _state.value
@@ -274,7 +372,7 @@ class ReaderModel(
         }
     }
 
-    /** Previous item; on the "previous chapter" transition, opens the previous chapter at its last page. */
+    /** Previous item; at the start of the items, opens the previous chapter at its last page. */
     fun previous(step: Int = 1) {
         val state = _state.value
         if (state.isLoadingAdjacent) return
@@ -285,9 +383,9 @@ class ReaderModel(
         }
     }
 
-    fun moveToFirstPage() = moveTo(1)
+    fun moveToFirstPage() = moveToPage(0)
 
-    fun moveToLastPage() = moveTo(_state.value.items.size - 2)
+    fun moveToLastPage() = moveToPage(_state.value.pages.lastIndex)
 
     /** Toolbar / N key: open the next chapter where its reading position is (Android: `loadNextChapter`). */
     fun loadNextChapter() {
@@ -317,7 +415,18 @@ class ReaderModel(
         }
     }
 
-    /** Loads a neighbouring chapter's page list in the background (Android: `preload`). */
+    /** Android's viewers: within the last five pages of the current chapter, preload the next one. */
+    private fun preloadIfInRange(page: ReaderPage) {
+        val pages = page.chapter.pages ?: return
+        val viewerChapters = _state.value.viewerChapters ?: return
+        if (page.chapter != viewerChapters.currChapter || pages.size - page.number >= PRELOAD_PAGES) return
+        viewerChapters.nextChapter?.let(::preload)
+    }
+
+    /**
+     * Loads a neighbouring chapter's page list in the background (Android: `preload`), then adds its pages to the
+     * items (Android: `ReloadViewerChapters`).
+     */
     private fun preload(chapter: ReaderChapter) {
         if (chapter.state is ReaderChapter.State.Loaded || chapter.state == ReaderChapter.State.Loading) return
         scope.launch {
@@ -327,7 +436,9 @@ class ReaderModel(
                 throw e
             } catch (_: Throwable) {
                 // shown on the transition item through chapter.stateFlow
+                return@launch
             }
+            refreshItems()
         }
     }
 
@@ -338,6 +449,7 @@ class ReaderModel(
         val progressChapter = progressOf(readerChapter)
         val manga = _state.value.manga ?: return
         if (page.number.toDouble() / pages.size > 0.25) downloadNextChapters(manga)
+        preloadIfInRange(page)
         enqueueWrite {
             run {
                 val completed = progressSaver.onPageSelected(
@@ -492,3 +604,6 @@ class ReaderModel(
     /** The domain chapter of the current item (for titles). */
     val currentDomainChapter get() = _state.value.currentChapter?.chapter?.toDomainChapter()
 }
+
+/** Android's viewers preload the next chapter within this many pages of the current chapter's end. */
+private const val PRELOAD_PAGES = 5

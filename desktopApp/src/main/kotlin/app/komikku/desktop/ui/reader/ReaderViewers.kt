@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -163,7 +164,8 @@ fun PagedViewer(
             when (item) {
                 is ReaderPage -> {
                     val spread = if (display.doublePages && state.readingMode.direction == ReadingMode.Direction.Horizontal) {
-                        (state.items.getOrNull(state.currentIndex + 1) as? ReaderPage)
+                        // Pages of one chapter only (the next item may be the next chapter's first page)
+                        (state.items.getOrNull(state.currentIndex + 1) as? ReaderPage)?.takeIf { it.chapter == item.chapter }
                     } else {
                         null
                     }
@@ -209,7 +211,8 @@ fun PagedViewer(
  * Webtoon / continuous vertical viewer: a lazy column of all items of the current chapter with the
  * side padding setting, native smooth wheel scrolling, keyboard scrolling from the reader, tall pages
  * as stacked strips. Item heights stay stable once a page's aspect ratio is known (also after the
- * decoded image left the memory cache). Reaching the "next chapter" item opens the next chapter.
+ * decoded image left the memory cache). The list holds the neighbouring chapters' pages once they are loaded (P11):
+ * the item on top is reported to the model ([onMoveTo]), which preloads and switches chapters like Android.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -219,24 +222,21 @@ fun WebtoonViewer(
     zoom: ReaderZoom,
     display: ReaderDisplay,
     onAction: (ReaderAction) -> Unit,
-    onMoveTo: (Int) -> Unit,
+    onMoveTo: (ReaderItem) -> Unit,
     onRetry: (ReaderPage) -> Unit,
 ) {
-    val aspects = remember(state.viewerChapters) { mutableStateMapOf<Int, Float>() }
-    LaunchedEffect(state.viewerChapters) {
+    // Page aspect ratios by item key: the list holds pages of up to three chapters (P11)
+    val aspects = remember { mutableStateMapOf<Any, Float>() }
+    // A position set by the reader (chapter opened, page / chapter jump): scroll there. Other item changes (a
+    // neighbour's pages added, the current chapter switched) keep the list where it is (lazy list keys).
+    LaunchedEffect(state.jump) {
         if (state.items.isNotEmpty()) listState.scrollToItem(state.currentIndex)
     }
-    LaunchedEffect(listState, state.viewerChapters) {
+    val items by rememberUpdatedState(state.items)
+    LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
-            .collect { index ->
-                // The "next chapter" item reached the top: open the next chapter.
-                if (index == state.items.lastIndex && state.viewerChapters?.nextChapter != null && index > 0) {
-                    onAction(ReaderAction.Next)
-                } else {
-                    onMoveTo(index)
-                }
-            }
+            .collect { index -> items.getOrNull(index)?.let(onMoveTo) }
     }
     BoxWithConstraints(
         modifier = Modifier
@@ -272,8 +272,8 @@ fun WebtoonViewer(
             itemsIndexed(state.items, key = { i, item -> itemKey(i, item) }) { i, item ->
                 when (item) {
                     is ReaderPage -> {
-                        val aspect = aspects[item.index]
-                        ReaderPageSlotWebtoon(item, contentWidthPx, display, aspect, onAspect = { aspects[item.index] = it }, onRetry = { onRetry(item) })
+                        val key = itemKey(i, item)
+                        ReaderPageSlotWebtoon(item, contentWidthPx, display, aspects[key], onAspect = { aspects[key] = it }, onRetry = { onRetry(item) })
                     }
                     is ChapterTransition -> ChapterTransitionContent(
                         item,
@@ -314,8 +314,9 @@ private fun ReaderPageSlotWebtoon(
 
 private fun itemKey(index: Int, item: ReaderItem): Any = when (item) {
     is ReaderPage -> "page-${item.chapter.chapter.id}-${item.index}"
-    is ChapterTransition.Prev -> "prev-$index"
-    is ChapterTransition.Next -> "next-$index"
+    // One transition of each kind per list, named by its chapters so that it keeps its key when the list is rebuilt
+    is ChapterTransition.Prev -> "prev-${item.from.chapter.id}-${item.to?.chapter?.id}"
+    is ChapterTransition.Next -> "next-${item.from.chapter.id}-${item.to?.chapter?.id}"
 }
 
 /** Scrolls the webtoon list for keyboard actions; returns `false` for actions it does not handle. */

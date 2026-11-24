@@ -103,8 +103,9 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
         when (action) {
             ReaderAction.Next -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageDown, viewportHeight) } else model.next(step)
             ReaderAction.Previous -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageUp, viewportHeight) } else model.previous(step)
-            ReaderAction.First -> if (webtoon) scope.launch { listState.scrollToItem(1) } else model.moveToFirstPage()
-            ReaderAction.Last -> if (webtoon) scope.launch { listState.scrollToItem((state.items.size - 2).coerceAtLeast(0)) } else model.moveToLastPage()
+            // The webtoon list follows the model's jump
+            ReaderAction.First -> model.moveToFirstPage()
+            ReaderAction.Last -> model.moveToLastPage()
             ReaderAction.NextChapter -> model.loadNextChapter()
             ReaderAction.PreviousChapter -> model.loadPreviousChapter()
             ReaderAction.ScrollDown, ReaderAction.ScrollUp, ReaderAction.PageDown, ReaderAction.PageUp ->
@@ -155,7 +156,7 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
                     modifier = Modifier.align(Alignment.Center).padding(24.dp).testTag("reader-error"),
                 )
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                webtoon -> WebtoonViewer(state, listState, zoom, display.viewer, ::perform, model::moveTo, model::retry)
+                webtoon -> WebtoonViewer(state, listState, zoom, display.viewer, ::perform, model::moveToItem, model::retry)
                 else -> PagedViewer(state, zoom, display.viewer, ::perform, model::retry)
             }
         }
@@ -237,7 +238,7 @@ private fun ReaderBottomBar(state: ReaderModel.State, model: ReaderModel) {
                 Text(state.currentPageNumber.toString(), modifier = Modifier.padding(horizontal = 8.dp))
                 Slider(
                     value = state.currentPageNumber.toFloat(),
-                    onValueChange = { model.moveTo(it.toInt()) },
+                    onValueChange = { model.moveToPage(it.toInt() - 1) },
                     valueRange = 1f..pages.toFloat(),
                     steps = (pages - 2).coerceAtLeast(0),
                     modifier = Modifier.weight(1f).testTag("reader-slider"),
