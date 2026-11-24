@@ -2,6 +2,7 @@ package app.komikku.desktop.ui.more
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -75,7 +76,8 @@ class SourceCategoriesScreen : Screen() {
                 if (current.isEmpty) {
                     EmptyScreen(stringRes = MR.strings.information_empty_category_dialog)
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().testTag("source-categories")) {
+                    // Room under the last row for the "Add" button (its height and margins)
+                    LazyColumn(Modifier.fillMaxSize().testTag("source-categories"), contentPadding = PaddingValues(bottom = 88.dp)) {
                         items(current.categories, key = { it }) { category ->
                             ListItem(
                                 modifier = Modifier.testTag("source-category-$category"),

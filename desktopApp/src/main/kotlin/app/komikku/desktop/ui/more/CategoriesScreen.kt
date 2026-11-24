@@ -3,6 +3,7 @@ package app.komikku.desktop.ui.more
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -129,7 +130,8 @@ class CategoriesScreen : Screen() {
                 if (state.categories.isEmpty()) {
                     EmptyScreen(stringRes = MR.strings.information_empty_category_dialog)
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().testTag("categories")) {
+                    // Room under the last row for the "Add" button (its height and margins)
+                    LazyColumn(Modifier.fillMaxSize().testTag("categories"), contentPadding = PaddingValues(bottom = 88.dp)) {
                         itemsIndexed(state.categories, key = { _, it -> it.id }) { index, category ->
                             CategoryRow(category, index, state.categories.size, model)
                         }

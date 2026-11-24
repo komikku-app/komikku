@@ -1,6 +1,8 @@
 package app.komikku.desktop.ui.browse
 
 import android.app.Application
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasAnyAncestor
@@ -14,6 +16,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -21,8 +24,13 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.ui.DesktopTheme
+import app.komikku.desktop.ui.more.SourceCategoriesScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import cafe.adriel.voyager.navigator.CurrentScreen
+import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.domain.source.service.SourcePreferences
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -147,6 +155,29 @@ class SourceCategoriesUiTest {
             waitForTag("source-$SOURCE", present = false)
             waitForTag("source-$SOURCE-category-Favourites")
             onAllNodesWithText("Favourites").fetchSemanticsNodes().isNotEmpty() shouldBe true
+        }
+
+    @Test
+    fun `the add button leaves the last category's buttons uncovered`() =
+        runDesktopComposeUiTest(width = 900, height = 600) {
+            val names = (1..25).map { "Cat %02d".format(it) }
+            preferences.sourcesTabCategories().set(names.toSet())
+            setContent {
+                CompositionLocalProvider(LocalContext provides app) {
+                    DesktopTheme { Navigator(SourceCategoriesScreen()) { CurrentScreen() } }
+                }
+            }
+            waitForTag("source-category-${names.first()}")
+            // To the end of the list (the last row as far up as the list lets it go)
+            onNodeWithTag("source-categories").performScrollToIndex(names.lastIndex)
+            waitForIdle()
+            val delete = onNodeWithTag("source-category-delete-${names.last()}").fetchSemanticsNode().boundsInRoot
+            val rename = onNodeWithTag("source-category-rename-${names.last()}").fetchSemanticsNode().boundsInRoot
+            val add = onNodeWithTag("source-category-add").fetchSemanticsNode().boundsInRoot
+            withClue("delete $delete, rename $rename, add $add") {
+                (delete.bottom <= add.top) shouldBe true
+                (rename.bottom <= add.top) shouldBe true
+            }
         }
 
     @Test
