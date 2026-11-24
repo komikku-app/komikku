@@ -29,6 +29,8 @@ import javax.crypto.spec.PBEKeySpec
  * - "Lock when idle" (`lockAppAfter`) and SY's lock times / days ([AppLockRules]) apply after the window was hidden
  *   (minimised: Android's app going to the background): [onWindowHidden] / [onWindowShown].
  * - Wrong entries: from the [FREE_ATTEMPTS]th failure in a row, the next try waits 30 s more each time (at most 5 min).
+ *   The count and the end of the wait are app-state preferences too (review fix), so a restart does not reset them; a
+ *   stored end further away than the current wait (the clock was set back) counts as the current wait from now.
  *
  * [clock] and [calendar] are injected for tests.
  */
@@ -40,6 +42,8 @@ class DesktopAppLock(
 ) {
 
     private val secret = preferenceStore.getString(Preference.appStateKey(SECRET_KEY), "")
+    private val failures = preferenceStore.getInt(Preference.appStateKey(FAILURES_KEY), 0)
+    private val blockedUntil = preferenceStore.getLong(Preference.appStateKey(BLOCKED_UNTIL_KEY), 0L)
 
     private val _locked = MutableStateFlow(false)
 
@@ -50,9 +54,6 @@ class DesktopAppLock(
 
     /** Whether the lock is on (see the class docs). */
     val enabled: StateFlow<Boolean> = _enabled.asStateFlow()
-
-    private var failures = 0
-    private var blockedUntil = 0L
 
     /** The window was hidden while unlocked: the next [onWindowShown] applies "Lock when idle". */
     private var hidden = false
@@ -143,24 +144,35 @@ class DesktopAppLock(
 
     private suspend fun check(input: String): Attempt {
         val now = clock()
-        if (now < blockedUntil) return Attempt.Blocked((blockedUntil - now + 999) / 1000)
+        val failed = failures.get()
+        var until = blockedUntil.get()
+        // A stored end further away than the wait it was set for (the clock was set back since): the wait from now
+        val wait = waitMillis(failed)
+        if (until - now > wait) {
+            until = now + wait
+            blockedUntil.set(until)
+        }
+        if (now < until) return Attempt.Blocked((until - now + 999) / 1000)
         val stored = secret.get()
         val matches = stored.isNotEmpty() && withContext(Dispatchers.Default) { AppLockSecret.verify(input, stored) }
         if (matches) {
             resetFailures()
             return Attempt.Accepted
         }
-        failures++
-        if (failures >= FREE_ATTEMPTS) {
-            val waitMillis = (30_000L * (failures - FREE_ATTEMPTS + 1)).coerceAtMost(MAX_WAIT_MILLIS)
-            blockedUntil = now + waitMillis
-        }
+        failures.set(failed + 1)
+        if (failed + 1 >= FREE_ATTEMPTS) blockedUntil.set(now + waitMillis(failed + 1))
         return Attempt.Wrong
     }
 
+    /** The wait after [failed] wrong entries in a row: none before [FREE_ATTEMPTS], then 30 s more each, at most 5 min. */
+    private fun waitMillis(failed: Int): Long = when {
+        failed < FREE_ATTEMPTS -> 0L
+        else -> (30_000L * (failed - FREE_ATTEMPTS + 1)).coerceAtMost(MAX_WAIT_MILLIS)
+    }
+
     private fun resetFailures() {
-        failures = 0
-        blockedUntil = 0L
+        failures.delete()
+        blockedUntil.delete()
     }
 
     companion object {
@@ -173,6 +185,8 @@ class DesktopAppLock(
         private const val MAX_WAIT_MILLIS = 5 * 60_000L
 
         internal const val SECRET_KEY = "desktop_app_lock_secret"
+        internal const val FAILURES_KEY = "desktop_app_lock_failures"
+        internal const val BLOCKED_UNTIL_KEY = "desktop_app_lock_blocked_until"
     }
 }
 
