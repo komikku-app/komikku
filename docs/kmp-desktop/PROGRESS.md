@@ -2040,8 +2040,8 @@ carries a desktop installer (see "What the release pipeline still needs").
   and desktop installers serves both; a desktop-only release line would need its own repository or tag prefix.
 - Release notes are plain selectable text (Android renders Markdown with `MarkdownRender`; the Markdown renderer is not on
   the desktop's classpath); the interactor's `\r` separators become line breaks.
-- A failed scheduled check waits the whole 3 days (Android's `Result.failure()`; Android's job additionally waits for a
-  network connection, which has no reliable JVM signal); every app start checks again anyway (throttled).
+- ~~A failed scheduled check waits the whole 3 days~~ (changed in the review fixes: a failed check is not recorded and
+  retries after 10 minutes; Android's job waits for a network connection instead, which has no reliable JVM signal).
 - Android's "What's new" / "What's coming" entries are not ported (release notes of the running version / a peek into
   the preview channel); without desktop releases they would show Android notes.
 - No new strings (`MR`: `check_for_updates`, `update_check_notification_update_available`, `update_check_open`,
@@ -2055,8 +2055,8 @@ carries a desktop installer (see "What the release pipeline still needs").
    `.deb` / `.rpm` / `.AppImage` (the Linux app image is a directory today; it needs `appimagetool` or should be
    left out).
 2. Build those installers with `-Penable-updater` (the workflow does not pass it yet).
-3. Optionally per-architecture assets (the selection takes the first matching file for the OS, not the CPU; macOS arm64
-   vs x64 and Linux x64 vs arm64 would need a marker in the name, like Android's ABI suffixes).
+3. Per-architecture assets need the architecture in the file name (`x64` / `amd64` / `x86_64`, `arm64` / `aarch64`;
+   matched since the P6 review fixes), like Android's ABI suffixes; a name without one counts for every architecture.
 4. Signing / notarization (separate parity step) so that the downloaded installers open without OS warnings.
 
 **Tests:** `DesktopAppUpdateCheckerTest` (9; fake release source in GitHub's newest-first shape filtered through the
@@ -2076,6 +2076,56 @@ Verification (after `6c6d0a5`, `--max-workers=2`): `spotlessApply`, `spotlessChe
 **Not verified:** a real request against `api.github.com` (no network calls in tests; the API shape is the one Android
 already parses); the dialog in a real window; a build with `-Penable-updater` / `-Pdesktop-preview` was only compiled
 through the property reading, not run.
+
+### Review fixes (P6)
+
+Review `/code-review medium 9f4a7ec^..ff465c0`, 8 findings (4 important, 1 pre-existing, 3 nits), all fixed in
+`c0ad31b` (preview build / workflow), `3a9a712` (dialog), `921518b` (checker, config, About, `main`) and this docs commit.
+
+1. **"Open on GitHub" closed the dialog although the browser did not open** (`AppUpdateDialog`): `DesktopBrowser.open`
+   returns `false` without AWT browse support or when `browse` throws. The dialog now closes only on success; otherwise it
+   stays and shows "Could not open the browser. Open this address yourself:" (new `KMR.strings.desktop_browser_open_failed`;
+   no existing string said this) and the release page address as selectable text (`app-update-release-link`). Test:
+   `AppUpdateUiTest` "when the browser cannot be opened …" (failed before: the dialog was gone).
+2. **A preview build on a shallow clone compared release tags with a commit count of 1** (`desktopApp/build.gradle.kts`):
+   `build_desktop.yml` checked out with the default depth. The checkout now has `fetch-depth: 0`, and with
+   `-Pdesktop-preview` the build fails at configuration with a clear message when `git rev-parse --is-shallow-repository`
+   says `true`, or the commit count is missing / not a number / 0 (`previewCommitCount()`). Checked by hand on this
+   (shallow) clone: `./gradlew :desktopApp:help -Pdesktop-preview` fails with "-Pdesktop-preview needs the full Git
+   history …"; without the flag nothing changes. No Gradle test (build logic has no test harness here).
+3. **An offline start blocked automatic checks for 3 days** (`DesktopAppUpdateChecker`): `checkOnStart` and the task
+   wrote `lastAppUpdateCheck` before the check, whatever its result. Now the checker writes it only after a check that got
+   an answer (update or not, forced or not), never after a failure; the scheduled task maps a failure to
+   `Outcome.Busy` (retry after its `retryDelay`, set to `FAILURE_RETRY_DELAY` = 10 minutes, like the other tasks' busy
+   retry). Checks are serialized with a `Mutex`; an automatic check within 10 minutes of a failure of this process returns
+   that failure without contacting GitHub, so the start-up check and the scheduler's catch-up right after it make one
+   request, not two. Tests: "a network failure is reported, not recorded …", "an offline start does not block the
+   scheduled check for days" (real `DesktopScheduler`: one request, retry not before 10 minutes, then the update), the
+   reworked scheduled-task test (failure = `Busy`, last run unchanged).
+4. **Installers were matched by OS only** (`DesktopUpdaterConfig.installerLink`): new `DesktopArch` (`X64`: `x64`,
+   `amd64`, `x86_64`, `x86-64`; `Arm64`: `arm64`, `aarch64`) from `os.arch`, matched in asset names as separate words
+   (between non-alphanumeric characters, ignoring case). An asset that states no architecture counts for any, one that
+   states another architecture does not; an unknown JVM architecture (`null`) matches by OS only. **The Linux package
+   format is not distinguished** (`.deb` / `.rpm` / `.AppImage`: the first matching asset of the release wins, as before;
+   the link is only shown via the release page anyway). Test: "the installer matches the CPU architecture …".
+5. **`isNewVersion` threw on an odd tag** (pre-existing, Android `GetApplicationRelease`): fixed on the desktop side
+   without touching the domain. The desktop `ReleaseService` selector is now `DesktopUpdaterConfig.downloadLink`, which
+   drops a release whose tag `isComparableTag` rejects (the interactor's own rule: digits and dots only; preview = an
+   `Int`; stable = all parts numbers and at least as many as the app's version), so one odd tag is skipped instead of
+   failing the whole check. Android is unchanged (it still throws on such a tag; out of scope). Test: "a release with a
+   tag that cannot be compared is skipped …" (`desktop-v2`, `v1.15`, `nightly`, `r12.4`).
+6. **The KDoc claimed a two-day throttle that only applied after a found update**: an up-to-date desktop asked GitHub at
+   every start. Automatic checks (start-up and scheduled) now return the new `Check.Throttled` without contacting GitHub
+   within `AUTOMATIC_CHECK_INTERVAL` (2 days, Android's value) of the desktop's last answered check
+   (`desktop_last_app_update_check`, also the task's last run); a forced check (About) is never throttled. KDoc
+   rewritten (class, `checkOnStart`, `appUpdateCheckTask`). Test: "an up-to-date app does not ask GitHub at every start".
+7. **About showed "(r0)"** for a preview build without a commit count: the suffix is added only when the count is above 0.
+   Not covered by a test (the About UI test builds a stable config; a preview build without a commit count cannot pass
+   the Gradle check from item 2 anyway).
+8. **The P3 scheduler comment headed the update check in `main`**: each comment is next to its statement now, and the
+   update check's comment says it must run before `scheduler.start()`.
+
+Tests after the fixes: `DesktopAppUpdateCheckerTest` 13 (was 9), `AppUpdateUiTest` 3 (was 2).
 
 ## Remaining parity gaps
 

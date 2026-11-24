@@ -4,9 +4,9 @@ State as of 2026-11-24, branch `claude/kmp-multiplatform-support` (the I2b revie
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
-sources, with its review fixes, and parity step P5, AVIF / JPEG XL, with its review fixes, are done; parity step P6, the
-app update check, is built, **its review and fix round are still pending**; then the remaining parity gaps WebView /
-Cloudflare and signing, and the maintainer's first real run; see "Done" and "Left to do").
+sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, and parity step P6, the app
+update check, with its review fixes, are done; next: WebView / Cloudflare, signing, the release pipeline for desktop
+installers, and the maintainer's first real run; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -154,8 +154,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   "Check for updates", an update dialog with the release notes and "Open on GitHub" (browser; **no in-app download /
   install on desktop**, decided). The release side does not exist yet: `build_desktop.yml` uploads workflow artifacts only,
   so nothing is found until desktop installers are attached to the GitHub releases (PROGRESS "What the release pipeline
-  still needs"). Tests `DesktopAppUpdateCheckerTest`, `AppUpdateUiTest`. **Review (`/code-review medium 9f4a7ec^..<last P6
-  commit>`) and its fix round are still pending.**
+  still needs"). Tests `DesktopAppUpdateCheckerTest`, `AppUpdateUiTest`.
+- **P6 review** (medium, `9f4a7ec^..ff465c0`, 8 findings) — all fixed in `c0ad31b`, `3a9a712`, `921518b` (PROGRESS.md
+  "Review fixes (P6)"): "Open on GitHub" closes the dialog only when the browser opened (otherwise the address as
+  selectable text); a `-Pdesktop-preview` build fails on a shallow clone / without a commit count and the desktop
+  workflow checks out with `fetch-depth: 0`; the last-check time is written only after a check that got an answer, a
+  failure retries after 10 minutes, and automatic checks are throttled to one per two days by that time (an up-to-date
+  app no longer asks GitHub at every start); installers are matched by CPU architecture (Linux package format not
+  distinguished); releases with a tag the interactor cannot compare are skipped on the desktop (Android's
+  `isNewVersion` unchanged); no "(r0)" in About; the `main` comments are next to their statements.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -196,10 +203,14 @@ mark the residual path in both modules.
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
    delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) and its review
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
-   check) is built; **next**: its review (`/code-review medium 9f4a7ec^..<last P6 commit>`) and fix round, then WebView /
-   Cloudflare (desktop `CloudflareInterceptor` is a pass-through), signing / notarization of the installers (and the
-   release pipeline publishing desktop installers as release assets, which the update check needs); then the
-   maintainer's first real run (item 7). Known gaps: P5's (macOS / Windows
+   check) and its review fixes are done (last review-fix commit `921518b`). **Next, in order:** WebView / Cloudflare
+   (desktop `CloudflareInterceptor` is a pass-through); signing / notarization of the installers; the release pipeline
+   for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
+   names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline
+   still needs"), which the update check needs to ever find something; then the
+   maintainer's first real run (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
+   shown in a real window, no build with `-Penable-updater` / `-Pdesktop-preview` run; Android's own
+   `GetApplicationRelease.isNewVersion` still throws on an odd tag), P5's (macOS / Windows
    Skia behaviour for AVIF / JPEG XL unverified, see the CI test output; no real AVIF cover loaded), P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
    against real extension APKs or servers), and: no bulk favourites in global search, no "search

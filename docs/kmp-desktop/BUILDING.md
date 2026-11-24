@@ -134,9 +134,11 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 App update check (P6, [`PROGRESS.md`](PROGRESS.md#p6--app-update-check)): off unless the build gets Android's flag,
 e.g. `./gradlew :desktopApp:packageDistributionForCurrentOS -Penable-updater` (passes `-Dkomikku.updater=true` to the
 launcher); add `-Pdesktop-preview` for the preview channel (`komikku-app/komikku-preview`, `r<commit count>` tags,
-`-Dkomikku.preview=true -Dkomikku.commitCount=…`). Stable builds read `komikku-app/komikku` and compare `v<versionName>`.
-A release counts only when it carries an installer for the running OS (`.msi` / `.exe`, `.dmg`, `.deb` / `.rpm` /
-`.AppImage`); `build_desktop.yml` does not publish any yet (workflow artifacts only), so the check finds nothing until
+`-Dkomikku.preview=true -Dkomikku.commitCount=…`; the build fails on a shallow clone or without a commit count, so CI
+needs `fetch-depth: 0`, which `build_desktop.yml` sets). Stable builds read `komikku-app/komikku` and compare
+`v<versionName>`. A release counts only when it carries an installer for the running OS (`.msi` / `.exe`, `.dmg`,
+`.deb` / `.rpm` / `.AppImage`) and CPU architecture (an asset name with `x64` / `amd64` / `x86_64` or `arm64` /
+`aarch64` counts only for that architecture, one without counts for any); `build_desktop.yml` does not publish any yet (workflow artifacts only), so the check finds nothing until
 the release pipeline attaches them.
 
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
