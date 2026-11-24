@@ -16,6 +16,8 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.browse.FixedSourceManager
+import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
@@ -165,6 +167,35 @@ class ReaderUiTest {
         }
         onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
         waitForTag("reader", present = false)
+        Unit
+    }
+
+    @Test
+    fun `webtoon scrolls on into the next chapter, which becomes the current one`() = runDesktopComposeUiTest(width = 1000, height = 700) {
+        // P11: the next chapter's pages follow in the same list once preloaded
+        val manga = TestLibrary.insertManga(FakeHttpSource.ID, "/manga/webtoon-next", "Webtoon next manga", favorite = true)
+        val (second, first) = TestLibrary.insertChapters(manga, "/chapter/12" to "Chapter 12", "/chapter/11" to "Chapter 11")
+        runBlocking {
+            Injekt.get<SetMangaViewerFlags>().awaitSetReadingMode(manga.id, ReadingMode.WEBTOON.flagValue.toLong())
+        }
+        setContent { KomikkuApp(context = app) }
+        runOnIdle { Injekt.get<app.komikku.desktop.ui.reader.ReaderLauncher>().open(manga.id, first.id) }
+        waitForTag("webtoon-viewer")
+        waitForTag("page-tile-0")
+        val history = { runBlocking { Injekt.get<GetHistory>().await(manga.id).map { it.chapterId } } }
+        var presses = 0
+        while (first.id !in history() && presses < 60) {
+            onNodeWithTag("reader").performKeyInput { pressKey(Key.PageDown) }
+            waitForIdle()
+            presses++
+        }
+        // Leaving chapter 11 by scrolling saved its history and its last page marked it read
+        waitForDb { first.id in history() }
+        waitForDb { runBlocking { Injekt.get<ChapterRepository>().getChapterById(first.id)!!.read } }
+        // History is written on leaving a chapter (and on close, which has not happened yet)
+        onNodeWithTag("reader").performKeyInput { pressKey(Key.Escape) }
+        waitForTag("reader", present = false)
+        waitForDb { second.id in history() }
         Unit
     }
 }
