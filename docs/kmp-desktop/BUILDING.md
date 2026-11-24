@@ -131,6 +131,14 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | Linux | package `komikku`, menu group / categories `Graphics;Viewer;`, shortcut |
 | ProGuard | the `release` build type's ProGuard step is disabled: extensions are loaded reflectively against host classes (source API, OkHttp, kotlinx, compat layer) that shrinking would remove or rename. Enabling it needs keep rules for that shared surface |
 
+App update check (P6, [`PROGRESS.md`](PROGRESS.md#p6--app-update-check)): off unless the build gets Android's flag,
+e.g. `./gradlew :desktopApp:packageDistributionForCurrentOS -Penable-updater` (passes `-Dkomikku.updater=true` to the
+launcher); add `-Pdesktop-preview` for the preview channel (`komikku-app/komikku-preview`, `r<commit count>` tags,
+`-Dkomikku.preview=true -Dkomikku.commitCount=…`). Stable builds read `komikku-app/komikku` and compare `v<versionName>`.
+A release counts only when it carries an installer for the running OS (`.msi` / `.exe`, `.dmg`, `.deb` / `.rpm` /
+`.AppImage`); `build_desktop.yml` does not publish any yet (workflow artifacts only), so the check finds nothing until
+the release pipeline attaches them.
+
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
 and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test`,
 `:core:quickjs:desktopTest` and `:source-js:desktopTest` first). The PR workflow has a separate `desktop` job
@@ -174,7 +182,8 @@ Details in [`PROGRESS.md`](PROGRESS.md#link-check-53).
   `:desktopApp:tasks --all`, a dry run (`-m`) of `packageDistributionForCurrentOS`, `createRuntimeImage`
   (jlink with the chosen modules) and YAML parsing only. Installers, icons inside them, file associations
   and upgrade behaviour are unverified.
-- No signing / notarization, no auto-update, no file associations.
+- No signing / notarization, no in-app update download / install (the update check only opens the release page), no
+  file associations.
 - The parity gaps with Android (features the desktop app does not have yet) are listed in
   [`PROGRESS.md`](PROGRESS.md#remaining-parity-gaps).
 - Only Linux has run the test suite; Windows / macOS specifics (paths, file dialogs, key handling) are

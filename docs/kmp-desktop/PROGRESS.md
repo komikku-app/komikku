@@ -1982,6 +1982,101 @@ pass; `:desktopApp:test` 43 classes, 163 tests, 0 failures (was 43 / 161: `Unsup
 `:core:common:desktopTest` 3 classes, 9 tests, 0 failures (`ImageUtilTest` +1). Not run: a real window, real AVIF /
 JPEG XL covers from a source, macOS / Windows.
 
+## P6 — app update check
+
+Commits `9f4a7ec` (release service download-link selector), `0dbc9a1` (desktop check, dialog, About entry, schedule,
+build flag), `6c6d0a5` (tests) and this section's docs commit. Chosen from "Remaining parity gaps" (distribution item 6).
+
+**What Android does:** `AppUpdateChecker` → `GetApplicationRelease.await` (domain) → `ReleaseServiceImpl.releaseNotes`
+(data, GitHub `GET /repos/<repo>/releases`), only with `BuildConfig.UPDATER_ENABLED` (Gradle `-Penable-updater`, off by
+default). Channel: preview builds read `komikku-app/komikku-preview` and compare the tag `r<n>` with `COMMIT_COUNT`,
+the others read `komikku-app/komikku` and compare `v<x.y.z>` with `VERSION_NAME`; pre-releases are skipped, the notes of
+every newer release are joined. Automatic checks at start (`MainActivity.CheckForUpdates`) and every 3 days
+(`AppUpdateJob`) are throttled to one per two days (`last_app_check` app-state key); the About screen's "Check for
+updates" forces one. A found update opens `NewUpdateScreen` (notes, "Download" with the in-app downloader / installer,
+"Open on GitHub").
+
+**What the release side has for the desktop today:** nothing. `build_desktop.yml` (manual or a `desktop-v*` tag) packages
+Msi / Exe (Windows), Dmg (macOS), Deb / Rpm / an app-image directory (Linux) and uploads them as **workflow artifacts
+only**; no GitHub release is created and no desktop installer is attached to any Komikku release. The desktop version
+is the Android `versionName` (single source of truth, `-Dkomikku.version`). So the check is built against the existing
+GitHub releases API shape and the existing Android release repositories / tags, and finds an update only once a release
+carries a desktop installer (see "What the release pipeline still needs").
+
+**Desktop changes:**
+- `ReleaseServiceImpl` (data, KMK block, Android unchanged: the new constructor parameter defaults to `null`, which keeps
+  the APK selection) takes an optional `downloadLinkSelector`; the desktop passes its installer selection, so the notes
+  clean-up (mentions, download badges, compare links) is shared, not copied.
+- `app.komikku.desktop.updater` (new, desktop-only):
+  - `DesktopUpdaterConfig` — from system properties set by `desktopApp/build.gradle.kts`: `komikku.updater=true` only
+    with Android's own Gradle flag `-Penable-updater` (off by default, as on Android; CI's desktop workflow does not pass
+    it), `-Pdesktop-preview` → `komikku.preview=true` + `komikku.commitCount` (`getCommitCount()`, the Android preview
+    rule). Repository and tag rule as on Android. A build whose version cannot be compared (`dev` without
+    `komikku.version`, a preview without commit count) does not check. `installerLink` keeps a release only when it has
+    an asset for this OS (`.msi` / `.exe`, `.dmg`, `.deb` / `.rpm` / `.AppImage`); Android's APK-only releases are skipped.
+  - `DesktopAppUpdateChecker` — Android's `GetApplicationRelease` (borrowed through the shared domain module, same
+    throttle key) with the desktop's own version; outcomes new update / no update / disabled / failed (exceptions are
+    logged with `xLogE` and returned, never thrown into the UI); `available` holds the found release for the dialog.
+    `checkOnStart` = Android's start-up check; `appUpdateCheckTask` = `AppUpdateJob` as a P3 `DesktopScheduler` task
+    (every 3 days, interval 0 when disabled). The start-up check stores the task's last run
+    (`DesktopSchedulerPreferences.lastAppUpdateCheck`, app-state key), so the scheduler's catch-up does not check twice.
+  - `AppUpdateDialog` / `AppUpdateDialogHost` (in `KomikkuApp`, over every screen) — Android's `NewUpdateScreen` texts:
+    "New version available!", "Latest: …", the release notes, "Open on GitHub" (opens the release page through
+    `DesktopBrowser`), "Not now".
+- Settings → About: the version line now names the preview commit count on a preview build; "Check for updates" (only
+  with the updater flag, as on Android) runs a forced check with a progress indicator; no update → Android's "No new
+  updates available" toast, a failure → its message.
+- DI: `DesktopUpdaterConfig`, `ReleaseService` (`ReleaseServiceImpl` with the desktop selector), `GetApplicationRelease`,
+  `DesktopAppUpdateChecker`; the scheduler gets the update task.
+
+**Decisions / deviations:**
+- **No in-app download / install on desktop** (Android: `AppUpdateDownloadJob` + package installer, and the
+  `appShouldAutoUpdate` auto-download preference): installers are per OS and per package format, need the OS installer
+  (MSI / DMG / package manager, often with elevation), and are unsigned so far; the dialog opens the release page
+  instead. "Download" is therefore not shown, and the auto-update preference has no desktop entry (it stays in backups).
+- Same flag as Android (`-Penable-updater`) instead of a desktop-only name: one switch for "this build may contact GitHub
+  for updates"; the preview channel needs the extra `-Pdesktop-preview` because the desktop has no preview build type.
+- Same repositories and tags as Android: the desktop shares Android's version line, so a release that carries both APKs
+  and desktop installers serves both; a desktop-only release line would need its own repository or tag prefix.
+- Release notes are plain selectable text (Android renders Markdown with `MarkdownRender`; the Markdown renderer is not on
+  the desktop's classpath); the interactor's `\r` separators become line breaks.
+- A failed scheduled check waits the whole 3 days (Android's `Result.failure()`; Android's job additionally waits for a
+  network connection, which has no reliable JVM signal); every app start checks again anyway (throttled).
+- Android's "What's new" / "What's coming" entries are not ported (release notes of the running version / a peek into
+  the preview channel); without desktop releases they would show Android notes.
+- No new strings (`MR`: `check_for_updates`, `update_check_notification_update_available`, `update_check_open`,
+  `update_check_no_new_updates`, `action_not_now`, `version`, `unknown_error`; `SYMR`: `latest_`).
+- Android behaviour unchanged (the only shared change is the defaulted constructor parameter in a KMK block).
+
+**What the release pipeline still needs** (for the check to ever find a desktop update):
+1. Publish the desktop installers as GitHub release assets: on a stable release attach the `build_desktop.yml` outputs to
+   the `v<versionName>` release of `komikku-app/komikku` (preview: the `r<commit count>` release of
+   `komikku-app/komikku-preview`, built with `-Pdesktop-preview`), with file names ending in `.msi` / `.exe`, `.dmg`,
+   `.deb` / `.rpm` / `.AppImage` (the Linux app image is a directory today; it needs `appimagetool` or should be
+   left out).
+2. Build those installers with `-Penable-updater` (the workflow does not pass it yet).
+3. Optionally per-architecture assets (the selection takes the first matching file for the OS, not the CPU; macOS arm64
+   vs x64 and Linux x64 vs arm64 would need a marker in the name, like Android's ABI suffixes).
+4. Signing / notarization (separate parity step) so that the downloaded installers open without OS warnings.
+
+**Tests:** `DesktopAppUpdateCheckerTest` (9; fake release source in GitHub's newest-first shape filtered through the
+desktop installer selection, real interactor and desktop preference store): newer stable release (notes, release page,
+installer link, dismiss), same / older version, Android-only and pre-releases skipped, preview channel (repository,
+commit counts, no commit count = disabled), network failure (reported, no throttle, the next check retries), throttle vs
+forced check, flag off / `dev` version (nothing contacted, default build has the flag off), scheduled task (3 days,
+start-up check counts, throttled run, failure), installer per OS / OS detection / release URLs. `AppUpdateUiTest` (2,
+headless, real DI with the checker replaced): About → "Check for updates" with no update (toast), failure (message), a
+newer release (the window's dialog with the notes, "Not now"); "Open on GitHub" opens the release page and closes the
+dialog.
+
+Verification (after `6c6d0a5`, `--max-workers=2`): `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 45 classes, 174 tests, 0 failures
+(was 43 / 163 after the P5 review: `DesktopAppUpdateCheckerTest` 9, `AppUpdateUiTest` 2).
+
+**Not verified:** a real request against `api.github.com` (no network calls in tests; the API shape is the one Android
+already parses); the dialog in a real window; a build with `-Penable-updater` / `-Pdesktop-preview` was only compiled
+through the property reading, not run.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2002,5 +2097,8 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
    them), WebView (Cloudflare) login, OAuth via
    redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs).
-6. **Distribution:** installers built and tried on each OS, signing / notarization, auto-update.
+6. **Distribution:** installers built and tried on each OS, signing / notarization. The update check is done (P6, behind
+   `-Penable-updater`; opens the release page, no in-app download / install); left from it: the release pipeline does
+   not publish desktop installers as GitHub release assets yet (P6 "What the release pipeline still needs"), so the
+   check finds nothing until it does; no Markdown in the notes, no "What's new" / "What's coming".
 
