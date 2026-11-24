@@ -191,15 +191,16 @@ class DesktopWebView(
     /**
      * Android's WebView "Clear cookies": removes every cookie of [url]'s host, whatever its path, and the domain cookies
      * that apply to the host (P23: a cookie with its own `Path`, which the address itself does not get, goes too; other
-     * hosts' cookies stay); returns how many.
+     * hosts' cookies stay); returns how many. [includeSubdomains]: also the cookies of the host's subdomains (the
+     * extension info's clearing, P23 review fix; the WebView's own "Clear cookies" leaves them).
      */
-    fun clearCookies(url: String): Int {
+    fun clearCookies(url: String, includeSubdomains: Boolean = false): Int {
         val httpUrl = url.toHttpUrlOrNull() ?: return 0
         hostStateProvider().run {
             removeUserAgent(httpUrl.host)
             clearFailure(httpUrl.host)
         }
-        return network.cookieJar.removeHostCookies(httpUrl)
+        return network.cookieJar.removeHostCookies(httpUrl, includeSubdomains)
     }
 
     private fun clearance(url: HttpUrl): String? =

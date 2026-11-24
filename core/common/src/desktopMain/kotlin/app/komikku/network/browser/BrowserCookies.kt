@@ -44,10 +44,11 @@ fun AndroidCookieJar.removeBrowserCookies(url: HttpUrl, names: Collection<String
 /**
  * Removes every jar cookie of [url]'s host, whatever its path (`Path=/manga` included) or name: the host's own cookies
  * and the domain cookies of the host or a parent domain; other hosts' cookies stay (P23, a site's "Clear cookies").
- * Returns how many. Without the desktop `CookieManager`, the jar's own removal for [url].
+ * Returns how many. [includeSubdomains]: also the cookies of the host's subdomains (`DesktopCookieManager.removeForHost`,
+ * P23 review fix). Without the desktop `CookieManager`, the jar's own removal for [url].
  */
-fun AndroidCookieJar.removeHostCookies(url: HttpUrl): Int =
-    desktopCookieManager?.removeForHost(url.toString()) ?: remove(url, null, 0)
+fun AndroidCookieJar.removeHostCookies(url: HttpUrl, includeSubdomains: Boolean = false): Int =
+    desktopCookieManager?.removeForHost(url.toString(), includeSubdomains) ?: remove(url, null, 0)
 
 /**
  * Stores cookies a user pasted ("Open in WebView" without a browser), marked so that a cookie of the same name the site

@@ -194,6 +194,9 @@ class ExtensionDetailsUiTest {
             val mangaPage = site.resolve("/manga/1")!!
             jar.get(mangaPage).map { it.name }.toSet() shouldBe setOf("session", "cf_clearance", "page")
             jar.saveFromResponse(other, listOfNotNull(Cookie.parse(other, "keep=3; Path=/")))
+            // P23 review fix: a subdomain's cookie of the source's host goes too
+            val subdomain = "https://cdn.simple.example.org/".toHttpUrl()
+            jar.saveFromResponse(subdomain, listOfNotNull(Cookie.parse(subdomain, "cdn=5; Path=/")))
             jar.get(site).map { it.name }.toSet() shouldBe setOf("session", "cf_clearance")
 
             openBrowse()
@@ -206,6 +209,7 @@ class ExtensionDetailsUiTest {
             waitForText(MR.strings.cookies_cleared.localized())
             jar.get(site).shouldBeEmpty()
             jar.get(mangaPage).shouldBeEmpty()
+            jar.get(subdomain).shouldBeEmpty()
             jar.get(other).map { it.name } shouldBe listOf("keep")
         }
 

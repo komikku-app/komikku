@@ -172,12 +172,18 @@ class DesktopCookieManager(
      * `Domain=example.com` for `www.example.com`). Cookies of other hosts stay, the host's subdomains and sibling hosts
      * included. Returns how many were removed; 0 for an invalid address. [removeFor] only takes the cookies sent to the
      * address itself, so a cookie with its own path (e.g. `Path=/manga`) survives it.
+     *
+     * [includeSubdomains] (P23 review fix, the extension info's "Clear cookies"): also the cookies of the host's
+     * subdomains (host-only or domain cookies of e.g. `cdn.www.example.com` for `www.example.com`); sibling hosts and
+     * parent-domain hosts' own cookies still stay.
      */
-    fun removeForHost(url: String): Int {
+    fun removeForHost(url: String, includeSubdomains: Boolean = false): Int {
         val host = url.toHttpUrlOrNull()?.host ?: return 0
         val removed = synchronized(lock) {
             removeExpired()
-            val matching = cookies.filterValues { it.appliesToHost(host) }.keys
+            val matching = cookies.filterValues {
+                it.appliesToHost(host) || (includeSubdomains && it.domain.endsWith(".$host"))
+            }.keys
             matching.forEach {
                 cookies.remove(it)
                 pasted.remove(it)

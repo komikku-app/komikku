@@ -90,6 +90,28 @@ class CookieManagerTest {
     }
 
     @Test
+    fun `host-wide removal with subdomains also takes the subdomains' cookies and nothing else (P23 review)`() {
+        val manager = manager()
+        manager.setCookie("https://example.com/", "root=1; Path=/manga")
+        manager.setCookie("https://www.example.com/", "www=1")
+        manager.setCookie("https://www.example.com/", "wwwWide=1; Domain=www.example.com")
+        manager.setCookie("https://cdn.www.example.com/", "cdn=1")
+        manager.setCookie("https://other.com/", "www=other")
+        manager.setCookie("https://notexample.com/", "near=1")
+        manager.setCookie("https://www.notexample.com/", "nearWww=1")
+
+        manager.removeForHost("https://www.example.com/") shouldBe 2
+        manager.getCookie("https://cdn.www.example.com/") shouldBe "cdn=1"
+        manager.removeForHost("https://example.com/", includeSubdomains = true) shouldBe 2
+
+        manager.cookiesFor("https://cdn.www.example.com/") shouldBe emptyList()
+        manager.cookiesFor("https://example.com/manga/1") shouldBe emptyList()
+        manager.getCookie("https://other.com/") shouldBe "www=other"
+        manager.getCookie("https://notexample.com/") shouldBe "near=1"
+        manager.getCookie("https://www.notexample.com/") shouldBe "nearWww=1"
+    }
+
+    @Test
     fun `a cookie the site sets replaces a pasted one of the same name on another domain (P7 review)`() {
         val manager = manager()
         fun pasted(name: String, value: String, domain: String, hostOnly: Boolean) = Cookie.Builder()
