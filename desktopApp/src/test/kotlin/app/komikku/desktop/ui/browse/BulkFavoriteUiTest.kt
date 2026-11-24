@@ -31,6 +31,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
@@ -110,6 +112,18 @@ class BulkFavoriteUiTest {
         waitUntil(timeoutMillis = 10_000) { favorite("Bulk A") && favorite("Bulk B") }
         favorite("Bulk C") shouldBe false
         waitForTag("bulk-select")
+    }
+
+    @Test
+    fun `select inverse compares the entries by id`() {
+        val model = BulkFavoriteScreenModel()
+        val loaded = Manga.create().copy(id = 9_041_001L, source = BulkSource.ID, url = "/bulk/inverse-a", ogTitle = "Inverse A")
+        val other = Manga.create().copy(id = 9_041_002L, source = BulkSource.ID, url = "/bulk/inverse-b", ogTitle = "Inverse B")
+        model.toggleSelection(loaded)
+        // The same entry after its row changed (e.g. its details were fetched): still the selected one
+        val changed = loaded.copy(ogTitle = "Inverse A (updated)", favorite = true)
+        model.reverseSelection(listOf(changed, other))
+        model.state.value.selection.map { it.id } shouldBe listOf(other.id)
     }
 
     @Test
