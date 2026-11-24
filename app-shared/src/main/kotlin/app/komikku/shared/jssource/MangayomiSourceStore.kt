@@ -191,7 +191,9 @@ class MangayomiSourceStore(
         val offers = offersOf(urls, listings)
         val offerById = offers.associateBy { it.id }
         // Not obsolete while any added repository was not read yet (or never read well): it may offer the source.
-        val listingKnown = urls.all { listings[it]?.entries != null }
+        // Nor with no repository at all (P23 review fix): nothing says it is gone, so removing the last repository
+        // does not flag working sources for migration.
+        val listingKnown = urls.isNotEmpty() && urls.all { listings[it]?.entries != null }
         val installedItems = installed.orEmpty().map { source ->
             val offer = offerById[source.id]
             val text = texts[source.id]?.takeIf { offer != null && it.url == offer.descriptor.sourceCodeUrl && it.version == offer.descriptor.version }
@@ -237,7 +239,10 @@ class MangayomiSourceStore(
         return normalized
     }
 
-    /** Removes the repository [url]; its sources stay installed (and become obsolete when nothing else offers them). */
+    /**
+     * Removes the repository [url]; its sources stay installed (and become obsolete when the other repositories, if
+     * any are left, do not offer them).
+     */
     fun removeRepository(url: String) {
         val repos = preferences.repositories()
         repos.set(repos.get() - url)

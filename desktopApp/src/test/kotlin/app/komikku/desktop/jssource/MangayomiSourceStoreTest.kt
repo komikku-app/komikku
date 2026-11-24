@@ -453,6 +453,11 @@ class MangayomiSourceStoreTest {
         route("/second/index.json", "[]")
         again.refresh()
         again.items.first().single { it.id == OBSOLETE_ID }.status shouldBe JsSourceStatus.OBSOLETE
+
+        // P23 review fix: with no repository left nothing says it is gone, so it is not flagged for migration
+        again.removeRepository(url("/first/index.json"))
+        again.removeRepository(url("/second/index.json"))
+        withTimeout(5_000) { again.items.first { items -> items.single { it.id == OBSOLETE_ID }.status == JsSourceStatus.UP_TO_DATE } }
     }
 
     @Test
