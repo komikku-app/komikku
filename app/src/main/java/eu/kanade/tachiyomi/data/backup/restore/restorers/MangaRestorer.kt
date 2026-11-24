@@ -142,6 +142,10 @@ class MangaRestorer(
             chapterFlags = newer.chapterFlags,
             viewerFlags = newer.viewerFlags,
             updateStrategy = newer.updateStrategy,
+            // KMK -->
+            notes = newer.notes,
+            memo = newer.memo,
+            // KMK <--
             initialized = this.initialized || newer.initialized,
             version = newer.version,
         )
