@@ -49,6 +49,10 @@ fun Screen.MigrateMangaDialog(
     onClickTitle: () -> Unit,
     onDismissRequest: () -> Unit,
     onComplete: () -> Unit = onDismissRequest,
+    // KMK -->
+    /** When set, called instead of [onComplete] when the migration did not happen (the desktop shows an error). */
+    onFailure: (() -> Unit)? = null,
+    // KMK <--
 ) {
     val scope = rememberCoroutineScope()
 
@@ -106,8 +110,16 @@ fun Screen.MigrateMangaDialog(
                 TextButton(
                     onClick = {
                         scope.launchIO {
-                            screenModel.migrateManga(replace = false)
-                            withUIContext { onComplete() }
+                            /* KMK --> */ val migrated = /* KMK <-- */ screenModel.migrateManga(replace = false)
+                            withUIContext {
+                                // KMK -->
+                                if (!migrated && onFailure != null) {
+                                    onFailure()
+                                    return@withUIContext
+                                }
+                                // KMK <--
+                                onComplete()
+                            }
                         }
                     },
                 ) {
@@ -116,8 +128,16 @@ fun Screen.MigrateMangaDialog(
                 TextButton(
                     onClick = {
                         scope.launchIO {
-                            screenModel.migrateManga(replace = true)
-                            withUIContext { onComplete() }
+                            /* KMK --> */ val migrated = /* KMK <-- */ screenModel.migrateManga(replace = true)
+                            withUIContext {
+                                // KMK -->
+                                if (!migrated && onFailure != null) {
+                                    onFailure()
+                                    return@withUIContext
+                                }
+                                // KMK <--
+                                onComplete()
+                            }
                         }
                     },
                 ) {
@@ -174,20 +194,24 @@ private class MigrateDialogScreenModel(
         }
     }
 
-    suspend fun migrateManga(replace: Boolean) {
+    // KMK --> returns whether the entry was migrated
+    suspend fun migrateManga(replace: Boolean): Boolean {
+        // KMK <--
         val state = state.value
-        val current = state.current ?: return
-        val target = state.target ?: return
+        val current = state.current ?: return /* KMK --> */ false /* KMK <-- */
+        val target = state.target ?: return /* KMK --> */ false /* KMK <-- */
         // KMK -->
         // sourcePreference.migrationFlags().set(state.selectedFlags)
         // KMK <--
         mutableState.update { it.copy(isMigrating = true) }
         try {
-            migrateManga(current, target, replace, /* KMK --> */ state.selectedFlags /* KMK <-- */)
+            /* KMK --> */ val migrated = /* KMK <-- */ migrateManga(current, target, replace, /* KMK --> */ state.selectedFlags /* KMK <-- */)
             mutableState.update { it.copy(isMigrating = false, isMigrated = true) }
             // KMK -->
+            return migrated
         } catch (_: Throwable) {
             mutableState.update { it.copy(isMigrating = false, isMigrated = false) }
+            return false
             // KMK <--
         }
     }

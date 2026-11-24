@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import mihon.domain.migration.models.MigrationFlag
 import mihon.domain.source.interactor.UpdateMangaFromRemote
@@ -46,6 +47,13 @@ class MigrateMangaUseCase(
 ) {
     private val enhancedServices by lazy { trackerManager.trackers.filterIsInstance<EnhancedTracker>() }
 
+    // KMK -->
+    /**
+     * Returns whether the entry was migrated: `false` when the target's source is missing, when [current] and [target]
+     * are the same entry (nothing to do: migrating an entry onto itself would delete its downloads and re-add it) or
+     * when a step failed (the failure is logged). Android's callers ignore it, like before.
+     */
+    // KMK <--
     suspend operator fun invoke(
         current: Manga,
         target: Manga,
@@ -56,8 +64,11 @@ class MigrateMangaUseCase(
         // SY -->
         throttleFunc: suspend () -> Unit = {},
         // SY <--
-    ) {
-        val targetSource = sourceManager.get(target.source) ?: return
+    ) /* KMK --> */: Boolean /* KMK <-- */ {
+        // KMK -->
+        if (current.id == target.id) return false
+        // KMK <--
+        val targetSource = sourceManager.get(target.source) ?: return /* KMK --> */ false /* KMK <-- */
         val currentSource = sourceManager.get(current.source)
         val flags = /* KMK --> */ presetFlags ?: /* KMK <-- */ sourcePreferences.migrationFlags().get()
 
@@ -190,10 +201,17 @@ class MigrateMangaUseCase(
             )
 
             updateManga.awaitAll(listOfNotNull(currentMangaUpdate, targetMangaUpdate))
+            // KMK -->
+            return true
+            // KMK <--
         } catch (e: Throwable) {
             if (e is CancellationException) {
                 throw e
             }
+            // KMK -->
+            xLogE("Could not migrate ${current.id} to ${target.id}", e)
+            return false
+            // KMK <--
         }
     }
 }
