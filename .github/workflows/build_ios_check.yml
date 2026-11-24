@@ -9,11 +9,25 @@ on:
     paths:
       - 'source-js/**'
       - 'gradle/**'
+      - 'buildSrc/**'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - '.github/.java-version'
       - '.github/workflows/build_ios_check.yml'
+  # Branch pushes only (a branch filter alone means tags never trigger it); other branches are covered by their PR
   push:
+    branches:
+      - master
+      - claude/kmp-multiplatform-support
     paths:
       - 'source-js/**'
       - 'gradle/**'
+      - 'buildSrc/**'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - '.github/.java-version'
       - '.github/workflows/build_ios_check.yml'
 
 concurrency:

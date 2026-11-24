@@ -2,7 +2,8 @@
 
 Status: **added, never run.** Nobody has seen the job pass yet, so it is non-blocking
 (`continue-on-error: true`). PLAN.md section 8.4, step I5, should reference this page once it is
-updated.
+updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
+commits that added this page.
 
 ## What the job checks
 
@@ -18,8 +19,9 @@ Workflow `.github/workflows/build_ios_check.yml`, one job on `macos-15` (GitHub-
 The task names are the Kotlin Multiplatform plugin's conventions; they were checked with
 `./gradlew -Pios-targets :source-js:tasks --all` (Kotlin 2.4.20).
 
-It runs on `workflow_dispatch`, and on pull requests and pushes that touch `source-js/**`, `gradle/**` or the
-workflow file. No signing, no secrets, no app (`:iosApp` is I6, an IPA is I7). Test reports are uploaded as
+It runs on `workflow_dispatch`, on pull requests, and on pushes to `master` and `claude/kmp-multiplatform-support`
+(never on tags), when they touch `source-js/**`, the build setup (`gradle/**`, `buildSrc/**`, `settings.gradle.kts`,
+`build.gradle.kts`, `gradle.properties`, `.github/.java-version`) or the workflow file. No signing, no secrets, no app (`:iosApp` is I6, an IPA is I7). Test reports are uploaded as
 `ios-test-report-<sha>` when the job fails.
 
 ## Running it
@@ -73,14 +75,18 @@ Once the job has passed a few times, remove `continue-on-error` so it gates pull
 `newSingleThreadContext`, which cannot set a thread stack size, so the JS stack limit was clamped to 256 KiB
 (Darwin's secondary threads get 512 KiB). It now runs a small `CloseableCoroutineDispatcher` on an `NSThread`
 whose `stackSize` is the JS limit plus 4 MiB headroom (as on the JVM), rounded up to 16 KiB; blocks wait in a
-queue guarded by an `NSCondition`. The JS stack limit is therefore the same 4 MiB as on Android and desktop. The
-public expect / actual signatures are unchanged.
+queue guarded by an `NSCondition` and each runs in its own autorelease pool (as Kotlin/Native workers do). The JS
+stack limit is therefore the same 4 MiB as on Android and desktop. It is based on the stack size read back from the
+thread: a smaller applied stack lowers it to the stack minus the headroom, and an ignored setter (Darwin's 512 KiB
+default) falls back to the old 256 KiB clamp, so deep recursion cannot overrun the real stack. The public
+expect / actual signatures are unchanged.
 
 - `NSThread` instead of a raw `pthread` (`pthread_attr_setstacksize`): no C function pointers or `StableRef`s, and
   the same stack-size control.
 - Differences from the JVM thread: it does not end after 30 s idle (only when the engine closes it, like the old
   `newSingleThreadContext`). A block dispatched after `close()` cancels its job and runs on `Dispatchers.Default`,
   as the JVM executor dispatcher does with a rejected block.
-- `iosTest/.../JsEngineThreadIosTest` checks the thread's name and stack size on the simulator.
+- `iosTest/.../JsEngineThreadIosTest` checks the thread's name and stack size, and the limit derived from the
+  applied stack, on the simulator.
 - Risk: compiled (Linux klib), never executed. If the simulator tests crash in deep recursion, the stack size was
-  not applied; the fallback is the old clamp (`minOf(jsStackBytes, 256 KiB)` with `newSingleThreadContext`).
+  not applied although the read-back said so; the fallback is the old `newSingleThreadContext` with its 256 KiB clamp.
