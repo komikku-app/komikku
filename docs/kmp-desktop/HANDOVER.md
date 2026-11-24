@@ -7,7 +7,9 @@ fixes, parity step P3, scheduled library updates and backups, with its review fi
 sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
-step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed; next: the
+step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
+P10, manga details parity (duplicates on add, edit info, cover actions), is built (its review
+`/code-review medium 8704044^..<P10 docs commit>` and fix round are pending); next: the P10 review, then the
 maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -225,6 +227,19 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   `<hash>  <name>` and sorted by name. Checked with local simulations (stub `gh`, stand-in `sha256sum` / `./gradlew`, a
   local tag repository), `actionlint` 1.7.12, `shellcheck`; still never executed.
 
+- **P10** manga details parity (`8704044` … , PROGRESS.md "P10 — manga details: duplicates, metadata editing, cover
+  actions"): Android's `GetDuplicateLibraryManga` before "Add to library" with a desktop duplicate dialog (open the
+  existing entry / add anyway / cancel; no migrate; the catalogue and global search add through the details); SY's
+  edit info for library entries on the new shared `MangaInfoEdits` (KMK, `desktopCopy`; Android's
+  `updateMangaInfo` builds its values with it, unchanged), stored in the same custom-info `edits.json` that backups
+  carry (local entries: database + `ComicInfo.xml`); a cover dialog (view large, save the image file through a file
+  chooser, set a custom cover from an image file via the borrowed `editCover` / `CoverCache`, delete it), the desktop
+  cover loader serving custom covers first, custom covers dropped on removal like Android. Not done: autofill from
+  tracker, share, migrate. Tests `DuplicateMangaUiTest` (3), `EditMangaInfoUiTest` (2), `MangaInfoEditsTest` (4),
+  `MangaCoverActionsUiTest` (2). Found in SY's `CustomMangaRepositoryImpl`: resetting the last edited entry is not
+  written to `edits.json` (left, PROGRESS P10).
+- **P10 review** — pending: `/code-review medium 8704044^..<P10 docs commit>`, then a fix round.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -267,7 +282,8 @@ mark the residual path in both modules.
    check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) and its review
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) and its review fixes are done (last
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) and its review fixes
-   are built, never executed (last Part A commit: see "P9 review"); then the maintainer's
+   are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
+   actions) is built: **next** its review `/code-review medium 8704044^..<P10 docs commit>` and fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

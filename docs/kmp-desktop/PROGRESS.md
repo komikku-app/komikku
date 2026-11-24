@@ -2718,6 +2718,92 @@ an upload broken after four files and resumed (the four skipped as identical, th
 an identical file without `digest` (downloaded and hashed, skipped), a different file with and without `digest` (fails,
 nothing uploaded), the asset listing failing (fails), everything already there (nothing uploaded).
 
+## P10 — manga details: duplicates, metadata editing, cover actions
+
+Commits `8704044` (duplicates), `022b144` (shared edit-info logic, Android), `3505448` (desktop edit info), `078be80`
+(custom covers in the desktop cover loader), `d92d6fd` (cover dialog and actions), `cb4485d` (custom cover dropped on
+removal) and this docs commit. All three items of "Remaining parity gaps" 3 that were asked for are built; Android
+behaviour unchanged (one refactor in `MangaScreenModel.updateMangaInfo`, same values).
+
+### Built
+
+- **Duplicate detection on add** (`MangaDetailsScreenModel.toggleFavorite(checkDuplicate)`): before adding, Android's
+  `GetDuplicateLibraryManga` (library entries whose title contains the entry's, or bound to the same tracker entry);
+  any → `Dialog.DuplicateManga` with a desktop `DuplicateMangaDialog`: the entry's title, Android's texts
+  (`possible_duplicates_title` / `_summary`), each duplicate with cover, title, chapter count (`manga_num_chapters`) and
+  source name; a click opens that entry's details, "Add anyway" adds without asking again (then the usual category
+  rules), "Cancel" adds nothing. **Where desktop adds entries:** only the details' "Add to library"; the catalogue and
+  global search open the details (no long-press / bulk add on desktop), so they go through the same check.
+- **Edit info** (top-bar pencil, library entries only like Android): new KMK file
+  `app/src/main/java/eu/kanade/tachiyomi/ui/manga/MangaInfoEdits.kt` (borrowed `desktopCopy`: it uses `isLocal` from
+  `:source-local`) holds the platform-neutral part of SY's `EditMangaDialog` / `updateMangaInfo`: the fields the dialog
+  starts with (a source entry: only edited values; a local entry: its values), the status choices and their index
+  mapping, "Reset tags", and what a save stores (`localInfoEdit`: new source values + `MangaUpdate`, a blank title =
+  the folder name; `customInfoEdit`: `CustomMangaInfo` with blank = the source's value, tags / status only when they
+  differ). Android's `MangaScreenModel.updateMangaInfo` now builds its values with it (KMK blocks; Android's view-based
+  dialog unchanged). Desktop `EditMangaInfoDialog`: title, author, artist, thumbnail URL, description (SY's hint texts
+  with the source's values as labels), tags as chips (click removes) plus a comma-separated "Add Tags" field, status
+  menu, "Reset Tags", "Reset Info", Save / Cancel. A source entry's edit goes through `SetCustomMangaInfo` into the same
+  `edits.json` (`CustomMangaRepositoryImpl`) that Android uses and that `MangaBackupCreator` / `MangaRestorer` carry; a
+  local entry's into the database and its `ComicInfo.xml` (`LocalSource.updateMangaInfo`).
+- **Cover actions** (click on the details cover → `MangaCoverDialog`, `MangaCoverActions`): the cover large; "Save" =
+  file chooser (`DesktopFileDialogs.saveFile`, suggested `<title as a valid file name>.<the image's extension>`)
+  and a copy of the image file as shown (custom cover, local file, or Coil's disk-cache entry, loaded first when
+  needed); "Edit cover" (library and local entries) = an image file (`openFile`, image extensions, content checked by
+  `ImageUtil.findImageType`) through the borrowed `Manga.editCover` (custom cover in `CoverCache`, or the local cover via
+  `LocalCoverManager`) and `awaitUpdateCoverLastModified`; "Delete" when there is a custom cover
+  (`CoverCache.deleteCustomCover`). Outcomes with Android's texts (`cover_saved`, `error_saving_cover`, `cover_updated`,
+  `notification_cover_update_failed`) inside the dialog. The desktop cover loader (`DesktopMangaCoverFetcher`, given the
+  `CoverCache` by `DesktopImageLoader.create`) now serves a custom cover first like Android's fetcher, so the new cover
+  shows everywhere (the keyer's `lastModified` changes with it). Removing an entry from the library now also drops its
+  custom cover (Android's `Manga.removeCovers` in `toggleFavorite`).
+
+### Decisions / deviations
+
+- **Dialogs are desktop composables, the logic is shared:** Android's `DuplicateMangaDialog` needs the Android cover
+  component (drawable resources), `AdaptiveSheet` / `isTabletUi` and preference-widget sizing; `EditMangaDialog` is
+  built from Android views (`EditMangaDialogBinding`, chips, spinner); `MangaCoverDialog` uses the reader's
+  `ReaderPageImageView`. The detection interactor, the edit-info rules (`MangaInfoEdits`), `CoverCache`, `editCover`,
+  `removeCovers`, the strings and the storage are the Android ones.
+- **No migrate** in the duplicate dialog (no migration on desktop); a click on a duplicate opens it (Android: click =
+  migrate, long press = open). No bulk-favourite variant (no bulk add on desktop).
+- **Not in desktop edit info:** "Autofill from tracker" (needs the trackers' metadata calls wired to the dialog) and the
+  cover preview inside the dialog.
+- **Save copies the file** instead of Android's decode → re-encode (`ImageSaver`): the bytes stay the source's, an
+  animated cover stays animated, no Android `Bitmap` needed. No "Share" on desktop.
+- **"Edit cover" only for library / local entries** (Android shows it always, but `editCover` does nothing for other
+  entries).
+- Library covers are still not copied into `CoverCache`'s cover folder on desktop (they stay in Coil's disk cache);
+  "Save" loads through Coil when the disk cache has none.
+
+### Found, not changed (upstream behaviour)
+
+- `CustomMangaRepositoryImpl.saveCustomInfo` (SY) writes nothing when the last custom entry is removed, so after
+  resetting the only edited entry the old `edits.json` comes back at the next start (Android and desktop alike). A fix
+  is one `else editJson.delete()`; left for the maintainer since it changes Android behaviour.
+
+### Tests
+
+- `DuplicateMangaUiTest` (3): a same-title library entry from another source opens the dialog; "Cancel" adds nothing;
+  a click on the duplicate opens its details; "Add anyway" adds; an entry without duplicates is added at once.
+- `EditMangaInfoUiTest` (2): empty fields for a source entry, its tags; title / author (trimmed) / tag removal / added
+  comma-separated tags / status saved as `CustomMangaInfo`, shown at once, carried by `MangaBackupCreator`
+  (`customTitle`, `customAuthor`, `customGenre`, `customStatus`); reopened with the edited values; "Reset Info" + default
+  status removes the custom info; whitespace-only fields store nothing; no "Edit info" outside the library.
+- `MangaInfoEditsTest` (4): initial fields for source / local entries, reset tags, custom info keeping only differences,
+  the local edit (blank title → folder name).
+- `MangaCoverActionsUiTest` (2): a cancelled chooser; the source cover saved byte for byte (from a `MockWebServer`) as
+  `Frieren_ Beyond.png`; a custom cover from a JPEG file (stored in `CoverCache`, `coverLastModified` bumped, the loader
+  serves it from disk without asking the server); "Save" then saves the custom cover as `.jpg`; a non-image file fails
+  with `notification_cover_update_failed` and keeps the custom cover; "Delete" removes it; removing the entry from the
+  library drops a custom cover; entries outside the library can save but not edit.
+
+Verification (after `cb4485d`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`
+(no changes), `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`
+pass; `:desktopApp:test` 55 classes, 238 tests, 0 failures (was 51 / 227: the four P10 classes, 11 tests). Not run: a
+real window, the native file choosers (tests use a stand-in `DesktopFileDialogs`), Android's edit-info dialog on a
+device (only compiled), a local-source entry's edit through the UI (the shared local branch is unit-tested).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2730,8 +2816,10 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
    recommendations, SY clean titles / MangaDex follow / reset info from the selection. Also: "continue reading" button, source-icon badge and language flag
    icons, random-entry shortcut. Scheduled automatic library updates are done (P3; no device restrictions on desktop).
-3. **Manga details:** duplicate detection on add, merged entries, metadata editing, cover actions, sharing,
-   recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the metadata, P4).
+3. **Manga details:** duplicate detection on add, metadata editing and cover actions are done (P10); left from them:
+   migrate from the duplicate dialog, "Autofill from tracker" in edit info, sharing the cover. Also: merged entries,
+   sharing, recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the
+   metadata, P4).
 4. **Reader:** neighbouring chapters appended in viewers, animated GIF / WebP playback, AVIF / JPEG XL / HEIF
    pages and covers (P5: no acceptable decoder, shown as an unsupported format; blocker in "P5"), automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
    chapters exercised from the UI.
