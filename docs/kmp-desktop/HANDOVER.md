@@ -1,6 +1,6 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-24, branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
+State as of 2026-11-24 (evening), branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19): built, not reviewed; next its review, then Browse → Migrate or another parity gap), then the maintainer's first real run of
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21): built, not reviewed; next their review), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -406,8 +406,22 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   (**Android behaviour change**: the borrowed model's rules and a toast on Android's list too); an explicit "no migration
   sources" state in the migration search with a way to the configuration; the search's unreachable own dialog removed
   and its tests moved to the real details → configuration → list → search flow; KMK markers on the moved configuration
-  model's declarations. Full `:desktopApp:test` on `8fc858f`: 76 classes, 352 tests, 0 failures. Last Part A commit: the
-  docs commit "Record the P19 review fixes".
+  model's declarations. Full `:desktopApp:test` on `8fc858f`: 76 classes, 352 tests, 0 failures. Last Part A commit
+  `4ea5fda` (the docs commit "Record the P19 review fixes").
+- **P20** Browse → Migrate (`74c0921` … , PROGRESS.md "P20 — Browse → Migrate"): Android's `MigrateSourceScreenModel`
+  (`desktopCopy`), `GetSourcesWithFavoriteCount` (`desktopCopy`: it uses `source-local`) and `MigrateMangaScreenModel`
+  (`shared`) borrowed, desktop counterparts of `installedExtension` and `SEARCH_DEBOUNCE_MILLIS`; a Migrate tab in Browse
+  after Extensions (sources with library counts, not-installed / obsolete marks, sort by name / count both ways, source
+  search, obsolete filter, guide link, long press copies the id) → a source's entries (click → configuration for it,
+  cover → details, long-press selection, select all / invert, "Migrate" → configuration for the selection) → P19's
+  configuration and list; the migration search's row header opens the source's own search, whose pick is the match
+  (Android's `MigrateSourceSearchScreen`). Tests `BrowseMigrateUiTest` (2), `BrowseMigrateTabUiTest` (1),
+  `MigrateMangaUiTest` +1. Not reviewed yet.
+- **P21** SY source categories (`f54b2d8` … , PROGRESS.md "P21 — SY source categories"): SY's category interactors and
+  `SourceCategoryScreenModel` borrowed (`shared`); Settings → Browse "Edit categories" (add / rename / delete with
+  Android's dialogs) and "Filter sources in categories"; the sources tab's options dialog has "Categories" (Android's
+  `SourceCategoriesDialog`), the existing grouping shows them. Test `SourceCategoriesUiTest` (2). Not reviewed yet;
+  review range of P20 + P21: `4ea5fda..` the docs commit "Record Browse → Migrate (P20) and source categories (P21)".
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -461,8 +475,9 @@ mark the residual path in both modules.
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
-   configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate): see
-   "Done"; **next**: its review, then another item of PROGRESS "Remaining parity gaps"; then the maintainer's
+   configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
+   source categories) are built; **next**: their review (`4ea5fda..`), then another item of PROGRESS "Remaining parity
+   gaps"; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
@@ -470,7 +485,7 @@ mark the residual path in both modules.
    `GetApplicationRelease.isNewVersion` still throws on an odd tag), P5's (macOS / Windows
    Skia behaviour for AVIF / JPEG XL unverified, see the CI test output; no real AVIF cover loaded), P4's
    (no metadata view / page previews / MangaDex settings, follows and similar screens / batch add on desktop; not run
-   against real extension APKs or servers), and: no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
+   against real extension APKs or servers), and: no SY data-saver exclusion; no merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
    P7's / P8's (no embedded browser: jcefmaven backend, PROGRESS P7 "What the embedded backend still needs"; without a
    FlareSolverr-compatible service automatic flows hitting a challenge need the manual step; the FlareSolverr backend

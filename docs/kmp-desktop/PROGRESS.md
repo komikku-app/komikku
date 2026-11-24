@@ -3808,6 +3808,128 @@ at a time, so it now waits for the first to go). Full `:desktopApp:test` on `8fc
 352 tests, 0 failures (was 76 / 348 on `c88b273`; `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`,
 `ReaderNavigationTest` and `MangayomiSourceStoreTest` included and passing).
 
+## P20 — Browse → Migrate
+
+Built in `74c0921` (borrowing), `8b52953` (the tab and a source's entries), `6bea5d4` (the pick from a source's own
+search), `f2b724b` (tests) and this docs commit.
+
+### Built
+
+- **Android's logic borrowed, not rewritten:** `MigrateMangaScreenModel` (a source's library entries by title, the
+  selection with Komikku's long-press range rule, select all, invert) is `shared` (Android compiles it from
+  `:app-shared` now, unchanged); `GetSourcesWithFavoriteCount` (the library's sources and their entry counts without
+  local entries, stubs first, by name or count, either direction, from `migrationSortingMode` / `migrationSortingDirection`)
+  and `MigrateSourceScreenModel` (the list, the sorting toggles through `SetMigrateSorting`, Komikku's source search: ","
+  for several, the extension's name, a source id) are `desktopCopy`. Desktop counterparts in `app-shared/src/desktopMain`:
+  `installedExtension` (`DesktopSourceModelExtensions.kt`, the installed extension of a source through the platform
+  extension manager; none without one) and `SEARCH_DEBOUNCE_MILLIS` (`SearchDebounce.kt`, 250 ms like Android's). The
+  desktop DI has `GetSourcesWithFavoriteCount`, `SetMigrateSorting` and `GetFavorites`.
+- **Desktop:** a Migrate tab in Browse after Extensions (Android's order; its model created when first shown, like the
+  Feed tab), `MigrateSourcePane` (`ui/migration/MigrateSourcePane.kt`): Android's prompt, the migration guide link, the
+  obsolete-only filter, the sort mode and direction buttons, the source search, rows with the source icon, name (the id
+  for a source without a name), language, "Not installed" / "Obsolete" and the count; Android's empty-library state; a
+  long press copies the source id. A click opens `MigrateMangaScreen(sourceId)`: the entries with covers; a click opens
+  the migration configuration for that entry, the cover its details; a long press selects, then clicks toggle; select
+  all, invert and "Migrate" (the configuration for the selection) in the top bar; back ends the selection first. From
+  there the P19 configuration and list; when the list ends it returns to the source's entries (no details below it).
+- **The pick from a source's own search** (Android's `MigrateSourceSearchScreen`, listed as not built in P18 / P19): the
+  migration search's row header opens the desktop catalogue with the query and `migrationFor`; a click on an entry there
+  makes it the match in the migration list below and shows the list again (the entry itself ignored); a long press
+  starts the bulk selection as in any catalogue.
+
+### Decisions / deviations
+
+- The selection's actions are in the top bar (Android: select all in the top bar; "Migrate" and scroll to top / bottom in
+  a bottom bar); no scroll buttons.
+- The obsolete-only filter does not leave out SY's built-in E-Hentai sources (Android does when E-Hentai is on): the
+  desktop has no built-in E-Hentai, so such entries are a not-installed source here.
+- The source's failed-count event, which Android's tab does not collect, is shown as Android's "internal error" toast.
+- `GetSourcesWithFavoriteCount` is a desktop copy, not shared: it uses `isLocal` from `source-local`, which `:app-shared`'s
+  Android target does not depend on.
+- Found while building: after moving a file from `shared` to `desktopCopy`, `:app-shared:compileKotlinDesktop` failed
+  with unresolved references to it although the copy was generated (incremental compilation); a `--rerun` of that task
+  compiled. Nothing to change in the build; noted for the next such move.
+- Android behaviour: unchanged (the entries' screen model is compiled by `:app-shared` instead of `app`, same source).
+
+### Not built
+
+Merged sources (SY), the library update errors screen's migration (no such screen on desktop), Android's fast scroller
+and the per-row "animate item" placement.
+
+### Tests
+
+`BrowseMigrateUiTest` (2): the sources with library entries and their counts (3 / 1, a not-installed source first and
+marked, a non-library entry not counted), sorted by name, by count ascending and descending (stored in the preferences),
+searched by name and by id; a source's entries by title (case ignored), a click opening the configuration for that
+entry, long press / click / invert / select all, "Migrate" opening the configuration for all three and from there the
+migration list with them. `MigrateMangaUiTest` +1: the row header of the migration search opens the source's own search,
+whose pick is the match in the list. Not tested headlessly: the tab in `BrowseHomeScreen` (its other tabs' models need
+the full extension setup); compile-checked.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*BrowseMigrateUiTest*' --tests '*MigrateMangaUiTest*'` 11 tests, 0 failures. The full suite after P20 and P21: see "P21".
+
+## P21 — SY source categories
+
+Built in `f54b2d8` (borrowing), `22dd0d7` (screen, settings, sources tab), `187a852` (tests) and this docs commit; the
+P20 tab test and a test-helper race fix in `e07220c`.
+
+**Why this item:** of "Remaining parity gaps" it was the most useful one that is small and fully testable headlessly: the
+desktop sources tab already grouped sources by SY's categories (`GetEnabledSources`, P1) but there was no way to create
+a category or put a source into one, so the grouping only showed up after restoring an Android backup. The other
+candidates were larger (merged sources, an embedded browser, the reader's tap zones) or need what the desktop lacks
+(tracker autofill needs real tracker searches, data saver an image proxy service).
+
+### Built
+
+- **Android's logic borrowed, not rewritten** (`shared`, Android compiles them from `:app-shared` now, unchanged): SY's
+  `GetSourceCategories`, `CreateSourceCategory` (a "|" is an invalid name), `RenameSourceCategory` (the sources follow),
+  `DeleteSourceCategory` (the sources leave it), `SetSourceCategories` and `SourceCategoryScreenModel` (categories by name,
+  dialogs, the invalid-name event). In the desktop DI like Android's `SYDomainModule`.
+- **Desktop:** `SourceCategoriesScreen` (`ui/more/`, Android's `SourceCategoryScreen`): the categories, add (button),
+  rename and delete per row with Android's dialogs (`CategoryCreateDialog` / `CategoryRenameDialog` /
+  `CategoryDeleteDialog`, borrowed since P2: duplicates refused there), SY's "invalid category name" message, the empty
+  state. Settings → Browse (Android's place, sources group): "Edit categories" with the count and SY's "Filter sources in
+  categories" switch. The sources tab's options dialog (long press) has "Categories" when categories exist (Android's
+  rule) → Android's `SourceCategoriesDialog` as a desktop copy (checkboxes, OK sets them through `SetSourceCategories`); the
+  list shows the source under each of its categories (and also under its language unless the filter is on), as before.
+- Same preferences as Android (`sources_tab_categories`, `sources_tab_source_categories`, `sources_tab_categories_filter`),
+  so backups carry them both ways.
+
+### Decisions / deviations
+
+- The right-click context menu of a source row keeps pin / disable only; "Categories" is in the long-press options
+  dialog like Android.
+- `SourceCategoriesDialog` is a desktop copy (Android's is in `SourcesScreen.kt`, which is Android UI throughout).
+- Android behaviour: unchanged.
+
+### Not built
+
+SY's data-saver exclusion entry of the options dialog (no data saver on desktop), the extension info entry.
+
+### Tests
+
+`SourceCategoriesUiTest` (2): through the whole app, More → Settings → Browse → "Edit categories": add "Manga", "A|B"
+refused with SY's message, rename to "Comics" with a source in it (the source follows), delete with the confirmation (the
+source leaves it); the sources tab: long press → "Categories" → a category → OK stores `<id>|Favourites`, the source is
+listed under the category and its language, and only under the category with the filter on. `BrowseMigrateTabUiTest`
+(1, P20): the whole app's Browse screen has the Migrate tab listing a source with library entries (a separate class:
+`KomikkuApp` installs the Coil image loader, which must happen before any other cover in the test JVM).
+
+Found while testing: a test name with "→" made `compileTestKotlin` fail (`InvalidPathException` for the lambda's class
+file under the machine's file name encoding); test names keep to ASCII punctuation. `BrowseMigrateUiTest`'s row-order
+helper looked a row up twice and failed when the list recomposed in between (fixed in `e07220c`).
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*SourceCategoriesUiTest*' --tests '*BrowseMigrateUiTest*' --tests '*SourcesUiTest*'` 10 tests and `--tests '*BrowseMigrate*'`
+3 tests, 0 failures (after the two test fixes above). Full `:desktopApp:test` on `187a852` (code of P20 and P21, with
+`spotlessCheck`, `:app:verifyBorrowedSources` and `:desktopApp:compileKotlin` in the same run): 79 classes, 358 tests, 0
+failures (was 76 / 352 on `8fc858f`: `BrowseMigrateUiTest` 2, `BrowseMigrateTabUiTest` 1, `SourceCategoriesUiTest` 2,
+`MigrateMangaUiTest` +1; `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest` and
+`MangayomiSourceStoreTest` included and passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3815,11 +3937,11 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 1. **Browse:** the global Feed tab, the per-source feed, saved searches in the catalogue, the filter panel and adding a
    saved search to a source's feed are done (P13; left from them: the source feed's incognito toggle, SY's MangaDex
    random / follows entries). Migration of one entry from its details is done (P18), the migration list, its configuration screen and
-   migrating from the duplicate dialog are done (P19); left: Browse → Migrate (sources with library entries), merged
-   sources. Global search, source / language
+   migrating from the duplicate dialog are done (P19), Browse → Migrate and the pick from a source's own search are done
+   (P20); left: merged sources. Global search, source / language
    toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
-   library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); left:
-   SY source categories and data-saver exclusion.
+   library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); SY source
+   categories are done (P21); left: data-saver exclusion (no data saver on desktop).
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2), migrate from the selection too (P19); left from
