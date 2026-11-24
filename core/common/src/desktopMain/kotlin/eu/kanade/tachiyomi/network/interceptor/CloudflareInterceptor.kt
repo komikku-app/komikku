@@ -40,7 +40,9 @@ import kotlin.time.Duration.Companion.seconds
  *   Android returns the challenge page after a "WebView is required" toast.
  * - One challenge per host is solved at a time: a request that waited for another one's solution is sent again with the
  *   new cookie instead of opening a second browser. A failed solve is remembered for a short time
- *   ([CloudflareHostState.FAILURE_MEMORY]): the requests behind it and right after it fail at once with the same reason.
+ *   ([CloudflareHostState.FAILURE_MEMORY]): the requests behind it and right after it fail at once with the same reason
+ *   (not a backend that could not be used, [BrowserUnavailableException], P8 review). A cancelled call starts no solve
+ *   and ends a running one through [BrowserSession.isCancelled].
  * - The challenge that counts is the one of the last request (after redirects): its host is solved and its clearance is
  *   compared.
  * - When the browser reports another User-Agent than the source's, the retry and the host's later requests (while that
@@ -112,10 +114,24 @@ actual class CloudflareInterceptor(
             } else {
                 // A solve that failed a moment ago fails the same way at once (no second browser run per waiter).
                 hosts.recentFailure(host, current)?.let { throw it }
+                // P8 review: a call cancelled while it waited for the host starts no solve.
+                if (chain.call().isCanceled()) throw IOException("Canceled")
                 try {
-                    solve(backend, request, challengedUrl, sourceUserAgent, hosts, staleClearance = current ?: sentClearance)
+                    solve(
+                        backend,
+                        request,
+                        challengedUrl,
+                        sourceUserAgent,
+                        hosts,
+                        staleClearance = current ?: sentClearance,
+                        isCancelled = { chain.call().isCanceled() },
+                    )
                 } catch (e: CloudflareBypassException) {
-                    hosts.recordFailure(host, e, currentClearance(challengedUrl))
+                    // P8 review: a backend that cannot be used (no solver at the address, its error answer) is not a
+                    // failed solve of this host: a corrected set-up must work with the next request.
+                    if (e.cause !is BrowserUnavailableException) {
+                        hosts.recordFailure(host, e, currentClearance(challengedUrl))
+                    }
                     throw e
                 }
             }
@@ -134,6 +150,7 @@ actual class CloudflareInterceptor(
         sourceUserAgent: String,
         hosts: CloudflareHostState,
         staleClearance: String?,
+        isCancelled: () -> Boolean,
     ): Request {
         val host = url.host
         // Android: `cookieManager.remove(request.url, COOKIE_NAMES, 0)`; on desktop that misses a site-wide cookie.
@@ -150,9 +167,12 @@ actual class CloudflareInterceptor(
                     // A new clearance: not the one that was refused (Android's `it != oldCookie`).
                     until = BrowserCondition.cookieSet(url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
                     timeout = timeout,
+                    isCancelled = isCancelled,
                 ),
             )
         } catch (e: Exception) {
+            // P8 review: a cancelled call (or an interrupted thread) is no failed solve.
+            if (isCancelled() || Thread.currentThread().isInterrupted) throw IOException("Canceled", e)
             logcat(LogPriority.ERROR, e) { "Cloudflare challenge for $host: ${backend.name} failed" }
             throw failure(host, CloudflareBypassException.Reason.BROWSER_FAILED, e)
         }
@@ -205,7 +225,8 @@ actual class CloudflareInterceptor(
             host = host,
             reason = reason,
             // A backend that says why (an unreachable solver, its error answer, P8) is quoted.
-            message = (cause as? BrowserUnavailableException)?.message?.takeIf { it.isNotBlank() }
+            // Its own final period is dropped: the message goes on after it (P8 review).
+            message = (cause as? BrowserUnavailableException)?.message?.trim()?.trimEnd('.')?.takeIf { it.isNotBlank() }
                 ?.let { context.stringResource(KMR.strings.desktop_cloudflare_solver_failed, host, it) }
                 ?: context.stringResource(KMR.strings.desktop_cloudflare_failed, host),
             cause = cause,

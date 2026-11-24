@@ -17,7 +17,8 @@ import kotlin.time.Duration.Companion.seconds
  * - **A failed solve**, for [failureMemory]: requests that queued behind it on the host's lock and the ones right after
  *   it fail at once with the same reason instead of each running the browser again (up to its timeout each). A new
  *   clearance cookie in the jar (the remembered failure is bound to the clearance it saw) or [clearFailure] (a manual
- *   "Open in WebView" save) ends it early.
+ *   "Open in WebView" save) ends it early, and [clearFailures] (another solver address) ends all of them. Failures of
+ *   the backend itself (`BrowserUnavailableException`: not configured, unreachable, an error answer) are not recorded.
  * - **The User-Agent a clearance belongs to**: Cloudflare binds `cf_clearance` to the browser's User-Agent, so the
  *   interceptor sends the solver's (or the pasted) User-Agent to that host while that clearance is in the jar, also when
  *   the source sets its own User-Agent header. Bound to a hash of the clearance value, so a newer clearance (the site's,
@@ -63,6 +64,11 @@ class CloudflareHostState(
 
     fun clearFailure(host: String) {
         failures.remove(host)
+    }
+
+    /** Forgets every host's failed solve (P8 review: the solver's address changed, its failures say nothing now). */
+    fun clearFailures() {
+        failures.clear()
     }
 
     /**

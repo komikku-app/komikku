@@ -52,6 +52,11 @@ data class BrowserSession(
     /** Shown to the user (a window the user works in) rather than hidden (the Cloudflare interceptor). */
     val interactive: Boolean = false,
     val title: String? = null,
+    /**
+     * Whether whoever waits for the session gave up (the Cloudflare interceptor: its OkHttp call was cancelled, P8
+     * review). A backend that cannot be interrupted (an HTTP call to a solver) checks it and stops early.
+     */
+    val isCancelled: () -> Boolean = { false },
 )
 
 /** The browser's state after a page load or a cookie change, which a [BrowserCondition] is tested against. */
@@ -119,8 +124,12 @@ sealed interface BrowserAvailability {
     }
 }
 
-/** A [BrowserBackend] could not start the browser. */
-class BrowserUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)
+/**
+ * A [BrowserBackend] could not start the browser, or the service behind it could not be used (an unreachable solver,
+ * its error answer). The Cloudflare interceptor does not remember these as a failed solve of the host (P8 review): a
+ * corrected backend set-up takes effect with the next request. Open for backends that carry a typed reason.
+ */
+open class BrowserUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /** The desktop default: no embedded browser. */
 object NoBrowserBackend : BrowserBackend {
