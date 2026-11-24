@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Public
@@ -71,6 +72,7 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
@@ -106,6 +108,12 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 IconButton(onClick = model::refresh, enabled = !state.isRefreshing) {
                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(KMR.strings.desktop_refresh))
                 }
+                // SY's "Edit info", for library entries like on Android
+                if (manga?.favorite == true) {
+                    IconButton(onClick = model::showEditMangaInfoDialog, modifier = Modifier.testTag("details-edit-info")) {
+                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(SYMR.strings.action_edit_info))
+                    }
+                }
                 if (manga != null && !manga.isLocal()) DownloadMenu(model::runDownloadAction)
                 if (manga != null) SortMenu(manga, model::setSorting)
             },
@@ -126,6 +134,11 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 val trackingModel = rememberScreenModel(tag = "tracking") { TrackingScreenModel(mangaId) }
                 TrackingDialog(trackingModel, manga?.title.orEmpty(), onDismiss = model::dismissDialog)
             }
+            is MangaDetailsScreenModel.Dialog.EditMangaInfo -> EditMangaInfoDialog(
+                manga = dialog.manga,
+                onDismissRequest = model::dismissDialog,
+                onSave = model::updateMangaInfo,
+            )
             is MangaDetailsScreenModel.Dialog.DuplicateManga -> DuplicateMangaDialog(
                 targetManga = dialog.manga,
                 duplicates = dialog.duplicates,

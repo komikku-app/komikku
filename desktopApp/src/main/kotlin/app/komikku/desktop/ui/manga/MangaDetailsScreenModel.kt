@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.manga.MangaInfoEdits
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
@@ -37,11 +38,13 @@ import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetMangaWithChapters
+import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -71,6 +74,7 @@ class MangaDetailsScreenModel(
     private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val readerLauncher: ReaderLauncher = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
+    private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
 ) : StateScreenModel<MangaDetailsScreenModel.State>(State()) {
 
     data class State(
@@ -101,6 +105,9 @@ class MangaDetailsScreenModel(
 
         /** Android `MangaScreenModel.Dialog.DuplicateManga`: library entries with the same title (or tracked alike). */
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
+
+        /** SY's "Edit info" for a library entry (Android `MangaScreenModel.Dialog.EditMangaInfo`). */
+        data class EditMangaInfo(val manga: Manga) : Dialog
     }
 
     private var fetchedOnOpen = false
@@ -372,6 +379,55 @@ class MangaDetailsScreenModel(
                 setMangaCategories.await(manga.id, categoryIds)
                 if (!manga.favorite) updateManga.awaitUpdateFavorite(manga.id, true)
             }
+        }
+    }
+
+    /** Android: "Edit info" is offered for library entries only (their custom info is what `Manga` shows). */
+    fun showEditMangaInfoDialog() {
+        val manga = state.value.manga ?: return
+        if (!manga.favorite) return
+        mutableState.update { it.copy(dialog = Dialog.EditMangaInfo(manga)) }
+    }
+
+    /**
+     * Android `MangaScreenModel.updateMangaInfo` with the shared [MangaInfoEdits]: a local entry gets the new values in
+     * the database and its `ComicInfo.xml`; a source entry stores them as its custom info (`edits.json`, which backups
+     * carry), blank values meaning the source's. The shown entry is replaced by a copy (the custom info is read when a
+     * `Manga` is made), since the database row of a source entry does not change.
+     */
+    fun updateMangaInfo(
+        title: String?,
+        author: String?,
+        artist: String?,
+        thumbnailUrl: String?,
+        description: String?,
+        tags: List<String>?,
+        status: Long?,
+    ) {
+        dismissDialog()
+        val manga = state.value.manga ?: return
+        screenModelScope.launch {
+            val edited = try {
+                withIOContext {
+                    if (manga.isLocal()) {
+                        val (edited, update) = MangaInfoEdits.localInfoEdit(manga, title, author, artist, thumbnailUrl, description, tags, status)
+                        (sourceManager.get(LocalSource.ID) as? LocalSource)?.updateMangaInfo(edited.toSManga())
+                        updateManga.await(update)
+                        edited
+                    } else {
+                        setCustomMangaInfo.set(
+                            MangaInfoEdits.customInfoEdit(manga, title, author, artist, thumbnailUrl, description, tags, status),
+                        )
+                        manga.copy(lastUpdate = manga.lastUpdate + 1)
+                    }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                xLogE("Failed to edit the entry's info", e)
+                return@launch
+            }
+            mutableState.update { if (it.manga?.id == edited.id) it.copy(manga = edited) else it }
         }
     }
 
