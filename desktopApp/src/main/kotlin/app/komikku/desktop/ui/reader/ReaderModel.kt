@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
+import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -35,6 +36,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -110,7 +113,33 @@ class ReaderModel(
          * by the viewer, so that the webtoon list scrolls there; the viewers keep their place on other item changes.
          */
         val jump: Int = 0,
+        /** Pages known to be wide (width > height, Android `ImageUtil.isWideImage`), by [pageKey]; P11. */
+        val widePages: Set<String> = emptySet(),
+        /** Wide pages shown as two halves (Android "Split wide pages"), by [pageKey]; the second half is an [InsertPage]. */
+        val splitPages: Set<String> = emptySet(),
     ) {
+        fun isWide(page: ReaderPage): Boolean = pageKey(page) in widePages
+
+        /**
+         * The pages shown at [index] in reading order: with [doublePages] the page and the next one of the same chapter,
+         * unless either is wide or a split half (SY's double pages show a wide page alone); else the page alone; none
+         * on a transition.
+         */
+        fun spreadAt(index: Int, doublePages: Boolean): List<ReaderPage> {
+            val page = items.getOrNull(index) as? ReaderPage ?: return emptyList()
+            if (!doublePages || !pairable(page)) return listOf(page)
+            val next = items.getOrNull(index + 1) as? ReaderPage
+            return if (next != null && next.chapter == page.chapter && pairable(next)) listOf(page, next) else listOf(page)
+        }
+
+        /** How far "previous" goes from [index]: two when the two items before form a pair ([spreadAt]), else one. */
+        fun previousStep(index: Int, doublePages: Boolean): Int {
+            if (!doublePages) return 1
+            return if (spreadAt(index - 2, doublePages = true).size == 2) 2 else 1
+        }
+
+        private fun pairable(page: ReaderPage) = page !is InsertPage && !isWide(page) && pageKey(page) !in splitPages
+
         val currentChapter: ReaderChapter? get() = viewerChapters?.currChapter
         val pages: List<ReaderPage> get() = currentChapter?.pages.orEmpty()
         val currentItem: ReaderItem? get() = items.getOrNull(currentIndex)
@@ -210,6 +239,11 @@ class ReaderModel(
                 )
             }
             progressSaver.restartReadTimer()
+            scope.launch {
+                combine(readerPreferences.dualPageSplitPaged().changes(), readerPreferences.dualPageRotateToFit().changes()) { _, _ -> }
+                    .drop(1)
+                    .collect { resplitPages() }
+            }
             val initial = chapterList.first { it.chapter.id == initialChapterId }
             loadChapter(initial, initialPage, ChapterStart.Requested)
             Result.success(Unit)
@@ -244,7 +278,7 @@ class ReaderModel(
             ChapterStart.Last -> pages.lastIndex
         }
         val target = pages.getOrNull(pageIndex)
-        val items = ReaderViewerItems.build(newChapters, forceTransition = alwaysShowTransition())
+        val items = withSplitPages(ReaderViewerItems.build(newChapters, forceTransition = alwaysShowTransition()))
         // Android: add the new references first to avoid recycling a chapter that stays
         newChapters.ref()
         _state.value.viewerChapters?.unref()
@@ -278,7 +312,7 @@ class ReaderModel(
         val chapters = _state.value.viewerChapters ?: return@withLock
         _state.update { state ->
             val current = state.currentItem
-            val items = ReaderViewerItems.build(chapters, forceTransition(current))
+            val items = withSplitPages(ReaderViewerItems.build(chapters, forceTransition(current)))
             val index = ReaderViewerItems.indexOf(items, current).takeIf { it >= 0 } ?: state.currentIndex.coerceIn(0, items.lastIndex)
             state.copy(items = items, currentIndex = index)
         }
@@ -310,7 +344,7 @@ class ReaderModel(
                     state.viewerChapters?.unref()
                     _state.update {
                         val current = it.currentItem
-                        val items = ReaderViewerItems.build(newChapters, forceTransition(current))
+                        val items = withSplitPages(ReaderViewerItems.build(newChapters, forceTransition(current)))
                         val index = ReaderViewerItems.indexOf(items, current).takeIf { i -> i >= 0 }
                             ?: ReaderViewerItems.indexOf(items, chapter.pages?.getOrNull(chapter.requestedPage)).coerceAtLeast(0)
                         it.copy(viewerChapters = newChapters, items = items, currentIndex = index, bookmarked = chapter.chapter.bookmark)
@@ -336,7 +370,8 @@ class ReaderModel(
         _state.update { it.copy(currentIndex = clamped) }
         when (val item = state.items.getOrNull(clamped)) {
             is ReaderPage -> {
-                onPageSelected(item)
+                // Android: the second half of a split page does not change the progress
+                if (item !is InsertPage) onPageSelected(item)
                 if (item.chapter != state.currentChapter) switchChapter(item.chapter)
             }
             is ChapterTransition -> item.to?.let { preload(it) }
@@ -554,6 +589,59 @@ class ReaderModel(
             setMangaViewerFlags.awaitSetReadingMode(manga.id, mode.flagValue.toLong())
             val updated = getManga.await(manga.id) ?: return@launch
             _state.update { it.copy(manga = updated, readingMode = resolveReadingMode(updated)) }
+            // Split halves are a paged-viewer item (Android reloads the viewer)
+            resplitPages()
+        }
+    }
+
+    // Wide pages (P11): what the paged viewer learns from decoded pages, Android `PagerPageHolder.process`
+
+    /** Second halves of split pages by their page's key (kept so a rebuilt item list keeps its position). */
+    private val insertPages = java.util.concurrent.ConcurrentHashMap<String, InsertPage>()
+
+    /**
+     * The viewer decoded [page] at [width] × [height] (its source size): a wide page is remembered (double pages show
+     * it alone) and, with "Split wide pages" in a paged mode (and not "Rotate wide pages to fit", which wins like in
+     * Android's `process`), split: its second half follows it as an [InsertPage] (Android `onPageSplit`).
+     */
+    fun onPageSize(page: ReaderPage, width: Int, height: Int) {
+        if (page is InsertPage || width <= height) return
+        val key = pageKey(page)
+        val split = splitWidePages()
+        val state = _state.value
+        if (key in state.widePages && (!split || key in state.splitPages)) return
+        _state.update { it.copy(widePages = it.widePages + key, splitPages = if (split) it.splitPages + key else it.splitPages) }
+        if (split) scope.launch { refreshItems() }
+    }
+
+    private fun splitWidePages(): Boolean =
+        readerPreferences.dualPageSplitPaged().get() &&
+            !readerPreferences.dualPageRotateToFit().get() &&
+            _state.value.readingMode.type != ReadingMode.ViewerType.Webtoon
+
+    /**
+     * Android reloads the pager when "Split wide pages" (or the viewer) changes: the known wide pages are split or
+     * joined again according to the current settings.
+     */
+    private fun resplitPages() {
+        val split = if (splitWidePages()) _state.value.widePages else emptySet()
+        if (split == _state.value.splitPages) return
+        _state.update { it.copy(splitPages = split) }
+        scope.launch { refreshItems() }
+    }
+
+    /** [items] with the second half of each split page after it. */
+    private fun withSplitPages(items: List<ReaderItem>): List<ReaderItem> {
+        val split = _state.value.splitPages
+        if (split.isEmpty()) return items
+        return buildList {
+            items.forEach { item ->
+                add(item)
+                if (item is ReaderPage && item !is InsertPage && pageKey(item) in split) {
+                    val key = pageKey(item)
+                    add(insertPages[key]?.takeIf { it.parent === item } ?: InsertPage(item).also { insertPages[key] = it })
+                }
+            }
         }
     }
 
@@ -604,6 +692,9 @@ class ReaderModel(
     /** The domain chapter of the current item (for titles). */
     val currentDomainChapter get() = _state.value.currentChapter?.chapter?.toDomainChapter()
 }
+
+/** A page's key across item list rebuilds and page reloads: its chapter and index (as `ReaderImages.key`). */
+fun pageKey(page: ReaderPage): String = "${page.chapter.chapter.id}-${page.index}"
 
 /** Android's viewers preload the next chapter within this many pages of the current chapter's end. */
 private const val PRELOAD_PAGES = 5

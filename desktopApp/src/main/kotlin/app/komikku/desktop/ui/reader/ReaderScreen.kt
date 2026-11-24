@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.shared.reader.image.PageFit
+import app.komikku.shared.reader.image.PixelSize
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
@@ -96,13 +97,18 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
     val fullscreen = LocalFullscreenToggle.current
     val focusRequester = remember { FocusRequester() }
     var viewportHeight by remember { mutableStateOf(800f) }
+    var viewportWidth by remember { mutableStateOf(1200f) }
     val webtoon = state.readingMode.type == ReadingMode.ViewerType.Webtoon
-    val step = if (display.doublePages && !webtoon && state.readingMode.direction == ReadingMode.Direction.Horizontal) 2 else 1
+    // Double pages: horizontal paged modes only; a page turn moves by the pages shown (a wide page is shown alone)
+    val doublePages = !webtoon && state.readingMode.direction == ReadingMode.Direction.Horizontal &&
+        display.viewer.doublePages(PixelSize(viewportWidth.toInt(), viewportHeight.toInt()))
+    val step = state.spreadAt(state.currentIndex, doublePages).size.coerceAtLeast(1)
+    val backStep = state.previousStep(state.currentIndex, doublePages)
 
     fun perform(action: ReaderAction) {
         when (action) {
             ReaderAction.Next -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageDown, viewportHeight) } else model.next(step)
-            ReaderAction.Previous -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageUp, viewportHeight) } else model.previous(step)
+            ReaderAction.Previous -> if (webtoon) scope.launch { listState.scrollFor(ReaderAction.PageUp, viewportHeight) } else model.previous(backStep)
             // The webtoon list follows the model's jump
             ReaderAction.First -> model.moveToFirstPage()
             ReaderAction.Last -> model.moveToLastPage()
@@ -145,6 +151,7 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
                 .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                 .drawWithContent {
                     viewportHeight = size.height
+                    viewportWidth = size.width
                     drawContent()
                     display.overlays.forEach { (color, blend) -> drawRect(color, blendMode = blend) }
                 },
@@ -157,7 +164,15 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
                 )
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 webtoon -> WebtoonViewer(state, listState, zoom, display.viewer, ::perform, model::moveToItem, model::retry)
-                else -> PagedViewer(state, zoom, display.viewer, ::perform, model::retry)
+                else -> PagedViewer(
+                    state,
+                    zoom,
+                    // The layout as resolved here for the page turns (automatic: the window's orientation)
+                    display.viewer.copy(pageLayout = if (doublePages) PagerConfig.PageLayout.DOUBLE_PAGES else PagerConfig.PageLayout.SINGLE_PAGE),
+                    ::perform,
+                    model::retry,
+                    model::onPageSize,
+                )
             }
         }
 
@@ -261,7 +276,6 @@ data class ReaderDisplaySettings(
 ) {
     val background: Color get() = viewer.background
     val textColor: Color get() = viewer.textColor
-    val doublePages: Boolean get() = viewer.doublePages
 }
 
 @Composable
@@ -270,6 +284,10 @@ private fun rememberReaderDisplay(preferences: ReaderPreferences): ReaderDisplay
     val scale by preferences.imageScaleType().collectAsState()
     val padding by preferences.webtoonSidePadding().collectAsState()
     val pageLayout by preferences.pageLayout().collectAsState()
+    val splitWide by preferences.dualPageSplitPaged().collectAsState()
+    val invertSplit by preferences.dualPageInvertPaged().collectAsState()
+    val rotateWide by preferences.dualPageRotateToFit().collectAsState()
+    val invertRotation by preferences.dualPageRotateToFitInvert().collectAsState()
     val grayscale by preferences.grayscale().collectAsState()
     val inverted by preferences.invertedColors().collectAsState()
     val customBrightness by preferences.customBrightness().collectAsState()
@@ -300,7 +318,11 @@ private fun rememberReaderDisplay(preferences: ReaderPreferences): ReaderDisplay
             textColor = textColor,
             colorFilter = matrix?.let(ColorFilter::colorMatrix),
             webtoonSidePaddingPercent = padding,
-            doublePages = pageLayout == PagerConfig.PageLayout.DOUBLE_PAGES,
+            pageLayout = pageLayout,
+            splitWidePages = splitWide,
+            invertSplit = invertSplit,
+            rotateWidePages = rotateWide,
+            invertRotation = invertRotation,
         ),
         overlays = overlays,
     )

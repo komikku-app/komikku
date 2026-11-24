@@ -60,11 +60,26 @@ fun ReaderSettingsPanel(
             ReaderPreferences.ImageScaleType.forEachIndexed { i, label ->
                 RadioRow(stringResource(label), selected = scaleType == i + 1) { preferences.imageScaleType().set(i + 1) }
             }
+            // Paged viewer: page layout and wide pages (Android "Reading mode" sheet, `ReadingModePage`)
+            Header(SYMR.strings.page_layout)
             val pageLayout by preferences.pageLayout().collectAsState()
-            SwitchRow(
-                stringResource(SYMR.strings.double_pages),
-                checked = pageLayout == PagerConfig.PageLayout.DOUBLE_PAGES,
-            ) { preferences.pageLayout().set(if (it) PagerConfig.PageLayout.DOUBLE_PAGES else PagerConfig.PageLayout.SINGLE_PAGE) }
+            listOf(
+                PagerConfig.PageLayout.SINGLE_PAGE to SYMR.strings.single_page,
+                PagerConfig.PageLayout.DOUBLE_PAGES to SYMR.strings.double_pages,
+                PagerConfig.PageLayout.AUTOMATIC to SYMR.strings.automatic_orientation,
+            ).forEach { (layout, label) ->
+                RadioRow(stringResource(label), selected = pageLayout == layout, tag = "page-layout-$layout") {
+                    preferences.pageLayout().set(layout)
+                }
+            }
+            BooleanPref(MR.strings.pref_dual_page_split, preferences.dualPageSplitPaged(), tag = "dual-page-split")
+            if (preferences.dualPageSplitPaged().collectAsState().value) {
+                BooleanPref(MR.strings.pref_dual_page_invert, preferences.dualPageInvertPaged(), tag = "dual-page-invert")
+            }
+            BooleanPref(MR.strings.pref_page_rotate, preferences.dualPageRotateToFit(), tag = "dual-page-rotate")
+            if (preferences.dualPageRotateToFit().collectAsState().value) {
+                BooleanPref(MR.strings.pref_page_rotate_invert, preferences.dualPageRotateToFitInvert(), tag = "dual-page-rotate-invert")
+            }
             val padding by preferences.webtoonSidePadding().collectAsState()
             Text(
                 stringResource(MR.strings.pref_webtoon_side_padding) + ": $padding%",
@@ -161,10 +176,14 @@ private fun RadioRow(label: String, selected: Boolean, tag: String? = null, onCl
 }
 
 @Composable
-private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchRow(label: String, checked: Boolean, tag: String? = null, onChange: (Boolean) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable { onChange(!checked) }.padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .let { if (tag != null) it.testTag(tag) else it },
     ) {
         Text(label, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange)
@@ -172,7 +191,7 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 }
 
 @Composable
-private fun BooleanPref(label: StringResource, preference: Preference<Boolean>) {
+private fun BooleanPref(label: StringResource, preference: Preference<Boolean>, tag: String? = null) {
     val value by preference.collectAsState()
-    SwitchRow(stringResource(label), value) { preference.set(it) }
+    SwitchRow(stringResource(label), value, tag) { preference.set(it) }
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -31,6 +32,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -47,9 +49,11 @@ import app.komikku.shared.reader.image.PageFit
 import app.komikku.shared.reader.image.PageScaling
 import app.komikku.shared.reader.image.PixelSize
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
+import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderItem
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 
@@ -98,14 +102,33 @@ data class ReaderDisplay(
     val textColor: Color,
     val colorFilter: ColorFilter?,
     val webtoonSidePaddingPercent: Int,
-    val doublePages: Boolean,
-)
+    /** `PagerConfig.PageLayout` (single, double, automatic = double while the window is wider than high). */
+    val pageLayout: Int,
+    /** "Split wide pages" (Android `dualPageSplitPaged`), [invertSplit] = "Invert split page placement". */
+    val splitWidePages: Boolean = false,
+    val invertSplit: Boolean = false,
+    /** "Rotate wide pages to fit" (Android `dualPageRotateToFit`), [invertRotation] = "Flip orientation". */
+    val rotateWidePages: Boolean = false,
+    val invertRotation: Boolean = false,
+) {
+    /** Android `PagerConfig.doublePages`: double (or automatic in a landscape [viewport]) and wide pages not split. */
+    fun doublePages(viewport: PixelSize): Boolean = !splitWidePages &&
+        (
+            pageLayout == PagerConfig.PageLayout.DOUBLE_PAGES ||
+                (pageLayout == PagerConfig.PageLayout.AUTOMATIC && viewport.width > viewport.height)
+            )
+}
 
 /**
- * Paged viewer (LTR, RTL, vertical): one item at a time — a page, or with [ReaderDisplay.doublePages]
- * two adjacent pages side by side (in reading direction) — fitted per [ReaderDisplay.fit], zoom
- * (Ctrl + wheel, +/-/0, double-click) and pan (drag, wheel when the page is taller than the window).
- * Click zones turn pages; the neighbours are loaded and decoded ahead.
+ * Paged viewer (LTR, RTL, vertical): one item at a time — a page, or with double pages
+ * ([ReaderDisplay.doublePages]) two adjacent pages side by side (in reading direction) — fitted per
+ * [ReaderDisplay.fit], zoom (Ctrl + wheel, +/-/0, double-click) and pan (drag, wheel when the page is taller than the
+ * window). Click zones turn pages; the neighbours are loaded and decoded ahead.
+ *
+ * Wide pages (P11, Android `PagerPageHolder`): decoded sizes go to the model ([onPageSize]); double pages show a wide
+ * page alone ([ReaderModel.State.spreadAt]); "Split wide pages" shows one half per item (the second half is an
+ * `InsertPage`; left half first left to right, right half first otherwise, swapped by "Invert"); "Rotate wide pages to
+ * fit" turns a wide page shown alone by 90° (−90° with "Flip").
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -115,6 +138,7 @@ fun PagedViewer(
     display: ReaderDisplay,
     onAction: (ReaderAction) -> Unit,
     onRetry: (ReaderPage) -> Unit,
+    onPageSize: (ReaderPage, Int, Int) -> Unit = { _, _, _ -> },
 ) {
     val item = state.currentItem
     LaunchedEffect(state.currentIndex, state.viewerChapters) { zoom.reset() }
@@ -163,13 +187,8 @@ fun PagedViewer(
         ) {
             when (item) {
                 is ReaderPage -> {
-                    val spread = if (display.doublePages && state.readingMode.direction == ReadingMode.Direction.Horizontal) {
-                        // Pages of one chapter only (the next item may be the next chapter's first page)
-                        (state.items.getOrNull(state.currentIndex + 1) as? ReaderPage)?.takeIf { it.chapter == item.chapter }
-                    } else {
-                        null
-                    }
-                    val pages = listOfNotNull(item, spread).let { if (state.readingMode == ReadingMode.RIGHT_TO_LEFT) it.reversed() else it }
+                    val spread = state.spreadAt(state.currentIndex, display.doublePages(viewport)).ifEmpty { listOf(item) }
+                    val pages = if (state.readingMode == ReadingMode.RIGHT_TO_LEFT) spread.reversed() else spread
                     val slotWidth = viewport.width / pages.size
                     Row(
                         modifier = Modifier.graphicsLayer {
@@ -181,13 +200,26 @@ fun PagedViewer(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         pages.forEach { page ->
-                            Box(Modifier.testTag("page-${page.index}")) {
-                                ReaderPageSlot(page, maxWidth = (slotWidth * 2).coerceAtLeast(1), display.colorFilter, onRetry = { onRetry(page) }) { decoded ->
-                                    val (w, h) = PageScaling.displaySize(decoded.decoded, PixelSize(slotWidth, viewport.height), display.fit)
-                                    contentSize = (w * pages.size) to h
-                                    with(density) {
-                                        PageTiles(decoded, display.colorFilter, Modifier.requiredSize(w.toDp(), h.toDp()))
+                            val imagePage = (page as? InsertPage)?.parent ?: page
+                            val tag = if (page is InsertPage) "page-${page.index}-second-half" else "page-${page.index}"
+                            Box(Modifier.testTag(tag)) {
+                                ReaderPageSlot(imagePage, maxWidth = (slotWidth * 2).coerceAtLeast(1), display.colorFilter, onRetry = { onRetry(imagePage) }) { decoded ->
+                                    LaunchedEffect(decoded) { onPageSize(imagePage, decoded.source.width, decoded.source.height) }
+                                    val half = when {
+                                        page is InsertPage -> splitSide(state.readingMode, display.invertSplit, first = false)
+                                        pageKey(page) in state.splitPages -> splitSide(state.readingMode, display.invertSplit, first = true)
+                                        else -> null
                                     }
+                                    val wide = decoded.decoded.width > decoded.decoded.height
+                                    val rotation = when {
+                                        !display.rotateWidePages || pages.size > 1 || half != null || !wide -> 0f
+                                        display.invertRotation -> -90f
+                                        else -> 90f
+                                    }
+                                    val slot = PixelSize(slotWidth, viewport.height)
+                                    val (w, h) = PageScaling.displaySize(shownSize(decoded.decoded, half, rotation), slot, display.fit)
+                                    contentSize = (w * pages.size) to h
+                                    with(density) { WidePageTiles(decoded, display.colorFilter, w.toDp(), h.toDp(), half, rotation) }
                                 }
                             }
                         }
@@ -200,10 +232,18 @@ fun PagedViewer(
                 null -> {}
             }
         }
-        // Preload (load + decode) the neighbouring pages.
+        // Preload (load + decode) the neighbouring pages; their sizes tell the model about wide pages ahead.
         listOf(state.currentIndex - 1, state.currentIndex + 1, state.currentIndex + 2)
-            .mapNotNull { state.items.getOrNull(it) as? ReaderPage }
-            .forEach { page -> key(page) { rememberPageImage(page, viewport.width * 2) } }
+            .mapNotNull { (state.items.getOrNull(it) as? ReaderPage)?.let { page -> (page as? InsertPage)?.parent ?: page } }
+            .distinct()
+            .forEach { page ->
+                key(page) {
+                    val image = rememberPageImage(page, viewport.width * 2)
+                    if (image is PageImageState.Ready) {
+                        LaunchedEffect(image) { onPageSize(page, image.page.source.width, image.page.source.height) }
+                    }
+                }
+            }
     }
 }
 
@@ -312,7 +352,56 @@ private fun ReaderPageSlotWebtoon(
     }
 }
 
+/** The half of a split page an item shows (Android `PagerPageHolder.splitInHalf`). */
+enum class PageHalf { Left, Right }
+
+/** Android: the first half is the left one left to right, the right one otherwise; "Invert" swaps them. */
+fun splitSide(mode: ReadingMode, invert: Boolean, first: Boolean): PageHalf {
+    val leftFirst = mode == ReadingMode.LEFT_TO_RIGHT
+    return if ((first == leftFirst) != invert) PageHalf.Left else PageHalf.Right
+}
+
+/** The size the shown part of an image of [size] has: half its width for a half, swapped for a quarter turn. */
+fun shownSize(size: PixelSize, half: PageHalf?, rotation: Float): PixelSize = when {
+    half != null -> PixelSize((size.width / 2).coerceAtLeast(1), size.height)
+    rotation != 0f -> PixelSize(size.height, size.width)
+    else -> size
+}
+
+/**
+ * [PageTiles] in a [width] × [height] slot: the whole page, one [half] of it (the page drawn at twice the width and
+ * clipped), or turned by [rotation] (drawn at the swapped size and rotated around its centre).
+ */
+@Composable
+private fun WidePageTiles(
+    page: app.komikku.shared.reader.image.DecodedPage<androidx.compose.ui.graphics.ImageBitmap>,
+    colorFilter: ColorFilter?,
+    width: androidx.compose.ui.unit.Dp,
+    height: androidx.compose.ui.unit.Dp,
+    half: PageHalf?,
+    rotation: Float,
+) {
+    when {
+        half != null -> Box(
+            modifier = Modifier.requiredSize(width, height).clipToBounds(),
+            contentAlignment = if (half == PageHalf.Left) Alignment.TopStart else Alignment.TopEnd,
+        ) {
+            val align = if (half == PageHalf.Left) Alignment.Start else Alignment.End
+            PageTiles(page, colorFilter, Modifier.wrapContentWidth(align, unbounded = true).requiredSize(width * 2, height))
+        }
+        rotation != 0f -> Box(Modifier.requiredSize(width, height), contentAlignment = Alignment.Center) {
+            PageTiles(
+                page,
+                colorFilter,
+                Modifier.wrapContentSize(unbounded = true).requiredSize(height, width).graphicsLayer { rotationZ = rotation },
+            )
+        }
+        else -> PageTiles(page, colorFilter, Modifier.requiredSize(width, height))
+    }
+}
+
 private fun itemKey(index: Int, item: ReaderItem): Any = when (item) {
+    is InsertPage -> "page-${item.chapter.chapter.id}-${item.index}-second-half"
     is ReaderPage -> "page-${item.chapter.chapter.id}-${item.index}"
     // One transition of each kind per list, named by its chapters so that it keeps its key when the list is rebuilt
     is ChapterTransition.Prev -> "prev-${item.from.chapter.id}-${item.to?.chapter?.id}"
