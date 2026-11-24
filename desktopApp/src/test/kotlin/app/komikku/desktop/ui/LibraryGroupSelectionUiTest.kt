@@ -211,6 +211,15 @@ class LibraryGroupSelectionUiTest {
         waitForTag("library-selection-toolbar", present = false)
         waitUntil(timeoutMillis = 20_000) { chapters(ajin).all { isDownloaded(it) } }
 
+        // P19: Migrate opens Android's migration configuration for the selection (and ends the selection)
+        select(blue)
+        onNodeWithContentDescription(MR.strings.migrate.localized()).performClick()
+        waitForTag("migration-config")
+        waitForTag("library-selection-toolbar", present = false)
+        onNodeWithContentDescription(MR.strings.action_bar_up_description.localized()).performClick()
+        waitForTag("migration-config", present = false)
+        waitForTag("library-item-${ajin.id}")
+
         // Remove from the library with the downloaded chapters
         select(ajin)
         onNodeWithContentDescription(MR.strings.action_delete.localized()).performClick()
