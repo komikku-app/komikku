@@ -2823,6 +2823,13 @@ memory-only-save tests (`MangaCoverActionsUiTest`) fail with the old keyer / the
 | 7 | Pre-existing, shared with Android: saving a local entry with status "Default" gave `ogStatus = 0` to the entry written to `ComicInfo.xml`, so editing any field reset the status there to Unknown | fixed in `MangaInfoEdits.localInfoEdit` (KMK block): `status ?: manga.ogStatus` (the database update already left the status unchanged). **Android behaviour change** (bug fix, decided by the coordinator): Android's local-entry edits keep the status in `ComicInfo.xml` and in the entry shown right after the save. Tests: `app` `MangaInfoEditsTest` (2, new), desktop `MangaInfoEditsTest` expectation updated | `35c5f80` |
 | 8 | Pre-existing, SY code shared with Android: `CustomMangaRepositoryImpl.saveCustomInfo` rewrote `edits.json` only for a non-empty map, so resetting the last custom info came back after a restart | fixed in a `// KMK` block: an empty map deletes `edits.json`. **Android behaviour change** (bug fix, decided by the coordinator). Test: `:data` `CustomMangaRepositoryImplTest` (2, new): set / removed info survives a new repository on the same file, also when the last entry's info is removed | `6f3f43a` |
 
+Verification (after `6f3f43a`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass;
+`:desktopApp:test` 55 classes, 244 tests, 0 failures (was 55 / 238: `MangaCoverActionsUiTest` 2 → 6,
+`EditMangaInfoUiTest` 2 → 4); `:app:testDebugUnitTest --tests "*MangaInfoEditsTest"` 2 tests, 0 failures;
+`:data:desktopTest --tests "*CustomMangaRepositoryImplTest"` 2 tests, 0 failures. Not run: a real window, Android's
+edit-info dialog on a device, an AVIF / JXL / HEIF cover picked on macOS / Windows.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
