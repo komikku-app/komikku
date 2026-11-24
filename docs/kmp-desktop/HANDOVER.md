@@ -237,8 +237,16 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   cover loader serving custom covers first, custom covers dropped on removal like Android. Not done: autofill from
   tracker, share, migrate. Tests `DuplicateMangaUiTest` (3), `EditMangaInfoUiTest` (2), `MangaInfoEditsTest` (4),
   `MangaCoverActionsUiTest` (2). Found in SY's `CustomMangaRepositoryImpl`: resetting the last edited entry is not
-  written to `edits.json` (left, PROGRESS P10).
-- **P10 review** — pending: `/code-review medium 8704044^..6578115`, then a fix round.
+  written to `edits.json` (fixed in the review round).
+- **P10 review** (medium, `2115049..5311cf8`, 8 findings) — all fixed in `87cdb35`, `65b8e0b`, `35c5f80`, `6f3f43a`
+  and the docs commits after them (PROGRESS.md "Review fixes (P10)"): the desktop cover keyer keys by entry while a
+  custom cover exists (like Android's `MangaCoverKeyer`); "Save" uses the fetcher's disk-cache key and loads a
+  memory-only cover again without memory reads; "Edit cover" accepts a file only when Skia decodes it on this machine
+  (AVIF / JXL / HEIF stay in the chooser) and fails visibly for entries that cannot get a cover; "Edit info" stays
+  open until saved, shows a failure with the input kept, and no longer overwrites a local entry's fresh row. **Two
+  Android behaviour changes** (bug fixes, decided by the coordinator): a local entry saved with the "Default" status
+  keeps its status (`MangaInfoEdits.localInfoEdit`), and removing the last custom info deletes `edits.json`
+  (`CustomMangaRepositoryImpl`, KMK block).
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into

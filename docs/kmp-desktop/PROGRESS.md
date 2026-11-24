@@ -2779,8 +2779,8 @@ behaviour unchanged (one refactor in `MangaScreenModel.updateMangaInfo`, same va
 ### Found, not changed (upstream behaviour)
 
 - `CustomMangaRepositoryImpl.saveCustomInfo` (SY) writes nothing when the last custom entry is removed, so after
-  resetting the only edited entry the old `edits.json` comes back at the next start (Android and desktop alike). A fix
-  is one `else editJson.delete()`; left for the maintainer since it changes Android behaviour.
+  resetting the only edited entry the old `edits.json` comes back at the next start (Android and desktop alike).
+  **Fixed in the review round** (finding 8 below, an Android behaviour change decided by the coordinator).
 
 ### Tests
 
@@ -2803,6 +2803,25 @@ Verification (after `cb4485d`, `--max-workers=2 --console=plain`, `./gradlew --s
 pass; `:desktopApp:test` 55 classes, 238 tests, 0 failures (was 51 / 227: the four P10 classes, 11 tests). Not run: a
 real window, the native file choosers (tests use a stand-in `DesktopFileDialogs`), Android's edit-info dialog on a
 device (only compiled), a local-source entry's edit through the UI (the shared local branch is unit-tested).
+
+### Review fixes (P10)
+
+Review `/code-review medium 8704044^..6578115` (range `2115049..5311cf8`), 8 findings (4 important, 2 nits, 2
+pre-existing in code shared with Android), all fixed in `87cdb35`, `65b8e0b`, `35c5f80`, `6f3f43a` and this docs
+commit. Tests written to show a defect were run against the unfixed code where that compiles: the keyer and
+memory-only-save tests (`MangaCoverActionsUiTest`) fail with the old keyer / the old fallback request, the
+`edits.json` test (`CustomMangaRepositoryImplTest`) fails with the old `saveCustomInfo`.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | `DesktopMangaCoverKeyer` keyed only on `url;lastModified` while the fetcher serves a custom cover first; the shared `LibraryBatchActions.removeMangas` deletes the custom cover without bumping `coverLastModified`, so a deleted custom cover kept showing from the memory cache | fixed: the keyer takes the `CoverCache` (given by `DesktopImageLoader.create`) and keys like Android's `MangaCoverKeyer`: custom cover file present → `mangaId;lastModified`, else `url;lastModified`. Every deletion path (`removeMangas` / `removeCovers`, the details' "Delete", leaving the library from the details) therefore changes the key; `setCover` / `deleteCustomCover` keep bumping `coverLastModified`. The shared `removeMangas` is unchanged (Android relies on its keyer the same way). Test: a custom cover loaded, deleted without a new cover time, loaded again → the source's cover (fails on the old keyer) | `87cdb35` |
+| 2 | `updateMangaInfo` wrote its pre-built `edited` copy into the state after the database update, over the fresh row the subscription had just emitted (local entries: a stale status and `lastUpdate`) | fixed: a local entry's shown entry now comes only from the subscription (nothing is set after the save); a source entry (whose row does not change) gets a copy of the **current** shown entry, made after `SetCustomMangaInfo`, so it reads the new custom info. Test: a local entry's edit with the default status → the shown entry equals the stored row (also 300 ms later) and keeps "Completed" | `65b8e0b` |
+| 3 | "Edit cover" accepted AVIF / JXL / HEIF / HEIC although the desktop may not decode them (P5) | fixed: `setCover` decodes the picked file once with Skia (`Image.makeFromEncoded` + `Bitmap.makeFromImage`, what Coil's Skia decoder does for covers; injectable `decodes`) and throws, storing nothing and not bumping `coverLastModified`, when that fails → "Failed to update cover". **Decision:** the chooser keeps offering AVIF / JXL / HEIF / HEIC, since Skia may decode them through OS codecs on macOS / Windows (P5, unverified); the decode check decides per machine. Tests: an injected failing decoder stores nothing; the real check accepts a JPEG and rejects a PNG signature followed by garbage (no AVIF sample here: its outcome depends on the OS) | `87cdb35` |
+| 4 | "Save" read Coil's disk cache under the raw URL, and its fallback `loader.execute` could be satisfied from the memory cache without a disk entry → "Error saving cover" for a visible cover | fixed: the disk-cache key comes from the fetcher (`DesktopMangaCoverFetcher.diskCacheKey`, the same function the fetcher uses) and the fallback request has memory-cache reads off (`WRITE_ONLY`) and the disk cache on, so it goes through the fetcher and lands on disk. Custom covers (the `CoverCache` file) and local covers (`file:` / absolute path) are copied directly as before. Tests: a cover loaded with the disk cache off (memory only) is saved byte for byte (fails on the old fallback); a local entry's cover file is saved; the custom-cover save stays in the main test | `87cdb35` |
+| 5 | A failed "Edit info" save only logged, after the dialog had been dismissed (nit) | fixed: the dialog stays open while saving (`Dialog.EditMangaInfo.saving`, Save disabled), closes on success and, on failure, stays with the input (its `remember` keys on the unchanged entry) and shows `KMR.strings.desktop_edit_info_failed` ("Couldn't save the info: %1$s", new, base locale only) with the error. Test: a store that throws for one entry → the error shows, the typed title is still there, nothing stored, Save enabled again | `65b8e0b` |
+| 6 | `setCover` returned normally when editing was not allowed and the caller reported "Cover updated" (nit) | fixed: it throws (`IOException`), so the dialog shows "Failed to update cover". Test: an entry outside the library | `87cdb35` |
+| 7 | Pre-existing, shared with Android: saving a local entry with status "Default" gave `ogStatus = 0` to the entry written to `ComicInfo.xml`, so editing any field reset the status there to Unknown | fixed in `MangaInfoEdits.localInfoEdit` (KMK block): `status ?: manga.ogStatus` (the database update already left the status unchanged). **Android behaviour change** (bug fix, decided by the coordinator): Android's local-entry edits keep the status in `ComicInfo.xml` and in the entry shown right after the save. Tests: `app` `MangaInfoEditsTest` (2, new), desktop `MangaInfoEditsTest` expectation updated | `35c5f80` |
+| 8 | Pre-existing, SY code shared with Android: `CustomMangaRepositoryImpl.saveCustomInfo` rewrote `edits.json` only for a non-empty map, so resetting the last custom info came back after a restart | fixed in a `// KMK` block: an empty map deletes `edits.json`. **Android behaviour change** (bug fix, decided by the coordinator). Test: `:data` `CustomMangaRepositoryImplTest` (2, new): set / removed info survives a new repository on the same file, also when the last entry's info is removed | `6f3f43a` |
 
 ## Remaining parity gaps
 
