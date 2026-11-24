@@ -9,7 +9,7 @@ update check, with its review fixes, parity step P7, WebView / Cloudflare, with 
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
 P10, manga details parity (duplicates on add, edit info, cover actions), is built (its review
-`/code-review medium 8704044^..<P10 docs commit>` and fix round are pending); next: the P10 review, then the
+`/code-review medium 8704044^..6578115` and fix round are pending); next: the P10 review, then the
 maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -238,7 +238,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   tracker, share, migrate. Tests `DuplicateMangaUiTest` (3), `EditMangaInfoUiTest` (2), `MangaInfoEditsTest` (4),
   `MangaCoverActionsUiTest` (2). Found in SY's `CustomMangaRepositoryImpl`: resetting the last edited entry is not
   written to `edits.json` (left, PROGRESS P10).
-- **P10 review** — pending: `/code-review medium 8704044^..<P10 docs commit>`, then a fix round.
+- **P10 review** — pending: `/code-review medium 8704044^..6578115`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -283,7 +283,7 @@ mark the residual path in both modules.
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) and its review fixes are done (last
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) and its review fixes
    are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
-   actions) is built: **next** its review `/code-review medium 8704044^..<P10 docs commit>` and fix round; then the maintainer's
+   actions) is built: **next** its review `/code-review medium 8704044^..6578115` and fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
