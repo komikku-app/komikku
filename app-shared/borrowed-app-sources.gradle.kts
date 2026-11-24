@@ -458,6 +458,12 @@ run {
         "exh/util/Boolean.kt",
         "exh/util/Math.kt",
     )
+    // Manga details: edit info (P10). MangaInfoEdits.kt holds the platform-neutral part of SY's edit-info dialog and
+    // `MangaScreenModel.updateMangaInfo` (initial fields, status choices, reset tags, what a save stores), which Android's
+    // screen model calls; it uses `isLocal` from `:source-local` (desktop-only dependency of `:app-shared`), hence a copy.
+    desktopCopy(
+        "eu/kanade/tachiyomi/ui/manga/MangaInfoEdits.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

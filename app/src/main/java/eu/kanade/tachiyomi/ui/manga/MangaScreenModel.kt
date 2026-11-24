@@ -81,8 +81,6 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedManga
 import exh.source.mangaDexSourceIds
-import exh.util.nullIfEmpty
-import exh.util.trimOrNull
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
@@ -145,10 +143,8 @@ import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.interactor.SetCustomMangaInfo
 import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.interactor.UpdateMergedSettings
-import tachiyomi.domain.manga.model.CustomMangaInfo
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
-import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.MergeMangaSettingsUpdate
 import tachiyomi.domain.manga.model.MergedMangaReference
@@ -683,54 +679,22 @@ class MangaScreenModel(
         val state = successState ?: return
         var manga = state.manga
         if (state.manga.isLocal()) {
-            val newTitle = if (title.isNullOrBlank()) manga.url else title.trim()
-            val newAuthor = author?.trimOrNull()
-            val newArtist = artist?.trimOrNull()
-            val newThumbnailUrl = thumbnailUrl?.trimOrNull()
-            val newDesc = description?.trimOrNull()
-            manga = manga.copy(
-                ogTitle = newTitle,
-                ogAuthor = author?.trimOrNull(),
-                ogArtist = artist?.trimOrNull(),
-                ogThumbnailUrl = thumbnailUrl?.trimOrNull(),
-                ogDescription = description?.trimOrNull(),
-                ogGenre = tags?.nullIfEmpty(),
-                ogStatus = status ?: 0,
-                lastUpdate = manga.lastUpdate + 1,
-            )
+            // KMK --> built by the code shared with the desktop details (MangaInfoEdits), same values as before
+            val (edited, update) = MangaInfoEdits.localInfoEdit(manga, title, author, artist, thumbnailUrl, description, tags, status)
+            manga = edited
+            // KMK <--
             (sourceManager.get(LocalSource.ID) as LocalSource).updateMangaInfo(manga.toSManga())
             screenModelScope.launchNonCancellable {
-                updateManga.await(
-                    MangaUpdate(
-                        manga.id,
-                        title = newTitle,
-                        author = newAuthor,
-                        artist = newArtist,
-                        thumbnailUrl = newThumbnailUrl,
-                        description = newDesc,
-                        genre = tags,
-                        status = status,
-                    ),
-                )
+                // KMK -->
+                updateManga.await(update)
+                // KMK <--
             }
         } else {
-            val genre = if (!tags.isNullOrEmpty() && tags != state.manga.ogGenre) {
-                tags
-            } else {
-                null
-            }
+            // KMK --> built by the code shared with the desktop details (MangaInfoEdits), same values as before
             setCustomMangaInfo.set(
-                CustomMangaInfo(
-                    state.manga.id,
-                    title?.trimOrNull(),
-                    author?.trimOrNull(),
-                    artist?.trimOrNull(),
-                    thumbnailUrl?.trimOrNull(),
-                    description?.trimOrNull(),
-                    genre,
-                    status.takeUnless { it == state.manga.ogStatus },
-                ),
+                MangaInfoEdits.customInfoEdit(state.manga, title, author, artist, thumbnailUrl, description, tags, status),
             )
+            // KMK <--
             manga = manga.copy(lastUpdate = manga.lastUpdate + 1)
         }
 
