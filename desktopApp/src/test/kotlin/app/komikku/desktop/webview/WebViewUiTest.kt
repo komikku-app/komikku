@@ -14,6 +14,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.ui.browse.FixedSourceManager
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -84,6 +85,8 @@ class WebViewUiTest {
         }
         server.start()
         app = DesktopInjekt.init(dataDir)
+        // A source opens its catalogue directly here (the source feed is SourceFeedUiTest's)
+        Injekt.get<UiPreferences>().useNewSourceNavigation().set(false)
         Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(ProtectedSource())) }
         // The system browser cannot be opened in a headless test: the dialog shows the address instead.
         Injekt.addSingletonFactory {

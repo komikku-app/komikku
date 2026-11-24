@@ -19,6 +19,7 @@ import app.komikku.shared.jssource.TAG_INSTALL_CONFIRM
 import app.komikku.sourcejs.mihon.MangayomiJsRuntime
 import app.komikku.sourcejs.sha256Hex
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.network.NetworkHelper
 import io.kotest.matchers.shouldBe
 import mockwebserver3.Dispatcher
@@ -92,6 +93,8 @@ class JsSourcesUiTest {
         server.start()
 
         app = DesktopInjekt.init(File(dir, "data"))
+        // A source opens its catalogue directly here (the source feed is SourceFeedUiTest's)
+        Injekt.get<UiPreferences>().useNewSourceNavigation().set(false)
         // The app's store, except that it may fetch from the (plain HTTP) fixture server.
         store = MangayomiSourceStore(
             directory = File(app.filesDir, MangayomiSourceStore.DIRECTORY),

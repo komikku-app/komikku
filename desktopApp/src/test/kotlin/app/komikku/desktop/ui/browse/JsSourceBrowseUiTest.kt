@@ -21,6 +21,7 @@ import app.komikku.sourcejs.mihon.JsPageRef
 import app.komikku.sourcejs.mihon.JsSourceIds
 import app.komikku.sourcejs.mihon.MangayomiJsRuntime
 import app.komikku.sourcejs.mihon.MangayomiJsSource
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
@@ -114,6 +115,8 @@ class JsSourceBrowseUiTest {
         server.start()
 
         app = DesktopInjekt.init(dataDir)
+        // A source opens its catalogue directly here (the source feed is SourceFeedUiTest's)
+        Injekt.get<UiPreferences>().useNewSourceNavigation().set(false)
         runtime = MangayomiJsRuntime(app, Injekt.get<NetworkHelper>())
         val descriptor = JsSourceDescriptor(
             id = MANGAYOMI_ID,

@@ -15,6 +15,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.util.system.toast
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -45,6 +46,8 @@ class BrowseCatalogueUiTest {
     @BeforeAll
     fun boot(@TempDir dataDir: File) {
         app = DesktopInjekt.init(dataDir)
+        // A source opens its catalogue directly here (the source feed is SourceFeedUiTest's)
+        Injekt.get<UiPreferences>().useNewSourceNavigation().set(false)
         // Replace the desktop source manager (registered, not yet created) by one with the fake source
         Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(FakeCatalogueSource())) }
     }
