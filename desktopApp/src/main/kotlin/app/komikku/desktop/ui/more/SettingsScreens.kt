@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.CircularProgressIndicator
@@ -95,6 +96,8 @@ class SettingsHomeScreen : Screen() {
             Entry(MR.strings.pref_category_tracking, Icons.Outlined.Sync, "tracking") { TrackingSettingsScreen() },
             Entry(MR.strings.browse, Icons.Outlined.Explore, "browse") { SettingsCategoryScreen(SettingsCategory.Browse) },
             Entry(MR.strings.label_data_storage, Icons.Outlined.Storage, "data") { DataStorageScreen() },
+            // P16: the app lock (Android's "Security and privacy")
+            Entry(MR.strings.pref_category_security, Icons.Outlined.Security, "security") { SettingsCategoryScreen(SettingsCategory.Security) },
             Entry(MR.strings.pref_category_advanced, Icons.Outlined.Code, "advanced") { SettingsCategoryScreen(SettingsCategory.Advanced) },
             Entry(MR.strings.pref_category_about, Icons.Outlined.Info, "about") { SettingsCategoryScreen(SettingsCategory.About) },
         )
@@ -125,6 +128,7 @@ enum class SettingsCategory(val title: StringResource) {
     Reader(MR.strings.pref_category_reader),
     Downloads(MR.strings.pref_category_downloads),
     Browse(MR.strings.browse),
+    Security(MR.strings.pref_category_security),
     Advanced(MR.strings.pref_category_advanced),
     About(MR.strings.pref_category_about),
 }
@@ -158,6 +162,7 @@ internal fun settingsCategoryPreferences(category: SettingsCategory, navigator: 
     SettingsCategory.Reader -> readerPreferences()
     SettingsCategory.Downloads -> downloadPreferences()
     SettingsCategory.Browse -> browsePreferences()
+    SettingsCategory.Security -> securityPreferences()
     SettingsCategory.Advanced -> advancedPreferences(navigator)
     SettingsCategory.About -> aboutPreferences()
 }

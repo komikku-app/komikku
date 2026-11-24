@@ -12,6 +12,7 @@ import app.komikku.desktop.platform.AwtFileDialogs
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.scheduler.DesktopSchedulerPreferences
 import app.komikku.desktop.scheduler.desktopScheduler
+import app.komikku.desktop.security.DesktopAppLock
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
@@ -140,6 +141,8 @@ class DesktopPreferenceModule(
         }
         addSingletonFactory { NetworkPreferences(get()) }
         addSingletonFactory { SecurityPreferences(get()) }
+        // P16: the desktop app lock (PIN / password)
+        addSingletonFactory { DesktopAppLock(get(), get()) }
         addSingletonFactory { PrivacyPreferences(get()) }
         addSingletonFactory { DelegateSourcePreferences(get()) }
         addSingletonFactory { DesktopStorageFolderProvider(baseDir = dataDir) }

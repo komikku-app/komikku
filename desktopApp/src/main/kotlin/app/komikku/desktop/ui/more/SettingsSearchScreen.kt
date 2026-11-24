@@ -61,7 +61,7 @@ import uy.kohesive.injekt.api.get
  * storage screens are opened at their top).
  *
  * Index: the desktop settings in Android's search order (appearance, library, reader, downloads, tracking, browse, data
- * and storage, advanced; Android's "About" is not searched either). The tracking and data and storage screens are not
+ * and storage, security (P16), advanced; Android's "About" is not searched either). The tracking and data and storage screens are not
  * built from the settings model, so their index lists their entries' titles.
  */
 class SettingsSearchScreen : Screen() {
@@ -194,12 +194,17 @@ internal fun settingsSearchIndex(navigator: Navigator): List<SettingsSearchPage<
         SettingsSearchTarget.DataStorage,
         dataStorageSearchEntries(),
     )
+    val security = SettingsSearchPage<SettingsSearchTarget>(
+        stringResource(SettingsCategory.Security.title),
+        SettingsSearchTarget.Category(SettingsCategory.Security),
+        settingsCategoryPreferences(SettingsCategory.Security, navigator),
+    )
     val advanced = SettingsSearchPage<SettingsSearchTarget>(
         stringResource(SettingsCategory.Advanced.title),
         SettingsSearchTarget.Category(SettingsCategory.Advanced),
         settingsCategoryPreferences(SettingsCategory.Advanced, navigator),
     )
-    return categories + tracking + browse + dataStorage + advanced
+    return categories + tracking + browse + dataStorage + security + advanced
 }
 
 /** The tracking screen's entries for the search: its two switches and one entry per tracker (by name). */

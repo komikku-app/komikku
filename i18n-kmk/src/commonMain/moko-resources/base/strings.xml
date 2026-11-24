@@ -343,4 +343,21 @@
     <string name="js_source_error_unexpected">Something went wrong: %1$s</string>
     <string name="js_source_host_redirected">Downloaded from %1$s (redirected from %2$s)</string>
     <string name="js_sources_unavailable">JavaScript sources are not available: their store could not be started</string>
+    <!-- Desktop app lock (P16) -->
+    <string name="desktop_app_lock">Lock with a PIN or password</string>
+    <string name="desktop_app_lock_summary">Asked for when Komikku starts, and after the window was minimised as \"Lock when idle\" says</string>
+    <string name="desktop_app_lock_set">Set a PIN or password</string>
+    <string name="desktop_app_lock_change">Change PIN or password</string>
+    <string name="desktop_app_lock_turn_off">Turn the lock off</string>
+    <string name="desktop_app_lock_now">Lock now</string>
+    <string name="desktop_app_lock_input">PIN or password</string>
+    <string name="desktop_app_lock_current">Current PIN or password</string>
+    <string name="desktop_app_lock_new">New PIN or password</string>
+    <string name="desktop_app_lock_repeat">Repeat it</string>
+    <string name="desktop_app_lock_too_short">At least %d characters</string>
+    <string name="desktop_app_lock_mismatch">The two entries differ</string>
+    <string name="desktop_app_lock_wrong">Wrong PIN or password</string>
+    <string name="desktop_app_lock_wait">Too many wrong entries, try again in %d s</string>
+    <string name="desktop_app_lock_unlock">Unlock</string>
+    <string name="desktop_app_lock_info">A forgotten PIN or password cannot be recovered. \"Lock when idle\" counts from when the window was minimised. The lock times and days of a restored Android backup are followed but cannot be changed here yet. Biometrics are not supported on desktop.</string>
 </resources>
