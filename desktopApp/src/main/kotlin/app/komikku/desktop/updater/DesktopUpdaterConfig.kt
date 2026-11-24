@@ -52,7 +52,8 @@ data class DesktopUpdaterConfig(
     /**
      * The download link of the installer for [os] and [arch] in [release], or `null` when the release has none. An
      * asset name that states no architecture counts for any; one that states another architecture does not count.
-     * The Linux package format (`.deb` / `.rpm` / `.AppImage`) is not distinguished: the first matching asset wins.
+     * The Linux package format (`.deb` / `.rpm` / `.tar.gz` / `.AppImage`) is not distinguished: the first matching asset
+     * wins.
      */
     fun installerLink(release: GithubRelease): String? = release.assets
         .firstOrNull { asset ->
@@ -129,11 +130,15 @@ enum class DesktopArch(spellings: List<String>) {
     }
 }
 
-/** The OS families the desktop packages are built for, with the installer file types of `build_desktop.yml`. */
+/**
+ * The OS families the desktop packages are built for, with the installer file types of `build_desktop.yml` (P9: the
+ * release assets `Komikku-<version>-<windows|macos|linux>-<x64|arm64>.<ext>`, the Linux app image packed as `.tar.gz`;
+ * `.AppImage` for a single-file AppImage, which the pipeline does not build yet).
+ */
 enum class DesktopOs(val installerExtensions: List<String>) {
     Windows(listOf(".msi", ".exe")),
     MacOs(listOf(".dmg")),
-    Linux(listOf(".deb", ".rpm", ".AppImage")),
+    Linux(listOf(".deb", ".rpm", ".tar.gz", ".AppImage")),
     ;
 
     companion object {

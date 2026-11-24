@@ -4,6 +4,7 @@ import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.DesktopSchedulerPreferences
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -353,6 +354,56 @@ class DesktopAppUpdateCheckerTest {
         DesktopOs.current("Linux") shouldBe DesktopOs.Linux
         stable("1.13.6").currentReleaseUrl shouldBe "https://github.com/komikku-app/komikku/releases/tag/v1.13.6"
         preview(1234).currentReleaseUrl shouldBe "https://github.com/komikku-app/komikku-preview/releases/tag/r1234"
+    }
+
+    @Test
+    fun `the release pipeline's asset names are matched per OS and architecture`() {
+        // What build_desktop.yml attaches (.github/scripts/desktop_release_assets.sh, BUILDING.md "Release pipeline"),
+        // next to the Android release's own APKs (build_release.yml) and the checksum files.
+        val pipeline = listOf(
+            "Komikku-1.14.0-linux-x64.deb",
+            "Komikku-1.14.0-linux-x64.rpm",
+            "Komikku-1.14.0-linux-x64.tar.gz",
+            "Komikku-1.14.0-linux-x64-SHA256SUMS.txt",
+            "Komikku-1.14.0-windows-x64.msi",
+            "Komikku-1.14.0-windows-x64.exe",
+            "Komikku-1.14.0-windows-x64-SHA256SUMS.txt",
+            "Komikku-1.14.0-macos-arm64.dmg",
+            "Komikku-1.14.0-macos-arm64-SHA256SUMS.txt",
+            "Komikku-1.14.0-macos-x64.dmg",
+            "Komikku-1.14.0-macos-x64-SHA256SUMS.txt",
+            "Komikku-1.14.0-desktop-SHA256SUMS.txt",
+        )
+        val android = listOf(
+            "Komikku-v1.14.0.apk",
+            "Komikku-arm64-v8a-v1.14.0.apk",
+            "Komikku-armeabi-v7a-v1.14.0.apk",
+            "Komikku-x86-v1.14.0.apk",
+            "Komikku-x86_64-v1.14.0.apk",
+        )
+        val release = githubRelease("v1.14.0", *(android + pipeline).toTypedArray())
+        fun link(os: DesktopOs, arch: DesktopArch?) = stable(os = os, arch = arch).downloadLink(release)?.substringAfterLast('/')
+
+        link(DesktopOs.Windows, DesktopArch.X64) shouldBe "Komikku-1.14.0-windows-x64.msi"
+        link(DesktopOs.MacOs, DesktopArch.Arm64) shouldBe "Komikku-1.14.0-macos-arm64.dmg"
+        link(DesktopOs.MacOs, DesktopArch.X64) shouldBe "Komikku-1.14.0-macos-x64.dmg"
+        link(DesktopOs.Linux, DesktopArch.X64) shouldBe "Komikku-1.14.0-linux-x64.deb"
+        // Not built: no update offered rather than another architecture's installer.
+        link(DesktopOs.Windows, DesktopArch.Arm64).shouldBeNull()
+        link(DesktopOs.Linux, DesktopArch.Arm64).shouldBeNull()
+        // Each format on its own counts, the packed Linux app image included; checksums and APKs never do.
+        listOf("deb", "rpm", "tar.gz").forEach { ext ->
+            stable(os = DesktopOs.Linux).installerLink(githubRelease("v1.14.0", "Komikku-1.14.0-linux-x64.$ext"))
+                .shouldNotBeNull()
+        }
+        stable(os = DesktopOs.Windows).installerLink(githubRelease("v1.14.0", "Komikku-1.14.0-windows-x64.exe")).shouldNotBeNull()
+        DesktopOs.entries.forEach { os ->
+            stable(os = os).installerLink(githubRelease("v1.14.0", *(android + pipeline.filter { it.endsWith(".txt") }).toTypedArray()))
+                .shouldBeNull()
+        }
+        pipeline.filterNot { it.endsWith(".txt") }.forEach { name ->
+            DesktopArch.of(name) shouldBe if ("-arm64." in name) DesktopArch.Arm64 else DesktopArch.X64
+        }
     }
 
     @Test
