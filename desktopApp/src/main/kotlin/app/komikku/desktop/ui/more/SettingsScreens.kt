@@ -11,9 +11,12 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -95,7 +98,16 @@ class SettingsHomeScreen : Screen() {
             Entry(MR.strings.pref_category_advanced, Icons.Outlined.Code, "advanced") { SettingsCategoryScreen(SettingsCategory.Advanced) },
             Entry(MR.strings.pref_category_about, Icons.Outlined.Info, "about") { SettingsCategoryScreen(SettingsCategory.About) },
         )
-        BrowseScaffold(title = stringResource(MR.strings.label_settings), onBack = navigator::pop) {
+        BrowseScaffold(
+            title = stringResource(MR.strings.label_settings),
+            onBack = navigator::pop,
+            // P15: Android's settings search action (`SettingsMainScreen`)
+            actions = {
+                IconButton(onClick = { navigator.push(SettingsSearchScreen()) }, modifier = Modifier.testTag("settings-search")) {
+                    Icon(Icons.Outlined.Search, contentDescription = stringResource(MR.strings.action_search_settings))
+                }
+            },
+        ) {
             LazyColumn(Modifier.fillMaxSize().testTag("settings-home")) {
                 entries.forEach { entry ->
                     item {
@@ -117,26 +129,37 @@ enum class SettingsCategory(val title: StringResource) {
     About(MR.strings.pref_category_about),
 }
 
-class SettingsCategoryScreen(private val category: SettingsCategory) : Screen() {
+/**
+ * One settings category. [highlightKey] (P15, a settings search result): the title of the item the list scrolls to and
+ * highlights, like Android's `SearchableSettings.highlightKey`.
+ */
+class SettingsCategoryScreen(
+    private val category: SettingsCategory,
+    private val highlightKey: String? = null,
+) : Screen() {
 
     override val key: String get() = "settings-${category.name}"
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val items = when (category) {
-            SettingsCategory.Appearance -> appearancePreferences()
-            SettingsCategory.Library -> libraryPreferences(navigator)
-            SettingsCategory.Reader -> readerPreferences()
-            SettingsCategory.Downloads -> downloadPreferences()
-            SettingsCategory.Browse -> browsePreferences()
-            SettingsCategory.Advanced -> advancedPreferences(navigator)
-            SettingsCategory.About -> aboutPreferences()
-        }
+        val items = settingsCategoryPreferences(category, navigator)
         BrowseScaffold(title = stringResource(category.title), onBack = navigator::pop) {
-            PreferenceList(items, Modifier.fillMaxSize().testTag("settings-${category.name}"))
+            PreferenceList(items, Modifier.fillMaxSize().testTag("settings-${category.name}"), highlightKey = highlightKey)
         }
     }
+}
+
+/** The items of [category]'s screen (also the settings search's index of it, P15). */
+@Composable
+internal fun settingsCategoryPreferences(category: SettingsCategory, navigator: Navigator): List<Preference> = when (category) {
+    SettingsCategory.Appearance -> appearancePreferences()
+    SettingsCategory.Library -> libraryPreferences(navigator)
+    SettingsCategory.Reader -> readerPreferences()
+    SettingsCategory.Downloads -> downloadPreferences()
+    SettingsCategory.Browse -> browsePreferences()
+    SettingsCategory.Advanced -> advancedPreferences(navigator)
+    SettingsCategory.About -> aboutPreferences()
 }
 
 /** Android `SettingsAppearanceScreen` theme group: mode, theme, pure black (desktop: list instead of previews). */
