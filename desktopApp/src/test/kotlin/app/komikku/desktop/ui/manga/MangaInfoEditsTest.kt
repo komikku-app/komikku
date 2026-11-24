@@ -68,7 +68,7 @@ class MangaInfoEditsTest {
         edited.ogAuthor shouldBe "New author"
         edited.ogArtist.shouldBeNull()
         edited.ogGenre.shouldBeNull()
-        edited.ogStatus shouldBe 0
+        edited.ogStatus shouldBe SManga.ONGOING.toLong()
         edited.lastUpdate shouldBe 11
         update.id shouldBe 7
         update.title shouldBe "frieren-folder"

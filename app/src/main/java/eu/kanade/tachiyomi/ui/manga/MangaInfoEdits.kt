@@ -88,7 +88,8 @@ object MangaInfoEdits {
 
     /**
      * A local entry's edit (`updateMangaInfo`, local branch): the entry with the new source values (to write the
-     * local `ComicInfo.xml` from and to show) and the database update. A blank title falls back to the folder name.
+     * local `ComicInfo.xml` from and to show) and the database update. A blank title falls back to the folder name; the
+     * "Default" status (`null`) keeps the entry's status (the database update leaves it unchanged as well).
      */
     fun localInfoEdit(
         manga: Manga,
@@ -112,7 +113,9 @@ object MangaInfoEdits {
             ogThumbnailUrl = newThumbnailUrl,
             ogDescription = newDesc,
             ogGenre = tags?.nullIfEmpty(),
-            ogStatus = status ?: 0,
+            // KMK --> "Default" (`null`) keeps the entry's status (SY wrote 0 = Unknown into `ComicInfo.xml`)
+            ogStatus = status ?: manga.ogStatus,
+            // KMK <--
             lastUpdate = manga.lastUpdate + 1,
         )
         val update = MangaUpdate(
