@@ -3110,8 +3110,8 @@ fresh `getFilterList()`) and the saved searches; `applySavedSearch` / `saveSearc
 `GetExhSavedSearch` are registered in `DesktopDomainModule` (the saved search interactors and repository were already in
 the shared DI), so backups carry the searches through the existing `SavedSearchBackupCreator` / restorer.
 
-Not done: a filter sheet (filters can only be set by a saved search on desktop), adding a saved search to the feed, the
-global Feed tab in Browse, the per-source feed (`SourceFeedScreen`). Test: `CatalogueSavedSearchUiTest` (save → listed
+Not done here: a filter sheet (added in the review fixes below), adding a saved search to the feed, the global Feed tab
+in Browse, the per-source feed (`SourceFeedScreen`). Test: `CatalogueSavedSearchUiTest` (save → listed
 and stored with query and filter JSON → duplicate name rejected → apply restores query and filters, including a
 non-default check box filter stored like Android stores it → delete).
 
@@ -3121,11 +3121,41 @@ Verification (`2a42392`, `--max-workers=2 --console=plain`): `spotlessApply`, `s
 (time limit); not run in a real window.
 
 
+### Review fixes (P13 saved searches)
+
+Review `/code-review medium 2a42392^..4337c40`, 6 findings (4 important, 2 nits), all fixed in `cda5152` (Android's
+filter rows shared), `145f3c9` (desktop catalogue) and this docs commit. Failing tests first: the five cases of the new
+`CatalogueFilterUiTest` that can show the defects were run on `4337c40` and all failed for the reported reasons (filters
+still applied after Popular, `[v1]` instead of `[v2]`, `NoClassDefFoundError` out of `CatalogueScreenModel.<init>`, the
+slower saved search won, the search field showed `abc` instead of `abcdef`); they pass now.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | A saved search's non-default filters stayed active for every later search (no filter sheet, no reset on desktop) | fixed by **a desktop filter panel**: a toolbar button (filter icon, with a badge while the search runs with filters other than the source's defaults) opens Android's filter sheet as a side panel of the catalogue: Reset, Save (Android's save dialog), Filter (apply, closes the panel like the sheet), the saved searches (moved there from the catalogue, as on Android; chips with a visible delete button, Android's dialogs) and the source's filters drawn by **Android's own rows** — `FilterItem` moved out of `SourceFilterDialog.kt` into the new KMK file `SourceFilterItems.kt` (`SourceFilterItem`: header, separator, check box, tri-state, text, select, sort, group, SY's auto-complete; `shared` borrowed source with `AutoCompleteItem.kt`; Android's sheet calls it). Semantics as on Android: Popular / Latest reset the filters (Android's chips call `resetFilters`), a typed search keeps the applied ones (`search(query)`), Filter from popular searches the empty query with the filters, Reset loads the source's defaults (applied with Filter), "expand all filters" follows `UiPreferences.expandFilters`. **Empty select:** `SelectItem` reads `options[state]`, so a `Filter.Select` without options (or a state outside them) crashed Android's sheet; `SourceFilterItem` shows such a select by its name and an out-of-range state as the first option — **an Android behaviour change** (a crash fix) | `cda5152`, `145f3c9` |
+| 2 | The filter list was captured once at model creation | fixed: `Mode.Search(query, filters)` carries the user's filters only while they differ from the source's defaults; with none applied every request takes a fresh `getFilterList()`; the panel edits a copy (the source's fresh list with the applied states carried over by `FilterSerializer`, as saved searches are loaded) and Reset takes a fresh list. Back from the source's settings (`onSourceSettingsOpened` / `onResumed`), the applied and the edited filters are carried over onto the source's new list and an applied search restarts with them | `145f3c9` |
+| 3 | `getFilterList()` ran unguarded in `init`, in the saved-search flow and in apply / save | fixed: no call in `init` any more; every call goes through `sourceCall` (on IO, any `Throwable` but a cancellation is a failure, logged with `xLogE`): a page load shows the source error screen (the listing's catch now takes `Throwable` too), the panel shows the error in place of the filters, apply / save show the source error as a toast; the saved-search list gets an empty filter list when the source's throws (it only lists names) and its flow has a `catch` | `145f3c9` |
+| 4 | `applySavedSearch` raced with another apply or a typed search | fixed: one `applyJob` (saved search, Filter, the settings refresh) cancelled by a newer apply, a search or a mode change; a cancelled apply that resumes after its slow lookup does nothing | `145f3c9` |
+| 5 | The search field re-synced on value changes of `state.mode` and on re-entering composition (wiping unsubmitted text) | fixed: the field takes the query only on an explicit event, `State.queryEvent` (bumped when a saved search is applied); the last seen event is kept with the text in `rememberSaveable`, so coming back from the details keeps what was typed | `145f3c9` |
+| 6 | `setFilters` changed the filters of an already paged search without restarting it | fixed: `setFilters` is gone; edits only change the panel's copy (`updateFilters`), and only Filter / a saved search / the settings refresh change the search, always through `startListing` (from page 1) | `145f3c9` |
+
+Tests: `CatalogueFilterUiTest` (6, new; a source whose filter list can change version, throw `NoClassDefFoundError` or
+block once on a gate): the five defect cases above and "the filter panel edits a copy, applies, keeps the filters for
+typed searches and resets" (all row kinds shown, an empty select only by its name, an edit not applied leaves the next
+page unfiltered, Filter applies and closes, badge, typed search keeps the filters, Reset + Filter back to the defaults).
+`CatalogueSavedSearchUiTest` opens the panel for the saved searches now. Not tested: the refresh after the source's
+settings (the fake sources are not configurable; the path is the same carry-over as opening the panel), a real
+JavaScript source changing its filters.
+
+Verification (after `145f3c9`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*CatalogueFilterUiTest*' --tests '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'` 8 tests, 0 failures.
+Full `:desktopApp:test` before the fixes (on `4337c40`): 65 classes, 282 tests, 0 failures; after them: see below.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
-1. **Browse:** source feeds (saved searches in the catalogue are done, P13; no filter sheet yet), migration (out of scope so far). Global search, source / language
+1. **Browse:** source feeds (saved searches in the catalogue and the filter panel are done, P13), migration (out of scope so far). Global search, source / language
    toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
    library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
