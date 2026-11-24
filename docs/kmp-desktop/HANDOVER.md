@@ -9,9 +9,9 @@ update check, with its review fixes, parity step P7, WebView / Cloudflare, with 
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
 P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
-P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), is built (its review
-`/code-review medium b4d2c57^..d253e83` and fix round are pending); next: the P11 review, then the
-maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
+P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done;
+next: P12, desktop advanced settings and library extras; then the maintainer's first real run of the workflow and of
+the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -257,7 +257,14 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   animated GIF / WebP pages played from Skia's codec frames (memory limit 128 MB, else the first frame). Android code
   unchanged. **Desktop default change:** automatic layout = double pages in a landscape window. Tests
   `ReaderNeighbourChaptersTest` (4), `ReaderUiTest` (+1), `ReaderWidePagesUiTest` (4), `ReaderAnimatedPagesTest` (3).
-- **P11 review** — pending: `/code-review medium b4d2c57^..d253e83`, then a fix round.
+- **P11 review** (medium, `fe75585..86b5d78`, 10 findings) — all fixed in `bcd9325`, `8fbfb74` and the docs commits
+  after them (PROGRESS.md "Review fixes (P11)"): one navigation design in `ReaderModel` — the current item is the single
+  source of truth, every change goes through `commit` (re-anchored by identity, normalised to its spread, progress /
+  preload / switch for a newly shown spread), chapter switches serialised and following the item the viewer is on,
+  one spread function (`State.spreads`) for page turns both ways, progress (a two-page spread's last page marks the
+  chapter read) and preloading (neighbouring spreads at their widths, never a shown page); the zoom kept across list
+  rebuilds; the previous chapter entered on its last item; animated pages show their first frame at once and decode
+  the other frames only while shown, on a slot of their own, one frame set per page, any failure → first frame.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -303,7 +310,7 @@ mark the residual path in both modules.
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) and its review fixes
    are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
    actions) and its review fixes are done (last Part A commit `fe75585`). P11 (reader: neighbouring chapters, wide
-   pages, animated pages) is built: **next** its review `/code-review medium b4d2c57^..d253e83` and fix round; then the maintainer's
+   pages, animated pages) and its review fixes are done (see "P11 review"); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

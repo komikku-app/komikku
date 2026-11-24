@@ -2912,6 +2912,53 @@ Verification (after `d253e83`, `--max-workers=2 --console=plain`, `./gradlew --s
 classes, 11 tests, and `ReaderUiTest` 2 → 3). Not run: a real window (page turns, scrolling and animations only
 headless), real sources, animated WebP (only GIF generated here; Skia's codec handles both), macOS / Windows.
 
+### Review fixes (P11)
+
+Review `/code-review medium b4d2c57^..d253e83` (range `fe75585..86b5d78`), 10 findings (7 important, 3 nits), all
+fixed in `bcd9325` (navigation), `8fbfb74` (animated pages) and this docs commit. Tests written to show a defect were
+run against the unfixed code first: the four `ReaderNavigationTest` cases, the two new `ReaderWidePagesUiTest` cases
+and the "first frame without the others" `ReaderAnimatedPagesTest` case all failed there (7 of 14 in that run) and pass
+now.
+
+**One design for the reader's navigation** (`ReaderModel`) instead of point patches:
+
+- The **current item is the single source of truth** for what is shown. Every state change goes through `commit`: the
+  change is applied atomically, the result normalised (the current index on the first item of its spread) and, when
+  the shown spread changed (its first item by identity, transitions by their chapters, and its page count), `onShown`
+  runs for it: progress (`onPageSelected` with `hasExtraPage` for a two-page spread, no progress for a second half),
+  the chapter switch when the page belongs to a neighbour, the neighbour's preload on a transition.
+- **Spreads** (`State.spreads`, the shared `ReaderViewerItems.spreads`): with double pages a page and the next item
+  form a pair when both are pairable pages (not wide, not split, not a second half) of the same chapter, paired from the
+  chapter's first page and again after every page shown alone; transitions alone; without double pages every item
+  alone. Page turns forward and backward move by spread index, the viewer shows `State.shownPages`, progress reports the
+  spread's first page with its extra page, the preloader takes the neighbouring spreads. The screen no longer computes
+  steps: it tells the model the resolved layout (`setDoublePages`). `State.spreadAt` / `previousStep` are gone.
+- **Chapter switches** (`requestChapterSync` → `syncChapter`) run one at a time under the chapter-load lock and read the
+  current item again at every step: the chapter of the page the viewer is on **then** becomes current (nothing on a
+  page of the current chapter or on a transition); the state update re-checks it and the loop starts over when the
+  viewer moved meanwhile. References are added after the update and the replaced chapters released then.
+- **Rebuilt lists** (neighbour loaded, split on / off, reading mode, a wide page found) are re-anchored by item
+  identity (`anchorIndex`): a second half that is gone falls back to its page, a reloaded page to the page with its key,
+  the old index only when the item is not there at all. A wide page found and its split are one change.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | A chapter ending on a two-page spread was never marked read in double pages (only the first page selected, no `hasExtraPage`) | fixed: a two-page spread reports its first page with `hasExtraPage = true` (Android's pager, SY), so `ReaderProgressSaver.onPageSelected` completes the chapter on it (read flag, tracker hook, delete after reading); `last_page_read` is the spread's first page as on Android. Test `ReaderWidePagesUiTest` "double pages mark the chapter read on a last two-page spread" (pages 4 + 5 of 5, failed before) | `bcd9325` |
+| 2 | An animated page showed nothing until every frame was decoded and rescaled, also for preloads | fixed: `SkiaPageDecoder.decode` returns the first frame (strips) at once and only flags `animated`; the other frames come from the new `PageImageDecoder.decodeFrames` (default empty), run on an animation slot of its own (`Dispatchers.IO.limitedParallelism(1)`, not the two decode slots), cancellable between frames, asked for only by a shown page (`rememberAnimationFrames`: the paged viewer's shown slots, the webtoon items on screen, not the lazy list's prefetched ones, never the preloader) and cancelled when it leaves. `DecodedPage.frames` is gone; frames live in `AnimationFrameCache` (192 MB, keyed by page, one frame set per page: another width replaces it). Tests: decode opens the codec once and returns one strip (failed before); the cache keeps one set per page; a preloaded animated page gets no frames until it is shown, then plays | `8fbfb74` |
+| 3 | `switchChapter` never re-checked where the viewer was; next-then-previous across a boundary left the wrong chapter current | fixed by the serialised `syncChapter` above (re-reads the current item inside the lock and in the update, no-op when already current). Test `ReaderNavigationTest` "next then previous across a chapter boundary …" (three rounds, failed before) | `bcd9325` |
+| 4 | `next()` / `previous()` at the last / first item called `loadAdjacent` also when that item was a neighbour's page with a switch pending | fixed: at the end of the spreads only a `ChapterTransition` whose chapter has no pages in the items loads it (`First` forward, `Last` backward); on a page while switches are pending the turn waits for them and is made once more if the viewer is still there. Test "next at the last item waits for the pending switch …" (lands on the next transition of chapter 2; failed before by jumping back to 2.1) | `bcd9325` |
+| 5 | `refreshItems` fell back to the old index when the current `InsertPage` disappeared (the next page shown) | fixed: `anchorIndex` (second half → its page; by key after a reload; old index last). Test "turning split pages off on the second half stays on its page" (failed before) | `bcd9325` |
+| 6 | The zoom / pan reset was keyed on `currentIndex` and `viewerChapters`, so list rebuilds reset the zoom on the same page | fixed: keyed on the current item (pages by identity, transitions by their chapters), so a neighbour loaded or a chapter switched keeps the zoom; a new page or spread resets it. No headless test (the zoom is screen state; the key is the current item, which the navigation tests keep stable across rebuilds) | `bcd9325` |
+| 7 | Backward double-page stepping did not follow the forward spreads (pages shown twice, other pairs) | fixed by the one spread function. Tests `ReaderSpreadsTest` (pairs from the chapter start and after a wide page, never across chapters or with a half, the same index both ways) and `ReaderWidePagesUiTest` "double pages opened on a spread's second page show that spread, backwards the forward spreads" (page 5 opened shows 4 + 5, back: 3 alone, 1 + 2; failed before) | `bcd9325` |
+| 8 | Entering the previous chapter backwards (`ChapterStart.Last`) landed on the parent of a split wide last page (nit) | fixed: `First` / `Last` target the chapter's first / last item in the built list (the second half of a split last page; normalised to the last spread with double pages). Test "entering the previous chapter backwards lands on the second half of its split last page" (failed before) | `bcd9325` |
+| 9 | `decodeFrames` caught only `IllegalArgumentException` (nit) | fixed: any failure but a cancellation (an `OutOfMemoryError` included, and an unreadable stream) gives no frames, the page keeps its first frame. Test with `IllegalStateException`, `OutOfMemoryError`, `RuntimeException` from the codec and a failing stream | `8fbfb74` |
+| 10 | The preloader mapped an `InsertPage` to its parent and decoded the shown page again at another width (nit) | fixed: `State.preloadPages` takes the pages of the spread before and the two after, each at its slot's decode width (`slotDecodeWidth`, the shown slots' rule: twice the slot width), and never a page whose image is shown. Test `ReaderSpreadsTest` "the preloader takes the neighbouring spreads at their widths, never a shown page" | `bcd9325` |
+
+Decisions: opening a chapter on the second page of a spread shows the whole spread (its first page is the reported one,
+like Android's joined pages); when a wide page is found and the shown spread changes (e.g. page 5 alone becomes 4 + 5),
+progress is reported again for the new spread. Turning past the end while a switch is pending is retried once after the
+switch instead of being dropped.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2929,7 +2976,7 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    sharing, recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the
    metadata, P4).
 4. **Reader:** neighbouring chapters in the viewers, wide pages (alone in double pages, split, rotated) and
-   animated GIF / WebP playback are done (P11); left from them: SY's shift / invert double pages and centre margins,
+   animated GIF / WebP playback are done (P11, with its review fixes); left from them: SY's shift / invert double pages and centre margins,
    webtoon split / rotate, cropped borders, animated AVIF / HEIF. Also: AVIF / JPEG XL / HEIF pages and covers (P5: no
    acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
    7z chapters exercised from the UI.
