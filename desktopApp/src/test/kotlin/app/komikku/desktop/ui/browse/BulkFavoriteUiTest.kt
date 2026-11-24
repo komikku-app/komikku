@@ -7,10 +7,12 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -112,6 +114,32 @@ class BulkFavoriteUiTest {
         waitUntil(timeoutMillis = 10_000) { favorite("Bulk A") && favorite("Bulk B") }
         favorite("Bulk C") shouldBe false
         waitForTag("bulk-select")
+    }
+
+    @Test
+    fun `a new listing in the catalogue ends the selection`() = runDesktopComposeUiTest(width = 1280, height = 900) {
+        show(CatalogueScreen(BulkSource.ID))
+        waitForText("Bulk A")
+        onNodeWithTag("bulk-select").performClick()
+        waitForTag("bulk-add")
+        onNodeWithText("Bulk A").performClick()
+        waitForTag("cover-selected-${stored("Bulk A")!!.id}")
+
+        // A new search: "Bulk A" is no longer listed, so it must not stay selected
+        onNode(hasSetTextAction()).performTextInput("Fresh")
+        onNodeWithContentDescription(MR.strings.action_search.localized()).performClick()
+        waitForText("Fresh A")
+        waitForTag("bulk-add", present = false)
+        waitForTag("bulk-select")
+
+        // Selecting again starts from nothing
+        onNodeWithTag("bulk-select").performClick()
+        waitForTag("bulk-add")
+        onNodeWithText("Fresh B").performClick()
+        onNodeWithTag("bulk-add").performClick()
+        waitUntil(timeoutMillis = 10_000) { favorite("Fresh B") }
+        favorite("Bulk A") shouldBe false
+        favorite("Fresh A") shouldBe false
     }
 
     @Test

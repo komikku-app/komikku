@@ -104,6 +104,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -170,6 +172,11 @@ class CatalogueScreen(
         val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkState by bulkModel.state.collectAsState()
         val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
+        // Another listing (a search, the Popular / Latest chips, applied filters or a saved search): the selected entries
+        // are no longer the ones shown, so the selection ends with it
+        LaunchedEffect(model, bulkModel) {
+            model.state.map { it.listing }.distinctUntilChanged().drop(1).collect { bulkModel.toggleSelectionMode(false) }
+        }
         BrowseScaffold(
             title = if (bulkState.selectionMode) "${bulkState.selection.size}" else source?.name.orEmpty(),
             // While selecting, "back" ends the selection (Android's action mode)
@@ -351,6 +358,8 @@ class CatalogueScreenModel(
         val queryEvent: Int = 0,
         /** The saved search the user is asked to add to the source's feed. */
         val addingToFeed: EXHSavedSearch? = null,
+        /** Bumped whenever another listing starts (mode, query or filters): the bulk selection ends with the old one. */
+        val listing: Int = 0,
     ) {
         /** The search runs with filters other than the source's defaults. */
         val filtersActive: Boolean get() = (mode as? Mode.Search)?.filters != null
@@ -424,6 +433,7 @@ class CatalogueScreenModel(
                 error = null,
                 openingSavedSearch = false,
                 queryEvent = if (queryApplied) it.queryEvent + 1 else it.queryEvent,
+                listing = it.listing + 1,
             )
         }
         loadMore()
