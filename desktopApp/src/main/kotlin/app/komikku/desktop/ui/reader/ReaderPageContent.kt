@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import kotlinx.coroutines.CancellationException
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 /** Decoder + decoded-page LRU shared by all reader screens of the process. */
@@ -116,7 +117,7 @@ fun PagePlaceholder(page: ReaderPage, state: PageImageState, onRetry: () -> Unit
             is PageImageState.Failed -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Outlined.BrokenImage, contentDescription = null, modifier = Modifier.size(48.dp))
                 val message = when (val error = state.error) {
-                    is UnsupportedPageFormatException -> stringResource(MR.strings.decode_image_error) + " (" + error.format + ")"
+                    is UnsupportedPageFormatException -> stringResource(KMR.strings.desktop_unsupported_image_format, error.format)
                     else -> stringResource(MR.strings.decode_image_error) + (error.message?.let { "\n$it" } ?: "")
                 }
                 Text(message, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))

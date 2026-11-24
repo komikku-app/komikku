@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.shared.jssource.JsSourceNotesBanner
 import app.komikku.sourcejs.mihon.MangayomiJsSource
@@ -48,7 +49,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import coil3.compose.AsyncImage
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.Screen
@@ -270,7 +270,7 @@ private fun CatalogueContent(
 @Composable
 internal fun CoverItem(manga: Manga, onClick: () -> Unit) {
     Column(modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onClick)) {
-        AsyncImage(
+        CoverImage(
             model = manga.asMangaCover(),
             contentDescription = manga.title,
             contentScale = ContentScale.Crop,

@@ -43,7 +43,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import app.komikku.desktop.ui.CoverImage
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.asMangaCover
@@ -195,7 +195,7 @@ private fun LibraryCover(item: LibraryItem, modifier: Modifier) {
     val manga = item.libraryManga.manga
     val cover = remember(manga) { manga.asMangaCover() }
     Surface(shape = RoundedCornerShape(6.dp), color = MaterialTheme.colorScheme.surfaceVariant, modifier = modifier) {
-        AsyncImage(
+        CoverImage(
             model = cover,
             contentDescription = manga.title,
             contentScale = ContentScale.Crop,

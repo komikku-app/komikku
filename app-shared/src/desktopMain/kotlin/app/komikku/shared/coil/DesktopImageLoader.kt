@@ -22,7 +22,8 @@ import java.io.File
  * - disk cache in [cacheDir] (`<dataDir>/cache/image_cache`), 2 % of the free space like Android.
  *
  * Not yet ported from Android: `CoverCache` (library covers / custom covers outside the disk cache),
- * the `TachiyomiImageDecoder` (AVIF / JXL / HEIF), page previews and cover-based colors.
+ * page previews and cover-based colors. Android's `TachiyomiImageDecoder` (AVIF / JXL / HEIF) has no desktop decoder:
+ * those images fail with [UnsupportedImageFormatDecoder]'s error (PROGRESS "P5").
  */
 object DesktopImageLoader {
 
@@ -38,6 +39,8 @@ object DesktopImageLoader {
                 add(OkHttpNetworkFetcherFactory(callFactory = { callFactoryLazy.value }))
                 add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager))
                 add(DesktopMangaCoverKeyer())
+                // AVIF / JPEG XL / HEIF: a clear "unsupported format" error instead of Skia's generic one (P5)
+                add(UnsupportedImageFormatDecoder.Factory())
             }
             .diskCache {
                 DiskCache.Builder()

@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.ui.relativeTimeSpanString
@@ -52,7 +53,6 @@ import app.komikku.shared.navigation.AppNavigatorHost
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import coil3.compose.AsyncImage
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.Tab
 import kotlinx.coroutines.launch
@@ -92,7 +92,7 @@ private fun Long.toLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(Zo
 
 @Composable
 private fun Cover(cover: MangaCover) {
-    AsyncImage(
+    CoverImage(
         model = cover,
         contentDescription = null,
         contentScale = ContentScale.Crop,
