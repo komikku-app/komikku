@@ -53,6 +53,7 @@ import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
+import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -232,6 +233,10 @@ internal fun SourcesPane(model: SourcesPaneModel) {
     val state by model.state.collectAsState()
     // P13: like Android's sources tab, a source opens its feed (landing page) while SY's "new source navigation" is on
     val useNewSourceNavigation by remember { Injekt.get<UiPreferences>().useNewSourceNavigation() }.collectAsState()
+    // P22: Android's "Extension info" for a source of an installed APK extension (not the local source)
+    val extensionInfo: (Source) -> (() -> Unit)? = { source ->
+        source.installedExtension?.takeUnless { source.isLocal() }?.let { ext -> { navigator.push(ExtensionDetailsScreen(ext.pkgName)) } }
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -256,6 +261,8 @@ internal fun SourcesPane(model: SourcesPaneModel) {
                 onClickPin = model::togglePin,
                 onLongClick = model::showSourceDialog,
                 onDisable = model::disable,
+                onSetCategories = model::showCategoriesDialog.takeIf { state.categories.isNotEmpty() },
+                extensionInfo = extensionInfo,
             )
         }
     }
@@ -268,6 +275,12 @@ internal fun SourcesPane(model: SourcesPaneModel) {
             },
             onClickDisable = { model.disable(source) },
             onClickSetCategories = { model.showCategoriesDialog(source) }.takeIf { state.categories.isNotEmpty() },
+            onClickExtensionInfo = extensionInfo(source)?.let { open ->
+                {
+                    model.closeDialog()
+                    open()
+                }
+            },
             onDismiss = model::closeDialog,
         )
     }
@@ -290,6 +303,8 @@ private fun SourcesList(
     onClickPin: (Source) -> Unit,
     onLongClick: (Source) -> Unit,
     onDisable: (Source) -> Unit,
+    onSetCategories: ((Source) -> Unit)?,
+    extensionInfo: (Source) -> (() -> Unit)?,
 ) {
     val context = LocalContext.current
     val sourceManager = remember { Injekt.get<SourceManager>() }
@@ -310,11 +325,16 @@ private fun SourcesList(
                     val isPinned = Pin.Pinned in source.pin
                     val pinLabel = stringResource(if (isPinned) MR.strings.action_unpin else MR.strings.action_pin)
                     val disableLabel = stringResource(MR.strings.action_disable)
+                    // P22: the options dialog's "Categories" and "Extension info" here too
+                    val categoriesLabel = stringResource(MR.strings.categories)
+                    val extensionInfoLabel = stringResource(MR.strings.label_extension_info)
                     ContextMenuArea(
                         items = {
                             listOfNotNull(
                                 ContextMenuItem(pinLabel) { onClickPin(source) },
                                 ContextMenuItem(disableLabel) { onDisable(source) }.takeUnless { source.isLocal() },
+                                onSetCategories?.let { ContextMenuItem(categoriesLabel) { it(source) } },
+                                extensionInfo(source)?.let { ContextMenuItem(extensionInfoLabel, it) },
                             )
                         },
                     ) {
@@ -368,13 +388,17 @@ private fun SourcesList(
     }
 }
 
-/** Android's `SourceOptionsDialog` without the SY data saver and extension info entries (P21: with SY's categories). */
+/**
+ * Android's `SourceOptionsDialog` without SY's data saver entry (P21: with SY's categories; P22: with Komikku's extension
+ * info).
+ */
 @Composable
 private fun SourceOptionsDialog(
     source: Source,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
     onClickSetCategories: (() -> Unit)?,
+    onClickExtensionInfo: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -401,6 +425,17 @@ private fun SourceOptionsDialog(
                             .fillMaxWidth()
                             .padding(vertical = 16.dp)
                             .testTag("source-options-categories"),
+                    )
+                }
+                // P22: like Android, for a source of an installed extension
+                if (onClickExtensionInfo != null) {
+                    Text(
+                        text = stringResource(MR.strings.label_extension_info),
+                        modifier = Modifier
+                            .clickable(onClick = onClickExtensionInfo)
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .testTag("source-options-extension-info"),
                     )
                 }
             }

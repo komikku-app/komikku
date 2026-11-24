@@ -1,5 +1,6 @@
 package app.komikku.desktop.ui.browse
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.extensions.ExtensionIconDrawable
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -136,6 +138,12 @@ private fun ExtensionRow(extension: Extension, step: InstallStep?, model: Extens
     val configurableSource = (extension as? Extension.Installed)?.sources?.firstOrNull { it is ConfigurableSource }
 
     ListItem(
+        // P22: like Android, an installed extension opens its extension info
+        modifier = if (extension is Extension.Installed) {
+            Modifier.clickable { navigator.push(ExtensionDetailsScreen(extension.pkgName)) }.testTag("extension-${extension.pkgName}")
+        } else {
+            Modifier
+        },
         leadingContent = { ExtensionIcon(extension) },
         headlineContent = { Text(extension.name) },
         supportingContent = {
@@ -208,7 +216,7 @@ private fun stepLabel(step: InstallStep): String = when (step) {
 }
 
 @Composable
-private fun ExtensionIcon(extension: Extension) {
+internal fun ExtensionIcon(extension: Extension) {
     val modifier = Modifier.size(40.dp)
     val model: Any? = when (extension) {
         is Extension.Installed -> (extension.icon as? ExtensionIconDrawable)?.bytes
