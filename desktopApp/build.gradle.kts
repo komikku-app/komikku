@@ -92,6 +92,27 @@ val packageVersionName: String = appVersionName.substringBefore('-').also {
     require(Regex("""\d+(\.\d+){0,2}""").matches(it)) { "versionName $it is not a jpackage version (x[.y[.z]])" }
 }
 
+/*
+ * The commit count of a preview build (`-Pdesktop-preview`), compared with the `r<N>` preview release tags. A shallow
+ * clone counts only its own commits (1 with CI's default checkout depth), which would make every release look newer, so
+ * the build fails instead of packaging a preview that offers every release as an update.
+ */
+fun previewCommitCount(): Int {
+    val shallow = providers.exec {
+        commandLine("git", "rev-parse", "--is-shallow-repository")
+        isIgnoreExitValue = true
+    }.standardOutput.asText.get().trim()
+    check(shallow != "true") {
+        "-Pdesktop-preview needs the full Git history for the commit count, but this clone is shallow " +
+            "(git fetch --unshallow, or actions/checkout with fetch-depth: 0)"
+    }
+    val count = runCatching { getCommitCount().toInt() }.getOrNull()
+    check(count != null && count > 0) {
+        "-Pdesktop-preview needs the commit count (git rev-list --count HEAD), got ${count ?: "none"}: build from a Git clone"
+    }
+    return count
+}
+
 // `compose` in build scripts resolves to the version catalog (see buildSrc ComposeCatalogAccessor.kt),
 // so the JetBrains Compose extension is accessed by type.
 extensions.configure<ComposeExtension> {
@@ -104,7 +125,7 @@ extensions.configure<ComposeExtension> {
             // `-Pdesktop-preview` selects the preview channel (komikku-preview releases, compared by commit count).
             if (Config.enableUpdater) jvmArgs += "-Dkomikku.updater=true"
             if (project.hasProperty("desktop-preview")) {
-                jvmArgs += listOf("-Dkomikku.preview=true", "-Dkomikku.commitCount=${getCommitCount()}")
+                jvmArgs += listOf("-Dkomikku.preview=true", "-Dkomikku.commitCount=${previewCommitCount()}")
             }
 
             // Packaging (Phase 9). How to build / what is not validated: docs/kmp-desktop/BUILDING.md.
