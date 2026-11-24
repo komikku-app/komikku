@@ -253,6 +253,7 @@
     <string name="desktop_source_error">Could not load: %1$s</string>
     <string name="desktop_source_not_installed">This source is not installed</string>
     <string name="desktop_refresh">Refresh</string>
+    <string name="desktop_browser_open_failed">Could not open the browser. Open this address yourself:</string>
     <string name="desktop_tracker_open_login">Open login page</string>
     <string name="desktop_tracker_paste_redirect">After you log in, the browser tries to open a komikku:// address. Copy that address (or only the code / token in it) and paste it here.</string>
     <string name="desktop_tracker_redirect_label">Address or code</string>

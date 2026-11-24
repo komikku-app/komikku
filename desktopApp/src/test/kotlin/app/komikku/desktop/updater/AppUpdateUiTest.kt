@@ -22,6 +22,7 @@ import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.domain.release.model.Release
 import tachiyomi.domain.release.service.ReleaseService
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.get
@@ -115,6 +116,33 @@ class AppUpdateUiTest {
         waitForTag("app-update-dialog", present = false)
         opened shouldBe listOf("https://github.com/komikku-app/komikku/releases/tag/v1.14.0")
         checker.available.value.shouldBeNull()
+    }
+
+    @Test
+    fun `when the browser cannot be opened the dialog stays and shows the release page address`() = runDesktopComposeUiTest {
+        fake.failure = null
+        fake.releases = newer
+        runBlocking { checker.check(forceCheck = true) }
+        var attempts = 0
+        setContent {
+            AppUpdateDialogHost(checker = checker, openUrl = {
+                attempts++
+                false
+            })
+        }
+        waitForTag("app-update-dialog")
+        onAllNodesWithTag("app-update-release-link").fetchSemanticsNodes().isEmpty() shouldBe true
+        onNodeWithTag("app-update-open").performClick()
+        waitForTag("app-update-release-link")
+        onNodeWithTag("app-update-release-link").assertTextEquals("https://github.com/komikku-app/komikku/releases/tag/v1.14.0")
+        onNodeWithText(KMR.strings.desktop_browser_open_failed.localized()).assertExists()
+        onNodeWithTag("app-update-dialog").assertExists()
+        attempts shouldBe 1
+        checker.available.value?.version shouldBe "v1.14.0"
+
+        // "Not now" still closes it
+        onNodeWithTag("app-update-dismiss").performClick()
+        waitForTag("app-update-dialog", present = false)
     }
 
     private val newer = listOf(
