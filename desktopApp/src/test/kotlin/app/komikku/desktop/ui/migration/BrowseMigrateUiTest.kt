@@ -123,11 +123,11 @@ class BrowseMigrateUiTest {
             onAllNodes(hasText(MR.strings.not_installed.localized()) and stubRow, useUnmergedTree = true).fetchSemanticsNodes().size shouldBe 1
             onAllNodes(hasText("$STUB") and stubRow, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() shouldBe true
 
-            // By count, ascending (not installed still first), then descending (reversed)
+            // By count, ascending (not installed still first), then descending (reversed, not installed still first)
             onNodeWithTag("migrate-sources-sort-mode").performClick()
             waitForOrder("migrate-source-$STUB", "migrate-source-$BETA", "migrate-source-$ALPHA")
             onNodeWithTag("migrate-sources-sort-direction").performClick()
-            waitForOrder("migrate-source-$ALPHA", "migrate-source-$BETA", "migrate-source-$STUB")
+            waitForOrder("migrate-source-$STUB", "migrate-source-$ALPHA", "migrate-source-$BETA")
             preferences.migrationSortingMode().get() shouldBe SetMigrateSorting.Mode.TOTAL
             preferences.migrationSortingDirection().get() shouldBe SetMigrateSorting.Direction.DESCENDING
 
