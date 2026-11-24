@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.Icon
@@ -70,6 +71,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaEvent
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
@@ -79,6 +81,7 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.screens.EmptyScreenAction
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.selectedBackground
 
@@ -119,6 +122,12 @@ fun MigrateSourcePane(
 
     when {
         state.isLoading -> LoadingScreen()
+        // The sources could not be read: say so (not "empty library") and offer to read them again
+        state.loadFailed -> EmptyScreen(
+            stringRes = MR.strings.internal_error,
+            modifier = Modifier.testTag("migrate-sources-error"),
+            actions = persistentListOf(EmptyScreenAction(MR.strings.action_retry, Icons.Outlined.Refresh, model::retry)),
+        )
         state.searchQuery == null && state.isEmpty -> EmptyScreen(stringRes = MR.strings.information_empty_library)
         else -> Column(modifier = Modifier.fillMaxSize().testTag("migrate-sources")) {
             Row(modifier = Modifier.padding(start = 16.dp), verticalAlignment = Alignment.CenterVertically) {

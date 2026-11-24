@@ -11,6 +11,7 @@ import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -38,9 +39,34 @@ class MigrateSourceScreenModel(
     private val _channel = Channel<Event>(Int.MAX_VALUE)
     val channel = _channel.receiveAsFlow()
 
+    // KMK -->
+    private var sourcesJob: Job? = null
+    // KMK <--
+
     init {
-        screenModelScope.launchIO {
-            // KMK -->
+        // KMK -->
+        loadSources()
+        // KMK <--
+
+        preferences.migrationSortingDirection().changes()
+            .onEach { mutableState.update { state -> state.copy(sortingDirection = it) } }
+            .launchIn(screenModelScope)
+
+        preferences.migrationSortingMode().changes()
+            .onEach { mutableState.update { state -> state.copy(sortingMode = it) } }
+            .launchIn(screenModelScope)
+    }
+
+    // KMK -->
+    /** Reads the sources again, after a failed read ([State.loadFailed]). */
+    fun retry() {
+        mutableState.update { it.copy(isLoading = true, loadFailed = false) }
+        loadSources()
+    }
+
+    private fun loadSources() {
+        sourcesJob?.cancel()
+        sourcesJob = screenModelScope.launchIO {
             combine(
                 state.map { it.searchQuery }.distinctUntilChanged().debounce(SEARCH_DEBOUNCE_MILLIS),
                 // KMK <--
@@ -66,6 +92,10 @@ class MigrateSourceScreenModel(
                 .catch {
                     logcat(LogPriority.ERROR, it)
                     _channel.send(Event.FailedFetchingSourcesWithCount)
+                    // KMK -->
+                    // The read ended: no endless spinner
+                    mutableState.update { state -> state.copy(isLoading = false, loadFailed = true) }
+                    // KMK <--
                 }
                 .collectLatest { sources ->
                     mutableState.update {
@@ -76,15 +106,9 @@ class MigrateSourceScreenModel(
                     }
                 }
         }
-
-        preferences.migrationSortingDirection().changes()
-            .onEach { mutableState.update { state -> state.copy(sortingDirection = it) } }
-            .launchIn(screenModelScope)
-
-        preferences.migrationSortingMode().changes()
-            .onEach { mutableState.update { state -> state.copy(sortingMode = it) } }
-            .launchIn(screenModelScope)
+        // KMK -->
     }
+    // KMK <--
 
     fun toggleSortingMode() {
         with(state.value) {
@@ -124,6 +148,8 @@ class MigrateSourceScreenModel(
         val sortingDirection: SetMigrateSorting.Direction = SetMigrateSorting.Direction.ASCENDING,
         // KMK -->
         val searchQuery: String? = null,
+        /** The last read of the sources failed; [retry] reads them again. */
+        val loadFailed: Boolean = false,
         // KMK <--
     ) {
         val isEmpty = items.isEmpty()

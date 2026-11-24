@@ -15,6 +15,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -29,26 +30,34 @@ import app.komikku.desktop.ui.browse.SimpleSearchSource
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
+import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.domain.source.repository.SourceRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 import java.io.File
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * P20, headless: Android's Browse → Migrate on desktop — the sources with library entries and their counts (a source
@@ -85,6 +94,7 @@ class BrowseMigrateUiTest {
     @BeforeEach
     fun reset() {
         migrateTestExtensions.value = emptyList()
+        failingReads.set(0)
         Injekt.get<SetMigrateSorting>().await(SetMigrateSorting.Mode.ALPHABETICAL, SetMigrateSorting.Direction.ASCENDING)
     }
 
@@ -206,6 +216,24 @@ class BrowseMigrateUiTest {
             waitForOrder(*sourceRows)
         }
 
+    @Test
+    fun `a failed read of the sources ends the loading and can be retried`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            failingReads.set(1)
+            setContent {
+                CompositionLocalProvider(LocalContext provides app) {
+                    DesktopTheme {
+                        DesktopToastHost {
+                            Navigator(FailingMigrateHost) { CurrentScreen() }
+                        }
+                    }
+                }
+            }
+            waitForTag("migrate-sources-error")
+            onNodeWithText(MR.strings.action_retry.localized()).performClick()
+            waitForOrder(*sourceRows)
+        }
+
     private fun extension(sourceId: Long, obsolete: Boolean) = Extension.Installed(
         name = "Beta",
         pkgName = "app.komikku.test.beta",
@@ -234,11 +262,32 @@ class BrowseMigrateUiTest {
 /** The installed extensions the panes of these tests see. */
 private val migrateTestExtensions = MutableStateFlow(emptyList<Extension.Installed>())
 
+/** How many of the next reads of the sources with library entries fail. */
+private val failingReads = AtomicInteger(0)
+
 /** Hosts the Migrate tab's pane like the Browse screen does. */
 private object MigrateHost : Screen() {
     @Composable
     override fun Content() {
         val model = rememberScreenModel { MigrateSourceScreenModel() }
+        MigrateSourcePane(model, migrateTestExtensions)
+    }
+}
+
+/** The pane on a source repository whose reads fail while [failingReads] counts down. */
+private object FailingMigrateHost : Screen() {
+    @Composable
+    override fun Content() {
+        val model = rememberScreenModel {
+            val repository = Injekt.get<SourceRepository>()
+            val failing = object : SourceRepository by repository {
+                override fun getSourcesWithFavoriteCount(): Flow<List<Pair<Source, Long>>> = flow {
+                    if (failingReads.getAndDecrement() > 0) throw IOException("database read failed")
+                    emitAll(repository.getSourcesWithFavoriteCount())
+                }
+            }
+            MigrateSourceScreenModel(getSourcesWithFavoriteCount = GetSourcesWithFavoriteCount(failing, Injekt.get()))
+        }
         MigrateSourcePane(model, migrateTestExtensions)
     }
 }
