@@ -194,6 +194,30 @@ class MigrateMangaUiTest {
     }
 
     @Test
+    fun `adding an entry with a duplicate in the library can migrate the duplicate onto it`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            val current = libraryEntry("pluto", "Pluto")
+            val adding = TestLibrary.insertManga(NEW, "/pluto", "Pluto", favorite = false)
+            details(adding)
+            waitForTag("details-favorite")
+            onNodeWithTag("details-favorite").performClick()
+            waitForTag("duplicate-${current.id}")
+            onNodeWithTag("duplicate-${current.id}").performClick()
+            waitUntil(timeoutMillis = 15_000) {
+                onAllNodesWithText(MR.strings.migration_dialog_what_to_include.localized()).fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithText(MR.strings.migrate.localized()).performClick()
+            waitUntil(timeoutMillis = 15_000) { stored(NEW, "/pluto")?.favorite == true }
+            stored(OLD, "/pluto")!!.favorite shouldBe false
+            stored(NEW, "/pluto")!!.notes shouldBe "A note"
+            // Android's: the dialog closes, these details stay
+            waitUntil(timeoutMillis = 15_000) {
+                onAllNodesWithText(MR.strings.migration_dialog_what_to_include.localized()).fetchSemanticsNodes().isEmpty()
+            }
+            waitForTag("details-migrate")
+        }
+
+    @Test
     fun `entries outside the library offer no migration`() = runDesktopComposeUiTest(width = 1280, height = 900) {
         val browsed = TestLibrary.insertManga(OLD, "/not-in-library", "Not in library", favorite = false)
         details(browsed)

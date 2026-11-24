@@ -8,11 +8,13 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.toSize
 import app.komikku.desktop.di.DesktopInjekt
@@ -39,7 +41,8 @@ import java.io.File
 /**
  * P10, headless: adding an entry to the library from its details checks [GetDuplicateLibraryManga] first, like
  * Android's `MangaScreenModel.toggleFavorite`. A library entry with the same title from another source opens the
- * duplicate dialog: "Cancel" adds nothing, a click on the duplicate opens its details, "Add anyway" adds the entry; an
+ * duplicate dialog: "Cancel" adds nothing, a click on the duplicate offers to migrate it (P19), a long press opens its
+ * details, "Add anyway" adds the entry; an
  * entry without duplicates is added at once.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -92,16 +95,31 @@ class DuplicateMangaUiTest {
         waitForTag("duplicate-dialog", present = false)
         favorite(target) shouldBe false
 
-        // The duplicate opens the existing entry's details
+        // A long press on the duplicate opens the existing entry's details
         onNodeWithTag("details-favorite").performClick()
         waitForTag("duplicate-${existing.id}")
-        onNodeWithTag("duplicate-${existing.id}").performClick()
+        onNodeWithTag("duplicate-${existing.id}").performTouchInput { longClick() }
         waitForTag("duplicate-dialog", present = false)
         waitUntil(timeoutMillis = 15_000) {
             onAllNodesWithTag("details-title").fetchSemanticsNodes().any { node ->
                 node.config.getOrNull(SemanticsProperties.Text)?.any { it.text == "Frieren" } == true
             }
         }
+        favorite(target) shouldBe false
+    }
+
+    @Test
+    fun `a click on a duplicate offers to migrate it`() = runDesktopComposeUiTest(width = 1200, height = 900) {
+        details(target)
+        waitForTag("details-favorite")
+        onNodeWithTag("details-favorite").performClick()
+        waitForTag("duplicate-${existing.id}")
+        onNodeWithTag("duplicate-${existing.id}").performClick()
+        // P19, Android's: Mihon's "what to include" dialog for migrating the duplicate onto this entry
+        waitUntil(timeoutMillis = 15_000) {
+            onAllNodesWithText(MR.strings.migration_dialog_what_to_include.localized()).fetchSemanticsNodes().isNotEmpty()
+        }
+        waitForTag("duplicate-dialog", present = false)
         favorite(target) shouldBe false
     }
 
