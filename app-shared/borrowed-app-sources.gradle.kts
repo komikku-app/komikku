@@ -534,6 +534,18 @@ run {
         "mihon/feature/migration/list/search/BaseSmartSearchEngine.kt",
         "mihon/feature/migration/list/search/SmartSourceSearchEngine.kt",
     )
+    // Browse → Migrate (P20): the sources with library entries and their counts (sorted by Android's migration sorting
+    // preferences) and a source's library entries with their selection. The entries' screen model compiles for both;
+    // GetSourcesWithFavoriteCount uses `isLocal` (source-local, not a dependency of app-shared's Android target) and the
+    // sources' screen model the Android-only `installedExtension` (Source.kt, drawables) and `SEARCH_DEBOUNCE_MILLIS`
+    // (AppBar.kt), whose desktop counterparts are in app-shared/src/desktopMain, hence copies.
+    shared(
+        "eu/kanade/tachiyomi/ui/browse/migration/manga/MigrateMangaScreenModel.kt",
+    )
+    desktopCopy(
+        "eu/kanade/domain/source/interactor/GetSourcesWithFavoriteCount.kt",
+        "eu/kanade/tachiyomi/ui/browse/migration/sources/MigrateSourceScreenModel.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

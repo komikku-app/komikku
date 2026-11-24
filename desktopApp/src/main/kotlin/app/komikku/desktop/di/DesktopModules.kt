@@ -49,6 +49,8 @@ import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
+import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
+import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
@@ -102,6 +104,7 @@ import tachiyomi.data.release.ReleaseServiceImpl
 import tachiyomi.data.source.SourceRepositoryImpl
 import tachiyomi.domain.di.registerDomainPreferences
 import tachiyomi.domain.di.registerLibraryInteractors
+import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
@@ -285,6 +288,10 @@ class DesktopDomainModule(
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetRemoteManga(get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
+        // Browse → Migrate (P20): sources with library entries and their counts, a source's library entries (borrowed)
+        addFactory { GetSourcesWithFavoriteCount(get(), get()) }
+        addFactory { SetMigrateSorting(get()) }
+        addFactory { GetFavorites(get()) }
         // Sources tab, source filter, pins and global search (P1): the Android interactors (borrowed)
         addFactory { GetEnabledSources(get(), get()) }
         addFactory { GetLanguagesWithSources(get(), get()) }
