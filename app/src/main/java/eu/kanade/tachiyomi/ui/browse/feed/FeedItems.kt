@@ -18,15 +18,19 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 /*
  * KMK: the platform-neutral part of the global feed (Android's FeedScreenModel), moved out of it unchanged so the
- * desktop Feed tab builds and loads its rows the same way (a `shared` borrowed source, see
+ * desktop Feed tab builds and loads its rows the same way (a `desktopCopy` borrowed source: still compiled by `app`,
+ * and again by `:app-shared` for desktop, because it uses the Android-only LocaleHelper; see
  * app-shared/borrowed-app-sources.gradle.kts). FeedScreenModel calls these.
  */
 
-/** The most rows the global feed takes: adding is refused once there are more (Android's limit). */
+/** The most rows the global feed takes: adding is refused once it holds that many (Android's limit). */
 const val MaxFeedItems = 20
 
-/** Whether the global feed is full ([count] = its rows, `CountFeedSavedSearchGlobal`). */
-fun isFeedFull(count: Long): Boolean = count > MaxFeedItems
+/**
+ * Whether the global feed is full ([count] = its rows, `CountFeedSavedSearchGlobal`). It used to be
+ * `count > MaxFeedItems`, which let a 21st row in although the message says 20 (bug fix).
+ */
+fun isFeedFull(count: Long): Boolean = count >= MaxFeedItems
 
 /**
  * The sources a feed row can be added for: enabled languages, not disabled, by "(lang) name", pinned ones first.
