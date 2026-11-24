@@ -477,14 +477,16 @@ run {
     )
 
     // The global feed (P13): FeedItems.kt holds the platform-neutral part of Android's FeedScreenModel (row titles, the
-    // sources to add a row for, a row's first page, the row limit), which FeedScreenModel calls; it uses the Android-only
-    // LocaleHelper (desktop counterpart in app-shared/src/desktopMain), hence a copy. The add-search and delete dialogs
-    // of Android's feed are shared.
+    // sources to add a row for, a row's first page, the row limit) and of SourceFeedScreenModel (a source's feed rows and
+    // their first pages), which both call; it uses the Android-only LocaleHelper (desktop counterpart in
+    // app-shared/src/desktopMain), hence a copy. The add-search, add-to-source-feed and delete dialogs of Android's feeds
+    // are shared.
     desktopCopy(
         "eu/kanade/tachiyomi/ui/browse/feed/FeedItems.kt",
     )
     shared(
         "eu/kanade/presentation/browse/FeedAddSearchDialog.kt",
+        "eu/kanade/presentation/browse/components/SourceFeedAddDialog.kt",
         "eu/kanade/presentation/browse/components/SourceFeedDeleteDialog.kt",
     )
 }

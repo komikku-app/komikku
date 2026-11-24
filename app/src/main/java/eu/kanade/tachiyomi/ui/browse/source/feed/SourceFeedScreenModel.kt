@@ -20,7 +20,10 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
-import eu.kanade.tachiyomi.ui.browse.feed.MaxFeedItems
+import eu.kanade.tachiyomi.ui.browse.feed.SourceFeedRow
+import eu.kanade.tachiyomi.ui.browse.feed.fetchSourceFeedPage
+import eu.kanade.tachiyomi.ui.browse.feed.isFeedFull
+import eu.kanade.tachiyomi.ui.browse.feed.sourceFeedRows
 import exh.source.EH_PACKAGE
 import exh.source.LOCAL_SOURCE_PACKAGE
 import exh.source.getMainSource
@@ -155,7 +158,10 @@ open class SourceFeedScreenModel(
     }
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchBySourceId.await(source.id) > MaxFeedItems
+        // KMK -->
+        // return countFeedSavedSearchBySourceId.await(source.id) > MaxFeedItems
+        return isFeedFull(countFeedSavedSearchBySourceId.await(source.id))
+        // KMK <--
     }
 
     fun createFeed(savedSearchId: Long) {
@@ -187,21 +193,19 @@ open class SourceFeedScreenModel(
     // KMK <--
 
     private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): ImmutableList<SourceFeedUI> {
+        // KMK --> the rows from the shared sourceFeedRows (FeedItems.kt, also used by the desktop source feed)
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
-            .associateBy { it.id }
 
-        return (
-            listOfNotNull(
-                if (source.supportsLatest) {
-                    SourceFeedUI.Latest(null)
-                } else {
-                    null
-                },
-                SourceFeedUI.Browse(null),
-            ) + feedSavedSearch
-                .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
-            )
+        return sourceFeedRows(source, feedSavedSearch, savedSearches)
+            .map { row ->
+                when (row) {
+                    SourceFeedRow.Latest -> SourceFeedUI.Latest(null)
+                    SourceFeedRow.Popular -> SourceFeedUI.Browse(null)
+                    is SourceFeedRow.SavedSearchRow -> SourceFeedUI.SourceSavedSearch(row.feed, row.savedSearch, null)
+                }
+            }
             .toImmutableList()
+        // KMK <--
     }
 
     // KMK -->
@@ -217,15 +221,15 @@ open class SourceFeedScreenModel(
                 async {
                     val page = try {
                         withContext(coroutineDispatcher) {
-                            when (sourceFeed) {
-                                is SourceFeedUI.Browse -> source.getPopularManga(1)
-                                is SourceFeedUI.Latest -> source.getLatestUpdates(1)
-                                is SourceFeedUI.SourceSavedSearch -> source.getSearchManga(
-                                    page = 1,
-                                    query = sourceFeed.savedSearch.query?.sanitize().orEmpty(),
-                                    filters = getFilterList(sourceFeed.savedSearch, source),
-                                )
+                            // KMK --> the shared fetchSourceFeedPage (FeedItems.kt)
+                            val row = when (sourceFeed) {
+                                is SourceFeedUI.Browse -> SourceFeedRow.Popular
+                                is SourceFeedUI.Latest -> SourceFeedRow.Latest
+                                is SourceFeedUI.SourceSavedSearch ->
+                                    SourceFeedRow.SavedSearchRow(sourceFeed.feed, sourceFeed.savedSearch)
                             }
+                            fetchSourceFeedPage(source, row, filterSerializer)
+                            // KMK <--
                         }.mangas
                     } catch (_: Exception) {
                         emptyList()
@@ -254,17 +258,8 @@ open class SourceFeedScreenModel(
 
     private val filterSerializer = FilterSerializer()
 
-    private fun getFilterList(savedSearch: SavedSearch, source: Source): FilterList {
-        val filters = savedSearch.filtersJson ?: return FilterList()
-        return runCatching {
-            val originalFilters = source.getFilterList()
-            filterSerializer.deserialize(
-                filters = originalFilters,
-                json = Json.decodeFromString(filters),
-            )
-            originalFilters
-        }.getOrElse { FilterList() }
-    }
+    // KMK --> getFilterList(savedSearch, source) is the shared feedFilterList (FeedItems.kt)
+    // KMK <--
 
     @Composable
     fun getManga(initialManga: DomainManga): State<DomainManga> {
