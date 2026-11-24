@@ -92,12 +92,15 @@ val packageVersionName: String = appVersionName.substringBefore('-').also {
     require(Regex("""\d+(\.\d+){0,2}""").matches(it)) { "versionName $it is not a jpackage version (x[.y[.z]])" }
 }
 
-// The version the release assets are named with (`build_desktop.yml`, P9): the same `versionName` as the packages.
+// The version the release assets are named with (`build_desktop.yml`, P9): the full Android `versionName`, printed as
+// one marked line `desktopVersionName=<versionName>` that the workflow extracts. The packages use only the part before
+// a `-` suffix (`packageVersionName`); desktop releases do not support suffixes, so the workflow refuses a suffixed
+// name before it builds (review fixes P9).
 tasks.register("printVersionName") {
     group = "help"
-    description = "Prints the desktop app's version (the Android versionName)."
+    description = "Prints the Android versionName as desktopVersionName=<versionName> (packages use it without a suffix)."
     val version = appVersionName
-    doLast { println(version) }
+    doLast { println("desktopVersionName=$version") }
 }
 
 /*

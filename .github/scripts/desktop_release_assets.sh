@@ -7,14 +7,15 @@
 #   desktop_release_assets.sh <binaries dir> <version> <os> <arch> <out dir>
 #
 #   <binaries dir>  desktopApp/build/compose/binaries/main
-#   <version>       the app's versionName, x.y.z (the release tag is v<version>)
+#   <version>       the app's versionName, x.y.z without a suffix (the release tag is v<version>)
 #   <os>            windows | macos | linux
 #   <arch>          x64 | arm64 (the JVM's / runner's CPU architecture: jpackage builds for the JDK it runs on)
 #   <out dir>       where the assets go (created; must not hold assets of another build)
 #
 # Asset names: Komikku-<version>-<os>-<arch>.<ext>
 #   windows: .msi, .exe        macos: .dmg        linux: .deb, .rpm, .tar.gz (the app image directory, packed)
-# and Komikku-<version>-<os>-<arch>-SHA256SUMS.txt (`sha256sum -c` format) for those files.
+# and Komikku-<version>-<os>-<arch>-SHA256SUMS.txt (`sha256sum -c` format, "<hash>  <name>" lines sorted by name) for
+# those files.
 # Every format the OS builds must be there exactly once, otherwise the script fails.
 set -euo pipefail
 
@@ -29,7 +30,7 @@ arch=$4
 out=$5
 
 if ! [[ "$version" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
-  echo "version '$version' is not x.y.z" >&2
+  echo "version '$version' is not x.y.z (desktop releases do not support a suffix such as -rc1)" >&2
   exit 2
 fi
 case "$os" in
@@ -85,10 +86,21 @@ sums="$base-SHA256SUMS.txt"
 (
   cd "$out"
   if command -v sha256sum > /dev/null; then
-    sha256sum "${assets[@]}" > "$sums"
+    raw=$(sha256sum "${assets[@]}")
   else
-    # macOS without coreutils: the same "<hash>  <name>" format.
-    shasum -a 256 "${assets[@]}" > "$sums"
+    # macOS without coreutils
+    raw=$(shasum -a 256 "${assets[@]}")
+  fi
+  # Every line as "<hash>  <name>" (Git Bash's sha256sum on Windows may write "<hash> *<name>" for binary mode, and
+  # CRLF), sorted by name; anything else fails.
+  printf '%s\n' "$raw" | tr -d '\r' | sed -E 's/^([0-9a-fA-F]{64}) [ *]/\1  /' \
+    | awk '{ print substr($0, 67) "\t" tolower(substr($0, 1, 64)) "  " substr($0, 67) }' | LC_ALL=C sort | cut -f 2- \
+    > "$sums"
+  if [ "$(grep -c -E '^[0-9a-f]{64}  Komikku-[^ ]+$' "$sums")" -ne "${#assets[@]}" ] \
+    || [ "$(wc -l < "$sums" | tr -d ' ')" -ne "${#assets[@]}" ]; then
+    echo "unexpected checksum output:" >&2
+    cat "$sums" >&2
+    exit 1
   fi
 )
 
