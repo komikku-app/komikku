@@ -25,7 +25,10 @@ import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import javax.imageio.IIOImage
 import javax.imageio.ImageIO
+import javax.imageio.ImageTypeSpecifier
+import javax.imageio.metadata.IIOMetadataNode
 
 /** Generated test images (no binary fixtures in the repository). */
 object TestImages {
@@ -39,6 +42,42 @@ object TestImages {
         g.fillRect(0, 0, width / 2, height / 2)
         g.dispose()
         return ByteArrayOutputStream().also { ImageIO.write(image, format, it) }.toByteArray()
+    }
+
+    /**
+     * An animated GIF (P11) of one [width] × [height] frame per colour of [colors], each shown for [delayCentis]
+     * hundredths of a second, looping.
+     */
+    fun animatedGif(width: Int, height: Int, colors: List<Color>, delayCentis: Int = 7): ByteArray {
+        val writer = ImageIO.getImageWritersByFormatName("gif").next()
+        val out = ByteArrayOutputStream()
+        ImageIO.createImageOutputStream(out).use { stream ->
+            writer.output = stream
+            writer.prepareWriteSequence(null)
+            colors.forEach { color ->
+                val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+                image.createGraphics().apply {
+                    this.color = color
+                    fillRect(0, 0, width, height)
+                    dispose()
+                }
+                val metadata = writer.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(image), writer.defaultWriteParam)
+                val format = metadata.nativeMetadataFormatName
+                val root = metadata.getAsTree(format) as IIOMetadataNode
+                val control = (0 until root.length).map { root.item(it) }.firstOrNull { it.nodeName == "GraphicControlExtension" } as? IIOMetadataNode
+                    ?: IIOMetadataNode("GraphicControlExtension").also(root::appendChild)
+                control.setAttribute("disposalMethod", "none")
+                control.setAttribute("userInputFlag", "FALSE")
+                control.setAttribute("transparentColorFlag", "FALSE")
+                control.setAttribute("delayTime", delayCentis.toString())
+                control.setAttribute("transparentColorIndex", "0")
+                metadata.setFromTree(format, root)
+                writer.writeToSequence(IIOImage(image, null, metadata), writer.defaultWriteParam)
+            }
+            writer.endWriteSequence()
+        }
+        writer.dispose()
+        return out.toByteArray()
     }
 
     /** An AVIF file header (`ftyp` box, brand `avif`) followed by junk: detected as AVIF, not decodable. */
@@ -69,6 +108,8 @@ class FakeMangaServer(
     private val pagesPerChapter: Int = 3,
     /** Page numbers (1-based) served as a wide 200 × 100 image instead (P11 wide pages). */
     private val widePages: Set<Int> = emptySet(),
+    /** Page numbers (1-based) served as an animated 80 × 120 GIF (red, green, blue frames; P11). */
+    private val animatedPages: Set<Int> = emptySet(),
 ) : AutoCloseable {
     val server = MockWebServer()
     val requests = CopyOnWriteArrayList<String>()
@@ -89,7 +130,15 @@ class FakeMangaServer(
                         val page = path.substringAfterLast('/').removeSuffix(".png").toInt()
                         MockResponse.Builder().code(200)
                             .addHeader("Content-Type", "image/png")
-                            .body(Buffer().write(if (page in widePages) TestImages.encode(200, 100) else TestImages.encode(80, 100 + page)))
+                            .body(
+                                Buffer().write(
+                                    when (page) {
+                                        in widePages -> TestImages.encode(200, 100)
+                                        in animatedPages -> TestImages.animatedGif(80, 120, listOf(Color.RED, Color.GREEN, Color.BLUE))
+                                        else -> TestImages.encode(80, 100 + page)
+                                    },
+                                ),
+                            )
                             .build()
                     }
                     else -> MockResponse.Builder().code(404).build()
