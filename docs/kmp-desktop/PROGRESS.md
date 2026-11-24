@@ -2488,6 +2488,81 @@ pass; `:desktopApp:test` 51 classes, 220 tests, 0 failures (was 49 / 209 after `
 0 failures; `:desktop:android-compat:test` 7 classes, 34 tests, 0 failures. Not run: a real FlareSolverr / Byparr, a
 real Cloudflare site, a real window, the Android app (compile only; nothing Android changed).
 
+### Review fixes (P8)
+
+Review `/code-review medium 6c8bc49..65ccc46` (the P8 range), 8 findings (7 important, 1 nit), all fixed in `90ce3b8`
+(backend, interceptor, strings, tests), `26c5bec` (settings) and the commits after it (settings "Disable", this docs
+commit).
+
+1. **FlareSolverr v3 cookies lost their expiry** (`FlareSolverrBackend.toCookie`): only `expires` was read, while
+   FlareSolverr v3 (Selenium's cookie shape) says `expiry`, so every cookie became a session cookie and the clearance was
+   gone after a restart. Now `expires` or `expiry` (the first positive one), seconds as an integer or a fraction; with
+   neither (or ≤ 0) the cookie stays a session cookie. Test: "cookie expiry is read from expires or expiry …".
+2. **A connect timeout counted as a timed-out solve**: OkHttp's connect timeout is a `SocketTimeoutException`
+   (an `InterruptedIOException`). The call now has an `EventListener` that notes `connectionAcquired`: an
+   `InterruptedIOException` before a connection (and every other `IOException`) is `UNREACHABLE`; after it (the read /
+   call timeout while the service solves) it stays `TIMED_OUT`, like the service's own timeout answer. A real thread
+   interrupt keeps its P8 handling (rethrown, no result) and now also cancels the call (item 4). Test: "a connect
+   timeout is an unreachable solver …" (a socket factory whose sockets time out while connecting; the cause is the
+   `SocketTimeoutException`).
+3. **A failed solve was replayed for 45 s after the solver address was corrected** (`CloudflareInterceptor`,
+   `DesktopCloudflare`): failures of the backend itself (any `BrowserUnavailableException` as the cause: not configured,
+   invalid, unreachable, an unreadable answer, an error answer of the service, an answer without a solution) are no
+   longer recorded in the per-host failure memory; timed-out and not-solved solves still are. And the backend reports a
+   changed address (`onEndpointChanged`, seen at its next `availability()`, which the interceptor asks before it looks
+   at a remembered failure); the app's wiring then calls the new `CloudflareHostState.clearFailures()`. **Decision:** a
+   lazy check of the address the backend reads anyway instead of a preference listener (no scope to own, no ordering
+   question; the memory is only consulted after that read). Test: "a solver that cannot be used is not remembered, and
+   another address forgets the failed solves".
+4. **A cancelled request left the solver call running (up to 75 s) and the host lock held**: `BrowserSession` has a new
+   defaulted `isCancelled` check; the interceptor passes `chain.call().isCanceled()` and checks it once more after it got
+   the host lock (a cancelled waiter starts no solve). The backend refuses a session that is already cancelled and, while
+   its blocking call runs, a shared daemon watcher polls every 200 ms and cancels the HTTP call when the session was
+   cancelled or the calling thread interrupted (not `call.isCanceled()` afterwards: OkHttp's own call timeout cancels
+   too). The result is an `InterruptedIOException`; the interceptor turns a failure of a cancelled call into a plain
+   `IOException("Canceled")`, which is not a `CloudflareBypassException` and is not remembered. Test: "a cancelled request
+   cancels the solver call and frees the host" (ends within 3 s of the cancel instead of the 10 s answer delay, nothing
+   remembered, the next request is solved at once; a pre-cancelled session sends nothing).
+5. **`…/v1/` was accepted but never worked** (`apiUrl` kept the trailing empty segment): `apiUrl` / `baseUrl` now
+   rebuild the path from the non-empty segments (encoded), `v1` appended unless last; the base address is the
+   directory (`http://host:8191/`, `https://host/solver/`). Test: the address test with `…:8191`, `…:8191/`, `…/v1`,
+   `…/v1/`, `//v1//`, sub-paths, an encoded segment.
+6. **`.jsonObject` / `.jsonArray` / `.jsonPrimitive` threw on `null` or another type** outside any `try` (`run`,
+   `testConnection`), and the settings' "Test connection" launch had only `try` / `finally`: every field is read with a
+   safe cast now (a field of another type, or `null`, counts as missing; a missing / `null` cookie list is empty; a
+   non-object answer is unreadable), and the settings catch any failure of the test (except cancellation) and show it as
+   "No FlareSolverr answer: …". Test: "answers with null or other types are read safely" (`run` and `testConnection`).
+7. **Hard-coded English in the exception messages, doubled final period** (nit): the new `FlareSolverrException`
+   (a `BrowserUnavailableException`, now `open`) carries a `Reason` (`NOT_CONFIGURED`, `INVALID_ADDRESS`, `UNREACHABLE`,
+   `UNREADABLE_ANSWER`, `ERROR_ANSWER`, `NO_SOLUTION`), the HTTP code and the service's own message / the network error;
+   its text comes from `KMR` (reused `desktop_flaresolverr_not_configured`, `_invalid`, `_unreachable`; new
+   `desktop_flaresolverr_error_answer`, `_unreadable_answer`, `_no_solution`, base locale only). The interceptor drops a
+   final period of the quoted reason before `desktop_cloudflare_solver_failed` goes on with ". Try again". The log-only
+   availability details stay English. Test: the error-answer test checks reason, code, detail, the string and no `..`.
+8. **The address subtitle showed `user:password@` in clear**: the settings now edit the address through
+   `MaskedAddressPreference` over the stored one (`FlareSolverrAddress.mask` / `unmask`, plain text work on the address
+   as typed): the subtitle **and the edit field** show `user:••••@…`; saving an address that still holds the mask keeps
+   the stored password (also with another host / path), typing over the mask replaces it, an address without user info
+   is saved as typed. **Decision:** mask in the field instead of a password input (the shared `EditTextPreferenceWidget`
+   is Android's and has no password mode; the username, host and path stay readable and editable); the subtitle shows the
+   masked address rather than `safeName()` so that the path and the presence of credentials stay visible. The subtitle's
+   `%` is escaped (the widget runs it through `String.format`, which threw on an address with `%2F`). Tests:
+   "the settings never render the address' password" (unit) and `FlareSolverrSettingsUiTest` (subtitle and edit field
+   masked, no "secret" anywhere, "Test connection" still sends the credentials, an address with `%2F`).
+
+Found in the fix round, fixed: the shared edit dialog cannot save an empty value (its confirm button is disabled for
+blank text), so the solver could not be turned off again from the settings; a "Disable" entry (`MR.strings.action_disable`,
+enabled while an address is set) empties it. Covered by `FlareSolverrSettingsUiTest`.
+
+Tests after the fixes: `FlareSolverrBackendTest` 15 (was 9), `FlareSolverrSettingsUiTest` 1 (extended),
+`DesktopCloudflareInterceptorTest` 15 unchanged and passing.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 51 classes, 226 tests,
+0 failures (was 220: `FlareSolverrBackendTest` +6); `:core:common:desktopTest` 3 classes, 9 tests, 0 failures. Not run:
+a real FlareSolverr / Byparr (in particular the v3 `expiry` shape is taken from Selenium's cookie format, not from a
+captured answer), a real window.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
