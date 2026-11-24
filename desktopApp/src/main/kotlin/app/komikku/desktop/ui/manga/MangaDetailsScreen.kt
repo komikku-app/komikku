@@ -134,6 +134,16 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 val trackingModel = rememberScreenModel(tag = "tracking") { TrackingScreenModel(mangaId) }
                 TrackingDialog(trackingModel, manga?.title.orEmpty(), onDismiss = model::dismissDialog)
             }
+            is MangaDetailsScreenModel.Dialog.Cover -> if (manga != null) {
+                MangaCoverDialog(
+                    manga = manga,
+                    dialog = dialog,
+                    onSave = model::saveCover,
+                    onEdit = model::editCover,
+                    onDeleteCustomCover = model::deleteCustomCover,
+                    onDismissRequest = model::dismissDialog,
+                )
+            }
             is MangaDetailsScreenModel.Dialog.EditMangaInfo -> EditMangaInfoDialog(
                 manga = dialog.manga,
                 onDismissRequest = model::dismissDialog,
@@ -255,7 +265,8 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
     LazyColumn(modifier = Modifier.fillMaxSize().testTag("details-list"), contentPadding = PaddingValues(16.dp)) {
         item(key = "header") {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Box(modifier = Modifier.width(160.dp)) { CoverItem(manga = manga, onClick = {}) }
+                // Android: the cover opens the cover dialog (view large, save, edit, delete the custom cover)
+                Box(modifier = Modifier.width(160.dp).testTag("details-cover")) { CoverItem(manga = manga, onClick = model::showCoverDialog) }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
                     // Like Android's manga info header: clicking the title searches it in all sources
                     val navigator = LocalNavigator.currentOrThrow

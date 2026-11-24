@@ -1,9 +1,11 @@
 package app.komikku.desktop.ui.manga
 
+import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.shared.chapter.ChapterListActions
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.downloadedFilter
@@ -44,6 +46,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.MR
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -75,6 +78,8 @@ class MangaDetailsScreenModel(
     private val readerLauncher: ReaderLauncher = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
+    private val coverActions: MangaCoverActions = MangaCoverActions(),
+    private val fileDialogs: DesktopFileDialogs = Injekt.get(),
 ) : StateScreenModel<MangaDetailsScreenModel.State>(State()) {
 
     data class State(
@@ -108,6 +113,17 @@ class MangaDetailsScreenModel(
 
         /** SY's "Edit info" for a library entry (Android `MangaScreenModel.Dialog.EditMangaInfo`). */
         data class EditMangaInfo(val manga: Manga) : Dialog
+
+        /**
+         * The cover, large, with Android's cover actions (`MangaCoverDialog`): save, edit (library and local entries)
+         * and delete the custom cover; [message] is the last action's outcome (Android's snackbar texts).
+         */
+        data class Cover(
+            val isCustomCover: Boolean,
+            val canEdit: Boolean,
+            val message: StringResource? = null,
+            val busy: Boolean = false,
+        ) : Dialog
     }
 
     private var fetchedOnOpen = false
@@ -428,6 +444,59 @@ class MangaDetailsScreenModel(
                 return@launch
             }
             mutableState.update { if (it.manga?.id == edited.id) it.copy(manga = edited) else it }
+        }
+    }
+
+    fun showCoverDialog() {
+        val manga = state.value.manga ?: return
+        screenModelScope.launch {
+            val custom = withIOContext { coverActions.hasCustomCover(manga) }
+            mutableState.update { it.copy(dialog = Dialog.Cover(isCustomCover = custom, canEdit = coverActions.canEditCover(manga))) }
+        }
+    }
+
+    /** Android `MangaCoverScreenModel.saveCover`: to a file the user picks ([dialogTitle] is the chooser's title). */
+    fun saveCover(dialogTitle: String) = coverAction(failure = MR.strings.error_saving_cover) { manga ->
+        val saved = coverActions.saveCover(manga) { name -> fileDialogs.saveFile(dialogTitle, null, name) }
+        if (saved) MR.strings.cover_saved else null
+    }
+
+    /** Android `MangaCoverScreenModel.editCover`: a new cover from an image file the user picks. */
+    fun editCover(dialogTitle: String) = coverAction(failure = MR.strings.notification_cover_update_failed) { manga ->
+        val file = fileDialogs.openFile(dialogTitle, null, MangaCoverActions.IMAGE_EXTENSIONS) ?: return@coverAction null
+        coverActions.setCover(manga, file)
+        MR.strings.cover_updated
+    }
+
+    /** Android `MangaCoverScreenModel.deleteCustomCover`. */
+    fun deleteCustomCover() = coverAction(failure = MR.strings.notification_cover_update_failed) { manga ->
+        coverActions.deleteCustomCover(manga)
+        MR.strings.cover_updated
+    }
+
+    /**
+     * Runs one cover action at a time while the cover dialog is open, off the UI thread; its message (`null` = none, e.g.
+     * a cancelled file chooser) or [failure] when it throws ends up in the dialog, with the custom cover state re-read.
+     */
+    private fun coverAction(failure: StringResource, block: suspend (Manga) -> StringResource?) {
+        val manga = state.value.manga ?: return
+        val current = state.value.dialog as? Dialog.Cover ?: return
+        if (current.busy) return
+        mutableState.update { it.copy(dialog = current.copy(busy = true, message = null)) }
+        screenModelScope.launch {
+            val message = try {
+                withIOContext { block(manga) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                xLogE("Cover action failed", e)
+                failure
+            }
+            val custom = withIOContext { coverActions.hasCustomCover(manga) }
+            mutableState.update { state ->
+                val dialog = state.dialog as? Dialog.Cover ?: return@update state
+                state.copy(dialog = dialog.copy(isCustomCover = custom, message = message, busy = false))
+            }
         }
     }
 
