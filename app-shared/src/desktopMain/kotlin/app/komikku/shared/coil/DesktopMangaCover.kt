@@ -9,6 +9,7 @@ import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
 import coil3.key.Keyer
 import coil3.request.Options
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.Call
@@ -32,7 +33,10 @@ class DesktopMangaCoverKeyer : Keyer<MangaCover> {
  *
  * - `http(s)` URLs: fetched with the source's OkHttp client and headers when the source is an
  *   [HttpSource] known to [sourceManager] (otherwise the app client), stored in Coil's disk cache;
- * - `file:` URIs and absolute paths (local source covers): read from disk.
+ * - `file:` URIs and absolute paths (local source covers): read from disk;
+ * - a custom cover in [coverCache] (set from the details, P10) comes first, like Android's fetcher with its default
+ *   `USE_CUSTOM_COVER`. Covers of library entries are not copied into the [CoverCache] cover folder (Android does);
+ *   they stay in Coil's disk cache.
  */
 class DesktopMangaCoverFetcher(
     private val cover: MangaCover,
@@ -40,11 +44,13 @@ class DesktopMangaCoverFetcher(
     private val callFactoryLazy: Lazy<Call.Factory>,
     private val sourceManager: SourceManager?,
     private val imageLoader: ImageLoader,
+    private val coverCache: CoverCache? = null,
 ) : Fetcher {
 
     private val diskCacheKey: String get() = options.diskCacheKey ?: cover.url.orEmpty()
 
     override suspend fun fetch(): FetchResult {
+        coverCache?.getCustomCoverFile(cover.mangaId)?.takeIf { it.exists() }?.let { return fileLoader(it) }
         val url = cover.url ?: error("No cover specified")
         return when {
             url.startsWith("http://") || url.startsWith("https://") -> httpLoader(url)
@@ -114,8 +120,9 @@ class DesktopMangaCoverFetcher(
     class Factory(
         private val callFactoryLazy: Lazy<Call.Factory>,
         private val sourceManager: SourceManager?,
+        private val coverCache: CoverCache? = null,
     ) : Fetcher.Factory<MangaCover> {
         override fun create(data: MangaCover, options: Options, imageLoader: ImageLoader): Fetcher =
-            DesktopMangaCoverFetcher(data, options, callFactoryLazy, sourceManager, imageLoader)
+            DesktopMangaCoverFetcher(data, options, callFactoryLazy, sourceManager, imageLoader, coverCache)
     }
 }

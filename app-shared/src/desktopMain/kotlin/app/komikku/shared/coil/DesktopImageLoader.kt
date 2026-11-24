@@ -7,6 +7,7 @@ import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.network.NetworkHelper
 import kotlinx.coroutines.Dispatchers
 import okhttp3.Call
@@ -21,8 +22,9 @@ import java.io.File
  *   source's client and headers when [sourceManager] knows the source;
  * - disk cache in [cacheDir] (`<dataDir>/cache/image_cache`), 2 % of the free space like Android.
  *
- * Not yet ported from Android: `CoverCache` (library covers / custom covers outside the disk cache),
- * page previews and cover-based colors. Android's `TachiyomiImageDecoder` (AVIF / JXL / HEIF) has no desktop decoder:
+ * - custom covers from [CoverCache] when one is given (P10).
+ *
+ * Not yet ported from Android: library covers kept in `CoverCache` outside the disk cache, page previews and cover-based colors. Android's `TachiyomiImageDecoder` (AVIF / JXL / HEIF) has no desktop decoder:
  * those images go to Skia and, when it cannot decode them, fail with [UnsupportedImageFormatDecoder]'s error
  * (PROGRESS "P5").
  */
@@ -33,12 +35,13 @@ object DesktopImageLoader {
         networkHelper: NetworkHelper,
         sourceManager: SourceManager?,
         cacheDir: File,
+        coverCache: CoverCache? = null,
     ): ImageLoader {
         val callFactoryLazy: Lazy<Call.Factory> = lazy { networkHelper.client }
         return ImageLoader.Builder(context)
             .components {
                 add(OkHttpNetworkFetcherFactory(callFactory = { callFactoryLazy.value }))
-                add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager))
+                add(DesktopMangaCoverFetcher.Factory(callFactoryLazy, sourceManager, coverCache))
                 add(DesktopMangaCoverKeyer())
                 // AVIF / JPEG XL / HEIF: Skia first, then a clear "unsupported format" error instead of its generic one (P5)
                 add(UnsupportedImageFormatDecoder.Factory())

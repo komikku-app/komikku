@@ -25,6 +25,7 @@ import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.desktop.window.rememberPersistedWindowState
 import app.komikku.shared.coil.DesktopImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.network.NetworkHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,6 +108,7 @@ fun KomikkuApp(
             networkHelper = Injekt.get<NetworkHelper>(),
             sourceManager = Injekt.get<SourceManager>(),
             cacheDir = context.cacheDir,
+            coverCache = Injekt.get<CoverCache>(),
         )
     }
     CompositionLocalProvider(LocalContext provides context) {
