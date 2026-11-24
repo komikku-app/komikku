@@ -2906,6 +2906,12 @@ are built; Android code unchanged.
 - `FakeMangaServer` serves wide and animated pages on request; `ReaderUiTest` pins single pages (the automatic
   default is double in its landscape window).
 
+Verification (after `d253e83`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs): `spotlessApply`,
+`spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass;
+`:desktopApp:test` 58 classes, 256 tests, 0 failures (was 55 / 244 after the P10 review fixes: the three new P11
+classes, 11 tests, and `ReaderUiTest` 2 → 3). Not run: a real window (page turns, scrolling and animations only
+headless), real sources, animated WebP (only GIF generated here; Skia's codec handles both), macOS / Windows.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
