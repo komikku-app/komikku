@@ -2135,8 +2135,8 @@ Verification (after `921518b`, `--max-workers=2 --console=plain`): `spotlessAppl
 ## P7 — WebView and Cloudflare
 
 Commits `2093b68` (browser abstraction, desktop interceptor, shared detection), `244325d` (site-wide cookies in browser
-sessions), `d692d02` ("Open in WebView" and the cookie dialog), `8587728` / `6eb4b18` (tests) and this section's docs
-commit. Next in HANDOVER's order ("Left to do", item 4). **Outcome: no embedded browser in this step**; the desktop has a
+sessions), `d692d02` ("Open in WebView" and the cookie dialog), `8587728` / `6eb4b18` / `e3c18cd` (tests) and this
+section's docs commit. Next in HANDOVER's order ("Left to do", item 4). **Outcome: no embedded browser in this step**; the desktop has a
 browser-backend abstraction, a Cloudflare interceptor on it that reuses Android's detection, a manual "Open in WebView"
 (system browser + pasted cookies and User-Agent) and a fake backend for tests. What an embedded backend still needs is
 listed below.
@@ -2284,7 +2284,16 @@ no Settings → Advanced network group; extensions using `android.webkit.WebView
 window or against a real Cloudflare site (the cookie / User-Agent binding to the IP and browser is Cloudflare's, so a
 pasted clearance may still be refused, e.g. behind another IP or after it expires).
 
-Verification: see the end of this section after the full run.
+The section's first draft went into `e3c18cd` by mistake (a `test(kmp)` commit that also carries
+`PROGRESS.md`); the docs commit after it completes it.
+
+Verification (after the cookie-manager test commit, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy
+runs): `spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin` (with `:core:common:compileDebugKotlinAndroid`),
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 48 classes, 198 tests, 0 failures
+(was 45 / 179 after the P6 review: `DesktopCloudflareInterceptorTest` 11, `DesktopWebViewTest` 7, `WebViewUiTest` 1;
+`DesktopNetworkTest` changed, still 2); `:desktop:android-compat:test` 33 tests, 0 failures (`CookieManagerTest` +1);
+`:core:common:desktopTest` 3 classes, 9 tests, 0 failures (unchanged). Not run: a real window, a real Cloudflare site,
+any embedded browser, the Android app (compile only; Android's interceptor code is moved, not changed).
 
 ## Remaining parity gaps
 

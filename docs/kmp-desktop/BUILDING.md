@@ -178,6 +178,19 @@ converted jars you already have locally; nothing is downloaded):
 
 Details in [`PROGRESS.md`](PROGRESS.md#link-check-53).
 
+## WebView and Cloudflare (P7)
+
+Nothing is downloaded or bundled for this: the desktop app has **no embedded browser**. Cloudflare challenges go
+through `app.komikku.network.browser.BrowserBackends.current`, which is `NoBrowserBackend` in every build, so a
+challenged request fails with a message that points the user to "Open in WebView" (catalogue top bar or error screen,
+details top bar): the page opens in the system browser and a dialog takes the pasted cookies and User-Agent (stored in
+`<dataDir>/cookies.json` and the `default_user_agent` preference). Tests use a fake backend (`FakeBrowserBackend`) and
+`MockWebServer`; CI starts no browser.
+
+An embedded backend (jcefmaven was evaluated as the candidate, see [`PROGRESS.md`](PROGRESS.md#p7--webview-and-cloudflare))
+would add 120–140 MB of Chromium natives per platform (downloaded at first use or bundled), JVM `--add-opens` flags
+and, on macOS, signed helper app bundles; none of that is configured yet.
+
 ## Known limitations
 
 - Packaging and the desktop workflow have not been run yet: the configuration was checked with
@@ -185,7 +198,7 @@ Details in [`PROGRESS.md`](PROGRESS.md#link-check-53).
   (jlink with the chosen modules) and YAML parsing only. Installers, icons inside them, file associations
   and upgrade behaviour are unverified.
 - No signing / notarization, no in-app update download / install (the update check only opens the release page), no
-  file associations.
+  file associations, no embedded browser (Cloudflare checks and logins by hand, see above).
 - The parity gaps with Android (features the desktop app does not have yet) are listed in
   [`PROGRESS.md`](PROGRESS.md#remaining-parity-gaps).
 - Only Linux has run the test suite; Windows / macOS specifics (paths, file dialogs, key handling) are

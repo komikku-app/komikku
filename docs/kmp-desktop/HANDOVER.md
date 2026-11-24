@@ -4,9 +4,10 @@ State as of 2026-11-24, branch `claude/kmp-multiplatform-support` (the I2b revie
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
-sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, and parity step P6, the app
-update check, with its review fixes, are done; next: WebView / Cloudflare, signing, the release pipeline for desktop
-installers, and the maintainer's first real run; see "Done" and "Left to do").
+sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
+update check, with its review fixes, are done, and parity step P7, WebView / Cloudflare, is built (its review
+`/code-review medium 2093b68^..<P7 docs commit>` and fix round are pending); next: the P7 review, signing, the release
+pipeline for desktop installers, and the maintainer's first real run; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -164,6 +165,19 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   distinguished); releases with a tag the interactor cannot compare are skipped on the desktop (Android's
   `isNewVersion` unchanged); no "(r0)" in About; the `main` comments are next to their statements.
 
+- **P7** WebView and Cloudflare (`2093b68` … , PROGRESS.md "P7 — WebView and Cloudflare"): **no embedded browser**
+  (evaluated: jcefmaven = the candidate for later, 118–138 MB natives per platform, JVM flags, macOS helper signing;
+  KCEF stalled since 2025-03; JavaFX WebView = WebKit, no Linux / Windows arm64; FlareSolverr = cheapest automatic
+  backend to add next). Built: a `BrowserBackend` abstraction in `core:common` desktop (`app.komikku.network.browser`,
+  `BrowserBackends.current` = none), the desktop `CloudflareInterceptor` on it with Android's detection shared
+  (`CloudflareChallenge`, Android unchanged), `cf_clearance` into the shared jar, one retry, `CloudflareBypassException`
+  with an actionable message when there is no backend / the check is not passed; "Open in WebView" (catalogue top bar and
+  error screen, details) = system browser + a dialog for pasted cookies (registrable domain, one year) and the
+  User-Agent (`default_user_agent`, restart for extension sources). Tests `DesktopCloudflareInterceptorTest` (11),
+  `DesktopWebViewTest` (7), `WebViewUiTest` (1), `CookieManagerTest` +1. Extensions using `android.webkit.WebView` still
+  fail at that call (`NoClassDefFoundError`; what is needed is in PROGRESS).
+- **P7 review** — pending: `/code-review medium 2093b68^..<P7 docs commit>`, then a fix round.
+
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
 `NewObject(FindClass(error.name), (String) ctor)` — script code can construct arbitrary classes
@@ -203,8 +217,9 @@ mark the residual path in both modules.
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
    delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) and its review
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
-   check) and its review fixes are done (last review-fix commit `921518b`). **Next, in order:** WebView / Cloudflare
-   (desktop `CloudflareInterceptor` is a pass-through); signing / notarization of the installers; the release pipeline
+   check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) is built: the
+   review `/code-review medium 2093b68^..<P7 docs commit>` and its fix round are next. **Then, in order:** signing /
+   notarization of the installers; the release pipeline
    for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
    names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline
    still needs"), which the update check needs to ever find something; then the
@@ -216,7 +231,10 @@ mark the residual path in both modules.
    against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   After WebView / Cloudflare and signing: notifications / tray.
+   P7's (no embedded browser: jcefmaven backend or a FlareSolverr backend, PROGRESS P7 "What the embedded backend still
+   needs"; automatic flows hitting a challenge need the manual step; User-Agent change needs a restart for extension
+   sources; no Settings → Advanced network group; `android.webkit.WebView` for extensions; not run against a real
+   Cloudflare site or in a real window). After signing: notifications / tray.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).
