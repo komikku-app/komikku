@@ -113,14 +113,16 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  *
  * The rows are built again (source, titles) whenever the feed rows or the source manager's sources change, and on
  * Refresh; a row whose feed row, saved search and source are unchanged keeps what it loaded (or its running load), so
- * only new or changed rows load. Refresh loads every row again.
+ * only new or changed rows load. Refresh loads every row again. A failure to build the rows keeps the feed followed; a
+ * failure to read the feed rows themselves ends their subscription and shows the error state, and Refresh follows them
+ * again (P13 rest / P14 review fixes).
  */
 class FeedPaneModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
+    private val getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
     private val countFeedSavedSearchGlobal: CountFeedSavedSearchGlobal = Injekt.get(),
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
@@ -187,9 +189,22 @@ class FeedPaneModel(
     /** The feed rows last read, built again on Refresh. */
     private var lastFeeds: List<FeedSavedSearch>? = null
 
+    /** Follows the feed rows and the sources; ends only when reading them fails (then [refresh] follows them again). */
+    private var subscription: Job? = null
+
     init {
-        screenModelScope.launch {
+        subscribe(reloadFirst = false)
+    }
+
+    /**
+     * Follows the feed rows and the source manager's sources and builds the rows on each change; the first build reloads
+     * every row when [reloadFirst]. A failure to read them (a database error) shows the error state and ends this
+     * subscription.
+     */
+    private fun subscribe(reloadFirst: Boolean) {
+        subscription = screenModelScope.launch {
             sourceManager.isInitialized.first { it }
+            var reload = reloadFirst
             combine(
                 getFeedSavedSearchGlobal.subscribe().distinctUntilChanged(),
                 // An extension installed, updated or removed: its rows get their (new) source
@@ -199,12 +214,22 @@ class FeedPaneModel(
                     xLogE("Failed to read the feed", e)
                     onBuildFailed()
                 }
-                .collect { feeds -> buildRows(feeds, reload = false) }
+                .collect { feeds ->
+                    buildRows(feeds, reload = reload)
+                    reload = false
+                }
         }
     }
 
-    /** Android's refresh (`FeedScreenModel.init`): the rows are built again (sources looked up afresh) and all load. */
+    /**
+     * Android's refresh (`FeedScreenModel.init`): the rows are built again (sources looked up afresh) and all load. After
+     * a failure to read the feed rows (the subscription ended) they are followed again, so the tab recovers.
+     */
     fun refresh() {
+        if (subscription?.isActive != true) {
+            subscribe(reloadFirst = true)
+            return
+        }
         screenModelScope.launch {
             val feeds = lastFeeds ?: return@launch
             buildRows(feeds, reload = true)

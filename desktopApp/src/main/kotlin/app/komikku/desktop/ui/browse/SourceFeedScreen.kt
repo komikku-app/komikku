@@ -274,7 +274,9 @@ private fun SourceFeedRows(
  * The model of [SourceFeedScreen], Android's `SourceFeedScreenModel` on the same rows and the shared logic (`FeedItems.kt`:
  * `sourceFeedRows`, `fetchSourceFeedPage`). Loads like Android's (up to five rows at a time); a failing row shows its
  * error (Android shows it as empty). Like the global feed (P13 review fixes): rows are built again when the source's feed
- * changes, unchanged rows keep what they loaded, a failure keeps the feed followed, Refresh loads every row again.
+ * changes, unchanged rows keep what they loaded, a failure to build the rows keeps the feed followed, Refresh loads every
+ * row again. A failure to read the feed rows themselves ends their subscription and shows the error state; Refresh then
+ * follows them again (P13 rest / P14 review fixes).
  */
 class SourceFeedScreenModel(
     val sourceId: Long,
@@ -283,7 +285,7 @@ class SourceFeedScreenModel(
     getIncognitoState: GetIncognitoState = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
+    private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
     private val getSavedSearchBySourceIdFeed: GetSavedSearchBySourceIdFeed = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     private val reorderFeed: ReorderFeed = Injekt.get(),
@@ -317,18 +319,13 @@ class SourceFeedScreenModel(
 
     private var lastFeeds: List<FeedSavedSearch>? = null
 
+    /** Follows the source's feed rows; ends only when reading them fails (then [refresh] follows them again). */
+    private var subscription: Job? = null
+
     init {
         val source = catalogueSource
         if (source != null) {
-            screenModelScope.launch {
-                getFeedSavedSearchBySourceId.subscribe(sourceId)
-                    .distinctUntilChanged()
-                    .catch { e ->
-                        xLogE("Failed to read the feed of source $sourceId", e)
-                        mutableState.update { it.copy(failed = true) }
-                    }
-                    .collect { feeds -> buildRows(source, feeds, reload = false) }
-            }
+            subscribe(source, reloadFirst = false)
             // Same as Android: a source opened outside incognito mode becomes the last used one
             getIncognitoState.subscribe(sourceId)
                 .onEach { incognito -> if (!incognito) sourcePreferences.lastUsedSource().set(sourceId) }
@@ -336,9 +333,36 @@ class SourceFeedScreenModel(
         }
     }
 
-    /** Every row loads again. */
+    /**
+     * Follows the source's feed rows and builds the rows on each change; the first build reloads every row when
+     * [reloadFirst]. A failure to read them (a database error) shows the error state and ends this subscription.
+     */
+    private fun subscribe(source: CatalogueSource, reloadFirst: Boolean) {
+        subscription = screenModelScope.launch {
+            var reload = reloadFirst
+            getFeedSavedSearchBySourceId.subscribe(sourceId)
+                .distinctUntilChanged()
+                .catch { e ->
+                    xLogE("Failed to read the feed of source $sourceId", e)
+                    mutableState.update { it.copy(failed = true) }
+                }
+                .collect { feeds ->
+                    buildRows(source, feeds, reload = reload)
+                    reload = false
+                }
+        }
+    }
+
+    /**
+     * Every row loads again. After a failure to read the feed rows (the subscription ended) they are followed again,
+     * so the screen recovers instead of showing the error for good.
+     */
     fun refresh() {
         val source = catalogueSource ?: return
+        if (subscription?.isActive != true) {
+            subscribe(source, reloadFirst = true)
+            return
+        }
         screenModelScope.launch {
             val feeds = lastFeeds ?: return@launch
             buildRows(source, feeds, reload = true)

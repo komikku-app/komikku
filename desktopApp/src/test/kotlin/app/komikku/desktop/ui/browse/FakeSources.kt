@@ -21,9 +21,14 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.StubSource
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 import tachiyomi.domain.source.service.SourceManager
+import java.util.concurrent.atomic.AtomicInteger
 
 /** An in-test catalogue source with settings: fixed listings, details and chapters, no network. */
 class FakeCatalogueSource : CatalogueSource, ConfigurableSource {
@@ -194,4 +199,22 @@ class SimpleSearchSource(
     ): SMangaUpdate = SMangaUpdate(manga, emptyList())
 
     override suspend fun getPageList(chapter: SChapter): List<Page> = emptyList()
+}
+
+/**
+ * The real feed repository whose next [failSubscriptions] subscriptions (global feed or a source's) fail with an
+ * `IOException` when collected, like a database error of the feed flow.
+ */
+class FlakyFeedRepository(private val real: FeedSavedSearchRepository) : FeedSavedSearchRepository by real {
+    val failSubscriptions = AtomicInteger()
+
+    private fun <T> failingOnce(flow: Flow<T>): Flow<T> = flow {
+        if (failSubscriptions.getAndUpdate { maxOf(0, it - 1) } > 0) throw java.io.IOException("Feed read failed")
+        emitAll(flow)
+    }
+
+    override fun getGlobalAsFlow(): Flow<List<FeedSavedSearch>> = failingOnce(real.getGlobalAsFlow())
+
+    override fun getBySourceIdAsFlow(sourceId: Long): Flow<List<FeedSavedSearch>> =
+        failingOnce(real.getBySourceIdAsFlow(sourceId))
 }

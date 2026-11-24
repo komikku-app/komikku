@@ -47,6 +47,7 @@ import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -75,16 +76,20 @@ class FeedUiTest {
     private val laterSource = FeedSource(ID_D, "Feed source D", supportsLatest = true)
     private val baseSources = listOf(latestSource, popularSource, brokenSource)
     private val sourceManager = FixedSourceManager(baseSources)
+    private lateinit var feedRepository: FlakyFeedRepository
 
     @BeforeAll
     fun boot(@TempDir dataDir: File) {
         app = DesktopInjekt.init(dataDir)
         Injekt.addSingletonFactory<SourceManager> { sourceManager }
+        feedRepository = FlakyFeedRepository(Injekt.get<FeedSavedSearchRepository>())
+        Injekt.addSingletonFactory { GetFeedSavedSearchGlobal(feedRepository) }
     }
 
     @BeforeEach
     fun clear() = runBlocking {
         sourceManager.setSources(baseSources)
+        feedRepository.failSubscriptions.set(0)
         sourceManager.failingIds = emptySet()
         (baseSources + laterSource).forEach { it.calls.set(0) }
         Injekt.get<UiPreferences>().hideFeedTab().set(false)
@@ -312,6 +317,20 @@ class FeedUiTest {
             waitForText("A latest 1")
             waitForText(ID_E.toString())
         }
+
+    @Test
+    fun `a feed whose rows cannot be read recovers on Refresh`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        feedRow(ID_A)
+        feedRepository.failSubscriptions.set(1)
+        openFeed()
+        waitForText(MR.strings.internal_error.text())
+
+        // Refresh follows the feed again: the rows are built and load, later changes are followed
+        onNodeWithTag("feed-refresh").performClick()
+        waitForText("A latest 1")
+        feedRow(ID_B)
+        waitForText("B popular")
+    }
 
     @Test
     fun `reordering and deleting keep the loaded rows, adding loads only the new row`() =

@@ -45,6 +45,7 @@ import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -67,16 +68,20 @@ class SourceFeedUiTest {
 
     private lateinit var app: Application
     private val source = LandingSource()
+    private lateinit var feedRepository: FlakyFeedRepository
 
     @BeforeAll
     fun boot(@TempDir dataDir: File) {
         app = DesktopInjekt.init(dataDir)
         Injekt.addSingletonFactory<SourceManager> { FixedSourceManager(listOf(source)) }
+        feedRepository = FlakyFeedRepository(Injekt.get<FeedSavedSearchRepository>())
+        Injekt.addSingletonFactory { GetFeedSavedSearchBySourceId(feedRepository) }
     }
 
     @BeforeEach
     fun clear() = runBlocking {
         source.calls.set(0)
+        feedRepository.failSubscriptions.set(0)
         Injekt.get<GetFeedSavedSearchGlobal>().await().forEach { Injekt.get<DeleteFeedSavedSearchById>().await(it.id) }
         sourceFeeds().forEach { Injekt.get<DeleteFeedSavedSearchById>().await(it.id) }
         Injekt.get<GetSavedSearchBySourceId>().await(LandingSource.ID).forEach { Injekt.get<DeleteSavedSearchById>().await(it.id) }
@@ -94,13 +99,15 @@ class SourceFeedUiTest {
         onNodeWithContentDescription(MR.strings.action_bar_up_description.text()).performClick()
     }
 
-    private fun ComposeUiTest.openSourceFeed() {
+    private fun ComposeUiTest.openSourceFeed(waitForRows: Boolean = true) {
         setContent { KomikkuApp(context = app) }
         onNodeWithText(MR.strings.browse.text()).performClick()
         waitForText(LandingSource.NAME)
         // Also listed as the last used source after the first test
         onAllNodesWithText(LandingSource.NAME).onFirst().performClick()
-        waitUntil(timeoutMillis = 10_000) { onAllNodesWithTag("source-feed-rows").fetchSemanticsNodes().isNotEmpty() }
+        if (waitForRows) {
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithTag("source-feed-rows").fetchSemanticsNodes().isNotEmpty() }
+        }
     }
 
     /** A row's header in the source feed ("Browse" is also the navigation rail's label). */
@@ -223,6 +230,23 @@ class SourceFeedUiTest {
         // Refresh loads every row again
         onNodeWithTag("source-feed-refresh").performClick()
         waitUntil(timeoutMillis = 5_000) { source.calls.get() == 7 }
+    }
+
+    @Test
+    fun `a source feed that fails to be read recovers on Refresh`() = runDesktopComposeUiTest(width = 1280, height = 1000) {
+        feedRow(savedSearch("Recovered", query = "back").id)
+        feedRepository.failSubscriptions.set(1)
+        openSourceFeed(waitForRows = false)
+        waitForText(MR.strings.internal_error.text())
+
+        // Refresh follows the feed again: the rows are built and load
+        onNodeWithTag("source-feed-refresh").performClick()
+        waitForText("L search back")
+        waitForText("L popular")
+        shows(MR.strings.internal_error.text()) shouldBe false
+        // …and later changes are followed
+        feedRow(savedSearch("Later", query = "later").id)
+        waitForText("L search later")
     }
 
     @Test
