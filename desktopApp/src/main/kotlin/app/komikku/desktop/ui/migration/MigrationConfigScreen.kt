@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,12 +46,15 @@ import eu.kanade.presentation.util.Screen
 import mihon.feature.migration.config.MigrationConfigScreenModel
 import mihon.feature.migration.config.MigrationConfigScreenSheet
 import mihon.feature.migration.config.MigrationSource
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.FlagEmoji
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * P19: Android's `MigrationConfigScreen` (Mihon / Komikku) on desktop — which sources the migration searches, in which
@@ -63,12 +67,19 @@ import tachiyomi.presentation.core.screens.LoadingScreen
  *
  * Desktop deviation: the selected sources are ordered with "move up / down" buttons instead of Android's drag handle.
  */
-class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
+class MigrationConfigScreen(internal val mangaIds: Collection<Long>) : Screen() {
 
     constructor(mangaId: Long) : this(listOf(mangaId))
 
     @Composable
     override fun Content() {
+        // Review fix (P19): the model reads the sources once, so it is created only once they are loaded
+        val sourceManager = remember { Injekt.get<SourceManager>() }
+        val sourcesLoaded by sourceManager.isInitialized.collectAsState()
+        if (!sourcesLoaded) {
+            LoadingScreen()
+            return
+        }
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { MigrationConfigScreenModel() }
         val state by model.state.collectAsState()
@@ -132,7 +143,8 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).testTag("migration-config-search"),
                 )
                 Box(modifier = Modifier.weight(1f)) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    // Review fix (P19): room under the last row for the Continue button, like Android's scaffold padding
+                    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FAB_SPACE)) {
                         if (selected.isNotEmpty()) {
                             item(key = "selected-header") { Header(stringResource(MR.strings.migrationConfigScreen_selectedHeader)) }
                             items(selected, key = { it.id }) { source ->
@@ -196,6 +208,9 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
         }
     }
 }
+
+/** The Continue button's height (56) and its margins (16 each side). */
+private val FAB_SPACE = 88.dp
 
 /** Android's source search of the screen: any of the ","-separated parts in the name, or a source id. */
 private fun MigrationSource.matches(query: String): Boolean {
