@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.RemoveDone
+import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -112,6 +113,12 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 if (manga?.favorite == true) {
                     IconButton(onClick = model::showEditMangaInfoDialog, modifier = Modifier.testTag("details-edit-info")) {
                         Icon(Icons.Outlined.Edit, contentDescription = stringResource(SYMR.strings.action_edit_info))
+                    }
+                }
+                // P18: Android's "Migrate" for library entries (the migration search, then Mihon's dialog)
+                if (manga?.favorite == true) {
+                    IconButton(onClick = { navigator.push(MigrateSearchScreen(manga.id)) }, modifier = Modifier.testTag("details-migrate")) {
+                        Icon(Icons.Outlined.SwapCalls, contentDescription = stringResource(MR.strings.migrate))
                     }
                 }
                 if (manga != null && !manga.isLocal()) DownloadMenu(model::runDownloadAction)

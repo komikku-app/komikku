@@ -167,7 +167,7 @@ internal fun globalSearchRowTitle(source: Source, extensions: List<Extension.Ins
 
 /** Android's `GlobalSearchToolbar` (search field, progress, pinned / all and "has results" chips, bulk selection). */
 @Composable
-private fun GlobalSearchToolbar(
+internal fun GlobalSearchToolbar(
     state: SearchScreenModel.State,
     hasPinnedSources: Boolean,
     onBack: () -> Unit,
@@ -243,7 +243,7 @@ private fun GlobalSearchToolbar(
 
 /** Android's `GlobalSearchContent`: one borrowed `GlobalSearchResultItem` per source. */
 @Composable
-private fun GlobalSearchContent(
+internal fun GlobalSearchContent(
     state: SearchScreenModel.State,
     getManga: @Composable (Manga) -> androidx.compose.runtime.State<Manga>,
     onClickSource: (Source) -> Unit,

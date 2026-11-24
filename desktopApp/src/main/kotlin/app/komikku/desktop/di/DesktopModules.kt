@@ -86,6 +86,7 @@ import mihon.domain.extension.interactor.GetExtensionStores
 import mihon.domain.extension.interactor.RemoveExtensionStore
 import mihon.domain.extension.interactor.UpdateExtensionStores
 import mihon.domain.extension.repository.ExtensionStoreRepository
+import mihon.domain.migration.usecases.MigrateMangaUseCase
 import mihon.domain.source.interactor.UpdateMangaFromRemote
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
@@ -317,6 +318,26 @@ class DesktopDomainModule(
         addFactory { FilterSerializer() }
         addFactory { GetExhSavedSearch(get(), get(), get()) }
         addFactory { UpdateMangaFromRemote(get(), get(), get(), get(), get(), get(), get()) }
+        // Source migration (P18): Mihon's / Komikku's use case (Android: DomainModule)
+        addFactory {
+            MigrateMangaUseCase(
+                sourcePreferences = get(),
+                trackerManager = get(),
+                sourceManager = get(),
+                downloadManager = get(),
+                updateManga = get(),
+                getChaptersByMangaId = get(),
+                updateChapter = get(),
+                getCategories = get(),
+                setMangaCategories = get(),
+                getTracks = get(),
+                insertTrack = get(),
+                coverCache = get(),
+                updateMangaFromRemote = get(),
+                getHistory = get(),
+                upsertHistory = get(),
+            )
+        }
 
         // Library update (6L.2): shared coroutine runner, one per process
         addSingletonFactory<LibraryUpdateRunner> {
