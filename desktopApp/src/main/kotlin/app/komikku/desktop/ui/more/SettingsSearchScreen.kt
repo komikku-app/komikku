@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -130,8 +131,10 @@ private fun SettingsSearchResults(
 ) {
     if (query.isEmpty()) return
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
-    val index = settingsSearchIndex(navigator)
-    val results = remember(query, index, isLtr) { searchSettings(index, query, isLtr) }
+    // The pages are composed like Android's search screen does (each page's `getPreferences()`), only while there is a
+    // query. A fresh list each time: the search runs again for a new query or reading direction only (review fix)
+    val index by rememberUpdatedState(settingsSearchIndex(navigator))
+    val results = remember(query, isLtr) { searchSettings(index, query, isLtr) }
     if (results.isEmpty()) {
         EmptyScreen(stringResource(MR.strings.no_results_found))
         return
