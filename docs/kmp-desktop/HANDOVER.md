@@ -9,9 +9,10 @@ update check, with its review fixes, parity step P7, WebView / Cloudflare, with 
 step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
 step P9, the desktop release pipeline and signing hooks, with its review fixes, is built but never executed, and step
 P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
-P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done;
-next: P12, desktop advanced settings and library extras; then the maintainer's first real run of the workflow and of
-the app; see "Done" and "Left to do").
+P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done
+(last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, is built (its review
+`/code-review medium 9e4c28a^..<last P12 commit>` and fix round are pending); next: the P12 review, then the
+maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -264,7 +265,18 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   one spread function (`State.spreads`) for page turns both ways, progress (a two-page spread's last page marks the
   chapter read) and preloading (neighbouring spreads at their widths, never a shown page); the zoom kept across list
   rebuilds; the previous chapter entered on its last item; animated pages show their first frame at once and decode
-  the other frames only while shown, on a slot of their own, one frame set per page, any failure → first frame.
+  the other frames only while shown, on a slot of their own, one frame set per page, any failure → first frame. Last
+  Part A commit `0d88469`.
+- **P12** advanced settings and library extras (`9e4c28a` … , PROGRESS.md "P12 — advanced settings and library
+  extras"): desktop Settings → Advanced in Android's order (open the log folder of the new desktop log file
+  `<data>/logs/komikku.log`, SY's log level applied at once, reindex downloads, clear database with Android's model
+  rules, clear cookies, DNS over HTTPS, default user agent and its reset, the per-site user agents of P7 / P8 listed and
+  removable, the FlareSolverr group and the delegated sources toggle moved there from Browse); Data and storage →
+  clear chapter cache with its size and "clear on app launch"; library: continue reading button, "Open random entry",
+  source icon badge (and their display settings). Not done: "Clear WebView data" (no embedded browser), language flag
+  icons (Android drawables), continue reading by Android's chapter filters (the desktop details' rule instead). Tests
+  `AdvancedSettingsUiTest` (3), `DesktopLogFileTest` (2), `LibraryExtrasUiTest` (3), settings tests updated.
+- **P12 review** — pending: `/code-review medium 9e4c28a^..<last P12 commit>`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -310,7 +322,8 @@ mark the residual path in both modules.
    Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) and its review fixes
    are built, never executed (last Part A commit: see "P9 review"). P10 (manga details: duplicates, edit info, cover
    actions) and its review fixes are done (last Part A commit `fe75585`). P11 (reader: neighbouring chapters, wide
-   pages, animated pages) and its review fixes are done (see "P11 review"); then the maintainer's
+   pages, animated pages) and its review fixes are done (see "P11 review"; last Part A commit `0d88469`). P12 (Settings
+   → Advanced, chapter cache, library extras) is built: **next** its review and fix round; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not

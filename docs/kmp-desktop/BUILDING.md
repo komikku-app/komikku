@@ -294,7 +294,7 @@ site sets its own); the User-Agent is sent to that site at once (the `desktop_cl
 to the clearance cookie) and, only with the dialog's "Also use … as the default" box ticked, becomes the
 `default_user_agent` preference (extension sources pick that up after a restart).
 
-**Automatic solving (P8), for users:** Settings → Browse → "Cloudflare solver (FlareSolverr)". Enter the address of a
+**Automatic solving (P8), for users:** Settings → Advanced (Browse before P12) → "Cloudflare solver (FlareSolverr)". Enter the address of a
 [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)-compatible service you run yourself (for example
 `docker run -p 8191:8191 ghcr.io/flaresolverr/flaresolverr` → `http://localhost:8191`; the API address `…/v1` works
 too; only `http` / `https`; user info in the address is sent as basic authentication and never logged), then "Test
@@ -310,6 +310,14 @@ Tests use a fake backend (`FakeBrowserBackend`) and `MockWebServer` (also as the
 An embedded backend (jcefmaven was evaluated as the candidate, see [`PROGRESS.md`](PROGRESS.md#p7--webview-and-cloudflare))
 would add 120–140 MB of Chromium natives per platform (downloaded at first use or bundled), JVM `--add-opens` flags
 and, on macOS, signed helper app bundles; none of that is configured yet.
+
+## Logs
+
+The desktop log goes to stderr and (P12, from `main`) to `<data folder>/logs/komikku.log` (at most two files of about
+2 MB: `komikku.log` and the previous `komikku.1.log`), uncaught exceptions included. Settings → Advanced → "Open the
+log folder" opens it in the file manager. The level follows SY's "Log level" in the same screen (minimal = info, extra
+= debug, extreme = verbose, applied at once); the system property `komikku.log.level` (verbose, debug, info, warn,
+error) overrides it when the app's JVM is started with it (`-Dkomikku.log.level=debug`).
 
 ## Known limitations
 

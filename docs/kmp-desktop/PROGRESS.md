@@ -2965,6 +2965,75 @@ Verification (after `490d3d7`, `--max-workers=2 --console=plain`, `./gradlew --s
 `ReaderSpreadsTest` 3 new, `ReaderWidePagesUiTest` 4 → 6, `ReaderAnimatedPagesTest` 3 → 7). Not run: a real window
 (page turns, zoom across a chapter switch and animations only headless), animated WebP, macOS / Windows.
 
+## P12 — advanced settings and library extras
+
+Commits `9e4c28a` … (`9e4c28a` / `3747944` Settings → Advanced, `c655b67` / `41c5236` library extras) and this docs
+commit; after the P11 review fixes (last Part A commit `0d88469`). Both items asked for from "Remaining parity gaps" 2
+and 5 are built; Android code unchanged.
+
+### Built
+
+- **Settings → Advanced on the desktop** (new `AdvancedSettings.kt`, a ninth settings entry, Android's order with what
+  the desktop has):
+  - **"Open the log folder"** for Android's "Dump crash logs": the desktop now keeps a log file (`DesktopLogFile`,
+    installed by `main`: every desktop log line also goes to `<data folder>/logs/komikku.log`, rotated to
+    `komikku.1.log` past 2 MB, uncaught exceptions included); the entry opens the folder in the file manager
+    (`DesktopBrowser.openFolder`, `java.awt.Desktop.open`) or says where it is.
+  - **Log level** (Komikku's verbose logging: SY's `eh_log_level` list with Android's entries); the desktop applies it
+    at once and at start (minimal = info, extra = debug, extreme = verbose) unless `-Dkomikku.log.level` is set.
+  - **Data:** "Reindex downloads" (`DownloadCache.invalidateCache`, Android's toast) and **"Clear database"** (new
+    desktop `ClearDatabaseScreen` with Android's private `ClearDatabaseScreenModel` rules: `GetSourcesWithNonLibraryManga`,
+    select / select all / inverse, the confirmation with "Keep entries with read chapters", the same
+    `deleteNonLibraryManga` / `removeResettedHistory` queries and strings; no source icons in the list).
+  - **Networking:** "Clear cookies" (`cookieJar.removeAll`, also the cookies pasted through "Open in WebView"), "DNS
+    over HTTPS" (Android's list; the shared `NetworkHelper` applies it on the desktop too, after a restart), "Default
+    user agent string" (validated with OkHttp like Android, "requires restart") and its reset (shown only
+    when changed, as on Android), and **"User agents of sites"**: the per-host user agents of P7 / P8
+    (`CloudflareHostState.userAgentOverrides`, new, with `clearUserAgents`) listed by host with a remove button each
+    and "Remove all"; then the P8 **Cloudflare solver** group (moved from Browse).
+  - **Developer tools** (SY's group): the P4 **delegated sources** toggle (moved from Browse, where Android has it).
+- **Data and storage → Storage usage** (Android `SettingsDataScreen`): "Clear chapter cache" with its used size and
+  Android's toasts, and "Clear chapter cache on app launch" (`autoClearChapterCache`, run by `main` like `MainActivity`).
+- **Library extras:** Android's **continue reading button** (`showContinueReadingButton`; 28 dp play button on the
+  cover, at the end of a list row) on entries with unread chapters opens the next unread chapter in the reader
+  (`LibraryScreenModel.getNextUnreadChapter`; "No next chapter" otherwise); **"Open random entry"** (shuffle button
+  next to the library filter: a random entry of the shown page, Android's `getRandomLibraryItemForCurrentCategory`,
+  "No entries found" when the page is empty); the **source icon badge** (Komikku's `sourceBadge`, on by default like
+  Android: the extension's icon from its APK, a warning for a missing source, a folder for the local source, else the
+  default icon). The library's display settings gained "Show source badge" and "Show continue reading button".
+
+### Decisions / deviations
+
+- **Layout like Android:** the chapter cache is in Data and storage (Android's place), not in Advanced. The delegated
+  sources toggle (P4) and the FlareSolverr group (P8) moved from Browse to Advanced (Developer tools / next to
+  Networking), Android's places for delegated sources and the network settings; both stay one screen away. The
+  settings tests follow them.
+- **Not on the desktop's Advanced screen:** "Clear WebView data" (no embedded browser: the only browser-like data are
+  the pasted cookies, cleared by "Clear cookies", and the per-site user agents, listed), notifications, battery, onboarding, debug info, hardware bitmaps / long strips,
+  extension installer, data saver, the other SY developer switches, database encryption.
+- **Continue reading** picks the chapter like the desktop details' "Continue reading" (`GetNextChapters`, unread only),
+  not Android's `getNextUnread` with the entry's chapter filters (that helper takes Android UI types), and shows the
+  button when the entry has unread chapters even with the unread badge off (Android hides it then, because its count is
+  zeroed with the badge).
+- **Language flags:** not shown. Android's flags are the `flagkit` / `app` Android drawables, which are not on the
+  desktop's classpath; the language badge stays text (as since P2). The "Use language icon" switch is not offered.
+- The log file is installed only by `main` (tests keep stderr only). "Open the log folder" reports the path in a toast
+  when the system has no file manager to open (headless, some Linux desktops).
+
+### Tests
+
+- `AdvancedSettingsUiTest` (3): clear cookies (the jar is empty, Android's toast), the default user agent's reset,
+  per-site user agents listed / one removed / all removed ("None saved"), reindex downloads (toast), the log level
+  list, DNS over HTTPS; "Clear database" removes only the selected source's entry outside the library (the library entry stays,
+  "Entries deleted", then "Nothing to clear"); Data and storage shows the chapter cache's size and clears it.
+- `DesktopLogFileTest` (2): appended lines, rotation to at most two files, appending after a restart; the log level
+  mapping and the system property winning.
+- `LibraryExtrasUiTest` (3): continue reading opens the next unread chapter (grid and list; none on an entry without
+  unread chapters; the preference hides it); random entry opens the only shown entry and says "No entries found" on an
+  empty page; the source badge follows its preference.
+- `SettingsUiTest` / `FlareSolverrSettingsUiTest`: the delegated sources toggle and the solver group are found in
+  Advanced now.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2975,8 +3044,9 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
    import screen, MangaDex settings / follows / similar screens, SY built-in E-Hentai / ExHentai and merged sources.
 2. **Library:** grouping and selection / batch actions are done (P2); left from them: migrate, merge,
-   recommendations, SY clean titles / MangaDex follow / reset info from the selection. Also: "continue reading" button, source-icon badge and language flag
-   icons, random-entry shortcut. Scheduled automatic library updates are done (P3; no device restrictions on desktop).
+   recommendations, SY clean titles / MangaDex follow / reset info from the selection. The "continue reading" button,
+   "Open random entry" and the source-icon badge are done (P12); left: language flag icons (Android drawables).
+   Scheduled automatic library updates are done (P3; no device restrictions on desktop).
 3. **Manga details:** duplicate detection on add, metadata editing and cover actions are done (P10); left from them:
    migrate from the duplicate dialog, "Autofill from tracker" in edit info, sharing the cover. Also: merged entries,
    sharing, recommendations, SY metadata / namespace-tag view and page previews (the delegated sources store the
@@ -2987,8 +3057,10 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
    7z chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
-   them), OAuth via redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs,
-   cookies, User-Agent). WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and
+   them), OAuth via redirect (paste only), app security / lock, settings search. Settings → Advanced is done (P12: log
+   folder and level, reindex downloads, clear database, cookies, default and per-site user agents, the solver and
+   delegated sources moved there, DNS over HTTPS; the chapter cache in Data and storage); left from it: "Clear WebView
+   data" (no embedded browser), the SY developer switches, data saver. WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and
    a manual "Open in WebView" (system browser + pasted cookies / User-Agent) are done, and automatic solving through a
    FlareSolverr-compatible service the user runs (P8); left: an embedded browser backend (jcefmaven evaluated as the
    candidate; P7 "What the embedded backend still needs"), `android.webkit.WebView` for extensions.
