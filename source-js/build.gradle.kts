@@ -15,7 +15,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  *   `app.komikku.sourcejs.mihon` over `source-api`) lives in the `jvmShared` intermediate source set
  *   (`src/jvmSharedMain`, tests in `src/jvmSharedTest`); `commonMain` stays free of JVM APIs for iOS.
  * - `iosArm64` / `iosSimulatorArm64`: only when the build host is macOS, so Linux / Windows builds and CI are
- *   unaffected.
+ *   unaffected. `-Pios-targets` declares them on any host: Kotlin/Native compiles iOS klibs (main and test) on Linux
+ *   too, only linking and running the simulator tests need macOS (docs/kmp-desktop/IOS_CI.md).
  *
  * Android uses `quickjs-kt`'s Android AAR (I2b replaced the zhanghai `quickjs-android` AAR that clashed with it,
  * PLAN.md 8.7 item 5). Its native library only exists for Android ABIs, so the Android host unit tests
@@ -29,6 +30,7 @@ plugins {
 }
 
 val isMacOsHost = providers.systemProperty("os.name").get().startsWith("Mac", ignoreCase = true)
+val withIosTargets = isMacOsHost || providers.gradleProperty("ios-targets").isPresent
 
 kotlin {
     androidTarget()
@@ -37,7 +39,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    if (isMacOsHost) {
+    if (withIosTargets) {
         iosArm64()
         iosSimulatorArm64()
     }
