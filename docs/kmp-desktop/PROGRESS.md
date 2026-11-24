@@ -3149,7 +3149,8 @@ JavaScript source changing its filters.
 Verification (after `145f3c9`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
 `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
 '*CatalogueFilterUiTest*' --tests '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'` 8 tests, 0 failures.
-Full `:desktopApp:test` before the fixes (on `4337c40`): 65 classes, 282 tests, 0 failures; after them: see below.
+Full `:desktopApp:test` before the fixes (on `4337c40`): 65 classes, 282 tests, 0 failures; after them (on `80834b4`):
+66 classes, 288 tests, 0 failures (`CatalogueFilterUiTest` 6 new).
 
 ## Remaining parity gaps
 
