@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -91,6 +92,8 @@ class CatalogueSavedSearchUiTest {
         waitForText("Filter source")
         onNodeWithText("Filter source").performClick()
         waitForText("Filter popular")
+        // The saved searches are in the filter panel, opened from the toolbar
+        onNodeWithTag("catalogue-filter").performClick()
         waitForText("Completed done")
 
         // Search, then save it under a name
@@ -121,11 +124,15 @@ class CatalogueSavedSearchUiTest {
         waitForText("Result for xyz")
         onNodeWithText("Completed done").performClick()
         waitForText("Result for done (completed)")
+        // Applying closes the panel like Android's sheet
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithTag("catalogue-filter-panel").fetchSemanticsNodes().isEmpty() }
+        onNodeWithTag("catalogue-filter").performClick()
         onNodeWithText("My abc").performClick()
         waitForText("Result for abc")
         onAllNodesWithText("Result for abc (completed)").fetchSemanticsNodes().size shouldBe 0
 
         // Delete
+        onNodeWithTag("catalogue-filter").performClick()
         onNodeWithTag("saved-search-delete-My abc").performClick()
         waitForText(SYMR.strings.save_search_delete.text())
         onNodeWithText(MR.strings.action_ok.text()).performClick()
