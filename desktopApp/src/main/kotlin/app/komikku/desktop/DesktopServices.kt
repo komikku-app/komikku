@@ -2,6 +2,7 @@ package app.komikku.desktop
 
 import android.app.Application
 import app.komikku.desktop.compat.DesktopPreferenceStores
+import app.komikku.desktop.webview.DesktopCloudflare
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import tachiyomi.core.common.preference.DesktopPreferenceStore
@@ -18,5 +19,8 @@ class DesktopServices(
 ) {
     val networkPreferences = NetworkPreferences(preferenceStore)
 
-    val network: NetworkHelper by lazy { NetworkHelper(application, networkPreferences) }
+    val network: NetworkHelper by lazy {
+        DesktopCloudflare.installHostState(preferenceStore)
+        NetworkHelper(application, networkPreferences)
+    }
 }

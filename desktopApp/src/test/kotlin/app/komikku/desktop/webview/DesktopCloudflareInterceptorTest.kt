@@ -10,6 +10,8 @@ import app.komikku.network.browser.BrowserCondition
 import app.komikku.network.browser.BrowserPage
 import app.komikku.network.browser.BrowserSessionResult
 import app.komikku.network.browser.BrowserUnavailableException
+import app.komikku.network.browser.CloudflareHostState
+import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import eu.kanade.tachiyomi.network.GET
@@ -53,11 +55,13 @@ class DesktopCloudflareInterceptorTest {
     private val context by lazy { Application(dir.resolve("data")) }
     private val jar = AndroidCookieJar()
     private val backend = FakeBrowserBackend()
+    private var now = 1_000_000L
+    private val hosts = CloudflareHostState(clock = { now })
 
     private fun client(backendProvider: () -> BrowserBackend = { backend }) = OkHttpClient.Builder()
         .cookieJar(jar)
         .addInterceptor(UserAgentInterceptor { DEFAULT_UA })
-        .addInterceptor(CloudflareInterceptor(context, jar, { DEFAULT_UA }, backendProvider, timeout = 5.seconds))
+        .addInterceptor(CloudflareInterceptor(context, jar, { DEFAULT_UA }, backendProvider, timeout = 5.seconds, hostStateProvider = { hosts }))
         .build()
 
     @BeforeEach
@@ -176,6 +180,8 @@ class DesktopCloudflareInterceptorTest {
         assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/").toString())).execute() }
             .reason shouldBe CloudflareBypassException.Reason.NOT_SOLVED
 
+        // After the remembered failure (P7 review) the next attempt runs the browser again.
+        now += CloudflareHostState.FAILURE_MEMORY.inWholeMilliseconds
         backend.browse = { throw BrowserUnavailableException("native files missing") }
         val failed = assertThrows<CloudflareBypassException> { client().newCall(GET(server.url("/").toString())).execute() }
         failed.reason shouldBe CloudflareBypassException.Reason.BROWSER_FAILED
@@ -198,7 +204,8 @@ class DesktopCloudflareInterceptorTest {
         val page = BrowserPage(server.url("/"), 200, listOf(FakeBrowserBackend.clearance(backend.sessions.single(), "stale")))
         backend.sessions.single().until.isMet(page) shouldBe false
 
-        // The next challenge is solved with a fresh one.
+        // The next challenge (after the remembered failure) is solved with a fresh one.
+        now += CloudflareHostState.FAILURE_MEMORY.inWholeMilliseconds
         backend.browse = { session -> session.cookies + FakeBrowserBackend.clearance(session, "fresh") }
         client().newCall(GET(server.url("/").toString())).execute().use { it.code shouldBe 200 }
     }
@@ -253,6 +260,126 @@ class DesktopCloudflareInterceptorTest {
     }
 
     @Test
+    fun `a failed solve is not repeated by the requests behind it and right after it`() {
+        protectedSite()
+        val started = CountDownLatch(1)
+        backend.browse = { session ->
+            started.countDown()
+            Thread.sleep(300)
+            session.cookies
+        }
+        val client = client()
+        val pool = Executors.newFixedThreadPool(3)
+        try {
+            val calls = (1..3).map {
+                pool.submit<CloudflareBypassException.Reason> {
+                    assertThrows<CloudflareBypassException> { client.newCall(GET(server.url("/$it").toString())).execute() }.reason
+                }
+            }
+            calls.map { it.get(10, TimeUnit.SECONDS) } shouldBe List(3) { CloudflareBypassException.Reason.TIMED_OUT }
+        } finally {
+            pool.shutdownNow()
+        }
+        backend.sessions shouldHaveSize 1
+
+        // A request right after it fails at once with the same reason, without a browser run.
+        assertThrows<CloudflareBypassException> { client.newCall(GET(server.url("/next").toString())).execute() }
+            .reason shouldBe CloudflareBypassException.Reason.TIMED_OUT
+        backend.sessions shouldHaveSize 1
+
+        // A manual save (cleared failure) lets the next one try again at once.
+        hosts.clearFailure(server.hostName)
+        assertThrows<CloudflareBypassException> { client.newCall(GET(server.url("/again").toString())).execute() }
+        backend.sessions shouldHaveSize 2
+
+        // So does a new clearance in the jar (pasted by hand): the request is sent with it.
+        jar.storeBrowserCookies(listOf(FakeBrowserBackend.clearance(backend.sessions.last())))
+        client.newCall(GET(server.url("/pasted").toString())).execute().use { it.code shouldBe 200 }
+        backend.sessions shouldHaveSize 2
+
+        // Without it the last failure still counts, until the memory ends.
+        jar.removeBrowserCookies(server.url("/"))
+        assertThrows<CloudflareBypassException> { client.newCall(GET(server.url("/x").toString())).execute() }
+        backend.sessions shouldHaveSize 2
+        now += CloudflareHostState.FAILURE_MEMORY.inWholeMilliseconds
+        assertThrows<CloudflareBypassException> { client.newCall(GET(server.url("/y").toString())).execute() }
+        backend.sessions shouldHaveSize 3
+    }
+
+    @Test
+    fun `the solver's user agent is used for the waiters and the host's later requests`() {
+        // Like Cloudflare: the clearance only works with the user agent that got it.
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if ("cf_clearance=solved" in request.headers["Cookie"].orEmpty() && request.headers["User-Agent"] == BROWSER_UA) {
+                    MockResponse.Builder().code(200).body("ok").build()
+                } else {
+                    challenge()
+                }
+        }
+        backend.userAgent = BROWSER_UA
+        backend.browse = { session ->
+            Thread.sleep(300)
+            listOf(FakeBrowserBackend.clearance(session))
+        }
+        val client = client()
+        val pool = Executors.newFixedThreadPool(3)
+        try {
+            val calls = (1..3).map { pool.submit<Int> { client.newCall(GET(server.url("/$it").toString())).execute().use { r -> r.code } } }
+            calls.map { it.get(10, TimeUnit.SECONDS) } shouldBe listOf(200, 200, 200)
+        } finally {
+            pool.shutdownNow()
+        }
+        backend.sessions shouldHaveSize 1
+        hosts.userAgentOverride(server.hostName)?.userAgent shouldBe BROWSER_UA
+
+        // A later request of the source (its own User-Agent header) goes through at once with the browser's.
+        val before = server.requestCount
+        val request = GET(server.url("/later").toString(), Headers.headersOf("User-Agent", "Source/1.0"))
+        client.newCall(request).execute().use { it.code shouldBe 200 }
+        server.requestCount shouldBe before + 1
+
+        // Once that clearance is replaced, the source's own User-Agent is sent again.
+        jar.removeBrowserCookies(server.url("/"))
+        jar.storeBrowserCookies(listOf(FakeBrowserBackend.clearance(backend.sessions.single(), "other")))
+        backend.availability = BrowserAvailability.Unavailable(BrowserAvailability.Reason.NOT_INSTALLED)
+        assertThrows<CloudflareBypassException> { client.newCall(request).execute() }
+        (1..server.requestCount).map { server.takeRequest() }.last().headers["User-Agent"] shouldBe "Source/1.0"
+    }
+
+    @Test
+    fun `a challenge on a redirect target is solved for that address`() {
+        // The entry address redirects to another host (127.0.0.1 instead of localhost), which is protected.
+        val target = server.url("/new").newBuilder().host(if (server.hostName == "127.0.0.1") "localhost" else "127.0.0.1").build()
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse = when {
+                request.url.encodedPath == "/old" -> MockResponse.Builder().code(302).addHeader("Location", target.toString()).build()
+                "cf_clearance=solved" in request.headers["Cookie"].orEmpty() -> MockResponse.Builder().code(200).body("ok").build()
+                else -> challenge()
+            }
+        }
+        // The first host has a clearance of its own, which the challenged request did not carry.
+        jar.storeBrowserCookies(listOf(FakeBrowserBackend.clearance(sessionFor(server.url("/")), "first-host")))
+        backend.browse = { session -> listOf(FakeBrowserBackend.clearance(session)) }
+
+        client().newCall(GET(server.url("/old").toString())).execute().use { response ->
+            response.code shouldBe 200
+            response.body.string() shouldBe "ok"
+        }
+
+        backend.sessions.single().url shouldBe target
+        jar.get(target).map { it.name to it.value } shouldBe listOf("cf_clearance" to "solved")
+        jar.get(server.url("/")).map { it.value } shouldBe listOf("first-host")
+    }
+
+    private fun sessionFor(url: okhttp3.HttpUrl) = app.komikku.network.browser.BrowserSession(
+        url = url,
+        userAgent = DEFAULT_UA,
+        until = BrowserCondition.UntilClosed,
+        timeout = 1.seconds,
+    )
+
+    @Test
     fun `cookie and url conditions`() {
         val url = server.url("/a")
         val cookie = Cookie.parse(url, "cf_clearance=new")!!
@@ -271,6 +398,7 @@ class DesktopCloudflareInterceptorTest {
 
     companion object {
         const val DEFAULT_UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36"
+        const val BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) Desktop browser"
         const val CHALLENGE_BODY = "<html><body><h1 id=\"challenge-error-title\">Just a moment...</h1></body></html>"
     }
 }

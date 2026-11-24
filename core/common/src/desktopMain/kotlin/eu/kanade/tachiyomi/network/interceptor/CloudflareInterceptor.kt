@@ -7,11 +7,14 @@ import app.komikku.network.browser.BrowserBackends
 import app.komikku.network.browser.BrowserCondition
 import app.komikku.network.browser.BrowserSession
 import app.komikku.network.browser.BrowserSessionResult
+import app.komikku.network.browser.CloudflareHostState
+import app.komikku.network.browser.CloudflareHosts
 import app.komikku.network.browser.browserCookies
 import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import logcat.LogPriority
+import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -35,9 +38,13 @@ import kotlin.time.Duration.Companion.seconds
  *   [CloudflareBypassException] that tells the user to pass the check by hand ("Open in WebView" and paste the cookies);
  *   Android returns the challenge page after a "WebView is required" toast.
  * - One challenge per host is solved at a time: a request that waited for another one's solution is sent again with the
- *   new cookie instead of opening a second browser.
- * - When the browser reports another User-Agent than the request's, the retry uses the browser's (the clearance is
- *   bound to it).
+ *   new cookie instead of opening a second browser. A failed solve is remembered for a short time
+ *   ([CloudflareHostState.FAILURE_MEMORY]): the requests behind it and right after it fail at once with the same reason.
+ * - The challenge that counts is the one of the last request (after redirects): its host is solved and its clearance is
+ *   compared.
+ * - When the browser reports another User-Agent than the source's, the retry and the host's later requests (while that
+ *   clearance is in the jar) use the browser's, since the clearance is bound to it ([CloudflareHostState]); a pasted
+ *   User-Agent ("Open in WebView") works the same way.
  */
 actual class CloudflareInterceptor(
     private val context: Context,
@@ -45,6 +52,7 @@ actual class CloudflareInterceptor(
     private val defaultUserAgentProvider: () -> String,
     private val backendProvider: () -> BrowserBackend,
     private val timeout: Duration = DEFAULT_TIMEOUT,
+    private val hostStateProvider: () -> CloudflareHostState = { CloudflareHosts.state },
 ) : Interceptor {
 
     actual constructor(
@@ -54,11 +62,17 @@ actual class CloudflareInterceptor(
     ) : this(context, cookieManager, defaultUserAgentProvider, { BrowserBackends.current })
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
+        val hosts = hostStateProvider()
+        val original = chain.request()
+        // The source's own User-Agent (or the app's default), before an override for a clearance replaces it.
+        val sourceUserAgent = original.header("User-Agent")?.takeIf { it.isNotBlank() } ?: defaultUserAgentProvider()
+        val request = original.withUserAgentFor(original.url, hosts)
         val response = chain.proceed(request)
         if (!CloudflareChallenge.isChallenge(response)) return response
 
-        val host = request.url.host
+        // The request that was challenged: after redirects the last one, which may be another host than [request]'s.
+        val challengedUrl = response.request.url
+        val host = challengedUrl.host
         val backend = backendProvider()
         val availability = try {
             backend.availability()
@@ -84,32 +98,51 @@ actual class CloudflareInterceptor(
         response.close()
 
         val retry = synchronized(hostLocks.computeIfAbsent(host) { Any() }) {
-            val current = cookieManager.get(request.url).firstOrNull { it.name == CloudflareChallenge.CLEARANCE_COOKIE }
-            if (current != null && current.value != sentClearance) {
-                // Another request solved this host's challenge while this one waited.
-                request
+            val current = currentClearance(challengedUrl)
+            if (current != null && current != sentClearance) {
+                // Another request solved this host's challenge while this one waited: send it with that clearance's
+                // User-Agent too.
+                request.withUserAgentFor(challengedUrl, hosts)
             } else {
-                solve(backend, request, host, staleClearance = current?.value ?: sentClearance)
+                // A solve that failed a moment ago fails the same way at once (no second browser run per waiter).
+                hosts.recentFailure(host, current)?.let { throw it }
+                try {
+                    solve(backend, request, challengedUrl, sourceUserAgent, hosts, staleClearance = current ?: sentClearance)
+                } catch (e: CloudflareBypassException) {
+                    hosts.recordFailure(host, e, currentClearance(challengedUrl))
+                    throw e
+                }
             }
         }
         return chain.proceed(retry)
     }
 
-    /** Runs the browser for [request]; returns the request to send again, or throws a [CloudflareBypassException]. */
-    private fun solve(backend: BrowserBackend, request: Request, host: String, staleClearance: String?): Request {
+    /**
+     * Runs the browser for the challenged [url]; returns [request] to send again (with the browser's User-Agent when it
+     * used another one), or throws a [CloudflareBypassException].
+     */
+    private fun solve(
+        backend: BrowserBackend,
+        request: Request,
+        url: HttpUrl,
+        sourceUserAgent: String,
+        hosts: CloudflareHostState,
+        staleClearance: String?,
+    ): Request {
+        val host = url.host
         // Android: `cookieManager.remove(request.url, COOKIE_NAMES, 0)`; on desktop that misses a site-wide cookie.
-        cookieManager.removeBrowserCookies(request.url, CloudflareChallenge.COOKIE_NAMES)
+        cookieManager.removeBrowserCookies(url, CloudflareChallenge.COOKIE_NAMES)
         val userAgent = request.header("User-Agent")?.takeIf { it.isNotBlank() } ?: defaultUserAgentProvider()
         val result = try {
             backend.run(
                 BrowserSession(
-                    url = request.url,
+                    url = url,
                     headers = CloudflareChallenge.browserHeaders(request.headers)
                         .filterKeys { !it.equals("User-Agent", ignoreCase = true) },
                     userAgent = userAgent,
-                    cookies = cookieManager.browserCookies(request.url),
+                    cookies = cookieManager.browserCookies(url),
                     // A new clearance: not the one that was refused (Android's `it != oldCookie`).
-                    until = BrowserCondition.cookieSet(request.url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
+                    until = BrowserCondition.cookieSet(url, CloudflareChallenge.CLEARANCE_COOKIE, staleClearance),
                     timeout = timeout,
                 ),
             )
@@ -121,9 +154,10 @@ actual class CloudflareInterceptor(
         // Like Android, where the WebView shares the app's cookie store, whatever the browser got is kept.
         cookieManager.storeBrowserCookies(result.cookies)
 
-        val solved = result.outcome == BrowserSessionResult.Outcome.CONDITION_MET &&
-            cookieManager.get(request.url).any { it.name == CloudflareChallenge.CLEARANCE_COOKIE && it.value != staleClearance }
-        if (!solved) {
+        val clearance = cookieManager.get(url)
+            .firstOrNull { it.name == CloudflareChallenge.CLEARANCE_COOKIE && it.value != staleClearance }
+            ?.value
+        if (result.outcome != BrowserSessionResult.Outcome.CONDITION_MET || clearance == null) {
             logcat(LogPriority.WARN) { "Cloudflare challenge for $host not solved by ${backend.name}: ${result.outcome}" }
             throw failure(
                 host,
@@ -134,15 +168,31 @@ actual class CloudflareInterceptor(
                 },
             )
         }
+        hosts.clearFailure(host)
 
-        val browserUserAgent = result.userAgent?.takeIf { it.isNotBlank() }
-        return if (browserUserAgent != null && browserUserAgent != userAgent) {
+        val solvedUserAgent = result.userAgent?.takeIf { it.isNotBlank() } ?: userAgent
+        // The host's later requests send the User-Agent this clearance belongs to.
+        if (solvedUserAgent != sourceUserAgent) {
+            hosts.setUserAgent(host, solvedUserAgent, clearance)
+        } else {
+            hosts.removeUserAgent(host)
+        }
+        return if (solvedUserAgent != userAgent) {
             logcat(LogPriority.WARN) { "Cloudflare challenge for $host: the browser used another User-Agent, retrying with it" }
-            request.newBuilder().header("User-Agent", browserUserAgent).build()
+            request.newBuilder().header("User-Agent", solvedUserAgent).build()
         } else {
             request
         }
     }
+
+    /** This request with the User-Agent of the clearance the jar holds for [url], when there is such an override. */
+    private fun Request.withUserAgentFor(url: HttpUrl, hosts: CloudflareHostState): Request {
+        val userAgent = hosts.userAgentFor(url.host) { currentClearance(url) } ?: return this
+        return if (header("User-Agent") == userAgent) this else newBuilder().header("User-Agent", userAgent).build()
+    }
+
+    private fun currentClearance(url: HttpUrl): String? =
+        cookieManager.get(url).firstOrNull { it.name == CloudflareChallenge.CLEARANCE_COOKIE }?.value
 
     private fun failure(host: String, reason: CloudflareBypassException.Reason, cause: Throwable? = null) =
         CloudflareBypassException(
