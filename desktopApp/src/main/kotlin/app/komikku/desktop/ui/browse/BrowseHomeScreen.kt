@@ -18,27 +18,31 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import eu.kanade.presentation.util.Screen
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
+import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import java.util.Locale
 
-/** Browse home: Sources / Extensions tabs, like Android's Browse screen, and the JavaScript sources (I4). */
+/** Browse home: Sources / Feed (P13) / Extensions tabs, like Android's Browse screen, and the JavaScript sources (I4). */
 data object BrowseHomeScreen : Screen() {
 
     @Composable
     override fun Content() {
         val extensionsModel = rememberScreenModel { ExtensionsScreenModel() }
         val sourcesModel = rememberScreenModel { SourcesPaneModel() }
+        val feedModel = rememberScreenModel { FeedPaneModel() }
         var selected by rememberSaveable { mutableIntStateOf(0) }
         Column(modifier = Modifier.fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = selected) {
                 Tab(selected = selected == 0, onClick = { selected = 0 }, text = { Text(stringResource(MR.strings.label_sources)) })
-                Tab(selected = selected == 1, onClick = { selected = 1 }, text = { Text(stringResource(MR.strings.label_extensions)) })
-                Tab(selected = selected == 2, onClick = { selected = 2 }, text = { Text(stringResource(KMR.strings.js_sources)) })
+                Tab(selected = selected == 1, onClick = { selected = 1 }, text = { Text(stringResource(SYMR.strings.feed)) })
+                Tab(selected = selected == 2, onClick = { selected = 2 }, text = { Text(stringResource(MR.strings.label_extensions)) })
+                Tab(selected = selected == 3, onClick = { selected = 3 }, text = { Text(stringResource(KMR.strings.js_sources)) })
             }
             when (selected) {
                 0 -> SourcesPane(sourcesModel)
-                1 -> ExtensionsPane(extensionsModel)
+                1 -> FeedPane(feedModel)
+                2 -> ExtensionsPane(extensionsModel)
                 else -> JsSourcesTab()
             }
         }

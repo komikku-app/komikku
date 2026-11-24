@@ -126,14 +126,21 @@ import tachiyomi.core.common.i18n.stringResource as contextString
 
 /**
  * Popular / latest / search listing of one source, as a cover grid. With [initialQuery] (global search: "open this
- * source's own search") it starts with that search, like Android's `BrowseSourceScreen(sourceId, query)`.
+ * source's own search") it starts with that search, like Android's `BrowseSourceScreen(sourceId, query)`; with
+ * [savedSearchId] (a feed row) with that saved search, with [latest] (a feed row) with the latest updates when the
+ * source has them, like Android's `BrowseSourceScreen(sourceId, listingQuery, savedSearch)`.
  */
-class CatalogueScreen(private val sourceId: Long, private val initialQuery: String? = null) : Screen() {
+class CatalogueScreen(
+    private val sourceId: Long,
+    private val initialQuery: String? = null,
+    private val savedSearchId: Long? = null,
+    private val latest: Boolean = false,
+) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery) }
+        val model = rememberScreenModel { CatalogueScreenModel(sourceId, initialQuery, savedSearchId, latest) }
         val state by model.state.collectAsState()
         val source = model.source
         // P7: Android's WebView action (`BrowseSourceScreen.onWebViewClick`)
@@ -239,6 +246,8 @@ class CatalogueScreen(private val sourceId: Long, private val initialQuery: Stri
 class CatalogueScreenModel(
     sourceId: Long,
     initialQuery: String? = null,
+    savedSearchId: Long? = null,
+    latest: Boolean = false,
     sourceManager: SourceManager = Injekt.get(),
     private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
     getIncognitoState: GetIncognitoState = Injekt.get(),
@@ -249,7 +258,15 @@ class CatalogueScreenModel(
     private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
     private val filterSerializer: FilterSerializer = Injekt.get(),
 ) : StateScreenModel<CatalogueScreenModel.State>(
-    State(mode = initialQuery?.takeIf { it.isNotBlank() }?.let { Mode.Search(it) } ?: Mode.Popular),
+    State(
+        mode = when {
+            !initialQuery.isNullOrBlank() -> Mode.Search(initialQuery)
+            latest && sourceManager.get(sourceId)?.supportsLatest == true -> Mode.Latest
+            else -> Mode.Popular
+        },
+        // A saved search to open: its listing starts once it is loaded
+        isLoading = savedSearchId != null,
+    ),
 ) {
 
     sealed interface Mode {
@@ -310,7 +327,7 @@ class CatalogueScreenModel(
 
     init {
         if (catalogueSource != null) {
-            loadMore()
+            if (savedSearchId == null) loadMore() else openSavedSearch(catalogueSource, savedSearchId)
             // The saved searches' own filter lists are not used here (only their names are listed; applying one loads
             // it again), so a failing filter list lists them all the same
             getExhSavedSearch.subscribe(sourceId) { filterListOrEmpty(catalogueSource) }
@@ -424,6 +441,27 @@ class CatalogueScreenModel(
                 return@launch
             }
             closeFilters()
+            startListing(
+                Mode.Search(search.query.orEmpty(), search.filterList?.takeUnless { it.list == defaults.list }),
+                queryApplied = true,
+            )
+        }
+    }
+
+    /**
+     * Opens with a saved search (a feed row), like Android's `BrowseSourceScreenModel` with `savedSearch`: its query
+     * with its filters, the source's defaults when they no longer load; popular when it is gone or fails.
+     */
+    private fun openSavedSearch(source: CatalogueSource, savedSearchId: Long) {
+        applyJob = screenModelScope.launch {
+            val (defaults, search) = sourceCall {
+                source.getFilterList() to getExhSavedSearch.awaitOne(savedSearchId, source::getFilterList)
+            }.getOrElse { null to null }
+            if (defaults == null || search == null) {
+                mutableState.update { it.copy(isLoading = false) }
+                loadMore()
+                return@launch
+            }
             startListing(
                 Mode.Search(search.query.orEmpty(), search.filterList?.takeUnless { it.list == defaults.list }),
                 queryApplied = true,

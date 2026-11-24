@@ -224,7 +224,7 @@ private fun GlobalSearchContent(
 
 /** Android's `GlobalSearchCardRow` with the desktop cover item (library entries dimmed and marked, like Android). */
 @Composable
-private fun GlobalSearchCardRow(
+internal fun GlobalSearchCardRow(
     titles: List<Manga>,
     getManga: @Composable (Manga) -> androidx.compose.runtime.State<Manga>,
     onClick: (Manga) -> Unit,
