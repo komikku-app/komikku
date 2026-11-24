@@ -21,10 +21,10 @@ import javax.crypto.spec.PBEKeySpec
  * P16: the desktop app lock, Android's `SecureActivityDelegate` with a PIN or password of the app's own instead of the
  * device's authenticator (desktop operating systems offer none to a JVM app; no biometrics).
  *
- * - On: Android's "Require unlock" (`SecurityPreferences.useAuthenticator`) **and** a PIN / password set on this machine.
- *   The secret is kept only as a salted PBKDF2 hash in an app-state preference, so backups never carry it. A "Require
- *   unlock" without a secret (an Android backup restored here) counts as off and is switched off at start, like Android
- *   does when the device has no authenticator.
+ * - On while a PIN / password is set on this machine (review fix): the secret is kept only as a salted PBKDF2 hash in an
+ *   app-state preference, which backups neither carry nor restore, so restoring a backup can neither switch the lock off
+ *   nor on. Android's backed-up "Require unlock" (`SecurityPreferences.useAuthenticator`) is Android's own setting: the
+ *   desktop neither reads nor writes it (a backup carries it between Android devices unchanged).
  * - Locked at start-up (Android: `requireUnlock` is true for a new process) and by [lockNow].
  * - "Lock when idle" (`lockAppAfter`) and SY's lock times / days ([AppLockRules]) apply after the window was hidden
  *   (minimised: Android's app going to the background): [onWindowHidden] / [onWindowShown].
@@ -58,9 +58,7 @@ class DesktopAppLock(
     private var hidden = false
 
     init {
-        val require = securityPreferences.useAuthenticator()
-        if (require.get() && secret.get().isEmpty()) require.set(false)
-        _enabled.value = require.get() && secret.get().isNotEmpty()
+        _enabled.value = secret.get().isNotEmpty()
         // Android: a new process always starts locked
         _locked.value = _enabled.value
     }
@@ -85,7 +83,6 @@ class DesktopAppLock(
         require(newSecret.length >= MIN_LENGTH) { "The PIN or password is too short" }
         val stored = withContext(Dispatchers.Default) { AppLockSecret.hash(newSecret) }
         secret.set(stored)
-        securityPreferences.useAuthenticator().set(true)
         resetFailures()
         _enabled.value = true
     }
@@ -94,7 +91,6 @@ class DesktopAppLock(
     suspend fun disable(current: String): Attempt {
         val attempt = check(current)
         if (attempt == Attempt.Accepted) {
-            securityPreferences.useAuthenticator().set(false)
             securityPreferences.lastAppClosed().delete()
             secret.delete()
             _enabled.value = false

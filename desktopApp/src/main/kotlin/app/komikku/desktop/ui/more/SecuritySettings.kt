@@ -40,7 +40,7 @@ internal fun securityPreferences(): List<Preference> {
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_security),
             preferenceItems = persistentListOf(
-                // Not a SwitchPreference: on means "Require unlock" *and* a PIN / password, and either way a dialog decides
+                // Not a SwitchPreference: on means a PIN / password is set (not Android's "Require unlock"); a dialog decides
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.desktop_app_lock),
                     subtitle = stringResource(KMR.strings.desktop_app_lock_summary),
