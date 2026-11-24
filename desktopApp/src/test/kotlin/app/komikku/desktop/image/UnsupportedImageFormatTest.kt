@@ -1,13 +1,17 @@
 package app.komikku.desktop.image
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.width
 import app.komikku.desktop.reader.TestImages
 import app.komikku.desktop.ui.CoverImage
 import app.komikku.shared.coil.DesktopImageLoader
@@ -133,6 +137,22 @@ class UnsupportedImageFormatTest {
         setContent { CoverImage(model = avif, contentDescription = null, imageLoader = loader, modifier = Modifier.size(40.dp, 56.dp)) }
         waitUntil(timeoutMillis = 10_000) { onAllNodesWithTag("cover-unsupported-format").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithTag("cover-unsupported-format").assertTextEquals("AVIF")
+    }
+
+    /** Like a bare AsyncImage: a caller fixing only the width still gets a cover with a height (no collapsed Box). */
+    @Test
+    fun `a cover sized by one dimension takes the image's height`(@TempDir dir: File) = runDesktopComposeUiTest {
+        val loader = desktopLoader(dir)
+        setContent {
+            CoverImage(
+                model = TestImages.encode(20, 30),
+                contentDescription = null,
+                imageLoader = loader,
+                modifier = Modifier.width(40.dp).testTag("cover"),
+            )
+        }
+        waitUntil(timeoutMillis = 10_000) { onNodeWithTag("cover").fetchSemanticsNode().size.height > 0 }
+        onNodeWithTag("cover").getUnclippedBoundsInRoot().width shouldBe 40.dp
     }
 
     // By message along the cause chain: coroutines' stack-trace recovery may hand back wrapped copies of exceptions

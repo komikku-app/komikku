@@ -2,6 +2,7 @@ package app.komikku.desktop.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +41,9 @@ fun CoverImage(
     imageLoader: ImageLoader = SingletonImageLoader.get(LocalPlatformContext.current),
 ) {
     var unsupported by remember(model) { mutableStateOf<String?>(null) }
-    Box(modifier, contentAlignment = Alignment.Center) {
+    // Sized like a bare AsyncImage with [modifier]: the image gets the Box's constraints (min ones included), so a
+    // caller that fixes only one dimension still gets the image's own size instead of a collapsed Box
+    Box(modifier, contentAlignment = Alignment.Center, propagateMinConstraints = true) {
         AsyncImage(
             model = model,
             contentDescription = contentDescription,
@@ -49,7 +52,6 @@ fun CoverImage(
             onState = { state ->
                 unsupported = ((state as? AsyncImagePainter.State.Error)?.result?.throwable as? UnsupportedPageFormatException)?.format
             },
-            modifier = Modifier.matchParentSize(),
         )
         unsupported?.let { format ->
             val description = stringResource(KMR.strings.desktop_unsupported_image_format, format)
@@ -59,6 +61,8 @@ fun CoverImage(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
+                    // centred in the cover instead of stretched to the propagated minimum size
+                    .wrapContentSize(Alignment.Center)
                     .padding(2.dp)
                     .testTag("cover-unsupported-format")
                     .semantics { this.contentDescription = description },
