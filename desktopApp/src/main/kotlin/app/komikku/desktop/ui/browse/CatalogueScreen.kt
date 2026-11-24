@@ -147,7 +147,7 @@ import tachiyomi.core.common.i18n.stringResource as contextString
  *
  * P20: with [migrationFor] (a row header of the migration search, Android's `MigrateSourceSearchScreen`) a click on an
  * entry makes it that library entry's match in the migration list below and shows the list again (the entry itself is
- * ignored); a long press selects as usual.
+ * ignored); like Android there is no bulk selection there, a long press opens the entry's details.
  */
 class CatalogueScreen(
     private val sourceId: Long,
@@ -177,16 +177,24 @@ class CatalogueScreen(
         // P14: Komikku's bulk favourites (selection mode)
         val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkState by bulkModel.state.collectAsState()
-        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { manga ->
-            val list = migrationFor?.let { navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull() }
-            when {
-                migrationFor == null || list == null -> navigator.push(MangaDetailsScreen(manga.id))
-                manga.id == migrationFor -> Unit
-                else -> {
-                    list.addMatchOverride(current = migrationFor, target = manga.id)
-                    navigator.popUntil { it === list }
+        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { manga -> navigator.push(MangaDetailsScreen(manga.id)) }
+        // P20: Android's `MigrateSourceSearchScreen` has no bulk selection: a click picks the match, a long press opens
+        // the details
+        val migrationList = migrationFor?.let { navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull() }
+        val onClick: (Manga) -> Unit = if (migrationFor == null || migrationList == null) {
+            bulkClicks::onClick
+        } else {
+            { manga ->
+                if (manga.id != migrationFor) {
+                    migrationList.addMatchOverride(current = migrationFor, target = manga.id)
+                    navigator.popUntil { it === migrationList }
                 }
             }
+        }
+        val onLongClick: (Manga) -> Unit = if (migrationList == null) {
+            bulkClicks::onLongClick
+        } else {
+            { manga -> navigator.push(MangaDetailsScreen(manga.id)) }
         }
         // Another listing (a search, the Popular / Latest chips, applied filters or a saved search): the selected entries
         // are no longer the ones shown, so the selection ends with it
@@ -208,7 +216,9 @@ class CatalogueScreen(
                     return@BrowseScaffold
                 }
                 if (source is CatalogueSource) {
-                    BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
+                    if (migrationList == null) {
+                        BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
+                    }
                     // P13: Android's filter sheet (saved searches included) as a side panel; the badge shows that the
                     // search runs with filters other than the source's defaults
                     IconButton(
@@ -251,8 +261,8 @@ class CatalogueScreen(
                             onMode = model::setMode,
                             onSearch = model::search,
                             onLoadMore = model::loadMore,
-                            onClick = bulkClicks::onClick,
-                            onLongClick = bulkClicks::onLongClick,
+                            onClick = onClick,
+                            onLongClick = onLongClick,
                             selection = bulkState.selection,
                             onWebViewClick = onWebViewClick,
                         )

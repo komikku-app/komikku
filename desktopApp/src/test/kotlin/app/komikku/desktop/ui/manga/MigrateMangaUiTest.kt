@@ -10,11 +10,13 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.reader.TestLibrary
@@ -279,6 +281,33 @@ class MigrateMangaUiTest {
             waitUntil(timeoutMillis = 15_000) {
                 onAllNodes(hasText(MigrationSource.nameOf(NEW), substring = true) and match).fetchSemanticsNodes().isNotEmpty()
             }
+        }
+
+    @Test
+    fun `a long press in a source's own search opens the details and picks nothing`() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            val current = libraryEntry("mushishi", "Mushishi")
+            openMigrationSearch(current)
+            newSourceResult(current, "Mushishi", pick = false)
+            val newRow = hasAnyAncestor(hasTestTag("global-search-source-$NEW"))
+            onAllNodes(hasText(MigrationSource.nameOf(NEW), substring = true) and newRow)[0].performClick()
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is CatalogueScreen }
+            val result = hasText("Mushishi") and !hasSetTextAction()
+            waitUntil(timeoutMillis = 15_000) { onAllNodes(result).fetchSemanticsNodes().isNotEmpty() }
+            // Android's `MigrateSourceSearchScreen` has no bulk selection: no selection button, and a long press opens
+            // the entry's details (twice, as a second long press picked the match while bulk selecting was possible)
+            onAllNodesWithTag("bulk-select").fetchSemanticsNodes().isEmpty() shouldBe true
+            onAllNodes(result)[0].performTouchInput { longClick() }
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is MangaDetailsScreen }
+            val opened = navigator!!.lastItem as MangaDetailsScreen
+            stored(NEW, "/mushishi")?.id shouldBe opened.mangaId
+            navigator!!.pop()
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is CatalogueScreen }
+            waitUntil(timeoutMillis = 15_000) { onAllNodes(result).fetchSemanticsNodes().isNotEmpty() }
+            onAllNodes(result)[0].performTouchInput { longClick() }
+            waitUntil(timeoutMillis = 15_000) { navigator?.lastItem is MangaDetailsScreen }
+            // The list below is still there and has no match from the new source
+            navigator!!.items.any { it is MigrationListScreen } shouldBe true
         }
 
     @Test
