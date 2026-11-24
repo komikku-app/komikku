@@ -3245,6 +3245,9 @@ Verification (after `642e5b5`, `--max-workers=2 --console=plain`): `spotlessAppl
 --tests '*FeedUiTest*' --tests '*FeedItemsTest*' --tests '*CatalogueFilterUiTest*' --tests '*SettingsUiTest*' --tests
 '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'` 23 tests, 0 failures (after the settings test fix). `:app:verifyBorrowedSources`,
 `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass.
+Full `:desktopApp:test` on `2d22abc` (`./gradlew --stop` before): 68 classes, 297 tests, 0 failures (was 67 / 290 on
+`65779f3`: `FeedUiTest` 2 → 7, `FeedItemsTest` 1 new, `CatalogueFilterUiTest` 6 → 7), `DesktopBackupJobsTest` and
+`DesktopExtensionManagerTest` included and passing. Last Part A commit of the round: the docs commit recording this run.
 
 ## Remaining parity gaps
 

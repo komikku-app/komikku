@@ -12,9 +12,10 @@ P10, manga details parity (duplicates on add, edit info, cover actions), with it
 P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done
 (last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, with its review fixes, is
 done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way: saved searches in the desktop catalogue
-and their review fixes (with a filter panel) are done, the global Feed tab is built, not yet reviewed; next: its review
-(`/code-review medium 116039e^..` the last P13 docs commit) and fix round, the per-source feed, then the maintainer's
-first real run of the workflow and of the app; see "Done" and "Left to do").
+and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
+commit: the "Record the full desktop suite after the P13 Feed tab review fixes" docs commit); next: the per-source feed
+and the rest of P13, P14; then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to
+do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -310,8 +311,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   search (`CatalogueScreen(savedSearchId)`) or its latest updates, an entry the details; add (source → latest / popular /
   saved search) within Android's limit, reorder (move up / down), delete. Test `FeedUiTest` (2). Found in the full run:
   a start-up race in `DesktopExtensionManager` (fixed in `65779f3`). Full `:desktopApp:test` on `65779f3`: 67 classes,
-  290 tests, 0 failures. **Pending:**
-  `/code-review medium 116039e^..<last docs commit of the round>` (includes `65779f3`) and its fix round. Not done: the per-source feed.
+  290 tests, 0 failures. Not done: the per-source feed.
+- **P13 Feed tab review** (medium, `5ebb0da..8b6cbde`, 8 findings) — all fixed in `1cd37d0`, `1bba95e`, `642e5b5` and the
+  docs commits after them (PROGRESS.md "Review fixes (P13 Feed tab)"): rows rebuilt (source, titles) when the sources
+  change and on Refresh; a failure keeps the feed followed and shows an error state; the catalogue's pending saved-search
+  opening tracked apart from loading (superseded → the listing starts; superseded source calls end quietly); the Feed
+  tab's model created on first show, Android's "hide feed tab" / "feed tab in front" followed and offered in Settings →
+  Browse; loaded rows kept across reorders / deletes, only new rows load; the add dialog's OK needs a source. **Android
+  behaviour change** (bug fix, coordinator's decision): `isFeedFull` is `count >= MaxFeedItems`, the global feed refuses
+  the 21st row. Full `:desktopApp:test` on `2d22abc`: 68 classes, 297 tests, 0 failures.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -360,9 +368,9 @@ mark the residual path in both modules.
    pages, animated pages) and its review fixes are done (see "P11 review"; last Part A commit `0d88469`). P12 (Settings
    → Advanced, chapter cache, library extras) and its review fixes are done (last Part A commit `0f596c4`); **next** P13
    (feed and saved searches, PROGRESS "Remaining parity gaps" item 1): saved searches in the catalogue are built
-   (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`) and the global Feed tab is built;
-   **pending**: `/code-review medium 116039e^..<last P13 docs commit>` of the Feed tab with its fix round, then the
-   per-source feed; then the maintainer's
+   (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
+   review fixes are done; **next**: the per-source feed and "add to feed" from the catalogue, then P14 (browse
+   leftovers); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
