@@ -3930,6 +3930,48 @@ failures (was 76 / 352 on `8fc858f`: `BrowseMigrateUiTest` 2, `BrowseMigrateTabU
 `MigrateMangaUiTest` +1; `DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest` and
 `MangayomiSourceStoreTest` included and passing).
 
+## Review fixes (P20 / P21)
+
+Review (medium, `4ea5fda..955f27c`, 7 findings); all fixed, each with a test that failed on `955f27c` first (finding 7: the
+existing test's descending expectation changed and failed).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | In a catalogue opened from the migration search a long press started the bulk selection, a second long press then picked that entry as the match | Fixed: no bulk selection there (button hidden); a click picks, a long press opens the details (Android's `MigrateSourceSearchScreen`) | `eb44922` |
+| 2 | Sources list row keys: a category named `lastused` gave the category copy the last used copy's key (`"<id>-lastused"`), a duplicate `LazyColumn` key and a crash | Fixed in `Source.key()` (domain, KMK block): a category copy is `"<id>-category-<name>"`. Pinned sources have no copy of their own (key `"<id>"`), so no other suffix can collide | `f18368c` |
+| 3 | The obsolete-only filter kept every source without an APK extension (`isObsolete != false`), healthy Mangayomi JavaScript sources included | Fixed: kept only `isStub` or an obsolete installed extension. Labels: "Not installed" only for stubs, "Obsolete" only for an obsolete extension, so JS sources get neither; the local source is not in the list (`GetSourcesWithFavoriteCount` leaves it out) | `ad88446` |
+| 4 | The filter was computed through a plain `Injekt` lookup, not re-run when the installed extensions changed | Fixed: `remember(state.items, obsoleteOnly, installed)` on the observed extensions, also for the label; the pane takes the extensions flow as a parameter (tests) | `ad88446` |
+| 5 | The source categories' last rows were under the "Add" button | Fixed: 88 dp bottom content padding; the same pattern in the library categories screen fixed too (the migration configuration had it since P19; no other desktop screen has a floating button) | `6278d48` |
+| 6 | `MigrateSourceScreenModel` never cleared `isLoading` after a read error: endless spinner | Fixed in the model (KMK): the catch clears `isLoading` and sets `loadFailed`; `retry()` reads again. Desktop: Android's "internal error" text with a Retry action | `23e8082` |
+| 7 | `GetSourcesWithFavoriteCount`: the stub-first rule was reversed with the rest for `DESCENDING` | Fixed (KMK): the rule is applied outside the reversed comparator | `4e92853` |
+
+**Android behaviour changes** (bug fixes): a source category named `lastused` no longer crashes Android's sources tab
+(the same `"source-${source.key()}"` row keys, finding 2); not-installed sources stay first in Browse → Migrate when sorted
+descending (finding 7); after a failed read Browse → Migrate shows its empty screen instead of an endless spinner
+(finding 6; Android's screen does not use `loadFailed` / `retry()`).
+
+Not changed on Android: its obsolete filter (`MigrateSourceScreen`, `isObsolete != false`) also keeps healthy JavaScript
+sources and built-in sources without an extension other than E-Hentai's; left as it is (not part of this review; the
+same one-line change would fix it). An obsolete JavaScript source (gone from every repository, `JsSourceStatus.OBSOLETE`)
+is not "obsolete" in the desktop filter either: it has no APK extension; open.
+
+Tests: `MigrateMangaUiTest` +1 (a long press in the source's own search opens the details twice, no selection button,
+the list below kept), `SourceCategoriesUiTest` +2 (a `lastused` category next to the last used row; the last row's rename
+/ delete buttons above the "Add" button after scrolling to the end, which fails without the padding: checked by removing
+it), `BrowseMigrateUiTest` +2 (the obsolete filter with no APK extension, then an extension turning obsolete and back
+while shown; a failed read → error → Retry → the list) and its descending order changed. The library categories screen's
+padding is compile-checked only.
+
+Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the heavy runs): the new tests failed on the old
+code (7 failures in `BrowseMigrateUiTest`, `SourceCategoriesUiTest`, `MigrateMangaUiTest`, among them the expected
+`Key "source-9081-lastused" was already used` crash); after the fixes `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:app:compileDebugKotlin` pass; `:desktopApp:test --tests
+'*BrowseMigrateUiTest*' --tests '*SourceCategoriesUiTest*' --tests '*MigrateMangaUiTest*' --tests '*SourcesUiTest*' --tests
+'*SettingsUiTest*' --tests '*BulkFavoriteUiTest*'` 35 tests, 0 failures (after the FAB test was changed to scroll by
+index). Full `:desktopApp:test` on `23e8082`: 79 classes, 363 tests, 0 failures (was 79 / 358; the timing-sensitive
+`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`, `ReaderNavigationTest`, `MangayomiSourceStoreTest` included and
+passing).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:

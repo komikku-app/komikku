@@ -1,6 +1,6 @@
 # Komikku Desktop / JS Sources — Handover
 
-State as of 2026-11-24 (evening), branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
+State as of 2026-11-24 (night), branch `claude/kmp-multiplatform-support` (the I2b review and its fixes, step I3 and its
 review fixes, step I4, the repository store and UI, with its review fixes, desktop parity step P1, global search
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21): built, not reviewed; next their review), then the maintainer's first real run of
+from P15 on (settings search and app lock and their review fixes: done; notifications / tray (P17) and single-entry migration (P18) and their review fixes: done, last Part A commit `506da59`; the migration list and its configuration (P19) and its review fixes: done, last Part A commit `4ea5fda`; Browse → Migrate (P20) and SY source categories (P21) and their review fixes: done, last Part A commit: the docs commit "Record the P20 / P21 review fixes"), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -422,6 +422,15 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   Android's dialogs) and "Filter sources in categories"; the sources tab's options dialog has "Categories" (Android's
   `SourceCategoriesDialog`), the existing grouping shows them. Test `SourceCategoriesUiTest` (2). Not reviewed yet;
   review range of P20 + P21: `4ea5fda..` the docs commit "Record Browse → Migrate (P20) and source categories (P21)".
+- **P20 / P21 review** (medium, `4ea5fda..955f27c`, 7 findings) — all fixed in `eb44922`, `f18368c`, `6278d48`, `4e92853`,
+  `ad88446`, `23e8082` and the docs commit after them (PROGRESS.md "Review fixes (P20 / P21)"): no bulk selection in a
+  source's search opened from the migration search (click picks, long press opens the details); a category copy's
+  `Source.key()` is `"<id>-category-<name>"` (a `lastused` category crashed the sources list, Android too); the obsolete
+  filter keeps only stubs and obsolete extensions (no JavaScript sources) and follows the observed extensions; bottom
+  padding under the "Add" button of the source and library categories; a failed read ends the Migrate tab's loading
+  (`loadFailed`, `retry()`, desktop Retry); stubs first in both sort directions. **Three Android behaviour changes** (bug
+  fixes): no crash for a `lastused` category, stubs first when descending, no endless spinner after a read error. Open:
+  Android's obsolete filter still keeps JavaScript sources.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -476,7 +485,7 @@ mark the residual path in both modules.
    P15 (settings search) and P16 (app lock) and their review fixes are done; P17 (notifications / tray) and P18 (single-
    entry migration) and their review fixes are done (last Part A commit `506da59`); P19 (the migration list and its
    configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
-   source categories) are built; **next**: their review (`4ea5fda..`), then another item of PROGRESS "Remaining parity
+   source categories) and their review fixes are done; **next**: another item of PROGRESS "Remaining parity
    gaps"; then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
    a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
