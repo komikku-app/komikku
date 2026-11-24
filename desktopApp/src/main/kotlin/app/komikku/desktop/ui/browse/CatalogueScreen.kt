@@ -68,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.desktop.ui.migration.MigrationListScreen
 import app.komikku.desktop.webview.WebViewDialogs
 import app.komikku.desktop.webview.rememberWebViewLauncher
 import app.komikku.shared.jssource.JsSourceNotesBanner
@@ -143,6 +144,10 @@ import tachiyomi.core.common.i18n.stringResource as contextString
  * [savedSearchId] (a feed row) with that saved search, with [latest] (a feed row) with the latest updates when the
  * source has them, like Android's `BrowseSourceScreen(sourceId, listingQuery, savedSearch)`; with [openFilters] (the
  * source feed's filter button) with the filter panel open.
+ *
+ * P20: with [migrationFor] (a row header of the migration search, Android's `MigrateSourceSearchScreen`) a click on an
+ * entry makes it that library entry's match in the migration list below and shows the list again (the entry itself is
+ * ignored); a long press selects as usual.
  */
 class CatalogueScreen(
     private val sourceId: Long,
@@ -150,6 +155,7 @@ class CatalogueScreen(
     private val savedSearchId: Long? = null,
     private val latest: Boolean = false,
     private val openFilters: Boolean = false,
+    private val migrationFor: Long? = null,
 ) : Screen() {
 
     @Composable
@@ -171,7 +177,17 @@ class CatalogueScreen(
         // P14: Komikku's bulk favourites (selection mode)
         val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
         val bulkState by bulkModel.state.collectAsState()
-        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
+        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { manga ->
+            val list = migrationFor?.let { navigator.items.filterIsInstance<MigrationListScreen>().lastOrNull() }
+            when {
+                migrationFor == null || list == null -> navigator.push(MangaDetailsScreen(manga.id))
+                manga.id == migrationFor -> Unit
+                else -> {
+                    list.addMatchOverride(current = migrationFor, target = manga.id)
+                    navigator.popUntil { it === list }
+                }
+            }
+        }
         // Another listing (a search, the Popular / Latest chips, applied filters or a saved search): the selected entries
         // are no longer the ones shown, so the selection ends with it
         LaunchedEffect(model, bulkModel) {

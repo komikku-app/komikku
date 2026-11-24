@@ -52,8 +52,7 @@ import uy.kohesive.injekt.api.get
  * list ([MigrationListScreen]: its "search manually", or at once for one entry): the entry's title searched in the
  * migration sources like the global search (the current source's row marked "▶", the entry itself left out); a pick
  * becomes that entry's match in the list and the list is shown again, like Android. A row header opens that source's
- * catalogue with the query (Android: its own source search screen for the migration). Not built: the pick from a
- * source's own search.
+ * catalogue with the query (Android's `MigrateSourceSearchScreen`), where a pick is the entry's match as well (P20).
  *
  * Review fix (P19): the screen is only reached from the list, so Android's own "what to include" dialog for a pick
  * without a list is gone; when none of the migration sources is installed any more, the search says so and offers the
@@ -111,7 +110,8 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
             GlobalSearchContent(
                 state = shown,
                 getManga = { model.getManga(it) },
-                onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery)) },
+                // P20, Android's `MigrateSourceSearchScreen`: the source's own search, whose pick is the match too
+                onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery, migrationFor = mangaId)) },
                 onClickItem = { target ->
                     if (target.id == mangaId) return@GlobalSearchContent
                     // P19, like Android: the pick becomes the entry's match in the migration list below
