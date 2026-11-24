@@ -3601,13 +3601,73 @@ Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessChec
 tests, then `--tests '*SettingsUiTest*' --tests '*SettingsSearchUiTest*' --tests '*AppLockUiTest*' --tests
 '*DesktopShellTest*' --tests '*LibraryUpdateRunnerTest*' --tests '*DesktopInjektTest*'` 29 tests, 0 failures.
 
+## P18 — source migration (single entry)
+
+Built in `c8d5248` (borrowing), `53b00ae` (desktop), `550f9fa` (tests) and this docs commit.
+
+### Built
+
+- **Android's logic borrowed, not rewritten** (`desktopCopy`, Android unchanged): Mihon's / Komikku's
+  `MigrateMangaUseCase` (refresh the target from its source, then by `MigrationFlag`: chapters' read state, bookmarks,
+  last page and fetch dates by recognised chapter number plus "read up to the last read chapter" for chapters only the
+  target has and SY's history; categories; tracks, with `EnhancedTracker.migrateTrack`; custom cover; notes; delete the
+  old downloads; KMK's extras = chapter / viewer flags; Copy keeps the old entry, Migrate takes it out of the library and
+  keeps its date added), the flags' labels (`mihon/feature/common/utils/MigrationFlag.kt`) and the "what to include"
+  dialog with its screen model (`MigrateMangaDialog.kt`: the applicable flags — custom cover only when there is one, notes
+  only when set, downloads only when there are some — preselected from `migrationFlags()`, "Show entry", Copy, Migrate).
+  The dialog's composable is now public (KMK marker; was `internal`, which the desktop module cannot call). The use case
+  is in the desktop DI with the same dependencies as Android's `DomainModule`.
+- **Desktop:** "Migrate" in the details' top bar for library entries (`details-migrate`, Android's `onMigrateClicked`)
+  opens `MigrateSearchScreen(mangaId)` (`ui/manga/MigrateSearchScreen.kt`): Android's `MigrateSearchScreenModel` rules on
+  the borrowed `SearchScreenModel` (the entry's title as query, the migration sources in their order, the pinned / all
+  and "has results" chips) with the global search's toolbar and rows (made `internal` for it), the current source's row
+  marked "▶" like Android; a result opens the borrowed dialog (`SearchScreenModel.setMigrateDialog`); a long press opens
+  the result's details; a row header opens that source's catalogue with the query. After Copy / Migrate the target's
+  details replace the search (Android's `navigator.replace(MangaScreen(target))`).
+
+### Decisions / deviations
+
+- Without migration sources (`migrationSources()`, filled by Android's migration configuration screen, which the desktop
+  does not have yet) the search uses the global search's sources (enabled languages, not disabled, pinned first); with
+  them, Android's list and order.
+- Android opens the configuration screen and the migration list from the details (Komikku's `MigrationConfigScreen`);
+  the desktop goes straight to the manual search (Android's `MigrateSearchScreen`, which the list offers per entry).
+- A row header opens the desktop catalogue with the query (Android: `MigrateSourceSearchScreen`, a source search whose
+  results migrate on click); picking a result there opens its details, not the migration dialog.
+
+### Not built
+
+The migration list (several entries from the library selection, automatic matching with `SmartSourceSearchEngine`,
+"migrate / copy all", per-entry manual search, hide unmatched / without updates, deep search), its configuration screen
+(sources and their order, flags), migration from the duplicate dialog (P10) and from bulk favourites, merged sources
+(SY). Not started for lack of time: the list's screen model and search engine look borrowable (`desktopCopy`), its UI and
+the configuration screen need desktop counterparts.
+
+### Tests
+
+`MigrateMangaUiTest` (3, two fake sources): from the details, the migration search shows the other source's result with
+the current source's row marked, the dialog's Migrate moves read state by chapter number (chapters 1 and 2 read, 3
+unread), the category and the note, takes the old entry out of the library and shows the new one's details; Copy keeps
+the old entry in the library; an entry outside the library has no "Migrate". Tracks, custom cover and downloads are the
+borrowed use case's (no desktop test).
+
+Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests '*MigrateMangaUiTest*'` 3 tests, 0
+failures. Full `:desktopApp:test` on `550f9fa` (code of P17 and P18, `./gradlew --stop` before; run on the same commits
+before they were rebased onto the iOS CI commits `5efbba2` … `bd18e95` pushed meanwhile, which change only iOS sources,
+CI and `source-js`'s iOS setup; `:desktopApp:compileKotlin` and `spotlessCheck` were run again after the rebase): 75
+classes, 338 tests, 0 failures (was 73 / 330 on `39b70ae`: `DesktopNotificationsTest` 5, `MigrateMangaUiTest` 3 new; `DesktopBackupJobsTest`,
+`DesktopExtensionManagerTest` and `ReaderNavigationTest` included and passing). Review range of P17 + P18: `56d2012..` the
+docs commit "Record the desktop single-entry migration (P18)".
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
 1. **Browse:** the global Feed tab, the per-source feed, saved searches in the catalogue, the filter panel and adding a
    saved search to a source's feed are done (P13; left from them: the source feed's incognito toggle, SY's MangaDex
-   random / follows entries), migration (out of scope so far). Global search, source / language
+   random / follows entries). Migration of one entry from its details is done (P18); left: the migration list and its
+   configuration screen, migrating from the duplicate dialog. Global search, source / language
    toggles and pins are done (P1); bulk favourites from global search and the catalogue, "search globally" from the
    library search and the extension name in global search rows are done (P14, bulk favourites in the feeds too); left:
    SY source categories and data-saver exclusion.
