@@ -3091,8 +3091,8 @@ badge's icon appearing, the clear-database progress), a real start-up failure wr
 
 ## P13 — feed and saved searches
 
-Item 1 of the round (saved searches in the desktop catalogue) is done; the Feed tab and the per-source feed are **not
-started**.
+Item 1 of the round (saved searches in the desktop catalogue) is done, with its review fixes (a filter panel); the global
+Feed tab is done ("Feed tab (P13 continued)" below); the per-source feed is **not started**.
 
 **What Android does:** SY's browse screen lists the source's saved searches (`saved_search` table) in the filter sheet,
 sorted by name; tapping one reloads it (`GetExhSavedSearch`: query + filter JSON deserialised onto a fresh
@@ -3152,11 +3152,64 @@ Verification (after `145f3c9`, `--max-workers=2 --console=plain`): `spotlessAppl
 Full `:desktopApp:test` before the fixes (on `4337c40`): 65 classes, 282 tests, 0 failures; after them (on `80834b4`):
 66 classes, 288 tests, 0 failures (`CatalogueFilterUiTest` 6 new).
 
+### Feed tab (P13 continued)
+
+Built in `116039e` (Android refactor), `b1b8c0a` (desktop), `71af70c` (tests) and the docs commits after them. **Not
+reviewed yet.**
+
+**Shared with Android (behaviour unchanged):** the platform-neutral part of `FeedScreenModel` moved into the new KMK file
+`eu/kanade/tachiyomi/ui/browse/feed/FeedItems.kt` (`desktopCopy`, it uses the Android-only `LocaleHelper`): `MaxFeedItems`
+(20) and `isFeedFull` (Android's `count > MaxFeedItems`, so a 21st row can still be added, as on Android), the sources a
+row can be added for (`feedSourceOptions`: enabled languages, not disabled, pinned first), the rows' saved searches
+(`pairFeedWithSavedSearches`), a row's title / subtitle (`feedItemTitles`), a row's first page (`fetchFeedPage`: the saved
+search's sanitised query and filters, else latest, popular when the source has no latest) and the saved search's filters
+(`feedFilterList`). `FeedScreenModel` calls them. `FeedAddSearchDialog` / `RadioSelectorSearchable<T>` moved out of
+`FeedScreen.kt` into `FeedAddSearchDialog.kt` and `SourceFeedDeleteDialog` out of `SourceFeedDialogs.kt` into
+`SourceFeedDeleteDialog.kt` (both `shared`; the dialog's context `stringResource` import is aliased, the plain name is
+ambiguous on desktop). `FeedItemUI` stays in `FeedScreen.kt` (moving it to another module breaks Android's smart casts on
+its properties).
+
+**Desktop:** a Feed tab in Browse (Sources, Feed, Extensions, JS sources), `FeedPane` / `FeedPaneModel` on the same
+`feed_saved_search` rows and interactors (`GetFeedSavedSearchGlobal`, `GetSavedSearchGlobalFeed`,
+`CountFeedSavedSearchGlobal`, `InsertFeedSavedSearch`, `DeleteFeedSavedSearchById`, `ReorderFeed`, already in the shared
+DI), so backups carry them (`FeedBackupCreator`). Rows: Android's `GlobalSearchResultItem` (title, subtitle), loading,
+error (`GlobalSearchErrorResultItem` with the source's message) and the desktop cover strip (`GlobalSearchCardRow`, now
+`internal`; "No results found" when empty). Loads: as Android, the whole list again on each change of the feed rows and on
+Refresh, one row's source call at a time (`Dispatchers.IO.limitedParallelism(1)`), "hide entries in library" honoured; the
+previous round of loads is cancelled when a new one starts. A row's header opens the catalogue: a saved search row with
+that saved search (new `CatalogueScreen(savedSearchId = …)`: query and filters applied like Android's `BrowseSourceScreen(
+savedSearch = …)`, the defaults when its filters no longer load, popular when it is gone), a latest / popular row on the
+latest updates (`latest = true`, popular for a source without latest); an entry opens the details. Managing: Add (refused
+with Android's "Too many sources in your feed" over the limit) → a source picker (Android's `FeedAddDialog` without the
+extension icons, `SourceIcon` is Android-only; searchable by name or id) → Android's `FeedAddSearchDialog` (Latest /
+Popular or one of the source's saved searches); Sort feeds → an order list with move up / down (instead of dragging) and
+delete → Android's delete confirmation; a long press on a row header asks to delete it too.
+
+**Decisions / deviations:** Android has no separate "popular" row for a source with latest (the null row is latest, or
+popular without latest) — the same on desktop. A failing row shows its error (Android catches `Exception` and shows "No
+results found"; the desktop also catches errors from extension code). A row of a source that is not installed shows "No
+results found" like Android. No bulk favourites (Android's selection mode on feed entries), no refresh on returning to the
+tab (Refresh button instead of pull-to-refresh). Not done: the per-source feed (`SourceFeedScreen`, the source landing
+page; item 3 of the round, left for time), adding a saved search to the feed from the catalogue.
+
+Tests: `FeedUiTest` (2, fake catalogue sources): latest / popular / saved-search / failing rows with their titles, an entry
+opens the details, a saved search row opens the catalogue with its query, a latest row opens it on the latest updates;
+add (source B → Popular, source A → its saved search, stored in order), move up (`ReorderFeed`, stored), delete with
+Android's dialog, and over the limit the add is refused with Android's message. Found while writing it: a feed row is
+unique per source, saved search and scope (the repository returns the existing row), so the limit is reached with
+distinct saved searches.
+
+Verification (after `71af70c`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
+'*FeedUiTest*' --tests '*CatalogueFilterUiTest*' --tests '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'`
+pass; the full suite: see "Verification of the Feed tab" below.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
 
-1. **Browse:** source feeds (saved searches in the catalogue and the filter panel are done, P13), migration (out of scope so far). Global search, source / language
+1. **Browse:** the per-source feed (the global Feed tab, saved searches in the catalogue and the filter panel are done,
+   P13; left from them: bulk favourites from feed entries, adding a saved search to the feed from the catalogue), migration (out of scope so far). Global search, source / language
    toggles and pins are done (P1); left from them: bulk favourites from global search, "search globally" from the
    library search, SY source categories and data-saver exclusion, the extension-name suffix in global search rows.
    SY delegated sources (Pururin, MangaDex, 8Muses, NHentai, LANraragi) are done (P4); left from them: batch add / URL
