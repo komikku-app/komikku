@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import tachiyomi.core.common.desktop.DesktopDirs
 import tachiyomi.core.common.util.system.DesktopLogcatLogger
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.source.service.SourceManager
@@ -53,9 +54,13 @@ import java.awt.Dimension
  */
 fun main() {
     DesktopLogcatLogger.install()
-    val app = DesktopInjekt.init()
-    // P12: the log file Settings → Advanced opens, at SY's log level (applied at once when it changes)
-    DesktopLogFile.install(DesktopLogFile.directoryFor(app.dataDir))
+    // P12: the log file Settings → Advanced opens and the crash handler writing to it, installed before anything else
+    // can fail (P12 review): the data folder is resolved without Injekt, so a failure inside `DesktopInjekt.init()`
+    // reaches the uncaught-exception handler and ends up in the file
+    val dataDir = DesktopDirs.dataDir
+    DesktopLogFile.install(DesktopLogFile.directoryFor(dataDir))
+    val app = DesktopInjekt.init(dataDir)
+    // SY's log level, once the preferences are there (applied at once when it changes)
     val startScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     Injekt.get<ExhPreferences>().logLevel(BuildConfig.DEBUG).changes()
         .onEach(DesktopLogFile::applyLevel)

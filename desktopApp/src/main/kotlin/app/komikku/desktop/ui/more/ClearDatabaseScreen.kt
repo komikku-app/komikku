@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -43,12 +44,16 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogE
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.toLong
-import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.data.Database
 import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
 import tachiyomi.domain.source.model.SourceWithCount
@@ -101,7 +106,7 @@ class ClearDatabaseScreen : Screen() {
                     }
                     Button(
                         onClick = model::showConfirmation,
-                        enabled = ready.selection.isNotEmpty(),
+                        enabled = ready.selection.isNotEmpty() && !ready.isClearing,
                         modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("clear-database-delete"),
                     ) {
                         Text(stringResource(MR.strings.action_delete))
@@ -110,11 +115,11 @@ class ClearDatabaseScreen : Screen() {
             }
         }
 
-        if (ready?.showConfirmation == true) {
+        if (ready != null && ready.showConfirmation) {
             var keepReadManga by remember { mutableStateOf(true) }
             val completed = stringResource(MR.strings.clear_database_completed)
             AlertDialog(
-                onDismissRequest = model::hideConfirmation,
+                onDismissRequest = { if (!ready.isClearing) model.hideConfirmation() },
                 title = { Text(stringResource(MR.strings.are_you_sure)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -122,6 +127,7 @@ class ClearDatabaseScreen : Screen() {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(MR.strings.clear_db_exclude_read), modifier = Modifier.weight(1f))
                             Switch(
+                                enabled = !ready.isClearing,
                                 checked = keepReadManga,
                                 onCheckedChange = { keepReadManga = it },
                                 modifier = Modifier.testTag("clear-database-keep-read"),
@@ -140,19 +146,34 @@ class ClearDatabaseScreen : Screen() {
                     TextButton(
                         onClick = {
                             scope.launch {
-                                model.removeMangaBySourceId(keepReadManga)
-                                model.clearSelection()
-                                model.hideConfirmation()
-                                context.toast(completed)
+                                try {
+                                    if (!model.removeMangaBySourceId(keepReadManga)) return@launch
+                                    model.clearSelection()
+                                    model.hideConfirmation()
+                                    context.toast(completed)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Throwable) {
+                                    xLogE("Could not clear the database", e)
+                                    model.hideConfirmation()
+                                    e.message?.let { context.toast(it) } ?: context.toast(MR.strings.unknown_error)
+                                }
                             }
                         },
+                        enabled = !ready.isClearing,
                         modifier = Modifier.testTag("clear-database-confirm"),
                     ) {
-                        Text(stringResource(MR.strings.action_ok))
+                        if (ready.isClearing) {
+                            CircularProgressIndicator(Modifier.size(20.dp).testTag("clear-database-progress"), strokeWidth = 2.dp)
+                        } else {
+                            Text(stringResource(MR.strings.action_ok))
+                        }
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = model::hideConfirmation) { Text(stringResource(MR.strings.action_cancel)) }
+                    TextButton(onClick = model::hideConfirmation, enabled = !ready.isClearing) {
+                        Text(stringResource(MR.strings.action_cancel))
+                    }
                 },
             )
         }
@@ -199,10 +220,28 @@ class ClearDatabaseScreenModel(
         }
     }
 
-    suspend fun removeMangaBySourceId(keepReadManga: Boolean) = withNonCancellableContext {
-        val state = state.value as? State.Ready ?: return@withNonCancellableContext
-        database.mangasQueries.deleteNonLibraryManga(state.selection, keepReadManga.toLong())
-        database.historyQueries.removeResettedHistory()
+    /**
+     * Deletes the selected sources' entries outside the library on the IO dispatcher, not cancellable once started
+     * (Android: `withNonCancellableContext`), with [State.Ready.isClearing] set meanwhile. Returns `false` when nothing
+     * was started (not ready, or already clearing).
+     */
+    suspend fun removeMangaBySourceId(keepReadManga: Boolean): Boolean {
+        var selection: List<Long>? = null
+        mutableState.update { state ->
+            if (state !is State.Ready || state.isClearing) return@update state
+            selection = state.selection
+            state.copy(isClearing = true)
+        }
+        val sources = selection ?: return false
+        try {
+            withContext(NonCancellable + Dispatchers.IO) {
+                database.mangasQueries.deleteNonLibraryManga(sources, keepReadManga.toLong())
+                database.historyQueries.removeResettedHistory()
+            }
+        } finally {
+            mutableState.update { state -> if (state is State.Ready) state.copy(isClearing = false) else state }
+        }
+        return true
     }
 
     fun toggleSelection(sourceId: Long) = mutableState.update { state ->
@@ -242,6 +281,8 @@ class ClearDatabaseScreenModel(
             val items: List<SourceWithCount>,
             val selection: List<Long> = emptyList(),
             val showConfirmation: Boolean = false,
+            /** The delete runs (P12 review): the buttons are disabled and a progress indicator shown. */
+            val isClearing: Boolean = false,
         ) : State
     }
 }

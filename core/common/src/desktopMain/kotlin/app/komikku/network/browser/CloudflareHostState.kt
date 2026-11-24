@@ -1,6 +1,9 @@
 package app.komikku.network.browser
 
 import eu.kanade.tachiyomi.network.interceptor.CloudflareBypassException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
@@ -36,8 +39,12 @@ class CloudflareHostState(
 
     private val failures = ConcurrentHashMap<String, Failure>()
 
-    @Volatile
-    private var overrides: Map<String, UserAgentOverride> = store.load()
+    private val overridesState = MutableStateFlow(store.load())
+
+    private val overrides: Map<String, UserAgentOverride> get() = overridesState.value
+
+    /** Every stored override by host as it changes (P12 review: the settings list follows solves made meanwhile). */
+    val userAgentOverridesFlow: StateFlow<Map<String, UserAgentOverride>> = overridesState.asStateFlow()
 
     /**
      * The failure of [host]'s last solve when it is younger than [failureMemory] and the jar still holds the clearance
@@ -112,9 +119,10 @@ class CloudflareHostState(
 
     private fun update(change: (Map<String, UserAgentOverride>) -> Map<String, UserAgentOverride>) {
         synchronized(this) {
-            overrides = change(overrides)
+            val changed = change(overrides)
+            overridesState.value = changed
             try {
-                store.save(overrides)
+                store.save(changed)
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e) { "Could not store the Cloudflare User-Agent overrides" }
             }

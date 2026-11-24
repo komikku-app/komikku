@@ -125,9 +125,20 @@ class AdvancedSettingsUiTest {
         clickInAdvanced(MR.strings.pref_reset_user_agent_string.localized())
         waitUntil(timeoutMillis = 5_000) { userAgent.get() == userAgent.defaultValue() }
 
-        // Per-site user agents: listed, one removed, then all
+        // Per-site user agents: listed, one stored while the screen is shown appears (P12 review), one removed, then all
         onNodeWithTag("settings-Advanced").performScrollToNode(hasTestTag("site-user-agent-remove-one.example"))
         waitForText("Agent One")
+        hosts.setUserAgent("three.example", "Agent Three", clearance = null)
+        waitUntil(timeoutMillis = 5_000) {
+            try {
+                onNodeWithTag("settings-Advanced").performScrollToNode(hasTestTag("site-user-agent-remove-three.example"))
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        onNodeWithTag("site-user-agent-remove-three.example").performClick()
+        waitUntil(timeoutMillis = 5_000) { "three.example" !in hosts.userAgentOverrides() }
         onNodeWithTag("site-user-agent-remove-one.example").performClick()
         waitUntil(timeoutMillis = 5_000) { hosts.userAgentOverrides().keys == setOf("two.example") }
         waitForText("Agent One", present = false)

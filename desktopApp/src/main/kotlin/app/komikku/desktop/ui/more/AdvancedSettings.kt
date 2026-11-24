@@ -5,10 +5,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -126,9 +125,10 @@ private fun networkGroup(): Preference.PreferenceGroup {
     val networkPreferences = remember { Injekt.get<NetworkPreferences>() }
     val userAgentPref = remember { networkPreferences.defaultUserAgent() }
     val userAgent by userAgentPref.collectAsState()
-    // The overrides are no flow: re-read them after each change made here
-    var overridesVersion by remember { mutableIntStateOf(0) }
-    val overrides = remember(overridesVersion) { CloudflareHosts.state.userAgentOverrides().toSortedMap() }
+    // Collected: overrides stored by a solve or an "Open in WebView" save while the screen is shown appear (P12 review)
+    val hosts = remember { CloudflareHosts.state }
+    val storedOverrides by hosts.userAgentOverridesFlow.collectAsState()
+    val overrides = remember(storedOverrides) { storedOverrides.toSortedMap() }
     val removeLabel = stringResource(MR.strings.action_remove)
     val items = buildList {
         add(
@@ -213,8 +213,7 @@ private fun networkGroup(): Preference.PreferenceGroup {
                     widget = {
                         IconButton(
                             onClick = {
-                                CloudflareHosts.state.removeUserAgent(host)
-                                overridesVersion++
+                                hosts.removeUserAgent(host)
                             },
                             modifier = Modifier.testTag("site-user-agent-remove-$host"),
                         ) {
@@ -229,8 +228,7 @@ private fun networkGroup(): Preference.PreferenceGroup {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(KMR.strings.desktop_clear_site_user_agents),
                     onClick = {
-                        CloudflareHosts.state.clearUserAgents()
-                        overridesVersion++
+                        hosts.clearUserAgents()
                         context.toast(KMR.strings.desktop_site_user_agents_cleared)
                     },
                 ),
