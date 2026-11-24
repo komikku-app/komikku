@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.browse.GlobalSearchScreen
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.more.CategoriesScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
@@ -245,6 +246,14 @@ private fun LibraryPages(
                         )
                     }
                 }
+            }
+            // P14: Android's "Search globally" for the library search's query (its first grid item while searching)
+            if (state.query.isNotEmpty()) {
+                val navigator = LocalNavigator.currentOrThrow
+                TextButton(
+                    onClick = { navigator.push(GlobalSearchScreen(state.query)) },
+                    modifier = Modifier.padding(horizontal = 8.dp).testTag("library-global-search"),
+                ) { Text(stringResource(MR.strings.action_global_search_query, state.query)) }
             }
             val page = pages[index]
             if (page.items.isEmpty()) {

@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.PushPin
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
+import app.komikku.desktop.ui.tabs.SourceIcons
 import app.komikku.shared.jssource.JsSourceLabel
 import app.komikku.sourcejs.mihon.MangayomiJsSource
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -55,7 +57,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
@@ -76,8 +80,11 @@ import uy.kohesive.injekt.api.get
  * or error; the row header opens that source's own search with the query, a result opens the manga details.
  * JavaScript sources take part like any other source (they are in the source manager).
  *
- * Not on desktop (yet): bulk favourite selection and the single-result shortcut of the extension filter (Android opens
- * the only match of a deep link directly).
+ * P14: Komikku's bulk favourites (selection mode, `BulkFavorite.kt`) and the extension's name after a source's name when
+ * they differ (Android's row title).
+ *
+ * Not on desktop (yet): the single-result shortcut of the extension filter (Android opens the only match of a deep link
+ * directly).
  */
 class GlobalSearchScreen(private val searchQuery: String = "") : Screen() {
 
@@ -97,27 +104,68 @@ class GlobalSearchScreen(private val searchQuery: String = "") : Screen() {
         // query and filter it has already searched, so this does not search twice.
         LaunchedEffect(state.sourceFilter) { model.search() }
         val hasPinnedSources = remember(state.sourceFilter) { model.hasPinnedSources() }
+        val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkState by bulkModel.state.collectAsState()
+        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
+        val extensions by remember { SourceIcons.installedExtensions() }.collectAsState()
         Column(modifier = Modifier.fillMaxSize()) {
-            GlobalSearchToolbar(
-                state = state,
-                hasPinnedSources = hasPinnedSources,
-                onBack = navigator::pop,
-                onChangeSearchQuery = model::updateSearchQuery,
-                onSearch = model::search,
-                onChangeSearchFilter = model::setSourceFilter,
-                onToggleResults = model::toggleFilterResults,
-            )
+            if (bulkState.selectionMode) {
+                // Android's BulkSelectionToolbar in place of the search toolbar
+                val results = { state.filteredItems.values.filterIsInstance<SearchItemResult.Success>().flatMap { it.result } }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp).testTag("bulk-toolbar"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { bulkModel.toggleSelectionMode(false) }) {
+                        Icon(Icons.Outlined.Close, contentDescription = stringResource(MR.strings.action_cancel))
+                    }
+                    Text("${bulkState.selection.size}", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                    BulkSelectionActions(
+                        state = bulkState,
+                        onSelectAll = { results().forEach(bulkModel::select) },
+                        onReverseSelection = { bulkModel.reverseSelection(results()) },
+                        onAddToLibrary = { bulkModel.addFavorite() },
+                    )
+                }
+                HorizontalDivider()
+            } else {
+                GlobalSearchToolbar(
+                    state = state,
+                    hasPinnedSources = hasPinnedSources,
+                    onBack = navigator::pop,
+                    onChangeSearchQuery = model::updateSearchQuery,
+                    onSearch = model::search,
+                    onChangeSearchFilter = model::setSourceFilter,
+                    onToggleResults = model::toggleFilterResults,
+                    bulkSelectionButton = {
+                        BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
+                    },
+                )
+            }
             GlobalSearchContent(
                 state = state,
                 getManga = { model.getManga(it) },
                 onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery)) },
-                onClickItem = { navigator.push(MangaDetailsScreen(it.id)) },
+                onClickItem = bulkClicks::onClick,
+                onLongClickItem = bulkClicks::onLongClick,
+                selection = bulkState.selection,
+                rowTitle = { globalSearchRowTitle(it, extensions) },
             )
         }
+        BulkFavoriteDialogs(bulkModel, bulkState.dialog)
     }
 }
 
-/** Android's `GlobalSearchToolbar` (search field, progress, pinned / all and "has results" chips) without bulk selection. */
+/**
+ * The title of a source's row, Android's (KMK): the source's name, followed by its extension's name when that differs
+ * (e.g. a multi-source extension).
+ */
+internal fun globalSearchRowTitle(source: Source, extensions: List<Extension.Installed>): String {
+    val extension = extensions.find { extension -> extension.sources.any { it.id == source.id } }
+    return source.name + (extension?.let { " (${it.name})".takeIf { _ -> it.name != source.name } } ?: "")
+}
+
+/** Android's `GlobalSearchToolbar` (search field, progress, pinned / all and "has results" chips, bulk selection). */
 @Composable
 private fun GlobalSearchToolbar(
     state: SearchScreenModel.State,
@@ -127,6 +175,7 @@ private fun GlobalSearchToolbar(
     onSearch: () -> Unit,
     onChangeSearchFilter: (SourceFilter) -> Unit,
     onToggleResults: () -> Unit,
+    bulkSelectionButton: @Composable () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Box {
@@ -152,6 +201,7 @@ private fun GlobalSearchToolbar(
                     },
                     modifier = Modifier.weight(1f).testTag("global-search-query"),
                 )
+                bulkSelectionButton()
             }
             if (state.progress in 1..<state.total) {
                 LinearProgressIndicator(
@@ -198,12 +248,15 @@ private fun GlobalSearchContent(
     getManga: @Composable (Manga) -> androidx.compose.runtime.State<Manga>,
     onClickSource: (Source) -> Unit,
     onClickItem: (Manga) -> Unit,
+    onLongClickItem: (Manga) -> Unit,
+    selection: List<Manga>,
+    rowTitle: (Source) -> String,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize().testTag("global-search-results")) {
         state.filteredItems.forEach { (source, result) ->
             item(key = "global-search-${source.id}") {
                 GlobalSearchResultItem(
-                    title = source.name,
+                    title = rowTitle(source),
                     subtitle = LocaleHelper.getLocalizedDisplayName(source.lang),
                     onClick = { onClickSource(source) },
                     modifier = Modifier.testTag("global-search-source-${source.id}"),
@@ -213,7 +266,8 @@ private fun GlobalSearchContent(
                     }
                     when (result) {
                         SearchItemResult.Loading -> GlobalSearchLoadingResultItem()
-                        is SearchItemResult.Success -> GlobalSearchCardRow(result.result, getManga, onClickItem)
+                        is SearchItemResult.Success ->
+                            GlobalSearchCardRow(result.result, getManga, onClickItem, selection = selection, onLongClick = onLongClickItem)
                         is SearchItemResult.Error -> GlobalSearchErrorResultItem(message = result.throwable.message)
                     }
                 }
@@ -228,6 +282,8 @@ internal fun GlobalSearchCardRow(
     titles: List<Manga>,
     getManga: @Composable (Manga) -> androidx.compose.runtime.State<Manga>,
     onClick: (Manga) -> Unit,
+    selection: List<Manga> = emptyList(),
+    onLongClick: ((Manga) -> Unit)? = null,
 ) {
     if (titles.isEmpty()) {
         Text(
@@ -244,7 +300,12 @@ internal fun GlobalSearchCardRow(
             val title by getManga(it)
             Column(modifier = Modifier.width(120.dp)) {
                 Box(modifier = Modifier.alpha(if (title.favorite) FAVORITE_COVER_ALPHA else 1f)) {
-                    CoverItem(manga = title, onClick = { onClick(title) })
+                    CoverItem(
+                        manga = title,
+                        onClick = { onClick(title) },
+                        selected = selection.any { it.id == title.id },
+                        onLongClick = onLongClick?.let { { it(title) } },
+                    )
                 }
                 if (title.favorite) {
                     Text(

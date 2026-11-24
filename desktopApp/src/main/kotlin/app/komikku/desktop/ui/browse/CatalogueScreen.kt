@@ -1,6 +1,7 @@
 package app.komikku.desktop.ui.browse
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material.icons.outlined.FilterList
@@ -88,6 +90,7 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.isFeedFull
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterItem
 import eu.kanade.tachiyomi.util.system.toast
@@ -163,11 +166,26 @@ class CatalogueScreen(
         val onSourceError: (String) -> Unit = { context.toast(context.contextString(KMR.strings.desktop_source_error, it)) }
         // Back from the source's settings: its filters may have changed (a JavaScript source's follow its preferences)
         LaunchedEffect(model) { model.onResumed() }
+        // P14: Komikku's bulk favourites (selection mode)
+        val bulkModel = rememberScreenModel { BulkFavoriteScreenModel() }
+        val bulkState by bulkModel.state.collectAsState()
+        val bulkClicks = BulkClicks(bulkModel, bulkState.selectionMode) { navigator.push(MangaDetailsScreen(it.id)) }
         BrowseScaffold(
-            title = source?.name.orEmpty(),
-            onBack = navigator::pop,
+            title = if (bulkState.selectionMode) "${bulkState.selection.size}" else source?.name.orEmpty(),
+            // While selecting, "back" ends the selection (Android's action mode)
+            onBack = { if (bulkState.selectionMode) bulkModel.toggleSelectionMode(false) else navigator.pop() },
             actions = {
+                if (bulkState.selectionMode) {
+                    BulkSelectionActions(
+                        state = bulkState,
+                        onSelectAll = { state.manga.forEach(bulkModel::select) },
+                        onReverseSelection = { bulkModel.reverseSelection(state.manga) },
+                        onAddToLibrary = { bulkModel.addFavorite() },
+                    )
+                    return@BrowseScaffold
+                }
                 if (source is CatalogueSource) {
+                    BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
                     // P13: Android's filter sheet (saved searches included) as a side panel; the badge shows that the
                     // search runs with filters other than the source's defaults
                     IconButton(
@@ -210,7 +228,9 @@ class CatalogueScreen(
                             onMode = model::setMode,
                             onSearch = model::search,
                             onLoadMore = model::loadMore,
-                            onClick = { navigator.push(MangaDetailsScreen(it.id)) },
+                            onClick = bulkClicks::onClick,
+                            onLongClick = bulkClicks::onLongClick,
+                            selection = bulkState.selection,
                             onWebViewClick = onWebViewClick,
                         )
                     }
@@ -237,6 +257,7 @@ class CatalogueScreen(
             }
         }
         WebViewDialogs(webView)
+        BulkFavoriteDialogs(bulkModel, bulkState.dialog)
         // P13: Android's saved search dialogs (BrowseSourceDialogs), a duplicate or blank name is rejected there
         if (savingSearch) {
             SavedSearchCreateDialog(
@@ -803,6 +824,8 @@ private fun CatalogueContent(
     onSearch: (String) -> Unit,
     onLoadMore: () -> Unit,
     onClick: (Manga) -> Unit,
+    onLongClick: (Manga) -> Unit,
+    selection: List<Manga>,
     onWebViewClick: (() -> Unit)?,
 ) {
     // The field keeps what the user typed (also across a visit to the details); it takes the query only when the
@@ -870,7 +893,12 @@ private fun CatalogueContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(state.manga, key = { it.id }) { manga ->
-                    CoverItem(manga = manga, onClick = { onClick(manga) })
+                    CoverItem(
+                        manga = manga,
+                        onClick = { onClick(manga) },
+                        selected = selection.any { it.id == manga.id },
+                        onLongClick = { onLongClick(manga) },
+                    )
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -886,15 +914,32 @@ private fun CatalogueContent(
     }
 }
 
+/** A cover with its title; [selected] (P14 bulk selection) marks it like Android's selected items. */
 @Composable
-internal fun CoverItem(manga: Manga, onClick: () -> Unit) {
-    Column(modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onClick)) {
-        CoverImage(
-            model = manga.asMangaCover(),
-            contentDescription = manga.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(RoundedCornerShape(8.dp)),
-        )
+internal fun CoverItem(manga: Manga, onClick: () -> Unit, selected: Boolean = false, onLongClick: (() -> Unit)? = null) {
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .then(if (selected) Modifier.background(MaterialTheme.colorScheme.secondaryContainer) else Modifier)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .then(if (selected) Modifier.testTag("cover-selected-${manga.id}") else Modifier),
+    ) {
+        Box {
+            CoverImage(
+                model = manga.asMangaCover(),
+                contentDescription = manga.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(RoundedCornerShape(8.dp)),
+            )
+            if (selected) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp),
+                )
+            }
+        }
         Text(
             text = manga.title,
             style = MaterialTheme.typography.bodyMedium,

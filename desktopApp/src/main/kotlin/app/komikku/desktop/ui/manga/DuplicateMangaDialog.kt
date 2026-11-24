@@ -3,6 +3,7 @@ package app.komikku.desktop.ui.manga
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
@@ -39,6 +41,9 @@ import uy.kohesive.injekt.api.get
  * Android a click migrates and a long press opens; migration is not on desktop). Android's composable is not borrowed:
  * it is built on the Android cover component (drawable resources), its adaptive sheet and the preference widgets'
  * sizing; the detection itself is the shared `GetDuplicateLibraryManga`.
+ *
+ * P14: for bulk favourites (several selected entries, Android's `bulkFavoriteManga` mode) also "Allow all" / "Skip all"
+ * / "Skip it" ([onAllowAllDuplicate], [onSkipAllDuplicate], [onSkipDuplicate]; each closes the dialog first).
  */
 @Composable
 internal fun DuplicateMangaDialog(
@@ -47,6 +52,9 @@ internal fun DuplicateMangaDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
     onOpenManga: (Manga) -> Unit,
+    onAllowAllDuplicate: (() -> Unit)? = null,
+    onSkipAllDuplicate: (() -> Unit)? = null,
+    onSkipDuplicate: (() -> Unit)? = null,
 ) {
     val sourceManager = remember { Injekt.get<SourceManager>() }
     AlertDialog(
@@ -101,7 +109,22 @@ internal fun DuplicateMangaDialog(
             ) { Text(stringResource(MR.strings.action_add_anyway)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismissRequest) { Text(stringResource(MR.strings.action_cancel)) }
+            Row {
+                listOfNotNull(
+                    onSkipDuplicate?.let { Triple(it, KMR.strings.action_skip_duplicate_manga, "duplicate-skip") },
+                    onSkipAllDuplicate?.let { Triple(it, KMR.strings.action_skip_all_duplicate_manga, "duplicate-skip-all") },
+                    onAllowAllDuplicate?.let { Triple(it, KMR.strings.action_allow_all_duplicate_manga, "duplicate-allow-all") },
+                ).forEach { (action, label, tag) ->
+                    TextButton(
+                        onClick = {
+                            onDismissRequest()
+                            action()
+                        },
+                        modifier = Modifier.testTag(tag),
+                    ) { Text(stringResource(label)) }
+                }
+                TextButton(onClick = onDismissRequest) { Text(stringResource(MR.strings.action_cancel)) }
+            }
         },
     )
 }
