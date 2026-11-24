@@ -3202,7 +3202,16 @@ distinct saved searches.
 Verification (after `71af70c`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`,
 `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test --tests
 '*FeedUiTest*' --tests '*CatalogueFilterUiTest*' --tests '*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'`
-pass; the full suite: see "Verification of the Feed tab" below.
+pass.
+
+**Verification of the Feed tab** (`--max-workers=2 --console=plain`, `./gradlew --stop` before each full run): the first
+full `:desktopApp:test` on `f4b0923` had 2 failures in 67 classes / 290 tests, both outside the feed and passing when run
+alone: `DesktopBackupJobsTest` "cancel stops the running job …" (a 5 s status wait timed out under load; nothing changed,
+like the earlier once-seen timeouts) and `LibraryGroupSelectionUiTest` (an `NullPointerException` on
+`DesktopExtensionManager.loadedApkHashes` — a real start-up race: the map was declared after the `init` block whose
+initial load runs on another thread and could read it before the constructor reached it; fixed in `65779f3` by declaring
+it before `init`). The full suite on `65779f3`: 67 classes, 290 tests, 0 failures (was 66 / 288 after the saved-search
+review fixes: `FeedUiTest` 2 new). Not run: a real window, real extension sources in the feed.
 
 ## Remaining parity gaps
 

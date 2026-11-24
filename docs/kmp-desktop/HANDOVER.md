@@ -308,8 +308,10 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   `FeedItems.kt` (`desktopCopy`, Android calls it, behaviour unchanged) and Android's add-search / delete dialogs shared;
   rows load one at a time like Android, with loading / empty / error states; a row opens the catalogue with its saved
   search (`CatalogueScreen(savedSearchId)`) or its latest updates, an entry the details; add (source → latest / popular /
-  saved search) within Android's limit, reorder (move up / down), delete. Test `FeedUiTest` (2). **Pending:**
-  `/code-review medium 116039e^..<last docs commit of the round>` and its fix round. Not done: the per-source feed.
+  saved search) within Android's limit, reorder (move up / down), delete. Test `FeedUiTest` (2). Found in the full run:
+  a start-up race in `DesktopExtensionManager` (fixed in `65779f3`). Full `:desktopApp:test` on `65779f3`: 67 classes,
+  290 tests, 0 failures. **Pending:**
+  `/code-review medium 116039e^..<last docs commit of the round>` (includes `65779f3`) and its fix round. Not done: the per-source feed.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
