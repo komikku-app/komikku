@@ -11,7 +11,7 @@ step P9, the desktop release pipeline and signing hooks, with its review fixes, 
 P10, manga details parity (duplicates on add, edit info, cover actions), with its review fixes, is done, and step
 P11, reader parity (neighbouring chapters in the viewers, wide pages, animated pages), with its review fixes, is done
 (last Part A commit `0d88469`), and step P12, desktop Settings → Advanced and library extras, is built (its review
-`/code-review medium 0d88469..<P12 verification docs commit>` and fix round are pending); next: the P12 review, then the
+`/code-review medium 0d88469..9bec249` (`9e4c28a^..9bec249`) and fix round are pending); next: the P12 review, then the
 maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -276,7 +276,7 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   source icon badge (and their display settings). Not done: "Clear WebView data" (no embedded browser), language flag
   icons (Android drawables), continue reading by Android's chapter filters (the desktop details' rule instead). Tests
   `AdvancedSettingsUiTest` (3), `DesktopLogFileTest` (2), `LibraryExtrasUiTest` (3), settings tests updated.
-- **P12 review** — pending: `/code-review medium 0d88469..<P12 verification docs commit>`, then a fix round.
+- **P12 review** — pending: `/code-review medium 0d88469..9bec249` (`9e4c28a^..9bec249`), then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
