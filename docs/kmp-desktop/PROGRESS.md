@@ -878,7 +878,7 @@ Android); content edits are listed in the last column.
 
 | Old path (upstream) | New path | Step | Edits / desktop counterpart |
 |---------------------|----------|------|-----------------------------|
-| `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | 1.2 | `actual class … actual constructor` (KMK-marked). `expect` in `src/jvmSharedMain/kotlin/…/CloudflareInterceptor.kt`; desktop `actual` (pass-through, logs challenges) in `src/desktopMain` |
+| `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/CloudflareInterceptor.kt` | 1.2 | `actual class … actual constructor` (KMK-marked). `expect` in `src/jvmSharedMain/kotlin/…/CloudflareInterceptor.kt`; desktop `actual` in `src/desktopMain` (pass-through until P7; since P7 on a `BrowserBackend`). P7: detection and safe-header filter moved to `src/main/…/CloudflareChallenge.kt`, both platforms call it |
 | `core/common/src/main/kotlin/eu/kanade/tachiyomi/network/interceptor/WebViewInterceptor.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/network/interceptor/WebViewInterceptor.kt` | 1.2 | none; no desktop counterpart (only used by the Android `CloudflareInterceptor`) |
 | `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/util/system/WebViewUtil.kt` | 1.2 | none; callers are Android-only (`app`, `WebViewInterceptor`) |
 | `core/common/src/main/kotlin/eu/kanade/tachiyomi/util/system/DeviceUtil.kt` | `core/common/src/androidMain/kotlin/eu/kanade/tachiyomi/util/system/DeviceUtil.kt` | 1.2 | none; callers are Android-only |
@@ -954,7 +954,7 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `android.os.Looper`, `Handler` | 1.1 | `Context.mainExecutor`, extensions | One main looper: a daemon thread "android-compat-main" (not the AWT thread); `Runnable` posts only, no `Message` |
 | `android.os.Environment`, `StatFs`, `FileUtils` | 1.1 | `DiskUtil`, `UniFileTempFileManager` | External storage = user home, always mounted; `StatFs` from `java.io.File` space queries |
 | `android.media.MediaScannerConnection` | 1.1 | `DiskUtil` | No-op (callback gets a `null` uri) |
-| `android.webkit.CookieManager`, `ValueCallback` | 1.1 | `AndroidCookieJar` (`NetworkHelper.cookieJar`) | `DesktopCookieManager`: RFC 6265 store with OkHttp parsing/matching; persistent cookies in `<dataDir>/cookies.json` (debounced write, `flush()`, shutdown hook) |
+| `android.webkit.CookieManager`, `ValueCallback` | 1.1 | `AndroidCookieJar` (`NetworkHelper.cookieJar`) | `DesktopCookieManager`: RFC 6265 store with OkHttp parsing/matching; persistent cookies in `<dataDir>/cookies.json` (debounced write, `flush()`, shutdown hook). P7: `cookiesFor(url)` (full cookies) and `removeFor(url, names)` (whatever the domain / path) for browser sessions |
 | `android.webkit.MimeTypeMap` | 1.1 | UniFile `type`, `ContentResolver.getType`, extensions | Built-in table (images, comic archives, documents, web, media) |
 | `android.widget.Toast` | 1.1 | `ToastExtensions` (`context.toast`) | `show()` → `Toast.presenter` (logs by default; the desktop UI can replace it) |
 | `android.text.Html`, `Spanned`, `androidx.core.text.parseAsHtml` | 1.1 | `StringExtensions.htmlDecode`, extensions | jsoup-based HTML → plain text (legacy/compact block separation), no spans |
@@ -2132,6 +2132,160 @@ Verification (after `921518b`, `--max-workers=2 --console=plain`): `spotlessAppl
 174). `:domain` untouched, so its tests were not run. Not verified: a real CI run of `build_desktop.yml` with
 `fetch-depth: 0`, a full (non-shallow) clone building with `-Pdesktop-preview`.
 
+## P7 — WebView and Cloudflare
+
+Commits `2093b68` (browser abstraction, desktop interceptor, shared detection), `244325d` (site-wide cookies in browser
+sessions), `d692d02` ("Open in WebView" and the cookie dialog), `8587728` / `6eb4b18` (tests) and this section's docs
+commit. Next in HANDOVER's order ("Left to do", item 4). **Outcome: no embedded browser in this step**; the desktop has a
+browser-backend abstraction, a Cloudflare interceptor on it that reuses Android's detection, a manual "Open in WebView"
+(system browser + pasted cookies and User-Agent) and a fake backend for tests. What an embedded backend still needs is
+listed below.
+
+**What Android does:** `CloudflareInterceptor` (a `WebViewInterceptor`, on every `NetworkHelper` client) detects a
+challenge (403 / 503, `Server: cloudflare(-nginx)`, `challenge-error-title` / `-text` in the page), removes the old
+`cf_clearance`, loads the page in a hidden `WebView` with the request's headers and User-Agent for up to 30 s until a new
+`cf_clearance` appears in the shared `android.webkit.CookieManager` (the same store `AndroidCookieJar` reads), then sends
+the request again; without a WebView it toasts "WebView is required" and returns the challenge page. `WebViewScreen` /
+`WebViewActivity` (source home page from browse / feed / extensions, an entry's `getMangaUrl` from details) let the user
+log in or pass a check by hand with the source's headers; the cookies land in the same store. The default User-Agent is
+the `default_user_agent` preference (Settings → Advanced, "requires app restart"; sources build their `headers` once).
+Extensions may use `android.webkit.WebView` directly (JavaScript evaluation, hidden logins) and read
+`WebSettings.getDefaultUserAgent(context)`.
+
+**Desktop before P7:** the `actual` `CloudflareInterceptor` passed every response through and logged a warning, so a
+Cloudflare-protected source failed with `HTTP 403` (`HttpException`, or a parse error of the challenge page) and nothing
+told the user what to do. No "Open in WebView" anywhere. The cookie jar was already shared (`AndroidCookieJar` over the
+compat `DesktopCookieManager`, persisted in `<dataDir>/cookies.json`); the User-Agent was the same preference with
+Android's default (a mobile Chrome string), with no desktop setting to change it. `android.webkit` had only
+`CookieManager`, `ValueCallback` and `MimeTypeMap`.
+
+### Embedded browser evaluation
+
+Sizes and versions from Maven Central on 2026-11-24 (compressed jars as downloaded; unpacked sizes not measured).
+
+| Option | Licence | Size per platform | OS / CPU | Maintenance | Packaging / fit | Verdict |
+|--------|---------|-------------------|----------|-------------|-----------------|---------|
+| JCEF via jcefmaven (`me.friwi:jcefmaven` 152.0.6, 2026-09-30) | wrapper Apache-2.0; JCEF / CEF BSD-3; Chromium BSD-3 plus its third-party licences | natives as separate artifacts: 132 MB (`jcef-natives-linux-amd64`), 118 MB (`macosx-arm64`), 138 MB (`windows-amd64`) for the build the metadata lists as `release` (Chromium 132) | Linux amd64 / arm64 / arm / i386, macOS amd64 / arm64, Windows amd64 / arm64 / i386 | active (follows CEF), one maintainer | natives either downloaded at first use (its `CefAppBuilder` from Maven Central into an install dir: fits "optional at run time") or bundled per OS (installer +120–140 MB). Needs JVM `--add-opens` / `--add-exports` for `java.desktop` internals, macOS helper app bundles that must be signed / notarized with the app (and hardened-runtime library validation relaxed for downloaded natives), and a heavyweight AWT component in Compose (`SwingPanel`, z-order problems with Compose popups) or off-screen rendering | best candidate for a later step; real Chromium, so the best Cloudflare compatibility of the embedded options |
+| KCEF (`dev.datlag:kcef` 2025.03.23, last release 2025-03-23) | Apache-2.0 (over JetBrains' JCEF fork) | downloads a JCEF / CEF bundle from its GitHub releases at first start (same order of size as above) | Linux / macOS / Windows, x64 and arm64 | no release for 20 months | same JVM flags and macOS signing questions as jcefmaven; adds Ktor client dependencies; used by compose-webview-multiplatform and Suwayomi | not chosen: stalled maintenance, extra dependency tree, no advantage over jcefmaven for a hidden solver |
+| JavaFX WebView (`org.openjfx:javafx-web` 21.0.x) | GPL-2.0 with Classpath Exception | `javafx-web-21.0.8-linux.jar` 43 MB, plus `javafx-graphics` / `-base` / `-controls` / `-media` | classifiers `linux`, `mac`, `mac-aarch64`, `win` only: no Linux arm64 and no Windows arm64 build of the web module | maintained (OpenJFX); the 21 line is the one for the bundled JDK 21 (newer JavaFX needs newer JDKs) | per-OS jars resolved on each OS's build runner (fits `build_desktop.yml`), `JFXPanel` inside `SwingPanel`; its cookies go through `java.net.CookieHandler` (could be bridged to the jar) | not chosen: WebKit, not Chromium, so Cloudflare's checks are less likely to pass; missing arm64 platforms |
+| No embedded browser (system browser + manual cookies / User-Agent) | — | 0 | every OS | — | nothing to bundle | **chosen for P7**: the user's own browser passes the check (a real, up-to-date browser); costs a manual step and, for Cloudflare, the browser's User-Agent (or setting the browser's to the app's) |
+| External solver (FlareSolverr, MIT; the user runs it) | MIT | none in the app | wherever the user runs it (Docker image) | active | an HTTP API (`POST /v1`, `request.get`) returning cookies and its User-Agent: a `BrowserBackend` over it is buildable and testable with `MockWebServer` only | not built in P7 (needs a setting for its address); the cheapest automatic backend to add next, the interceptor already retries with the solver's User-Agent |
+
+Why no embedded backend now: it cannot be verified here (no display, no launch allowed in this task, so not even a
+smoke test of the native loading); the 120–140 MB native download per platform and the macOS helper-bundle signing
+belong with the signing / notarization step; the JVM flags and the jlink runtime would change for every user without a
+run on any OS. **What the embedded backend still needs:** a `BrowserBackend` over jcefmaven (`availability()` =
+installed natives for this OS / CPU and a display, `NOT_INSTALLED` before the download); a download / install flow with
+progress and a "not installed" state in settings (natives under `<dataDir>/jcef`, checksum check); the JVM flags in
+`desktopApp/build.gradle.kts` (`jvmArgs`, also for `run`) and a check of the jlink module list; a hidden window or
+off-screen browser for the interceptor and a visible one for "Open in WebView" (the cookie hand-over and conditions
+are already defined by `BrowserSession` / `BrowserCondition`); macOS helper bundles and entitlements in the signed DMG;
+CI must not download it (tests keep the fake backend); BUILDING.md: where the natives come from and their licences.
+
+### Built
+
+- **Shared detection** (`core/common/src/main/…/network/interceptor/CloudflareChallenge.kt`, new KMK file): Android's
+  `shouldIntercept` body and `WebViewInterceptor.parseHeaders`' safe-header filter moved there unchanged; Android's
+  `CloudflareInterceptor.shouldIntercept` / `parseHeaders` delegate to it (KMK-marked). Android behaviour unchanged.
+- **Browser abstraction** (`core/common/src/desktopMain/kotlin/app/komikku/network/browser/BrowserBackend.kt`):
+  `BrowserBackend` (`availability()`, blocking `run(BrowserSession)`), `BrowserSession` (URL, browser-safe headers,
+  User-Agent, the jar's cookies to start with, a `BrowserCondition`, timeout, interactive or hidden),
+  `BrowserCondition` (`cookieSet(url, name, notValue)`, `urlReached`, `UntilClosed`), `BrowserSessionResult` (condition
+  met / timed out / closed, final URL, the browser's cookies, the User-Agent it really sent), `NoBrowserBackend` and the
+  `BrowserBackends.current` registry (default: none). Cookie helpers (`BrowserCookies.kt`): `storeBrowserCookies` (each
+  cookie under its own domain and path), `browserCookies` / `removeBrowserCookies` through the compat
+  `DesktopCookieManager.cookiesFor` / `removeFor` (new: full cookies, removal whatever the domain), because
+  `AndroidCookieJar.remove` only reaches a host-only cookie of the address's own path.
+- **Desktop `CloudflareInterceptor`** (`actual`, same constructor as before plus an internal one with a backend provider
+  and timeout): Android's detection; no backend → `CloudflareBypassException` (`IOException`, reason `NO_BROWSER`,
+  `KMR.strings.desktop_cloudflare_no_browser`: what to do); otherwise the old `cf_clearance` is removed, the backend runs
+  with the request's headers and User-Agent until a new `cf_clearance` for the URL (not the refused one) or 30 s, its
+  cookies go into the jar and the request is sent once more (that response is returned as is); not solved / timed out /
+  backend failure → `CloudflareBypassException` (`NOT_SOLVED` / `TIMED_OUT` / `BROWSER_FAILED`,
+  `KMR.strings.desktop_cloudflare_failed`). `NetworkHelper` is unchanged (it builds the interceptor through the `expect`
+  constructor).
+- **"Open in WebView"** (`desktopApp/…/webview/DesktopWebView.kt`, Injekt singleton): with an available backend an
+  interactive session (source headers and User-Agent, until closed, 30 min) whose cookies are stored; otherwise (today
+  always) the system browser opens the page and a dialog (`WebViewDialog.kt`) takes pasted cookies (a `Cookie` header,
+  `Set-Cookie`-like lines or developer-tools table rows, `ManualCookies`) and the User-Agent (pre-filled with the
+  source's), with "Open in browser" again, "Clear cookies" (this site) and the address as selectable text when no
+  browser opened. Entry points: the catalogue's top bar (Android's `BrowseSourceScreen` WebView action, source home
+  page) and its error screen (Android's retry / WebView actions), and the details top bar (`getMangaUrl`).
+
+### Decisions / deviations
+
+- Without a backend a challenge **fails with an actionable error** instead of returning the challenge page (Android
+  returns it after a toast): on desktop that is the normal case, and the message says what to do.
+- One challenge per host at a time: a request that waited is sent again with the cookie the other one got (Android
+  opens one WebView per request).
+- When the backend reports another User-Agent than the request's, the retry uses the backend's (the clearance is bound
+  to it). The next requests of that source still send the source's own User-Agent and may be challenged again; an
+  embedded backend should be given (and honour) the request's User-Agent, as `BrowserSession.userAgent` asks.
+- Pasted cookies are stored for the site's registrable domain (`www.example.com` → `example.com`, where Cloudflare sets
+  `cf_clearance`; host-only for IPs / hosts without a public suffix), path `/`, `Secure` on `https`, for one year (the
+  browser does not say; the site's next `Set-Cookie` replaces them), replacing stored cookies of the same names.
+- A pasted User-Agent is saved to Android's `default_user_agent` preference (Android's check: not blank, a valid header
+  value). Requests without their own User-Agent use it at once (`UserAgentInterceptor` reads it per request), but
+  extension sources build their `headers` once, so it applies to them after a restart: the dialog shows Android's
+  "Requires app restart" then. Alternative offered in the help text: set the browser's User-Agent to the app's (shown
+  in the field) before passing the check, which needs no restart.
+- Removing cookies on desktop (`removeBrowserCookies`, "Clear cookies") removes every cookie sent to the URL whatever its
+  domain / path; Android's `AndroidCookieJar.remove` is unchanged.
+- No desktop Settings → Advanced: no global "Clear cookies", "Clear WebView data", User-Agent edit / reset there (the
+  dialog edits the User-Agent; "Clear cookies" is per site).
+- The progress dialog of an embedded session cannot be cancelled (no backend exists yet to cancel).
+
+### `android.webkit.WebView` used by extensions
+
+Today: the compat layer has no `WebView`, `WebViewClient`, `WebChromeClient`, `WebSettings`, `WebResourceRequest` /
+`WebResourceResponse` or `JavascriptInterface`. Class resolution is lazy, so an extension that references them loads
+and its other code works; the first call of a method that touches them (or loading a class that extends
+`WebViewClient`) throws `NoClassDefFoundError`, which the source manager and the screens treat like any source failure
+(P4 review guards; `DelegatedSourcesTest` models exactly this error). `:desktop:extension-runtime:linkCheck` lists such
+symbols per APK. What would be needed: compat classes for that surface (`loadUrl` with headers, `loadDataWithBaseURL`,
+`evaluateJavascript`, `addJavascriptInterface`, the client callbacks, `settings.userAgentString`,
+`WebSettings.getDefaultUserAgent`) mapped onto an embedded `BrowserBackend` that can also evaluate JavaScript and call
+back into the JVM, with Android's main-thread semantics (`Handler` / `Looper` exist in compat). Without an embedded
+browser the honest behaviour is a clear "needs WebView" error. Not attempted here. The smallest useful piece would be a
+static `WebSettings.getDefaultUserAgent(Context)` returning the app's default User-Agent (not added).
+
+### Tests
+
+- `DesktopCloudflareInterceptorTest` (11, `MockWebServer` + `FakeBrowserBackend`): challenge → backend → `cf_clearance`
+  stored → retried with the cookie and the same User-Agent → 200 (session headers, no `User-Agent` header in them,
+  timeout); `NetworkHelper.client` uses `BrowserBackends.current`; no backend → `NO_BROWSER` with the host and "Open in
+  WebView" in the message, backend not run, one request; the desktop default (no backend); timeout → `TIMED_OUT`, no
+  retry, the browser's other cookies kept; closed → `NOT_SOLVED`, throwing backend → `BROWSER_FAILED`; a stale site-wide
+  clearance removed before the session and not accepted as solved, then a fresh one works; retry with the browser's
+  User-Agent; a non-challenge 403 (Cloudflare without markers, markers from another server) and a 429 untouched;
+  three parallel challenges of one host → one session; the conditions.
+- `DesktopWebViewTest` (7): no backend → system browser, the source's User-Agent, stored cookie names, invalid URL; the
+  manual flow end to end (challenge → `NO_BROWSER` → paste `Cookie: cf_clearance=…; theme=…` and the browser's
+  User-Agent → the next request carries both and passes; pasting again replaces); invalid cookie / blank / invalid
+  User-Agent store nothing; "Clear cookies" removes site-wide cookies and keeps other sites'; an available backend runs
+  an interactive session with the source's headers and its cookies are stored; unavailable / failing backend → manual;
+  `ManualCookies` forms and the stored cookie attributes.
+- `WebViewUiTest` (1, headless window): catalogue of a protected `HttpSource` → the interceptor's message with retry /
+  WebView actions → "Open in WebView" (browser cannot open: address shown) → invalid paste shows the reason → valid
+  `cf_clearance` saved (snackbar) → Retry loads the listing.
+- `DesktopNetworkTest`: the Cloudflare case now expects the `NO_BROWSER` error (through `await`'s wrapping) instead of
+  the pass-through 403.
+
+New strings (KMR, base only): `desktop_cloudflare_no_browser`, `desktop_cloudflare_failed`,
+`desktop_webview_manual_title`, `desktop_webview_manual_help`, `desktop_webview_cookies_label`,
+`desktop_webview_stored_cookies`, `desktop_webview_cookie_invalid`, `desktop_webview_cookies_saved`; reused MR:
+`action_open_in_web_view`, `action_open_in_browser`, `pref_clear_cookies`, `cookies_cleared`, `pref_user_agent_string`,
+`error_user_agent_string_blank` / `_invalid`, `requires_app_restart`, `action_retry`, `action_save`, `action_cancel`,
+`loading`. `core:common`'s desktop source set now depends on `:i18n-kmk` (Android's does not).
+
+**Known gaps:** no embedded browser (above); automatic flows (library updates, global search, downloads) hitting a
+challenge fail with the message and need the manual step; the User-Agent change needs a restart for extension sources;
+no Settings → Advanced network group; extensions using `android.webkit.WebView` fail at that call; not run in a real
+window or against a real Cloudflare site (the cookie / User-Agent binding to the IP and browser is Cloudflare's, so a
+pasted clearance may still be refused, e.g. behind another IP or after it expires).
+
+Verification: see the end of this section after the full run.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2150,8 +2304,11 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    pages and covers (P5: no acceptable decoder, shown as an unsupported format; blocker in "P5"), automatic wide-page detection for double pages, tap-zone / volume-key settings, EPUB / RAR / 7z
    chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
-   them), WebView (Cloudflare) login, OAuth via
-   redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs).
+   them), OAuth via redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs,
+   cookies, User-Agent). WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and
+   a manual "Open in WebView" (system browser + pasted cookies / User-Agent) are done; left: an embedded browser
+   backend (jcefmaven evaluated as the candidate; P7 "What the embedded backend still needs") or an external solver
+   backend (FlareSolverr), `android.webkit.WebView` for extensions, automatic solving during library updates.
 6. **Distribution:** installers built and tried on each OS, signing / notarization. The update check is done (P6, behind
    `-Penable-updater`; opens the release page, no in-app download / install); left from it: the release pipeline does
    not publish desktop installers as GitHub release assets yet (P6 "What the release pipeline still needs"), so the

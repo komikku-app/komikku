@@ -33,6 +33,33 @@ class CookieManagerTest {
     }
 
     @Test
+    fun `full cookies and removal whatever the domain and path (P7)`() {
+        val manager = manager()
+        manager.setCookie("https://www.example.com/", "cf_clearance=x; Domain=example.com; Path=/")
+        manager.setCookie("https://www.example.com/manga/1", "deep=1; Path=/manga")
+        manager.setCookie("https://www.example.com/", "keep=1")
+        manager.setCookie("https://other.com/", "cf_clearance=other")
+
+        val full = manager.cookiesFor("https://www.example.com/manga/1")
+        full.map { Triple(it.name, it.domain, it.hostOnly) } shouldBe listOf(
+            Triple("cf_clearance", "example.com", false),
+            Triple("deep", "www.example.com", true),
+            Triple("keep", "www.example.com", true),
+        )
+        manager.cookiesFor("not a url") shouldBe emptyList()
+
+        // A `Max-Age=0` for the page's own host and default path (`AndroidCookieJar.remove`) misses a site-wide cookie.
+        manager.setCookie("https://www.example.com/manga/1", "cf_clearance=; Max-Age=0")
+        manager.getCookie("https://www.example.com/manga/1") shouldBe "deep=1; cf_clearance=x; keep=1"
+
+        manager.removeFor("https://www.example.com/manga/1", listOf("cf_clearance", "deep")) shouldBe 2
+        manager.getCookie("https://www.example.com/manga/1") shouldBe "keep=1"
+        manager.removeFor("https://www.example.com/") shouldBe 1
+        manager.getCookie("https://www.example.com/") shouldBe null
+        manager.getCookie("https://other.com/") shouldBe "cf_clearance=other"
+    }
+
+    @Test
     fun `replaces, expires and deletes cookies`() {
         val manager = manager()
         manager.setCookie("https://example.com/", "a=1")
