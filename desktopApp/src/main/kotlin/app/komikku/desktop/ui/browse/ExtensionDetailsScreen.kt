@@ -264,9 +264,10 @@ internal fun ExtensionUninstallDialog(name: String, onConfirm: () -> Unit, onDis
 
 /**
  * P22 review: Android's "Clear cookies" of the extension info for the desktop. Each source's base and home address goes
- * through [DesktopWebView.clearCookies] (Android's WebView "Clear cookies" on desktop): every jar cookie sent to it is
- * removed whatever its `Domain` (Cloudflare's `cf_clearance` for the registrable domain), together with the host's
- * remembered solver User-Agent and failed solve. Blocking; returns how many cookies were removed.
+ * through [DesktopWebView.clearCookies] (Android's WebView "Clear cookies" on desktop): every jar cookie of its host is
+ * removed whatever its path (P23) and the domain cookies that apply to the host (Cloudflare's `cf_clearance` for the
+ * registrable domain), together with the host's remembered solver User-Agent and failed solve; other sites' cookies
+ * stay. Blocking; returns how many cookies were removed.
  */
 internal object ExtensionCookies {
     fun clear(

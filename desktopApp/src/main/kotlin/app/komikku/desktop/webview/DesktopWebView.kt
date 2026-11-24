@@ -11,6 +11,7 @@ import app.komikku.network.browser.CloudflareHostState
 import app.komikku.network.browser.CloudflareHosts
 import app.komikku.network.browser.browserCookies
 import app.komikku.network.browser.removeBrowserCookies
+import app.komikku.network.browser.removeHostCookies
 import app.komikku.network.browser.storeBrowserCookies
 import app.komikku.network.browser.storePastedCookies
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -187,14 +188,18 @@ class DesktopWebView(
     /** Opens [url] in the system browser again; `false` when it could not be opened. */
     fun openInBrowser(url: String): Boolean = browserOpener(url)
 
-    /** Android's WebView "Clear cookies": removes the cookies the app sends to [url]; returns how many. */
+    /**
+     * Android's WebView "Clear cookies": removes every cookie of [url]'s host, whatever its path, and the domain cookies
+     * that apply to the host (P23: a cookie with its own `Path`, which the address itself does not get, goes too; other
+     * hosts' cookies stay); returns how many.
+     */
     fun clearCookies(url: String): Int {
         val httpUrl = url.toHttpUrlOrNull() ?: return 0
         hostStateProvider().run {
             removeUserAgent(httpUrl.host)
             clearFailure(httpUrl.host)
         }
-        return network.cookieJar.removeBrowserCookies(httpUrl)
+        return network.cookieJar.removeHostCookies(httpUrl)
     }
 
     private fun clearance(url: HttpUrl): String? =

@@ -166,6 +166,32 @@ class DesktopCookieManager(
         return removed
     }
 
+    /**
+     * Removes every stored cookie the host of [url] gets, whatever its path, `Secure` flag or name (P23: a site's "Clear
+     * cookies"): host-only cookies of that host and domain cookies of the host or one of its parent domains (e.g.
+     * `Domain=example.com` for `www.example.com`). Cookies of other hosts stay, the host's subdomains and sibling hosts
+     * included. Returns how many were removed; 0 for an invalid address. [removeFor] only takes the cookies sent to the
+     * address itself, so a cookie with its own path (e.g. `Path=/manga`) survives it.
+     */
+    fun removeForHost(url: String): Int {
+        val host = url.toHttpUrlOrNull()?.host ?: return 0
+        val removed = synchronized(lock) {
+            removeExpired()
+            val matching = cookies.filterValues { it.appliesToHost(host) }.keys
+            matching.forEach {
+                cookies.remove(it)
+                pasted.remove(it)
+            }
+            matching.size
+        }
+        if (removed > 0) changed(persistent = true)
+        return removed
+    }
+
+    /** RFC 6265 5.1.3 domain matching (the address's path and scheme left aside). */
+    private fun Cookie.appliesToHost(host: String): Boolean =
+        host == domain || (!hostOnly && host.endsWith(".$domain"))
+
     override fun removeSessionCookies(callback: ValueCallback<Boolean>?) {
         val removed = synchronized(lock) {
             cookies.values.removeAll { !it.persistent }.also { pasted.retainAll(cookies.keys) }

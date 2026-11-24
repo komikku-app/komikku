@@ -250,10 +250,17 @@ class DesktopWebViewTest {
         // the entered host only.
         services.network.cookieJar.get("https://api.example.com/".toHttpUrl()).map { it.name } shouldContainExactly
             listOf("cf_clearance")
+        // P23: a cookie with its own path, not sent to the entered address, and a sibling host's own cookie.
+        val reader = "https://www.example.com/reader/2".toHttpUrl()
+        val api = "https://api.example.com/".toHttpUrl()
+        services.network.cookieJar.saveFromResponse(reader, listOf(Cookie.parse(reader, "page=1; Path=/reader")!!))
+        services.network.cookieJar.saveFromResponse(api, listOf(Cookie.parse(api, "api=1")!!))
 
-        webView.clearCookies(url) shouldBe 2
+        webView.clearCookies(url) shouldBe 3
 
         services.network.cookieJar.get(url.toHttpUrl()).shouldBeEmpty()
+        services.network.cookieJar.get(reader).shouldBeEmpty()
+        services.network.cookieJar.get(api).map { it.name } shouldContainExactly listOf("api")
         services.network.cookieJar.get(other).map { it.name } shouldContainExactly listOf("keep")
     }
 

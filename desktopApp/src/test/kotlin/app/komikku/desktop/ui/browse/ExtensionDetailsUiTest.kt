@@ -187,8 +187,12 @@ class ExtensionDetailsUiTest {
                 listOfNotNull(
                     Cookie.parse(site, "session=1; Path=/"),
                     Cookie.parse(site, "cf_clearance=2; Domain=example.org; Path=/"),
+                    // P23: a cookie with its own path, which the base address does not get
+                    Cookie.parse(site, "page=4; Path=/manga"),
                 ),
             )
+            val mangaPage = site.resolve("/manga/1")!!
+            jar.get(mangaPage).map { it.name }.toSet() shouldBe setOf("session", "cf_clearance", "page")
             jar.saveFromResponse(other, listOfNotNull(Cookie.parse(other, "keep=3; Path=/")))
             jar.get(site).map { it.name }.toSet() shouldBe setOf("session", "cf_clearance")
 
@@ -201,6 +205,7 @@ class ExtensionDetailsUiTest {
 
             waitForText(MR.strings.cookies_cleared.localized())
             jar.get(site).shouldBeEmpty()
+            jar.get(mangaPage).shouldBeEmpty()
             jar.get(other).map { it.name } shouldBe listOf("keep")
         }
 

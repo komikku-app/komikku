@@ -61,6 +61,35 @@ class CookieManagerTest {
     }
 
     @Test
+    fun `host-wide removal takes every path and parent-domain cookie of the host and nothing else (P23)`() {
+        val manager = manager()
+        manager.setCookie("https://www.example.com/", "root=1")
+        manager.setCookie("https://www.example.com/manga/1", "deep=1; Path=/manga")
+        manager.setCookie("https://www.example.com/", "secure=1; Secure; Path=/other")
+        manager.setCookie("https://www.example.com/", "cf_clearance=x; Domain=example.com; Path=/")
+        manager.setCookie("https://www.example.com/", "wide=1; Domain=example.com; Path=/reader")
+        // Not the host's: a sibling host's own cookie, a subdomain's, another site's.
+        manager.setCookie("https://api.example.com/", "api=1")
+        manager.setCookie("https://cdn.www.example.com/", "cdn=1")
+        manager.setCookie("https://other.com/", "root=other; Path=/manga")
+        manager.setCookie("https://notexample.com/", "near=1")
+
+        // Only the root-path cookies are sent to the base address, so `removeFor` would leave the others.
+        manager.cookiesFor("http://www.example.com/").map { it.name } shouldBe listOf("root", "cf_clearance")
+
+        manager.removeForHost("http://www.example.com/") shouldBe 5
+
+        manager.cookiesFor("https://www.example.com/manga/1") shouldBe emptyList()
+        manager.cookiesFor("https://www.example.com/other/x") shouldBe emptyList()
+        manager.cookiesFor("https://www.example.com/reader/x") shouldBe emptyList()
+        manager.getCookie("https://api.example.com/") shouldBe "api=1"
+        manager.getCookie("https://cdn.www.example.com/") shouldBe "cdn=1"
+        manager.getCookie("https://other.com/manga/1") shouldBe "root=other"
+        manager.getCookie("https://notexample.com/") shouldBe "near=1"
+        manager.removeForHost("not a url") shouldBe 0
+    }
+
+    @Test
     fun `a cookie the site sets replaces a pasted one of the same name on another domain (P7 review)`() {
         val manager = manager()
         fun pasted(name: String, value: String, domain: String, hostOnly: Boolean) = Cookie.Builder()
