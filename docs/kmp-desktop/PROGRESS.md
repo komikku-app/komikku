@@ -3437,6 +3437,73 @@ Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessChec
 (`import-ordering`, no autocorrection), so the shared import of Android's `PreferenceScreen` has no KMK markers (its uses
 are marked).
 
+## P16 — app lock (PIN / password)
+
+Built in `8603bab` (Android refactor), `5752965` (desktop), `d8c42bb` (tests) and this docs commit.
+
+### Built
+
+- **Shared with Android:** the platform-neutral rules of Android's `SecureActivityDelegate` moved into the new KMK file
+  `eu/kanade/tachiyomi/ui/base/delegate/AppLockRules.kt` (`shared`): SY's `canLockNow` (lock times, lock days; its
+  day constants, which the delegate's constants now name) and Android's "Lock when idle" rule (`isLockDue`: never /
+  always / after N minutes). The delegate calls them (KMK blocks in the SY / Mihon code; behaviour unchanged). The time
+  ranges are read in SY's `TimeRange.toPreferenceString` format by a small parser of the shared file (SY's `TimeRange`
+  uses Android's `DateFormat` and stays in `app`).
+- **Desktop lock** (`security/DesktopAppLock.kt`, an Injekt singleton): on only with Android's "Require unlock"
+  (`SecurityPreferences.useAuthenticator`, the same key as Android) **and** a PIN / password set on this machine; the
+  secret is kept only as a salted PBKDF2-HMAC-SHA256 hash (210 000 iterations, `pbkdf2-sha256:<n>:<salt>:<hash>`) in an
+  app-state preference (`Preference.appStateKey("desktop_app_lock_secret")`), so backups never carry it. Locked at every
+  start (Android: a new process starts locked) and by "Lock now"; "Lock when idle" and SY's times / days apply after the
+  window was minimised and shown again (Android's background / foreground; `onWindowHidden` / `onWindowShown` from the
+  window state in `KomikkuWindow`). Wrong entries: from the 5th failure in a row each try waits 30 s more (at most 5 min).
+- **Lock screen** (`ui/security/AppLock.kt`, `AppLockGate` around the whole app in `KomikkuApp`): Android's "Unlock
+  Komikku" with a masked field and Unlock (Enter submits), the error / wait text. The app stays composed under it (its
+  screens and the reader keep their state, like Android's activities under `UnlockActivity`) but is cleared from the
+  semantics, cannot take focus (`focusProperties { onEnter = cancelFocusChange() }`, focus cleared when locking) and gets
+  no clicks (an opaque `Surface` on top); the window's keyboard shortcuts are off while locked.
+- **Settings → Security and privacy** (new desktop category, Android's place between Data and storage and Advanced;
+  `ui/more/SecuritySettings.kt`): "Lock with a PIN or password" (a switch row: on asks for a new secret twice, off for the
+  current one), "Change PIN or password" (current + new twice), "Lock now", Android's "Lock when idle" (its values), an
+  info row. New `KMR` strings `desktop_app_lock*`. The settings search (P15) indexes the page.
+
+### Decisions / deviations
+
+- **No biometrics / OS authenticator** (Windows Hello, macOS Touch ID or PAM are not reachable from a plain JVM app
+  without native code); the app's own secret instead. A forgotten secret cannot be recovered (deleting the app-state
+  preference by hand clears it); the info row says so.
+- A "Require unlock" without a secret (an Android backup restored on desktop) counts as off and is switched off at start,
+  like Android does when the device has no authenticator.
+- "Idle" means the window was **minimised**, not merely unfocused (switching to another window and back would otherwise
+  ask for the secret each time with "Always").
+- SY's lock times / days from a restored Android backup are followed, but there is no editor for them on desktop yet.
+- Not on desktop: secure screen (no window flag equivalent), hide notification content (no notifications yet), SY's
+  CBZ password, Firebase.
+- Test-only finding: Injekt keeps the first instance of a singleton (`addSingleton` / `addSingletonFactory` only
+  `putIfAbsent` the instance), so a test simulating a new start registers a plain factory returning its new lock.
+
+### Tests
+
+`DesktopAppLockTest` (5): on with a secret only, locked at a new start, wrong / right entries, change and turn off with
+the current secret, only a hash under an app-state key; a restored "Require unlock" without a secret is switched off;
+the throttling (30 s, then 60 s, reset by a success); "Lock when idle" never / after 2 minutes / always only after the
+window was hidden; SY's lock days and time ranges (an unreadable range ignored), `isLockDue`'s boundary.
+`AppLockUiTest` (2): the settings set the secret (too short, mismatch, then accepted), "Lock now" shows only the lock
+screen (the page behind it is not in the semantics), a wrong entry's error, unlock keeps the page, turning off needs the
+current secret; a locked start shows only the lock screen until unlocked. Found while writing them: JUnit skips test
+methods that return a value (`= runBlocking { … shouldBe … }` returns the `shouldBe` value); `runBlocking<Unit>`. Checked
+the other desktop test classes: each runs as many tests as it declares.
+
+Not verified: the minimise / restore wiring in a real window (headless tests have no window state), a real keyboard's
+Tab traversal behind the lock screen.
+
+Verification (`--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin` pass; `:desktopApp:test --tests '*DesktopAppLockTest*' --tests '*AppLockUiTest*' --tests
+'*SettingsSearchUiTest*' --tests '*SettingsUiTest*' --tests '*DesktopShellTest*'` 12 tests, 0 failures.
+Full `:desktopApp:test` on `d8c42bb` (code of P15 and P16, `./gradlew --stop` before): 73 classes, 323 tests, 0
+failures (was 70 / 313 on `f9e36c8`: `SettingsSearchUiTest` 3, `DesktopAppLockTest` 5, `AppLockUiTest` 2 new;
+`DesktopBackupJobsTest`, `DesktopExtensionManagerTest` and `ReaderNavigationTest` included and passing). Review range of
+P15 + P16: `925e360..` the docs commit "Record the desktop app lock (P16)".
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -3463,7 +3530,8 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    acceptable decoder, shown as an unsupported format; blocker in "P5"), tap-zone / volume-key settings, EPUB / RAR /
    7z chapters exercised from the UI.
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
-   them), OAuth via redirect (paste only), app security / lock. Settings search is done (P15). Settings → Advanced is done (P12: log
+   them), OAuth via redirect (paste only). Settings search is done (P15); the app lock with a PIN / password is done
+   (P16; left: an OS authenticator / biometrics, an editor for SY's lock times and days, secure screen). Settings → Advanced is done (P12: log
    folder and level, reindex downloads, clear database, cookies, default and per-site user agents, the solver and
    delegated sources moved there, DNS over HTTPS; the chapter cache in Data and storage); left from it: "Clear WebView
    data" (no embedded browser), the SY developer switches, data saver. WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and

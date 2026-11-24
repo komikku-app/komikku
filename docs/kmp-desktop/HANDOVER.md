@@ -15,7 +15,7 @@ done (last Part A commit `0f596c4`); P13 (feed and saved searches) is under way:
 and their review fixes (with a filter panel) are done, the global Feed tab and its review fixes are done (last Part A
 commit `e4f266a`), the per-source feed and "add to feed" from the catalogue (P13 rest) and P14 (browse leftovers) and their review fixes
 are done (last Part A commit: the docs commit "Record the P13 rest / P14 review fixes"); next: the remaining parity gaps
-from P15 on (settings search: built; app lock, notifications / tray, source migration), then the maintainer's first real run of
+from P15 on (settings search and app lock: built, not reviewed; next notifications / tray, source migration), then the maintainer's first real run of
 the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -348,6 +348,14 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   Settings has the search button, results replace the search with their page, which scrolls to and highlights the item
   (`PreferenceList(highlightKey)`). Index in Android's order; tracking and data and storage indexed by their rows' titles
   (opened at the top). Test `SettingsSearchUiTest` (3). Not reviewed yet.
+- **P16** app lock (`8603bab` … , PROGRESS.md "P16 — app lock (PIN / password)"): Android's lock rules (SY's times / days,
+  "Lock when idle") moved into the shared `AppLockRules.kt` (Android's delegate calls it, unchanged); a desktop lock with
+  the app's own PIN / password (PBKDF2 hash in an app-state preference, never in backups) on Android's "Require unlock"
+  key, locked at start and by "Lock now", idle lock after the window was minimised, wrong entries throttled; a lock
+  screen over the whole app (kept composed, inert); Settings → Security and privacy. No biometrics. Tests
+  `DesktopAppLockTest` (5), `AppLockUiTest` (2). Not reviewed yet; the minimise wiring is not run in a real window.
+  Full `:desktopApp:test` on `d8c42bb`: 73 classes, 323 tests, 0 failures. **Pending:** `/code-review medium 925e360..`
+  the docs commit "Record the desktop app lock (P16)" and its fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -399,7 +407,7 @@ mark the residual path in both modules.
    (see "Done"); the saved-search review fixes are done (last Part A commit `5ebb0da`), the global Feed tab and its
    review fixes are done; the per-source feed, "add to feed" from the catalogue and P14 (browse leftovers: bulk
    favourites, search globally from the library, extension names in global search) and their review fixes are done;
-   P15 (settings search) is built; **next**: in this order — app lock (PIN / password at start-up, no biometrics),
+   P15 (settings search) and P16 (app lock) are built; **next**: the review of P15 / P16, then in this order —
    notifications and a tray icon for library updates / downloads, source migration (single entry from the details
    first); then the maintainer's
    first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
