@@ -18,13 +18,20 @@ interface BrowserBackend {
     /** Shown in logs and errors. */
     val name: String
 
+    /**
+     * Whether the backend can show pages to the user ([BrowserSession.interactive], "Open in WebView"); an external
+     * solver (FlareSolverr, P8) cannot, so "Open in WebView" keeps the manual flow with it.
+     */
+    val showsPages: Boolean get() = true
+
     /** Whether [run] can be used now. Must be cheap and must not start the browser. */
     fun availability(): BrowserAvailability
 
     /**
      * Loads [BrowserSession.url] and runs until [BrowserSession.until] is met for a page, the user closes an
      * interactive session or [BrowserSession.timeout] passes, whichever comes first. Blocks the calling thread (OkHttp
-     * interceptors cannot suspend); never call it on the UI thread.
+     * interceptors cannot suspend); never call it on the UI thread. Should stop when the calling thread is interrupted
+     * (a cancelled "Open in WebView").
      *
      * @throws BrowserUnavailableException when the browser cannot be started.
      */

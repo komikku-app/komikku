@@ -280,6 +280,17 @@
     <string name="desktop_webview_no_cookies">The browser returned no cookies for %1$s</string>
     <string name="desktop_webview_failed">Could not open %1$s: %2$s</string>
     <string name="desktop_webview_no_address">This entry has no web address: its source is not installed yet or has no website</string>
+    <!-- Do not translate "FlareSolverr" -->
+    <string name="desktop_cloudflare_solver_failed">Failed to bypass Cloudflare on %1$s: %2$s. Try again, or use “Open in WebView” to pass the check by hand</string>
+    <string name="desktop_flaresolverr_title">Cloudflare solver (FlareSolverr)</string>
+    <string name="desktop_flaresolverr_url">FlareSolverr address</string>
+    <string name="desktop_flaresolverr_info">With the address of a FlareSolverr-compatible service you run yourself (for example http://localhost:8191), Cloudflare checks are passed automatically while browsing and during library updates, global search and downloads. Pages of protected sites are then loaded by that service: it sees their addresses and the cookies sent with them. Leave it empty to turn it off; “Open in WebView” stays available either way.</string>
+    <string name="desktop_flaresolverr_test">Test connection</string>
+    <string name="desktop_flaresolverr_ok">Connected to FlareSolverr %1$s</string>
+    <string name="desktop_flaresolverr_not_configured">No FlareSolverr address is set</string>
+    <string name="desktop_flaresolverr_invalid">Not an http(s) address</string>
+    <string name="desktop_flaresolverr_unreachable">FlareSolverr is unreachable: %1$s</string>
+    <string name="desktop_flaresolverr_failed">No FlareSolverr answer: %1$s</string>
     <!-- Mangayomi JavaScript sources -->
     <string name="js_sources">JavaScript sources</string>
     <string name="js_sources_summary">Mangayomi extensions written in JavaScript, from repositories you add</string>

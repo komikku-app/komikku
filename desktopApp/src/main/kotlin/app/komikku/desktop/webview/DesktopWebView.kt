@@ -100,7 +100,8 @@ class DesktopWebView(
         val hostUserAgent = hostStateProvider().userAgentFor(httpUrl.host) { clearance(httpUrl) }
 
         val backend = backendProvider()
-        val available = try {
+        // A backend that cannot show pages (an external solver, P8) is not used here: the manual flow stays.
+        val available = backend.showsPages && try {
             backend.availability() == BrowserAvailability.Available
         } catch (e: Exception) {
             xLogW("Browser backend ${backend.name} unavailable", e)

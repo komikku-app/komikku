@@ -18,7 +18,9 @@ import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.updater.DesktopUpdaterConfig
 import app.komikku.desktop.webview.DesktopCloudflare
+import app.komikku.desktop.webview.DesktopCloudflarePreferences
 import app.komikku.desktop.webview.DesktopWebView
+import app.komikku.desktop.webview.FlareSolverrBackend
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.download.DesktopDownloadEvents
 import app.komikku.shared.download.DownloadNotificationSink
@@ -196,8 +198,12 @@ class DesktopAppModule(
         addSingletonFactory {
             // P7 review: the interceptors' per-host User-Agent overrides persist in a desktop preference.
             DesktopCloudflare.installHostState(get())
+            // P8: a FlareSolverr-compatible service, when its address is set, solves challenges automatically.
+            get<FlareSolverrBackend>()
             NetworkHelper(app, get())
         }
+        addSingletonFactory { DesktopCloudflarePreferences(get()) }
+        addSingletonFactory { DesktopCloudflare.installBackend(get()) }
         // "Open in WebView" (P7): embedded browser backend or the system browser + pasted cookies.
         addSingletonFactory { DesktopWebView(get(), get(), get()) }
         addSingletonFactory { JavaScriptEngine(app) }

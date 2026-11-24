@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import app.komikku.desktop.source.DesktopDelegatedSources
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
+import app.komikku.desktop.webview.DesktopCloudflarePreferences
+import app.komikku.desktop.webview.FlareSolverrBackend
 import app.komikku.shared.settings.PreferenceList
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -49,6 +51,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.model.GroupLibraryMode
@@ -59,12 +62,14 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_R
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import tachiyomi.core.common.i18n.stringResource as localized
 
 /**
  * Desktop settings (Android `SettingsMainScreen` + the most used categories), built from the borrowed
@@ -374,6 +379,7 @@ private fun browsePreferences(): List<Preference> {
                 ),
             ),
         ),
+        cloudflarePreferences(),
         Preference.PreferenceGroup(
             title = stringResource(MR.strings.pref_category_nsfw_content),
             preferenceItems = persistentListOf(
@@ -386,6 +392,71 @@ private fun browsePreferences(): List<Preference> {
         ),
     )
 }
+
+/**
+ * P8: the automatic Cloudflare backend, a FlareSolverr-compatible service the user runs (desktop only; Android has no
+ * such setting). Empty address = off (the manual "Open in WebView" flow); "Test connection" asks the service.
+ */
+@Composable
+private fun cloudflarePreferences(): Preference.PreferenceGroup {
+    val preferences = remember { Injekt.get<DesktopCloudflarePreferences>() }
+    val backend = remember { Injekt.get<FlareSolverrBackend>() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var testing by remember { mutableStateOf(false) }
+    val url by preferences.flareSolverrUrl().collectAsState()
+    val invalid = stringResource(KMR.strings.desktop_flaresolverr_invalid)
+    return Preference.PreferenceGroup(
+        title = stringResource(KMR.strings.desktop_flaresolverr_title),
+        preferenceItems = persistentListOf(
+            Preference.PreferenceItem.EditTextPreference(
+                preference = preferences.flareSolverrUrl(),
+                title = stringResource(KMR.strings.desktop_flaresolverr_url),
+                subtitle = url.ifBlank { stringResource(MR.strings.off) },
+                onValueChanged = { value ->
+                    DesktopCloudflarePreferences.isValidFlareSolverrUrl(value).also { valid ->
+                        if (!valid) context.toast(invalid)
+                    }
+                },
+            ),
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(KMR.strings.desktop_flaresolverr_test),
+                widget = {
+                    if (testing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp).testTag("flaresolverr-test-progress"),
+                            strokeWidth = 3.dp,
+                        )
+                    }
+                },
+                onClick = {
+                    if (!testing) {
+                        testing = true
+                        scope.launch {
+                            try {
+                                val result = withIOContext { backend.testConnection() }
+                                context.toast(flareSolverrTestMessage(context, result))
+                            } finally {
+                                testing = false
+                            }
+                        }
+                    }
+                },
+            ),
+            Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.desktop_flaresolverr_info)),
+        ),
+    )
+}
+
+/** The message for a "Test connection" [result]. */
+internal fun flareSolverrTestMessage(context: android.content.Context, result: FlareSolverrBackend.ConnectionTest): String =
+    when (result) {
+        FlareSolverrBackend.ConnectionTest.NotConfigured -> context.localized(KMR.strings.desktop_flaresolverr_not_configured)
+        FlareSolverrBackend.ConnectionTest.InvalidAddress -> context.localized(KMR.strings.desktop_flaresolverr_invalid)
+        is FlareSolverrBackend.ConnectionTest.Ok -> context.localized(KMR.strings.desktop_flaresolverr_ok, result.version.orEmpty()).trim()
+        is FlareSolverrBackend.ConnectionTest.Unreachable -> context.localized(KMR.strings.desktop_flaresolverr_unreachable, result.detail)
+        is FlareSolverrBackend.ConnectionTest.Failed -> context.localized(KMR.strings.desktop_flaresolverr_failed, result.detail)
+    }
 
 /**
  * Android `AboutScreen`: the version (with the build's channel) and, when the build has the updater (P6, `-Penable-updater`),

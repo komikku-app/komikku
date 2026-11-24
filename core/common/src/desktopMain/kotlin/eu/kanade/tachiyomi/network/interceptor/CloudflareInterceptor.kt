@@ -7,6 +7,7 @@ import app.komikku.network.browser.BrowserBackends
 import app.komikku.network.browser.BrowserCondition
 import app.komikku.network.browser.BrowserSession
 import app.komikku.network.browser.BrowserSessionResult
+import app.komikku.network.browser.BrowserUnavailableException
 import app.komikku.network.browser.CloudflareHostState
 import app.komikku.network.browser.CloudflareHosts
 import app.komikku.network.browser.browserCookies
@@ -203,7 +204,10 @@ actual class CloudflareInterceptor(
         CloudflareBypassException(
             host = host,
             reason = reason,
-            message = context.stringResource(KMR.strings.desktop_cloudflare_failed, host),
+            // A backend that says why (an unreachable solver, its error answer, P8) is quoted.
+            message = (cause as? BrowserUnavailableException)?.message?.takeIf { it.isNotBlank() }
+                ?.let { context.stringResource(KMR.strings.desktop_cloudflare_solver_failed, host, it) }
+                ?: context.stringResource(KMR.strings.desktop_cloudflare_failed, host),
             cause = cause,
         )
 
