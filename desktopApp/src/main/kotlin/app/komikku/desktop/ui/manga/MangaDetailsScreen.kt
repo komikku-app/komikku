@@ -126,6 +126,16 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
                 val trackingModel = rememberScreenModel(tag = "tracking") { TrackingScreenModel(mangaId) }
                 TrackingDialog(trackingModel, manga?.title.orEmpty(), onDismiss = model::dismissDialog)
             }
+            is MangaDetailsScreenModel.Dialog.DuplicateManga -> DuplicateMangaDialog(
+                targetManga = dialog.manga,
+                duplicates = dialog.duplicates,
+                onDismissRequest = model::dismissDialog,
+                onConfirm = { model.toggleFavorite(checkDuplicate = false) },
+                onOpenManga = {
+                    model.dismissDialog()
+                    navigator.push(MangaDetailsScreen(it.id))
+                },
+            )
             null -> {}
         }
         WebViewDialogs(webView)
@@ -250,7 +260,7 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
                     )
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (manga.favorite) {
-                            Button(onClick = model::toggleFavorite) {
+                            Button(onClick = { model.toggleFavorite() }, modifier = Modifier.testTag("details-favorite")) {
                                 Icon(Icons.Filled.Favorite, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                                 Text(stringResource(MR.strings.in_library))
                             }
@@ -259,7 +269,7 @@ private fun DetailsContent(state: MangaDetailsScreenModel.State, manga: Manga, m
                                 Text(stringResource(MR.strings.action_move_category))
                             }
                         } else {
-                            OutlinedButton(onClick = model::toggleFavorite) {
+                            OutlinedButton(onClick = { model.toggleFavorite() }, modifier = Modifier.testTag("details-favorite")) {
                                 Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                                 Text(stringResource(MR.strings.add_to_library))
                             }

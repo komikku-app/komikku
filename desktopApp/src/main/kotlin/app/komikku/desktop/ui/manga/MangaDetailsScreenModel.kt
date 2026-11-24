@@ -35,9 +35,11 @@ import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetMangaWithChapters
 import tachiyomi.domain.manga.interactor.SetMangaChapterFlags
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.manga.model.MangaWithChapterCount
 import tachiyomi.domain.manga.model.applyFilter
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
@@ -68,6 +70,7 @@ class MangaDetailsScreenModel(
     private val downloadCache: DownloadCache = Injekt.get(),
     private val readerPreferences: ReaderPreferences = Injekt.get(),
     private val readerLauncher: ReaderLauncher = Injekt.get(),
+    private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
 ) : StateScreenModel<MangaDetailsScreenModel.State>(State()) {
 
     data class State(
@@ -95,6 +98,9 @@ class MangaDetailsScreenModel(
     sealed interface Dialog {
         data class ChangeCategories(val categories: List<Category>, val selected: Set<Long>) : Dialog
         data object Tracking : Dialog
+
+        /** Android `MangaScreenModel.Dialog.DuplicateManga`: library entries with the same title (or tracked alike). */
+        data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
     }
 
     private var fetchedOnOpen = false
@@ -312,17 +318,26 @@ class MangaDetailsScreenModel(
     }
 
     /**
-     * Adds to / removes from the library like Android's `toggleFavorite` (default category preference:
-     * a chosen category, "default" (0) or ask when categories exist). Duplicate detection, tracker
-     * binding and download deletion are not on desktop.
+     * Adds to / removes from the library like Android's `toggleFavorite`: before adding, library entries that look like
+     * the same title ([GetDuplicateLibraryManga]: same title from another entry, or bound to the same tracker entry)
+     * open [Dialog.DuplicateManga] unless [checkDuplicate] is off ("Add anyway"); then the default category preference
+     * (a chosen category, "default" (0) or ask when categories exist). Tracker binding and download deletion are not on
+     * desktop.
      */
-    fun toggleFavorite() {
+    fun toggleFavorite(checkDuplicate: Boolean = true) {
         val manga = state.value.manga ?: return
         screenModelScope.launch {
             withIOContext {
                 if (manga.favorite) {
                     updateManga.awaitUpdateFavorite(manga.id, false)
                     return@withIOContext
+                }
+                if (checkDuplicate) {
+                    val duplicates = getDuplicateLibraryManga(manga)
+                    if (duplicates.isNotEmpty()) {
+                        mutableState.update { it.copy(dialog = Dialog.DuplicateManga(manga, duplicates)) }
+                        return@withIOContext
+                    }
                 }
                 val categories = getCategories.await().filterNot { it.isSystemCategory }
                 val defaultCategoryId = libraryPreferences.defaultCategory().get().toLong()
