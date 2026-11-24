@@ -15,6 +15,8 @@ import app.komikku.desktop.scheduler.desktopScheduler
 import app.komikku.desktop.source.DesktopSourceManager
 import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import app.komikku.desktop.updater.DesktopAppUpdateChecker
+import app.komikku.desktop.updater.DesktopUpdaterConfig
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.shared.download.DesktopDownloadEvents
 import app.komikku.shared.download.DownloadNotificationSink
@@ -85,12 +87,15 @@ import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.DesktopDatabase
 import tachiyomi.data.di.registerDatabaseRepositories
+import tachiyomi.data.release.ReleaseServiceImpl
 import tachiyomi.data.source.SourceRepositoryImpl
 import tachiyomi.domain.di.registerDomainPreferences
 import tachiyomi.domain.di.registerLibraryInteractors
 import tachiyomi.domain.manga.interactor.GetFlatMetadataById
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.InsertFlatMetadata
+import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.domain.release.service.ReleaseService
 import tachiyomi.domain.source.interactor.GetRemoteManga
 import tachiyomi.domain.source.interactor.GetSourcesWithNonLibraryManga
 import tachiyomi.domain.source.repository.SourceRepository
@@ -306,7 +311,16 @@ class DesktopDomainModule(
 
         // Scheduled library updates and automatic backups (P3), started by main() for the app's lifetime
         addSingletonFactory { DesktopSchedulerPreferences(get()) }
-        addSingletonFactory { desktopScheduler(get(), get(), get(), get(), get()) }
+        addSingletonFactory { desktopScheduler(get(), get(), get(), get(), get(), appUpdateChecker = get()) }
+
+        // App update check (P6): Android's interactor on the GitHub releases, desktop installers only
+        addSingletonFactory { DesktopUpdaterConfig.fromSystemProperties() }
+        addSingletonFactory<ReleaseService> {
+            val config = get<DesktopUpdaterConfig>()
+            ReleaseServiceImpl(get(), get(), downloadLinkSelector = { release, _ -> config.installerLink(release) })
+        }
+        addFactory { GetApplicationRelease(get(), get()) }
+        addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
 
         // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart

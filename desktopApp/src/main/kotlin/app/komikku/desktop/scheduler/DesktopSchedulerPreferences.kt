@@ -17,4 +17,10 @@ class DesktopSchedulerPreferences(
      * `LibraryPreferences.lastUpdatedTimestamp()`, shown in the updates tab) do not move it.
      */
     fun lastScheduledLibraryUpdate() = preferenceStore.getLong(Preference.appStateKey("desktop_last_scheduled_library_update"), 0L)
+
+    /**
+     * When the app last started an automatic update check (start-up or scheduled, epoch milliseconds, 0 = never): the
+     * due time of the scheduled check (P6). The interactor's own throttle (`last_app_check`) is separate, as on Android.
+     */
+    fun lastAppUpdateCheck() = preferenceStore.getLong(Preference.appStateKey("desktop_last_app_update_check"), 0L)
 }

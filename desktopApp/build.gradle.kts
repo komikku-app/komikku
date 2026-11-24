@@ -1,3 +1,5 @@
+import mihon.buildlogic.Config
+import mihon.buildlogic.getCommitCount
 import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.compose.desktop.DesktopExtension
@@ -98,6 +100,12 @@ extensions.configure<ComposeExtension> {
             mainClass = "app.komikku.desktop.MainKt"
             // Read by app-shared's desktop BuildConfig (About screen, backups); also applies to `run`.
             jvmArgs += listOf("-Dkomikku.version=$appVersionName", "-Dkomikku.versionCode=$appVersionCode")
+            // App update check (P6, DesktopUpdaterConfig): off unless built with Android's `-Penable-updater`;
+            // `-Pdesktop-preview` selects the preview channel (komikku-preview releases, compared by commit count).
+            if (Config.enableUpdater) jvmArgs += "-Dkomikku.updater=true"
+            if (project.hasProperty("desktop-preview")) {
+                jvmArgs += listOf("-Dkomikku.preview=true", "-Dkomikku.commitCount=${getCommitCount()}")
+            }
 
             // Packaging (Phase 9). How to build / what is not validated: docs/kmp-desktop/BUILDING.md.
             nativeDistributions {

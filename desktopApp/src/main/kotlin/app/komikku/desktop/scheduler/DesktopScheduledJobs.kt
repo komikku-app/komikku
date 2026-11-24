@@ -1,6 +1,8 @@
 package app.komikku.desktop.scheduler
 
 import app.komikku.desktop.backup.DesktopBackupJobs
+import app.komikku.desktop.updater.DesktopAppUpdateChecker
+import app.komikku.desktop.updater.appUpdateCheckTask
 import app.komikku.shared.library.LibraryUpdateRunner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +37,9 @@ import kotlin.time.Duration.Companion.hours
  *   it retries 10 minutes later (Android retries while a restore runs). Cancelled by the user, it counts as failed and
  *   waits a whole interval (the scheduler's rule for work cancelled on its own).
  *
+ * - **App update check** (P6, only with [appUpdateChecker]) — Android `AppUpdateJob`: every 3 days while the updater
+ *   is enabled (see `appUpdateCheckTask`).
+ *
  * When the scheduler stops (app exit), each task stops the work it started and waits for its end.
  */
 fun desktopScheduler(
@@ -43,13 +48,15 @@ fun desktopScheduler(
     schedulerPreferences: DesktopSchedulerPreferences,
     libraryUpdateRunner: LibraryUpdateRunner,
     backupJobs: DesktopBackupJobs,
+    appUpdateChecker: DesktopAppUpdateChecker? = null,
     now: () -> Long = System::currentTimeMillis,
     scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ): DesktopScheduler = DesktopScheduler(
     scope = scope,
-    tasks = listOf(
+    tasks = listOfNotNull(
         libraryUpdateTask(libraryPreferences, schedulerPreferences, libraryUpdateRunner, now),
         automaticBackupTask(backupPreferences, backupJobs),
+        appUpdateChecker?.let { appUpdateCheckTask(it, schedulerPreferences, now) },
     ),
     now = now,
     wakeUps = merge(

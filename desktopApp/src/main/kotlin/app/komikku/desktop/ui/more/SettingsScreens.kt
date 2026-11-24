@@ -1,6 +1,7 @@
 package app.komikku.desktop.ui.more
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChromeReaderMode
@@ -11,14 +12,21 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import app.komikku.desktop.source.DesktopDelegatedSources
 import app.komikku.desktop.ui.browse.BrowseScaffold
+import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.shared.settings.PreferenceList
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -34,11 +42,13 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.util.system.toast
 import exh.pref.DelegateSourcePreferences
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.library.model.GroupLibraryMode
@@ -377,12 +387,62 @@ private fun browsePreferences(): List<Preference> {
     )
 }
 
+/**
+ * Android `AboutScreen`: the version (with the build's channel) and, when the build has the updater (P6, `-Penable-updater`),
+ * "Check for updates" (a forced check; a found update opens the update dialog, otherwise Android's toasts).
+ */
 @Composable
-private fun aboutPreferences(): List<Preference> = listOf(
-    Preference.PreferenceItem.TextPreference(
-        title = stringResource(MR.strings.app_name),
-        subtitle = stringResource(MR.strings.version) + " " + BuildConfig.VERSION_NAME + " (desktop, " +
-            System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", Java " +
-            System.getProperty("java.version") + ")",
-    ),
-).toImmutableList()
+private fun aboutPreferences(): List<Preference> {
+    val checker = remember { Injekt.get<DesktopAppUpdateChecker>() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var checking by remember { mutableStateOf(false) }
+    val unknownError = stringResource(MR.strings.unknown_error)
+    val config = checker.config
+    val version = if (config.isPreview) "${BuildConfig.VERSION_NAME} (r${config.commitCount})" else BuildConfig.VERSION_NAME
+    return buildList {
+        add(
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(MR.strings.app_name),
+                subtitle = stringResource(MR.strings.version) + " " + version + " (desktop, " +
+                    System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", Java " +
+                    System.getProperty("java.version") + ")",
+            ),
+        )
+        if (checker.isEnabled) {
+            add(
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.check_for_updates),
+                    widget = {
+                        if (checking) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(28.dp).testTag("about-update-progress"),
+                                strokeWidth = 3.dp,
+                            )
+                        }
+                    },
+                    onClick = {
+                        if (!checking) {
+                            checking = true
+                            scope.launch {
+                                try {
+                                    when (val result = checker.check(forceCheck = true)) {
+                                        is DesktopAppUpdateChecker.Check.NewUpdate -> Unit // the update dialog shows it
+                                        DesktopAppUpdateChecker.Check.NoNewUpdate,
+                                        DesktopAppUpdateChecker.Check.Disabled,
+                                        -> context.toast(MR.strings.update_check_no_new_updates)
+                                        is DesktopAppUpdateChecker.Check.Failed -> context.toast(
+                                            result.error.message ?: unknownError,
+                                        )
+                                    }
+                                } finally {
+                                    checking = false
+                                }
+                            }
+                        }
+                    },
+                ),
+            )
+        }
+    }.toImmutableList()
+}

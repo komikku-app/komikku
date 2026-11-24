@@ -18,12 +18,17 @@ import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
 import app.komikku.desktop.ui.reader.ReaderHost
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import app.komikku.desktop.updater.AppUpdateDialogHost
+import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.window.DesktopShortcuts
 import app.komikku.desktop.window.DesktopWindowPreferences
 import app.komikku.desktop.window.rememberPersistedWindowState
 import app.komikku.shared.coil.DesktopImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import eu.kanade.tachiyomi.network.NetworkHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import tachiyomi.core.common.util.system.DesktopLogcatLogger
 import tachiyomi.domain.source.service.SourceManager
@@ -42,6 +47,9 @@ fun main() {
     val app = DesktopInjekt.init()
     // Scheduled library updates and automatic backups while the app runs (P3); the first check catches up on what
     // was missed while it was closed.
+    // Android's start-up app update check (P6; only with the updater build flag), before the scheduler so its
+    // catch-up does not check again
+    Injekt.get<DesktopAppUpdateChecker>().checkOnStart(CoroutineScope(SupervisorJob() + Dispatchers.IO))
     val scheduler = Injekt.get<DesktopScheduler>().also { it.start() }
 
     application {
@@ -106,6 +114,7 @@ fun KomikkuApp(
             DesktopToastHost {
                 ReaderHost(launcher = remember { Injekt.get<ReaderLauncher>() }, onToggleFullscreen = onToggleFullscreen) {
                     HomeShell(shortcuts = shortcuts)
+                    AppUpdateDialogHost()
                 }
             }
         }
