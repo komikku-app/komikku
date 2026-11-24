@@ -63,8 +63,14 @@ import mihon.feature.migration.list.components.MigrationProgressDialog
 import mihon.feature.migration.list.models.MigratingManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import tachiyomi.core.common.i18n.stringResource as contextStringResource
 
 /**
  * P19: Android's `MigrationListScreen` (Mihon / Komikku) on desktop, on the borrowed [MigrationListScreenModel]: each
@@ -78,7 +84,7 @@ import tachiyomi.presentation.core.i18n.stringResource
  * new entry's details take the old one's place, like Android.
  */
 class MigrationListScreen(
-    private val mangaIds: Collection<Long>,
+    internal val mangaIds: Collection<Long>,
     private val extraSearchQuery: String?,
     private val isSmartSearchSingleEntry: Boolean = false,
 ) : Screen() {
@@ -92,6 +98,13 @@ class MigrationListScreen(
 
     @Composable
     override fun Content() {
+        // Review fix (P19): the model resolves the migration sources once, so it is created only once they are loaded
+        val sourceManager = remember { Injekt.get<SourceManager>() }
+        val sourcesLoaded by sourceManager.isInitialized.collectAsState()
+        if (!sourcesLoaded) {
+            LoadingScreen()
+            return
+        }
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val singleEntryNoSmartSearch = mangaIds.size == 1 && !isSmartSearchSingleEntry
@@ -119,8 +132,16 @@ class MigrationListScreen(
 
         LaunchedEffect(model) {
             model.navigateBackEvent.collect {
-                val newId = (model.state.value.items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Success)?.manga?.id
-                navigator.leaveMigration(single = mangaIds.size == 1, newMangaId = newId, list = this@MigrationListScreen)
+                // Review fix (P19): after "migrate / copy now" the entry is no longer in the list; the last target is
+                val newId = model.lastMigratedTargetId
+                    ?: (model.state.value.items.firstOrNull()?.searchResult?.value as? MigratingManga.SearchResult.Success)?.manga?.id
+                navigator.leaveMigration(list = this@MigrationListScreen, migratedId = mangaIds.singleOrNull(), newMangaId = newId)
+            }
+        }
+        // Review fix (P19): a failed migration is reported; the entry stays in the list
+        LaunchedEffect(model) {
+            model.migrationFailedEvent.collect { manga ->
+                context.toast(context.contextStringResource(KMR.strings.desktop_migration_failed, manga.title))
             }
         }
 
@@ -249,21 +270,30 @@ class MigrationListScreen(
 }
 
 /**
- * Android's end of the list: for one entry opened from its details, the details of the new entry replace the old one's
- * (and this list, its configuration and the migration search); otherwise back to where the migration started.
+ * Android's end of the list: [list] and the screens above it close, and its own configuration screen if it is right below;
+ * for one entry ([migratedId]) whose details are right below, the details of the new entry ([newMangaId]) take their
+ * place. Every other screen stays (review fix, P19: other details, another migration list).
  */
-private fun Navigator.leaveMigration(single: Boolean, newMangaId: Long?, list: MigrationListScreen) {
-    if (single && newMangaId != null && items.any { it is MangaDetailsScreen }) {
-        val kept = items.filter {
-            it !is MangaDetailsScreen && it !is MigrationListScreen && it !is MigrationConfigScreen && it !is MigrateSearchScreen
-        }
-        replaceAll(kept + MangaDetailsScreen(newMangaId))
-        // Like Android: end in a pop so the screens taken out are disposed properly
-        push(list)
+private fun Navigator.leaveMigration(list: MigrationListScreen, migratedId: Long?, newMangaId: Long?) {
+    val index = items.indexOfLast { it === list }
+    if (index <= 0) {
         pop()
-    } else {
-        pop()
+        return
     }
+    val below = items.subList(0, index).toMutableList()
+    val config = below.last() as? MigrationConfigScreen
+    if (below.size > 1 && config != null && config.mangaIds.toSet() == list.mangaIds.toSet()) below.removeAt(below.lastIndex)
+    val details = below.last() as? MangaDetailsScreen
+    val swapDetails = migratedId != null && newMangaId != null && details?.mangaId == migratedId
+    if (swapDetails) below[below.lastIndex] = MangaDetailsScreen(newMangaId)
+    if (!swapDetails && below.size == index && items.size == index + 1) {
+        pop()
+        return
+    }
+    replaceAll(below)
+    // Like Android: end in a pop so the screens taken out are disposed properly
+    push(list)
+    pop()
 }
 
 @Composable
