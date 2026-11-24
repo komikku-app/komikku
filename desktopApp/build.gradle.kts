@@ -92,6 +92,45 @@ val packageVersionName: String = appVersionName.substringBefore('-').also {
     require(Regex("""\d+(\.\d+){0,2}""").matches(it)) { "versionName $it is not a jpackage version (x[.y[.z]])" }
 }
 
+// The version the release assets are named with (`build_desktop.yml`, P9): the same `versionName` as the packages.
+tasks.register("printVersionName") {
+    group = "help"
+    description = "Prints the desktop app's version (the Android versionName)."
+    val version = appVersionName
+    doLast { println(version) }
+}
+
+/*
+ * Signing hooks (P9, BUILDING.md "Signing"): off unless set, so a build without them is exactly the unsigned one. Each
+ * setting is a Gradle property (`-Pkomikku.desktop.<name>=…`, or ~/.gradle/gradle.properties) or an environment
+ * variable (CI: from repository secrets); blank = not set. Values are never printed.
+ *
+ * - macOS signing (Compose `macOS.signing`): the Developer ID Application identity, optionally the keychain that
+ *   holds it (CI imports the certificate into a temporary one).
+ * - macOS notarization (Compose `macOS.notarization`, task `notarizeDmg`): Apple ID, app-specific password and team
+ *   ID, all three or none; only together with signing.
+ * - Windows: the Compose plugin has no signing configuration; `build_desktop.yml` signs the MSI / EXE with signtool
+ *   after packaging when its secrets are set.
+ */
+fun desktopSetting(property: String, environment: String): String? =
+    (providers.gradleProperty(property).orNull ?: providers.environmentVariable(environment).orNull)
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val macSigningIdentity = desktopSetting("komikku.desktop.macSigningIdentity", "KOMIKKU_MAC_SIGNING_IDENTITY")
+val macSigningKeychain = desktopSetting("komikku.desktop.macSigningKeychain", "KOMIKKU_MAC_SIGNING_KEYCHAIN")
+val macNotarizationAppleId = desktopSetting("komikku.desktop.macNotarizationAppleId", "KOMIKKU_MAC_NOTARIZATION_APPLE_ID")
+val macNotarizationPassword = desktopSetting("komikku.desktop.macNotarizationPassword", "KOMIKKU_MAC_NOTARIZATION_PASSWORD")
+val macNotarizationTeamId = desktopSetting("komikku.desktop.macNotarizationTeamId", "KOMIKKU_MAC_NOTARIZATION_TEAM_ID")
+val macNotarizationSettings = listOf(macNotarizationAppleId, macNotarizationPassword, macNotarizationTeamId)
+check(macNotarizationSettings.all { it == null } || macNotarizationSettings.all { it != null }) {
+    "macOS notarization needs all of KOMIKKU_MAC_NOTARIZATION_APPLE_ID, _PASSWORD and _TEAM_ID (or the " +
+        "komikku.desktop.macNotarization* Gradle properties), or none of them"
+}
+check(macNotarizationAppleId == null || macSigningIdentity != null) {
+    "macOS notarization needs signing: set KOMIKKU_MAC_SIGNING_IDENTITY (or komikku.desktop.macSigningIdentity) too"
+}
+
 /*
  * The commit count of a preview build (`-Pdesktop-preview`), compared with the `r<N>` preview release tags. A shallow
  * clone counts only its own commits (1 with CI's default checkout depth), which would make every release look newer, so
@@ -206,8 +245,21 @@ extensions.configure<ComposeExtension> {
                     dockName = "Komikku"
                     packageVersion = packageVersionName
                     dmgPackageVersion = packageVersionName
-                    // TODO(signing): `signing { sign.set(true); identity.set(...) }` and `notarization { ... }`
-                    // need an Apple Developer ID; not configured (no secrets), see BUILDING.md.
+                    // Signing / notarization only when their settings are there (see "Signing hooks" above).
+                    if (macSigningIdentity != null) {
+                        signing {
+                            sign.set(true)
+                            identity.set(macSigningIdentity)
+                            if (macSigningKeychain != null) keychain.set(macSigningKeychain)
+                        }
+                    }
+                    if (macNotarizationAppleId != null) {
+                        notarization {
+                            appleID.set(macNotarizationAppleId)
+                            password.set(macNotarizationPassword)
+                            teamID.set(macNotarizationTeamId)
+                        }
+                    }
                 }
             }
 
