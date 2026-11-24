@@ -57,6 +57,7 @@ import exh.log.xLogE
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -144,6 +145,7 @@ private fun ExtensionDetails(
 ) {
     val context = LocalContext.current
     var nsfwWarning by remember { mutableStateOf(false) }
+    var confirmUninstall by remember { mutableStateOf(false) }
     LazyColumn(modifier = Modifier.fillMaxSize().testTag("extension-details")) {
         if (extension.isRedundant) item(key = "redundant") { Warning(stringResource(SYMR.strings.redundant_extension_message)) }
         if (extension.isObsolete) item(key = "obsolete") { Warning(stringResource(MR.strings.obsolete_extension_message)) }
@@ -177,7 +179,7 @@ private fun ExtensionDetails(
                         )
                     }
                 }
-                OutlinedButton(onClick = onUninstall, modifier = Modifier.testTag("extension-details-uninstall")) {
+                OutlinedButton(onClick = { confirmUninstall = true }, modifier = Modifier.testTag("extension-details-uninstall")) {
                     Text(stringResource(MR.strings.ext_uninstall))
                 }
             }
@@ -222,6 +224,16 @@ private fun ExtensionDetails(
             )
         }
     }
+    if (confirmUninstall) {
+        ExtensionUninstallDialog(
+            name = extension.name,
+            onConfirm = {
+                confirmUninstall = false
+                onUninstall()
+            },
+            onDismiss = { confirmUninstall = false },
+        )
+    }
     if (nsfwWarning) {
         AlertDialog(
             text = { Text(stringResource(MR.strings.ext_nsfw_warning)) },
@@ -229,6 +241,25 @@ private fun ExtensionDetails(
             onDismissRequest = { nsfwWarning = false },
         )
     }
+}
+
+/**
+ * P22 review: Android asks through the system's uninstall dialog; the desktop deletes the APK at once, so it asks here
+ * (the extension info and the Extensions tab's rows).
+ */
+@Composable
+internal fun ExtensionUninstallDialog(name: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(MR.strings.ext_uninstall)) },
+        text = { Text(stringResource(KMR.strings.js_source_uninstall_confirm, name)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm, modifier = Modifier.testTag("extension-uninstall-confirm")) {
+                Text(stringResource(MR.strings.ext_uninstall))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(MR.strings.action_cancel)) } },
+    )
 }
 
 /**

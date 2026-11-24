@@ -39,6 +39,7 @@ import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
@@ -132,8 +133,17 @@ class ExtensionDetailsUiTest {
             onNodeWithTag("extension-details-incognito").performClick()
             waitUntil(timeoutMillis = 5_000) { preferences.incognitoExtensions().get() == setOf(PKG) }
 
-            // Uninstall: the extension is gone, the screen closes
+            // Uninstall asks first (P22 review); cancelled, the extension stays
             onNodeWithTag("extension-details-uninstall").performClick()
+            waitForTag("extension-uninstall-confirm")
+            waitForText(KMR.strings.js_source_uninstall_confirm.localized().replace("%1\$s", "Greek"))
+            onNodeWithText(MR.strings.action_cancel.localized()).performClick()
+            waitForTag("extension-uninstall-confirm", present = false)
+            extensions.installed.value.map { it.pkgName } shouldBe listOf(PKG)
+            // Confirmed: the extension is gone, the screen closes
+            onNodeWithTag("extension-details-uninstall").performClick()
+            waitForTag("extension-uninstall-confirm")
+            onNodeWithTag("extension-uninstall-confirm").performClick()
             waitForTag("extension-details", present = false)
             waitForTag("source-$LONE")
 
@@ -192,6 +202,24 @@ class ExtensionDetailsUiTest {
             waitForText(MR.strings.cookies_cleared.localized())
             jar.get(site).shouldBeEmpty()
             jar.get(other).map { it.name } shouldBe listOf("keep")
+        }
+
+    @Test
+    fun `the extensions tab asks before it uninstalls`() =
+        runDesktopComposeUiTest(width = 1200, height = 1000) {
+            openBrowse()
+            onNodeWithText(MR.strings.label_extensions.localized()).performClick()
+            waitForTag("extension-$PKG")
+            onNodeWithText(MR.strings.ext_uninstall.localized()).performClick()
+            waitForTag("extension-uninstall-confirm")
+            onNodeWithText(MR.strings.action_cancel.localized()).performClick()
+            waitForTag("extension-uninstall-confirm", present = false)
+            extensions.installed.value.map { it.pkgName } shouldBe listOf(PKG)
+
+            onNodeWithText(MR.strings.ext_uninstall.localized()).performClick()
+            waitForTag("extension-uninstall-confirm")
+            onNodeWithTag("extension-uninstall-confirm").performClick()
+            waitUntil(timeoutMillis = 5_000) { extensions.installed.value.isEmpty() }
         }
 
     private class FakeExtensions : PlatformExtensionManager {

@@ -135,6 +135,7 @@ fun ExtensionsPane(model: ExtensionsScreenModel) {
 private fun ExtensionRow(extension: Extension, step: InstallStep?, model: ExtensionsScreenModel) {
     val navigator = LocalNavigator.currentOrThrow
     var confirmTrust by remember { mutableStateOf(false) }
+    var confirmUninstall by remember { mutableStateOf(false) }
     val configurableSource = (extension as? Extension.Installed)?.sources?.firstOrNull { it is ConfigurableSource }
 
     ListItem(
@@ -178,16 +179,28 @@ private fun ExtensionRow(extension: Extension, step: InstallStep?, model: Extens
                         if (extension.hasUpdate) {
                             Button(onClick = { model.update(extension) }) { Text(stringResource(MR.strings.ext_update)) }
                         }
-                        OutlinedButton(onClick = { model.uninstall(extension) }) { Text(stringResource(MR.strings.ext_uninstall)) }
+                        OutlinedButton(onClick = { confirmUninstall = true }) { Text(stringResource(MR.strings.ext_uninstall)) }
                     }
                     is Extension.Untrusted -> {
                         Button(onClick = { confirmTrust = true }) { Text(stringResource(MR.strings.ext_trust)) }
-                        OutlinedButton(onClick = { model.uninstall(extension) }) { Text(stringResource(MR.strings.ext_uninstall)) }
+                        OutlinedButton(onClick = { confirmUninstall = true }) { Text(stringResource(MR.strings.ext_uninstall)) }
                     }
                 }
             }
         },
     )
+
+    // P22 review: the APK is deleted at once, so ask first (Android: the system's uninstall dialog)
+    if (confirmUninstall) {
+        ExtensionUninstallDialog(
+            name = extension.name,
+            onConfirm = {
+                confirmUninstall = false
+                model.uninstall(extension)
+            },
+            onDismiss = { confirmUninstall = false },
+        )
+    }
 
     if (confirmTrust && extension is Extension.Untrusted) {
         AlertDialog(
