@@ -147,9 +147,10 @@ fun KomikkuApp(
     }
     CompositionLocalProvider(LocalContext provides context) {
         DesktopTheme {
-            DesktopToastHost {
-                // P16: the app lock covers everything (Android's UnlockActivity over the app)
-                AppLockGate(lock = remember { Injekt.get<DesktopAppLock>() }) {
+            // P16: the app lock covers everything (Android's UnlockActivity over the app): the toasts too (review fix,
+            // they were drawn over the lock screen), and the dialogs / menus the app has open
+            AppLockGate(lock = remember { Injekt.get<DesktopAppLock>() }) {
+                DesktopToastHost {
                     ReaderHost(launcher = remember { Injekt.get<ReaderLauncher>() }, onToggleFullscreen = onToggleFullscreen) {
                         HomeShell(shortcuts = shortcuts)
                         AppUpdateDialogHost()

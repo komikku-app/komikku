@@ -343,7 +343,7 @@ class DesktopDomainModule(
         }
         addFactory { GetApplicationRelease(get(), get()) }
         addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get()) }
-        addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs() }
+        addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs(get<DesktopAppLock>().locked) }
 
         // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart
         addSingletonFactory { TrackerManager() }

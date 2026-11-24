@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -48,13 +50,19 @@ import tachiyomi.presentation.core.i18n.stringResource
 /**
  * P16: the app behind Android's `UnlockActivity`. While [lock] is locked, the lock screen covers [content], which stays
  * composed (its screens and the reader keep their state, like Android's activities under the unlock screen) but cannot
- * be focused, clicked or read by accessibility services.
+ * be focused, clicked or read by accessibility services. Its dialogs, menus and other popups, which Compose draws in
+ * layers above the window content, are emptied and made inert while locked ([LockAwareSceneContext], review fix), and
+ * come back on unlock. Everything the app shows belongs inside [content] (the toast host too).
  */
+@OptIn(InternalComposeUiApi::class)
 @Composable
 fun AppLockGate(lock: DesktopAppLock, content: @Composable () -> Unit) {
-    val locked by lock.locked.collectAsState()
+    val lockedState = lock.locked.collectAsState()
+    val locked by lockedState
     val focusManager = LocalFocusManager.current
     LaunchedEffect(locked) { if (locked) focusManager.clearFocus(force = true) }
+    val sceneContextLocal = localComposeSceneContext
+    val parentSceneContext = sceneContextLocal?.current
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -69,7 +77,17 @@ fun AppLockGate(lock: DesktopAppLock, content: @Composable () -> Unit) {
                         Modifier
                     },
                 ),
-        ) { content() }
+        ) {
+            if (sceneContextLocal != null && parentSceneContext != null) {
+                val sceneContext = remember(parentSceneContext, lockedState) {
+                    LockAwareSceneContext(parentSceneContext, lockedState)
+                }
+                CompositionLocalProvider(sceneContextLocal provides sceneContext) { content() }
+            } else if (!locked) {
+                // Fallback without Compose's scene context: nothing of the app while locked (its state is lost)
+                content()
+            }
+        }
         if (locked) AppLockScreen(lock)
     }
 }
