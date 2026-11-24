@@ -8,6 +8,10 @@ import app.komikku.desktop.compat.DesktopPreferenceStores
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.library.desktopLibraryUpdateRunner
+import app.komikku.desktop.notification.DesktopNotifications
+import app.komikku.desktop.notification.DesktopNotifier
+import app.komikku.desktop.notification.DesktopTray
+import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.platform.AwtFileDialogs
 import app.komikku.desktop.platform.DesktopFileDialogs
 import app.komikku.desktop.scheduler.DesktopSchedulerPreferences
@@ -344,6 +348,23 @@ class DesktopDomainModule(
         addFactory { GetApplicationRelease(get(), get()) }
         addSingletonFactory { DesktopAppUpdateChecker(get(), get(), get()) }
         addSingletonFactory<DesktopFileDialogs> { AwtFileDialogs(get<DesktopAppLock>().locked) }
+
+        // Notifications and the system tray (P17): Android's notifiers' texts through the tray icon, when there is one
+        addSingletonFactory { DesktopTrayPreferences(get()) }
+        addSingletonFactory { DesktopTray() }
+        addSingletonFactory<DesktopNotifier> { get<DesktopTray>() }
+        addSingletonFactory {
+            DesktopNotifications(
+                context = app,
+                notifier = get(),
+                securityPreferences = get(),
+                isLocked = { get<DesktopAppLock>().locked.value },
+                libraryUpdates = get<LibraryUpdateRunner>().progress,
+                downloadEvents = get<DesktopDownloadEvents>().events,
+                backupStatus = get<DesktopBackupJobs>().status,
+                appUpdates = get<DesktopAppUpdateChecker>().available,
+            )
+        }
 
         // Trackers (8.3): borrowed Android trackers and interactors, desktop TrackerManager counterpart
         addSingletonFactory { TrackerManager() }

@@ -26,7 +26,7 @@ import uy.kohesive.injekt.api.get
 /**
  * P16: Android's `SettingsSecurityScreen` security group with what the desktop has: the lock (a PIN / password of the
  * app's own instead of the device's authenticator, see [DesktopAppLock]), changing it, "Lock now" and Android's "Lock
- * when idle". Not on desktop: secure screen and notification content (no such window flag / notifications yet), SY's
+ * when idle", Android's "Hide notification content" (P17). Not on desktop: secure screen (no such window flag), SY's
  * CBZ password and lock times / days editors, Firebase.
  */
 @Composable
@@ -70,6 +70,11 @@ internal fun securityPreferences(): List<Preference> {
                         .toImmutableMap(),
                     title = stringResource(MR.strings.lock_when_idle),
                     enabled = enabled,
+                ),
+                // P17: Android's switch; the desktop also leaves entry titles out of notifications while locked
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = security.hideNotificationContent(),
+                    title = stringResource(MR.strings.hide_notification_content),
                 ),
                 Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.desktop_app_lock_info)),
             ),

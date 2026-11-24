@@ -4,7 +4,9 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalContext
@@ -14,6 +16,9 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.log.DesktopLogFile
+import app.komikku.desktop.notification.DesktopNotifications
+import app.komikku.desktop.notification.DesktopTray
+import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.security.DesktopAppLock
@@ -48,6 +53,8 @@ import tachiyomi.core.common.util.system.DesktopLogcatLogger
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.awt.Dimension
@@ -78,6 +85,9 @@ fun main() {
     // Scheduled library updates, automatic backups and app update checks while the app runs (P3); the first check
     // catches up on what was missed while it was closed.
     val scheduler = Injekt.get<DesktopScheduler>().also { it.start() }
+    // P17: Android's notifications (new chapters, update errors, downloader, backup / restore, app update) through the
+    // system tray icon while there is one (KomikkuWindow installs it)
+    Injekt.get<DesktopNotifications>().start(startScope)
 
     application {
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication)
@@ -102,6 +112,8 @@ fun ApplicationScope.KomikkuWindow(
             .distinctUntilChanged()
             .collect { minimized -> if (minimized) appLock.onWindowHidden() else appLock.onWindowShown() }
     }
+    val tray = remember { Injekt.get<DesktopTray>() }
+    val trayIcon by remember { Injekt.get<DesktopTrayPreferences>().trayIcon() }.collectAsState()
     Window(
         onCloseRequest = onCloseRequest,
         state = windowState,
@@ -111,6 +123,23 @@ fun ApplicationScope.KomikkuWindow(
     ) {
         remember(window) {
             window.minimumSize = Dimension(DesktopWindowPreferences.MIN_WIDTH, DesktopWindowPreferences.MIN_HEIGHT)
+        }
+        // P17: the optional tray icon (no-op without a system tray); it brings this window back and can quit
+        DisposableEffect(trayIcon, window) {
+            if (trayIcon) {
+                tray.install(
+                    openText = KMR.strings.desktop_tray_open.localized(),
+                    exitText = KMR.strings.desktop_tray_exit.localized(),
+                    onOpen = {
+                        windowState.isMinimized = false
+                        window.isVisible = true
+                        window.toFront()
+                        window.requestFocus()
+                    },
+                    onExit = onCloseRequest,
+                )
+            }
+            onDispose { tray.remove() }
         }
         KomikkuApp(
             context = app,

@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.ui.browse.BrowseScaffold
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
 import app.komikku.desktop.webview.DesktopCloudflarePreferences
@@ -212,6 +213,12 @@ private fun appearancePreferences(): List<Preference> {
                 Preference.PreferenceItem.SwitchPreference(
                     preference = ui.relativeTime(),
                     title = stringResource(MR.strings.pref_relative_format),
+                ),
+                // P17: the system tray icon, which shows the notifications (desktop only)
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = remember { Injekt.get<DesktopTrayPreferences>() }.trayIcon(),
+                    title = stringResource(KMR.strings.desktop_tray_icon),
+                    subtitle = stringResource(KMR.strings.desktop_tray_icon_summary),
                 ),
             ),
         ),

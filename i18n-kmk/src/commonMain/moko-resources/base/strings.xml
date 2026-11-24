@@ -360,4 +360,9 @@
     <string name="desktop_app_lock_wait">Too many wrong entries, try again in %d s</string>
     <string name="desktop_app_lock_unlock">Unlock</string>
     <string name="desktop_app_lock_info">A forgotten PIN or password cannot be recovered. \"Lock when idle\" counts from when the window was minimised. The lock times and days of a restored Android backup are followed but cannot be changed here yet. Biometrics are not supported on desktop.</string>
+    <string name="desktop_tray_icon">Show an icon in the system tray</string>
+    <string name="desktop_tray_icon_summary">Library updates, downloads, backups and app updates are notified through it. Not every desktop has a system tray</string>
+    <string name="desktop_tray_open">Open Komikku</string>
+    <string name="desktop_tray_exit">Exit</string>
+    <string name="desktop_notification_open">Click to open Komikku</string>
 </resources>

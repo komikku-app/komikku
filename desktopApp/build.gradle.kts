@@ -78,6 +78,11 @@ tasks.withType<Test>().configureEach {
     doFirst { testDataDir.deleteRecursively() }
 }
 
+// P17: the system tray icon (`DesktopTray.ICON_RESOURCE`) is the packaging icon, not a second copy in the sources
+tasks.named<ProcessResources>("processResources") {
+    from("icons/komikku.png") { into("app/komikku/desktop") }
+}
+
 /*
  * Version: the Android app's `versionName` / `versionCode` in app/build.gradle.kts are the single source of truth
  * (read here, not duplicated). jpackage needs MAJOR[.MINOR[.BUILD]] numbers (MSI: MAJOR, MINOR <= 255,
