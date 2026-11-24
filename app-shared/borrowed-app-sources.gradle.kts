@@ -506,6 +506,15 @@ run {
         "eu/kanade/presentation/browse/components/SourceFeedAddDialog.kt",
         "eu/kanade/presentation/browse/components/SourceFeedDeleteDialog.kt",
     )
+    // Source migration (P18): Mihon's / Komikku's migration of one entry (MigrateMangaUseCase: chapters' read state and
+    // history, categories, tracks, custom cover, notes, downloads, extras by MigrationFlag), the labels of the flags and
+    // the "what to include" dialog with Copy / Migrate (its composable is public for the desktop, was `internal`). They
+    // use desktopCopy sources (CoverCache, DownloadManager, UpdateMangaFromRemote, MangaExtensions), hence copies.
+    desktopCopy(
+        "mihon/domain/migration/usecases/MigrateMangaUseCase.kt",
+        "mihon/feature/common/utils/MigrationFlag.kt",
+        "mihon/feature/migration/dialog/MigrateMangaDialog.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

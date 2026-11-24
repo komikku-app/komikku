@@ -40,8 +40,10 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
+// KMK --> public: the desktop app (another module) shows it too
 @Composable
-internal fun Screen.MigrateMangaDialog(
+fun Screen.MigrateMangaDialog(
+    // KMK <--
     current: Manga,
     target: Manga,
     onClickTitle: () -> Unit,
