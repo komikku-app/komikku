@@ -97,10 +97,8 @@ fun AppLockGate(lock: DesktopAppLock, content: @Composable () -> Unit) {
 private fun AppLockScreen(lock: DesktopAppLock) {
     val scope = rememberCoroutineScope()
     var input by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
+    var failedAttempt by remember { mutableStateOf<DesktopAppLock.Attempt?>(null) }
     var checking by remember { mutableStateOf(false) }
-    val wrong = stringResource(KMR.strings.desktop_app_lock_wrong)
-    val waitText = stringResource(KMR.strings.desktop_app_lock_wait)
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
     val submit = submit@{
@@ -108,11 +106,7 @@ private fun AppLockScreen(lock: DesktopAppLock) {
         checking = true
         scope.launch {
             try {
-                when (val attempt = lock.unlock(input)) {
-                    DesktopAppLock.Attempt.Accepted -> error = null
-                    DesktopAppLock.Attempt.Wrong -> error = wrong
-                    is DesktopAppLock.Attempt.Blocked -> error = waitText.replace("%d", attempt.seconds.toString())
-                }
+                failedAttempt = lock.unlock(input).takeUnless { it == DesktopAppLock.Attempt.Accepted }
                 input = ""
             } finally {
                 checking = false
@@ -136,10 +130,10 @@ private fun AppLockScreen(lock: DesktopAppLock) {
                     value = input,
                     onValueChange = {
                         input = it
-                        error = null
+                        failedAttempt = null
                     },
                     label = stringResource(KMR.strings.desktop_app_lock_input),
-                    error = error,
+                    error = attemptErrorText(failedAttempt),
                     onDone = submit,
                     modifier = Modifier.focusRequester(focusRequester).testTag("app-lock-input"),
                 )
@@ -151,6 +145,17 @@ private fun AppLockScreen(lock: DesktopAppLock) {
             }
         }
     }
+}
+
+/**
+ * The text of a refused entry: wrong, or the wait (the seconds formatted through the string resource, so translations
+ * may place or number the placeholder as they need; review fix).
+ */
+@Composable
+private fun attemptErrorText(attempt: DesktopAppLock.Attempt?): String? = when (attempt) {
+    null, DesktopAppLock.Attempt.Accepted -> null
+    DesktopAppLock.Attempt.Wrong -> stringResource(KMR.strings.desktop_app_lock_wrong)
+    is DesktopAppLock.Attempt.Blocked -> stringResource(KMR.strings.desktop_app_lock_wait, attempt.seconds)
 }
 
 /** A masked PIN / password field. */
@@ -190,21 +195,16 @@ fun AppLockSecretDialog(mode: AppLockDialogMode, lock: DesktopAppLock, onDismiss
     var current by remember { mutableStateOf("") }
     var new by remember { mutableStateOf("") }
     var repeat by remember { mutableStateOf("") }
-    var currentError by remember { mutableStateOf<String?>(null) }
+    var currentError by remember { mutableStateOf<DesktopAppLock.Attempt?>(null) }
     var newError by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    val wrong = stringResource(KMR.strings.desktop_app_lock_wrong)
-    val waitText = stringResource(KMR.strings.desktop_app_lock_wait)
     val tooShort = stringResource(KMR.strings.desktop_app_lock_too_short, DesktopAppLock.MIN_LENGTH)
     val mismatch = stringResource(KMR.strings.desktop_app_lock_mismatch)
     val asksCurrent = mode != AppLockDialogMode.TurnOn
     val asksNew = mode != AppLockDialogMode.TurnOff
 
-    fun attemptError(attempt: DesktopAppLock.Attempt): String? = when (attempt) {
-        DesktopAppLock.Attempt.Accepted -> null
-        DesktopAppLock.Attempt.Wrong -> wrong
-        is DesktopAppLock.Attempt.Blocked -> waitText.replace("%d", attempt.seconds.toString())
-    }
+    fun attemptError(attempt: DesktopAppLock.Attempt): DesktopAppLock.Attempt? =
+        attempt.takeUnless { it == DesktopAppLock.Attempt.Accepted }
 
     val confirm = confirm@{
         if (busy) return@confirm
@@ -263,7 +263,7 @@ fun AppLockSecretDialog(mode: AppLockDialogMode, lock: DesktopAppLock, onDismiss
                             currentError = null
                         },
                         label = stringResource(KMR.strings.desktop_app_lock_current),
-                        error = currentError,
+                        error = attemptErrorText(currentError),
                         onDone = confirm,
                         modifier = Modifier.testTag("app-lock-current"),
                     )
