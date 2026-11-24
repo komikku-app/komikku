@@ -139,17 +139,25 @@ enum class SettingsCategory(val title: StringResource) {
  */
 class SettingsCategoryScreen(
     private val category: SettingsCategory,
-    private val highlightKey: String? = null,
+    highlightKey: String? = null,
 ) : Screen() {
 
     override val key: String get() = "settings-${category.name}"
+
+    /** The search result's item, until the page highlighted it once (not again when the page is shown again). */
+    private var pendingHighlightKey: String? = highlightKey
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val items = settingsCategoryPreferences(category, navigator)
         BrowseScaffold(title = stringResource(category.title), onBack = navigator::pop) {
-            PreferenceList(items, Modifier.fillMaxSize().testTag("settings-${category.name}"), highlightKey = highlightKey)
+            PreferenceList(
+                items,
+                Modifier.fillMaxSize().testTag("settings-${category.name}"),
+                highlightKey = pendingHighlightKey,
+                onHighlightConsumed = { pendingHighlightKey = null },
+            )
         }
     }
 }

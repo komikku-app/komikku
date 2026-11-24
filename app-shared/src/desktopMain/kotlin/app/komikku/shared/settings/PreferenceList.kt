@@ -27,6 +27,8 @@ import kotlin.time.Duration.Companion.seconds
  * each item through the borrowed `PreferenceItem` (switch, list, multi-select, edit text, slider, text / link, info
  * widgets). With [highlightKey] (a settings search result, P15; Android's `SearchableSettings.highlightKey`) the list
  * scrolls to the item of that title and the item blinks like Android's; afterwards nothing is highlighted any more.
+ * [onHighlightConsumed] is called once the highlight started: the caller forgets [highlightKey] there (Android resets
+ * `SearchableSettings.highlightKey`), so showing the page again later neither scrolls nor blinks again (review fix).
  */
 @Composable
 fun PreferenceList(
@@ -34,11 +36,13 @@ fun PreferenceList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     highlightKey: String? = null,
+    onHighlightConsumed: () -> Unit = {},
 ) {
     val state = rememberLazyListState()
     var highlighted by remember { mutableStateOf(highlightKey) }
     highlighted?.let { key ->
         LaunchedEffect(Unit) {
+            onHighlightConsumed()
             val i = items.findHighlightedIndex(key)
             if (i >= 0) {
                 delay(0.5.seconds)
