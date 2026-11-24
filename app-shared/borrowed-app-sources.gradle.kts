@@ -383,6 +383,10 @@ run {
     shared(
         "eu/kanade/domain/source/interactor/GetExhSavedSearch.kt",
         "eu/kanade/presentation/browse/components/BrowseSourceDialogs.kt",
+        // The filter rows of Android's filter sheet (SourceFilterItems.kt, moved out of SourceFilterDialog.kt) and SY's
+        // auto-complete filter row they use; the desktop catalogue's filter panel shows them (P13 review fixes).
+        "eu/kanade/tachiyomi/ui/browse/source/browse/AutoCompleteItem.kt",
+        "eu/kanade/tachiyomi/ui/browse/source/browse/SourceFilterItems.kt",
     )
 
     // Enabled-sources query (uses `:source-local`, a desktop-only dependency of `:app-shared`), source
