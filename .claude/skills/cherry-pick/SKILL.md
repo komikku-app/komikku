@@ -253,8 +253,9 @@ step 1.
   folds in a change from another upstream commit (a Notes plan, or something the user approved), add one line to the
   end of the body, before the `(cherry picked from commit …)` lines, naming that commit by hash and PR, e.g.
   `Also includes <change> from upstream <hash> (mihonapp/mihon#N).` Don't hard-wrap it.
-- **`(cherry picked from commit …)` lines** end the body, with the full hashes. A mihon pick ends with mihon's line. A
-  pick of SY's copy ends with two lines, with nothing between them: mihon's next to last and SY's last.
+- **`(cherry picked from commit …)` lines** end the body, with the full hashes, followed only by the user's co-author
+  trailer when the pick needs one (Commit, below). A mihon pick ends with mihon's line. A pick of SY's copy ends with
+  two lines, with nothing between them: mihon's next to last and SY's last.
 
   ```
   (cherry picked from commit <mihon-full-hash>)
@@ -283,7 +284,25 @@ step 1.
     `git commit -F <file>`.
   - After a clean pick: write its message to a scratchpad file (`git log -1 --format=%B > <file>`) and edit it there,
     add the log row, then `git commit --amend -F <file>`.
-  - No `Co-Authored-By` trailer: the commit is upstream's.
+  - **Co-author trailer.** Never add a `Co-Authored-By` trailer for Claude. Add one for the user when the pick holds
+    Komikku work beyond resolving conflicts:
+    - **Ported by hand:** upstream's file or code doesn't exist here, so its change is rewritten into other code, as
+      `a6ee4bc596` (Fix library range selection crash across categories) went from upstream's `LibraryViewModel` into
+      our `LibraryScreenModel`.
+    - **Komikku changes folded in:** step 7's fixes folded into the pick, or a change from another upstream commit
+      (Body, above).
+
+    A conflict resolved in place (the code is the same, only nearby Komikku lines are in the way) and step 3's routine
+    adaptations (fork markers, migration numbers, strings, URLs, gone files) don't count. Take the name and email from
+    `git config user.name` and `git config user.email`; never type them from memory or write them into this skill. Put
+    the trailer on the message's last line, only once, separated from the `(cherry picked from commit …)` lines by one
+    blank line (add it if the message doesn't end with one):
+
+    ```
+    (cherry picked from commit <full-hash>)
+
+    Co-authored-by: <name> <email>
+    ```
   - Check that the commit holds only the expected files: `git show --stat HEAD`.
   - Leave step 0's stash where it is; it comes back at the end of step 7.
 - **Signature:** commits are GPG-signed automatically (`commit.gpgsign`), so `git log -1 --format='%h %G?'` must show
@@ -368,8 +387,9 @@ Review every pick once it passes step 5, fix what is worth fixing, and repeat un
 fixes stay **uncommitted**: never amend them into the pick or commit them yourself. The user decides where they go
 (Report).
 
-1. **Run the review** with Claude Code's built-in `code-review` skill (Skill tool), at `low` or `medium` effort each
-   round. If it isn't in this session's skill list, say so and review by hand for correctness and the checks below.
+1. **Run the review** with Claude Code's built-in `code-review` skill (Skill tool), at `medium` effort each round,
+   however small the pick (`low` reads only the diff, so it misses callers and removed behavior). If it isn't in this
+   session's skill list, say so and review by hand for correctness and the checks below.
    - **Never pass `--fix`.** It applies every finding, its cleanups included, and this step decides what is worth
      fixing. Never use `max` or `ultra` unless the user asks: each round would start many reviewers, and `ultra` is a
      billed cloud review only the user can start.
@@ -418,7 +438,8 @@ For each fix, suggest where it should go:
 - **Both** when the fixes are of both kinds: fold the first kind and commit the rest separately.
 
 Then carry out the user's answer to the Report's question:
-- **Fold:** each pick gets only its own fixes.
+- **Fold:** each pick gets only its own fixes. A fold puts Komikku work in the pick, so its message gains the user's
+  co-author trailer (step 4, Commit) if it doesn't have it yet: amend with `-F <file>`, not `--no-edit`.
   - One pick, at the branch tip: `git add <files>`, then `git commit --amend --no-edit` (or `-F <file>` with the
     corrected message).
   - Several picks: stash all the fixes (`git stash push -u -m "review fixes, all"`), then for each pick, earliest
@@ -494,7 +515,7 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the Komikku verdict from step 2: safe, safe after the adaptation (say which), or would break it (not picked, or kept
   only after the user confirmed);
 - any Notes plan from step 0 that you carried out;
-- the new hash and subject, and whether it is signed;
+- the new hash and subject, whether it is signed, and whether it carries the user's co-author trailer and why;
 - every line that differs from upstream's patch and why (`git range-diff <hash>~1..<hash> <new>~1..<new>` shows them),
   KMK blocks included;
 - the log rows marked `O` (or `?` with a `Partial` note), and the rows of other commits marked `?` with a `Folded`
