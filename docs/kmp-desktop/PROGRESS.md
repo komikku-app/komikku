@@ -3159,7 +3159,8 @@ reviewed yet.**
 
 **Shared with Android (behaviour unchanged):** the platform-neutral part of `FeedScreenModel` moved into the new KMK file
 `eu/kanade/tachiyomi/ui/browse/feed/FeedItems.kt` (`desktopCopy`, it uses the Android-only `LocaleHelper`): `MaxFeedItems`
-(20) and `isFeedFull` (Android's `count > MaxFeedItems`, so a 21st row can still be added, as on Android), the sources a
+(20) and `isFeedFull` (Android's `count > MaxFeedItems`, so a 21st row can still be added, as on Android; `>=` since the
+review fixes below), the sources a
 row can be added for (`feedSourceOptions`: enabled languages, not disabled, pinned first), the rows' saved searches
 (`pairFeedWithSavedSearches`), a row's title / subtitle (`feedItemTitles`), a row's first page (`fetchFeedPage`: the saved
 search's sanitised query and filters, else latest, popular when the source has no latest) and the saved search's filters
@@ -3212,6 +3213,38 @@ like the earlier once-seen timeouts) and `LibraryGroupSelectionUiTest` (an `Null
 initial load runs on another thread and could read it before the constructor reached it; fixed in `65779f3` by declaring
 it before `init`). The full suite on `65779f3`: 67 classes, 290 tests, 0 failures (was 66 / 288 after the saved-search
 review fixes: `FeedUiTest` 2 new). Not run: a real window, real extension sources in the feed.
+
+### Review fixes (P13 Feed tab)
+
+Review `/code-review medium 5ebb0da..8b6cbde`, 8 findings (4 important, 4 nits), all fixed in `1cd37d0` (shared
+`FeedItems.kt`), `1bba95e` (desktop catalogue), `642e5b5` (Feed tab, Browse, Settings) and this docs commit. Failing tests
+first: the new cases were run on the unfixed code and failed for the reported reasons — `FeedUiTest` "a row whose source is
+installed later" (timeout: the row stayed empty), "a feed that fails to be read" (timeout: loading forever), "reordering and
+deleting keep the loaded rows" (4 listing calls instead of 1), "the feed loads only once its tab is shown" (1 call before
+the tab was opened), "the add dialog's OK is disabled" (enabled), the limit case of "add, reorder and delete rows" (a 21st
+row accepted), `FeedItemsTest` (`isFeedFull(20)` false) and `CatalogueFilterUiTest` "a saved search being opened from the
+feed and superseded by a failing apply" (still loading after 5 s); they pass now.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | A row's `Source` was resolved once per feed-list emission and Refresh reused it: a row whose extension is installed / updated later stayed blank and unclickable | fixed: the rows are built again (source looked up, titles) on every emission of the feed rows **combined with the source manager's `sources`** (an extension installed, updated or removed) and on Refresh, which looks the sources up afresh and loads every row | `642e5b5` |
+| 2 | A throw in the `onEach` body went to `.catch` and ended the subscription (first emission: loading forever; later changes never seen) | fixed: the body (`buildRows`) catches everything but a cancellation itself, logs, sets `State.failed` and sends the toast event; the collection stays alive, so the next change (or Refresh, which retries the last rows read) builds again. A feed that never built shows Android's "internal error" empty screen instead of the spinner; one that built before keeps its rows. Upstream (database) errors still end in `.catch`, now also with the error state | `642e5b5` |
+| 3 | A catalogue opened from a saved-search row started with `isLoading = true` and relied on `openSavedSearch` to clear it; `applyFilters` / `applySavedSearch` / the settings refresh cancelled it and could return early (`onError`, `onInvalid`), loading forever | fixed: the pending opening is its own state (`State.openingSavedSearch`, a spinner like loading); `isLoading` is only page loading. Every apply that supersedes it goes through `cancelApply()`, which ends the opening and starts the current listing (popular / latest), so a failing or refused apply leaves a usable catalogue and a succeeding one replaces the listing; a mode change / search ends it through `startListing`. Found while writing the test: a superseded source call whose blocked extension code later throws still ran its failure branch in the cancelled coroutine (the old code even loaded popular from there, which hid the defect after 10 s); `sourceCall` now ends with the cancellation instead (`ensureActive`) | `1bba95e` |
+| 4 | `FeedPaneModel` was created eagerly (every row loaded when Browse opened) and Android's `hideFeedTab` was ignored | fixed: the Feed tab's model is created inside the tab's composable (`rememberScreenModel` on first show, kept with the Browse screen afterwards, like the JS sources tab); the tabs follow `UiPreferences.hideFeedTab()` and `feedTabInFront()` like Android's `BrowseTab` (the selected tab is kept by name, the first tab when the selected one is hidden). Settings → Browse has Android's Feed group: hide feed tab, feed tab position (shown only while the tab is not hidden: the desktop list leaves disabled entries out), hide entries in library | `642e5b5` |
+| 5 | Every reorder step / delete rebuilt all rows with `results = null` and fetched everything again | fixed: a row keeps its results / error (or its running load) when its feed row id, source id, saved search id, saved search (name, query, filters) and source instance are unchanged; only new or changed rows load, loads of removed / changed rows are cancelled. Each row's load is registered (by feed id) before it starts and only the registered load may write its row | `642e5b5` |
+| 6 | `isFeedFull` used `count > MaxFeedItems`: a 21st row could be added although the message says 20 (pre-existing, shared with Android) | fixed to `count >= MaxFeedItems` (coordinator's decision) — **an Android behaviour change** (bug fix): Android's global feed now refuses the 21st row too. Android's per-source feed (`SourceFeedScreenModel.hasTooManyFeeds`) has the same `>` of its own and is left as it is here | `1cd37d0` |
+| 7 | The add-source dialog's OK was enabled with nothing selected and then closed silently | fixed: OK is enabled only while a listed source is selected (a search that hides it clears the selection) | `642e5b5` |
+| 8 | `FeedItems.kt`'s header said `shared`; it is a `desktopCopy` | corrected (and why: the Android-only `LocaleHelper`) | `1cd37d0` |
+
+Tests: `FeedUiTest` 2 → 7 (the cases above; the limit case now fills 20 rows), `FeedItemsTest` (1, new),
+`CatalogueFilterUiTest` 6 → 7, `SettingsUiTest` (Browse → Feed toggles). `FixedSourceManager` (test helper) can replace
+its sources and fail lookups of given ids. Not tested: an extension *updated* in place (same path as installed: a new
+source instance), a database error of the feed flow.
+
+Verification (after `642e5b5`, `--max-workers=2 --console=plain`): `spotlessApply`, `spotlessCheck` pass; `:desktopApp:test
+--tests '*FeedUiTest*' --tests '*FeedItemsTest*' --tests '*CatalogueFilterUiTest*' --tests '*SettingsUiTest*' --tests
+'*CatalogueSavedSearchUiTest*' --tests '*BrowseCatalogueUiTest*'` 23 tests, 0 failures (after the settings test fix). `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass.
 
 ## Remaining parity gaps
 
