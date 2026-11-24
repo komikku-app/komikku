@@ -6,9 +6,10 @@ and source toggles, with its review fixes, parity step P2, library grouping and 
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
 sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
 update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
-step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done;
-next: signing, the release pipeline for desktop installers (P9), and the maintainer's first real run; see "Done" and
-"Left to do").
+step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, with its review fixes, are done, and
+step P9, the desktop release pipeline and signing hooks, is built but never executed (its review
+`/code-review medium c712c3f^..<P9 docs commit>` and fix round are pending; the exact range is in "Done"); next: the P9
+review, then the maintainer's first real run of the workflow and of the app; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
 [`MANGAYOMI_CONTRACT.md`](MANGAYOMI_CONTRACT.md) and [`MANGAYOMI_SURVEY.md`](MANGAYOMI_SURVEY.md).
@@ -202,7 +203,20 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   host and another solver address forgets the remembered failures; `…/v1/` and doubled slashes normalised; safe JSON
   casts everywhere and a caught "Test connection"; typed `FlareSolverrException` reasons with `KMR` texts, no doubled
   period; the address' password masked (`••••`) in the subtitle and the edit field, kept on save. Found and fixed in the
-  round: the address could not be emptied from the settings ("Disable" entry).
+  round: the address could not be emptied from the settings ("Disable" entry). Last Part A commit `6112d7b`.
+- **P9** desktop release pipeline and signing hooks (`c712c3f` … , PROGRESS.md "P9 — desktop release pipeline and
+  signing hooks"): `build_desktop.yml` builds with `-Penable-updater` on Linux x64, Windows x64, macOS arm64 and (new)
+  macOS Intel x64, names the assets `Komikku-<v>-<os>-<arch>.<ext>` (`.github/scripts/desktop_release_assets.sh`;
+  Linux app image packed as `.tar.gz`, now matched by the update check) with SHA-256 sums, uploads them as workflow
+  artifacts and, only with `release_mode` `existing` / `draft` (manual input, or the `DESKTOP_RELEASE_MODE` variable
+  for `desktop-v*` tags), to the `v<versionName>` release of `komikku-app/komikku` (never publishes or edits a release,
+  never replaces a published file, only `Komikku-<v>-…` names). Signing hooks, off without settings: macOS signing +
+  notarization through the Compose DSL from `KOMIKKU_MAC_*` / `komikku.desktop.mac*`, Windows `signtool` in the workflow
+  (the plugin has none); secrets and how to make them in BUILDING.md "Signing". Test: `DesktopAppUpdateCheckerTest`
+  "the release pipeline's asset names …". **Never executed**; what the maintainer must do for the first run: PROGRESS
+  P9 "What the maintainer must do before the first run".
+- **P9 review** — pending: `/code-review medium c712c3f^..<P9 docs commit>` (the docs commit that records P9), then a
+  fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -245,12 +259,11 @@ mark the residual path in both modules.
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
    check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) and its review
    fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) and its review fixes are done (last
-   review-fix commit `f761ac7`). **Then, in order:** signing /
-   notarization of the installers; the release pipeline
-   for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
-   names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline
-   still needs"), which the update check needs to ever find something; then the
-   maintainer's first real run (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
+   Part A commit `6112d7b`). P9 (release pipeline for the desktop installers and signing hooks) is built, never
+   executed: **next** its review `/code-review medium c712c3f^..<P9 docs commit>` and fix round; then the maintainer's
+   first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
+   a `release_mode: none` run, then `existing` on the Android draft, certificates for signing), and the first real run
+   of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
    shown in a real window, no build with `-Penable-updater` / `-Pdesktop-preview` run; Android's own
    `GetApplicationRelease.isNewVersion` still throws on an odd tag), P5's (macOS / Windows
    Skia behaviour for AVIF / JPEG XL unverified, see the CI test output; no real AVIF cover loaded), P4's

@@ -2048,7 +2048,8 @@ carries a desktop installer (see "What the release pipeline still needs").
   `update_check_no_new_updates`, `action_not_now`, `version`, `unknown_error`; `SYMR`: `latest_`).
 - Android behaviour unchanged (the only shared change is the defaulted constructor parameter in a KMK block).
 
-**What the release pipeline still needs** (for the check to ever find a desktop update):
+**What the release pipeline still needs** (for the check to ever find a desktop update; items 1–3 built in P9 and
+4 as hooks, see "P9 — desktop release pipeline and signing hooks"; none of it executed yet):
 1. Publish the desktop installers as GitHub release assets: on a stable release attach the `build_desktop.yml` outputs to
    the `v<versionName>` release of `komikku-app/komikku` (preview: the `r<commit count>` release of
    `komikku-app/komikku-preview`, built with `-Pdesktop-preview`), with file names ending in `.msi` / `.exe`, `.dmg`,
@@ -2563,6 +2564,101 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` between heav
 a real FlareSolverr / Byparr (in particular the v3 `expiry` shape is taken from Selenium's cookie format, not from a
 captured answer), a real window.
 
+## P9 — desktop release pipeline and signing hooks
+
+Commits `c712c3f` (asset script, update-check match, test), `26a2139` (version task, macOS signing hooks), `6b0cdf9`
+(workflow) and this section's docs commit. What P6's update check needs on the release side ("What the release
+pipeline still needs" above) plus signing hooks. **CI / build configuration only; the workflow has never been
+executed** (no runner here, no certificates).
+
+### Built
+
+- **`build_desktop.yml`** rewritten around the old packaging job: `plan` (decides the release mode and tag, no
+  permissions), `package` (per runner, `contents: read`), `release` (`contents: write`, only for a release mode). Same
+  pinned actions as before (+ `actions/download-artifact` v8.0.1 as in `build_release.yml`). Inputs and secrets reach
+  scripts only through `env`. Details and tables: BUILDING.md "Release pipeline" and "Signing".
+  - Triggers: manual (`release_mode` `none` / `existing` / `draft`, `release_tag`) and a `desktop-v<versionName>` tag
+    (release `v<versionName>`; mode from the repository variable `DESKTOP_RELEASE_MODE`, unset = `none`).
+  - Builds with `-Penable-updater` (stable channel). Before the build: the version from the new
+    `:desktopApp:printVersionName` task (Android `versionName`), the release tag must be `v<version>`, the architecture
+    from `RUNNER_ARCH`.
+  - Runners: `ubuntu-24.04` (x64), `windows-2022` (x64), `macos-15` (arm64), **new** `macos-15-intel` (x64; without it
+    Intel Macs would find no installer: the arm64 DMG does not count for them since the P6 review's architecture
+    match).
+  - Assets via `.github/scripts/desktop_release_assets.sh`: `Komikku-<v>-<os>-<arch>.<ext>` (`linux` deb / rpm /
+    tar.gz, `windows` msi / exe, `macos` dmg) and a SHA-256 file per job; each expected format exactly once or the job
+    fails. The release job checks every name starts with `Komikku-<v>-`, verifies each checksum file, merges them into
+    `Komikku-<v>-desktop-SHA256SUMS.txt` and uploads with `gh` (no third-party release action).
+- **Update check** (`DesktopUpdaterConfig`): Linux also matches `.tar.gz`. Test "the release pipeline's asset names are
+  matched per OS and architecture" (`DesktopAppUpdateCheckerTest`, 14 tests now): the documented names next to the
+  Android release's APK names and the checksum files → Windows x64 MSI, macOS arm64 / x64 DMG, Linux x64 DEB; no
+  installer for Windows / Linux arm64; each Linux format and the EXE alone count; checksums / APKs never.
+- **Signing hooks** (`desktopApp/build.gradle.kts`): macOS `signing` (identity, optional keychain) and `notarization`
+  (Apple ID, app-specific password, team ID) from `komikku.desktop.mac*` Gradle properties or `KOMIKKU_MAC_*`
+  environment variables, blank = unset; notarization needs all three settings and signing (configuration fails with a
+  message otherwise). Workflow: certificate import into a temporary keychain (deleted at the end), the settings passed
+  only on macOS runners and only when the secrets are set, `notarizeDmg` (the Compose task: `notarytool --wait`, then
+  staple) and `stapler validate`; Windows: `signtool` over the MSI / EXE from a `.pfx` secret with an RFC 3161
+  timestamp, before the checksums.
+
+### Decisions / deviations
+
+- **Which release:** the existing `v<versionName>` release of `komikku-app/komikku`, because P6's stable check reads
+  that repository and compares `v<versionName>` tags with the app's version; a desktop-only release line would need its
+  own repository or tag prefix (P6 decision). The normal path is `existing` on the draft that the Android release
+  workflow creates for `v<x>`; `draft` creates a draft only for an existing tag when no release exists (and refuses a
+  published one). The workflow never publishes, edits or deletes a release, never replaces a file of a published release,
+  and uploads only `Komikku-<version>-…` names (Android assets are `Komikku-v<x>.apk` / `Komikku-<abi>-v<x>.apk`). A
+  tag push does nothing to releases unless the maintainer sets `DESKTOP_RELEASE_MODE` (the "maintainer-set input" for
+  tags, which have no inputs).
+- **Linux app image as `.tar.gz`** (not left out): it is the only package that needs no installation; packed with the
+  directory at the root, named like the others, and matched by the update check. No `.AppImage` (needs
+  `appimagetool`, not part of the build). The Windows / macOS app-image folders are no longer uploaded as artifacts.
+- **Asset names are OS + architecture words** (`linux` / `windows` / `macos`, `x64` / `arm64`), so one release holds
+  every desktop build next to the APKs; `DesktopArch` already matched `x64` / `arm64` as separate words.
+- **Windows signing outside the Compose plugin** (it has no Windows signing configuration; the task's assumption did
+  not hold): a `signtool` step over the finished installers; the launcher inside stays unsigned. New code-signing
+  keys are HSM-bound since 2023, so the `.pfx` hook may have to become a cloud-signing action (documented).
+- **macOS signing through the plugin's DSL** from the project's own setting names (`KOMIKKU_MAC_*`) rather than
+  documenting the plugin's `compose.desktop.mac.*` properties: one place that also checks the combination; both forms
+  of the identity work (the plugin adds `Developer ID Application: `).
+- Preview channel (`komikku-preview`, `r<n>`) not covered: another repository, would need a token.
+- `printVersionName` instead of parsing `app/build.gradle.kts` in the workflow: the same source as the packages.
+
+### Checked locally
+
+- YAML parses (PyYAML 6.0.3); a structural check (inputs, `needs` outputs, matrix keys, step ids defined; every
+  `uses` pinned to a SHA with a version comment; every job with `permissions`; no `inputs` / `secrets` /
+  `github.event` expression inside a `run` script); `actionlint` 1.7.7 passes once `macos-15-intel` is declared (that
+  version predates the label; shellcheck was not installed, so the scripts were not linted by it).
+- `desktop_release_assets.sh` on stand-in files for the three OSes (names, `sha256sum -c`, tarball layout) and its
+  failures (unknown arch, `v` in the version, two DMGs, missing outputs).
+- `./gradlew :desktopApp:help` plain, with `-Penable-updater` and dummy `KOMIKKU_MAC_*` values (all five), with the
+  Gradle-property form, and with blank values: configures; partial notarization and notarization without signing
+  fail with their messages; `./gradlew -q :desktopApp:printVersionName` prints `1.14.1`.
+
+### What the maintainer must do before the first run
+
+1. Check that the runner labels exist for the repository (`macos-15-intel`; drop that matrix entry otherwise — Intel
+   Macs then get no update offer).
+2. First run without a release: Actions → "Desktop builder" → Run workflow with `release_mode: none`; check the four
+   artifacts (names, the DMG / MSI / DEB install, the `.tar.gz` holds one folder with `bin/` and `lib/`), and the tests
+   on Linux.
+3. For a release: push `v<x>` as usual (Android draft), then run the desktop builder on that commit with
+   `release_mode: existing` and `release_tag: v<x>`; review the draft (APKs untouched, desktop files and the checksum
+   file added) and publish it by hand. Optionally set `DESKTOP_RELEASE_MODE=existing` so that a `desktop-v<x>` tag does
+   the same.
+4. Signing (optional, both independent): add the macOS secrets (Developer ID certificate `.p12` + password + identity,
+   Apple ID + app-specific password + team ID) and / or the Windows `.pfx` + password (BUILDING.md "Signing"); the next
+   run signs, notarizes and staples. Not tried with real certificates.
+5. After the first published release with desktop files: an older packaged build with `-Penable-updater` should offer
+   it (P6), which has also never been tried.
+
+Verification (after `6b0cdf9`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs):
+`spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktopApp:test` 51
+classes, 227 tests, 0 failures (was 226: the asset-name test). Not run: the workflow itself, any packaging task, the
+signing / notarization tools, `gh release` against GitHub.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2587,7 +2683,8 @@ What Android has and the desktop app does not (yet), roughly by user impact:
    FlareSolverr-compatible service the user runs (P8); left: an embedded browser backend (jcefmaven evaluated as the
    candidate; P7 "What the embedded backend still needs"), `android.webkit.WebView` for extensions.
 6. **Distribution:** installers built and tried on each OS, signing / notarization. The update check is done (P6, behind
-   `-Penable-updater`; opens the release page, no in-app download / install); left from it: the release pipeline does
-   not publish desktop installers as GitHub release assets yet (P6 "What the release pipeline still needs"), so the
-   check finds nothing until it does; no Markdown in the notes, no "What's new" / "What's coming".
+   `-Penable-updater`; opens the release page, no in-app download / install); the release pipeline that attaches the
+   installers to the `v<versionName>` release on request and the signing hooks are built (P9) but have never run;
+   left: the first real run, certificates, the preview channel's releases, no Markdown in the notes, no "What's new" /
+   "What's coming".
 

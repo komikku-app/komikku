@@ -137,9 +137,9 @@ launcher); add `-Pdesktop-preview` for the preview channel (`komikku-app/komikku
 `-Dkomikku.preview=true -Dkomikku.commitCount=…`; the build fails on a shallow clone or without a commit count, so CI
 needs `fetch-depth: 0`, which `build_desktop.yml` sets). Stable builds read `komikku-app/komikku` and compare
 `v<versionName>`. A release counts only when it carries an installer for the running OS (`.msi` / `.exe`, `.dmg`,
-`.deb` / `.rpm` / `.AppImage`) and CPU architecture (an asset name with `x64` / `amd64` / `x86_64` or `arm64` /
-`aarch64` counts only for that architecture, one without counts for any); `build_desktop.yml` does not publish any yet (workflow artifacts only), so the check finds nothing until
-the release pipeline attaches them.
+`.deb` / `.rpm` / `.tar.gz` / `.AppImage`) and CPU architecture (an asset name with `x64` / `amd64` / `x86_64` or
+`arm64` / `aarch64` counts only for that architecture, one without counts for any); the release pipeline below
+attaches such assets to a release only when the maintainer asks for it.
 
 CI: `.github/workflows/build_desktop.yml` (manual, or a `desktop-v*` tag) packages on Ubuntu, Windows
 and macOS runners and uploads the installers as workflow artifacts (on Linux it also runs `:desktopApp:test`,
@@ -148,10 +148,96 @@ and macOS runners and uploads the installers as workflow artifacts (on Linux it 
 cannot block the Android build and, while the port is
 experimental, does not fail the PR check (`continue-on-error`).
 
-Signing: none. macOS packages are neither signed nor notarized (Gatekeeper will warn; open them with
-right-click → Open), Windows installers are unsigned (SmartScreen warning). The TODOs in
-`build_desktop.yml` / `desktopApp/build.gradle.kts` list what signing needs (Apple Developer ID +
-notarization credentials, a Windows code-signing certificate).
+## Release pipeline
+
+`build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — **never
+executed yet**:
+
+- **Jobs:** `plan` (no permissions: decides the mode and tag), `package` (`contents: read`; one job per runner:
+  `ubuntu-24.04` x64, `windows-2022` x64, `macos-15` arm64, `macos-15-intel` x64), `release` (`contents: write`; only
+  when the mode is not `none`).
+- **Build:** `./gradlew :desktopApp:packageDistributionForCurrentOS -Penable-updater` (the update check on, stable
+  channel), after the tests on Linux. The version is `./gradlew -q :desktopApp:printVersionName` (the Android
+  `versionName`); with a release mode the release tag must be `v<that version>`, checked before the build.
+- **Asset names** (`.github/scripts/desktop_release_assets.sh`, the same on a developer machine:
+  `.github/scripts/desktop_release_assets.sh desktopApp/build/compose/binaries/main <version> <windows|macos|linux> <x64|arm64> <out dir>`):
+
+  | Runner | Assets |
+  |--------|--------|
+  | Linux x64 | `Komikku-<v>-linux-x64.deb`, `Komikku-<v>-linux-x64.rpm`, `Komikku-<v>-linux-x64.tar.gz` (the app image directory, packed: one folder with `bin/` and `lib/`; no `.AppImage` file, that needs `appimagetool`) |
+  | Windows x64 | `Komikku-<v>-windows-x64.msi`, `Komikku-<v>-windows-x64.exe` |
+  | macOS arm64 / x64 | `Komikku-<v>-macos-arm64.dmg` / `Komikku-<v>-macos-x64.dmg` |
+
+  plus `Komikku-<v>-<os>-<arch>-SHA256SUMS.txt` per job; the release gets one `Komikku-<v>-desktop-SHA256SUMS.txt`
+  (`sha256sum -c` format). `DesktopAppUpdateCheckerTest` ("the release pipeline's asset names …") checks that the update
+  check picks exactly these per OS and architecture next to the Android APKs. The Windows / macOS app-image folders
+  are no longer uploaded (the installers contain them).
+- **Workflow artifacts** always: `Komikku-desktop-<os>-<ARCH>-<sha>` with the assets of one job.
+- **Release, only on request** (`release_mode`):
+
+  | Trigger | Mode from | Release tag |
+  |---------|-----------|-------------|
+  | Run workflow (manual) | input `release_mode`: `none` (default), `existing`, `draft` | input `release_tag` (`v<versionName>`) |
+  | Tag `desktop-v<versionName>` | repository variable `DESKTOP_RELEASE_MODE` (unset = `none`) | `v<versionName>` |
+
+  `existing`: the release must exist (draft or published); a draft gets the files (same-named desktop files replaced),
+  a published release only gets files it does not have yet (an existing name fails, nothing is replaced). `draft`: the
+  draft with that tag gets the files; if there is none, one is created **as a draft** for the existing tag (a missing
+  tag or a published release fails). The workflow never publishes, edits or deletes a release and only uploads files
+  named `Komikku-<version>-…`, which no Android asset is named like (`Komikku-v<x>.apk`, `Komikku-<abi>-v<x>.apk`).
+- **Which release:** the existing `v<versionName>` release of `komikku-app/komikku`, the one P6's stable check reads
+  and compares with the app's version. The usual order: push `v<x>` → the Android release workflow creates its draft
+  → run the desktop builder on the same commit with `release_mode: existing`, `release_tag: v<x>` → check the draft →
+  publish it by hand. The preview channel (`komikku-app/komikku-preview`, `r<n>`, `-Pdesktop-preview`) is not covered:
+  it is another repository (a token with access to it would be needed).
+
+## Signing
+
+Off unless set: a build without these settings is exactly the unsigned one (macOS: Gatekeeper warns, open with
+right-click → Open; Windows: SmartScreen warns). Nothing secret is in the repository.
+
+**macOS** (Compose plugin `macOS { signing { … }; notarization { … } }`, configured in `desktopApp/build.gradle.kts`
+from these Gradle properties or environment variables; blank = not set):
+
+| Gradle property | Environment variable | Contents |
+|-----------------|----------------------|----------|
+| `komikku.desktop.macSigningIdentity` | `KOMIKKU_MAC_SIGNING_IDENTITY` | the Developer ID Application identity: `Developer ID Application: <Name> (<TEAMID>)`, or `<Name> (<TEAMID>)` (the plugin adds the prefix) |
+| `komikku.desktop.macSigningKeychain` | `KOMIKKU_MAC_SIGNING_KEYCHAIN` | optional: the keychain holding it (CI sets it to its temporary keychain) |
+| `komikku.desktop.macNotarizationAppleId` | `KOMIKKU_MAC_NOTARIZATION_APPLE_ID` | the Apple ID (e-mail) of the developer account |
+| `komikku.desktop.macNotarizationPassword` | `KOMIKKU_MAC_NOTARIZATION_PASSWORD` | an app-specific password of that Apple ID |
+| `komikku.desktop.macNotarizationTeamId` | `KOMIKKU_MAC_NOTARIZATION_TEAM_ID` | the 10-character team ID |
+
+Notarization needs all three of its settings and signing; anything else fails at configuration with a message.
+Locally on a Mac with the certificate in the login keychain:
+`./gradlew :desktopApp:packageDmg :desktopApp:notarizeDmg -Pkomikku.desktop.macSigningIdentity="…" …` (the Compose
+task submits with `notarytool`, waits and staples).
+
+**Repository secrets** for `build_desktop.yml` (Settings → Secrets and variables → Actions; each part runs only when
+its secrets are all set):
+
+| Secret | Contents | How to make it |
+|--------|----------|----------------|
+| `MACOS_CERTIFICATE_P12_BASE64` | the "Developer ID Application" certificate **with its private key**, `.p12`, base64 | Apple Developer account (paid) → Certificates → "Developer ID Application" (create a CSR in Keychain Access → Certificate Assistant); install it, export certificate + key from Keychain Access as `.p12` with a password; `base64 -i cert.p12 \| pbcopy` |
+| `MACOS_CERTIFICATE_PASSWORD` | the `.p12` export password | chosen at export |
+| `MACOS_SIGNING_IDENTITY` | as `KOMIKKU_MAC_SIGNING_IDENTITY` above | `security find-identity -v -p codesigning` shows it |
+| `MACOS_NOTARIZATION_APPLE_ID` | the Apple ID e-mail | — |
+| `MACOS_NOTARIZATION_PASSWORD` | an app-specific password | account.apple.com → Sign-In and Security → App-Specific Passwords |
+| `MACOS_NOTARIZATION_TEAM_ID` | the team ID | developer.apple.com → Account → Membership details |
+| `WINDOWS_CERTIFICATE_PFX_BASE64` | an exportable code-signing certificate with its private key, `.pfx`, base64 | from a code-signing CA (OV / EV); `base64 -w0 cert.pfx` |
+| `WINDOWS_CERTIFICATE_PASSWORD` | the `.pfx` password | chosen at export |
+
+Optional repository variables: `WINDOWS_TIMESTAMP_URL` (RFC 3161 timestamp server, default
+`http://timestamp.digicert.com`), `DESKTOP_RELEASE_MODE` (see "Release pipeline").
+
+**Windows:** the Compose plugin has no Windows signing configuration, so the workflow signs the finished MSI and EXE
+with `signtool` (Windows SDK on the runner: SHA-256, RFC 3161 timestamp, then `signtool verify /pa`) before the
+checksums are taken; the app's own launcher inside them stays unsigned. Since 2023 CAs issue new OV / EV code-signing
+keys only on hardware tokens or cloud HSMs, so an exportable `.pfx` may not be obtainable: with Azure Trusted Signing,
+SignPath or a similar service that step has to be replaced by that service's action (not done; no account exists).
+
+Unverified: none of this has run (no certificates exist); in particular whether the notary service accepts the bundled
+runtime and the native libraries inside the JARs as the Compose plugin signs them (it signs them itself; Compose's
+default entitlements for the JVM are used).
 
 ## Data directory
 
@@ -211,9 +297,10 @@ and, on macOS, signed helper app bundles; none of that is configured yet.
 
 - Packaging and the desktop workflow have not been run yet: the configuration was checked with
   `:desktopApp:tasks --all`, a dry run (`-m`) of `packageDistributionForCurrentOS`, `createRuntimeImage`
-  (jlink with the chosen modules) and YAML parsing only. Installers, icons inside them, file associations
+  (jlink with the chosen modules), `:desktopApp:help` with dummy signing settings, the asset script on stand-in files,
+  YAML parsing and `actionlint` only. Installers, icons inside them, file associations
   and upgrade behaviour are unverified.
-- No signing / notarization, no in-app update download / install (the update check only opens the release page), no
+- Signing / notarization only as hooks (never run, no certificates), no in-app update download / install (the update check only opens the release page), no
   file associations, no embedded browser (Cloudflare checks by hand or through a FlareSolverr-compatible service you
   run, logins by hand; see above).
 - The parity gaps with Android (features the desktop app does not have yet) are listed in
