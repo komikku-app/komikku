@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.network.interceptor.CloudflareBypassException
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import kotlinx.coroutines.runBlocking
@@ -18,11 +19,13 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.core.common.preference.DesktopPreferenceStore
 import java.io.File
+import java.io.IOException
 
 /**
  * Smoke test of the shared network stack on desktop: `NetworkHelper.client` built through the compat
  * `Application`, the `GET` / `awaitSuccess` helpers, the cookie jar over the desktop `CookieManager`,
- * the default user agent and the desktop (pass-through) Cloudflare interceptor. No real network.
+ * the default user agent and the desktop Cloudflare interceptor without a browser backend (P7: a challenge fails with
+ * an actionable error; `DesktopCloudflareInterceptorTest` covers the rest). No real network.
  */
 class DesktopNetworkTest {
 
@@ -81,7 +84,7 @@ class DesktopNetworkTest {
     }
 
     @Test
-    fun `awaitSuccess throws HttpException and Cloudflare responses pass through`(): Unit = runBlocking {
+    fun `awaitSuccess throws HttpException and a Cloudflare challenge needs a browser`(): Unit = runBlocking {
         server.enqueue(MockResponse.Builder().code(404).build())
         server.enqueue(
             MockResponse.Builder()
@@ -98,8 +101,12 @@ class DesktopNetworkTest {
         }
         error.code shouldBe 404
 
-        client.newCall(GET(server.url("/protected").toString())).await().use { response ->
-            response.code shouldBe 403
+        // `await` wraps the interceptor's exception (coroutines may copy it too) and keeps its message, which the UI shows.
+        val challenge = assertThrows<IOException> {
+            runBlocking { client.newCall(GET(server.url("/protected").toString())).await() }
         }
+        val cause = generateSequence<Throwable>(challenge) { it.cause }.filterIsInstance<CloudflareBypassException>().first()
+        cause.reason shouldBe CloudflareBypassException.Reason.NO_BROWSER
+        challenge.message shouldBe cause.message
     }
 }
