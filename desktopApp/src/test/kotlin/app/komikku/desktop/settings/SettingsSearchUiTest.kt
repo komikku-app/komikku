@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
@@ -25,6 +26,7 @@ import app.komikku.desktop.ui.more.SettingsCategory
 import app.komikku.desktop.ui.more.SettingsCategoryScreen
 import app.komikku.desktop.ui.more.SettingsHomeScreen
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.SettingsSearchPage
@@ -126,6 +128,52 @@ class SettingsSearchUiTest {
         waitForIdle()
         val delegated = SYMR.strings.toggle_delegated_sources.localized()
         onAdvanced(delegated) shouldBe false
+    }
+
+    @Test
+    fun `a result's highlight is used once, not again when the page is shown again`() =
+        runDesktopComposeUiTest(width = 1000, height = 700) {
+            val delegated = SYMR.strings.toggle_delegated_sources.localized()
+            var navigator: Navigator? = null
+            setContent {
+                CompositionLocalProvider(LocalContext provides app) {
+                    DesktopTheme {
+                        DesktopToastHost {
+                            Navigator(SettingsCategoryScreen(SettingsCategory.Advanced, highlightKey = delegated)) {
+                                navigator = it
+                                CurrentScreen()
+                            }
+                        }
+                    }
+                }
+            }
+            waitForTag("settings-Advanced")
+            waitUntil(timeoutMillis = 10_000) { onAdvanced(delegated) }
+            // Back at the top, then to another page and back: the page stays where it was left
+            onNodeWithTag("settings-Advanced").performScrollToIndex(0)
+            waitUntil(timeoutMillis = 5_000) { !onAdvanced(delegated) }
+            runOnIdle { navigator!!.push(SettingsCategoryScreen(SettingsCategory.Appearance)) }
+            waitForTag("settings-Appearance")
+            runOnIdle { navigator!!.pop() }
+            waitForTag("settings-Advanced")
+            // Longer than the highlight's delay and scroll
+            mainClock.advanceTimeBy(2_000)
+            waitForIdle()
+            onAdvanced(delegated) shouldBe false
+        }
+
+    @Test
+    fun `the highlighted index skips disabled groups like the rendered lists`() {
+        fun text(title: String) = Preference.PreferenceItem.TextPreference(title = title)
+        val contents = listOf(
+            Preference.PreferenceGroup(title = "Off", enabled = false, preferenceItems = persistentListOf(text("A"), text("B"))),
+            Preference.PreferenceGroup(title = "On", preferenceItems = persistentListOf(text("C"))),
+            text("D"),
+        )
+        // PreferenceList / Android's PreferenceScreen render: header "On", C, spacer, D
+        contents.findHighlightedIndex("C") shouldBe 1
+        contents.findHighlightedIndex("D") shouldBe 3
+        contents.findHighlightedIndex("A") shouldBe -1
     }
 
     @Test
