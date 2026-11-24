@@ -455,6 +455,12 @@ private fun cloudflarePreferences(): Preference.PreferenceGroup {
                     }
                 },
             ),
+            // The shared edit dialog cannot save an empty value: this turns the solver off (P8 review fix round).
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(MR.strings.action_disable),
+                enabled = url.isNotBlank(),
+                onClick = { preferences.flareSolverrUrl().set("") },
+            ),
             Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.desktop_flaresolverr_info)),
         ),
     )

@@ -104,6 +104,14 @@ class FlareSolverrSettingsUiTest {
         sent.url.encodedPath shouldBe "/a%2Fb/"
         sent.headers["Authorization"] shouldBe okhttp3.Credentials.basic("user", "secret")
 
+        // "Disable" empties the address (the edit dialog cannot save an empty value).
+        val preference = Injekt.get<DesktopCloudflarePreferences>().flareSolverrUrl()
+        onNodeWithText(MR.strings.action_disable.localized()).performClick()
+        waitUntil(timeoutMillis = 15_000) { preference.get().isEmpty() }
+        waitForText(MR.strings.off.localized())
+        preference.set(address)
+        waitForText(masked)
+
         // The edit field shows the masked address too.
         onNodeWithText(stringResource(KMR.strings.desktop_flaresolverr_url)).performClick()
         waitUntil(timeoutMillis = 15_000) { onAllNodesWithText(masked, substring = true).fetchSemanticsNodes().size >= 2 }
