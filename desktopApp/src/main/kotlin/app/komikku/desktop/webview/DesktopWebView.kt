@@ -7,9 +7,12 @@ import app.komikku.network.browser.BrowserBackends
 import app.komikku.network.browser.BrowserCondition
 import app.komikku.network.browser.BrowserSession
 import app.komikku.network.browser.BrowserSessionResult
+import app.komikku.network.browser.CloudflareHostState
+import app.komikku.network.browser.CloudflareHosts
 import app.komikku.network.browser.browserCookies
 import app.komikku.network.browser.removeBrowserCookies
 import app.komikku.network.browser.storeBrowserCookies
+import app.komikku.network.browser.storePastedCookies
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.interceptor.CloudflareChallenge
@@ -17,6 +20,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.log.xLogE
 import exh.log.xLogW
 import okhttp3.Headers
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import tachiyomi.domain.source.service.SourceManager
 import kotlin.time.Duration
@@ -30,9 +34,11 @@ import kotlin.time.Duration.Companion.minutes
  * - With a usable [BrowserBackend] ([BrowserBackends.current]): an interactive browser session with the source's
  *   headers and User-Agent, until the user closes it; its cookies are stored ([Opened.Embedded]).
  * - Without one (the desktop default): the page opens in the system browser and the user pastes the site's cookies and,
- *   optionally, that browser's User-Agent ([Opened.Manual], [saveManual]). The User-Agent goes to Android's
+ *   optionally, that browser's User-Agent ([Opened.Manual], [saveManual]). The User-Agent is kept for the host
+ *   ([CloudflareHostState], persisted), bound to the clearance cookie in the jar: the Cloudflare interceptor sends it
+ *   to that host at once, also for sources with their own User-Agent header. Only when asked, it also becomes Android's
  *   `default_user_agent` preference ([NetworkPreferences.defaultUserAgent]), which sources read when they are created,
- *   so it applies after a restart (Android's "Requires app restart" too).
+ *   so that applies after a restart (Android's "Requires app restart" too).
  */
 class DesktopWebView(
     private val network: NetworkHelper,
@@ -42,6 +48,7 @@ class DesktopWebView(
     private val browserOpener: (String) -> Boolean = DesktopBrowser::open,
     private val clock: () -> Long = System::currentTimeMillis,
     private val interactiveTimeout: Duration = INTERACTIVE_TIMEOUT,
+    private val hostStateProvider: () -> CloudflareHostState = { CloudflareHosts.state },
 ) {
 
     sealed interface Opened {
@@ -59,18 +66,28 @@ class DesktopWebView(
         val url: String,
         val host: String,
         val browserOpened: Boolean,
-        /** The User-Agent the source sends now (its own header, else the app's default). */
+        /** The User-Agent sent to [host] now: the host's override for its clearance, else [sourceUserAgent]. */
         val userAgent: String,
         /** Names of the cookies the app holds for [url] now. */
         val storedCookies: List<String>,
+        /** The User-Agent of the source itself (its own header, else the app's default). */
+        val sourceUserAgent: String = userAgent,
     )
 
     sealed interface SaveResult {
-        data class Saved(val cookies: Int, val userAgentChanged: Boolean) : SaveResult
+        /**
+         * [cookies] were stored; [skipped] names / entries could not be used. [userAgentChanged]: the User-Agent sent to
+         * the host changed (at once); [defaultUserAgentChanged]: the app's default changed too (restart for sources).
+         */
+        data class Saved(
+            val cookies: Int,
+            val userAgentChanged: Boolean,
+            val defaultUserAgentChanged: Boolean = false,
+            val skipped: List<String> = emptyList(),
+        ) : SaveResult
 
+        /** Nothing usable was pasted; [entry] names what was skipped. */
         data class InvalidCookie(val entry: String) : SaveResult
-
-        data object UserAgentBlank : SaveResult
 
         data object UserAgentInvalid : SaveResult
     }
@@ -80,6 +97,7 @@ class DesktopWebView(
         val httpUrl = url.toHttpUrlOrNull() ?: return Opened.InvalidUrl(url)
         val headers = sourceHeaders(sourceId)
         val userAgent = headers["User-Agent"]?.takeIf { it.isNotBlank() } ?: network.defaultUserAgentProvider()
+        val hostUserAgent = hostStateProvider().userAgentFor(httpUrl.host) { clearance(httpUrl) }
 
         val backend = backendProvider()
         val available = try {
@@ -114,25 +132,26 @@ class DesktopWebView(
                 url = httpUrl.toString(),
                 host = httpUrl.host,
                 browserOpened = openInBrowser(httpUrl.toString()),
-                userAgent = userAgent,
+                userAgent = hostUserAgent ?: userAgent,
+                sourceUserAgent = userAgent,
                 storedCookies = network.cookieJar.get(httpUrl).map { it.name }.distinct(),
             ),
         )
     }
 
     /**
-     * Stores the pasted [cookiesText] for [entry]'s site (see [ManualCookies]), replacing cookies of the same names, and
-     * [userAgentText] as the default User-Agent when it differs from [ManualEntry.userAgent]. Nothing is stored when
-     * either is invalid.
+     * Stores the pasted [cookiesText] for [entry]'s site (see [ManualCookies]), replacing cookies of the same names and
+     * skipping unusable entries, and [userAgentText] (blank: [ManualEntry.userAgent], unchanged) as the User-Agent sent
+     * to the host while its clearance cookie is in the jar; with [alsoDefault] also as the app's default User-Agent.
+     * Nothing is stored when the User-Agent is invalid or no pasted cookie is usable.
      */
-    fun saveManual(entry: ManualEntry, cookiesText: String, userAgentText: String): SaveResult {
+    fun saveManual(entry: ManualEntry, cookiesText: String, userAgentText: String, alsoDefault: Boolean = false): SaveResult {
         val url = entry.url.toHttpUrlOrNull() ?: return SaveResult.InvalidCookie(entry.url)
-        val pairs = when (val parsed = ManualCookies.parse(cookiesText)) {
-            is ManualCookies.Parsed.Invalid -> return SaveResult.InvalidCookie(parsed.entry)
-            is ManualCookies.Parsed.Cookies -> parsed.pairs
-        }
-        val userAgent = userAgentText.trim()
-        if (userAgent.isEmpty()) return SaveResult.UserAgentBlank
+        val parsed = ManualCookies.parse(cookiesText)
+        val cookies = ManualCookies.toCookies(url, parsed.pairs, clock())
+        val skipped = parsed.skipped + parsed.pairs.map { it.first }.filter { name -> cookies.none { it.name == name } }
+        if (cookies.isEmpty() && skipped.isNotEmpty()) return SaveResult.InvalidCookie(skipped.joinToString())
+        val userAgent = userAgentText.trim().ifEmpty { entry.userAgent }
         try {
             // OkHttp checks for valid values internally (Android's settings check)
             Headers.Builder().add("User-Agent", userAgent)
@@ -140,21 +159,45 @@ class DesktopWebView(
             return SaveResult.UserAgentInvalid
         }
 
-        if (pairs.isNotEmpty()) {
-            network.cookieJar.removeBrowserCookies(url, pairs.map { it.first })
-            network.cookieJar.storeBrowserCookies(ManualCookies.toCookies(url, pairs, clock()))
+        if (cookies.isNotEmpty()) {
+            network.cookieJar.removeBrowserCookies(url, cookies.map { it.name })
+            network.cookieJar.storePastedCookies(cookies)
         }
-        val userAgentChanged = userAgent != entry.userAgent
-        if (userAgentChanged) networkPreferences.defaultUserAgent().set(userAgent)
-        return SaveResult.Saved(cookies = pairs.size, userAgentChanged = userAgentChanged)
+        val hosts = hostStateProvider()
+        // The pasted clearance (or the one already stored) is bound to this User-Agent.
+        if (userAgent != entry.sourceUserAgent) {
+            hosts.setUserAgent(entry.host, userAgent, clearance(url))
+        } else {
+            hosts.removeUserAgent(entry.host)
+        }
+        // A new manual attempt: the interceptor tries this host again at once.
+        hosts.clearFailure(entry.host)
+
+        val defaultChanged = alsoDefault && userAgent != networkPreferences.defaultUserAgent().get()
+        if (defaultChanged) networkPreferences.defaultUserAgent().set(userAgent)
+        return SaveResult.Saved(
+            cookies = cookies.size,
+            userAgentChanged = userAgent != entry.userAgent,
+            defaultUserAgentChanged = defaultChanged,
+            skipped = skipped,
+        )
     }
 
     /** Opens [url] in the system browser again; `false` when it could not be opened. */
     fun openInBrowser(url: String): Boolean = browserOpener(url)
 
     /** Android's WebView "Clear cookies": removes the cookies the app sends to [url]; returns how many. */
-    fun clearCookies(url: String): Int =
-        url.toHttpUrlOrNull()?.let { network.cookieJar.removeBrowserCookies(it) } ?: 0
+    fun clearCookies(url: String): Int {
+        val httpUrl = url.toHttpUrlOrNull() ?: return 0
+        hostStateProvider().run {
+            removeUserAgent(httpUrl.host)
+            clearFailure(httpUrl.host)
+        }
+        return network.cookieJar.removeBrowserCookies(httpUrl)
+    }
+
+    private fun clearance(url: HttpUrl): String? =
+        network.cookieJar.get(url).firstOrNull { it.name == CloudflareChallenge.CLEARANCE_COOKIE }?.value
 
     /** The source's headers, as Android's `WebViewScreenModel` gives them to the WebView. */
     private fun sourceHeaders(sourceId: Long?): Headers {

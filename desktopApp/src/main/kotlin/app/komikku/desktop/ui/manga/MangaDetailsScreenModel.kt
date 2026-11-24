@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import exh.log.xLogE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
@@ -205,14 +206,16 @@ class MangaDetailsScreenModel(
 
     /**
      * The entry's page on its source, for "Open in WebView" (Android `MangaScreen.getMangaUrl`); `null` for a source that
-     * is not an `HttpSource` (local, missing) or fails to build it.
+     * is not an `HttpSource` (local, not installed / loaded yet) or fails to build it. Calls the source: not on the UI
+     * thread.
      */
-    fun mangaUrl(): Pair<String, Long>? {
+    fun mangaUrl(): String? {
         val manga = state.value.manga ?: return null
         val source = sourceManager.get(manga.source) as? HttpSource ?: return null
         return try {
-            source.getMangaUrl(manga.toSManga()) to source.id
-        } catch (_: Exception) {
+            source.getMangaUrl(manga.toSManga())
+        } catch (e: Exception) {
+            xLogE("Failed to build the entry's address", e)
             null
         }
     }

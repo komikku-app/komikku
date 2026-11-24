@@ -40,3 +40,12 @@ fun AndroidCookieJar.browserCookies(url: HttpUrl): List<Cookie> =
 /** Removes the jar's cookies sent to [url] named [names] (all when `null`), whatever their domain; returns how many. */
 fun AndroidCookieJar.removeBrowserCookies(url: HttpUrl, names: Collection<String>? = null): Int =
     desktopCookieManager?.removeFor(url.toString(), names) ?: remove(url, names?.toList(), 0)
+
+/**
+ * Stores cookies a user pasted ("Open in WebView" without a browser), marked so that a cookie of the same name the site
+ * sets later replaces them whatever its domain (`DesktopCookieManager.setPastedCookies`); without the desktop
+ * `CookieManager` like [storeBrowserCookies].
+ */
+fun AndroidCookieJar.storePastedCookies(cookies: List<Cookie>) {
+    desktopCookieManager?.setPastedCookies(cookies) ?: storeBrowserCookies(cookies)
+}

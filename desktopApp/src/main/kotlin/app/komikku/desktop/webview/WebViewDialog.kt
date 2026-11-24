@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,10 +28,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.komikku.network.browser.BrowserSessionResult
 import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogE
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import tachiyomi.core.common.util.lang.withIOContext
+import kotlinx.coroutines.runInterruptible
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -50,7 +56,7 @@ class WebViewLauncher(
     sealed interface State {
         data object Idle : State
 
-        /** The embedded browser is open. */
+        /** The address is resolved or the embedded browser is open; [cancel] ends it. */
         data object Running : State
 
         data class Manual(val entry: DesktopWebView.ManualEntry, val error: DesktopWebView.SaveResult? = null) : State
@@ -59,32 +65,85 @@ class WebViewLauncher(
     var state by mutableStateOf<State>(State.Idle)
         private set
 
+    private var job: Job? = null
+
     fun open(url: String, sourceId: Long?) {
-        if (state != State.Idle) return
-        state = State.Running
-        scope.launch {
-            val opened = withIOContext { webView.open(url, sourceId) }
-            state = when (opened) {
-                is DesktopWebView.Opened.Embedded -> {
-                    app.toast(app.localized(KMR.strings.desktop_webview_cookies_saved, url.hostOf()))
-                    State.Idle
-                }
-                is DesktopWebView.Opened.Manual -> State.Manual(opened.entry)
-                is DesktopWebView.Opened.InvalidUrl -> {
-                    app.toast(app.localized(KMR.strings.desktop_source_error, opened.url))
-                    State.Idle
-                }
-            }
-        }
+        open(sourceId) { url }
     }
 
-    fun save(cookies: String, userAgent: String) {
+    /**
+     * Resolves the address with [resolveUrl] off the UI thread (it may call the source, e.g. `getMangaUrl`; `null`: the
+     * entry has no address) and opens it. Every failure ends in [State.Idle] with a message.
+     */
+    fun open(sourceId: Long?, resolveUrl: () -> String?): Job? {
+        if (state != State.Idle) return null
+        state = State.Running
+        return scope.launch {
+            var address: String? = null
+            try {
+                // Interruptible: cancelling the dialog interrupts the thread a blocking browser session runs on.
+                val opened = runInterruptible(Dispatchers.IO) {
+                    address = resolveUrl()
+                    address?.let { webView.open(it, sourceId) }
+                }
+                state = when (opened) {
+                    null -> {
+                        app.toast(KMR.strings.desktop_webview_no_address)
+                        State.Idle
+                    }
+                    is DesktopWebView.Opened.Embedded -> {
+                        val host = opened.result.finalUrl?.host ?: address.orEmpty().hostOf()
+                        app.toast(
+                            when {
+                                opened.result.cookies.isNotEmpty() ->
+                                    app.localized(KMR.strings.desktop_webview_cookies_saved, host)
+                                opened.result.outcome == BrowserSessionResult.Outcome.TIMED_OUT ->
+                                    app.localized(KMR.strings.desktop_webview_timed_out, host)
+                                else -> app.localized(KMR.strings.desktop_webview_no_cookies, host)
+                            },
+                        )
+                        State.Idle
+                    }
+                    is DesktopWebView.Opened.Manual -> State.Manual(opened.entry)
+                    is DesktopWebView.Opened.InvalidUrl -> {
+                        app.toast(app.localized(KMR.strings.desktop_source_error, opened.url))
+                        State.Idle
+                    }
+                }
+            } catch (e: CancellationException) {
+                // [cancel] already reset the state (or the screen is gone).
+                throw e
+            } catch (e: Throwable) {
+                xLogE("Open in WebView failed", e)
+                state = State.Idle
+                app.toast(
+                    app.localized(
+                        KMR.strings.desktop_webview_failed,
+                        address?.hostOf() ?: "",
+                        e.message ?: e::class.simpleName.orEmpty(),
+                    ),
+                )
+            }
+        }.also { job = it }
+    }
+
+    /** Cancels a running [open] (and with it an embedded browser session). */
+    fun cancel() {
+        if (state != State.Running) return
+        job?.cancel()
+        state = State.Idle
+    }
+
+    fun save(cookies: String, userAgent: String, alsoDefault: Boolean = false) {
         val manual = state as? State.Manual ?: return
-        when (val result = webView.saveManual(manual.entry, cookies, userAgent)) {
+        when (val result = webView.saveManual(manual.entry, cookies, userAgent, alsoDefault)) {
             is DesktopWebView.SaveResult.Saved -> {
                 state = State.Idle
                 if (result.cookies > 0) app.toast(app.localized(KMR.strings.desktop_webview_cookies_saved, manual.entry.host))
-                if (result.userAgentChanged) app.toast(MR.strings.requires_app_restart)
+                if (result.skipped.isNotEmpty()) {
+                    app.toast(app.localized(KMR.strings.desktop_webview_cookies_skipped, result.skipped.joinToString()))
+                }
+                if (result.defaultUserAgentChanged) app.toast(MR.strings.requires_app_restart)
             }
             else -> state = manual.copy(error = result)
         }
@@ -98,7 +157,10 @@ class WebViewLauncher(
     fun clearCookies() {
         val manual = state as? State.Manual ?: return
         webView.clearCookies(manual.entry.url)
-        state = manual.copy(entry = manual.entry.copy(storedCookies = emptyList()), error = null)
+        state = manual.copy(
+            entry = manual.entry.copy(storedCookies = emptyList(), userAgent = manual.entry.sourceUserAgent),
+            error = null,
+        )
         app.toast(MR.strings.cookies_cleared)
     }
 
@@ -121,7 +183,7 @@ fun WebViewDialogs(launcher: WebViewLauncher) {
     when (val state = launcher.state) {
         WebViewLauncher.State.Idle -> {}
         WebViewLauncher.State.Running -> AlertDialog(
-            onDismissRequest = {},
+            onDismissRequest = launcher::cancel,
             modifier = Modifier.testTag("webview-running"),
             title = { Text(stringResource(MR.strings.action_open_in_web_view)) },
             text = {
@@ -131,6 +193,11 @@ fun WebViewDialogs(launcher: WebViewLauncher) {
                 }
             },
             confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = launcher::cancel, modifier = Modifier.testTag("webview-cancel")) {
+                    Text(stringResource(MR.strings.action_cancel))
+                }
+            },
         )
         is WebViewLauncher.State.Manual -> ManualCookieDialog(state, launcher)
     }
@@ -140,7 +207,8 @@ fun WebViewDialogs(launcher: WebViewLauncher) {
 private fun ManualCookieDialog(state: WebViewLauncher.State.Manual, launcher: WebViewLauncher) {
     val entry = state.entry
     var cookies by remember(entry.url) { mutableStateOf("") }
-    var userAgent by remember(entry.url) { mutableStateOf(entry.userAgent) }
+    var userAgent by remember(entry.url, entry.userAgent) { mutableStateOf(entry.userAgent) }
+    var alsoDefault by remember(entry.url) { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = launcher::dismiss,
         modifier = Modifier.testTag("webview-manual"),
@@ -177,9 +245,16 @@ private fun ManualCookieDialog(state: WebViewLauncher.State.Manual, launcher: We
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth().testTag("webview-user-agent"),
                 )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = alsoDefault,
+                        onCheckedChange = { alsoDefault = it },
+                        modifier = Modifier.testTag("webview-user-agent-default"),
+                    )
+                    Text(stringResource(KMR.strings.desktop_webview_user_agent_default), style = MaterialTheme.typography.bodySmall)
+                }
                 when (val error = state.error) {
                     is DesktopWebView.SaveResult.InvalidCookie -> stringResource(KMR.strings.desktop_webview_cookie_invalid, error.entry)
-                    DesktopWebView.SaveResult.UserAgentBlank -> stringResource(MR.strings.error_user_agent_string_blank)
                     DesktopWebView.SaveResult.UserAgentInvalid -> stringResource(MR.strings.error_user_agent_string_invalid)
                     else -> null
                 }?.let {
@@ -194,7 +269,7 @@ private fun ManualCookieDialog(state: WebViewLauncher.State.Manual, launcher: We
             }
         },
         confirmButton = {
-            TextButton(onClick = { launcher.save(cookies, userAgent) }, modifier = Modifier.testTag("webview-save")) {
+            TextButton(onClick = { launcher.save(cookies, userAgent, alsoDefault) }, modifier = Modifier.testTag("webview-save")) {
                 Text(stringResource(MR.strings.action_save))
             }
         },

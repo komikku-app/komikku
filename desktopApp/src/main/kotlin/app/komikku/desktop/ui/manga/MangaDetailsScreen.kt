@@ -97,9 +97,9 @@ class MangaDetailsScreen(private val mangaId: Long) : Screen() {
             title = manga?.title.orEmpty(),
             onBack = navigator::pop,
             actions = {
-                val mangaUrl = remember(manga?.url, manga?.source) { model.mangaUrl() }
-                if (mangaUrl != null) {
-                    IconButton(onClick = { webView.open(mangaUrl.first, mangaUrl.second) }, modifier = Modifier.testTag("details-webview")) {
+                // Resolved on click, off the UI thread: the source may load later and `getMangaUrl` is extension code.
+                if (manga != null) {
+                    IconButton(onClick = { webView.open(manga.source) { model.mangaUrl() } }, modifier = Modifier.testTag("details-webview")) {
                         Icon(Icons.Outlined.Public, contentDescription = stringResource(MR.strings.action_open_in_web_view))
                     }
                 }

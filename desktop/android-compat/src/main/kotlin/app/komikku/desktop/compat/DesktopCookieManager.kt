@@ -41,6 +41,9 @@ class DesktopCookieManager(
     private val lock = Any()
     private val cookies = LinkedHashMap<Key, Cookie>()
 
+    /** Keys of cookies a user pasted ([setPastedCookies]), which a cookie the site sets later replaces. */
+    private val pasted = HashSet<Key>()
+
     @Volatile
     private var accept = true
 
@@ -70,13 +73,52 @@ class DesktopCookieManager(
             callback?.onReceiveValue(false)
             return
         }
-        synchronized(lock) {
+        val replacedPasted = synchronized(lock) {
             val key = cookie.key()
             // An already expired cookie (e.g. `Max-Age=0`) deletes the stored one.
             if (cookie.expiresAt <= clock()) cookies.remove(key) else cookies[key] = cookie
+            pasted.remove(key)
+            // A pasted cookie of the same name that would be sent with this one (e.g. on the parent domain) is stale
+            // now: the site's own cookie replaces it instead of being sent after it.
+            val stale = pasted.filter { it.name == cookie.name && cookies[it]?.matches(httpUrl) == true }
+            stale.forEach {
+                cookies.remove(it)
+                pasted.remove(it)
+            }
+            stale.isNotEmpty()
         }
-        changed(cookie.persistent)
+        changed(cookie.persistent || replacedPasted)
         callback?.onReceiveValue(true)
+    }
+
+    /**
+     * Stores cookies a user pasted (desktop "Open in WebView" without a browser, P7) under their own domain and path,
+     * marked so that a later [setCookie] of the same name for an address they are sent to removes them (the site's
+     * `Set-Cookie` may use another domain, e.g. host-only, than the pasted one, which would then be a second cookie).
+     */
+    fun setPastedCookies(pastedCookies: List<Cookie>) {
+        if (!accept || pastedCookies.isEmpty()) return
+        synchronized(lock) {
+            pastedCookies.forEach { cookie ->
+                val key = cookie.key()
+                if (cookie.expiresAt <= clock()) {
+                    cookies.remove(key)
+                    pasted.remove(key)
+                } else {
+                    cookies[key] = cookie
+                    pasted += key
+                }
+            }
+        }
+        changed(persistent = true)
+    }
+
+    /** Whether the cookie [name] sent to [url] was pasted by the user (for tests and the cookie dialog). */
+    fun isPasted(url: String, name: String): Boolean {
+        val httpUrl = url.toHttpUrlOrNull() ?: return false
+        return synchronized(lock) {
+            pasted.any { it.name == name && cookies[it]?.matches(httpUrl) == true }
+        }
     }
 
     override fun getCookie(url: String): String? {
@@ -114,7 +156,10 @@ class DesktopCookieManager(
         val removed = synchronized(lock) {
             removeExpired()
             val matching = cookies.filterValues { it.matches(httpUrl) && (names == null || it.name in names) }.keys
-            matching.forEach { cookies.remove(it) }
+            matching.forEach {
+                cookies.remove(it)
+                pasted.remove(it)
+            }
             matching.size
         }
         if (removed > 0) changed(persistent = true)
@@ -122,12 +167,15 @@ class DesktopCookieManager(
     }
 
     override fun removeSessionCookies(callback: ValueCallback<Boolean>?) {
-        val removed = synchronized(lock) { cookies.values.removeAll { !it.persistent } }
+        val removed = synchronized(lock) {
+            cookies.values.removeAll { !it.persistent }.also { pasted.retainAll(cookies.keys) }
+        }
         callback?.onReceiveValue(removed)
     }
 
     override fun removeAllCookies(callback: ValueCallback<Boolean>?) {
         val removed = synchronized(lock) {
+            pasted.clear()
             cookies.isNotEmpty().also { cookies.clear() }
         }
         changed(persistent = true)
@@ -146,7 +194,8 @@ class DesktopCookieManager(
             pendingWrite?.cancel(false)
             pendingWrite = null
             removeExpired()
-            cookies.values.filter { it.persistent }
+            pasted.retainAll(cookies.keys)
+            cookies.values.filter { it.persistent }.map { it to (it.key() in pasted) }
         }
         try {
             write(target, snapshot)
@@ -176,17 +225,20 @@ class DesktopCookieManager(
             val now = clock()
             json.parseToJsonElement(file.readText()).jsonObject[KEY_COOKIES]?.jsonArray?.forEach { element ->
                 val cookie = element.jsonObject.toCookie() ?: return@forEach
-                if (cookie.expiresAt > now) cookies[cookie.key()] = cookie
+                if (cookie.expiresAt > now) {
+                    cookies[cookie.key()] = cookie
+                    if (element.jsonObject["pasted"]?.jsonPrimitive?.booleanOrNull == true) pasted += cookie.key()
+                }
             }
         } catch (e: Exception) {
             DesktopLog.log(DesktopLog.ERROR, "CookieManager", "Ignoring unreadable ${file.path}", e)
         }
     }
 
-    private fun write(target: File, snapshot: List<Cookie>) {
+    private fun write(target: File, snapshot: List<Pair<Cookie, Boolean>>) {
         val root = buildJsonObject {
             put(KEY_VERSION, 1)
-            put(KEY_COOKIES, buildJsonArray { snapshot.forEach { add(it.toJson()) } })
+            put(KEY_COOKIES, buildJsonArray { snapshot.forEach { (cookie, isPasted) -> add(cookie.toJson(isPasted)) } })
         }
         target.absoluteFile.parentFile?.mkdirs()
         val tmp = File(target.absoluteFile.parentFile, "${target.name}.tmp")
@@ -201,7 +253,7 @@ class DesktopCookieManager(
         }
     }
 
-    private fun Cookie.toJson() = buildJsonObject {
+    private fun Cookie.toJson(isPasted: Boolean) = buildJsonObject {
         put("name", name)
         put("value", value)
         put("domain", domain)
@@ -211,6 +263,7 @@ class DesktopCookieManager(
         put("httpOnly", httpOnly)
         put("hostOnly", hostOnly)
         sameSite?.let { put("sameSite", it) }
+        if (isPasted) put("pasted", true)
     }
 
     private fun JsonObject.toCookie(): Cookie? = try {

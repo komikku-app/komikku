@@ -2,6 +2,7 @@ package android.webkit
 
 import app.komikku.desktop.compat.DesktopCookieManager
 import io.kotest.matchers.shouldBe
+import okhttp3.Cookie
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -57,6 +58,41 @@ class CookieManagerTest {
         manager.removeFor("https://www.example.com/") shouldBe 1
         manager.getCookie("https://www.example.com/") shouldBe null
         manager.getCookie("https://other.com/") shouldBe "cf_clearance=other"
+    }
+
+    @Test
+    fun `a cookie the site sets replaces a pasted one of the same name on another domain (P7 review)`() {
+        val manager = manager()
+        fun pasted(name: String, value: String, domain: String, hostOnly: Boolean) = Cookie.Builder()
+            .name(name).value(value).path("/").expiresAt(now + 3_600_000)
+            .apply { if (hostOnly) hostOnlyDomain(domain) else domain(domain) }
+            .build()
+        manager.setPastedCookies(
+            listOf(
+                pasted("cf_clearance", "pasted", "example.com", hostOnly = false),
+                pasted("session", "pasted", "www.example.com", hostOnly = true),
+            ),
+        )
+        manager.setCookie("https://www.example.com/", "keep=1; Domain=example.com")
+        manager.isPasted("https://www.example.com/", "cf_clearance") shouldBe true
+
+        // The site's host-only clearance and domain-wide session: the pasted ones would otherwise be sent too.
+        manager.setCookie("https://www.example.com/", "cf_clearance=site")
+        manager.setCookie("https://www.example.com/", "session=site; Domain=example.com")
+
+        manager.getCookie("https://www.example.com/") shouldBe "keep=1; cf_clearance=site; session=site"
+        manager.isPasted("https://www.example.com/", "cf_clearance") shouldBe false
+        // An ordinary cookie of the same name on another domain is not removed: only pasted ones are.
+        manager.setCookie("https://www.example.com/", "keep=2")
+        manager.getCookie("https://www.example.com/") shouldBe "keep=1; cf_clearance=site; session=site; keep=2"
+
+        // The mark survives a restart (the site's cookies above are session cookies and do not).
+        manager.setPastedCookies(listOf(pasted("theme", "dark", "www.example.com", hostOnly = true)))
+        manager.flush()
+        val reloaded = manager()
+        reloaded.isPasted("https://www.example.com/", "theme") shouldBe true
+        reloaded.setCookie("https://www.example.com/", "theme=light; Domain=example.com")
+        reloaded.getCookie("https://www.example.com/") shouldBe "theme=light"
     }
 
     @Test
