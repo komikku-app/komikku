@@ -35,7 +35,7 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 /**
- * P8 settings, headless: Settings → Browse has the FlareSolverr group (address, "Test connection", the privacy note);
+ * P8 settings, headless: Settings → Advanced (Browse until P12) has the FlareSolverr group (address, "Test connection", the privacy note);
  * the app's backend is the FlareSolverr one, and "Test connection" reports a missing address and a ready service; the
  * address' password is never shown (P8 review).
  */
@@ -69,11 +69,11 @@ class FlareSolverrSettingsUiTest {
         onNodeWithText(MR.strings.label_more.localized()).performClick()
         waitForTag("more-settings")
         onNodeWithTag("more-settings").performClick()
-        waitForTag("settings-browse")
-        onNodeWithTag("settings-browse").performClick()
-        waitForTag("settings-Browse")
+        waitForTag("settings-advanced")
+        onNodeWithTag("settings-advanced").performClick()
+        waitForTag("settings-Advanced")
         val test = stringResource(KMR.strings.desktop_flaresolverr_test)
-        onNodeWithTag("settings-Browse").performScrollToNode(hasText(test))
+        onNodeWithTag("settings-Advanced").performScrollToNode(hasText(test))
         waitForText(stringResource(KMR.strings.desktop_flaresolverr_url))
 
         // Off by default: the test says so.

@@ -3,12 +3,14 @@ package app.komikku.desktop.settings
 import android.app.Application
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
@@ -104,12 +106,13 @@ class SettingsUiTest {
         waitUntil(timeoutMillis = 5_000) { !Injekt.get<DownloadPreferences>().saveChaptersAsCBZ().get() }
         back()
 
-        // Browse: SY's delegated sources toggle (P4), on by default like Android
-        waitForTag("settings-browse")
-        onNodeWithTag("settings-browse").performClick()
-        waitForTag("settings-Browse")
+        // Advanced → Developer tools: SY's delegated sources toggle (P4; there like on Android since P12), on by default
+        waitForTag("settings-advanced")
+        onNodeWithTag("settings-advanced").performClick()
+        waitForTag("settings-Advanced")
         val delegates = Injekt.get<DelegateSourcePreferences>().delegateSources()
         delegates.get() shouldBe true
+        onNodeWithTag("settings-Advanced").performScrollToNode(hasText(SYMR.strings.toggle_delegated_sources.localized()))
         onNodeWithText(SYMR.strings.toggle_delegated_sources.localized()).performClick()
         waitUntil(timeoutMillis = 5_000) { !delegates.get() }
         delegates.set(true)
