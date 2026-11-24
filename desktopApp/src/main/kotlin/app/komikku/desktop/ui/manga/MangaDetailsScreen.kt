@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.BrowseScaffold
@@ -70,6 +71,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.util.system.toast
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -92,6 +95,7 @@ class MangaDetailsScreen(internal val mangaId: Long) : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
         val model = rememberScreenModel { MangaDetailsScreenModel(mangaId) }
         val state by model.state.collectAsState()
         val manga = state.manga
@@ -168,7 +172,22 @@ class MangaDetailsScreen(internal val mangaId: Long) : Screen() {
                     model.dismissDialog()
                     navigator.push(MangaDetailsScreen(it.id))
                 },
+                onMigrate = model::showMigrateDialog,
             )
+            // P19: Android's — the duplicate migrated onto this entry; this entry's details stay
+            is MangaDetailsScreenModel.Dialog.Migrate -> {
+                val failedText = stringResource(KMR.strings.desktop_migration_failed, dialog.current.title)
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    onClickTitle = { navigator.push(MangaDetailsScreen(dialog.current.id)) },
+                    onDismissRequest = model::dismissDialog,
+                    onFailure = {
+                        model.dismissDialog()
+                        context.toast(failedText)
+                    },
+                )
+            }
             null -> {}
         }
         WebViewDialogs(webView)

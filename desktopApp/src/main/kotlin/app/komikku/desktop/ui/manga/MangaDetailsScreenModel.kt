@@ -114,6 +114,9 @@ class MangaDetailsScreenModel(
         /** Android `MangaScreenModel.Dialog.DuplicateManga`: library entries with the same title (or tracked alike). */
         data class DuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
 
+        /** P19: Android's `MangaScreenModel.Dialog.Migrate` from the duplicate dialog: [current] onto this entry. */
+        data class Migrate(val target: Manga, val current: Manga) : Dialog
+
         /**
          * SY's "Edit info" for a library entry (Android `MangaScreenModel.Dialog.EditMangaInfo`); [saving] while a save
          * runs, [error] the last failed save's message (the dialog keeps the input).
@@ -533,6 +536,14 @@ class MangaDetailsScreenModel(
 
     fun dismissDialog() {
         mutableState.update { it.copy(dialog = null) }
+    }
+
+    /** P19: Android's `showMigrateDialog` — the duplicate migrated onto this entry with Mihon's dialog. */
+    fun showMigrateDialog(duplicate: Manga) {
+        mutableState.update { state ->
+            val manga = state.manga ?: return@update state
+            state.copy(dialog = Dialog.Migrate(target = manga, current = duplicate))
+        }
     }
 
     fun openReader(chapter: Chapter) {

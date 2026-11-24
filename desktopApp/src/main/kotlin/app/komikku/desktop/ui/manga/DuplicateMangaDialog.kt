@@ -1,6 +1,8 @@
 package app.komikku.desktop.ui.manga
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -38,8 +40,9 @@ import uy.kohesive.injekt.api.get
 
 /**
  * Desktop counterpart of Android's `DuplicateMangaDialog` (P10): the entry being added, the library entries that look
- * like it (cover, title, chapter count, source) and "Add anyway" / "Cancel". Clicking a duplicate opens it (on
- * Android a click migrates and a long press opens; migration is not on desktop). Android's composable is not borrowed:
+ * like it (cover, title, chapter count, source) and "Add anyway" / "Cancel". Clicking a duplicate opens it; with
+ * [onMigrate] (P19) a click migrates it onto the entry being added and a long press opens it, like
+ * Android. Android's composable is not borrowed:
  * it is built on the Android cover component (drawable resources), its adaptive sheet and the preference widgets'
  * sizing; the detection itself is the shared `GetDuplicateLibraryManga`.
  *
@@ -47,6 +50,7 @@ import uy.kohesive.injekt.api.get
  * / "Skip it" ([onAllowAllDuplicate], [onSkipAllDuplicate], [onSkipDuplicate]; each closes the dialog first). They
  * wrap onto further lines when the dialog is too narrow for them all (long translations).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun DuplicateMangaDialog(
     targetManga: Manga,
@@ -54,6 +58,7 @@ internal fun DuplicateMangaDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
     onOpenManga: (Manga) -> Unit,
+    onMigrate: ((Manga) -> Unit)? = null,
     onAllowAllDuplicate: (() -> Unit)? = null,
     onSkipAllDuplicate: (() -> Unit)? = null,
     onSkipDuplicate: (() -> Unit)? = null,
@@ -74,7 +79,13 @@ internal fun DuplicateMangaDialog(
                             modifier = Modifier
                                 .width(140.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .clickable { onOpenManga(manga) }
+                                .then(
+                                    if (onMigrate == null) {
+                                        Modifier.clickable { onOpenManga(manga) }
+                                    } else {
+                                        Modifier.combinedClickable(onLongClick = { onOpenManga(manga) }, onClick = { onMigrate(manga) })
+                                    },
+                                )
                                 .padding(4.dp)
                                 .testTag("duplicate-${manga.id}"),
                             verticalArrangement = Arrangement.spacedBy(2.dp),

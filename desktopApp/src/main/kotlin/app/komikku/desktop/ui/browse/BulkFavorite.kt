@@ -12,7 +12,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.manga.DuplicateMangaDialog
@@ -22,6 +25,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
+import eu.kanade.tachiyomi.util.system.toast
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -89,10 +94,11 @@ internal class BulkClicks(
     }
 }
 
-/** Android's `BulkFavoriteDialogs` with the desktop's dialogs (no migration on desktop). */
+/** Android's `BulkFavoriteDialogs` with the desktop's dialogs (P19: with the migration from the duplicate dialog). */
 @Composable
 internal fun BulkFavoriteDialogs(model: BulkFavoriteScreenModel, dialog: BulkFavoriteScreenModel.Dialog?) {
     val navigator = LocalNavigator.currentOrThrow
+    val context = LocalContext.current
     when (dialog) {
         is BulkFavoriteScreenModel.Dialog.ChangeMangasCategory -> ChangeCategoryDialog(
             initialSelection = dialog.initialSelection,
@@ -116,6 +122,7 @@ internal fun BulkFavoriteDialogs(model: BulkFavoriteScreenModel, dialog: BulkFav
                 model.removeDuplicateSelectedManga(dialog.currentIdx)
                 model.addFavorite(dialog.currentIdx)
             },
+            onMigrate = { model.showMigrateDialog(dialog.manga, it) },
         )
         is BulkFavoriteScreenModel.Dialog.AddDuplicateManga -> {
             LaunchedEffect(dialog) { model.stopRunning() }
@@ -128,10 +135,35 @@ internal fun BulkFavoriteDialogs(model: BulkFavoriteScreenModel, dialog: BulkFav
                     model.addFavorite(dialog.manga)
                 },
                 onOpenManga = { navigator.push(MangaDetailsScreen(it.id)) },
+                onMigrate = { model.showMigrateDialog(dialog.manga, it) },
             )
         }
-        // Not reached on desktop: removing (Android's long press on a library entry) and migrating are not offered
-        is BulkFavoriteScreenModel.Dialog.RemoveManga, is BulkFavoriteScreenModel.Dialog.Migrate -> {
+        // P19: Android's `ShowMigrateDialog` — the duplicate migrated onto the entry being added, then on with the rest
+        is BulkFavoriteScreenModel.Dialog.Migrate -> {
+            val state by model.state.collectAsState()
+            val failedText = stringResource(KMR.strings.desktop_migration_failed, dialog.current.title)
+            LaunchedEffect(dialog) { model.stopRunning() }
+            with(navigator.lastItem) {
+                MigrateMangaDialog(
+                    current = dialog.current,
+                    target = dialog.target,
+                    onClickTitle = { navigator.push(MangaDetailsScreen(dialog.current.id)) },
+                    onDismissRequest = model::dismissDialog,
+                    onComplete = {
+                        val continueAdding = state.selection.size > 1
+                        model.toggleSelection(dialog.target, false)
+                        model.dismissDialog()
+                        if (continueAdding) model.addFavorite()
+                    },
+                    onFailure = {
+                        model.dismissDialog()
+                        context.toast(failedText)
+                    },
+                )
+            }
+        }
+        // Not reached on desktop: removing (Android's long press on a library entry) is not offered
+        is BulkFavoriteScreenModel.Dialog.RemoveManga -> {
             LaunchedEffect(dialog) { model.dismissDialog() }
         }
         null -> Unit
