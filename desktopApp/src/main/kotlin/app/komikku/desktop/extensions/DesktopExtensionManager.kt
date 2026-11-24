@@ -387,15 +387,44 @@ class DesktopExtensionManager(
             }
         }
 
+        // P22 review: the new version replaces the old entry in one emission of each list. Removing first and adding
+        // after gave observers a list without the extension (an open extension info took it as uninstalled and closed,
+        // the source manager dropped and re-added its sources).
         val result = loadExtension(target)
-        unregister(extension.pkgName)
+        val pkgName = extension.pkgName
         when (result) {
-            is LoadResult.Success -> register(result.extension.withUpdateCheck())
-            is LoadResult.Untrusted -> if (!result.extension.isBlacklisted()) setUntrusted(untrustedMap.value + (result.extension.pkgName to result.extension))
-            LoadResult.Error -> return@withLock false
+            is LoadResult.Success -> replace(pkgName, installed = result.extension.withUpdateCheck())
+            is LoadResult.Untrusted ->
+                replace(pkgName, untrusted = result.extension.takeUnless { it.isBlacklisted() })
+            LoadResult.Error -> {
+                replace(pkgName)
+                return@withLock false
+            }
         }
         updatePendingUpdatesCount()
         true
+    }
+
+    /**
+     * Sets [pkgName]'s entries at once: [installed] (unless blacklisted) or [untrusted], the other list without it; an
+     * entry already listed keeps its position. `null` for both removes it from both.
+     */
+    private fun replace(
+        pkgName: String,
+        installed: Extension.Installed? = null,
+        untrusted: Extension.Untrusted? = null,
+    ) {
+        val listed = installed?.takeUnless { extension ->
+            extension.isBlacklisted().also { blacklisted ->
+                if (blacklisted) {
+                    logcat { "Removing blacklisted extension: (name: ${extension.name}, pkgName: ${extension.pkgName})" }
+                }
+            }
+        }
+        val installedNext = if (listed != null) installedMap.value + (pkgName to listed) else installedMap.value - pkgName
+        val untrustedNext = if (untrusted != null) untrustedMap.value + (pkgName to untrusted) else untrustedMap.value - pkgName
+        if (installedNext != installedMap.value) setInstalled(installedNext)
+        if (untrustedNext != untrustedMap.value) setUntrusted(untrustedNext)
     }
 
     override fun uninstallExtension(extension: Extension) {

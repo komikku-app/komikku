@@ -10,14 +10,19 @@ import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.model.InstallStep
+import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsEvent
+import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreenModel
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import mihon.domain.extension.interactor.AddExtensionStore
@@ -181,7 +186,23 @@ class DesktopExtensionManagerTest {
         outdated.hasUpdate shouldBe true
         Injekt.get<SourcePreferences>().extensionUpdatesCount().get() shouldBe 1
 
+        // P22 review: an update replaces the entry in one emission; an open extension info stays open across it
+        val seen = mutableListOf<List<String>>()
+        val recorder = CoroutineScope(Dispatchers.Unconfined).launch {
+            manager.installedExtensionsFlow.collect { list -> synchronized(seen) { seen += list.map { it.pkgName } } }
+        }
+        val details = ExtensionDetailsScreenModel(pkg, Injekt.get<Application>())
+        val events = mutableListOf<ExtensionDetailsEvent>()
+        val eventCollector = CoroutineScope(Dispatchers.Unconfined).launch { details.events.collect { synchronized(events) { events += it } } }
+        withTimeout(10_000) { details.state.first { it.extension?.versionCode == 3L } }
+
         manager.updateExtension(outdated).toList().last() shouldBe InstallStep.Installed
+        withTimeout(10_000) { details.state.first { it.extension?.versionCode == 4L } }
+        recorder.cancel()
+        eventCollector.cancel()
+        details.onDispose()
+        synchronized(seen) { seen.filter { pkg !in it } }.shouldBeEmpty()
+        synchronized(events) { events.toList() }.shouldBeEmpty()
 
         val updated = manager.installedExtensionsFlow.value.single()
         updated.versionCode shouldBe 4L
