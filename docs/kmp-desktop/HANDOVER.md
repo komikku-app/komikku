@@ -5,8 +5,9 @@ review fixes, step I4, the repository store and UI, with its review fixes, deskt
 and source toggles, with its review fixes, parity step P2, library grouping and batch actions, with its review
 fixes, parity step P3, scheduled library updates and backups, with its review fixes, parity step P4, SY delegated
 sources, with its review fixes, parity step P5, AVIF / JPEG XL, with its review fixes, parity step P6, the app
-update check, with its review fixes, are done, and parity step P7, WebView / Cloudflare, is built (its review
-`/code-review medium 2093b68^..e43620e` and fix round are pending); next: the P7 review, signing, the release
+update check, with its review fixes, parity step P7, WebView / Cloudflare, with its review fixes, are done, and parity
+step P8, automatic Cloudflare solving through a FlareSolverr-compatible service, is built (its review
+`/code-review medium 1be55e8^..<P8 docs commit>` and fix round are pending); next: the P8 review, signing, the release
 pipeline for desktop installers, and the maintainer's first real run; see "Done" and "Left to do").
 Read with [`PLAN.md`](PLAN.md) (plan and decisions), [`PROGRESS.md`](PROGRESS.md) (step log,
 deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to run/test/package),
@@ -176,7 +177,25 @@ deviations, moved files, compat classes), [`BUILDING.md`](BUILDING.md) (how to r
   User-Agent (`default_user_agent`, restart for extension sources). Tests `DesktopCloudflareInterceptorTest` (11),
   `DesktopWebViewTest` (7), `WebViewUiTest` (1), `CookieManagerTest` +1. Extensions using `android.webkit.WebView` still
   fail at that call (`NoClassDefFoundError`; what is needed is in PROGRESS).
-- **P7 review** — pending: `/code-review medium 2093b68^..e43620e`, then a fix round.
+- **P7 review** (medium, `2093b68^..efae9ab`, 10 findings) — all fixed in `ed37378`, `fc72df6`, `6c8bc49` (PROGRESS.md
+  "Review fixes (P7)"): a failed solve is remembered per host for 45 s (waiters and followers fail at once; a new
+  clearance or a manual save clears it); the solver's / a pasted User-Agent is kept per host, bound to a hash of its
+  clearance, persisted (`desktop_cloudflare_user_agents`) and sent to that host's requests while the clearance is in the
+  jar, also for sources with their own User-Agent (no restart; the default User-Agent only with an explicit checkbox);
+  the challenged redirect target is the one solved; pasted cookies host-only except Cloudflare's `cf_*` / `__cf*`, and
+  replaced when the site sets its own (`DesktopCookieManager.setPastedCookies`); unusable pasted entries skipped and
+  named instead of rejecting the paste; a blank User-Agent keeps the current one; details resolve the address on click
+  off the UI thread; the WebView progress dialog is cancellable and never stuck; honest messages after an embedded
+  session. Last Part A commit `6c8bc49`.
+- **P8** automatic Cloudflare solving (`1be55e8` … , PROGRESS.md "P8 — automatic Cloudflare solving through a
+  FlareSolverr-compatible service"): `FlareSolverrBackend` (`POST /v1`, `request.get`, cookies + `userAgent` mapped to
+  the browser-session result, ≥ 60 s solve time, clear errors for not configured / not `http(s)` / unreachable / error
+  answer / timeout, no credentials in logs) installed as `BrowserBackends.current`; Settings → Browse "Cloudflare solver
+  (FlareSolverr)" with the address (desktop preference `desktop_flaresolverr_url`, empty = off; no Android key exists),
+  "Test connection" and the privacy note. With it, browse, library updates, global search and downloads get past
+  challenges; "Open in WebView" stays the manual fallback (the solver shows no pages). Tests `FlareSolverrBackendTest`
+  (9, `MockWebServer` as the solver), `FlareSolverrSettingsUiTest` (1). Not run against a real solver.
+- **P8 review** — pending: `/code-review medium 1be55e8^..<P8 docs commit>`, then a fix round.
 
 ### Security decision on record
 quickjs-kt (1.0.15 and 1.0.18) turns a JS `Error` reaching the JVM into
@@ -217,8 +236,9 @@ mark the residual path in both modules.
    (scheduled library updates and backups) and its review fixes are done (last review-fix commit `ddfd839`); P4 (SY
    delegated sources) and its review fixes are done (last review-fix commit `9c1a2d2`). P5 (AVIF / JXL) and its review
    fixes are done (no decoder; Skia first, format state on failure; last review-fix commit `ac074ee`). P6 (app update
-   check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) is built: the
-   review `/code-review medium 2093b68^..e43620e` and its fix round are next. **Then, in order:** signing /
+   check) and its review fixes are done (last review-fix commit `921518b`). P7 (WebView / Cloudflare) and its review
+   fixes are done (last review-fix commit `6c8bc49`). P8 (FlareSolverr backend) is built: the review
+   `/code-review medium 1be55e8^..<P8 docs commit>` and its fix round are next. **Then, in order:** signing /
    notarization of the installers; the release pipeline
    for desktop installers (attach the `build_desktop.yml` outputs to the GitHub releases, built with `-Penable-updater`,
    names with the OS extension and, for per-architecture builds, the architecture; PROGRESS "What the release pipeline
@@ -231,10 +251,10 @@ mark the residual path in both modules.
    against real extension APKs or servers), and: no bulk favourites in global search, no "search
    globally" from the library, no SY source categories / data-saver exclusion; no migrate / merge / recommendations /
    SY title cleaning / MangaDex follow / reset info from the library selection; desktop UI not run in a real window.
-   P7's (no embedded browser: jcefmaven backend or a FlareSolverr backend, PROGRESS P7 "What the embedded backend still
-   needs"; automatic flows hitting a challenge need the manual step; User-Agent change needs a restart for extension
-   sources; no Settings → Advanced network group; `android.webkit.WebView` for extensions; not run against a real
-   Cloudflare site or in a real window). After signing: notifications / tray.
+   P7's / P8's (no embedded browser: jcefmaven backend, PROGRESS P7 "What the embedded backend still needs"; without a
+   FlareSolverr-compatible service automatic flows hitting a challenge need the manual step; the FlareSolverr backend
+   not run against a real solver; no per-source opt-out; no Settings → Advanced network group; `android.webkit.WebView`
+   for extensions; not run against a real Cloudflare site or in a real window). After signing: notifications / tray.
 5. I5–I7 (iOS core, iOS app, macOS CI) need a macOS host; re-check the JS catalogue size first (PLAN 8.9).
 6. Optional: report the quickjs-kt bugs upstream (draft in `QUICKJS_KT_SECURITY_REPORT.md`, with the crash and
    the JNI state race added; the maintainer submits it).

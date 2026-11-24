@@ -178,14 +178,30 @@ converted jars you already have locally; nothing is downloaded):
 
 Details in [`PROGRESS.md`](PROGRESS.md#link-check-53).
 
-## WebView and Cloudflare (P7)
+## WebView and Cloudflare (P7, P8)
 
 Nothing is downloaded or bundled for this: the desktop app has **no embedded browser**. Cloudflare challenges go
-through `app.komikku.network.browser.BrowserBackends.current`, which is `NoBrowserBackend` in every build, so a
-challenged request fails with a message that points the user to "Open in WebView" (catalogue top bar or error screen,
-details top bar): the page opens in the system browser and a dialog takes the pasted cookies and User-Agent (stored in
-`<dataDir>/cookies.json` and the `default_user_agent` preference). Tests use a fake backend (`FakeBrowserBackend`) and
-`MockWebServer`; CI starts no browser.
+through `app.komikku.network.browser.BrowserBackends.current`, which the app sets to the FlareSolverr backend (P8)
+when the network is created; with its address empty (the default) it is unavailable, so a challenged request fails with
+a message that points the user to "Open in WebView" (catalogue top bar or error screen, details top bar): the page
+opens in the system browser and a dialog takes the pasted cookies and User-Agent. The cookies go to
+`<dataDir>/cookies.json` (pasted ones host-only, Cloudflare's `cf_*` for the site's registrable domain, replaced when the
+site sets its own); the User-Agent is sent to that site at once (the `desktop_cloudflare_user_agents` preference, bound
+to the clearance cookie) and, only with the dialog's "Also use … as the default" box ticked, becomes the
+`default_user_agent` preference (extension sources pick that up after a restart).
+
+**Automatic solving (P8), for users:** Settings → Browse → "Cloudflare solver (FlareSolverr)". Enter the address of a
+[FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)-compatible service you run yourself (for example
+`docker run -p 8191:8191 ghcr.io/flaresolverr/flaresolverr` → `http://localhost:8191`; the API address `…/v1` works
+too; only `http` / `https`; user info in the address is sent as basic authentication and never logged), then "Test
+connection". From then on challenges during browsing, library updates, global search and downloads are solved by that
+service (`POST /v1`, `request.get`, at least 60 s per solve): its cookies and User-Agent are stored and the request is
+sent again. **Privacy:** the service loads the protected pages itself, so it sees their addresses and the cookies the
+app sends with them; run it on a machine you trust. Empty address = off. "Open in WebView" stays the manual fallback
+(the service shows no pages). The setting is desktop-only (`desktop_flaresolverr_url`; Android has no such setting).
+
+Tests use a fake backend (`FakeBrowserBackend`) and `MockWebServer` (also as the stand-in solver,
+`FlareSolverrBackendTest`); CI starts no browser and no solver.
 
 An embedded backend (jcefmaven was evaluated as the candidate, see [`PROGRESS.md`](PROGRESS.md#p7--webview-and-cloudflare))
 would add 120–140 MB of Chromium natives per platform (downloaded at first use or bundled), JVM `--add-opens` flags
@@ -198,7 +214,8 @@ and, on macOS, signed helper app bundles; none of that is configured yet.
   (jlink with the chosen modules) and YAML parsing only. Installers, icons inside them, file associations
   and upgrade behaviour are unverified.
 - No signing / notarization, no in-app update download / install (the update check only opens the release page), no
-  file associations, no embedded browser (Cloudflare checks and logins by hand, see above).
+  file associations, no embedded browser (Cloudflare checks by hand or through a FlareSolverr-compatible service you
+  run, logins by hand; see above).
 - The parity gaps with Android (features the desktop app does not have yet) are listed in
   [`PROGRESS.md`](PROGRESS.md#remaining-parity-gaps).
 - Only Linux has run the test suite; Windows / macOS specifics (paths, file dialogs, key handling) are

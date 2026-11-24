@@ -954,7 +954,7 @@ Desktop behaviour is documented in each class's KDoc; unsupported members throw
 | `android.os.Looper`, `Handler` | 1.1 | `Context.mainExecutor`, extensions | One main looper: a daemon thread "android-compat-main" (not the AWT thread); `Runnable` posts only, no `Message` |
 | `android.os.Environment`, `StatFs`, `FileUtils` | 1.1 | `DiskUtil`, `UniFileTempFileManager` | External storage = user home, always mounted; `StatFs` from `java.io.File` space queries |
 | `android.media.MediaScannerConnection` | 1.1 | `DiskUtil` | No-op (callback gets a `null` uri) |
-| `android.webkit.CookieManager`, `ValueCallback` | 1.1 | `AndroidCookieJar` (`NetworkHelper.cookieJar`) | `DesktopCookieManager`: RFC 6265 store with OkHttp parsing/matching; persistent cookies in `<dataDir>/cookies.json` (debounced write, `flush()`, shutdown hook). P7: `cookiesFor(url)` (full cookies) and `removeFor(url, names)` (whatever the domain / path) for browser sessions |
+| `android.webkit.CookieManager`, `ValueCallback` | 1.1 | `AndroidCookieJar` (`NetworkHelper.cookieJar`) | `DesktopCookieManager`: RFC 6265 store with OkHttp parsing/matching; persistent cookies in `<dataDir>/cookies.json` (debounced write, `flush()`, shutdown hook). P7: `cookiesFor(url)` (full cookies) and `removeFor(url, names)` (whatever the domain / path) for browser sessions. P7 review: `setPastedCookies` / `isPasted` (pasted cookies marked, `"pasted": true` in the file, removed when the site sets one of the same name sent with it) |
 | `android.webkit.MimeTypeMap` | 1.1 | UniFile `type`, `ContentResolver.getType`, extensions | Built-in table (images, comic archives, documents, web, media) |
 | `android.widget.Toast` | 1.1 | `ToastExtensions` (`context.toast`) | `show()` → `Toast.presenter` (logs by default; the desktop UI can replace it) |
 | `android.text.Html`, `Spanned`, `androidx.core.text.parseAsHtml` | 1.1 | `StringExtensions.htmlDecode`, extensions | jsoup-based HTML → plain text (legacy/compact block separation), no spans |
@@ -2388,6 +2388,106 @@ pass; `:desktopApp:test` 49 classes, 209 tests, 0 failures (was 48 / 198); `:cor
 commit: `spotlessCheck` and the `app.komikku.desktop.webview.*` tests (4 classes, 31 tests) pass. Not run: a real window,
 a real Cloudflare site, the Android app (compile only; nothing Android changed).
 
+## P8 — automatic Cloudflare solving through a FlareSolverr-compatible service
+
+Commits `1be55e8` (backend, settings, wiring), `29f0fef` (tests) and this section's docs commit. Next in HANDOVER's order
+after the P7 review fixes. **Outcome:** with the address of a FlareSolverr-compatible service the user runs (Settings →
+Browse → "Cloudflare solver (FlareSolverr)"), the desktop's `CloudflareInterceptor` gets past challenges without the
+manual step, in every flow that uses `NetworkHelper.client` (browse, library updates, global search, downloads); empty
+address (the default) = the P7 manual flow, unchanged. No embedded browser.
+
+**Preference key:** none existed for this (checked: no `flaresolverr` key or string in Android / Mihon / SY code or
+resources here), so it is a desktop preference, `desktop_flaresolverr_url` (`DesktopCloudflarePreferences`), default
+empty.
+
+### Built
+
+- **`FlareSolverrBackend`** (`desktopApp/…/webview/FlareSolverrBackend.kt`, a `BrowserBackend`): one
+  `POST <address>/v1 {"cmd": "request.get", "url", "maxTimeout", "cookies": [{name, value, domain, path}]}` per session
+  (the jar's cookies for the page; FlareSolverr v2+ takes no headers / User-Agent, so the source's are not sent). The
+  answer's `solution` becomes the session result: cookies with their domain (Chrome's leading dot = domain cookie, else
+  host-only), path, expiry (`expires` in seconds, -1 = session cookie), secure / HttpOnly; `userAgent`; the final `url`
+  and `status`; the outcome comes from testing the session's condition (a new `cf_clearance` for the URL) against that
+  page, because the service answers `ok` also when the page had no challenge (not met → `CLOSED` → the interceptor's
+  `NOT_SOLVED`). The interceptor then stores the cookies, keeps the solver's User-Agent as the host's override (P7 review
+  finding 2) and retries.
+  - **Timeouts:** `maxTimeout` = the session's timeout, at least `MIN_TIMEOUT` = 60 s (FlareSolverr's default; a solve
+    takes longer than the 30 s WebView wait Android uses); the HTTP call gets that plus `ANSWER_MARGIN` = 15 s. The
+    service's own timeout answer (`status` not `ok` with "timeout" in the message) and no answer in time
+    (`InterruptedIOException` without an interrupt) are `TIMED_OUT`; an interrupt (cancelled dialog) is rethrown.
+  - **Unavailability, clearly:** empty address → `Unavailable(NOT_INSTALLED)` (the interceptor's `NO_BROWSER` message:
+    pass the check by hand); a non-`http(s)` address → `Unavailable(NOT_SUPPORTED)` (same message; the settings refuse
+    to save it); unreachable → `BrowserUnavailableException("FlareSolverr is unreachable at <scheme://host:port>: …")`;
+    an error answer → "FlareSolverr error (HTTP n): <its message>"; an unreadable answer / one without a solution →
+    their own messages. The interceptor now quotes a `BrowserUnavailableException`'s message in its error
+    (`KMR.strings.desktop_cloudflare_solver_failed`: "Failed to bypass Cloudflare on <host>: <reason>. Try again, or use
+    “Open in WebView” …"), so the user sees why.
+  - **Addresses:** `http(s)` only; the base address (`http://localhost:8191`, with or without `/`) gets `/v1` appended,
+    an address ending in `/v1` is used as is, query / fragment dropped (`apiUrl`). User info in the address is sent as
+    basic authentication (a solver behind a proxy) and never shown or logged: logs and messages carry
+    `scheme://host:port` only; request URLs are logged by host only.
+  - Its own `OkHttpClient` (10 s connect timeout), not the app's: the app's client has the Cloudflare interceptor and
+    the DoH setting, and a solver is usually on the local network.
+  - `showsPages = false` (new `BrowserBackend.showsPages`, default `true`): "Open in WebView" does not use it and keeps
+    the system browser + pasted cookies dialog as the fallback.
+  - `testConnection()`: `GET` of the base address; `Ok(version)` when the answer is JSON with `msg` / `version`
+    (FlareSolverr: `{"msg": "FlareSolverr is ready!", "version": …}`), else `Failed("HTTP n from …")`, `Unreachable`,
+    `NotConfigured`, `InvalidAddress`.
+- **Wiring** (`DesktopCloudflare.installBackend`, Injekt singleton `FlareSolverrBackend`): created with the
+  `NetworkHelper` and set as `BrowserBackends.current`; it reads the address per challenge, so a change in the settings
+  applies at once (no restart). `DesktopServices` (tests) does not install it.
+- **Settings** (Settings → Browse, new group "Cloudflare solver (FlareSolverr)"): the address (`EditTextPreference`,
+  "Off" when empty; an address that is not `http(s)` is refused with "Not an http(s) address"), "Test connection"
+  (progress indicator, result as a snackbar: connected + version / not set / not http(s) / unreachable + reason / no
+  FlareSolverr answer + HTTP status), and the explanation with the privacy note: pages of protected sites are then
+  loaded by that service, which sees their addresses and the cookies sent with them; "Open in WebView" stays available.
+  Browse was chosen because the desktop has no Settings → Advanced (P7 decision); Android's "Networking" group lives
+  there.
+
+### Decisions / deviations
+
+- **A desktop preference**, not a shared key (none exists); not in backups (Android's backup would not restore it).
+- **The source's headers and User-Agent are not passed** (FlareSolverr v2+ dropped `headers` / `userAgent`); the
+  clearance is bound to the solver's User-Agent, which the interceptor then sends to that host (P7 review finding 2).
+  Byparr and other compatible services: only the `request.get` call and the `solution` fields above are relied on.
+- **No `session` / `proxy` parameters** (FlareSolverr's browser sessions and proxies): one solve per challenge.
+- **One solve per host at a time and the 45 s failure memory** (P7 review) apply as with any backend: a down solver
+  fails every queued request at once instead of each waiting for the connect timeout.
+- The 60 s minimum solve time means a request can now block up to ~75 s on a hard challenge, inside the app client's
+  120 s call timeout; acceptable for background work, and the UI shows its normal loading state meanwhile.
+
+### Tests
+
+- `FlareSolverrBackendTest` (9, one `MockWebServer` as the protected site, which wants the clearance and the solver's
+  User-Agent, one as the solver): solved → `POST /v1` with `request.get`, the URL and `maxTimeout` → cookies and
+  User-Agent stored → the retry passes, and the host's next request goes through with the solver's User-Agent without a
+  second solve; the jar's cookies are sent to the solver, domain / session cookies mapped, the 60 s minimum; an error
+  answer → `BROWSER_FAILED` quoting the solver's message; unreachable (closed port, credentials in the address) →
+  `BROWSER_FAILED` "unreachable", no credentials in the message; the solver's timeout answer and an answer that does not
+  come in time → `TIMED_OUT` (bounded wait); empty / `ftp:` address → `NO_BROWSER` (P7 manual error), solver not called;
+  the app wiring (`installBackend`: the setting turns it on at once, `NetworkHelper.client` passes) and "Open in WebView"
+  staying manual with it; address normalisation and validation; `testConnection` (ready, 404, not set, invalid,
+  unreachable) and its messages.
+- `FlareSolverrSettingsUiTest` (1, headless window): the app's backend is the FlareSolverr one; Settings → Browse shows
+  the group; "Test connection" says no address is set, then (address set to the stand-in) "Connected to FlareSolverr
+  3.3.21".
+
+New strings (KMR, base only): `desktop_cloudflare_solver_failed`, `desktop_flaresolverr_title`, `desktop_flaresolverr_url`,
+`desktop_flaresolverr_info`, `desktop_flaresolverr_test`, `desktop_flaresolverr_ok`, `desktop_flaresolverr_not_configured`,
+`desktop_flaresolverr_invalid`, `desktop_flaresolverr_unreachable`, `desktop_flaresolverr_failed`; reused MR: `off`.
+
+**Known gaps:** not run against a real FlareSolverr / Byparr or a real Cloudflare site (only the documented API shape,
+FlareSolverr 3.x); no per-source opt-out (every challenged host goes to the solver once it is set); the solver's
+`response` HTML is not used (the request is always sent again); no Settings → Advanced network group; extensions that use
+`android.webkit.WebView` themselves still fail at that call (P7).
+
+Verification (after `29f0fef`, `--max-workers=2 --console=plain`, `./gradlew --stop` between heavy runs):
+`spotlessApply`, `spotlessCheck`, `:app:compileDebugKotlin`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`
+pass; `:desktopApp:test` 51 classes, 220 tests, 0 failures (was 49 / 209 after `fc72df6`: +1 interceptor test in
+`6c8bc49`, `FlareSolverrBackendTest` 9, `FlareSolverrSettingsUiTest` 1); `:core:common:desktopTest` 3 classes, 9 tests,
+0 failures; `:desktop:android-compat:test` 7 classes, 34 tests, 0 failures. Not run: a real FlareSolverr / Byparr, a
+real Cloudflare site, a real window, the Android app (compile only; nothing Android changed).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
@@ -2408,9 +2508,9 @@ What Android has and the desktop app does not (yet), roughly by user impact:
 5. **System integration:** notifications / tray (scheduled updates / backups run only while the app is open; P3 did
    them), OAuth via redirect (paste only), app security / lock, settings search, advanced settings (clear caches, logs,
    cookies, User-Agent). WebView / Cloudflare (P7): a browser-backend abstraction, the Cloudflare interceptor on it and
-   a manual "Open in WebView" (system browser + pasted cookies / User-Agent) are done; left: an embedded browser
-   backend (jcefmaven evaluated as the candidate; P7 "What the embedded backend still needs") or an external solver
-   backend (FlareSolverr), `android.webkit.WebView` for extensions, automatic solving during library updates.
+   a manual "Open in WebView" (system browser + pasted cookies / User-Agent) are done, and automatic solving through a
+   FlareSolverr-compatible service the user runs (P8); left: an embedded browser backend (jcefmaven evaluated as the
+   candidate; P7 "What the embedded backend still needs"), `android.webkit.WebView` for extensions.
 6. **Distribution:** installers built and tried on each OS, signing / notarization. The update check is done (P6, behind
    `-Penable-updater`; opens the release page, no in-app download / install); left from it: the release pipeline does
    not publish desktop installers as GitHub release assets yet (P6 "What the release pipeline still needs"), so the
