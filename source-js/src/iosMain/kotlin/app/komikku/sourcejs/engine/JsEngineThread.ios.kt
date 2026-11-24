@@ -1,5 +1,6 @@
 package app.komikku.sourcejs.engine
 
+import kotlinx.cinterop.autoreleasepool
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CloseableCoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,9 @@ private const val STACK_HEADROOM_BYTES = 4L * 1024 * 1024
 /** `NSThread.stackSize` must be a multiple of 4 KiB; 16 KiB is also the arm64 page size. */
 private const val STACK_GRANULE_BYTES = 16L * 1024
 
+/** JS stack limit when the thread kept Darwin's 512 KiB default stack (the stack size was not applied). */
+private const val DEFAULT_STACK_MAX_JS_BYTES = 256L * 1024
+
 /**
  * iOS engine thread: an `NSThread` with an explicit stack size (Kotlin/Native's `newSingleThreadContext` cannot set
  * one and gets Darwin's 512 KiB secondary-thread default), so the JS stack limit is the same 4 MiB as on Android and
@@ -26,8 +30,18 @@ private const val STACK_GRANULE_BYTES = 16L * 1024
  */
 internal actual fun newJsEngineThread(name: String, jsStackBytes: Long): JsEngineThread {
     val stackBytes = (jsStackBytes + STACK_HEADROOM_BYTES + STACK_GRANULE_BYTES - 1) / STACK_GRANULE_BYTES * STACK_GRANULE_BYTES
-    return JsEngineThread(NSThreadDispatcher(name, stackBytes), jsStackBytes)
+    val dispatcher = NSThreadDispatcher(name, stackBytes)
+    return JsEngineThread(dispatcher, maxJsStackBytes(jsStackBytes, dispatcher.stackSize))
 }
+
+/** The JS stack limit the stack actually applied ([appliedStackBytes]) can hold, never more than [jsStackBytes]. */
+internal fun maxJsStackBytes(jsStackBytes: Long, appliedStackBytes: Long): Long =
+    if (appliedStackBytes > STACK_HEADROOM_BYTES + DEFAULT_STACK_MAX_JS_BYTES) {
+        minOf(jsStackBytes, appliedStackBytes - STACK_HEADROOM_BYTES)
+    } else {
+        // The setter was ignored (or the stack is too small for the headroom): the old clamp.
+        minOf(jsStackBytes, DEFAULT_STACK_MAX_JS_BYTES)
+    }
 
 /** Runs dispatched blocks in order on one `NSThread`; [close] lets it finish the queued blocks and end. */
 internal class NSThreadDispatcher(name: String, stackBytes: Long) : CloseableCoroutineDispatcher() {
@@ -85,7 +99,8 @@ internal class NSThreadDispatcher(name: String, stackBytes: Long) : CloseableCor
             }
             // Empty only once closed: the queued blocks have run.
             if (next == null) return
-            next.run()
+            // Objective-C objects autoreleased by a block are freed after it, as Kotlin/Native workers do per job.
+            autoreleasepool { next.run() }
         }
     }
 }

@@ -27,4 +27,14 @@ class JsEngineThreadIosTest {
             thread.dispatcher.close()
         }
     }
+
+    @Test
+    fun theJsLimitFollowsTheAppliedStack() {
+        val mib = 1024L * 1024
+        assertEquals(4 * mib, maxJsStackBytes(4 * mib, 8 * mib))
+        assertEquals(2 * mib, maxJsStackBytes(4 * mib, 6 * mib))
+        // Darwin's default secondary-thread stack (the stack size was ignored): the old 256 KiB clamp.
+        assertEquals(256L * 1024, maxJsStackBytes(4 * mib, 512L * 1024))
+        assertEquals(64L * 1024, maxJsStackBytes(64L * 1024, 512L * 1024))
+    }
 }
