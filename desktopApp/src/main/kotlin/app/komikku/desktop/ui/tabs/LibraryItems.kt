@@ -33,6 +33,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.extensions.DesktopExtensionManager
@@ -59,6 +62,8 @@ import app.komikku.desktop.extensions.ExtensionIconDrawable
 import app.komikku.desktop.ui.CoverImage
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.library.LibraryItem
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.domain.source.model.Source
@@ -300,30 +305,40 @@ private fun LibraryBadges(item: LibraryItem, modifier: Modifier) {
 
 /**
  * KMK: Android's `SourceIconBadge` (P12): the extension's icon (from its APK), a warning for a missing source, a folder
- * for the local source, else the default source icon.
+ * for the local source, else the default source icon. The installed extensions are collected, so that an icon of an
+ * extension loaded after the library was shown appears (P12 review).
  */
 @Composable
-private fun SourceIconBadge(source: Source, modifier: Modifier) {
-    val icon = remember(source.id) { SourceIcons.of(source.id) }
+internal fun SourceIconBadge(
+    source: Source,
+    modifier: Modifier,
+    installedExtensions: StateFlow<List<Extension.Installed>> = remember { SourceIcons.installedExtensions() },
+) {
+    val installed by installedExtensions.collectAsState()
+    val isStub = source.isStub
+    val icon = remember(source.id, installed, isStub) { SourceIcons.of(source.id, installed) }
     when {
-        source.isStub && icon == null -> Badge(
+        isStub && icon == null -> Badge(
             imageVector = Icons.Filled.Warning,
             iconColor = MaterialTheme.colorScheme.error,
             color = MaterialTheme.colorScheme.errorContainer,
-            modifier = modifier,
+            modifier = modifier.semantics { stateDescription = SourceIcons.MISSING },
         )
-        icon != null -> Badge(imageBitmap = icon, modifier = modifier.scale(1.3f).height(18.dp))
+        icon != null -> Badge(
+            imageBitmap = icon,
+            modifier = modifier.semantics { stateDescription = SourceIcons.ICON }.scale(1.3f).height(18.dp),
+        )
         source.isLocal() -> Badge(
             imageVector = Icons.Outlined.Folder,
             color = MaterialTheme.colorScheme.tertiary,
             iconColor = MaterialTheme.colorScheme.onTertiary,
-            modifier = modifier,
+            modifier = modifier.semantics { stateDescription = SourceIcons.LOCAL },
         )
         else -> Badge(
             imageVector = Icons.Outlined.LocalLibrary,
             color = MaterialTheme.colorScheme.tertiary,
             iconColor = MaterialTheme.colorScheme.onTertiary,
-            modifier = modifier,
+            modifier = modifier.semantics { stateDescription = SourceIcons.DEFAULT },
         )
     }
 }
@@ -333,20 +348,30 @@ private fun SourceIconBadge(source: Source, modifier: Modifier) {
  * installed extensions change.
  */
 internal object SourceIcons {
+    /** The badge kinds, as the badge's state description (tests). */
+    const val MISSING = "missing"
+    const val ICON = "icon"
+    const val LOCAL = "local"
+    const val DEFAULT = "default"
+
     private val cache = ConcurrentHashMap<Long, Optional<ImageBitmap>>()
 
     @Volatile
     private var extensions: List<Extension.Installed>? = null
 
-    fun of(sourceId: Long): ImageBitmap? {
-        val installed = try {
-            Injekt.get<DesktopExtensionManager>().installedExtensionsFlow.value
-        } catch (_: Exception) {
-            emptyList()
-        }
-        if (installed !== extensions) {
-            cache.clear()
-            extensions = installed
+    /** The extension manager's installed extensions; none when there is no manager (some tests). */
+    fun installedExtensions(): StateFlow<List<Extension.Installed>> = try {
+        Injekt.get<DesktopExtensionManager>().installedExtensionsFlow
+    } catch (_: Exception) {
+        MutableStateFlow(emptyList())
+    }
+
+    fun of(sourceId: Long, installed: List<Extension.Installed>): ImageBitmap? {
+        synchronized(this) {
+            if (installed !== extensions) {
+                cache.clear()
+                extensions = installed
+            }
         }
         return iconOf(sourceId, installed)
     }

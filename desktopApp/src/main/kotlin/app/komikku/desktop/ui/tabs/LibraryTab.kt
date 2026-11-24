@@ -51,6 +51,8 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogE
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -275,11 +277,19 @@ private fun LibraryPages(
                     // Android's "continue reading" button (P12): the next unread chapter in the reader
                     onContinueReading = { item: LibraryItem ->
                         scope.launch {
-                            val chapter = screenModel.getNextUnreadChapter(item.libraryManga.manga)
-                            if (chapter != null) {
-                                readerLauncher.open(chapter.mangaId, chapter.id)
-                            } else {
-                                context.toast(MR.strings.no_next_chapter)
+                            // A failure (database, reader) is logged and shown, never left to the composition's scope
+                            try {
+                                val chapter = screenModel.getNextUnreadChapter(item.libraryManga.manga)
+                                if (chapter != null) {
+                                    readerLauncher.open(chapter.mangaId, chapter.id)
+                                } else {
+                                    context.toast(MR.strings.no_next_chapter)
+                                }
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Throwable) {
+                                xLogE("Could not open the next unread chapter", e)
+                                e.message?.let { context.toast(it) } ?: context.toast(MR.strings.unknown_error)
                             }
                         }
                         Unit

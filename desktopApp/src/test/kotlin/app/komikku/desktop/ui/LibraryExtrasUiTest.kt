@@ -1,6 +1,10 @@
 package app.komikku.desktop.ui
 
 import android.app.Application
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
@@ -14,10 +18,16 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.KomikkuApp
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.extensions.ExtensionIconDrawable
+import app.komikku.desktop.reader.TestImages
 import app.komikku.desktop.reader.TestLibrary
 import app.komikku.desktop.ui.reader.ReaderLauncher
+import app.komikku.desktop.ui.tabs.SourceIconBadge
+import app.komikku.desktop.ui.tabs.SourceIcons
 import app.komikku.desktop.window.DesktopShortcuts
+import eu.kanade.tachiyomi.extension.model.Extension
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -27,6 +37,8 @@ import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.Source
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -124,6 +136,38 @@ class LibraryExtrasUiTest {
         waitForTag("source-badge-${unread.id}", present = false)
         preferences.sourceBadge().set(true)
     }
+
+    @Test
+    fun `the source badge shows an extension's icon once the extensions are loaded`() = runDesktopComposeUiTest(width = 400, height = 200) {
+        // P12 review: the extensions load after the library is shown; the badge must not keep the missing icon
+        val installed = MutableStateFlow(emptyList<Extension.Installed>())
+        val source = Source(id = SOURCE_ID, lang = "en", name = "Later source", supportsLatest = false, isStub = true)
+        setContent { SourceIconBadge(source, Modifier.testTag("badge"), installed) }
+        waitUntil(timeoutMillis = 15_000) { badgeKind() == SourceIcons.MISSING }
+        installed.value = listOf(
+            Extension.Installed(
+                name = "Later",
+                pkgName = "app.komikku.test.later",
+                versionName = "1.0",
+                versionCode = 1,
+                libVersion = 1.4,
+                lang = "en",
+                isNsfw = false,
+                signatureHash = "test",
+                pkgFactory = null,
+                sources = listOf(StubSource(SOURCE_ID, "en", "Later source")),
+                icon = ExtensionIconDrawable(TestImages.encode(16, 16)),
+                isShared = false,
+            ),
+        )
+        waitUntil(timeoutMillis = 15_000) { badgeKind() == SourceIcons.ICON }
+    }
+
+    private fun ComposeUiTest.badgeKind(): String? = onAllNodesWithTag("badge", useUnmergedTree = true)
+        .fetchSemanticsNodes()
+        .firstOrNull()
+        ?.config
+        ?.getOrNull(SemanticsProperties.StateDescription)
 
     private companion object {
         const val SOURCE_ID = 4712L
