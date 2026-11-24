@@ -176,6 +176,8 @@ internal fun GlobalSearchToolbar(
     onChangeSearchFilter: (SourceFilter) -> Unit,
     onToggleResults: () -> Unit,
     bulkSelectionButton: @Composable () -> Unit,
+    /** Android's `hideSourceFilter`: no pinned / all chips (the migration search searches its own sources). */
+    hideSourceFilter: Boolean = false,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Box {
@@ -215,21 +217,25 @@ internal fun GlobalSearchToolbar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (hasPinnedSources) {
+            if (!hideSourceFilter) {
+                if (hasPinnedSources) {
+                    FilterChip(
+                        selected = state.sourceFilter == SourceFilter.PinnedOnly,
+                        onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
+                        leadingIcon = { Icon(Icons.Outlined.PushPin, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) },
+                        label = { Text(stringResource(MR.strings.pinned_sources)) },
+                        modifier = Modifier.testTag("global-search-pinned"),
+                    )
+                }
                 FilterChip(
-                    selected = state.sourceFilter == SourceFilter.PinnedOnly,
-                    onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
-                    leadingIcon = { Icon(Icons.Outlined.PushPin, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) },
-                    label = { Text(stringResource(MR.strings.pinned_sources)) },
+                    selected = state.sourceFilter == SourceFilter.All,
+                    onClick = { onChangeSearchFilter(SourceFilter.All) },
+                    leadingIcon = { Icon(Icons.Outlined.DoneAll, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) },
+                    label = { Text(stringResource(MR.strings.all)) },
+                    modifier = Modifier.testTag("global-search-all"),
                 )
+                VerticalDivider(modifier = Modifier.height(24.dp))
             }
-            FilterChip(
-                selected = state.sourceFilter == SourceFilter.All,
-                onClick = { onChangeSearchFilter(SourceFilter.All) },
-                leadingIcon = { Icon(Icons.Outlined.DoneAll, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) },
-                label = { Text(stringResource(MR.strings.all)) },
-            )
-            VerticalDivider(modifier = Modifier.height(24.dp))
             FilterChip(
                 selected = state.onlyShowHasResults,
                 onClick = onToggleResults,

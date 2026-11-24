@@ -365,4 +365,5 @@
     <string name="desktop_tray_open">Open Komikku</string>
     <string name="desktop_tray_exit">Exit</string>
     <string name="desktop_notification_open">Click to open Komikku</string>
+    <string name="desktop_migration_failed">Could not migrate %1$s</string>
 </resources>

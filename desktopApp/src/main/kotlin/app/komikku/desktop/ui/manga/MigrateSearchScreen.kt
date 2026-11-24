@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import app.komikku.desktop.ui.browse.CatalogueScreen
 import app.komikku.desktop.ui.browse.GlobalSearchContent
@@ -23,11 +24,15 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
+import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.feature.migration.dialog.MigrateMangaDialog
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -61,9 +66,12 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
         val hasPinnedSources = remember(state.sourceFilter) { model.hasPinnedSources() }
         val extensions by remember { SourceIcons.installedExtensions() }.collectAsState()
         val fromSource = state.from?.source
+        val context = LocalContext.current
+        // Review fix (P18): the entry itself is no migration target (its own source's row lists it)
+        val shown = remember(state) { state.withoutEntry(mangaId) }
         Column(modifier = Modifier.fillMaxSize().testTag("migrate-search")) {
             GlobalSearchToolbar(
-                state = state,
+                state = shown,
                 hasPinnedSources = hasPinnedSources,
                 onBack = navigator::pop,
                 onChangeSearchQuery = model::updateSearchQuery,
@@ -71,12 +79,14 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                 onChangeSearchFilter = model::setSourceFilter,
                 onToggleResults = model::toggleFilterResults,
                 bulkSelectionButton = {},
+                // Like Android's migration search: its sources are the migration sources, no pinned / all filter
+                hideSourceFilter = true,
             )
             GlobalSearchContent(
-                state = state,
+                state = shown,
                 getManga = { model.getManga(it) },
                 onClickSource = { navigator.push(CatalogueScreen(it.id, initialQuery = state.searchQuery)) },
-                onClickItem = { model.setMigrateDialog(mangaId, it) },
+                onClickItem = { if (it.id != mangaId) model.setMigrateDialog(mangaId, it) },
                 onLongClickItem = { navigator.push(MangaDetailsScreen(it.id)) },
                 selection = emptyList(),
                 rowTitle = { source ->
@@ -91,10 +101,25 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                 onClickTitle = { navigator.push(MangaDetailsScreen(dialog.target.id)) },
                 onDismissRequest = model::clearDialog,
                 onComplete = { navigator.replace(MangaDetailsScreen(dialog.target.id)) },
+                // Review fix (P18): the borrowed use case reports a failed migration; stay here and say so
+                onFailure = {
+                    model.clearDialog()
+                    context.toast(context.stringResource(KMR.strings.desktop_migration_failed, dialog.current.title))
+                },
             )
             null -> {}
         }
     }
+}
+
+/** The search's state without [mangaId] in the results (P18 review fix: an entry cannot be migrated onto itself). */
+internal fun SearchScreenModel.State.withoutEntry(mangaId: Long): SearchScreenModel.State {
+    if (items.values.none { it is SearchItemResult.Success && it.result.any { manga -> manga.id == mangaId } }) return this
+    return copy(
+        items = items.mapValues { (_, result) ->
+            if (result is SearchItemResult.Success) SearchItemResult.Success(result.result.filterNot { it.id == mangaId }) else result
+        }.toPersistentMap(),
+    )
 }
 
 /**
