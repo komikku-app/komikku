@@ -64,6 +64,7 @@ class SourceCategoriesUiTest {
         preferences.sourcesTabCategories().delete()
         preferences.sourcesTabSourcesInCategories().delete()
         preferences.sourcesTabCategoriesFilter().delete()
+        preferences.lastUsedSource().delete()
     }
 
     private fun ComposeUiTest.waitForTag(tag: String, present: Boolean = true) =
@@ -140,12 +141,26 @@ class SourceCategoriesUiTest {
             waitUntil(timeoutMillis = 5_000) { preferences.sourcesTabSourcesInCategories().get() == setOf("$SOURCE|Favourites") }
 
             // Listed under the category (Android: as well as under its language, unless the filter is on)
-            waitForTag("source-$SOURCE-Favourites")
+            waitForTag("source-$SOURCE-category-Favourites")
             waitForTag("source-$SOURCE")
             preferences.sourcesTabCategoriesFilter().set(true)
             waitForTag("source-$SOURCE", present = false)
-            waitForTag("source-$SOURCE-Favourites")
+            waitForTag("source-$SOURCE-category-Favourites")
             onAllNodesWithText("Favourites").fetchSemanticsNodes().isNotEmpty() shouldBe true
+        }
+
+    @Test
+    fun `a category named like the last used group does not clash with the last used row`() =
+        runDesktopComposeUiTest(width = 1200, height = 1000) {
+            // The last used copy's key was "<id>-lastused", a category copy's "<id>-<category>": the same row key
+            preferences.lastUsedSource().set(SOURCE)
+            preferences.sourcesTabCategories().set(setOf("lastused"))
+            preferences.sourcesTabSourcesInCategories().set(setOf("$SOURCE|lastused"))
+            setContent { KomikkuApp(context = app) }
+            onNodeWithText(MR.strings.browse.localized()).performClick()
+            waitForTag("source-$SOURCE-lastused")
+            waitForTag("source-$SOURCE-category-lastused")
+            waitForTag("source-$SOURCE")
         }
 
     private companion object {
