@@ -213,34 +213,6 @@ class DarwinHostHttp private constructor(
         return Hop(method, target.toString(), headers, body)
     }
 
-    /**
-     * [location] resolved against [base] (RFC 3986, section 5.2, like OkHttp's `HttpUrl.resolve`): a reference with a
-     * scheme or an authority stands alone (no user info or port of [base]); a reference with a path or a query
-     * replaces the base's query; the fragment is the reference's; dot segments are removed (as Ktor's `HttpRedirect`
-     * does). `null` when it does not parse: OkHttp's `resolve` returns `null` then, and the redirect is the result.
-     */
-    private fun resolve(base: Url, location: String): Url? = try {
-        val reference = location.trim()
-        val builder = when {
-            schemeOf(reference) != null -> URLBuilder().takeFrom(reference)
-            reference.startsWith("//") -> URLBuilder().apply { protocol = base.protocol }.takeFrom(reference)
-            else -> URLBuilder(base).apply {
-                if (reference.substringBefore('#').isNotEmpty()) {
-                    parameters.clear()
-                    trailingQuery = false
-                }
-                encodedFragment = ""
-                takeFrom(reference)
-            }
-        }
-        if (reference.substringBefore('#').substringBefore('?').isNotEmpty()) {
-            builder.encodedPathSegments = removeDotSegments(builder.encodedPathSegments)
-        }
-        builder.build()
-    } catch (e: Exception) {
-        null
-    }
-
     private fun sameOrigin(a: Url, b: Url): Boolean =
         a.protocol.name == b.protocol.name && a.host.equals(b.host, ignoreCase = true) && a.port == b.port
 
@@ -268,6 +240,35 @@ class DarwinHostHttp private constructor(
     }
 
     companion object {
+        /**
+         * [location] resolved against [base] (RFC 3986, section 5.2, like OkHttp's `HttpUrl.resolve`): a reference
+         * with a scheme or an authority stands alone (no user info or port of [base]); a reference with a path or a
+         * query replaces the base's query; the fragment is the reference's; dot segments are removed (as Ktor's
+         * `HttpRedirect` does). `null` when it does not parse: OkHttp's `resolve` returns `null` then, and the
+         * redirect is the result. Also used by `IosJsSourceStore` for its own redirects.
+         */
+        internal fun resolve(base: Url, location: String): Url? = try {
+            val reference = location.trim()
+            val builder = when {
+                schemeOf(reference) != null -> URLBuilder().takeFrom(reference)
+                reference.startsWith("//") -> URLBuilder().apply { protocol = base.protocol }.takeFrom(reference)
+                else -> URLBuilder(base).apply {
+                    if (reference.substringBefore('#').isNotEmpty()) {
+                        parameters.clear()
+                        trailingQuery = false
+                    }
+                    encodedFragment = ""
+                    takeFrom(reference)
+                }
+            }
+            if (reference.substringBefore('#').substringBefore('?').isNotEmpty()) {
+                builder.encodedPathSegments = removeDotSegments(builder.encodedPathSegments)
+            }
+            builder.build()
+        } catch (e: Exception) {
+            null
+        }
+
         /**
          * Stores and sends cookies with `NSHTTPCookieStorage.sharedHTTPCookieStorage`, accepting all of them like the
          * app's OkHttp cookie jar. Ktor's Darwin engine sets the storage to `nil` before running `configureSession`,
