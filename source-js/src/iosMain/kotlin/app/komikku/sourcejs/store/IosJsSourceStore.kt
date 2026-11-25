@@ -529,9 +529,9 @@ class IosJsSourceStore(
     /** The installed record of the Komikku source [sourceId], if it is an installed JavaScript source. */
     fun installedSource(sourceId: Long): InstalledJsSource? = _installed.value?.find { it.sourceId == sourceId }
 
-    /** The path of the stored icon of the Komikku source [sourceId], if it is installed and has one. */
+    /** The path of the stored icon of the Komikku source [sourceId], if it is installed and has one (not empty). */
     fun iconFileForSource(sourceId: Long): String? =
-        installedSource(sourceId)?.let { iconPath(it.id) }?.takeIf { StoreFiles.isFile(it) }
+        installedSource(sourceId)?.let { iconPath(it.id) }?.takeIf { (StoreFiles.fileSize(it) ?: 0) > 0 }
 
     /** Stops background work and closes [runtime] (and the HTTP client the store created). */
     fun close() {
@@ -642,11 +642,11 @@ class IosJsSourceStore(
         codePath(sha256)?.let { StoreFiles.delete(it) }
     }
 
-    /** Best effort: a missing, insecure or too large icon only means no icon (`null`). */
+    /** Best effort: a missing, empty, insecure or too large icon only means no icon (`null`). */
     private suspend fun fetchIcon(id: Long, iconUrl: String): ByteArray? {
         if (iconUrl.isBlank()) return null
         return try {
-            fetchBytes(iconUrl, limits.iconBytes).bytes
+            fetchBytes(iconUrl, limits.iconBytes).bytes.takeIf { it.isNotEmpty() }
         } catch (e: JsSourceStoreException) {
             log("No icon for JavaScript source $id: ${e.message}")
             null

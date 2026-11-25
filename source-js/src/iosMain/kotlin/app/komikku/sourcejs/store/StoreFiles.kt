@@ -16,6 +16,8 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSData
 import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.dataWithContentsOfFile
@@ -55,6 +57,12 @@ internal object StoreFiles {
     }
 
     fun exists(path: String): Boolean = fileManager.fileExistsAtPath(path)
+
+    /** The size in bytes of the file at [path], `null` when it is missing or no file. */
+    fun fileSize(path: String): Long? {
+        if (!isFile(path)) return null
+        return (fileManager.attributesOfItemAtPath(path, error = null)?.get(NSFileSize) as? NSNumber)?.longLongValue
+    }
 
     /** The bytes of the file at [path], `null` when it is missing or cannot be read. */
     fun readBytes(path: String): ByteArray? {

@@ -489,6 +489,26 @@ class IosJsSourceStoreTest {
     }
 
     @Test
+    fun anEmptyIconIsNoIcon() = timedTest {
+        serveRepository()
+        http.route(ICON_URL, "", status = 204)
+        val store = newStore().loaded()
+        val source = store.installFixture()
+        assertNull(file("icons/$ID"))
+        assertNull(store.iconFileForSource(source.sourceId))
+        // A 0-byte file (one stored before this check) is no icon either.
+        StoreFiles.writeAtomically("$root/icons/$ID", ByteArray(0))
+        assertNull(store.iconFileForSource(source.sourceId))
+        // Installing again with an empty 200 removes it; a real icon is stored and found.
+        http.route(ICON_URL, "")
+        store.install(store.offer(ID)!!, sha256Hex(code("v1")))
+        assertNull(file("icons/$ID"))
+        http.route(ICON_URL, "PNG-BYTES")
+        store.install(store.offer(ID)!!, sha256Hex(code("v1")))
+        assertEquals("$root/icons/$ID", store.iconFileForSource(source.sourceId))
+    }
+
+    @Test
     fun aReloadedStoreUsesTheCachedMetadataWithoutRunningTheScript() = timedTest {
         serveRepository()
         val first = newStore().loaded()
