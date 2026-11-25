@@ -481,15 +481,22 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
-- **Open from run 45655979842 (commit `98e84f7`, 2026-11-25):** (1) the two `self-hosted` jobs (desktop Apple silicon
-  package, iOS check) were still queued 13 minutes after the push: check that the maintainer's runner is online and
-  picked them up, then that both pass on that Mac. (2) Linux `:desktopApp:test` failed once: `JsSourceBrowseUiTest >
+<<<<<<< HEAD
+- **Self-hosted Mac runner: parked.** The change that put the macOS jobs of `build_desktop.yml` and
+  `build_ios_check.yml` on the maintainer's Mac (label `self-hosted`, fork pull requests kept on `macos-15`, docs in
+  AGENTS.md / BUILDING.md) is commit `98e84f7`, kept on the branch `claude/kmp-self-hosted-mac-runner` and reverted
+  here on 2026-11-25: the runner is assigned to another project for now. To bring it back when the maintainer says
+  the runner is free: `git cherry-pick 98e84f7` (it assumes an Apple silicon Mac). Until then all jobs run on
+  GitHub-hosted runners.
+- **Open from run 45655979842 (2026-11-25):** Linux `:desktopApp:test` failed once: `JsSourceBrowseUiTest >
   executionError`, `TempDirDeletionStrategy$DeletionException` (the temp directory could not be deleted after the
   class, 374 tests, 1 failed); not seen before, looks like a file still being written at clean-up. Reproduce or make
   the test wait for the store / engine to close before the directory is removed.
 - **Self-hosted Mac runner (2026-11-25):** the maintainer's Mac runs the macOS jobs of `build_desktop.yml` (Apple
   silicon entry) and `build_ios_check.yml` (label `self-hosted`; fork pull requests stay on `macos-15`). Rules and how
   to switch back: [`BUILDING.md`](BUILDING.md#self-hosted-mac-runner). Jobs queue while the Mac is off.
+=======
+>>>>>>> parent of 98e84f7ed8 (ci(kmp): Run the macOS jobs of the desktop and iOS workflows on the self-hosted Mac runner)
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,

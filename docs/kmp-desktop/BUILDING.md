@@ -216,30 +216,6 @@ changes the workflow file or `.github/desktop-build-trigger` (bump the counter i
   publish it by hand. The preview channel (`komikku-app/komikku-preview`, `r<n>`, `-Pdesktop-preview`) is not covered:
   it is another repository (a token with access to it would be needed).
 
-## Self-hosted Mac runner
-
-Since 2026-11-25 the maintainer's own Mac is registered with the repository as a GitHub Actions self-hosted runner
-(label `self-hosted`). The macOS jobs of the KMP workflows run on it:
-
-| Workflow | Job | `runs-on` |
-|----------|-----|-----------|
-| `build_desktop.yml` | Package, Apple silicon `.dmg` | `self-hosted` (was `macos-15`) |
-| `build_desktop.yml` | Package, Intel `.dmg` | `macos-15-intel` (GitHub-hosted, unchanged) |
-| `build_ios_check.yml` | iOS compile + simulator tests | `self-hosted`; pull requests from forks stay on `macos-15` |
-
-Rules for anyone (person or agent) editing workflows:
-
-- **Never let fork code run on it.** The repository is public; a job with a `pull_request` trigger may use
-  `self-hosted` only behind the fork check used in `build_ios_check.yml`. Do not add `pull_request_target` jobs on it.
-- New macOS jobs for the KMP work go on `self-hosted`; Linux and Windows jobs stay on GitHub-hosted runners.
-- The machine is not a clean image: tools persist between runs (JDK via `actions/setup-java`, Gradle caches, Xcode and
-  its simulators as installed by the maintainer), jobs wait in the queue while the Mac is off or asleep, and one job
-  runs at a time. A job that needs a tool the Mac lacks fails there even though it passed on `macos-15`.
-- The label says nothing about the chip. The desktop job takes the architecture from `RUNNER_ARCH`, so the `.dmg` is
-  named for whatever the Mac is; the matrix assumes Apple silicon (the hosted Intel job stays). If the Mac is Intel,
-  swap them: `self-hosted` for the Intel entry and `macos-15` for Apple silicon, or two artifacts get the same name.
-- To go back to GitHub's runners, put `macos-15` back in both places.
-
 ## Signing
 
 Off unless set: a build without these settings is exactly the unsigned one (macOS: Gatekeeper warns, open with

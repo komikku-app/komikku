@@ -148,10 +148,8 @@ jobs:
           # Msi, Exe (the Compose Gradle plugin downloads WiX); x64
           - os: 'windows-2022'
             asset-os: windows
-          # Dmg; Apple silicon (arm64). KMK: the maintainer's own Mac, registered as a self-hosted runner (label
-          # `self-hosted`; see docs/kmp-desktop/BUILDING.md "Self-hosted Mac runner"). Safe here because this workflow
-          # has no pull_request trigger, so no fork code reaches that machine. GitHub-hosted equivalent: 'macos-15'
-          - os: 'self-hosted'
+          # Dmg; Apple silicon (arm64)
+          - os: 'macos-15'
             asset-os: macos
           # Dmg; Intel (x64)
           - os: 'macos-15-intel'
