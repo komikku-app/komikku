@@ -4188,6 +4188,21 @@ Suspect, left for the first real test on a Mac (TESTING_MAC.md lists the steps t
 The app has not been started on a Mac by anyone; DMG layout, icon, first start, Gatekeeper behaviour and everything
 in TESTING_MAC.md's test pass are open. Linux / Intel built green in CI but are as untried as the macOS arm64 build.
 
+### Flaky `@TempDir` clean-up (run 45655979842)
+
+The Linux job's `:desktopApp:test` failed once with `JsSourceBrowseUiTest > executionError`: JUnit could not delete
+the class's data folder, `DirectoryNotEmptyException` on its root and on no path below it, i.e. a top-level folder was
+created after JUnit had listed the tree. `DownloadCache` writes its index (`cache/dl_index_cache_v3`) a second after
+each change from its own scope, and the compat `Context.cacheDir` re-creates `cache/` on access. A snapshot of the data
+folder at `@AfterAll` showed the index as the last write, ~0.3 s before clean-up, so a slower runner puts it inside
+the deletion. Not reproduced locally (the cause is inferred).
+
+Fix: `DownloadCache.cancelAndJoin()` (KMK) cancels its scope and waits; the desktop DI registers it with
+`DesktopInjekt.onCreatedWriter`, and `DesktopInjekt.stopDelayedWriters()` runs what was registered. The test-only
+`DesktopDataDirTeardown` (autodetected through `junit-platform.properties` / `META-INF/services`) calls it after every
+test class, before JUnit's clean-up; every class that boots `DesktopInjekt` is `PER_CLASS`, so all benefit. No
+`cleanup = NEVER`, no sleeps. Checked: `JsSourceBrowseUiTest` in a loop with `--rerun`, all green (see HANDOVER).
+
 ## Review fixes (P23 fixes)
 
 Findings of the review of `80d94dd..25a39cd` (the P23 review fixes), each its own commit (2 and 4 share one: same

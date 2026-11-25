@@ -487,10 +487,14 @@ mark the residual path in both modules.
   here on 2026-11-25: the runner is assigned to another project for now. To bring it back when the maintainer says
   the runner is free: `git cherry-pick 98e84f7` (it assumes an Apple silicon Mac). Until then all jobs run on
   GitHub-hosted runners.
-- **Open from run 45655979842 (2026-11-25):** Linux `:desktopApp:test` failed once: `JsSourceBrowseUiTest >
-  executionError`, `TempDirDeletionStrategy$DeletionException` (the temp directory could not be deleted after the
-  class, 374 tests, 1 failed); not seen before, looks like a file still being written at clean-up. Reproduce or make
-  the test wait for the store / engine to close before the directory is removed.
+- **Run 45655979842 flake (2026-11-25), fixed:** `JsSourceBrowseUiTest > executionError` (`DeletionException`:
+  `DirectoryNotEmptyException` on the `@TempDir` root only) was `DownloadCache`'s index, written into `cache/` a second
+  after the last change from its own scope; the compat `Context.cacheDir` re-creates `cache/` on access, so a late
+  write landed in the root while JUnit deleted it. Not reproduced locally (inferred from the report and a snapshot of
+  the data folder at `@AfterAll`: the index was the last write, ~0.3 s before clean-up). `DesktopInjekt.stopDelayedWriters()`
+  now cancels and joins it, run after every test class by the autodetected `DesktopDataDirTeardown` (PROGRESS M1
+  "Flaky `@TempDir` clean-up"). Other delayed writers into the data folder register with
+  `DesktopInjekt.onCreatedWriter` if one shows up.
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,
