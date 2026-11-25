@@ -117,6 +117,16 @@ class DownloadCache(
                         val diskCache = diskCacheFile.inputStream().use {
                             ProtoBuf.decodeFromByteArray<RootDirectory>(it.readBytes())
                         }
+                        // KMK -->
+                        // The disk cache stores a folder shared by several source ids once per id, so link
+                        // those ids to one copy again, as renewCache does
+                        val sourceDirsByUri = diskCache.sourceDirs.values
+                            .mapNotNull { sourceDir -> sourceDir.dir?.uri?.let { it to sourceDir } }
+                            .toMap()
+                        diskCache.sourceDirs = diskCache.sourceDirs.mapValues { (_, sourceDir) ->
+                            sourceDir.dir?.uri?.let { sourceDirsByUri[it] } ?: sourceDir
+                        }
+                        // KMK <--
                         rootDownloadsDir = diskCache
                         lastRenew = System.currentTimeMillis()
                     }
