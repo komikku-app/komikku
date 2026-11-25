@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# KMK: collects the desktop installers that `:desktopApp:packageDistributionForCurrentOS` built into release assets
-# named as the desktop update check expects (DesktopUpdaterConfig / DesktopArch, P6), and writes their SHA-256 sums.
+# KMK: collects the desktop installers that `:desktopApp:packageDistributionForCurrentOS` built (and, on Linux, the app
+# image directory of `:desktopApp:createDistributable`, packed as the .tar.gz) into release assets named as the desktop
+# update check expects (DesktopUpdaterConfig / DesktopArch, P6), and writes their SHA-256 sums.
 # Used by .github/workflows/build_desktop.yml; runs the same on a developer machine (docs/kmp-desktop/BUILDING.md,
 # "Release pipeline").
 #
@@ -67,8 +68,8 @@ single() {
 for format in $formats; do
   case "$format" in
     app)
-      # The Linux app image is a directory (jpackage --type app-image): packed as a tarball with that directory at its
-      # root, so that `tar -xzf` gives one folder with bin/ and lib/.
+      # The Linux app image is a directory (createDistributable, jpackage --type app-image): packed as a tarball with that
+      # directory at its root, so that `tar -xzf` gives one folder with bin/ and lib/.
       image=$(single "$binaries/app" '*' d)
       name="$base.tar.gz"
       tar -czf "$out/$name" -C "$(dirname "$image")" "$(basename "$image")"
