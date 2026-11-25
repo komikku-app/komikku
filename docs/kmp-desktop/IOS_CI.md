@@ -3,7 +3,7 @@
 Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
 section below); 132 with the I5a review fixes (cookies, non-HTTP URLs, `HEAD` bodies, redirect resolution; run
-45567078024, commit `0501bf16e7`). Runs #1–#2 looked green only because the job was
+45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below). Runs #1–#2 looked green only because the job was
 non-blocking; they had one failing test (the forged-cancellation message keeps the error name on iOS), fixed in
 `d21b68cfc4`. The job now blocks (no `continue-on-error`). PLAN.md section 8.4, step I5, should reference this page once it is
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
@@ -198,7 +198,114 @@ desktop do not see Ktor.
 - **I6 app**: create one `IosJsSourceRuntime` at start, pass `declaredPreferences` from the store's cached
   metadata (`JsExtension.metadata()`), call `clearPreferences` on uninstall, `close()` at shutdown. The store of
   installed sources (index fetch, install, hash check, I4 on JVM) has no iOS twin yet: `repo/` parsing is common,
-  the download and file cache are not.
+  the download and file cache are not. *(Done in I5b below: `IosJsSourceStore` creates the runtime and does all
+  three.)*
 - No WebView (`evaluateJavascriptViaWebview` still fails as unsupported; a `WKWebView` `HostWebView` is an I6 item).
 - Not covered on iOS: `NetworkHelper`'s Cloudflare interceptor, DNS over HTTPS and rate limits have no iOS
   counterpart (cookies are the shared `NSHTTPCookieStorage`, see above); proxy settings are the system's.
+
+## I5b: the store of installed JavaScript sources on iOS
+
+`IosJsSourceStore` (`source-js/src/iosMain/.../store/`) is the iOS twin of app-shared's JVM `MangayomiSourceStore`
+(I4): an I6 app lists repositories, installs, updates and uninstalls JavaScript sources the way the desktop app does.
+All of it is in `iosMain` / `iosTest`; the only change to existing code is `DarwinHostHttp.resolve` moving to its
+companion (`internal`), so the store resolves its redirects with the same RFC 3986 rules. No common code, no new
+library.
+
+| Piece | File | What it is |
+|-------|------|------------|
+| `IosJsSourceStore` | `iosMain/.../store/IosJsSourceStore.kt` | repositories, refresh, download / install / update / uninstall, load at start-up |
+| models | `iosMain/.../store/IosJsSourceStoreModels.kt` | `InstalledJsSource`, `JsSourceItem`, `JsSourceRepository`, `JsSourceDownload`, `JsSourceStoreException` (the JVM names and fields), `IosJsSource` (record + `JsExtension`) |
+| `StoreFiles` | `iosMain/.../store/StoreFiles.kt` | Application Support path, read, atomic write, delete (Foundation + POSIX) |
+
+### Behaviour (the same as the JVM store)
+
+- **Repositories**: index URLs; `addRepository` reads the index (`MangayomiIndex`, JavaScript manga only) and its
+  optional `repo.json` (`MangayomiRepoInfo.infoUrl`) once before adding; `refresh` reads them all again (a failed read
+  keeps the last good entries and records the error) and fetches the offered text of installed sources whose version
+  did not change, so a changed text shows as `TEXT_CHANGED`. Offers merge by id, highest version first
+  (`JsSourceOffer.merge`). Nothing is fetched or updated on its own.
+- **Install in two steps**: `download(offer)` returns the host that served the text (after redirects), the requested
+  host, SHA-256 and size for the user to confirm; `install(offer, confirmedSha256)` fetches it again and refuses another
+  text (`SHA_MISMATCH`). It then reads the source's metadata (this runs the script; a text that does not load is
+  `LOAD_FAILED`) while the installed version stays in use, writes the text and the manifest, and only then swaps the
+  new source in, deletes the old text when nothing else uses it and stores the icon (best effort).
+- **A failed update changes nothing**: a download failure, a hash mismatch, a script that does not load or a file
+  that cannot be written leaves the installed version, its files and its `JsExtension` as they were (a new text file
+  is removed again).
+- **States**: `installed` (`null` until read), `isLoaded`, `isRefreshing`, `sources` (loaded, NSFW ones only while
+  `showNsfw`), `repositories`, `available`, `items` with `JsSourceStatus` (`UP_TO_DATE`, `UPDATE_AVAILABLE`,
+  `TEXT_CHANGED`, `OBSOLETE`; not obsolete while a repository was not read or none is added) and the load error.
+- **Errors**: `JsSourceStoreException` with the JVM's `Reason`s (`INSECURE_URL`, `DOWNLOAD_FAILED`, `TOO_LARGE`,
+  `INVALID_INDEX`, `SHA_MISMATCH`, `NOT_FOUND`, `LOAD_FAILED`, `STORAGE_FAILED`); warnings go to `NSLog`
+  (`[JS store] …`, injectable).
+
+### Decisions
+
+- **Files under `<Application Support>/mangayomi-js`** (`NSFileManager.URLsForDirectory`, the JVM directory name;
+  `root` can be overridden, tests use a temporary directory): `manifest.json` (the JVM manifest's shape),
+  `code/<sha256>.js`, `icons/<mangayomi id>`. Every write is a temporary file next to the target, written and
+  `fsync`ed with POSIX calls, then `rename(2)`d over it (atomic replace). Application Support is in the device
+  backup; the directory is not marked as excluded (the manifest is user data, the texts are small).
+- **The metadata cache is the manifest**: each record keeps its `JsSourceMetadata` (supports-latest, filters,
+  declared preferences, headers), as on the JVM. At start-up the store builds a `JsExtension` per record from its
+  text (checked against the SHA-256) and does not run any script; a record without metadata gets it read once.
+  `refreshMetadata(id)` reads it again (after a preference change), since there is no adapter that re-reads it in
+  the background as on the JVM.
+- **The store creates the runtime** (wiring for I6): `IosJsSourceStore(...).runtime` is an `IosJsSourceRuntime` on
+  the store's HTTP client whose `declaredPreferences` is `store.declaredPreferences` (the cached declarations), so
+  the `NSUserDefaults` values are typed before a script ran. The `runtime` parameter builds it from that function
+  (tests pass a suite prefix and a log). I6 creates one store at start, calls `IosJsSource.extension` for the
+  provider calls, and `store.close()` at shutdown (it closes the runtime and the HTTP client it created).
+- **Uninstall clears the preferences** (`IosJsSourceRuntime.clearPreferences`, the source's suite), unlike the JVM
+  store, which keeps them. Done after the manifest was written, so a failed uninstall keeps them.
+- **Downloads through `HostHttp`** (`DarwinHostHttp` by default, injectable): `GET` with `Cache-Control: no-cache`,
+  `followRedirects = false` and `maxBodyBytes` set to the limit; the store follows up to 5 redirects itself and
+  checks each target (`https` only by default, `allowUrl` injectable) before requesting it, so a redirect to plain
+  HTTP is refused, not followed. The body cap is enforced twice: `DarwinHostHttp`'s cap error becomes `TOO_LARGE`,
+  and the body is checked again (a client without a cap). Limits as on the JVM: index 8 MiB, `repo.json` 64 KiB,
+  text 4 MiB, icon 1 MiB, plus a 120 s call timeout per download.
+- **Repositories in `NSUserDefaults`** (standard defaults, injectable) under the JVM preference key
+  `mangayomi_js_repos`, an array of strings, so a later settings backup maps them by the same key.
+- **A corrupt cache is not fatal**: a manifest that does not decode is set aside as `manifest.json.corrupt-<time>`
+  and the store starts empty (warning logged); a text file that is missing or does not match its SHA-256 is a load
+  error of that source only (shown in `items`, left out of `sources`), and reinstalling repairs it; a record whose
+  SHA-256 is not 64 hex digits is a load error, so it can never name another path.
+
+### Tests (`iosTest/.../store/IosJsSourceStoreTest`, 13, simulator only)
+
+All 13 passed in run 45570113228 (job `success`, 145 `:source-js` tests in total, none failed).
+
+All with `FakeHostHttp` (a URL → response table that records requests and can enforce the body cap like
+`DarwinHostHttp`) and a temporary root; no network:
+
+- index read through to an installed source (repo name, only the JS manga entry offered, download host / SHA-256 /
+  size, files and manifest with metadata, icon, no `.tmp` left, `declaredPreferences` from the cache, the requests'
+  `followRedirects = false` and cap);
+- end to end: an installed fixture source runs `getPopular` through the store's `IosJsSourceRuntime` (HTML from the
+  fake site parsed by the DOM bridge); a changed preference seen by `refreshMetadata` and cached; a stored value of
+  the wrong type reads as missing;
+- a new version is an update (installed / updated times, old text deleted); a changed text under the same version
+  shows as `TEXT_CHANGED` and updates;
+- failed updates keep the installed version working: a text that does not load, a network failure, HTTP 500, a
+  manifest that cannot be written (also for uninstall, which keeps the preferences); then the update goes through;
+- SHA-256 mismatch; texts above the limit refused by the client's cap and by the store's own check; an index above
+  its limit;
+- `http`, `file:` and malformed URLs refused, broken and missing indexes, a redirect chain to another `https` host
+  (relative location) named in the confirmation, a redirect to `http` not followed, endless redirects;
+- uninstall removes the record, text, icon and the preferences (declared and free strings);
+- a reloaded store uses the cached metadata: no request and no script ran at start-up;
+- a corrupt manifest set aside; a tampered or missing text and a malformed SHA-256 as load errors while the other
+  source loads; NSFW filtering; obsolete status after removing a repository, and not with none left.
+
+### Not covered
+
+- Not run on Linux: compiled with `-Pios-targets` (main and test klibs); the tests run on the simulator in CI only.
+  No test against the real `DarwinHostHttp` (the HTTP semantics are I5a's tests) or a real repository.
+- No UI (I6), no background refresh or update notifications, no migration of obsolete sources (P23 is JVM-only).
+- Not shared with the JVM store: the models and logic are a copy in `iosMain` (app-shared is JVM-only and owned by
+  the desktop work). Moving both stores onto one common implementation would need `app-shared` changes.
+- `Cache-Control: no-cache` is a request header only; whether NSURLSession's shared `URLCache` still answers
+  from its cache is not checked (the JVM store forces the network).
+- The device backup / iCloud exclusion of the store's directory, file protection classes and disk-full handling
+  beyond reporting `STORAGE_FAILED` are not decided.
