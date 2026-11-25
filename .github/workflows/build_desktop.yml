@@ -282,7 +282,13 @@ jobs:
           KOMIKKU_MAC_NOTARIZATION_TEAM_ID: ${{ runner.os == 'macOS' && env.MAC_SIGNING == 'true' && env.MAC_NOTARIZATION == 'true' && secrets.MACOS_NOTARIZATION_TEAM_ID || '' }}
         run: |
           set -euo pipefail
-          ./gradlew :desktopApp:packageDistributionForCurrentOS -Penable-updater
+          # KMK -->
+          # Linux: the app image directory for the .tar.gz is createDistributable's (no AppImage target, see
+          # desktopApp/build.gradle.kts); the DEB / RPM tasks build it anyway, named here so it is always there
+          tasks=(:desktopApp:packageDistributionForCurrentOS)
+          if [ "$RUNNER_OS" = Linux ]; then tasks+=(:desktopApp:createDistributable); fi
+          ./gradlew "${tasks[@]}" -Penable-updater
+          # KMK <--
           if [ -n "$KOMIKKU_MAC_NOTARIZATION_APPLE_ID" ]; then
             # The Compose plugin's task submits the signed DMG with notarytool, waits for it and staples the ticket
             ./gradlew :desktopApp:notarizeDmg -Penable-updater
