@@ -11,6 +11,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
@@ -58,6 +59,7 @@ import platform.WebKit.WKWebsiteDataStore
 import platform.darwin.NSObject
 import kotlin.concurrent.AtomicInt
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -240,6 +242,9 @@ class WKWebViewHostWebView(
 
         private suspend fun copyCookiesOut(store: WKHTTPCookieStore, copied: List<NSHTTPCookie>) {
             val storage = cookieStorage ?: return
+            // `document.cookie` changes reach the store from the web content process, on another connection than
+            // this read: give the ones the page made just before it reported a moment to arrive.
+            delay(COOKIE_SETTLE)
             val now = suspendCancellableCoroutine { continuation ->
                 store.getAllCookies { cookies -> continuation.resumeIfActive(cookies.orEmpty().filterIsInstance<NSHTTPCookie>()) }
             }
@@ -301,6 +306,7 @@ class WKWebViewHostWebView(
         private const val OFFSCREEN_WIDTH = 390.0
         private const val OFFSCREEN_HEIGHT = 844.0
         private val COOKIE_COPY_TIMEOUT = 2.seconds
+        private val COOKIE_SETTLE = 250.milliseconds
 
         /** Characters an URL may contain as they are; the others are percent-encoded (spaces, non-ASCII). */
         private const val URL_CHARACTERS =
@@ -371,7 +377,8 @@ class WKWebViewHostWebView(
         /** `WebKitErrorFrameLoadInterruptedByPolicyChange`, `WebKitErrorPlugInWillHandleLoad`. */
         private val IGNORED_WEBKIT_ERRORS = setOf(102L, 204L)
 
-        private fun NSHTTPCookie.key() = "$name\u0000${domain.lowercase()}\u0000$path"
+        /** A cookie's identity; the domain without its leading dot, which the two stores may write differently. */
+        private fun NSHTTPCookie.key() = "$name\u0000${domain.lowercase().removePrefix(".")}\u0000$path"
 
         private fun NSHTTPCookie.sameAs(other: NSHTTPCookie) =
             value == other.value &&
