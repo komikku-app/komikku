@@ -3,11 +3,13 @@ package app.komikku.sourcejs.bridge
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
+import kotlinx.cinterop.autoreleasepool
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -15,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSBundle
 import platform.Foundation.NSCharacterSet
+import platform.Foundation.NSDate
 import platform.Foundation.NSError
 import platform.Foundation.NSHTTPCookie
 import platform.Foundation.NSHTTPCookieStorage
@@ -47,6 +49,8 @@ import platform.WebKit.WKErrorDomain
 import platform.WebKit.WKErrorJavaScriptResultTypeIsUnsupported
 import platform.WebKit.WKHTTPCookieStore
 import platform.WebKit.WKNavigation
+import platform.WebKit.WKNavigationAction
+import platform.WebKit.WKNavigationActionPolicy
 import platform.WebKit.WKNavigationDelegateProtocol
 import platform.WebKit.WKScriptMessage
 import platform.WebKit.WKScriptMessageHandlerWithReplyProtocol
@@ -61,6 +65,8 @@ import kotlin.concurrent.AtomicInt
 import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * `evaluateJavascriptViaWebview` (contract 4.4) on a `WKWebView`, with Mangayomi's contract (its
@@ -69,13 +75,14 @@ import kotlin.time.Duration.Companion.seconds
  * - [url] is loaded with [headers] (an `NSMutableURLRequest`). Only `http` / `https` URLs: anything else fails with an
  *   [IllegalArgumentException] before a web view exists (the bridge reports a catchable error).
  * - Every page and frame gets `window.flutter_inappwebview.callHandler(name, ...args)` at document start, returning a
- *   promise. `callHandler('setResponse', value)` with a string `value` ends the call with that value; any other value
- *   rejects the promise (Mangayomi's handler casts it to `String`) and the call goes on. Other handler names resolve
- *   with nothing.
+ *   promise. `callHandler('setResponse', value)` with a string `value` ends the call with that value, from any frame
+ *   (as in flutter_inappwebview, whose handlers do not check the frame); any other value rejects the promise
+ *   (Mangayomi's handler casts it to `String`) and the call goes on. Other handler names resolve with nothing.
  * - Each time the main frame finishes loading, the `flutterInAppWebViewPlatformReady` event is dispatched and then
  *   [scripts] run in order in the main frame (a script that throws is logged, the next one still runs).
- * - `timeoutSeconds` bounds the whole call; without a reported value it resolves to `""`, as do a failed first
- *   navigation and a crashed web content process (Mangayomi waits for the timeout then, with the same result).
+ * - `timeoutSeconds` bounds the whole call (the wait for a web view, the cookie copy, the load and the scripts); a
+ *   call that times out returns `""` at its deadline, as do a failed first navigation and a crashed web content
+ *   process at once (Mangayomi waits for the timeout then, with the same result).
  *
  * The web view is created, driven and torn down on the main thread (`Dispatchers.Main`), one per call; at most
  * [maxConcurrent] exist at once (more calls wait, within their timeout). When the app has a window, the web view is
@@ -85,11 +92,12 @@ import kotlin.time.Duration.Companion.seconds
  * message handler and scripts are removed and the view leaves the window; nothing keeps a reference to it.
  *
  * Cookies: each call has its own `WKWebsiteDataStore.nonPersistentDataStore()` (no disk cache, local storage or
- * cookies left behind), into which the cookies of [cookieStorage] are copied before the load, and from which new,
- * changed and deleted cookies are copied back after the call. With the default, the shared `NSHTTPCookieStorage` that
- * [DarwinHostHttp] uses, the page sees the session a source's `Client` requests set up, and cookies the page sets
- * (a JavaScript challenge's clearance) are sent by later `Client` requests, as Mangayomi's HTTP client sends the
- * cookies its web view saved. `null` keeps every call isolated.
+ * cookies left behind). Before the load, the cookies of [cookieStorage] that apply to the URL's host (its domain and
+ * parent domains) are copied into it, and before each later navigation to another host (a redirect, a frame) those
+ * of that host; after the call, what the page added, changed or deleted is copied back. With the default, the shared
+ * `NSHTTPCookieStorage` that [DarwinHostHttp] uses, the page sees the session a source's `Client` requests set up,
+ * and cookies the page sets (a JavaScript challenge's clearance) are sent by later `Client` requests, as Mangayomi's
+ * HTTP client sends the cookies its web view saved. `null` keeps every call isolated.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class WKWebViewHostWebView(
@@ -103,6 +111,9 @@ class WKWebViewHostWebView(
     private val permits = Semaphore(maxConcurrent)
     private val liveCount = AtomicInt(0)
 
+    /** Copies back of calls that timed out or were cancelled: they run after the call returned. */
+    private val cookieScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     /** Web views that exist now (created and not yet torn down). */
     internal val liveWebViews: Int get() = liveCount.value
 
@@ -111,11 +122,32 @@ class WKWebViewHostWebView(
 
     override suspend fun evaluate(url: String, headers: Map<String, String>, scripts: List<String>, timeoutSeconds: Int): String {
         val target = webViewUrl(url)
-        return withTimeoutOrNull(timeoutSeconds.coerceAtLeast(1).seconds) {
-            permits.withPermit {
-                withContext(Dispatchers.Main) { Call(target, headers, scripts).run() }
+        val timeout = timeoutSeconds.coerceAtLeast(1).seconds
+        val deadline = TimeSource.Monotonic.markNow() + timeout
+        val permit = Permit()
+        try {
+            // The wait for a web view counts toward the timeout. `held` is checked, not the result: a timeout can
+            // win the race against an acquire that already succeeded.
+            withTimeoutOrNull(timeout) {
+                permits.acquire()
+                permit.held = true
             }
-        } ?: ""
+            if (!permit.held) return ""
+            return withContext(Dispatchers.Main) { Call(target, headers, scripts, deadline, permit).run() }
+        } finally {
+            permit.release()
+        }
+    }
+
+    /** One call's permit, released once: when its web view is torn down, before the cookies are copied back. */
+    private inner class Permit {
+        var held = false
+
+        fun release() {
+            if (!held) return
+            held = false
+            permits.release()
+        }
     }
 
     /** What the web view's delegates report to the call, on the main thread. */
@@ -130,17 +162,31 @@ class WKWebViewHostWebView(
         private val url: NSURL,
         private val headers: Map<String, String>,
         private val scripts: List<String>,
+        private val deadline: TimeMark,
+        private val permit: Permit,
     ) {
         private val events = Channel<Event>(Channel.UNLIMITED)
 
+        /** Hosts whose stored cookies were copied in (lower case). Main thread only, like everything below. */
+        private val cookieHosts = mutableSetOf<String>()
+
+        /**
+         * The copied cookies as WebKit's store holds them, read back right after each copy (WebKit may reject or
+         * normalise a cookie): what the page's changes are measured against.
+         */
+        private val baseline = mutableMapOf<String, NSHTTPCookie>()
+
+        /** Whether the first copy (the URL's host) completed, so the page loaded with it. */
+        private var copiedIn = false
+
         suspend fun run(): String = coroutineScope {
+            val callScope = this
             val handler = BridgeMessageHandler { body ->
                 val message = WebViewBridge.message(body)
                 val value = message?.let { WebViewBridge.response(it) }
                 if (value is WebViewBridge.Reply.Value) events.trySend(Event.Response(value.text))
                 (value as? WebViewBridge.Reply.Rejected)?.message
             }
-            val delegate = NavigationDelegate(events)
             val configuration = WKWebViewConfiguration().apply {
                 websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore()
                 mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeAll
@@ -153,38 +199,53 @@ class WKWebViewHostWebView(
                 )
                 userContentController.addScriptMessageHandlerWithReply(handler, WKContentWorld.pageWorld, WebViewBridge.HANDLER_NAME)
             }
+            val store = configuration.websiteDataStore.httpCookieStore
+            val delegate = NavigationDelegate(events) { host, proceed -> beforeNavigation(store, host, proceed) }
+            val webView = autoreleasepool { createWebView(configuration, delegate) }
+            liveCount.incrementAndGet()
+            // null: the call timed out (or was cancelled).
+            var value: String? = null
+            try {
+                value = withTimeoutOrNull(-deadline.elapsedNow()) {
+                    host(url)?.let { copyCookiesIn(store, it) }
+                    copiedIn = true
+                    val request = NSMutableURLRequest(uRL = url)
+                    headers.forEach { (name, text) -> request.setValue(text, forHTTPHeaderField = name) }
+                    webView.loadRequest(request)
+                    // In the call's scope: the scripts it launches are cancelled with it, not waited for here.
+                    callScope.awaitResponse(webView)
+                }
+                value ?: ""
+            } finally {
+                coroutineContext.cancelChildren()
+                autoreleasepool { tearDown(webView, configuration.userContentController, delegate) }
+                liveCount.decrementAndGet()
+                permit.release()
+                // Also after a timeout or a cancellation: cookies the page set are kept, as in Mangayomi's store.
+                // The web view is gone, the data store stays as long as this copy needs it.
+                if (cookieStorage != null && copiedIn) {
+                    val copyBack = cookieScope.launch { withTimeoutOrNull(COOKIE_COPY_TIMEOUT) { copyCookiesOut(store) } }
+                    // A reported value waits for its cookies, so the source's next `Client` request sends them; a
+                    // call that timed out or was cancelled returns at once.
+                    if (value != null) copyBack.join()
+                }
+            }
+        }
+
+        private fun createWebView(configuration: WKWebViewConfiguration, delegate: NavigationDelegate): WKWebView {
             val window = container()
             val frame = window?.bounds?.useContents { CGRectMake(0.0, 0.0, size.width, size.height) }
                 ?: CGRectMake(0.0, 0.0, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT)
             val webView = WKWebView(frame = frame, configuration = configuration)
-            liveCount.incrementAndGet()
-            try {
-                webView.navigationDelegate = delegate
-                if (window != null) {
-                    webView.alpha = 0.01
-                    webView.userInteractionEnabled = false
-                    window.insertSubview(webView, atIndex = 0)
-                    window.sendSubviewToBack(webView)
-                }
-                onWebViewCreated?.invoke(webView)
-                val store = configuration.websiteDataStore.httpCookieStore
-                val copied = copyCookiesIn(store)
-                try {
-                    val request = NSMutableURLRequest(uRL = url)
-                    headers.forEach { (name, value) -> request.setValue(value, forHTTPHeaderField = name) }
-                    webView.loadRequest(request)
-                    awaitResponse(webView)
-                } finally {
-                    // Also after a timeout or a cancellation: cookies the page set are kept, as in Mangayomi's store.
-                    withContext(NonCancellable) {
-                        withTimeoutOrNull(COOKIE_COPY_TIMEOUT) { copyCookiesOut(store, copied) }
-                    }
-                }
-            } finally {
-                coroutineContext.cancelChildren()
-                tearDown(webView, configuration.userContentController, delegate)
-                liveCount.decrementAndGet()
+            webView.navigationDelegate = delegate
+            if (window != null) {
+                webView.alpha = 0.01
+                webView.userInteractionEnabled = false
+                window.insertSubview(webView, atIndex = 0)
+                window.sendSubviewToBack(webView)
             }
+            onWebViewCreated?.invoke(webView)
+            return webView
         }
 
         private suspend fun CoroutineScope.awaitResponse(webView: WKWebView): String {
@@ -224,39 +285,74 @@ class WKWebViewHostWebView(
             evaluateJavaScript(script) { _, error -> continuation.resumeIfActive(error) }
         }
 
-        private suspend fun copyCookiesIn(store: WKHTTPCookieStore): List<NSHTTPCookie> {
-            val cookies = cookieStorage?.cookies.orEmpty().filterIsInstance<NSHTTPCookie>()
-            if (cookies.isEmpty()) return cookies
-            suspendCancellableCoroutine { continuation ->
-                // Completion handlers run on the main thread, like this code.
-                var left = cookies.size
-                cookies.forEach { cookie ->
-                    store.setCookie(cookie) {
-                        left--
-                        if (left == 0) continuation.resumeIfActive(Unit)
-                    }
+        /**
+         * A navigation (the first load, a redirect, a frame, a script's) is about to start: [proceed] once the stored
+         * cookies of its host are in the store. Hosts already copied proceed at once.
+         */
+        private fun CoroutineScope.beforeNavigation(store: WKHTTPCookieStore, host: String?, proceed: () -> Unit) {
+            if (cookieStorage == null || !copiedIn || host == null || host.lowercase() in cookieHosts) {
+                proceed()
+                return
+            }
+            // Undispatched: the `finally` is entered now, so WebKit's decision handler is called even if the call
+            // ends first (WebKit raises an exception for a handler that is never called).
+            launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    copyCookiesIn(store, host)
+                } finally {
+                    proceed()
                 }
             }
-            return cookies
         }
 
-        private suspend fun copyCookiesOut(store: WKHTTPCookieStore, copied: List<NSHTTPCookie>) {
+        /**
+         * Copies the stored cookies that apply to [host] (its domain and parent domains, any path) into [store], then
+         * adds what the store made of them to [baseline]. A cookie the store already has (copied for another host,
+         * or set by the page) is not copied again: the store's is the newer one.
+         */
+        private suspend fun copyCookiesIn(store: WKHTTPCookieStore, host: String) {
+            val storage = cookieStorage ?: return
+            val name = host.lowercase()
+            if (!cookieHosts.add(name)) return
+            val first = cookieHosts.size == 1
+            val stored = storage.cookies.orEmpty().filterIsInstance<NSHTTPCookie>().filter { cookieApplies(it.domain, name) }
+            if (stored.isEmpty()) return
+            val present = if (first) emptySet() else store.allCookies().mapTo(mutableSetOf()) { it.key() }
+            val copies = stored.filter { it.key() !in present }
+            if (copies.isEmpty()) return
+            store.setAll(copies)
+            // The first copy fills an empty store: all of it is the baseline, whatever WebKit made of the cookies.
+            val keys = copies.mapTo(mutableSetOf()) { it.key() }
+            store.allCookies().forEach { cookie ->
+                val key = cookie.key()
+                if ((first || key in keys) && key !in baseline) baseline[key] = cookie
+            }
+        }
+
+        private suspend fun copyCookiesOut(store: WKHTTPCookieStore) {
             val storage = cookieStorage ?: return
             // `document.cookie` changes reach the store from the web content process, on another connection than
             // this read: give the ones the page made just before it reported a moment to arrive.
             delay(COOKIE_SETTLE)
-            val now = suspendCancellableCoroutine { continuation ->
-                store.getAllCookies { cookies -> continuation.resumeIfActive(cookies.orEmpty().filterIsInstance<NSHTTPCookie>()) }
+            val now = NSDate().timeIntervalSince1970
+            val after = store.allCookies().associateBy { it.key() }
+            // Deleted by the page: in the baseline, gone now, not expired meanwhile (the storage expires its own
+            // copy), and still the copied value in the storage (a value the app's HTTP client stored meanwhile wins).
+            val deleted = baseline.filter { (key, cookie) ->
+                key !in after && (cookie.expiresDate?.timeIntervalSince1970?.let { it > now } ?: true)
             }
-            val before = copied.associateBy { it.key() }
-            val after = now.associateBy { it.key() }
-            // Only what the page changed: a cookie the app's HTTP client changed meanwhile is not overwritten.
-            before.forEach { (key, cookie) -> if (key !in after) storage.deleteCookie(cookie) }
-            after.forEach { (key, cookie) -> if (before[key]?.sameAs(cookie) != true) storage.setCookie(cookie) }
+            if (deleted.isNotEmpty()) {
+                storage.cookies.orEmpty().filterIsInstance<NSHTTPCookie>()
+                    .filter { deleted[it.key()]?.value == it.value }
+                    .forEach { storage.deleteCookie(it) }
+            }
+            // Added or changed by the page (or by its responses); cookies it did not touch are not written back.
+            after.forEach { (key, cookie) -> if (baseline[key]?.sameAs(cookie) != true) storage.setCookie(cookie) }
         }
     }
 
     private fun tearDown(webView: WKWebView, controller: WKUserContentController, delegate: NavigationDelegate) {
+        delegate.closed = true
         webView.navigationDelegate = null
         webView.stopLoading()
         controller.removeScriptMessageHandlerForName(WebViewBridge.HANDLER_NAME, WKContentWorld.pageWorld)
@@ -264,11 +360,28 @@ class WKWebViewHostWebView(
         // Replaces the page, so its scripts, timers and requests stop now, not when the view is deallocated.
         webView.loadHTMLString("", baseURL = null)
         webView.removeFromSuperview()
-        delegate.closed = true
     }
 
-    private class NavigationDelegate(private val events: Channel<Event>) : NSObject(), WKNavigationDelegateProtocol {
+    private class NavigationDelegate(
+        private val events: Channel<Event>,
+        /** Called with the host a navigation goes to; it calls its second argument when the navigation may start. */
+        private val beforeNavigation: (String?, () -> Unit) -> Unit,
+    ) : NSObject(), WKNavigationDelegateProtocol {
         var closed = false
+
+        override fun webView(
+            webView: WKWebView,
+            decidePolicyForNavigationAction: WKNavigationAction,
+            decisionHandler: (WKNavigationActionPolicy) -> Unit,
+        ) {
+            if (closed) {
+                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
+                return
+            }
+            beforeNavigation(host(decidePolicyForNavigationAction.request.URL)) {
+                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
+            }
+        }
 
         override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {
             if (!closed) events.trySend(Event.Finished)
@@ -377,8 +490,45 @@ class WKWebViewHostWebView(
         /** `WebKitErrorFrameLoadInterruptedByPolicyChange`, `WebKitErrorPlugInWillHandleLoad`. */
         private val IGNORED_WEBKIT_ERRORS = setOf(102L, 204L)
 
-        /** A cookie's identity; the domain without its leading dot, which the two stores may write differently. */
-        private fun NSHTTPCookie.key() = "$name\u0000${domain.lowercase().removePrefix(".")}\u0000$path"
+        /**
+         * A cookie's identity: name, domain and path. The domain keeps its leading dot: a host-only `example.com`
+         * cookie and a domain `.example.com` cookie of the same name and path are two cookies.
+         */
+        internal fun cookieKey(name: String, domain: String, path: String) = "$name\u0000${domain.lowercase()}\u0000$path"
+
+        private fun NSHTTPCookie.key() = cookieKey(name, domain, path)
+
+        /**
+         * Whether a cookie of [domain] is copied in for [host] (lower case): the host itself or a parent domain, with
+         * or without the leading dot. Any path and either scheme: a later request to the host may need it. Lenient
+         * for a domain without a dot (host-only in `NSHTTPCookie`): it is also copied for subdomains, where WebKit
+         * does not send it.
+         */
+        internal fun cookieApplies(domain: String, host: String): Boolean {
+            val bare = domain.lowercase().removePrefix(".")
+            return bare.isNotEmpty() && (host == bare || host.endsWith(".$bare"))
+        }
+
+        /** The host a navigation goes to, lower case; `null` for a URL without one (`about:blank`, `data:`). */
+        private fun host(url: NSURL?): String? = url?.host?.takeIf { it.isNotEmpty() }?.lowercase()
+
+        private suspend fun WKHTTPCookieStore.allCookies(): List<NSHTTPCookie> = suspendCancellableCoroutine { continuation ->
+            getAllCookies { cookies -> continuation.resumeIfActive(cookies.orEmpty().filterIsInstance<NSHTTPCookie>()) }
+        }
+
+        private suspend fun WKHTTPCookieStore.setAll(cookies: List<NSHTTPCookie>) {
+            if (cookies.isEmpty()) return
+            suspendCancellableCoroutine { continuation ->
+                // Completion handlers run on the main thread, like this code.
+                var left = cookies.size
+                cookies.forEach { cookie ->
+                    setCookie(cookie) {
+                        left--
+                        if (left == 0) continuation.resumeIfActive(Unit)
+                    }
+                }
+            }
+        }
 
         private fun NSHTTPCookie.sameAs(other: NSHTTPCookie) =
             value == other.value &&

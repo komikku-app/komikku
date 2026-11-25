@@ -113,7 +113,10 @@ jobs:
           UDID=$(xcrun simctl list devices available --json | python3 -c '
           import json, sys
           devices = json.load(sys.stdin)["devices"]
-          ios = sorted((runtime, d["name"], d["udid"]) for runtime, ds in devices.items() if "iOS" in runtime for d in ds if d["name"].startswith("iPhone"))
+          def version(runtime):
+              # com.apple.CoreSimulator.SimRuntime.iOS-18-2 -> (18, 2): numeric, so iOS-18-10 sorts after iOS-18-2
+              return tuple(int(part) for part in runtime.rsplit(".", 1)[-1].split("-")[1:] if part.isdigit())
+          ios = sorted((version(runtime), d["name"], d["udid"]) for runtime, ds in devices.items() if ".iOS-" in runtime for d in ds if d["name"].startswith("iPhone"))
           print(ios[-1][2])
           ')
           echo "Simulator: $UDID"
@@ -124,8 +127,13 @@ jobs:
             '--ktest_filter=*WKWebViewHostWebViewTest.*:*WebViewBridgeTest.*:*IosJsSourceRuntimeWebViewTest.*' \
             2>&1 | tee "$RUNNER_TEMP/webkit-tests.log" || true
           xcrun simctl shutdown "$UDID" || true
-          # The runner's own summary: every test passed, none failed, none skipped by WebKitTest
-          grep -E '^\[ +PASSED +\] [0-9]+ tests' "$RUNNER_TEMP/webkit-tests.log"
+          # The runner's own summary: at least the expected number of tests passed (WKWebViewHostWebViewTest 17,
+          # WebViewBridgeTest 6, IosJsSourceRuntimeWebViewTest 2; raise it with new tests), none failed, none skipped
+          # by WebKitTest
+          MIN_TESTS=25
+          PASSED=$(sed -nE 's/^\[ +PASSED +\] ([0-9]+) tests.*/\1/p' "$RUNNER_TEMP/webkit-tests.log" | tail -n 1)
+          echo "Passed: ${PASSED:-none} (expected at least $MIN_TESTS)"
+          if [ -z "$PASSED" ] || [ "$PASSED" -lt "$MIN_TESTS" ]; then exit 1; fi
           if grep -E '^\[ +FAILED +\]|SKIPPED: ' "$RUNNER_TEMP/webkit-tests.log"; then exit 1; fi
 
       - name: Upload test report

@@ -1,5 +1,7 @@
 package app.komikku.sourcejs
 
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.autoreleasepool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -37,14 +39,19 @@ internal fun timedTest(
  * [timeoutMillis] (plus a margin for its own cancellation) fails the test instead of hanging it, also when this is not
  * the main thread (the main queue is then served elsewhere, or never).
  */
+@OptIn(BetaInteropApi::class)
 internal fun mainRunLoopTest(timeoutMillis: Long = 30_000, block: suspend CoroutineScope.() -> Unit) {
     val job = GlobalScope.async(Dispatchers.Default) { withTimeout(timeoutMillis) { block() } }
     val onMainThread = NSThread.isMainThread
     val deadline = TimeSource.Monotonic.markNow() + (timeoutMillis + 5_000).milliseconds
     while (!job.isCompleted && deadline.hasNotPassedNow()) {
         if (onMainThread) {
-            // Returns at once when nothing is queued for this mode: do not spin.
-            val ran = NSRunLoop.mainRunLoop.runMode(NSDefaultRunLoopMode, beforeDate = NSDate.dateWithTimeIntervalSinceNow(0.05))
+            // Returns at once when nothing is queued for this mode: do not spin. Each pass has its own autorelease
+            // pool, as UIKit's run loop does: without it, objects autoreleased on the main thread (by WebKit, by
+            // blocks on the main queue) stay alive until the process ends.
+            val ran = autoreleasepool {
+                NSRunLoop.mainRunLoop.runMode(NSDefaultRunLoopMode, beforeDate = NSDate.dateWithTimeIntervalSinceNow(0.05))
+            }
             if (!ran) usleep(2_000u)
         } else {
             usleep(10_000u)

@@ -9,13 +9,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import platform.Foundation.NSDate
 import platform.Foundation.NSHTTPCookie
 import platform.Foundation.NSHTTPCookieDomain
+import platform.Foundation.NSHTTPCookieExpires
 import platform.Foundation.NSHTTPCookieName
 import platform.Foundation.NSHTTPCookiePath
 import platform.Foundation.NSHTTPCookieStorage
 import platform.Foundation.NSHTTPCookieValue
 import platform.Foundation.NSURL
+import platform.Foundation.dateWithTimeIntervalSinceNow
 import platform.WebKit.WKWebView
 import kotlin.concurrent.AtomicInt
 import kotlin.concurrent.AtomicReference
@@ -28,6 +31,8 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.TimeSource
@@ -45,7 +50,7 @@ class WKWebViewHostWebViewTest {
     private val pings = AtomicInt(0)
     private val logs = AtomicReference(emptyList<String>())
 
-    private val server = LoopbackHttpServer { request ->
+    private val server: LoopbackHttpServer = LoopbackHttpServer { request ->
         requests.update { it + "${request.target} ${request.headers["x-token"]}" }
         when (request.target) {
             "/page", "/dir%20%C3%A9/page" -> html(
@@ -77,6 +82,22 @@ class WKWebViewHostWebViewTest {
                 """,
             )
             "/cookies" -> html("""<html><body><p id="c">${request.headers["cookie"].orEmpty()}</p></body></html>""")
+            "/hop" -> Response(302, listOf("Location" to "${base.replace("127.0.0.1", "localhost")}/cookies"))
+            "/expiring" -> {
+                // The app's HTTP client stores new values while the page runs.
+                NSHTTPCookieStorage.sharedHTTPCookieStorage.setCookie(cookieOf("${cookie}_exp", "fresh"))
+                NSHTTPCookieStorage.sharedHTTPCookieStorage.setCookie(cookieOf("${cookie}_app", "fresh"))
+                html(
+                    """
+                    <html><body><p id="c">${request.headers["cookie"].orEmpty()}</p><script>
+                    document.cookie = '${cookie}_app=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+                    setTimeout(function () {
+                      window.flutter_inappwebview.callHandler('setResponse', document.getElementById('c').textContent);
+                    }, 6500);
+                    </script></body></html>
+                    """,
+                )
+            }
             "/slow-report" -> html(
                 """
                 <html><body><script>
@@ -90,14 +111,14 @@ class WKWebViewHostWebViewTest {
             }
         }
     }
-    private val base = server.baseUrl
+    private val base: String = server.baseUrl
     private val webView = WKWebViewHostWebView(log = { message -> logs.update { it + message } })
 
     @AfterTest
     fun stop() {
         server.close()
         val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
-        storage.cookiesForURL(NSURL(string = base)).orEmpty()
+        storage.cookies.orEmpty()
             .filterIsInstance<NSHTTPCookie>()
             .filter { it.name.startsWith(cookie) }
             .forEach { storage.deleteCookie(it) }
@@ -126,6 +147,7 @@ class WKWebViewHostWebViewTest {
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
     }
 
+    /** flutter_inappwebview's handlers accept every frame (docs/kmp-desktop/IOS_CI.md, I5c), so this one does too. */
     @Test
     fun aFrameCanReport() = webKitTest {
         assertEquals("from frame", webView.evaluate("$base/outer", emptyMap(), emptyList(), 20))
@@ -167,7 +189,8 @@ class WKWebViewHostWebViewTest {
         val start = TimeSource.Monotonic.markNow()
         assertEquals("", webView.evaluate("$base/silent", emptyMap(), listOf("1 + 1"), 1))
         val elapsed = start.elapsedNow().inWholeMilliseconds
-        assertTrue(elapsed in 900..6_000, "took $elapsed ms")
+        // Returns at its deadline: the cookies are copied back after the call, not within it.
+        assertTrue(elapsed in 900..3_000, "took $elapsed ms")
         assertEquals(0, webView.liveWebViews)
     }
 
@@ -234,8 +257,8 @@ class WKWebViewHostWebViewTest {
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
         webView.onWebViewCreated = null
         withContext(Dispatchers.Main) { assertTornDown(holder.value!!) }
-        // Deallocation is up to Kotlin/Native's garbage collector and WebKit; reported, not asserted
-        // (docs/kmp-desktop/IOS_CI.md, I5c).
+        // Freed once Kotlin/Native's collector releases its reference and the main thread's autorelease pool is
+        // drained (mainRunLoopTest drains one per run loop pass, as UIKit does; docs/kmp-desktop/IOS_CI.md, I5c).
         val weak = weakAndClear(holder)
         val start = TimeSource.Monotonic.markNow()
         while (weak.value != null && start.elapsedNow().inWholeMilliseconds < 8_000) {
@@ -243,6 +266,7 @@ class WKWebViewHostWebViewTest {
             delay(200)
         }
         println("WEBVIEW_DEALLOCATED=${weak.value == null} after ${start.elapsedNow()}")
+        assertNull(weak.value, "the web view was not deallocated 8 s after the call")
     }
 
     private fun assertTornDown(view: WKWebView) {
@@ -283,6 +307,60 @@ class WKWebViewHostWebViewTest {
         assertEquals("v1", stored["${cookie}_in"])
         assertEquals("v2", stored["${cookie}_page"])
         assertNull(stored["${cookie}_gone"], describeStoredCookies())
+    }
+
+    @Test
+    fun aRedirectToAnotherHostGetsThatHostsCookies() = webKitTest {
+        val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
+        storage.setCookie(cookieOf("${cookie}_near", "n"))
+        storage.setCookie(cookieOf("${cookie}_far", "f", domain = "localhost"))
+        val value = webView.evaluate(
+            "$base/hop",
+            emptyMap(),
+            listOf("window.flutter_inappwebview.callHandler('setResponse', location.host + '|' + document.getElementById('c').textContent)"),
+            20,
+        )
+        // 127.0.0.1 redirected to localhost: the request there carried localhost's cookie, copied in before it.
+        assertTrue(value.startsWith("localhost:"), value)
+        assertTrue("${cookie}_far=f" in value, value)
+        assertTrue("${cookie}_near" !in value, value)
+    }
+
+    @Test
+    fun cookiesThatExpireOrThatTheAppChangesDuringTheCallAreNotDeleted() = webKitTest {
+        val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
+        storage.setCookie(cookieOf("${cookie}_exp", "old", expires = NSDate.dateWithTimeIntervalSinceNow(5.0)))
+        storage.setCookie(cookieOf("${cookie}_app", "old"))
+        // The page deletes `_app` and reports after `_exp` expired; meanwhile the app stored new values of both.
+        val value = webView.evaluate("$base/expiring", emptyMap(), emptyList(), 20)
+        assertTrue("${cookie}_exp=old" in value, value)
+        assertTrue("${cookie}_app=old" in value, value)
+        val stored = storedCookies()
+        assertEquals("fresh", stored["${cookie}_exp"], describeStoredCookies())
+        assertEquals("fresh", stored["${cookie}_app"], describeStoredCookies())
+    }
+
+    @Test
+    fun cookieKeysKeepTheLeadingDot() {
+        val hostOnly = WKWebViewHostWebView.cookieKey("a", "example.com", "/")
+        assertNotEquals(hostOnly, WKWebViewHostWebView.cookieKey("a", ".example.com", "/"))
+        assertNotEquals(hostOnly, WKWebViewHostWebView.cookieKey("a", "example.com", "/x"))
+        assertEquals(hostOnly, WKWebViewHostWebView.cookieKey("a", "Example.COM", "/"))
+    }
+
+    @Test
+    fun cookiesAreCopiedForTheHostAndItsParentDomains() {
+        fun applies(domain: String, host: String) = WKWebViewHostWebView.cookieApplies(domain, host)
+        assertTrue(applies("example.com", "example.com"))
+        assertTrue(applies(".example.com", "example.com"))
+        assertTrue(applies(".Example.com", "www.example.com"))
+        assertTrue(applies("example.com", "a.b.example.com"))
+        assertTrue(applies("127.0.0.1", "127.0.0.1"))
+        assertFalse(applies(".example.com", "badexample.com"))
+        assertFalse(applies("www.example.com", "example.com"))
+        assertFalse(applies("other.org", "example.com"))
+        assertFalse(applies(".", "example.com"))
+        assertFalse(applies("27.0.0.1", "127.0.0.1"))
     }
 
     @Test
@@ -332,14 +410,16 @@ class WKWebViewHostWebViewTest {
             .filter { it.name.startsWith(cookie) }
             .associate { it.name to it.value }
 
-    private fun cookieOf(name: String, value: String): NSHTTPCookie = NSHTTPCookie.cookieWithProperties(
-        mapOf<Any?, Any?>(
-            NSHTTPCookieName to name,
-            NSHTTPCookieValue to value,
-            NSHTTPCookieDomain to "127.0.0.1",
-            NSHTTPCookiePath to "/",
-        ),
-    )!!
+    private fun cookieOf(name: String, value: String, domain: String = "127.0.0.1", expires: NSDate? = null): NSHTTPCookie =
+        NSHTTPCookie.cookieWithProperties(
+            buildMap<Any?, Any?> {
+                put(NSHTTPCookieName, name)
+                put(NSHTTPCookieValue, value)
+                put(NSHTTPCookieDomain, domain)
+                put(NSHTTPCookiePath, "/")
+                if (expires != null) put(NSHTTPCookieExpires, expires)
+            },
+        )!!
 
     private fun html(text: String) =
         Response(200, listOf("Content-Type" to "text/html; charset=utf-8"), text.trimIndent().encodeToByteArray())
