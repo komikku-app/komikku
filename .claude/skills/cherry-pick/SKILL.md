@@ -110,8 +110,8 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
     non-base locales; that is the only kind of pick that may (AGENTS.md "Internationalization").
 - For each file present here, see how ours already differs from upstream's parent: `git diff <hash>~1 HEAD -- <file>`.
   Every difference is SY code (`// SY`, `// EXH`), Komikku code (`// KMK`), something upstream has and Komikku
-  dropped or reworked on purpose, or a later upstream commit picked early (below). Keep all of them.
-  `git log --oneline -5 -- <file>` shows why a line is ours.
+  dropped or reworked on purpose, or a later upstream commit picked early (below). Keep all of them, except Komikku
+  code that step 3 finds upstream now covers. `git log --oneline -5 -- <file>` shows why a line is ours.
 - **Later upstream commits picked early.** Komikku can already have an upstream commit that comes after this one
   upstream, such as a fix picked before the refactor it follows. List the later upstream commits that touch this
   commit's files, new ones included, on both upstreams (step 6's `<range>`), and keep the ones picked here:
@@ -219,6 +219,36 @@ that commit. Otherwise the pick stays in progress.
 
 Resolve conflicts by keeping upstream's code and layout, so later picks still apply, together with everything step 1
 found that is ours. Change only what this list covers:
+
+- **Komikku's own code in a conflict.** When our side of a conflict holds Komikku's own lines, don't take either side
+  blindly. Komikku's own lines are usually a `// KMK` block. Unmarked lines count too when the commit that added them
+  is Komikku's, such as work from before the markers: no upstream branch contains it
+  (`git branch -r --contains <commit>` lists neither `mihon/main` nor `tachiyomiSY/master`; Komikku shares SY's
+  history, so SY's own commits are here too) and it has no `cherry picked from` line. Check whether that change is
+  still needed with upstream's new code:
+  - **Why it exists:** find the commit that added it, with `git log -S '<distinctive line>' -- <file>`, or
+    `git log -L <first>,<last>:<file> HEAD` with the line numbers of HEAD's version (`git show HEAD:<file>`), not of
+    the working file, whose conflict markers and upstream lines shift them. Read its message and PR, and what it
+    fixed or added.
+  - **What upstream does there now:** whether this commit (or an earlier upstream one it builds on) fixes the same bug
+    or adds the same behavior, makes the change wrong (it relies on code upstream removed or reworked), or leaves it
+    untouched.
+  - **Who else relies on it:** `git grep` the names the block defines or changes, so dropping or reshaping it doesn't
+    break other Komikku code.
+
+  Then decide, and record each decision for the report:
+  - **Still needed** (upstream doesn't do what it does): keep it, adapted to upstream's new code, inside KMK markers;
+    add them around unmarked Komikku code the resolution changes (AGENTS.md "Fork markers"). This is the usual case.
+  - **Covered by upstream** (upstream now does the same, and keeping ours would duplicate or fight it): take
+    upstream's side and drop ours, once you've checked that upstream covers every case ours handled. Dropping
+    Komikku code drops Komikku behavior (step 2, Komikku features), so ask the user first unless ours is only an
+    earlier copy of the same fix.
+  - **Unsure:** keep ours, adapted, and say why in the report.
+
+  Clean merges can hit Komikku code too: git doesn't flag upstream lines landing right next to a KMK block, or
+  upstream changing code a KMK block relies on. In each file the pick touches, list the markers (`grep -n 'KMK' <file>`)
+  and read the staged diff with enough context to reach them (`git diff --cached -U15 <base> -- <file>`; the default
+  3 lines of context hide a marker a few lines away), asking the same questions of every hunk near a KMK block.
 
 - **Fork markers** (AGENTS.md "Fork markers"): upstream's own lines go in unwrapped. Every line Komikku has to change
   or add to make the pick fit is wrapped in `// KMK -->` … `// KMK <--` (`-- KMK -->` in `.sq` / `.sqm`, inline
@@ -585,6 +615,8 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the new hash and subject, whether it is signed, and whether it carries the user's co-author trailer and why;
 - every line that differs from upstream's patch and why (`git range-diff <hash>~1..<hash> <new>~1..<new>` shows them),
   KMK blocks included;
+- each conflict (or clean merge) in Komikku's own code from step 3: the commit that added it, what it does, and
+  whether it was kept as is, adapted or dropped, with the reason (and, for a drop, that the user agreed);
 - the log rows marked `O` (or `?` with a `Partial` note), the rows of other commits marked `?` with a `Folded`
   note, the rows given an `Early pick` note (step 1, Earlier upstream commits it jumps ahead of), and the listed rows
   left without one;
