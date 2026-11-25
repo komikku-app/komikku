@@ -481,6 +481,12 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **Open from run 45655979842 (commit `98e84f7`, 2026-11-25):** (1) the two `self-hosted` jobs (desktop Apple silicon
+  package, iOS check) were still queued 13 minutes after the push: check that the maintainer's runner is online and
+  picked them up, then that both pass on that Mac. (2) Linux `:desktopApp:test` failed once: `JsSourceBrowseUiTest >
+  executionError`, `TempDirDeletionStrategy$DeletionException` (the temp directory could not be deleted after the
+  class, 374 tests, 1 failed); not seen before, looks like a file still being written at clean-up. Reproduce or make
+  the test wait for the store / engine to close before the directory is removed.
 - **Self-hosted Mac runner (2026-11-25):** the maintainer's Mac runs the macOS jobs of `build_desktop.yml` (Apple
   silicon entry) and `build_ios_check.yml` (label `self-hosted`; fork pull requests stay on `macos-15`). Rules and how
   to switch back: [`BUILDING.md`](BUILDING.md#self-hosted-mac-runner). Jobs queue while the Mac is off.
