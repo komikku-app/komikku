@@ -26,6 +26,11 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
 
     private val packageActionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            // KMK -->
+            // Abandoning a committed session still reports it, after the queue has moved on
+            val reportedSessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
+            if (reportedSessionId != -1 && reportedSessionId != activeSession?.second) return
+            // KMK <--
             when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                     val userAction = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
@@ -45,6 +50,11 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                         }
                     if (userAction == null) {
                         xLogE("Fatal error for $intent")
+                        // KMK -->
+                        activeSession?.let { (_, sessionId) ->
+                            runCatching { packageInstaller.abandonSession(sessionId) }
+                        }
+                        // KMK <--
                         continueQueue(InstallStep.Error)
                         return
                     }
@@ -69,6 +79,10 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
         }
     }
 
+    // KMK -->
+    // Written wherever the queue runs and read by the receiver on the main thread
+    @Volatile
+    // KMK <--
     private var activeSession: Pair<Entry, Int>? = null
 
     // Always ready
