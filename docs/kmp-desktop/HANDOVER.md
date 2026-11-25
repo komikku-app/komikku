@@ -497,6 +497,12 @@ mark the residual path in both modules.
   `DesktopInjekt.onCreatedWriter` if one shows up. After the fix (`f49581d`): `:app:verifyBorrowedSources`,
   `:app:compileDebugKotlin` pass and the full `:desktopApp:test` passed with 81 classes, 373 tests, 0 failures; the
   fix has not been code-reviewed and has not run in CI yet (no desktop build was started for it).
+- **Review fixes (temp directory teardown), 2026-11-25:** the eight findings on `c8c2fa7` / `f49581d` are handled
+  (PROGRESS "Review fixes (temp directory teardown)"): late writers stopped at once, compat folder getters stop
+  creating folders after `stopDelayedWriters()`, `DownloadCache` closed flag and `internal` `cancelAndJoin()` (desktop:
+  `stopForDesktopTeardown()`), every stop attempted, teardown timeout logged, autodetection limited to the teardown
+  (mockk's `MockKExtension` is also service-registered), push trigger on the marker file only. **To do first:** a full
+  `:desktopApp:test` (not run after these fixes) and the result of CI run 45721165455; not reviewed yet.
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,

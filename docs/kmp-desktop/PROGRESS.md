@@ -4203,6 +4203,31 @@ Fix: `DownloadCache.cancelAndJoin()` (KMK) cancels its scope and waits; the desk
 test class, before JUnit's clean-up; every class that boots `DesktopInjekt` is `PER_CLASS`, so all benefit. No
 `cleanup = NEVER`, no sleeps. Checked: `JsSourceBrowseUiTest` in a loop with `--rerun`, all green (see HANDOVER).
 
+## Review fixes (temp directory teardown)
+
+Findings of the review of `c8c2fa7` / `f49581d` (PROGRESS M1 "Flaky `@TempDir` clean-up").
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | A `DownloadCache` created after `stopDelayedWriters()` drained the list was never stopped | Fixed: `DesktopInjekt` is marked stopped (reset by `init`); `onCreatedWriter` while stopped runs the stop at once (`runBlocking`, failure logged with `xLogE`) | `9a864fe` |
+| 2 | Late readers (`invalidateCache()` / `cleanInvalidDownloads()` on the caller's thread, CoverCache, ChapterCache, Coil) re-create folders through the compat getters' `ensureDir()` | Fixed at the root: `Application.stopCreatingDataFolders()` (`:desktop:android-compat`) makes the `DesktopContext` folder getters return their paths without creating folders; `stopDelayedWriters()` calls it on the `init` application first. Per instance, so the next `init` (new `Application`) creates folders again; nothing changes until it is called (test "folder getters create their folders on access"). Plus a KMK `closed` flag in `DownloadCache`: its public mutating calls, `invalidateCache` / `cleanInvalidDownloads`, renewals and change notifications are no-ops after the stop | `0c0adfd`, `3342695` |
+| 3 | `withTimeout(10.seconds)` could fail a class whose tests passed | Fixed: `withTimeoutOrNull`, a line on stderr when it times out | `0e58a88` |
+| 4 | One failing stop aborted the loop | Fixed: every stop is attempted, the first failure rethrown at the end (others suppressed) | `9a864fe` |
+| 5 | `DownloadCache.cancelAndJoin()` public on the shared class, not idempotent, `isInitializing` could stay true | Fixed as far as the modules allow: `cancelAndJoin()` is `internal` (Android `:app` / desktop `:app-shared`); the desktop reaches it through the `:app-shared` desktopMain wrapper `stopForDesktopTeardown()`. Idempotent (closed flag + cancelling a cancelled job), resets `_isInitializing`. Left: the debounced public `isInitializing` is a `stateIn` on the cancelled scope, so it keeps the last value it published (no collector after the teardown) | `3342695` |
+| 6 | Autodetection enables every service-registered extension | Checked the `:desktopApp` test runtime classpath (209 entries): one more, `io.mockk.junit5.MockKExtension` (mockk-jvm 1.14.11). Instead of `@ExtendWith` on the 60+ classes that boot `DesktopInjekt` (a new class could forget it), autodetection is limited with `junit.jupiter.extensions.autodetection.include=app.komikku.desktop.DesktopDataDirTeardown` (JUnit 6.1.3), an explicit allowlist; checked once with a temporary stderr line that the teardown still runs | `0e58a88` |
+| 7 | The temporary push trigger also started on workflow edits | Fixed: `paths` is only `.github/desktop-build-trigger` (BUILDING.md, TESTING_MAC.md updated) | `c4b8b3e` |
+| 8 | Stale comments ("Never executed yet", the Linux app image task) | Fixed: header names the green runs 45623103294 / 45625758564; `desktop_release_assets.sh` names `createDistributable` | `c4b8b3e`, `5470869` |
+
+Tests: `DesktopContextTest` (android-compat, 3, failed first: did not compile without the API), `DesktopInjektTeardownTest`
+(desktopApp, 4: every stop attempted and the first failure rethrown; a late writer stopped at once until the next `init`;
+after the stop `invalidateCache()` / `cleanInvalidDownloads()` / `cacheDir` leave the deleted `cache/` deleted; without a
+stop folders are still created). `DesktopInjektTeardownTest` was not run against the old code (time).
+
+Verification (`--max-workers=2 --console=plain`): `spotlessCheck`, `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`,
+`:desktopApp:compileKotlin` pass; `:desktop:android-compat:test` 8 classes, 40 tests, 0 failures (was 7 / 37);
+`JsSourceBrowseUiTest` with `--rerun` 5 times: 3 tests each, 0 failures. Full `:desktopApp:test`: not run in this
+session (time box); CI run 45721165455 (marker bump `a0e49c0`) runs it on Linux: macOS arm64 / x64 and Windows packages green, the Linux job (with the tests) still running when this was written.
+
 ## Review fixes (P23 fixes)
 
 Findings of the review of `80d94dd..25a39cd` (the P23 review fixes), each its own commit (2 and 4 share one: same
