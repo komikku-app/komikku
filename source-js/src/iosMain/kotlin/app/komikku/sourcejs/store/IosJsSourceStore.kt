@@ -419,14 +419,21 @@ class IosJsSourceStore(
                 storage("store the text of ${descriptor.name}") {
                     withContext(Dispatchers.IO) { StoreFiles.writeAtomically(code, text.encodeToByteArray()) }
                 }
-                storage("store the JavaScript source manifest") { writeManifest(updated) }
             } catch (e: Throwable) {
                 if (!codeWasThere) withContext(NonCancellable + Dispatchers.IO) { StoreFiles.delete(code) }
                 throw e
             }
-            // Written: from here on the new version is the installed one, also if the caller is cancelled.
             val source = IosJsSource(record, extension)
+            // The manifest write and the swap are one step a cancellation cannot split: a write that finished names
+            // the new text, so the text must stay and the new version is the installed one, also if the caller is
+            // cancelled meanwhile (a cancellable write would throw once done, and the new text would be deleted).
             withContext(NonCancellable) {
+                try {
+                    storage("store the JavaScript source manifest") { writeManifest(updated) }
+                } catch (e: Throwable) {
+                    if (!codeWasThere) withContext(Dispatchers.IO) { StoreFiles.delete(code) }
+                    throw e
+                }
                 _installed.value = updated
                 loaded.update { it + (descriptor.id to source) }
                 loadErrors.update { it - descriptor.id }
@@ -456,8 +463,9 @@ class IosJsSourceStore(
             val current = _installed.value.orEmpty()
             val record = current.find { it.id == id } ?: return
             val updated = current - record
-            storage("store the JavaScript source manifest") { writeManifest(updated) }
+            // As in install: once the manifest is written, the rest happens also if the caller is cancelled.
             withContext(NonCancellable) {
+                storage("store the JavaScript source manifest") { writeManifest(updated) }
                 _installed.value = updated
                 loaded.update { it - id }
                 loadErrors.update { it - id }
@@ -491,9 +499,11 @@ class IosJsSourceStore(
             if (metadata != source.metadata) {
                 val record = source.record.copy(metadata = metadata)
                 val updated = _installed.value.orEmpty().map { if (it.id == id) record else it }
-                storage("store the JavaScript source manifest") { writeManifest(updated) }
-                _installed.value = updated
-                loaded.update { it + (id to IosJsSource(record, source.extension)) }
+                withContext(NonCancellable) {
+                    storage("store the JavaScript source manifest") { writeManifest(updated) }
+                    _installed.value = updated
+                    loaded.update { it + (id to IosJsSource(record, source.extension)) }
+                }
             }
             metadata
         }
@@ -597,9 +607,13 @@ class IosJsSourceStore(
         }
     }
 
+    /** Tests only: runs on the IO thread right after the manifest was written (e.g. to cancel the caller then). */
+    internal var afterManifestWrite: (() -> Unit)? = null
+
     private suspend fun writeManifest(sources: List<InstalledJsSource>) = withContext(Dispatchers.IO) {
         val text = json.encodeToString(JsSourceManifest.serializer(), JsSourceManifest(sources = sources.sortedBy { it.id }))
         StoreFiles.writeAtomically(manifestPath, text.encodeToByteArray())
+        afterManifestWrite?.invoke()
     }
 
     private fun codePath(sha256: String): String = "$codeDir/${sha256.lowercase()}.js"

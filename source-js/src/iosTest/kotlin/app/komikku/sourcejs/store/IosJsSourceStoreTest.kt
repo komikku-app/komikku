@@ -11,9 +11,11 @@ import app.komikku.sourcejs.sha256Hex
 import app.komikku.sourcejs.store.JsSourceStoreException.Reason
 import app.komikku.sourcejs.timedTest
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import platform.Foundation.NSFileManager
@@ -339,6 +341,51 @@ class IosJsSourceStoreTest {
         assertEquals("1.0.1", manifest().single().descriptor.version)
         assertNull(file("code/$oldSha.js"))
         assertEquals("First v2", updated.extension.getPopular(1).list.single().name)
+    }
+
+    @Test
+    fun aCancellationDuringTheManifestWriteKeepsTheStoreConsistent() = timedTest {
+        serveRepository()
+        val store = newStore().loaded()
+        store.addRepository(REPO_URL)
+        val download = store.download(store.offer(ID)!!)
+        // The caller is cancelled while the manifest is written (the write itself finishes).
+        var job: Job? = null
+        store.afterManifestWrite = { job?.cancel() }
+
+        // Install: the manifest names the new text, so the text stays and the source is the installed one.
+        job = launch { store.install(download.offer, download.sha256) }
+        job.join()
+        assertTrue(job.isCancelled)
+        assertEquals(download.sha256, manifest().single().sha256)
+        assertNotNull(file("code/${download.sha256}.js"))
+        assertEquals(download.sha256, store.installed.value!!.single().sha256)
+        val source = store.sources.first { it.isNotEmpty() }.single()
+        // A store started now loads it.
+        val again = newStore().loaded()
+        assertNull(again.item().loadError)
+        assertEquals(listOf(ID), again.sources.first { it.isNotEmpty() }.map { it.id })
+        again.close()
+
+        // Refreshing the metadata: the cached metadata and the state agree with the manifest.
+        store.runtime.preferences(source.descriptor).setValue("k", JsPreferenceValue.Bool(false))
+        job = launch { store.refreshMetadata(ID) }
+        job.join()
+        assertTrue(job.isCancelled)
+        assertEquals(false, manifest().single().metadata!!.supportsLatest)
+        assertEquals(false, store.installed.value!!.single().metadata!!.supportsLatest)
+        assertEquals(false, store.source(source.sourceId)!!.metadata!!.supportsLatest)
+
+        // Uninstall: the record is gone from the manifest, so the state, files and preferences go too.
+        job = launch { store.uninstall(ID) }
+        job.join()
+        assertTrue(job.isCancelled)
+        assertEquals(emptyList(), manifest())
+        assertEquals(emptyList(), store.installed.value)
+        assertEquals(emptyList(), store.sources.first { it.isEmpty() })
+        assertNull(file("code/${download.sha256}.js"))
+        assertNull(file("icons/$ID"))
+        assertNull(suite().objectForKey("k"))
     }
 
     @Test
