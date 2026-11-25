@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -513,6 +515,17 @@ class DownloadCache(
             }
         }
     }
+
+    // KMK -->
+    /**
+     * Stops the cache's background work (renewal, the delayed disk cache write) and waits for it to end, so nothing
+     * writes into [Context.getCacheDir] afterwards. The cache is unusable after this. Desktop: before its data folder
+     * is deleted (tests).
+     */
+    suspend fun cancelAndJoin() {
+        scope.coroutineContext.job.cancelAndJoin()
+    }
+    // KMK <--
 }
 
 /**

@@ -327,7 +327,8 @@ class DesktopDomainModule(
         addSingletonFactory { DownloadProvider(app) }
         addSingletonFactory { DesktopDownloadEvents(showMessage = { app.toast(it) }) }
         addSingletonFactory<DownloadNotificationSink> { get<DesktopDownloadEvents>() }
-        addSingletonFactory { DownloadCache(app) }
+        // Its index is written to `cache/` a second after each change, from its own scope
+        addSingletonFactory { DownloadCache(app).also { cache -> DesktopInjekt.onCreatedWriter { cache.cancelAndJoin() } } }
         addSingletonFactory { DownloadManager(app) }
         addFactory { GetExcludedScanlators(get()) }
         addFactory { SyncChaptersWithSource(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
