@@ -201,11 +201,15 @@ class WKWebViewHostWebView(
             }
             val store = configuration.websiteDataStore.httpCookieStore
             val delegate = NavigationDelegate(events) { host, proceed -> beforeNavigation(store, host, proceed) }
-            val webView = autoreleasepool { createWebView(configuration, delegate) }
+            val window = container()
+            val frame = window?.bounds?.useContents { CGRectMake(0.0, 0.0, size.width, size.height) }
+                ?: CGRectMake(0.0, 0.0, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT)
+            val webView = autoreleasepool { WKWebView(frame = frame, configuration = configuration) }
             liveCount.incrementAndGet()
             // null: the call timed out (or was cancelled).
             var value: String? = null
             try {
+                autoreleasepool { prepare(webView, window, delegate) }
                 value = withTimeoutOrNull(-deadline.elapsedNow()) {
                     host(url)?.let { copyCookiesIn(store, it) }
                     copiedIn = true
@@ -232,11 +236,7 @@ class WKWebViewHostWebView(
             }
         }
 
-        private fun createWebView(configuration: WKWebViewConfiguration, delegate: NavigationDelegate): WKWebView {
-            val window = container()
-            val frame = window?.bounds?.useContents { CGRectMake(0.0, 0.0, size.width, size.height) }
-                ?: CGRectMake(0.0, 0.0, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT)
-            val webView = WKWebView(frame = frame, configuration = configuration)
+        private fun prepare(webView: WKWebView, window: UIView?, delegate: NavigationDelegate) {
             webView.navigationDelegate = delegate
             if (window != null) {
                 webView.alpha = 0.01
@@ -245,7 +245,6 @@ class WKWebViewHostWebView(
                 window.sendSubviewToBack(webView)
             }
             onWebViewCreated?.invoke(webView)
-            return webView
         }
 
         private suspend fun CoroutineScope.awaitResponse(webView: WKWebView): String {

@@ -362,7 +362,15 @@ bridge (`JavaScriptBridgeJS.swift`, `InAppWebView.swift`). What a source sees on
   plugin's `pluginScriptsForMainFrameOnly` default is `false`) and returns a promise. The arguments travel as one
   JSON text, like the plugin's `JSON.stringify(slice(arguments, 1))`. Here the promise is WebKit's own reply
   (`WKScriptMessageHandlerWithReply`) instead of the plugin's `_callHandlerID` bookkeeping.
-- `callHandler('setResponse', value)` with a **string** ends the call with that string. Mangayomi's handler does
+- `callHandler('setResponse', value)` with a **string** ends the call with that string, **from any frame**.
+  Mangayomi registers `setResponse` with `addJavaScriptHandler` and no settings, and flutter_inappwebview's iOS
+  handler (`InAppWebView.swift`, kodjodevf/flutter_inappwebview `master`, which Mangayomi's `pubspec.yaml` uses) does
+  not check the frame: the bridge is in every frame (`javaScriptBridgeForMainFrameOnly` defaults to `false`), the
+  origin allow list is `nil` (every origin), and `isMainFrame` is only passed to the Dart callback, which ignores it.
+  So an iframe's `setResponse` is accepted here too (`frameInfo.isMainFrame` is not checked): a source whose page
+  reports from a frame keeps working. The risk: a third-party frame on the page (an ad, an embed) can call
+  `setResponse` and end the call with its own string, which the source then parses; it reaches nothing else (the
+  value is only returned to the script, as in Mangayomi). Mangayomi's handler does
   `args[0] as String`: anything else (a number, `null`, nothing) throws in Dart, which rejects the page's promise
   and leaves the call waiting; here the promise rejects with `setResponse expects a string, got …` and the call
   goes on. Other handler names resolve with nothing (Mangayomi registers no other handler).
@@ -371,8 +379,9 @@ bridge (`JavaScriptBridgeJS.swift`, `InAppWebView.swift`). What a source sees on
   run one after the other in the main frame's page world, each awaited. A script that throws is logged and the next
   one runs (the plugin's `evaluateJavascript` does not fail either); a result WebKit cannot return (a promise, a
   node) is not an error.
-- `time` (seconds, `30` by default, set by the prelude) bounds the whole call; with no value reported it resolves
-  to `""`. Mangayomi polls once a second and returns `""` for any failure as well (its HTTP endpoint answers 400, the
+- `time` (seconds, `30` by default, set by the prelude) bounds the whole call: the wait for a web view, the cookie
+  copy, the load and the scripts. With no value reported it resolves to `""` at its deadline (the cookies are
+  copied back after it returns, below). Mangayomi polls once a second and returns `""` for any failure as well (its HTTP endpoint answers 400, the
   Dart side turns that into `""`).
 
 Deviations, all in timing only:
@@ -407,23 +416,46 @@ Deviations, all in timing only:
   `NSHTTPCookieStorage.sharedHTTPCookieStorage` by explicit copies.** `WKHTTPCookieStore` and `NSHTTPCookieStorage`
   are separate stores. In Mangayomi the headless web view uses the app's persistent WebView store, and the app's HTTP
   client attaches the cookies that store saved (contract 4.2): a page that sets a session or a JavaScript
-  challenge's clearance cookie makes later `Client` requests work. To get that on iOS, every cookie of the storage is
-  copied into the call's `WKWebsiteDataStore.nonPersistentDataStore()` before the load (all of them, so redirects
-  and subresources on other hosts get theirs too; the load waits for every `setCookie`), and afterwards (also after
-  a timeout or a cancellation, bounded to 2 s) the cookies the page added or changed are copied back and the ones it
-  deleted are deleted. Cookies it did not touch are not written back, so a value `DarwinHostHttp` stored meanwhile
-  is not overwritten with the old copy; cookies are matched by name, path and domain without its leading dot. The
-  copy back waits 250 ms first: `document.cookie` changes reach the store from the web content process on another
-  connection than the UI process's read, and a deletion the page made just before reporting was missed without
-  the wait (run 45585550783). The other choices: the default (persistent) data store would be a second
-  persistent cookie jar that drifts from the HTTP client's, and would keep the sites' local storage, caches and
-  service workers between calls and launches; an isolated store would lose the clearance cookies sources rely on.
-  The non-persistent store keeps nothing but the copied cookies. `cookieStorage = null` gives isolated calls.
+  challenge's clearance cookie makes later `Client` requests work. To get that on iOS:
+  - **In, per host.** Before the load, the stored cookies that apply to the URL's host are copied into the call's
+    `WKWebsiteDataStore.nonPersistentDataStore()`: the host's own and its parent domains' (`example.com` and
+    `.example.com` for `www.example.com`), any path, secure or not (a redirect to `https` or another path on the
+    host needs them; `cookiesForURL` would filter by the first URL's path and scheme). The load waits for every
+    `setCookie`, and the wait counts toward the timeout. Not the whole jar: each `setCookie` is a main-thread round
+    trip to the network process, and a large jar used up the timeout before the load.
+  - **Other hosts.** Before each navigation to a host not copied yet (a server redirect, a frame, a script's
+    navigation: `decidePolicyForNavigationAction`, which WebKit also asks for redirects), that host's cookies are
+    copied the same way and the navigation then proceeds. A cookie the store already has (copied for another host,
+    or set by the page) is not copied again. Subresource requests (`fetch`, XHR, images, scripts) to other hosts
+    do not ask the navigation delegate, so they get no stored cookies, only what the page's own responses set.
+  - **Baseline.** Right after each copy, the store is read back (`getAllCookies`); what WebKit made of the copied
+    cookies is the baseline the page's changes are measured against. A cookie WebKit rejected or normalised on the
+    way in is therefore not mistaken for one the page deleted.
+  - **Out, only what the page changed.** After the call (also after a timeout or a cancellation, bounded to 2 s),
+    the store is read again: cookies that are new or differ from the baseline (value, expiry, secure, HTTP-only) are
+    written to the storage; cookies of the baseline that are gone are deleted from the storage only if they had not
+    expired meanwhile (the storage expires its own copy) and the storage still has the value that was copied in (a
+    value `DarwinHostHttp` stored meanwhile wins). Cookies the page did not touch are not written back. The diff
+    covers only the copied cookies and those the page set, so it is as small as the copy in. Cookies are matched by
+    name, domain and path; the domain keeps its leading dot, so a host-only `example.com` cookie and a domain
+    `.example.com` cookie of the same name and path stay two cookies. The copy back waits 250 ms first:
+    `document.cookie` changes reach the store from the web content process on another connection than the UI
+    process's read, and a deletion the page made just before reporting was missed without the wait (run
+    45585550783).
+  - **When.** A call that reported a value copies back before it returns (about 250 ms), so the source's next
+    `Client` request sends the page's cookies. A call that timed out or was cancelled returns at its deadline and
+    copies back afterwards, in the host's own scope; the web view is torn down and the permit released first, so
+    a waiting call gets its web view at once. The data store lives until that copy ends.
+  - The other choices: the default (persistent) data store would be a second persistent cookie jar that drifts
+    from the HTTP client's, and would keep the sites' local storage, caches and service workers between calls and
+    launches; an isolated store would lose the clearance cookies sources rely on. The non-persistent store keeps
+    nothing but the copied cookies. `cookieStorage = null` gives isolated calls.
 - **Teardown** (on the main thread, whatever ended the call): the navigation delegate is removed, loading stops, the
   message handler and user scripts are removed (the content controller retains its handler), the page is replaced
   by an empty one (so its scripts, timers and requests stop now, not whenever the view is deallocated) and the view
-  leaves its window. Nothing in the host keeps a reference to the web view afterwards; when the `WKWebView` object
-  itself is freed is up to Kotlin/Native's garbage collector and WebKit (see "Not covered").
+  leaves its window. Nothing in the host keeps a reference to the web view afterwards. Creation and teardown run in
+  their own autorelease pool, so what WebKit autoreleases there is released with the call, not when the main
+  thread's pool is drained.
 - **Headers** are set on the first request only, as flutter_inappwebview does: WebKit sends its own `User-Agent` and
   the data store's cookies on later requests (a `Cookie` header the source passes is not copied into the store).
   No `customUserAgent` is set, so `navigator.userAgent` is WebKit's.
@@ -455,7 +487,9 @@ So the job runs the WebKit tests a second time inside an app: the step "WebKit t
 `Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and starts it with `simctl launch
 --console-pty`, passing `--ktest_filter` for the three WebKit test classes and `KMK_WEBKIT_REQUIRED=1`. Launched as an
 app (still without `UIApplicationMain`, so offscreen), WebKit works. The step fails unless the runner prints
-`[  PASSED  ] <n> tests` and no `[  FAILED  ]` or `SKIPPED:` line.
+`[  PASSED  ] <n> tests` with `n` at least the expected count (`MIN_TESTS`, 25 now; raise it with new tests) and no
+`[  FAILED  ]` or `SKIPPED:` line. The simulator is the newest iPhone by runtime version, compared as numbers
+(`iOS-18-10` after `iOS-18-2`).
 
 In the plain test run, the WebKit tests use `webKitTest` (`iosTest/.../WebKitTest.kt`): once per process it checks
 that a web view runs JavaScript (a `loadHTMLString` page read back with `evaluateJavaScript`, 10 s at most). When it
@@ -464,17 +498,20 @@ where it fails. The tests that need no page (URL refusal, timeout, the message l
 
 ### Tests (`iosTest`, simulator only)
 
-- `WKWebViewHostWebViewTest` (13): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
+- `WKWebViewHostWebViewTest` (17): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
   in order after the load and see the page and the `flutterInAppWebViewPlatformReady` event, the reported value is
   returned, a header reaches the server, a URL with a space and a non-ASCII letter is percent-encoded; a page that
   reports from its own timer (300 ms, offscreen); a report from an iframe; scripts run on a 404 page; a non-string
   `setResponse` rejects the page's promise and the call goes on (another handler resolves), a throwing script is
-  logged; a timeout returns `""` after about 1 s; a refused connection returns `""` at once and logs the failure;
+  logged; a timeout returns `""` after about 1 s (under 3 s, the copy back comes after); a refused connection returns `""` at once and logs the failure;
   `file:`, `data:`, `javascript:`, `about:`, `ftp:`, relative, empty and host-less URLs refused before a web view
   exists; cancellation returns at once, leaves no web view, and the page's 100 ms `fetch` ticker stops; after a call
-  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page (whether it is
-  deallocated is printed, not asserted); cookies copied in from and back to
-  the shared storage (one sent with the page request, one set by the page, one deleted by it); with
+  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page, and it is
+  deallocated within 8 s (asserted); cookies copied in from and back to
+  the shared storage (one sent with the page request, one set by the page, one deleted by it); a redirect from
+  `127.0.0.1` to `localhost` carries `localhost`'s stored cookie and not `127.0.0.1`'s; a cookie that expires during
+  the call and one the page deletes after the app stored a new value are both kept with the app's value; cookie keys
+  keep the leading dot, and which domains apply to a host; with
   `cookieStorage = null` nothing is shared, even between two calls; 4 concurrent calls run at most 2 web views.
 - `WebViewBridgeTest` (6): the message logic without WebKit: `setResponse` values, rejections, other handlers,
   message bodies, the bridge script's names, URL encoding.
