@@ -166,6 +166,8 @@ Reference: `domain/src/main/java/tachiyomi/domain/category/interactor/HideCatego
 
 Desktop app (`:desktopApp`, Compose Multiplatform): run, test, package and its CI in `docs/kmp-desktop/BUILDING.md`.
 
+**Self-hosted Mac runner:** the maintainer's Mac is a GitHub Actions runner (label `self-hosted`). The macOS jobs of `build_desktop.yml` and `build_ios_check.yml` run on it; put new macOS jobs for the KMP work there too, and never let pull requests from forks run on it. Details and rules: `docs/kmp-desktop/BUILDING.md` → "Self-hosted Mac runner".
+
 Build types (`applicationIdSuffix`): `debug` (`.dev`), `release`, `releaseTest` (`.rt`), `foss` (`.foss`), `preview` (`.beta`, CI default), `benchmark` (`.benchmark`).
 
 Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):

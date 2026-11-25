@@ -42,7 +42,10 @@ jobs:
     name: JavaScript source host (iOS compile + simulator tests)
     # Apple silicon: the iOS targets are only declared on a macOS host (source-js/build.gradle.kts), and the
     # iosSimulatorArm64 tests need an arm64 Mac
-    runs-on: 'macos-15'
+    # KMK: runs on the maintainer's own Mac (self-hosted runner, label `self-hosted`; see
+    # docs/kmp-desktop/BUILDING.md "Self-hosted Mac runner"), except for pull requests from forks: their code must
+    # never run on that machine, so they stay on the GitHub-hosted runner
+    runs-on: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) && 'macos-15' || 'self-hosted' }}
     timeout-minutes: 60
 
     steps:

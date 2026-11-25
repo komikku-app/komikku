@@ -11,6 +11,10 @@ non-blocking; they had one failing test (the forged-cancellation message keeps t
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
 commits that added this page.
 
+> Since 2026-11-25 the job runs on the maintainer's self-hosted Mac (label `self-hosted`), except pull requests from
+> forks, which stay on `macos-15`. See [`BUILDING.md`](BUILDING.md#self-hosted-mac-runner). Where this page says
+> `macos-15`, that is now only the fork fallback; Xcode and the simulators are whatever that Mac has installed.
+
 ## What the job checks
 
 Workflow `.github/workflows/build_ios_check.yml`, one job on `macos-15` (GitHub-hosted, Apple silicon):

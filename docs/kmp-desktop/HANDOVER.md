@@ -481,6 +481,9 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **Self-hosted Mac runner (2026-11-25):** the maintainer's Mac runs the macOS jobs of `build_desktop.yml` (Apple
+  silicon entry) and `build_ios_check.yml` (label `self-hosted`; fork pull requests stay on `macos-15`). Rules and how
+  to switch back: [`BUILDING.md`](BUILDING.md#self-hosted-mac-runner). Jobs queue while the Mac is off.
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,
