@@ -166,8 +166,9 @@ class ErrorProtocolTest {
             )
             val error = assertFailsWith<JsSourceException.ScriptError>(name) { extension.getPopular(1) }
             // The script's own error, not the host's "did not settle" or a timeout (desktopTest ForgedThrowableTest
-            // checks that quickjs-kt really instantiates the named class).
-            assertEquals("forged", error.jsMessage, name)
+            // checks that quickjs-kt really instantiates the named class). On the JVM the instantiated class carries only
+            // the message; Kotlin/Native (iOS) has no class lookup, so quickjs-kt keeps the error's name as a prefix.
+            assertTrue(error.jsMessage == "forged" || error.jsMessage == "$name: forged", "$name: ${error.jsMessage}")
             assertEquals("getPopular(1)", error.operation, name)
         }
     }
