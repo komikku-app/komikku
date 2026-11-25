@@ -15,7 +15,8 @@ import platform.Foundation.NSUserDefaults
  * The JavaScript source host of an iOS app: one [JsExtensionHost] with the iOS services, so a Mangayomi source is one
  * call away: `runtime.extension(descriptor, code).getPopular(1)`.
  *
- * - HTTP: [DarwinHostHttp] (NSURLSession, its shared cookie storage) unless [http] is given.
+ * - HTTP: [DarwinHostHttp] (NSURLSession with the shared `NSHTTPCookieStorage`, every cookie accepted) unless [http]
+ *   is given.
  * - Preferences: [NSUserDefaultsHostPreferences], one `NSUserDefaults` suite per source named [suiteName] of its
  *   Komikku id (by default `source_<komikkuId>`, the name of the source's preference file on Android and desktop).
  *   [declaredPreferences] types the stored values once the source's `getSourcePreferences()` is known (the app's store

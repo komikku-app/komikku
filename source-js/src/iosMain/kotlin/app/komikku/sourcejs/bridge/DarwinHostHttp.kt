@@ -19,7 +19,10 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.IOException
 import kotlinx.io.readByteArray
+import platform.Foundation.NSHTTPCookieAcceptPolicy
+import platform.Foundation.NSHTTPCookieStorage
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLSessionConfiguration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
@@ -44,7 +47,11 @@ import kotlin.time.TimeSource
  * - HTTP error statuses are returned; network failures throw. Cancelling the coroutine cancels the
  *   `NSURLSessionTask`. Certificates are verified by NSURLSession (no challenge handler is installed).
  *
- * Cookies are NSURLSession's (`NSHTTPCookieStorage.sharedHTTPCookieStorage`), applied on every hop.
+ * Cookies: the own engine stores and sends them with `NSHTTPCookieStorage.sharedHTTPCookieStorage`, accepting every
+ * cookie like the app's OkHttp cookie jar (Ktor's Darwin engine turns the session's cookie storage off;
+ * [configureCookies] turns it back on). Each hop is its own `NSURLSessionTask` that starts after the previous
+ * response, so a cookie set by a redirect is sent on the next hop. A caller-supplied engine needs [configureCookies]
+ * in its own `configureSession` for the same.
  *
  * @param engine the Ktor engine; tests pass a `MockEngine`. It is not closed by [close] unless this class created it.
  */
@@ -59,7 +66,10 @@ class DarwinHostHttp private constructor(
     /** Over its own Darwin engine (a dedicated `NSURLSession` with a [idleTimeoutSeconds] request idle timeout). */
     constructor(idleTimeoutSeconds: Double = DEFAULT_IDLE_TIMEOUT_SECONDS) : this(
         Darwin.create {
-            configureSession { timeoutIntervalForRequest = idleTimeoutSeconds }
+            configureSession {
+                timeoutIntervalForRequest = idleTimeoutSeconds
+                configureCookies()
+            }
         },
         ownsEngine = true,
     )
@@ -210,6 +220,17 @@ class DarwinHostHttp private constructor(
     }
 
     companion object {
+        /**
+         * Stores and sends cookies with `NSHTTPCookieStorage.sharedHTTPCookieStorage`, accepting all of them like the
+         * app's OkHttp cookie jar. Ktor's Darwin engine sets the storage to `nil` before running `configureSession`,
+         * so an engine without this has no cookies at all.
+         */
+        fun NSURLSessionConfiguration.configureCookies() {
+            HTTPCookieStorage = NSHTTPCookieStorage.sharedHTTPCookieStorage
+            HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicy.NSHTTPCookieAcceptPolicyAlways
+            HTTPShouldSetCookies = true
+        }
+
         /** NSURLSession's request idle timeout of the default engine, like the app's OkHttp read timeout. */
         const val DEFAULT_IDLE_TIMEOUT_SECONDS = 30.0
 

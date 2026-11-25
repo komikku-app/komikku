@@ -7,6 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.IOException
+import platform.Foundation.NSHTTPCookie
+import platform.Foundation.NSHTTPCookieStorage
+import platform.Foundation.NSURL
+import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,11 +23,14 @@ import kotlin.test.assertTrue
  * [DarwinHostHttp] on its real engine (NSURLSession) against [LoopbackHttpServer] on `127.0.0.1` inside the simulator
  * test process (App Transport Security does not apply to IP addresses): what the mock engine cannot show, i.e. the
  * session's own encoding negotiation and decompression, Foundation's joined response headers, no native redirects,
- * timeouts and cancellation of a real task.
+ * cookies, timeouts and cancellation of a real task.
  */
 class DarwinHostHttpServerTest {
 
     private val requestSeen = CompletableDeferred<Unit>()
+
+    /** This test's cookie names (the shared cookie storage outlives the test). */
+    private val cookie = "kmk${Random.nextInt(0, Int.MAX_VALUE)}"
     private val server = LoopbackHttpServer { request ->
         when (request.target) {
             "/echo" -> Response(
@@ -45,6 +52,9 @@ class DarwinHostHttpServerTest {
                 Response(200, body = "late".encodeToByteArray(), delaySeconds = 5.0)
             }
             "/big" -> Response(200, body = "x".repeat(2048).encodeToByteArray())
+            "/set-cookie" -> Response(200, listOf("Set-Cookie" to "$cookie=one; Path=/"))
+            "/redirect-setting-cookie" -> Response(302, listOf("Set-Cookie" to "${cookie}_hop=two; Path=/", "Location" to "/cookie"))
+            "/cookie" -> Response(200, body = request.headers["cookie"].orEmpty().encodeToByteArray())
             else -> Response(404)
         }
     }
@@ -55,6 +65,11 @@ class DarwinHostHttpServerTest {
     fun stop() {
         http.close()
         server.close()
+        val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
+        storage.cookiesForURL(NSURL(string = base)).orEmpty()
+            .filterIsInstance<NSHTTPCookie>()
+            .filter { it.name.startsWith(cookie) }
+            .forEach { storage.deleteCookie(it) }
     }
 
     @Test
@@ -91,6 +106,18 @@ class DarwinHostHttpServerTest {
         // NSURLSession does not follow it by itself.
         val notFollowed = http.execute(HostHttpRequest("GET", "$base/start", emptyList(), null, followRedirects = false))
         assertEquals(302, notFollowed.statusCode)
+    }
+
+    @Test
+    fun cookiesAreStoredAndSentOnEveryHop() = timedTest {
+        http.execute(HostHttpRequest("GET", "$base/set-cookie", emptyList(), null))
+        val sent = http.execute(HostHttpRequest("GET", "$base/cookie", emptyList(), null)).body.decodeToString()
+        assertTrue("$cookie=one" in sent, sent)
+        // The redirect's cookie reaches the next hop, which is a request of its own.
+        val afterRedirect = http.execute(HostHttpRequest("GET", "$base/redirect-setting-cookie", emptyList(), null))
+        val sentAfterRedirect = afterRedirect.body.decodeToString()
+        assertEquals(200, afterRedirect.statusCode)
+        assertTrue("${cookie}_hop=two" in sentAfterRedirect && "$cookie=one" in sentAfterRedirect, sentAfterRedirect)
     }
 
     @Test

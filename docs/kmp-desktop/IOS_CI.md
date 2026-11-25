@@ -130,7 +130,14 @@ desktop do not see Ktor.
   against the request URL; up to 20 follow-ups (`Too many follow-up requests: 21`); 307 / 308 (and `PROPFIND`) keep
   method and body, the others turn into a body-less `GET` without `Content-Type` / `Content-Length` /
   `Transfer-Encoding`; `Authorization` dropped when scheme, host or port change; HTTPS → HTTP followed (OkHttp's
-  `followSslRedirects` default). Cookies are the session's (`NSHTTPCookieStorage.sharedHTTPCookieStorage`), per hop.
+  `followSslRedirects` default).
+- **Cookies: the app's `NSHTTPCookieStorage.sharedHTTPCookieStorage`.** Ktor's Darwin engine sets the session's
+  cookie storage to `nil` before it runs `configureSession` (`createSession` in `DarwinSession.kt`), so without more
+  every `Set-Cookie` is dropped. `DarwinHostHttp`'s own engine calls `DarwinHostHttp.configureCookies()` there: the
+  shared storage, accept policy `Always` (the app's OkHttp jar, `AndroidCookieJar`, keeps every cookie too) and
+  `HTTPShouldSetCookies`. Each redirect hop is its own `NSURLSessionTask` started after the previous response, so a
+  cookie set on a redirect is sent on the next hop. A caller-supplied Darwin engine needs `configureCookies()` in its
+  own `configureSession`.
 - **Timeout.** `timeoutMillis` bounds the whole call (hops and body) like OkHttp's call timeout, with a coroutine
   timeout instead of Ktor's `HttpTimeout`, so it fails with an `IOException("timeout")` like OkHttp's
   `InterruptedIOException`. Without it, the default engine's NSURLSession idle timeout is 30 s
@@ -155,10 +162,11 @@ desktop do not see Ktor.
   method, `Accept-Encoding` dropped and no added `Accept`, body rules, raw bytes, redirects followed or not (relative
   location), OkHttp's method / header changes on 302 / 307 / cross-host, the 20 follow-up limit, the timeout, the
   body cap (declared, streamed, exact, unbounded), cancellation reaching the engine, a source through `Client`.
-- `DarwinHostHttpServerTest` (5): the real Darwin engine against `LoopbackHttpServer`, a small HTTP/1.1 server on
+- `DarwinHostHttpServerTest` (6): the real Darwin engine against `LoopbackHttpServer`, a small HTTP/1.1 server on
   POSIX sockets and `NSThread`s inside the simulator test process, on `127.0.0.1` (App Transport Security does not
   apply to IP addresses): the session's own `Accept-Encoding`, repeated response headers, gzip decompressed with the
-  encoding headers gone, no native redirects, timeout and body cap, cancellation of a real task. A Ktor CIO server
+  encoding headers gone, no native redirects, cookies stored and sent (also on a redirect hop), timeout and body cap,
+  cancellation of a real task. A Ktor CIO server
   was tried first and never started in the simulator process (every start timed out, run 45544362098), so the test
   server has no dependency.
 - The iOS tests run in `timedTest` (a `runBlocking` with a 30 s limit), and the native test tasks log each test's
@@ -177,5 +185,5 @@ desktop do not see Ktor.
   installed sources (index fetch, install, hash check, I4 on JVM) has no iOS twin yet: `repo/` parsing is common,
   the download and file cache are not.
 - No WebView (`evaluateJavascriptViaWebview` still fails as unsupported; a `WKWebView` `HostWebView` is an I6 item).
-- Not covered on iOS: NSURLSession's cookie policy versus the app's (`NetworkHelper`'s cookie jar, Cloudflare
-  interceptor, DNS over HTTPS and rate limits have no iOS counterpart); proxy settings are the system's.
+- Not covered on iOS: `NetworkHelper`'s Cloudflare interceptor, DNS over HTTPS and rate limits have no iOS
+  counterpart (cookies are the shared `NSHTTPCookieStorage`, see above); proxy settings are the system's.
