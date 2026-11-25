@@ -4131,6 +4131,85 @@ Verification (`--max-workers=2 --console=plain`, `./gradlew --stop` before the f
 timing-sensitive classes included) and `:desktop:android-compat:test` (7 classes, 36 tests, 0 failures): all pass.
 Skipped (time): none.
 
+## M1 — first macOS CI build
+
+Goal: a `.dmg` out of CI that the maintainer can download and test, plus test instructions
+([`TESTING_MAC.md`](TESTING_MAC.md)). No new features.
+
+### Changed
+
+| Commit | Change |
+|--------|--------|
+| `d9e544a` | `build_desktop.yml` gets a **temporary** `push` trigger (KMK block): branch `claude/kmp-multiplatform-support`, `paths:` only the workflow file and the marker file `.github/desktop-build-trigger` (bump its counter to start a run). Reason: a dispatch-only workflow that is not on the default branch is not registered and cannot be started (`gh api …/actions/workflows` did not list it). `plan` forces release mode `none` for any non-tag push (`github.ref_type != tag`), whatever `DESKTOP_RELEASE_MODE` says. The `macos-15-intel` job is `continue-on-error` when the mode is `none` (matrix `optional`), because the label could not be checked up front; a release run still needs every job. Remove the trigger and the marker file when the port reaches master |
+| `a1d10c5` | The Intel job's `continue-on-error` removed again: the label got a runner and built in run 45623103294 |
+| `118e3df` | No `TargetFormat.AppImage`: its `packageAppImage` writes `binaries/main/app`, the same directory `createDistributable` writes and `packageDmg` / `packageDeb` / `packageRpm` read, and Gradle stopped the first macOS run on the undeclared overlap. The Linux `.tar.gz` is packed from `createDistributable`'s directory (same contents), which the workflow now names explicitly on Linux. BUILDING.md updated |
+
+### CI runs (Desktop builder)
+
+| Run | Commit | Result |
+|-----|--------|--------|
+| [45621459645](https://github.com/komikku-app/komikku/actions/runs/45621459645) | `d9e544a` | `plan` ok. **Linux:** failed in "Version and architecture" (Gradle could not resolve `kotlin-stdlib` for `buildSrc`: Maven Central answered 429 Too Many Requests; transient, nothing to fix). **macOS arm64:** `packageDmg` refused by Gradle (implicit dependency on `packageAppImage`'s output) → `118e3df`. **Windows:** green (MSI + EXE artifact, 338 MB). **macOS Intel:** got a runner (so the `macos-15-intel` label exists), cancelled by the next push |
+| [45623103294](https://github.com/komikku-app/komikku/actions/runs/45623103294) | `d158199` (= `118e3df` + an iOS merge) | **macOS arm64: green**, artifact `Komikku-desktop-macos-ARM64-d158199e…` with `Komikku-1.14.1-macos-arm64.dmg` (183 MB) and its `SHA256SUMS` (checksum checked after download). Windows, Linux (tests + DEB / RPM / `.tar.gz`, 502 MB) and **macOS Intel** (`Komikku-1.14.1-macos-x64.dmg`, artifact 183 MB) green: all four jobs and their artifacts |
+
+### Static review (before the first run)
+
+Checked and fine:
+- Packaging: `packageVersion` 1.14.1 (MAJOR > 0, as the DMG needs), bundle ID `app.komikku`, category Entertainment,
+  `dockName`, `icons/komikku.icns` present and referenced; signing / notarization only with their settings.
+- Native libraries (from the resolved `runtimeClasspath` jars): `androidx.sqlite:sqlite-bundled-jvm:2.6.2`
+  (`natives/osx_arm64` + `osx_x64`), `io.github.dokar3:quickjs-kt-jvm:1.0.15` (`jni/macos_aarch64` + `macos_x64`);
+  the arm64 dylibs of both carry a code signature (`LC_CODE_SIGNATURE`, needed to load on Apple silicon), the x64 ones
+  none (not required on Intel). Skiko / Compose come from `ComposePlugin.DesktopDependencies.currentOs`, resolved on
+  the build host (nothing hard-codes `linux-x64`; the macOS run resolved its own). No other JNI library (junrar,
+  `org.brotli:dec` are pure Java; images are decoded by Skia).
+- Code: data folder `~/Library/Application Support/Komikku` (`DesktopDirs`), log in `<data>/logs`; shortcuts use Cmd
+  on macOS (`DesktopShortcuts`), list / reader multi-select and zoom accept Ctrl or Cmd.
+- Workflow: JDK from `.github/.java-version` (21), the asset script ran on the macOS runner (checksums via
+  `sha256sum` or `shasum -a 256`; no `sed -i`, `readlink -f` or bash-4-only syntax).
+
+Suspect, left for the first real test on a Mac (TESTING_MAC.md lists the steps that show them):
+- **Gatekeeper / signature:** the app is unsigned. Whether jpackage's ad-hoc signature of the launcher is enough to
+  start on Apple silicon after the quarantine flag is removed is not verified (`codesign -dv /Applications/Komikku.app`
+  shows it).
+- **Cmd+Q** goes through AWT's default quit handler, which may exit without the bounded `stopDesktopWork` after
+  `application {}` (shutdown hooks still run: cookies, logs).
+- **Tray:** a colour PNG in the menu bar (not a template image, so it does not follow a dark / light menu bar);
+  `TrayIcon.displayMessage` on current macOS may show nothing (AWT uses a deprecated notification API there).
+- **Folder chooser** is Swing's `JFileChooser` (not the native panel; `apple.awt.fileDialogForDirectories` would give
+  the native one).
+- **App lock:** "Lock when idle" reacts to minimising only; Cmd+H (hide) is not seen as the app going to the background.
+- **jlink modules:** no `java.sql`, `java.naming`, `jdk.security.auth`, `java.security.jgss`: nothing in the app needs
+  them (jdeps), an extension might (then `NoClassDefFoundError` in the log; see the comment at `modules(...)`).
+- No macOS menu bar items beyond the system's default app menu; no file associations.
+
+### Not verified
+
+The app has not been started on a Mac by anyone; DMG layout, icon, first start, Gatekeeper behaviour and everything
+in TESTING_MAC.md's test pass are open. Linux / Intel built green in CI but are as untried as the macOS arm64 build.
+
+## Review fixes (P23 fixes)
+
+Findings of the review of `80d94dd..25a39cd` (the P23 review fixes), each its own commit (2 and 4 share one: same
+function, same file).
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | `DesktopCookieManager.removeForHost(…, includeSubdomains = true)` on a shared parent host (`github.io`, `blogspot.com`) took every unrelated `*.github.io` site's cookies | Fixed: the subdomain match only when the host has a registrable domain (`HttpUrl.topPrivateDomain() != null`, OkHttp's public suffix list, which includes the private section with `github.io` / `blogspot.com`); a public suffix host loses only its own cookies. A site on such a host (`foo.github.io`) still takes its own subdomains. Test: `CookieManagerTest` "host-wide removal with subdomains of a public suffix host …", failed first | `8329c55` |
+| 2 | `initExtensions` published the loaded entries without statuses; a store refresh that finished before the initial load lost update / obsolete / store until a manual refresh | Fixed: the last refresh's extensions are kept (`lastAvailableExtensions`, written before the refresh updates the entries, read inside `updateInstalled`'s lock), and the initial load publishes `statusesOf(loaded, last)` | `cd5e31d` |
+| 3 | `DesktopWebView.clearCookies(url, includeSubdomains = true)` forgot the Cloudflare User-Agent override and failure of the exact host only | Fixed: `CloudflareHostState.forgetHost(host, includeSubdomains)` drops the overrides and failures of `*.<host>` too, with the same public-suffix guard as 1 (decided in `DesktopWebView`). Test: `DesktopWebViewTest` "clearing with subdomains forgets the subdomains' Cloudflare state too, not on a public suffix", failed first | `c9a90b1` |
+| 4 | `updatePendingUpdatesCount()` read the installed map and set the preference outside `entriesLock`, so a refresh could write a stale count after an install | Fixed: `updateInstalled` sets the count from the entries it publishes, inside the lock; the separate calls are gone (the initial load now sets it too). No deterministic race test (needs an interleaving hook); `DesktopExtensionManagerTest` checks the count after refresh and update as before | `cd5e31d` |
+| 5 | `removeHostCookies` ignored `includeSubdomains` without the desktop `CookieManager` | A plain `CookieManager` cannot list other hosts' cookies, so they stay on that path: now logged with `xLogW`, documented in the KDoc. No test (the app always runs with `DesktopCookieManager`) | `77710b7` |
+
+Tests: `CookieManagerTest` +1, `DesktopWebViewTest` +1, `DesktopExtensionManagerTest` +1 ("a store refresh that ends
+before the initial load still sets the loaded entries' statuses": the initial load is held on a gated executor while
+`findAvailableExtensions` runs; failed first with `hasUpdate` false). The three new tests were run against the old
+code (fail) and the new code (pass).
+
+Verification (`--max-workers=2 --console=plain`, on `cd5e31d`): targeted `CookieManagerTest`, `DesktopWebViewTest`,
+`DesktopExtensionManagerTest` pass; full `:desktopApp:test` 81 classes, 373 tests, 0 failures (was 371: +2) and
+`:desktop:android-compat:test` 7 classes, 37 tests, 0 failures (was 36: +1); `spotlessCheck` passes. The CI run on
+`a1d10c5` (Desktop builder, Linux job) runs `:desktopApp:test` again. Skipped (time): none.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
