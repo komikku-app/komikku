@@ -3,7 +3,7 @@
 Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
 section below); 132 with the I5a review fixes (cookies, non-HTTP URLs, `HEAD` bodies, redirect resolution; run
-45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below). Runs #1–#2 looked green only because the job was
+45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below); 150 with the I5b review fixes (run 45574226158, commit `97ea1bb4fd`). Runs #1–#2 looked green only because the job was
 non-blocking; they had one failing test (the forged-cancellation message keeps the error name on iOS), fixed in
 `d21b68cfc4`. The job now blocks (no `continue-on-error`). PLAN.md section 8.4, step I5, should reference this page once it is
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
@@ -282,8 +282,8 @@ library.
 
 ### Tests (`iosTest/.../store/IosJsSourceStoreTest`, 18, simulator only)
 
-The first 13 passed in run 45570113228 (job `success`, 145 `:source-js` tests in total, none failed); the 5 added
-with the review fixes below are recorded there.
+The first 13 passed in run 45570113228 (job `success`, 145 `:source-js` tests in total, none failed); all 18,
+with the 5 added for the review fixes below, passed in run 45574226158 (job `success`, 150 in total, none failed).
 
 All with `FakeHostHttp` (a URL → response table that records requests and can enforce the body cap like
 `DarwinHostHttp`) and a temporary root; no network:
