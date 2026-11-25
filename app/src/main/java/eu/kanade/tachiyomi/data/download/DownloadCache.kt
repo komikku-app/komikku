@@ -75,6 +75,12 @@ class DownloadCache(
     private val scope = CoroutineScope(Dispatchers.IO)
 
     // KMK -->
+    /** Set by [cancelAndJoin]: the cache no longer changes, renews or touches its disk file. */
+    @Volatile
+    private var closed = false
+    // KMK <--
+
+    // KMK -->
     private val downloadPreferences: DownloadPreferences = Injekt.get()
     // KMK <--
 
@@ -216,6 +222,9 @@ class DownloadCache(
      * @param manga the manga of the chapter.
      */
     suspend fun addChapter(chapterDirName: String, mangaUniFile: UniFile, manga: Manga) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             // Retrieve the cached source directory or cache a new one
             var sourceDir = rootDownloadsDir.sourceDirs[manga.source]
@@ -248,6 +257,9 @@ class DownloadCache(
      * @param manga the manga of the chapter.
      */
     suspend fun removeChapter(chapter: Chapter, manga: Manga) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
             val mangaDir = sourceDir.mangaDirs[
@@ -269,6 +281,9 @@ class DownloadCache(
 
     // SY -->
     suspend fun removeFolders(folders: List<String>, manga: Manga) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
             val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(manga.ogTitle)] ?: return
@@ -289,6 +304,9 @@ class DownloadCache(
      * @param manga the manga of the chapter.
      */
     suspend fun removeChapters(chapters: List<Chapter>, manga: Manga) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
             val mangaDir = sourceDir.mangaDirs[
@@ -316,6 +334,9 @@ class DownloadCache(
      * @param manga the manga to remove.
      */
     suspend fun removeManga(manga: Manga) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
             val mangaDirName = provider.getMangaDirName(/* SY --> */ manga.ogTitle /* SY <-- */)
@@ -335,6 +356,9 @@ class DownloadCache(
      * @param newTitle the manga's new title.
      */
     suspend fun renameManga(manga: Manga, mangaUniFile: UniFile, newTitle: String) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             val sourceDir = rootDownloadsDir.sourceDirs[manga.source] ?: return
             val oldMangaDirName = provider.getMangaDirName(/* KMK --> */ manga.ogTitle /* KMK --> */)
@@ -363,6 +387,9 @@ class DownloadCache(
     }
 
     suspend fun removeSource(source: Source) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         rootDownloadsDirMutex.withLock {
             rootDownloadsDir.sourceDirs -= source.id
         }
@@ -371,6 +398,9 @@ class DownloadCache(
     }
 
     fun invalidateCache() {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         lastRenew = 0L
         renewalJob?.cancel()
         diskCacheFile.delete()
@@ -383,6 +413,7 @@ class DownloadCache(
 
     // KMK -->
     fun cleanInvalidDownloads() {
+        if (closed) return
         lastRenew = 0L
         renewalJob?.cancel()
         diskCacheFile.delete()
@@ -398,6 +429,9 @@ class DownloadCache(
         renewInterval: Long = this.renewInterval,
         // KMK <--
     ) {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         // Avoid renewing cache if in the process nor too often
         if (lastRenew + renewInterval >= System.currentTimeMillis() ||
             // KMK -->
@@ -490,6 +524,9 @@ class DownloadCache(
     }
 
     private fun notifyChanges() {
+        // KMK -->
+        if (closed) return
+        // KMK <--
         scope.launchNonCancellable {
             _changes.send(Unit)
         }
@@ -518,12 +555,16 @@ class DownloadCache(
 
     // KMK -->
     /**
-     * Stops the cache's background work (renewal, the delayed disk cache write) and waits for it to end, so nothing
-     * writes into [Context.getCacheDir] afterwards. The cache is unusable after this. Desktop: before its data folder
-     * is deleted (tests).
+     * Desktop teardown only (its data folder is about to be deleted, tests): closes the cache, so its public mutating
+     * calls and renewals do nothing from now on, stops its background work (renewal, the delayed disk cache write)
+     * and waits for it to end, so nothing writes into [Context.getCacheDir] afterwards. Idempotent; the cache stays
+     * readable (its last index) but never changes again. `internal`: the desktop reaches it through the `:app-shared`
+     * desktop wrapper `stopForDesktopTeardown()`; Android never calls it.
      */
-    suspend fun cancelAndJoin() {
+    internal suspend fun cancelAndJoin() {
+        closed = true
         scope.coroutineContext.job.cancelAndJoin()
+        _isInitializing.value = false
     }
     // KMK <--
 }

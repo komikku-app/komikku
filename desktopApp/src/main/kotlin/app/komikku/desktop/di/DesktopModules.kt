@@ -75,6 +75,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
+import eu.kanade.tachiyomi.data.download.stopForDesktopTeardown
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -328,7 +329,9 @@ class DesktopDomainModule(
         addSingletonFactory { DesktopDownloadEvents(showMessage = { app.toast(it) }) }
         addSingletonFactory<DownloadNotificationSink> { get<DesktopDownloadEvents>() }
         // Its index is written to `cache/` a second after each change, from its own scope
-        addSingletonFactory { DownloadCache(app).also { cache -> DesktopInjekt.onCreatedWriter { cache.cancelAndJoin() } } }
+        addSingletonFactory {
+            DownloadCache(app).also { cache -> DesktopInjekt.onCreatedWriter { cache.stopForDesktopTeardown() } }
+        }
         addSingletonFactory { DownloadManager(app) }
         addFactory { GetExcludedScanlators(get()) }
         addFactory { SyncChaptersWithSource(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
