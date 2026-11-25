@@ -3,7 +3,8 @@ name: Desktop builder
 # (-Penable-updater), names them as the update check expects (Komikku-<version>-<os>-<arch>.<ext>) with SHA-256 sums,
 # uploads them as workflow artifacts and, only when a maintainer asks for it, attaches them to a GitHub release
 # (never published by this workflow, never touching other assets). Signing / notarization run only when their secrets
-# are set. Never executed yet; see docs/kmp-desktop/BUILDING.md "Release pipeline" and "Signing".
+# are set. Branch runs so far build only (release mode none; first green runs 45623103294 and 45625758564); the release
+# jobs have not attached to a release yet. See docs/kmp-desktop/BUILDING.md "Release pipeline" and "Signing".
 
 on:
   workflow_dispatch:
@@ -34,12 +35,12 @@ on:
     # KMK -->
     # Temporary, for the first CI builds of the desktop installers (macOS bring-up, docs/kmp-desktop/TESTING_MAC.md):
     # a dispatch-only workflow that is not on the default branch cannot be started, so a push to this branch that
-    # changes this file or the marker file .github/desktop-build-trigger starts a run. Branch pushes never release
-    # (`plan` forces mode none). Remove this trigger (and the marker file) when the port reaches master.
+    # changes the marker file .github/desktop-build-trigger starts a run (edits of this workflow do not: bump the marker
+    # to test them). Branch pushes never release (`plan` forces mode none). Remove this trigger (and the marker file)
+    # when the port reaches master.
     branches:
       - claude/kmp-multiplatform-support
     paths:
-      - '.github/workflows/build_desktop.yml'
       - '.github/desktop-build-trigger'
     # KMK <--
 

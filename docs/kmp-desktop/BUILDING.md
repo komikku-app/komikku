@@ -157,8 +157,9 @@ pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).
 `build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — first run
 in M1 ([`PROGRESS.md`](PROGRESS.md#m1--first-macos-ci-build)), artifacts only; the release job has never run.
 **Temporary bring-up trigger:** while the port is on `claude/kmp-multiplatform-support`, a push to that branch that
-changes the workflow file or `.github/desktop-build-trigger` (bump the counter in it) starts a run with release mode
-`none` (a dispatch-only workflow off the default branch cannot be started); remove both when the port reaches master.
+changes `.github/desktop-build-trigger` (bump the counter in it) starts a run with release mode `none` (a
+dispatch-only workflow off the default branch cannot be started; edits of the workflow alone do not start one); remove
+the trigger and the marker file when the port reaches master.
 
 - **Jobs:** `plan` (`contents: read`: decides the mode and tag and, in a release mode, checks that the release tag
   points to the run's commit), `package` (`contents: read`; one job per runner: `ubuntu-24.04` x64, `windows-2022`

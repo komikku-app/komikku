@@ -13,7 +13,7 @@ Status of the CI build: see [Getting the build](#getting-the-build) (the green r
 
 The workflow **Desktop builder** (`.github/workflows/build_desktop.yml`) packages the app on GitHub's macOS runners.
 While the port is on the branch `claude/kmp-multiplatform-support`, a run starts when a push to that branch changes
-`.github/desktop-build-trigger` (bump the counter in it) or the workflow file; branch runs never touch a release.
+`.github/desktop-build-trigger` (bump the counter in it); branch runs never touch a release.
 
 **Build to test:** <https://github.com/komikku-app/komikku/actions/runs/45625758564> (commit `a1d10c5`, all four jobs
 green; the first green run was <https://github.com/komikku-app/komikku/actions/runs/45623103294>, without the P23
