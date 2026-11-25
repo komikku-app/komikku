@@ -483,13 +483,13 @@ mark the residual path in both modules.
 
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
-  First green run: <https://github.com/komikku-app/komikku/actions/runs/45623103294> (macOS arm64 + x64 `.dmg`,
+  Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,
   Windows `.msi` / `.exe`, Linux `.deb` / `.rpm` / `.tar.gz`). The maintainer's Mac test guide:
   [`TESTING_MAC.md`](TESTING_MAC.md). Nobody has opened the app on a Mac yet; the suspects are listed in PROGRESS M1.
   Remove the trigger and the marker file before the port goes to master.
 - **Review fixes (P23 fixes):** the five findings on `80d94dd..25a39cd` are fixed (PROGRESS "Review fixes (P23
   fixes)"); not reviewed yet.
-- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the M1 docs commit (last code commit `cd5e31d`), in
+- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the M1 docs commit (last code commit `cd5e31d`, last CI change `a1d10c5`), in
   sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
   `.github/workflows/build_ios_check.yml`, `docs/kmp-desktop/IOS_CI.md`): leave those files alone, merge (never rebase or
   force) when a push is rejected.

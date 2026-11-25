@@ -4150,6 +4150,7 @@ Goal: a `.dmg` out of CI that the maintainer can download and test, plus test in
 |-----|--------|--------|
 | [45621459645](https://github.com/komikku-app/komikku/actions/runs/45621459645) | `d9e544a` | `plan` ok. **Linux:** failed in "Version and architecture" (Gradle could not resolve `kotlin-stdlib` for `buildSrc`: Maven Central answered 429 Too Many Requests; transient, nothing to fix). **macOS arm64:** `packageDmg` refused by Gradle (implicit dependency on `packageAppImage`'s output) → `118e3df`. **Windows:** green (MSI + EXE artifact, 338 MB). **macOS Intel:** got a runner (so the `macos-15-intel` label exists), cancelled by the next push |
 | [45623103294](https://github.com/komikku-app/komikku/actions/runs/45623103294) | `d158199` (= `118e3df` + an iOS merge) | **macOS arm64: green**, artifact `Komikku-desktop-macos-ARM64-d158199e…` with `Komikku-1.14.1-macos-arm64.dmg` (183 MB) and its `SHA256SUMS` (checksum checked after download). Windows, Linux (tests + DEB / RPM / `.tar.gz`, 502 MB) and **macOS Intel** (`Komikku-1.14.1-macos-x64.dmg`, artifact 183 MB) green: all four jobs and their artifacts |
+| [45625758564](https://github.com/komikku-app/komikku/actions/runs/45625758564) | `a1d10c5` (with the P23 fixes review and the Intel job no longer optional) | All four jobs green (Linux with `:desktopApp:test`, `:core:quickjs:desktopTest`, `:source-js:desktopTest`); artifacts `Komikku-desktop-{macos-ARM64,macos-X64,windows-X64,linux-X64}-a1d10c59…`. **The build to test** (TESTING_MAC.md) |
 
 ### Static review (before the first run)
 
@@ -4208,7 +4209,7 @@ code (fail) and the new code (pass).
 Verification (`--max-workers=2 --console=plain`, on `cd5e31d`): targeted `CookieManagerTest`, `DesktopWebViewTest`,
 `DesktopExtensionManagerTest` pass; full `:desktopApp:test` 81 classes, 373 tests, 0 failures (was 371: +2) and
 `:desktop:android-compat:test` 7 classes, 37 tests, 0 failures (was 36: +1); `spotlessCheck` passes. The CI run on
-`a1d10c5` (Desktop builder, Linux job) runs `:desktopApp:test` again. Skipped (time): none.
+`a1d10c5` (Desktop builder, Linux job, run 45625758564) ran `:desktopApp:test` again: green. Skipped (time): none.
 
 ## Remaining parity gaps
 

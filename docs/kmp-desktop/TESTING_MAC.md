@@ -15,8 +15,9 @@ The workflow **Desktop builder** (`.github/workflows/build_desktop.yml`) package
 While the port is on the branch `claude/kmp-multiplatform-support`, a run starts when a push to that branch changes
 `.github/desktop-build-trigger` (bump the counter in it) or the workflow file; branch runs never touch a release.
 
-**First green run:** <https://github.com/komikku-app/komikku/actions/runs/45623103294> (commit `d158199`, all four
-jobs green). Later runs of the branch are listed under Actions → "Desktop builder" → filter by branch.
+**Build to test:** <https://github.com/komikku-app/komikku/actions/runs/45625758564> (commit `a1d10c5`, all four jobs
+green; the first green run was <https://github.com/komikku-app/komikku/actions/runs/45623103294>, without the P23
+review fixes). Later runs of the branch are listed under Actions → "Desktop builder" → filter by branch.
 
 1. Open the run on GitHub (Actions → "Desktop builder" → the run), scroll to **Artifacts** (you must be signed in to
    download them).
