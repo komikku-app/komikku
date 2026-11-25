@@ -29,6 +29,8 @@ import kotlin.time.TimeSource
 /**
  * [HostHttp] on iOS: Ktor's Darwin engine, i.e. `NSURLSession`, with the semantics of the JVM's `OkHttpHostHttp`.
  *
+ * - Only `http` / `https` URLs (`ws` / `wss` are sent as `http` / `https`, as OkHttp does); any other URL fails
+ *   with an [IllegalArgumentException] in OkHttp's words before anything is sent.
  * - Any method; request headers as given, except a source's `Accept-Encoding`: NSURLSession negotiates the encoding
  *   itself and decompresses the body (Ktor then drops `Content-Encoding` / `Content-Length`, as OkHttp does).
  *   `Transfer-Encoding` / `Upgrade` are dropped too (Ktor refuses them; the session frames the body).
@@ -84,13 +86,16 @@ class DarwinHostHttp private constructor(
     }
 
     override suspend fun execute(request: HostHttpRequest): HostHttpResponse {
+        // Before Ktor sees it: Ktor's Darwin engine casts every response to `NSHTTPURLResponse` inside an NSURLSession
+        // delegate callback, so a `data:` or `file:` URL would kill the process instead of failing the call.
+        val url = httpUrl(request.url)
         require(request.body == null || request.method !in METHODS_WITHOUT_BODY) {
             "method ${request.method} must not have a request body."
         }
-        val timeout = request.timeoutMillis?.takeIf { it > 0 } ?: return follow(request)
+        val timeout = request.timeoutMillis?.takeIf { it > 0 } ?: return follow(request, url)
         val deadline = TimeSource.Monotonic.markNow() + timeout.milliseconds
         return try {
-            withTimeout(timeout.milliseconds) { follow(request) }
+            withTimeout(timeout.milliseconds) { follow(request, url) }
         } catch (e: Throwable) {
             // The caller's own cancellation stays a cancellation.
             currentCoroutineContext().ensureActive()
@@ -120,10 +125,10 @@ class DarwinHostHttp private constructor(
         class Redirect(val next: Hop) : HopResult
     }
 
-    private suspend fun follow(request: HostHttpRequest): HostHttpResponse {
+    private suspend fun follow(request: HostHttpRequest, url: String): HostHttpResponse {
         var hop = Hop(
             method = request.method,
-            url = request.url,
+            url = url,
             // A source-supplied Accept-Encoding would hand back compressed bytes; the session negotiates it. The framing
             // headers are the engine's (Ktor refuses them).
             headers = request.headers.filterNot { (name, _) -> DROPPED_HEADERS.any { it.equals(name, ignoreCase = true) } },
@@ -230,6 +235,46 @@ class DarwinHostHttp private constructor(
             HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicy.NSHTTPCookieAcceptPolicyAlways
             HTTPShouldSetCookies = true
         }
+
+        /**
+         * [url] when it is an `http` / `https` URL, with `ws` / `wss` turned into those like OkHttp's
+         * `Request.Builder`; otherwise an [IllegalArgumentException] with OkHttp's `HttpUrl` message.
+         */
+        internal fun httpUrl(url: String): String {
+            val canonical = when {
+                url.startsWith("ws:", ignoreCase = true) -> "http:" + url.substring(3)
+                url.startsWith("wss:", ignoreCase = true) -> "https:" + url.substring(4)
+                else -> url
+            }
+            val input = canonical.trim { it in ASCII_WHITESPACE }
+            val scheme = schemeOf(input)
+            if (scheme == null) {
+                val truncated = if (input.length > 6) input.take(6) + "..." else input
+                throw IllegalArgumentException(
+                    "Expected URL scheme 'http' or 'https' but no scheme was found for $truncated",
+                )
+            }
+            require(scheme.lowercase() in HTTP_SCHEMES) { "Expected URL scheme 'http' or 'https' but was '$scheme'" }
+            return canonical
+        }
+
+        /** The scheme of [input] (OkHttp's `schemeDelimiterOffset`): a letter, letters, digits, `+ - .`, then `:`. */
+        private fun schemeOf(input: String): String? {
+            if (input.isEmpty() || !input[0].isAsciiLetter()) return null
+            for (i in 1 until input.length) {
+                val c = input[i]
+                when {
+                    c.isAsciiLetter() || c in '0'..'9' || c == '+' || c == '-' || c == '.' -> continue
+                    c == ':' -> return input.substring(0, i)
+                    else -> return null
+                }
+            }
+            return null
+        }
+
+        private fun Char.isAsciiLetter() = this in 'a'..'z' || this in 'A'..'Z'
+
+        private val ASCII_WHITESPACE = charArrayOf('\t', '\n', '\u000C', '\r', ' ')
 
         /** NSURLSession's request idle timeout of the default engine, like the app's OkHttp read timeout. */
         const val DEFAULT_IDLE_TIMEOUT_SECONDS = 30.0

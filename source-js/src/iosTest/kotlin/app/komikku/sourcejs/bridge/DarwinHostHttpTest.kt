@@ -1,6 +1,7 @@
 package app.komikku.sourcejs.bridge
 
 import app.komikku.sourcejs.JsSourceDescriptor
+import app.komikku.sourcejs.JsSourceException
 import app.komikku.sourcejs.TestHost
 import app.komikku.sourcejs.provider
 import app.komikku.sourcejs.timedTest
@@ -222,6 +223,43 @@ class DarwinHostHttpTest {
         assertEquals(1024, http.execute(get("https://h.test/big", maxBodyBytes = 1024)).body.size)
         handler = { respond(big) }
         assertEquals(2048, http.execute(get("https://h.test/big", maxBodyBytes = Long.MAX_VALUE)).body.size)
+    }
+
+    @Test
+    fun refusesUrlsOtherThanHttpLikeOkHttp() = timedTest {
+        handler = { respond("ok") }
+        val data = assertFailsWith<IllegalArgumentException> { http.execute(get("data:,x")) }
+        assertEquals("Expected URL scheme 'http' or 'https' but was 'data'", data.message)
+        val file = assertFailsWith<IllegalArgumentException> { http.execute(get("file:///etc/hosts")) }
+        assertEquals("Expected URL scheme 'http' or 'https' but was 'file'", file.message)
+        val relative = assertFailsWith<IllegalArgumentException> { http.execute(get("/relative/path")) }
+        assertEquals("Expected URL scheme 'http' or 'https' but no scheme was found for /relat...", relative.message)
+        assertTrue(recorded.isEmpty())
+        // OkHttp's Request.Builder sends ws / wss as http / https.
+        http.execute(get("wss://h.test/socket"))
+        assertEquals("https://h.test/socket", recorded.single().url)
+    }
+
+    @Test
+    fun urlsOtherThanHttpAreCatchableBridgeErrors() = timedTest {
+        val source = JsSourceDescriptor(id = 1, name = "Mock", baseUrl = "https://h.test")
+        val code = provider(
+            """
+            async getPopular(page) { await new Client().get("data:,x"); }
+            async getLatestUpdates(page) {
+              try { await new Client().get("file:///etc/hosts"); } catch (e) { return { list: [{ name: e.message, link: "x" }], hasNextPage: false }; }
+            }
+            """,
+        )
+        val extension = TestHost(http = http).extension(code, source)
+        val error = assertFailsWith<JsSourceException.BridgeError> { extension.getPopular(1) }
+        assertEquals("http", error.channel)
+        assertEquals("HTTP GET data:,x failed: Expected URL scheme 'http' or 'https' but was 'data'", error.detail)
+        assertEquals(
+            "HTTP GET file:///etc/hosts failed: Expected URL scheme 'http' or 'https' but was 'file'",
+            extension.getLatestUpdates(1).list.single().name,
+        )
+        assertTrue(recorded.isEmpty())
     }
 
     @Test

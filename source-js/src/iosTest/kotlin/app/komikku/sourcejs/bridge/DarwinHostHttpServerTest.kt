@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
  * [DarwinHostHttp] on its real engine (NSURLSession) against [LoopbackHttpServer] on `127.0.0.1` inside the simulator
  * test process (App Transport Security does not apply to IP addresses): what the mock engine cannot show, i.e. the
  * session's own encoding negotiation and decompression, Foundation's joined response headers, no native redirects,
- * cookies, timeouts and cancellation of a real task.
+ * cookies, timeouts and cancellation of a real task, URLs NSURLSession must never see.
  */
 class DarwinHostHttpServerTest {
 
@@ -118,6 +118,15 @@ class DarwinHostHttpServerTest {
         val sentAfterRedirect = afterRedirect.body.decodeToString()
         assertEquals(200, afterRedirect.statusCode)
         assertTrue("${cookie}_hop=two" in sentAfterRedirect && "$cookie=one" in sentAfterRedirect, sentAfterRedirect)
+    }
+
+    @Test
+    fun urlsOtherThanHttpFailBeforeTheSession() = timedTest {
+        // NSURLSession would answer them with a plain NSURLResponse, which Ktor's Darwin engine cannot take.
+        listOf("data:,x" to "data", "file:///etc/hosts" to "file").forEach { (url, scheme) ->
+            val error = assertFailsWith<IllegalArgumentException> { http.execute(HostHttpRequest("GET", url, emptyList(), null)) }
+            assertEquals("Expected URL scheme 'http' or 'https' but was '$scheme'", error.message)
+        }
     }
 
     @Test

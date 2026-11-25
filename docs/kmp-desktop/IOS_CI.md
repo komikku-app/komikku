@@ -115,7 +115,11 @@ desktop do not see Ktor.
 
 ### Decisions
 
-- **HTTP semantics match `OkHttpHostHttp`.** All methods; request headers in order, minus the source's
+- **HTTP semantics match `OkHttpHostHttp`.** Only `http` / `https` URLs (`ws` / `wss` sent as `http` / `https`,
+  like OkHttp's `Request.Builder`): any other URL fails with OkHttp's `IllegalArgumentException` message (`Expected
+  URL scheme 'http' or 'https' but was 'data'`) before Ktor sees it, which the bridge reports as a catchable `http`
+  error. It must not reach NSURLSession: a `data:` or `file:` URL gets a plain `NSURLResponse`, and Ktor's Darwin
+  engine casts every response to `NSHTTPURLResponse` inside a delegate callback, which kills the process. All methods; request headers in order, minus the source's
   `Accept-Encoding` (NSURLSession negotiates `gzip, deflate, br` and decompresses; Ktor's Darwin engine then drops
   `Content-Encoding` / `Content-Length`, like OkHttp's transparent gzip) and minus `Transfer-Encoding` / `Upgrade`
   (Ktor refuses them). OkHttp's body rules: an empty body for `POST` / `PUT` / `PATCH` / `PROPPATCH` / `REPORT`
