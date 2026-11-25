@@ -386,11 +386,11 @@ class IosJsSourceStore(
         download(offer(id) ?: throw JsSourceStoreException(Reason.NOT_FOUND, "No repository offers the JavaScript source $id"))
 
     /**
-     * Installs (or updates to) the text of [offer] if it still has [confirmedSha256]: downloads it (and its icon), checks the hash,
-     * loads it (reads its metadata, which runs the script) while the installed version stays in use, stores the text
-     * and manifest, then swaps the new source in and stores its icon. Any failure before the manifest is written (a
-     * text that does not load, a file that cannot be written) changes nothing: the installed version stays in use and
-     * the new files are removed.
+     * Installs (or updates to) the text of [offer] if it still has [confirmedSha256]: downloads it, checks the hash,
+     * fetches the icon, loads the text (reads its metadata, which runs the script) while the installed version stays in
+     * use, stores the text and manifest, then swaps the new source in and stores its icon. Any failure before the
+     * manifest is written (a text that does not load, a file that cannot be written) changes nothing: the installed
+     * version stays in use and the new files are removed. Once it is written, a cancellation no longer stops the swap.
      *
      * @throws JsSourceStoreException
      */
