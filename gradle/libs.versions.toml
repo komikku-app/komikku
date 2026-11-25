@@ -25,6 +25,9 @@ compose-multiplatform-material-icons = "1.7.3"
 # KMK --> quickjs-kt (both artifacts below must stay on the same release)
 quickjs-kt = "1.0.15"
 # KMK <--
+# KMK --> Ktor (HTTP of :source-js on iOS, Darwin engine; built with Kotlin 2.3.21 and coroutines 1.11.0)
+ktor = "3.6.1"
+# KMK <--
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
@@ -56,6 +59,12 @@ quickjs-kt-jvm = { module = "io.github.dokar3:quickjs-kt-jvm", version.ref = "qu
 # KMK <--
 # KMK --> Multiplatform jsoup port (JVM + iOS) for the DOM bridge of :source-js (Mangayomi JavaScript sources).
 ksoup = "com.fleeksoft.ksoup:ksoup:0.2.6"
+# KMK <--
+# KMK --> Ktor client on NSURLSession for `DarwinHostHttp` (:source-js iosMain); mock engine and CIO server for its tests.
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 # KMK <--
 
 jsoup = "org.jsoup:jsoup:1.23.2"

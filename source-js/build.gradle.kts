@@ -16,7 +16,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  *   (`src/jvmSharedMain`, tests in `src/jvmSharedTest`); `commonMain` stays free of JVM APIs for iOS.
  * - `iosArm64` / `iosSimulatorArm64`: only when the build host is macOS, so Linux / Windows builds and CI are
  *   unaffected. `-Pios-targets` declares them on any host: Kotlin/Native compiles iOS klibs (main and test) on Linux
- *   too, only linking and running the simulator tests need macOS (docs/kmp-desktop/IOS_CI.md).
+ *   too, only linking and running the simulator tests need macOS (docs/kmp-desktop/IOS_CI.md). Their HTTP is Ktor's
+ *   Darwin engine (`DarwinHostHttp`), their preferences `NSUserDefaults` (`IosJsSourceRuntime`).
  *
  * Android uses `quickjs-kt`'s Android AAR (I2b replaced the zhanghai `quickjs-android` AAR that clashed with it,
  * PLAN.md 8.7 item 5). Its native library only exists for Android ABIs, so the Android host unit tests
@@ -86,6 +87,22 @@ kotlin {
         named("desktopTest").configure {
             dependencies {
                 implementation(libs.okhttp.mockwebserver)
+            }
+        }
+        if (withIosTargets) {
+            named("iosMain").configure {
+                dependencies {
+                    // `DarwinHostHttp`: Ktor on NSURLSession (docs/kmp-desktop/IOS_CI.md, I5a).
+                    api(libs.ktor.client.core)
+                    implementation(libs.ktor.client.darwin)
+                }
+            }
+            named("iosTest").configure {
+                dependencies {
+                    implementation(libs.ktor.client.mock)
+                    // A real HTTP server inside the simulator test process, for the NSURLSession specifics.
+                    implementation(libs.ktor.server.cio)
+                }
             }
         }
     }
