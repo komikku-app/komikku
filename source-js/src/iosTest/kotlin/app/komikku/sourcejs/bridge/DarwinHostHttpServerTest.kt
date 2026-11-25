@@ -1,30 +1,13 @@
 package app.komikku.sourcejs.bridge
 
+import app.komikku.sourcejs.bridge.LoopbackHttpServer.Response
 import app.komikku.sourcejs.timedTest
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.request.httpMethod
-import io.ktor.server.request.receiveText
-import io.ktor.server.response.header
-import io.ktor.server.response.respondBytes
-import io.ktor.server.response.respondRedirect
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.IOException
 import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -33,59 +16,45 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * [DarwinHostHttp] on its real engine (NSURLSession) against a Ktor CIO server in the simulator test process, on
- * `127.0.0.1` (App Transport Security does not apply to IP addresses): what the mock engine cannot show, i.e. the
+ * [DarwinHostHttp] on its real engine (NSURLSession) against [LoopbackHttpServer] on `127.0.0.1` inside the simulator
+ * test process (App Transport Security does not apply to IP addresses): what the mock engine cannot show, i.e. the
  * session's own encoding negotiation and decompression, Foundation's joined response headers, no native redirects,
  * timeouts and cancellation of a real task.
  */
 class DarwinHostHttpServerTest {
 
     private val requestSeen = CompletableDeferred<Unit>()
-    private lateinit var server: EmbeddedServer<*, *>
-    private lateinit var base: String
+    private val server = LoopbackHttpServer { request ->
+        when (request.target) {
+            "/echo" -> Response(
+                status = 201,
+                headers = listOf("X-A" to "1", "X-A" to "2"),
+                body = listOf(
+                    request.method,
+                    request.headers["x-token"],
+                    request.headers["accept-encoding"],
+                    request.headers["content-type"],
+                    request.body.decodeToString(),
+                ).joinToString("|").encodeToByteArray(),
+            )
+            "/gz" -> Response(200, listOf("Content-Encoding" to "gzip"), GZIPPED)
+            "/start" -> Response(302, listOf("Location" to "/target"))
+            "/target" -> Response(200, body = "target".encodeToByteArray())
+            "/slow" -> {
+                requestSeen.complete(Unit)
+                Response(200, body = "late".encodeToByteArray(), delaySeconds = 5.0)
+            }
+            "/big" -> Response(200, body = "x".repeat(2048).encodeToByteArray())
+            else -> Response(404)
+        }
+    }
+    private val base = server.baseUrl
     private val http = DarwinHostHttp()
 
-    private fun Application.routes() = routing {
-        route("/echo") {
-            handle {
-                val body = call.receiveText()
-                val headers = call.request.headers
-                call.response.header("X-A", "1")
-                call.response.header("X-A", "2")
-                call.respondText(
-                    listOf(call.request.httpMethod.value, headers["X-Token"], headers["Accept-Encoding"], headers["Content-Type"], body)
-                        .joinToString("|"),
-                    status = HttpStatusCode.Created,
-                )
-            }
-        }
-        get("/gz") {
-            call.response.header(HttpHeaders.ContentEncoding, "gzip")
-            call.respondBytes(GZIPPED)
-        }
-        get("/start") { call.respondRedirect("/target") }
-        get("/target") { call.respondText("target") }
-        get("/slow") {
-            requestSeen.complete(Unit)
-            delay(10_000)
-            call.respondText("late")
-        }
-        get("/big") { call.respondText("x".repeat(2048)) }
-    }
-
-    @BeforeTest
-    fun start() = timedTest {
-        withTimeout(10_000) {
-            server = embeddedServer(CIO, port = 0, host = "127.0.0.1") { routes() }
-            server.startSuspend(wait = false)
-            base = "http://127.0.0.1:${server.engine.resolvedConnectors().first().port}"
-        }
-    }
-
     @AfterTest
-    fun stop() = timedTest {
+    fun stop() {
         http.close()
-        withTimeout(10_000) { server.stopSuspend(gracePeriodMillis = 0, timeoutMillis = 1_000) }
+        server.close()
     }
 
     @Test

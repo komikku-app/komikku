@@ -122,7 +122,6 @@ class DarwinHostHttpTest {
         assertFailsWith<IllegalArgumentException> {
             http.execute(HostHttpRequest("GET", "https://h.test/g", emptyList(), byteArrayOf(1)))
         }
-        Unit
     }
 
     @Test

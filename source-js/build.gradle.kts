@@ -100,8 +100,6 @@ kotlin {
             named("iosTest").configure {
                 dependencies {
                     implementation(libs.ktor.client.mock)
-                    // A real HTTP server inside the simulator test process, for the NSURLSession specifics.
-                    implementation(libs.ktor.server.cio)
                 }
             }
         }
