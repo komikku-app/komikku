@@ -192,14 +192,13 @@ class DesktopWebView(
      * Android's WebView "Clear cookies": removes every cookie of [url]'s host, whatever its path, and the domain cookies
      * that apply to the host (P23: a cookie with its own `Path`, which the address itself does not get, goes too; other
      * hosts' cookies stay); returns how many. [includeSubdomains]: also the cookies of the host's subdomains (the
-     * extension info's clearing, P23 review fix; the WebView's own "Clear cookies" leaves them).
+     * extension info's clearing, P23 review fix; the WebView's own "Clear cookies" leaves them), and their remembered
+     * Cloudflare User-Agents and failures; a host that is a public suffix / shared hosting domain (`github.io`) keeps
+     * its "subdomains", which are other sites (P23 fixes review).
      */
     fun clearCookies(url: String, includeSubdomains: Boolean = false): Int {
         val httpUrl = url.toHttpUrlOrNull() ?: return 0
-        hostStateProvider().run {
-            removeUserAgent(httpUrl.host)
-            clearFailure(httpUrl.host)
-        }
+        hostStateProvider().forgetHost(httpUrl.host, includeSubdomains && httpUrl.topPrivateDomain() != null)
         return network.cookieJar.removeHostCookies(httpUrl, includeSubdomains)
     }
 

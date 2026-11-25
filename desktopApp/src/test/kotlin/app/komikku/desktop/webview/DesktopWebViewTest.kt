@@ -265,6 +265,34 @@ class DesktopWebViewTest {
     }
 
     @Test
+    fun `clearing with subdomains forgets the subdomains' Cloudflare state too, not on a public suffix (P23 fixes review)`() {
+        val webView = webView()
+        val state = CloudflareHosts.state
+        state.clearUserAgents()
+        state.clearFailures()
+        val hosts = listOf("example.com", "cdn.example.com", "notexample.com", "example.org", "github.io", "foo.github.io")
+        hosts.forEach { host ->
+            state.setUserAgent(host, BROWSER_UA, clearance = null)
+            state.recordFailure(
+                host,
+                CloudflareBypassException(host, CloudflareBypassException.Reason.NOT_SOLVED, "not solved"),
+                clearance = null,
+            )
+        }
+
+        webView.clearCookies("https://example.com/", includeSubdomains = true)
+        webView.clearCookies("https://github.io/", includeSubdomains = true)
+
+        val kept = listOf("notexample.com", "example.org", "foo.github.io")
+        state.userAgentOverrides().keys shouldContainExactlyInAnyOrder kept
+        hosts.filter { state.recentFailure(it, currentClearance = null) != null } shouldContainExactlyInAnyOrder kept
+
+        // Without subdomains only the host itself
+        webView.clearCookies("https://example.org/")
+        state.userAgentOverrides().keys shouldContainExactlyInAnyOrder listOf("notexample.com", "foo.github.io")
+    }
+
+    @Test
     fun `with a backend an interactive session runs and its cookies are stored`() {
         val url = server.url("/manga/1")
         backend.unmetOutcome = BrowserSessionResult.Outcome.CLOSED

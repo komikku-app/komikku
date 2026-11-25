@@ -109,6 +109,17 @@ class CloudflareHostState(
         if (host in overrides) update { it - host }
     }
 
+    /**
+     * Forgets [host]'s failed solve and User-Agent override and, with [includeSubdomains], those of its subdomains
+     * (`*.<host>`; a site's "Clear cookies" with its subdomains, P23 fixes review). The caller decides whether the host
+     * may take its subdomains (not for a public suffix such as `github.io`).
+     */
+    fun forgetHost(host: String, includeSubdomains: Boolean = false) {
+        fun matches(other: String) = other == host || (includeSubdomains && other.endsWith(".$host"))
+        failures.keys.removeIf(::matches)
+        if (overrides.keys.any(::matches)) update { all -> all.filterKeys { !matches(it) } }
+    }
+
     /** Every stored override by host (P12: listed in Settings → Advanced, where they can be removed). */
     fun userAgentOverrides(): Map<String, UserAgentOverride> = overrides
 
