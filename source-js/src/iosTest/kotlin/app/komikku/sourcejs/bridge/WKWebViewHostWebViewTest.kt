@@ -228,27 +228,36 @@ class WKWebViewHostWebViewTest {
     @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class)
     @Test
     fun theWebViewIsTornDownAfterTheCall() = webKitTest {
-        var created: WKWebView? = null
-        webView.onWebViewCreated = { created = it }
+        // Only this holder references the view, so the test's own frame does not keep it alive below.
+        val holder = AtomicReference<WKWebView?>(null)
+        webView.onWebViewCreated = { holder.value = it }
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
         webView.onWebViewCreated = null
-        val view = created!!
-        withContext(Dispatchers.Main) {
-            assertNull(view.navigationDelegate)
-            assertNull(view.superview)
-            assertTrue(view.configuration.userContentController.userScripts.isEmpty())
-            // The fixture page was replaced by an empty one.
-            assertTrue(view.URL?.absoluteString.orEmpty().let { "later" !in it }, view.URL?.absoluteString)
-        }
-        // Deallocation is up to Kotlin/Native's garbage collector; reported, not asserted (docs/kmp-desktop/IOS_CI.md).
-        val weak = WeakReference<Any>(view)
-        created = null
+        withContext(Dispatchers.Main) { assertTornDown(holder.value!!) }
+        // Deallocation is up to Kotlin/Native's garbage collector and WebKit; reported, not asserted
+        // (docs/kmp-desktop/IOS_CI.md, I5c).
+        val weak = weakAndClear(holder)
         val start = TimeSource.Monotonic.markNow()
-        while (weak.value != null && start.elapsedNow().inWholeMilliseconds < 5_000) {
+        while (weak.value != null && start.elapsedNow().inWholeMilliseconds < 8_000) {
             GC.collect()
             delay(200)
         }
         println("WEBVIEW_DEALLOCATED=${weak.value == null} after ${start.elapsedNow()}")
+    }
+
+    private fun assertTornDown(view: WKWebView) {
+        assertNull(view.navigationDelegate)
+        assertNull(view.superview)
+        assertTrue(view.configuration.userContentController.userScripts.isEmpty())
+        // The fixture page was replaced by an empty one.
+        assertTrue(view.URL?.absoluteString.orEmpty().let { "later" !in it }, view.URL?.absoluteString)
+    }
+
+    @OptIn(ExperimentalNativeApi::class)
+    private fun weakAndClear(holder: AtomicReference<WKWebView?>): WeakReference<Any> {
+        val weak = WeakReference<Any>(holder.value!!)
+        holder.value = null
+        return weak
     }
 
     @Test
