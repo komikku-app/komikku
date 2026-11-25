@@ -111,8 +111,9 @@ through `testReleaseUnitTest`.
 ```bash
 ./gradlew :desktopApp:packageDistributionForCurrentOS   # every installer format of this OS
 ./gradlew :desktopApp:packageDeb                        # one format: packageDeb / packageRpm /
-                                                        # packageAppImage / packageMsi / packageExe / packageDmg
+                                                        # packageMsi / packageExe / packageDmg
 ./gradlew :desktopApp:createDistributable               # unpacked app image + bundled runtime only
+                                                        # (binaries/main/app; the Linux .tar.gz)
 ./gradlew :desktopApp:runDistributable                  # run that image
 ```
 
@@ -123,7 +124,7 @@ Configuration (`desktopApp/build.gradle.kts`, `nativeDistributions`):
 | Setting | Value |
 |---------|-------|
 | Version | `versionName` / `versionCode` of `app/build.gradle.kts`, read by the build script (single source of truth); also passed to the app as `-Dkomikku.version` / `-Dkomikku.versionCode` |
-| Formats | Msi, Exe, Dmg, Deb, Rpm, AppImage (the AppImage target produces an app-image *directory*; turning it into a single `.AppImage` file needs `appimagetool`, not part of the build) |
+| Formats | Msi, Exe, Dmg, Deb, Rpm, plus the app image *directory* of `createDistributable` (packed as the Linux `.tar.gz`; turning it into a single `.AppImage` file needs `appimagetool`, not part of the build). No `TargetFormat.AppImage`: its `packageAppImage` writes the same directory as `createDistributable`, which the DMG / DEB / RPM tasks read, and Gradle refuses that (first CI run, M1) |
 | Runtime | jlink image with the modules listed in `modules(...)` (jdeps + run-time additions, see the comment there); `includeAllModules = true` is the documented fallback if a packaged build misses a JDK module |
 | Icons | `desktopApp/icons/komikku.{png,ico,icns}`, generated from the Android launcher icon's vector layers by `python3 desktopApp/icons/generate_icons.py` (Pillow + numpy, offline); re-run it when the launcher icon changes |
 | Windows | menu group "Komikku", desktop shortcut, per-user install, directory chooser, fixed upgrade UUID (never change it: it lets newer MSIs replace older installs) |

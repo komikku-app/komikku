@@ -177,14 +177,16 @@ extensions.configure<ComposeExtension> {
 
             // Packaging (Phase 9). How to build / what is not validated: docs/kmp-desktop/BUILDING.md.
             nativeDistributions {
-                // AppImage is a directory image for appimagetool, not a single .AppImage file (BUILDING.md).
+                // No TargetFormat.AppImage (M1, first CI run): its `packageAppImage` writes the same directory as
+                // `createDistributable` (binaries/main/app), which the DMG / DEB / RPM tasks read, and Gradle refuses
+                // to run them together. The app image directory (packed as the Linux .tar.gz) is
+                // `createDistributable`'s output.
                 targetFormats(
                     TargetFormat.Msi,
                     TargetFormat.Exe,
                     TargetFormat.Dmg,
                     TargetFormat.Deb,
                     TargetFormat.Rpm,
-                    TargetFormat.AppImage,
                 )
                 packageName = "Komikku"
                 packageVersion = packageVersionName
