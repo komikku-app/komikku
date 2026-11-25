@@ -3,7 +3,9 @@
 Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
 simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
 section below); 132 with the I5a review fixes (cookies, non-HTTP URLs, `HEAD` bodies, redirect resolution; run
-45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below); 150 with the I5b review fixes (run 45574226158, commit `97ea1bb4fd`). Runs #1–#2 looked green only because the job was
+45567078024, commit `0501bf16e7`); 145 with I5b, the store of installed sources (run 45570113228, commit `32c89164ae`, section below); 150 with the I5b review fixes (run 45574226158, commit `97ea1bb4fd`); 171 with I5c, the `WKWebView`
+`HostWebView`, plus its 21 WebKit tests run again inside a simulator app (run 45620605008, commit `089b9b4ade`,
+section below). Runs #1–#2 looked green only because the job was
 non-blocking; they had one failing test (the forged-cancellation message keeps the error name on iOS), fixed in
 `d21b68cfc4`. The job now blocks (no `continue-on-error`). PLAN.md section 8.4, step I5, should reference this page once it is
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
@@ -201,6 +203,7 @@ desktop do not see Ktor.
   the download and file cache are not. *(Done in I5b below: `IosJsSourceStore` creates the runtime and does all
   three.)*
 - No WebView (`evaluateJavascriptViaWebview` still fails as unsupported; a `WKWebView` `HostWebView` is an I6 item).
+  *(Done in I5c below: `WKWebViewHostWebView` is the runtime's default.)*
 - Not covered on iOS: `NetworkHelper`'s Cloudflare interceptor, DNS over HTTPS and rate limits have no iOS
   counterpart (cookies are the shared `NSHTTPCookieStorage`, see above); proxy settings are the system's.
 
@@ -340,3 +343,168 @@ All with `FakeHostHttp` (a URL → response table that records requests and can 
   from its cache is not checked (the JVM store forces the network).
 - The device backup / iCloud exclusion of the store's directory, file protection classes and disk-full handling
   beyond reporting `STORAGE_FAILED` are not decided.
+
+## I5c: `evaluateJavascriptViaWebview` on a `WKWebView`
+
+`WKWebViewHostWebView` (`source-js/src/iosMain/.../bridge/WKWebViewHostWebView.kt`) is the iOS `HostWebView`, and
+`IosJsSourceRuntime`'s default `webView` (a constructor parameter, so the app or a test can pass another one; the
+store's runtime gets the default). Before, every call failed through `UnsupportedHostWebView`. Only `iosMain` /
+`iosTest` changed; no common code, no new library (WebKit and UIKit are Kotlin/Native platform libraries).
+
+### The contract matched
+
+Mangayomi's `_evaluateJavascriptViaWebview` (`lib/services/http/m_client.dart`, read at kodjodevf/mangayomi
+`0ad144b7`) runs a flutter_inappwebview `HeadlessInAppWebView`; the page side is flutter_inappwebview's JavaScript
+bridge (`JavaScriptBridgeJS.swift`, `InAppWebView.swift`). What a source sees on iOS now:
+
+- `url` is loaded with `headers` (`NSMutableURLRequest`, each header set as given).
+- `window.flutter_inappwebview.callHandler(name, ...args)` exists from document start in **every frame** (the
+  plugin's `pluginScriptsForMainFrameOnly` default is `false`) and returns a promise. The arguments travel as one
+  JSON text, like the plugin's `JSON.stringify(slice(arguments, 1))`. Here the promise is WebKit's own reply
+  (`WKScriptMessageHandlerWithReply`) instead of the plugin's `_callHandlerID` bookkeeping.
+- `callHandler('setResponse', value)` with a **string** ends the call with that string. Mangayomi's handler does
+  `args[0] as String`: anything else (a number, `null`, nothing) throws in Dart, which rejects the page's promise
+  and leaves the call waiting; here the promise rejects with `setResponse expects a string, got …` and the call
+  goes on. Other handler names resolve with nothing (Mangayomi registers no other handler).
+- Each time the main frame finishes loading (`didFinishNavigation`, the plugin's `onLoadStop`), the
+  `flutterInAppWebViewPlatformReady` event is dispatched (the plugin does this on load stop too), then the scripts
+  run one after the other in the main frame's page world, each awaited. A script that throws is logged and the next
+  one runs (the plugin's `evaluateJavascript` does not fail either); a result WebKit cannot return (a promise, a
+  node) is not an error.
+- `time` (seconds, `30` by default, set by the prelude) bounds the whole call; with no value reported it resolves
+  to `""`. Mangayomi polls once a second and returns `""` for any failure as well (its HTTP endpoint answers 400, the
+  Dart side turns that into `""`).
+
+Deviations, all in timing only:
+
+- The value is returned at once, not at the next one-second tick, and the first string wins (in Mangayomi a second
+  `setResponse` within the same second overwrote the first).
+- A failed first navigation (connection refused, DNS, TLS) and a crashed web content process end the call with
+  `""` at once instead of after the timeout (Mangayomi gets the same `""` later: nothing can report from a page that
+  never loaded). A navigation that fails after a page loaded (a script navigating somewhere unreachable) leaves the
+  loaded page, which can still report, so the call goes on. Cancelled navigations (`NSURLErrorCancelled`, a newer
+  navigation replaced it) and WebKit's policy interruptions (102, 204) are not failures. An HTTP error status is not
+  a failure: the error page loads and the scripts run.
+- Only `http` / `https` URLs: anything else (`file:`, `data:`, `javascript:`, `about:`, a relative or host-less URL)
+  is an `IllegalArgumentException` before a web view exists, which the bridge reports to the script as a catchable
+  `webview` error. Mangayomi would load any URL `WebUri` accepts. Spaces and non-ASCII characters are
+  percent-encoded first (`NSURL` refuses them before iOS 17).
+
+### Decisions
+
+- **Main thread.** Everything WebKit (creation, delegates, script evaluation, cookie stores, teardown) runs in
+  `withContext(Dispatchers.Main)`; Kotlin/Native's `Dispatchers.Main` is the main dispatch queue, which a UIKit app's
+  run loop serves.
+- **One web view per call, at most 2 at once** (`maxConcurrent`, a `Semaphore`): more calls wait for a permit, and
+  the wait counts toward their timeout. A pool was not worth it: each call gets a fresh data store anyway (below),
+  so a reused view would only save the `WKWebView` allocation.
+- **Headless, like flutter_inappwebview.** When the app has a window (`UIApplication`'s connected window scenes, the
+  key window first), the web view is inserted behind its content with alpha 0.01, no user interaction and the
+  window's size, as `HeadlessInAppWebView.prepare` does ("The WKWebView behaves very unreliable when rendering
+  offscreen on a device. This is especially true with JavaScript"). Without a window (a test process, before
+  `UIApplicationMain`) it runs offscreen at 390 × 844 points. `container` overrides the choice.
+- **Cookies: a non-persistent data store per call, sharing cookies with `DarwinHostHttp`'s
+  `NSHTTPCookieStorage.sharedHTTPCookieStorage` by explicit copies.** `WKHTTPCookieStore` and `NSHTTPCookieStorage`
+  are separate stores. In Mangayomi the headless web view uses the app's persistent WebView store, and the app's HTTP
+  client attaches the cookies that store saved (contract 4.2): a page that sets a session or a JavaScript
+  challenge's clearance cookie makes later `Client` requests work. To get that on iOS, every cookie of the storage is
+  copied into the call's `WKWebsiteDataStore.nonPersistentDataStore()` before the load (all of them, so redirects
+  and subresources on other hosts get theirs too; the load waits for every `setCookie`), and afterwards (also after
+  a timeout or a cancellation, bounded to 2 s) the cookies the page added or changed are copied back and the ones it
+  deleted are deleted. Cookies it did not touch are not written back, so a value `DarwinHostHttp` stored meanwhile
+  is not overwritten with the old copy; cookies are matched by name, path and domain without its leading dot. The
+  copy back waits 250 ms first: `document.cookie` changes reach the store from the web content process on another
+  connection than the UI process's read, and a deletion the page made just before reporting was missed without
+  the wait (run 45585550783). The other choices: the default (persistent) data store would be a second
+  persistent cookie jar that drifts from the HTTP client's, and would keep the sites' local storage, caches and
+  service workers between calls and launches; an isolated store would lose the clearance cookies sources rely on.
+  The non-persistent store keeps nothing but the copied cookies. `cookieStorage = null` gives isolated calls.
+- **Teardown** (on the main thread, whatever ended the call): the navigation delegate is removed, loading stops, the
+  message handler and user scripts are removed (the content controller retains its handler), the page is replaced
+  by an empty one (so its scripts, timers and requests stop now, not whenever the view is deallocated) and the view
+  leaves its window. Nothing in the host keeps a reference to the web view afterwards; when the `WKWebView` object
+  itself is freed is up to Kotlin/Native's garbage collector and WebKit (see "Not covered").
+- **Headers** are set on the first request only, as flutter_inappwebview does: WebKit sends its own `User-Agent` and
+  the data store's cookies on later requests (a `Cookie` header the source passes is not copied into the store).
+  No `customUserAgent` is set, so `navigator.userAgent` is WebKit's.
+- Autoplaying media is off (`mediaTypesRequiringUserActionForPlayback = all`); there is no `WKUIDelegate`, so
+  `alert` / `confirm` return at once and `window.open` does nothing.
+- Log: `NSLog` (`[JS webview] …`, injectable): failed navigations, crashed content processes, failing scripts.
+
+### WebKit in the simulator tests
+
+Two obstacles, both found on CI:
+
+1. **The main run loop.** The Kotlin/Native test binary runs its tests on the process's main thread.
+   `timedTest`'s `runBlocking` blocks that thread, so a block sent to `Dispatchers.Main` would never run and a WebKit
+   test would hang. The WebKit tests use `mainRunLoopTest` (`iosTest/.../TimedTest.kt`): the test body runs on
+   `Dispatchers.Default` while the main thread runs `NSRunLoop.mainRunLoop` in the default mode (which serves the main
+   dispatch queue) in 50 ms slices until the body ends. Same 30 s limit; a body still running 5 s after that fails
+   the test (also if the test thread were not the main thread) instead of hanging the job. This works: timeouts and
+   cancellations on `Dispatchers.Main` complete in the plain test run.
+2. **No app, no WebKit.** The test task spawns the bare test executable (`simctl spawn --standalone`, no bundle, no
+   `UIApplication`). There a `WKWebView` never loads anything: no navigation finishes or fails, no script runs, every
+   call ends at its timeout (run 45582734648: every WebKit test returned `""`, a refused connection included). WebKit
+   cannot start its web content and networking processes for a process that is not an app, as with XCTest logic
+   tests without a host app. (Reading `UIApplication.sharedApplication`, nil there, also crashed the process with
+   SIGSEGV in run 45581199787: Kotlin types it non-null. `keyWindowOrNull` now reads it only in an `.app` bundle and
+   checks it for nil.)
+
+So the job runs the WebKit tests a second time inside an app: the step "WebKit tests in a simulator app" of
+`build_ios_check.yml` wraps the linked test executable (`test.kexe`) in `SourceJsTests.app` (a minimal
+`Info.plist`, ad-hoc signed), boots the newest iPhone simulator, installs it and starts it with `simctl launch
+--console-pty`, passing `--ktest_filter` for the three WebKit test classes and `KMK_WEBKIT_REQUIRED=1`. Launched as an
+app (still without `UIApplicationMain`, so offscreen), WebKit works. The step fails unless the runner prints
+`[  PASSED  ] <n> tests` and no `[  FAILED  ]` or `SKIPPED:` line.
+
+In the plain test run, the WebKit tests use `webKitTest` (`iosTest/.../WebKitTest.kt`): once per process it checks
+that a web view runs JavaScript (a `loadHTMLString` page read back with `evaluateJavaScript`, 10 s at most). When it
+does not, the test prints `SKIPPED: WebKit does not run in this process` and returns, unless `KMK_WEBKIT_REQUIRED=1`,
+where it fails. The tests that need no page (URL refusal, timeout, the message logic) run in both.
+
+### Tests (`iosTest`, simulator only)
+
+- `WKWebViewHostWebViewTest` (13): a real `WKWebView` against `LoopbackHttpServer` on `127.0.0.1`: the scripts run
+  in order after the load and see the page and the `flutterInAppWebViewPlatformReady` event, the reported value is
+  returned, a header reaches the server, a URL with a space and a non-ASCII letter is percent-encoded; a page that
+  reports from its own timer (300 ms, offscreen); a report from an iframe; scripts run on a 404 page; a non-string
+  `setResponse` rejects the page's promise and the call goes on (another handler resolves), a throwing script is
+  logged; a timeout returns `""` after about 1 s; a refused connection returns `""` at once and logs the failure;
+  `file:`, `data:`, `javascript:`, `about:`, `ftp:`, relative, empty and host-less URLs refused before a web view
+  exists; cancellation returns at once, leaves no web view, and the page's 100 ms `fetch` ticker stops; after a call
+  the web view has no navigation delegate, no superview, no user scripts and no longer shows the page (whether it is
+  deallocated is printed, not asserted); cookies copied in from and back to
+  the shared storage (one sent with the page request, one set by the page, one deleted by it); with
+  `cookieStorage = null` nothing is shared, even between two calls; 4 concurrent calls run at most 2 web views.
+- `WebViewBridgeTest` (6): the message logic without WebKit: `setResponse` values, rejections, other handlers,
+  message bodies, the bridge script's names, URL encoding.
+- `IosJsSourceRuntimeWebViewTest` (2): end to end through `IosJsSourceRuntime`'s default web view: a fixture source's
+  `getPopular` reads a list the page builds with its own script (so only a web view sees it), with a header from
+  the source; `""` on timeout and a catchable error for a `file:` URL, both seen by the script.
+
+### Not covered
+
+- Real sites, TLS, redirects to other hosts, Cloudflare-style challenges: only the loopback server (no network).
+- The web view's deallocation: the teardown state is checked, the release of the `WKWebView` object is only reported
+  (`WEBVIEW_DEALLOCATED=…` in the step's log), and it says `false`: still not freed 8 s after the call with
+  `GC.collect()` every 200 ms (run 45620605008; the test holds it only through a Kotlin/Native `WeakReference`). The
+  page is gone (replaced, its timers stopped, checked by the cancellation test), so what stays is the view object
+  and its empty page. Whether something retains it (WebKit, a pending completion block, Kotlin/Native's release of
+  Objective-C references) or the weak reference does not report Objective-C deallocation was not investigated;
+  I6 should check with Instruments (Allocations / Leaks) after a few calls.
+- The key-window path (behind the app's content, alpha 0.01): the test app never runs `UIApplicationMain`, so only
+  the offscreen path runs. On a device, flutter_inappwebview's note above is why the window path exists; I6 should check
+  that a call made while the app is in the background (no foreground scene) still runs its JavaScript.
+- App Transport Security: the test app's `Info.plist` has no ATS keys and `127.0.0.1` is exempt. An I6 app that
+  wants `http` sources to load in the web view needs `NSAllowsArbitraryLoadsInWebContent` (or per-domain exceptions).
+- iOS 17+ percent-encodes `NSURL` input itself; the fallback for older versions is only exercised there.
+- The desktop and Android hosts still use `UnsupportedHostWebView`.
+
+### Result
+
+Run 45620605008 (commit `089b9b4ade`): job `success`. The plain simulator run: 171 `:source-js` tests passed, none
+failed (the WebKit tests among them returned early, see above). The app step: `[  PASSED  ] 21 tests.`
+(`WKWebViewHostWebViewTest` 13, `WebViewBridgeTest` 6, `IosJsSourceRuntimeWebViewTest` 2), no failure, no skip.
+Earlier runs: 45581199787 (SIGSEGV reading `sharedApplication`), 45582734648 (no WebKit in the bare process),
+45585550783 (in the app: a cookie deletion missed, the deallocation assertion), 45618212624 (green, deallocation
+measured while the test still held the view).
