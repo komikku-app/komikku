@@ -264,17 +264,26 @@ library.
   checks each target (`https` only by default, `allowUrl` injectable) before requesting it, so a redirect to plain
   HTTP is refused, not followed. The body cap is enforced twice: `DarwinHostHttp`'s cap error becomes `TOO_LARGE`,
   and the body is checked again (a client without a cap). Limits as on the JVM: index 8 MiB, `repo.json` 64 KiB,
-  text 4 MiB, icon 1 MiB, plus a 120 s call timeout per download.
+  text 4 MiB, icon 1 MiB, plus one 120 s deadline per download, redirects included (each request is given the time
+  left). The icon is fetched before `install` takes the store's lock; an empty icon (a 204 or an empty 200) is no
+  icon, and `iconFileForSource` returns files with a size only.
 - **Repositories in `NSUserDefaults`** (standard defaults, injectable) under the JVM preference key
-  `mangayomi_js_repos`, an array of strings, so a later settings backup maps them by the same key.
+  `mangayomi_js_repos`, an array of strings, so a later settings backup maps them by the same key. Each add or
+  remove reads the stored list again and saves it under one process-wide lock (`NSLock`), so changes made elsewhere
+  (a restored backup, another store) are kept and the list saved last is the newest.
 - **A corrupt cache is not fatal**: a manifest that does not decode is set aside as `manifest.json.corrupt-<time>`
   and the store starts empty (warning logged); a text file that is missing or does not match its SHA-256 is a load
   error of that source only (shown in `items`, left out of `sources`), and reinstalling repairs it; a record whose
-  SHA-256 is not 64 hex digits is a load error, so it can never name another path.
+  SHA-256 is not 64 hex digits is a load error, and every read or delete built from it is skipped, so it can never
+  name another path (`codePath` accepts 64 hex digits only; icon paths are named by the numeric id).
+- **Cancellation**: the manifest write and the state swap after it run under `NonCancellable` (`install`,
+  `uninstall`, `refreshMetadata`): once the manifest names the new state, the text, the in-memory state, file
+  deletions and preferences follow it even if the caller was cancelled meanwhile.
 
-### Tests (`iosTest/.../store/IosJsSourceStoreTest`, 13, simulator only)
+### Tests (`iosTest/.../store/IosJsSourceStoreTest`, 18, simulator only)
 
-All 13 passed in run 45570113228 (job `success`, 145 `:source-js` tests in total, none failed).
+The first 13 passed in run 45570113228 (job `success`, 145 `:source-js` tests in total, none failed); the 5 added
+with the review fixes below are recorded there.
 
 All with `FakeHostHttp` (a URL → response table that records requests and can enforce the body cap like
 `DarwinHostHttp`) and a temporary root; no network:
@@ -295,8 +304,30 @@ All with `FakeHostHttp` (a URL → response table that records requests and can 
   (relative location) named in the confirmation, a redirect to `http` not followed, endless redirects;
 - uninstall removes the record, text, icon and the preferences (declared and free strings);
 - a reloaded store uses the cached metadata: no request and no script ran at start-up;
+- a cancellation while the manifest is written (a test hook, `afterManifestWrite`, cancels the caller) during
+  install, `refreshMetadata` and uninstall: the store, its files and a reloaded store agree with the manifest;
+- a malformed SHA-256 (`../../sentinel-…`) reinstalled over and uninstalled: the file it names outside the root
+  survives;
+- an empty icon (204, empty 200, a 0-byte file) is no icon;
+- one time limit for a download and its redirects (a fake client that takes 400 ms per request, 1 s limit);
+- an add or remove keeps repositories another store added to the stored list;
 - a corrupt manifest set aside; a tampered or missing text and a malformed SHA-256 as load errors while the other
   source loads; NSFW filtering; obsolete status after removing a repository, and not with none left.
+
+### Review fixes
+
+1. Cancellation during the manifest write: `withContext(Dispatchers.IO)` finished the write and then threw, so
+   `install` deleted the text the new manifest named (a broken source at the next start), `uninstall` left its state,
+   files and preferences, and `refreshMetadata` skipped its state update. Fixed with `NonCancellable` (above). The
+   JVM `MangayomiSourceStore` (app-shared) has the same pattern and is not changed here.
+2. Path traversal through a malformed `sha256`: the 64-hex check guarded the start-up read only; `install` (the old
+   text) and `uninstall` deleted `code/<sha256>.js` recursively for any value. `codePath` now refuses it.
+3. The repository list: the in-memory update and the defaults write were not ordered, and `refresh` / `addRepository`
+   read the list outside their listings update. One lock; the list is read inside the update.
+4. A 0-byte icon was returned by `iconFileForSource`.
+5. The repository list was read from the defaults once, so a change overwrote ones made elsewhere.
+6. The download timeout applied per redirect hop (about 6 × 120 s) while `install` held the lock for the icon.
+7. The test helper `installFixture(text)` ignored `text`.
 
 ### Not covered
 
