@@ -176,13 +176,19 @@ class DesktopCookieManager(
      * [includeSubdomains] (P23 review fix, the extension info's "Clear cookies"): also the cookies of the host's
      * subdomains (host-only or domain cookies of e.g. `cdn.www.example.com` for `www.example.com`); sibling hosts and
      * parent-domain hosts' own cookies still stay.
+     *
+     * A host that is itself a public suffix or shared hosting domain (`github.io`, `blogspot.com`; OkHttp's public
+     * suffix list, no registrable domain) has unrelated sites as its "subdomains": only its own cookies go then
+     * (P23 fixes review).
      */
     fun removeForHost(url: String, includeSubdomains: Boolean = false): Int {
-        val host = url.toHttpUrlOrNull()?.host ?: return 0
+        val httpUrl = url.toHttpUrlOrNull() ?: return 0
+        val host = httpUrl.host
+        val subdomains = includeSubdomains && httpUrl.topPrivateDomain() != null
         val removed = synchronized(lock) {
             removeExpired()
             val matching = cookies.filterValues {
-                it.appliesToHost(host) || (includeSubdomains && it.domain.endsWith(".$host"))
+                it.appliesToHost(host) || (subdomains && it.domain.endsWith(".$host"))
             }.keys
             matching.forEach {
                 cookies.remove(it)

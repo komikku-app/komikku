@@ -20,6 +20,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -46,6 +48,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 
 /**
  * End to end against [MockWebServer]: a generated extension store index and generated, signed
@@ -269,6 +273,44 @@ class DesktopExtensionManagerTest {
 
     @Test
     @Order(7)
+    fun `a store refresh that ends before the initial load still sets the loaded entries' statuses (P23 fixes review)`(): Unit = runBlocking {
+        routes["/apk/fixture-5.apk"] = fixtureApk(versionCode = 5, name = "Dex fixture v5", key = storeKey)
+        routes["/index.min.json"] = storeIndex(versionCode = 5, apk = "fixture-5.apk")
+        // The manager's initial load waits on this executor until the refresh below has finished
+        val executor = Executors.newSingleThreadExecutor()
+        val gate = CountDownLatch(1)
+        executor.execute { gate.await() }
+        try {
+            val reloaded = DesktopExtensionManager(
+                context = Injekt.get<Application>(),
+                extensionsDir = File(dataDir, "extensions"),
+                runtime = Injekt.get<ExtensionRuntime>(),
+                network = Injekt.get(),
+                storeRepository = Injekt.get<ExtensionStoreRepository>(),
+                preferences = Injekt.get(),
+                exhPreferences = Injekt.get(),
+                scope = CoroutineScope(SupervisorJob() + executor.asCoroutineDispatcher()),
+            )
+            reloaded.findAvailableExtensions()
+            reloaded.isInitialized.value shouldBe false
+            gate.countDown()
+            withTimeout(30_000) { reloaded.isInitialized.first { it } }
+
+            val extension = reloaded.installedExtensionsFlow.value.single()
+            extension.versionCode shouldBe 4L
+            extension.hasUpdate shouldBe true
+            extension.isObsolete shouldBe false
+            extension.store.shouldNotBeNull()
+            Injekt.get<SourcePreferences>().extensionUpdatesCount().get() shouldBe 1
+        } finally {
+            gate.countDown()
+            executor.shutdown()
+            routes["/index.min.json"] = storeIndex(versionCode = 4, apk = "fixture-4.apk")
+        }
+    }
+
+    @Test
+    @Order(8)
     fun `uninstalls an extension`(): Unit = runBlocking {
         manager.uninstall(pkg)
 

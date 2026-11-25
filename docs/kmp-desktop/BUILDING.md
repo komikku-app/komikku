@@ -149,10 +149,16 @@ and macOS runners and uploads the installers as workflow artifacts (on Linux it 
 cannot block the Android build and, while the port is
 experimental, does not fail the PR check (`continue-on-error`).
 
+**Testing on a Mac** (getting the CI `.dmg` or building it, opening the unsigned app, data and logs, a first test
+pass, what to send back): [`TESTING_MAC.md`](TESTING_MAC.md).
+
 ## Release pipeline
 
-`build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — **never
-executed yet**:
+`build_desktop.yml` (P9, [`PROGRESS.md`](PROGRESS.md#p9--desktop-release-pipeline-and-signing-hooks)) — first run
+in M1 ([`PROGRESS.md`](PROGRESS.md#m1--first-macos-ci-build)), artifacts only; the release job has never run.
+**Temporary bring-up trigger:** while the port is on `claude/kmp-multiplatform-support`, a push to that branch that
+changes the workflow file or `.github/desktop-build-trigger` (bump the counter in it) starts a run with release mode
+`none` (a dispatch-only workflow off the default branch cannot be started); remove both when the port reaches master.
 
 - **Jobs:** `plan` (`contents: read`: decides the mode and tag and, in a release mode, checks that the release tag
   points to the run's commit), `package` (`contents: read`; one job per runner: `ubuntu-24.04` x64, `windows-2022`
@@ -322,11 +328,10 @@ error) overrides it when the app's JVM is started with it (`-Dkomikku.log.level=
 
 ## Known limitations
 
-- Packaging and the desktop workflow have not been run yet: the configuration was checked with
-  `:desktopApp:tasks --all`, a dry run (`-m`) of `packageDistributionForCurrentOS`, `createRuntimeImage`
-  (jlink with the chosen modules), `:desktopApp:help` with dummy signing settings, the asset script on stand-in files,
-  YAML parsing and `actionlint` only. Installers, icons inside them, file associations
-  and upgrade behaviour are unverified.
+- The desktop workflow has built installers in CI (M1: macOS arm64 `.dmg` and Windows `.msi` / `.exe`; Linux and
+  macOS Intel see [`PROGRESS.md`](PROGRESS.md#m1--first-macos-ci-build)), but no installer has been installed or
+  started yet: icons inside them, first start, file associations and upgrade behaviour are unverified. The release
+  job has never run.
 - Signing / notarization only as hooks (never run, no certificates), no in-app update download / install (the update check only opens the release page), no
   file associations, no embedded browser (Cloudflare checks by hand or through a FlareSolverr-compatible service you
   run, logins by hand; see above).

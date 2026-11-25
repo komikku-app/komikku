@@ -112,6 +112,29 @@ class CookieManagerTest {
     }
 
     @Test
+    fun `host-wide removal with subdomains of a public suffix host takes only that host's cookies (P23 fixes review)`() {
+        val manager = manager()
+        manager.setCookie("https://github.io/", "suffix=1")
+        manager.setCookie("https://foo.github.io/", "foo=1")
+        manager.setCookie("https://cdn.foo.github.io/", "fooCdn=1")
+        manager.setCookie("https://bar.github.io/", "bar=1")
+        manager.setCookie("https://blogspot.com/", "blog=1")
+        manager.setCookie("https://site.blogspot.com/", "site=1")
+
+        // Shared hosting / public suffixes: their "subdomains" are unrelated sites
+        manager.removeForHost("https://github.io/", includeSubdomains = true) shouldBe 1
+        manager.removeForHost("https://blogspot.com/", includeSubdomains = true) shouldBe 1
+        manager.getCookie("https://foo.github.io/") shouldBe "foo=1"
+        manager.getCookie("https://bar.github.io/") shouldBe "bar=1"
+        manager.getCookie("https://site.blogspot.com/") shouldBe "site=1"
+
+        // A site on such a host still gets its own subdomains removed
+        manager.removeForHost("https://foo.github.io/", includeSubdomains = true) shouldBe 2
+        manager.getCookie("https://cdn.foo.github.io/") shouldBe null
+        manager.getCookie("https://bar.github.io/") shouldBe "bar=1"
+    }
+
+    @Test
     fun `a cookie the site sets replaces a pasted one of the same name on another domain (P7 review)`() {
         val manager = manager()
         fun pasted(name: String, value: String, domain: String, hostOnly: Boolean) = Cookie.Builder()

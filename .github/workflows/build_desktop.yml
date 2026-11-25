@@ -154,15 +154,7 @@ jobs:
           # Dmg; Intel (x64)
           - os: 'macos-15-intel'
             asset-os: macos
-            # KMK -->
-            # Not verified that GitHub still offers this label: while it is unverified, a failing Intel build does
-            # not fail the run when nothing is released (artifacts-only runs; a release still needs every job)
-            optional: true
-            # KMK <--
     runs-on: ${{ matrix.os }}
-    # KMK -->
-    continue-on-error: ${{ matrix.optional == true && needs.plan.outputs.mode == 'none' }}
-    # KMK <--
     # A newer run of the same ref cancels this runner's packaging (see the note at the top)
     concurrency:
       group: ${{ github.workflow }}-package-${{ github.ref }}-${{ matrix.os }}

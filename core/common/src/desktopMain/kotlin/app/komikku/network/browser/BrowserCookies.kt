@@ -3,6 +3,7 @@ package app.komikku.network.browser
 import android.webkit.CookieManager
 import app.komikku.desktop.compat.DesktopCookieManager
 import eu.kanade.tachiyomi.network.AndroidCookieJar
+import exh.log.xLogW
 import okhttp3.Cookie
 import okhttp3.HttpUrl
 
@@ -45,10 +46,16 @@ fun AndroidCookieJar.removeBrowserCookies(url: HttpUrl, names: Collection<String
  * Removes every jar cookie of [url]'s host, whatever its path (`Path=/manga` included) or name: the host's own cookies
  * and the domain cookies of the host or a parent domain; other hosts' cookies stay (P23, a site's "Clear cookies").
  * Returns how many. [includeSubdomains]: also the cookies of the host's subdomains (`DesktopCookieManager.removeForHost`,
- * P23 review fix). Without the desktop `CookieManager`, the jar's own removal for [url].
+ * P23 review fix). Without the desktop `CookieManager`, the jar's own removal for [url]: a plain `CookieManager` cannot
+ * list the cookies of other hosts, so the subdomains' cookies stay on that path (logged; P23 fixes review).
  */
-fun AndroidCookieJar.removeHostCookies(url: HttpUrl, includeSubdomains: Boolean = false): Int =
-    desktopCookieManager?.removeForHost(url.toString(), includeSubdomains) ?: remove(url, null, 0)
+fun AndroidCookieJar.removeHostCookies(url: HttpUrl, includeSubdomains: Boolean = false): Int {
+    desktopCookieManager?.let { return it.removeForHost(url.toString(), includeSubdomains) }
+    if (includeSubdomains) {
+        xLogW("Clearing the cookies of ${url.host}: its subdomains' cookies are kept (no desktop cookie store)")
+    }
+    return remove(url, null, 0)
+}
 
 /**
  * Stores cookies a user pasted ("Open in WebView" without a browser), marked so that a cookie of the same name the site

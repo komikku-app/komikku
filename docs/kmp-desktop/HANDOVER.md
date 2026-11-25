@@ -481,18 +481,26 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
-- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the docs commit "Record the P23 review fixes" (last
-  code commit `0b55233`), in sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
+- **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
+  through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
+  First green run: <https://github.com/komikku-app/komikku/actions/runs/45623103294> (macOS arm64 + x64 `.dmg`,
+  Windows `.msi` / `.exe`, Linux `.deb` / `.rpm` / `.tar.gz`). The maintainer's Mac test guide:
+  [`TESTING_MAC.md`](TESTING_MAC.md). Nobody has opened the app on a Mac yet; the suspects are listed in PROGRESS M1.
+  Remove the trigger and the marker file before the port goes to master.
+- **Review fixes (P23 fixes):** the five findings on `80d94dd..25a39cd` are fixed (PROGRESS "Review fixes (P23
+  fixes)"); not reviewed yet.
+- **State:** branch `claude/kmp-multiplatform-support`, HEAD = the M1 docs commit (last code commit `cd5e31d`), in
+  sync with origin. Another session may push iOS commits to the same branch (`source-js/**/ios*`,
   `.github/workflows/build_ios_check.yml`, `docs/kmp-desktop/IOS_CI.md`): leave those files alone, merge (never rebase or
   force) when a push is rejected.
-- **Last full `:desktopApp:test`:** on `0b55233` (the code of HEAD): 81 classes, 371 tests, 0 failures (was 81 / 369: `BrowseMigrateUiTest` +1,
+- **Last full `:desktopApp:test`:** on `cd5e31d` (P23 fixes review): 81 classes, 373 tests, 0 failures, `:desktop:android-compat:test` 7 classes, 37 tests, 0 failures. Before that, on `0b55233`: 81 classes, 371 tests, 0 failures (was 81 / 369: `BrowseMigrateUiTest` +1,
   `ExtensionDetailsUiTest` +1), the timing-sensitive classes (`DesktopBackupJobsTest`, `DesktopExtensionManagerTest`,
   `ReaderNavigationTest`, `MangayomiSourceStoreTest`) included and passing; `:desktop:android-compat:test` 7 classes,
   36 tests, 0 failures (was 35: `CookieManagerTest` +1).
 - **Reviewed:** `c968ba3..80d94dd` (the P22 review fixes and P23); its six findings are fixed (PROGRESS "Review fixes
   (P23)"). **Not reviewed:** those review fixes, `80d94dd..` the P23 review-fix docs commit. Open from them: no
   deterministic race test for the extension manager's atomic entry updates; the "no repository → not obsolete" test was
-  not run failing-first. Never run: the desktop app in a real window, `build_desktop.yml`, Android on a device (item 7).
+  not run failing-first. Never run: the desktop app in a real window (on any OS), the release job of `build_desktop.yml`, Android on a device (item 7).
 - **Next items** (from PROGRESS "Remaining parity gaps", in this order: small and headless-testable first, then by user
   impact, the big ones last):
   1. Reader leftovers (gap 4): tap-zone / keyboard navigation settings, SY's shift / invert double pages and centre
@@ -538,8 +546,8 @@ mark the residual path in both modules.
    configuration, migration from the duplicate dialog) and its review fixes are done; P20 (Browse → Migrate) and P21 (SY
    source categories) and their review fixes are done; P22 (extension info) and its review fixes and P23 (small open points from reviews, not reviewed) are done; **next**: the
    items in "Next session" above; then the maintainer's
-   first run of `build_desktop.yml` (PROGRESS P9 "What the maintainer must do before the first run": runner labels,
-   a `release_mode: none` run, then `existing` from the tag on the Android draft, certificates for signing), and the
+   test of the CI `.dmg` on a Mac (TESTING_MAC.md; `build_desktop.yml` has run artifacts-only in M1), then a release
+   run (`existing` from the tag on the Android draft, PROGRESS P9) and certificates for signing, and the
    first real run of the app (item 7). Known gaps: P6's (no real request against `api.github.com`, the dialog not
    shown in a real window, no build with `-Penable-updater` / `-Pdesktop-preview` run; Android's own
    `GetApplicationRelease.isNewVersion` still throws on an odd tag), P5's (macOS / Windows
