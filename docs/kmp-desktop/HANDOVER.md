@@ -494,7 +494,9 @@ mark the residual path in both modules.
   the data folder at `@AfterAll`: the index was the last write, ~0.3 s before clean-up). `DesktopInjekt.stopDelayedWriters()`
   now cancels and joins it, run after every test class by the autodetected `DesktopDataDirTeardown` (PROGRESS M1
   "Flaky `@TempDir` clean-up"). Other delayed writers into the data folder register with
-  `DesktopInjekt.onCreatedWriter` if one shows up.
+  `DesktopInjekt.onCreatedWriter` if one shows up. After the fix (`f49581d`): `:app:verifyBorrowedSources`,
+  `:app:compileDebugKotlin` pass and the full `:desktopApp:test` passed with 81 classes, 373 tests, 0 failures; the
+  fix has not been code-reviewed and has not run in CI yet (no desktop build was started for it).
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,
