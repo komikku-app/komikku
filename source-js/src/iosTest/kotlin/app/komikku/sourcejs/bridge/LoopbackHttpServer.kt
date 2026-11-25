@@ -104,7 +104,9 @@ internal class LoopbackHttpServer(private val handler: (Request) -> Response) {
                 response.headers.forEach { (name, value) -> append("$name: $value\r\n") }
                 append("Content-Length: ${response.body.size}\r\nConnection: close\r\n\r\n")
             }
-            writeAll(connection, head.encodeToByteArray() + response.body)
+            // A HEAD response declares the length of the body it does not send.
+            val body = if (request.method == "HEAD") ByteArray(0) else response.body
+            writeAll(connection, head.encodeToByteArray() + body)
         } finally {
             closeFd(connection)
         }

@@ -46,6 +46,8 @@ import kotlin.time.TimeSource
  *   own engine).
  * - The response: status, headers as received (repeated names joined by Foundation; the bridge joins Ktor's separate
  *   values the same way), the body capped at [HostHttpRequest.maxBodyBytes] with [HttpBridge.tooLargeMessage].
+ *   A `HEAD` response and a 204 / 304 have an empty body whatever their `Content-Length` says (OkHttp's
+ *   `promisesBody`).
  * - HTTP error statuses are returned; network failures throw. Cancelling the coroutine cancels the
  *   `NSURLSessionTask`. Certificates are verified by NSURLSession (no challenge handler is installed).
  *
@@ -164,11 +166,22 @@ class DarwinHostHttp private constructor(
                     headers = buildList {
                         response.headers.forEach { name, values -> values.forEach { add(name to it) } }
                     },
-                    body = response.readBody(maxBodyBytes),
+                    body = if (promisesBody(hop.method, response.status.value)) {
+                        response.readBody(maxBodyBytes)
+                    } else {
+                        ByteArray(0)
+                    },
                 ),
             )
         }
     }
+
+    /**
+     * Whether a response has a body (OkHttp's `promisesBody`): not for `HEAD`, whose `Content-Length` is the `GET`'s,
+     * nor for 204 / 304.
+     */
+    private fun promisesBody(method: String, code: Int): Boolean =
+        method != "HEAD" && code != 204 && code != 304
 
     /** The next hop when [response] is a redirect OkHttp would follow, `null` otherwise (it is the result then). */
     private fun redirectOf(hop: Hop, response: HttpResponse): Hop? {
@@ -207,8 +220,10 @@ class DarwinHostHttp private constructor(
     private suspend fun HttpResponse.readBody(maxBytes: Long?): ByteArray {
         val channel = bodyAsChannel()
         if (maxBytes == null || maxBytes == Long.MAX_VALUE) return channel.readBuffer().readByteArray()
-        // Ktor removes Content-Length when the session decompressed the body, so this is the body's length.
+        // Ktor removes Content-Length when the session decompressed the body, so this is the body's length, except
+        // where Ktor keeps the encoding headers (`OPTIONS`): then it is the compressed length.
         val declared = headers[HttpHeaders.ContentLength]?.toLongOrNull()
+            ?.takeIf { headers[HttpHeaders.ContentEncoding] == null }
         if (declared != null && declared > maxBytes) throw IOException(HttpBridge.tooLargeMessage(maxBytes))
         val bytes = channel.readBuffer(maxBytes + 1).readByteArray()
         if (bytes.size > maxBytes) throw IOException(HttpBridge.tooLargeMessage(maxBytes))

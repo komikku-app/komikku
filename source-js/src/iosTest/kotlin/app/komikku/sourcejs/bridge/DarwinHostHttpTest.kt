@@ -226,6 +226,20 @@ class DarwinHostHttpTest {
     }
 
     @Test
+    fun headAnd204And304HaveNoBody() = timedTest {
+        // A HEAD declares the length of the GET's body; Ktor keeps that Content-Length for HEAD.
+        handler = { respond(ByteReadChannel.Empty, HttpStatusCode.OK, headersOf(HttpHeaders.ContentLength, "4096")) }
+        val head = http.execute(HostHttpRequest("HEAD", "https://h.test/big", emptyList(), null, maxBodyBytes = 1024))
+        assertEquals(200 to 0, head.statusCode to head.body.size)
+        assertEquals(listOf("4096"), head.headers.filter { it.first.equals("Content-Length", true) }.map { it.second })
+        listOf(HttpStatusCode.NoContent, HttpStatusCode.NotModified).forEach { status ->
+            handler = { respond(ByteReadChannel.Empty, status, headersOf(HttpHeaders.ContentLength, "4096")) }
+            val response = http.execute(get("https://h.test/${status.value}", maxBodyBytes = 1024))
+            assertEquals(status.value to 0, response.statusCode to response.body.size)
+        }
+    }
+
+    @Test
     fun refusesUrlsOtherThanHttpLikeOkHttp() = timedTest {
         handler = { respond("ok") }
         val data = assertFailsWith<IllegalArgumentException> { http.execute(get("data:,x")) }

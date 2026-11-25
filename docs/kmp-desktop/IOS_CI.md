@@ -125,8 +125,10 @@ desktop do not see Ktor.
   (Ktor refuses them). OkHttp's body rules: an empty body for `POST` / `PUT` / `PATCH` / `PROPPATCH` / `REPORT`
   without one, `GET` / `HEAD` with a body fail. The response: status, headers (NSURLResponse already joins repeated
   names with `", "`, the bridge joins Ktor's separate values the same way), the body capped at `maxBodyBytes`
-  (declared `Content-Length` first, then at most cap + 1 bytes read) with `HttpBridge.tooLargeMessage`. Error
-  statuses are returned. TLS is NSURLSession's default validation (no challenge handler).
+  (declared `Content-Length` first, then at most cap + 1 bytes read) with `HttpBridge.tooLargeMessage`. A `HEAD`
+  response and a 204 / 304 have an empty body and no length check (OkHttp's `promisesBody`): Ktor keeps
+  `Content-Length` for `HEAD`, where it is the `GET`'s length. A `Content-Length` next to a kept `Content-Encoding`
+  (Ktor keeps both for `OPTIONS`) is the compressed length and is not checked either. Error statuses are returned. TLS is NSURLSession's default validation (no challenge handler).
 - **Redirects are followed by `DarwinHostHttp`, not by Ktor.** Ktor's Darwin engine already disables NSURLSession's
   own redirects; Ktor's `HttpRedirect` follows only `GET` / `HEAD`, keeps the method and body on 301 / 302 / 303 and
   refuses HTTPS → HTTP. So the client runs with `followRedirects = false` and `DarwinHostHttp` applies OkHttp's

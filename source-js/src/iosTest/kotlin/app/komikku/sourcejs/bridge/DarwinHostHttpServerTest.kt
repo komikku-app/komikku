@@ -130,6 +130,14 @@ class DarwinHostHttpServerTest {
     }
 
     @Test
+    fun headHasNoBodyWhateverItsLength() = timedTest {
+        val response = http.execute(HostHttpRequest("HEAD", "$base/big", emptyList(), null, maxBodyBytes = 1024))
+        assertEquals(200, response.statusCode)
+        assertEquals(0, response.body.size)
+        assertEquals("2048", response.headers.firstOrNull { it.first.equals("Content-Length", ignoreCase = true) }?.second)
+    }
+
+    @Test
     fun timeoutAndBodyCap() = timedTest {
         val late = assertFailsWith<IOException> {
             http.execute(HostHttpRequest("GET", "$base/slow", emptyList(), null, timeoutMillis = 300))
