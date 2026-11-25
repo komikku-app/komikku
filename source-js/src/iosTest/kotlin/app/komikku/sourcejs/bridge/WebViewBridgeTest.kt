@@ -46,8 +46,8 @@ class WebViewBridgeTest {
 
     @Test
     fun theBridgeIsFlutterInAppWebViewsCallHandler() {
-        assertTrue("window.flutter_inappwebview = {" in WebViewBridge.BRIDGE_SCRIPT)
-        assertTrue("messageHandlers.${WebViewBridge.HANDLER_NAME}" in WebViewBridge.BRIDGE_SCRIPT)
+        assertTrue("window.flutter_inappwebview = {" in WebViewBridge.BRIDGE_SCRIPT, WebViewBridge.BRIDGE_SCRIPT)
+        assertTrue("handlers.${WebViewBridge.HANDLER_NAME};" in WebViewBridge.BRIDGE_SCRIPT, WebViewBridge.BRIDGE_SCRIPT)
         assertTrue("flutterInAppWebViewPlatformReady" in WebViewBridge.PLATFORM_READY_SCRIPT)
     }
 

@@ -79,6 +79,55 @@ jobs:
           :source-js:iosSimulatorArm64Test
           --max-workers=2
 
+      # The WebKit tests again, inside an app bundle: the test task spawns the bare test executable, where WebKit
+      # cannot start its web content and networking processes, so those tests return early there
+      # (source-js/src/iosTest/.../WebKitTest.kt). Installed and launched as an app on a booted simulator, with
+      # KMK_WEBKIT_REQUIRED=1 so that a web view that does not work fails them (docs/kmp-desktop/IOS_CI.md, I5c)
+      - name: WebKit tests in a simulator app
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/SourceJsTests.app"
+          BUNDLE_ID=app.komikku.sourcejs.tests
+          rm -rf "$APP" && mkdir -p "$APP"
+          cp source-js/build/bin/iosSimulatorArm64/debugTest/test.kexe "$APP/SourceJsTests"
+          cat > "$APP/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleIdentifier</key><string>app.komikku.sourcejs.tests</string>
+            <key>CFBundleExecutable</key><string>SourceJsTests</string>
+            <key>CFBundleName</key><string>SourceJsTests</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>1.0</string>
+            <key>CFBundleVersion</key><string>1</string>
+            <key>CFBundleSupportedPlatforms</key><array><string>iPhoneSimulator</string></array>
+            <key>LSRequiresIPhoneOS</key><true/>
+            <key>MinimumOSVersion</key><string>14.0</string>
+            <key>UIDeviceFamily</key><array><integer>1</integer><integer>2</integer></array>
+          </dict>
+          </plist>
+          PLIST
+          codesign --force --sign - "$APP"
+          UDID=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          ios = sorted((runtime, d["name"], d["udid"]) for runtime, ds in devices.items() if "iOS" in runtime for d in ds if d["name"].startswith("iPhone"))
+          print(ios[-1][2])
+          ')
+          echo "Simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          SIMCTL_CHILD_KMK_WEBKIT_REQUIRED=1 xcrun simctl launch --console-pty --terminate-running-process "$UDID" "$BUNDLE_ID" \
+            '--ktest_filter=*WKWebViewHostWebViewTest.*:*WebViewBridgeTest.*:*IosJsSourceRuntimeWebViewTest.*' \
+            2>&1 | tee "$RUNNER_TEMP/webkit-tests.log" || true
+          xcrun simctl shutdown "$UDID" || true
+          # The runner's own summary: every test passed, none failed, none skipped by WebKitTest
+          grep -E '^\[ +PASSED +\] [0-9]+ tests' "$RUNNER_TEMP/webkit-tests.log"
+          if grep -E '^\[ +FAILED +\]|SKIPPED: ' "$RUNNER_TEMP/webkit-tests.log"; then exit 1; fi
+
       - name: Upload test report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

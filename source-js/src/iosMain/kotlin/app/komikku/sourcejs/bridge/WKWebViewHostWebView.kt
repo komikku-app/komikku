@@ -335,11 +335,14 @@ class WKWebViewHostWebView(
 
         /** The app's key window, or `null` without a running `UIApplication` (a test process). */
         internal fun keyWindowOrNull(): UIView? {
-            // `sharedApplication` is nil in a process that is not an app (the simulator test binary), and Kotlin types
-            // it non-null, so it is only read in an app.
+            // `sharedApplication` is nil in a process that is not an app (the simulator test binary) or that did not
+            // run `UIApplicationMain`, and Kotlin types it non-null: calling it on nil crashed the test process. So it
+            // is only read in an app bundle, and checked through a nullable parameter the compiler cannot drop.
             if (!isAppProcess) return null
             return try {
-                val windows = UIApplication.sharedApplication.connectedScenes
+                val application = UIApplication.sharedApplication
+                if (isNil(application)) return null
+                val windows = application.connectedScenes
                     .filterIsInstance<UIWindowScene>()
                     .flatMap { scene -> scene.windows.filterIsInstance<UIWindow>() }
                 windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull()
@@ -347,6 +350,8 @@ class WKWebViewHostWebView(
                 null
             }
         }
+
+        private fun isNil(value: Any?): Boolean = value == null
 
         /** Whether this process is an app (its main bundle is an `.app`), where `UIApplicationMain` runs. */
         private val isAppProcess: Boolean by lazy { NSBundle.mainBundle.bundlePath.endsWith(".app") }

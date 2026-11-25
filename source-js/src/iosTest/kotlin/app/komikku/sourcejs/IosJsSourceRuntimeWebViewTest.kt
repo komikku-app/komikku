@@ -75,7 +75,7 @@ class DefaultExtension extends MProvider {
     }
 
     @Test
-    fun aSourceReadsAPageThroughTheWebView() = mainRunLoopTest {
+    fun aSourceReadsAPageThroughTheWebView() = webKitTest {
         val page = runtime.extension(descriptor, code).getPopular(1)
         assertEquals(
             JsMangaPage(

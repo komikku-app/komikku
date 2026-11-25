@@ -2,6 +2,7 @@ package app.komikku.sourcejs.bridge
 
 import app.komikku.sourcejs.bridge.LoopbackHttpServer.Response
 import app.komikku.sourcejs.mainRunLoopTest
+import app.komikku.sourcejs.webKitTest
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -100,7 +101,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun runsTheScriptsAfterLoadAndReturnsTheReportedValue() = mainRunLoopTest {
+    fun runsTheScriptsAfterLoadAndReturnsTheReportedValue() = webKitTest {
         val value = webView.evaluate(
             url = "$base/dir é/page",
             headers = mapOf("X-Token" to "t1"),
@@ -118,17 +119,17 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun aPageReportsLaterWithItsOwnTimer() = mainRunLoopTest {
+    fun aPageReportsLaterWithItsOwnTimer() = webKitTest {
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
     }
 
     @Test
-    fun aFrameCanReport() = mainRunLoopTest {
+    fun aFrameCanReport() = webKitTest {
         assertEquals("from frame", webView.evaluate("$base/outer", emptyMap(), emptyList(), 20))
     }
 
     @Test
-    fun anErrorStatusPageStillRunsTheScripts() = mainRunLoopTest {
+    fun anErrorStatusPageStillRunsTheScripts() = webKitTest {
         val value = webView.evaluate(
             "$base/missing",
             emptyMap(),
@@ -139,7 +140,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun aValueThatIsNotAStringRejectsAndTheCallGoesOn() = mainRunLoopTest {
+    fun aValueThatIsNotAStringRejectsAndTheCallGoesOn() = webKitTest {
         val bridge = "window.flutter_inappwebview"
         val value = webView.evaluate(
             "$base/silent",
@@ -168,7 +169,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun aFailedNavigationEndsTheCallWithAnEmptyValue() = mainRunLoopTest {
+    fun aFailedNavigationEndsTheCallWithAnEmptyValue() = webKitTest {
         val closed = LoopbackHttpServer { Response(200) }
         val url = closed.baseUrl + "/page"
         closed.close()
@@ -204,7 +205,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun cancellationTearsTheWebViewDown() = mainRunLoopTest {
+    fun cancellationTearsTheWebViewDown() = webKitTest {
         val call = async { webView.evaluate("$base/ticker", emptyMap(), emptyList(), 25) }
         withTimeout(15_000) {
             while (pings.value < 3) delay(50)
@@ -223,7 +224,7 @@ class WKWebViewHostWebViewTest {
 
     @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class)
     @Test
-    fun noWebViewIsKeptAliveAfterTheCall() = mainRunLoopTest {
+    fun noWebViewIsKeptAliveAfterTheCall() = webKitTest {
         var weak: WeakReference<Any>? = null
         webView.onWebViewCreated = { weak = WeakReference(it) }
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
@@ -239,7 +240,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun sharesCookiesWithTheSharedCookieStorage() = mainRunLoopTest {
+    fun sharesCookiesWithTheSharedCookieStorage() = webKitTest {
         val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
         storage.setCookie(cookieOf("${cookie}_in", "v1"))
         storage.setCookie(cookieOf("${cookie}_gone", "old"))
@@ -264,7 +265,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun withoutACookieStorageEveryCallIsIsolated() = mainRunLoopTest {
+    fun withoutACookieStorageEveryCallIsIsolated() = webKitTest {
         val isolated = WKWebViewHostWebView(cookieStorage = null)
         NSHTTPCookieStorage.sharedHTTPCookieStorage.setCookie(cookieOf("${cookie}_in", "v1"))
         val value = isolated.evaluate(
@@ -289,7 +290,7 @@ class WKWebViewHostWebViewTest {
     }
 
     @Test
-    fun atMostTwoWebViewsAtOnce() = mainRunLoopTest {
+    fun atMostTwoWebViewsAtOnce() = webKitTest {
         var peak = 0
         webView.onWebViewCreated = { peak = maxOf(peak, webView.liveWebViews) }
         val values = List(4) { async { webView.evaluate("$base/slow-report", emptyMap(), emptyList(), 25) } }.awaitAll()
