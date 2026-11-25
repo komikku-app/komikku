@@ -148,6 +148,7 @@ class IosJsSourceStoreTest {
     private suspend fun IosJsSourceStore.item(id: Long = ID) = items.first().single { it.id == id }
 
     private suspend fun IosJsSourceStore.installFixture(text: String = code("v1")): IosJsSource {
+        http.route(CODE_URL, text)
         addRepository(REPO_URL)
         val download = download(offer(ID)!!)
         return install(download.offer, download.sha256)
