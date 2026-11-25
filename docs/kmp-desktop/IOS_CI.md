@@ -106,7 +106,7 @@ and `iosTest`; nothing JVM changed.
 | `NSUserDefaultsKeyValueStore` | same file | a `JsKeyValueStore` on `NSUserDefaults` (for `KeyValueHostPreferences`; not used by the runtime) |
 | `IosJsSourceRuntime` | `iosMain/.../IosJsSourceRuntime.kt` | `JsExtensionHost` with the iOS services: `IosJsSourceRuntime().extension(descriptor, code)` |
 
-Library: **Ktor 3.6.1** (`ktor-client-core`, `ktor-client-darwin`; tests `ktor-client-mock`, `ktor-server-cio`), the
+Library: **Ktor 3.6.1** (`ktor-client-core`, `ktor-client-darwin`; tests `ktor-client-mock`), the
 latest release on Maven Central (2026-11-25); it is built with Kotlin 2.3.21 and kotlinx-coroutines 1.11.0, so it
 works with the project's Kotlin 2.4.20 / coroutines 1.11.0. Catalog entries in `gradle/libs.versions.toml` (KMK
 block); the dependencies are declared only for the iOS source sets of `source-js/build.gradle.kts`, so Android and
@@ -154,10 +154,15 @@ desktop do not see Ktor.
   method, `Accept-Encoding` dropped and no added `Accept`, body rules, raw bytes, redirects followed or not (relative
   location), OkHttp's method / header changes on 302 / 307 / cross-host, the 20 follow-up limit, the timeout, the
   body cap (declared, streamed, exact, unbounded), cancellation reaching the engine, a source through `Client`.
-- `DarwinHostHttpServerTest` (5): the real Darwin engine against a Ktor CIO server started inside the simulator test
-  process on `127.0.0.1` (cheap: a test dependency and a few lines; App Transport Security does not apply to IP
-  addresses): the session's own `Accept-Encoding`, repeated response headers, gzip decompressed with the encoding
-  headers gone, no native redirects, timeout and body cap, cancellation of a real task.
+- `DarwinHostHttpServerTest` (5): the real Darwin engine against `LoopbackHttpServer`, a small HTTP/1.1 server on
+  POSIX sockets and `NSThread`s inside the simulator test process, on `127.0.0.1` (App Transport Security does not
+  apply to IP addresses): the session's own `Accept-Encoding`, repeated response headers, gzip decompressed with the
+  encoding headers gone, no native redirects, timeout and body cap, cancellation of a real task. A Ktor CIO server
+  was tried first and never started in the simulator process (every start timed out, run 45544362098), so the test
+  server has no dependency.
+- The iOS tests run in `timedTest` (a `runBlocking` with a 30 s limit), and the native test tasks log each test's
+  start and result (`source-js/build.gradle.kts`), so a hang names its test in the CI log instead of stalling the job
+  (the first run, 45540635477, hung silently and was cancelled).
 - `NSUserDefaultsHostPreferencesTest` (4): native types in the suite, typing by declarations and declared order,
   the free string store, the key-value store.
 - `IosJsSourceRuntimeTest` (1): end to end: a fixture source's `getPopular` fetches HTML over `DarwinHostHttp`
