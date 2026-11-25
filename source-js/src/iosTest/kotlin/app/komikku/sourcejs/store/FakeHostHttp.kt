@@ -4,6 +4,7 @@ import app.komikku.sourcejs.bridge.HostHttp
 import app.komikku.sourcejs.bridge.HostHttpRequest
 import app.komikku.sourcejs.bridge.HostHttpResponse
 import app.komikku.sourcejs.bridge.HttpBridge
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.io.IOException
@@ -22,6 +23,12 @@ internal class FakeHostHttp(var enforceBodyCap: Boolean = true) : HostHttp {
     private val routes = MutableStateFlow<Map<String, Route>>(emptyMap())
     private val failures = MutableStateFlow<Map<String, String>>(emptyMap())
     private val _requests = MutableStateFlow<List<HostHttpRequest>>(emptyList())
+
+    /**
+     * How long each request takes; one with a shorter [HostHttpRequest.timeoutMillis] fails with an `IOException`
+     * `timeout` once that time passed, like `DarwinHostHttp`.
+     */
+    var delayMillis: Long = 0
 
     val requests: List<HostHttpRequest> get() = _requests.value
 
@@ -48,6 +55,14 @@ internal class FakeHostHttp(var enforceBodyCap: Boolean = true) : HostHttp {
     override suspend fun execute(request: HostHttpRequest): HostHttpResponse {
         _requests.update { it + request }
         failures.value[request.url]?.let { throw IOException(it) }
+        if (delayMillis > 0) {
+            val timeout = request.timeoutMillis?.takeIf { it > 0 }
+            if (timeout != null && timeout < delayMillis) {
+                delay(timeout)
+                throw IOException("timeout")
+            }
+            delay(delayMillis)
+        }
         val route = routes.value[request.url] ?: return HostHttpResponse(404, emptyList(), "not found".encodeToByteArray())
         val cap = request.maxBodyBytes
         if (enforceBodyCap && cap != null && route.body.size > cap) throw IOException(HttpBridge.tooLargeMessage(cap))

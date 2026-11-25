@@ -459,6 +459,26 @@ class IosJsSourceStoreTest {
     }
 
     @Test
+    fun oneTimeLimitCoversADownloadWithItsRedirects() = timedTest {
+        serveRepository()
+        val store = newStore(limits = IosJsSourceStore.Limits(timeoutMillis = 1_000)).loaded()
+        store.addRepository(REPO_URL)
+        http.redirect(CODE_URL, "https://cdn.test/1.js")
+        http.redirect("https://cdn.test/1.js", "https://cdn.test/2.js")
+        http.route("https://cdn.test/2.js", code("v1"))
+        http.clearRequests()
+        // Three requests of 400 ms each: each fits in 1 s, all three do not.
+        http.delayMillis = 400
+        assertStoreFailure(Reason.DOWNLOAD_FAILED) { store.download(store.offer(ID)!!) }
+        // Each request was given the time left, not the whole limit again.
+        val timeouts = http.requests.map { it.timeoutMillis!! }
+        assertTrue(timeouts.size >= 2 && timeouts.first() <= 1_000 && timeouts.zipWithNext().all { (a, b) -> b < a }, "$timeouts")
+        // Within the limit the download goes through.
+        http.delayMillis = 0
+        assertEquals("cdn.test", store.download(store.offer(ID)!!).host)
+    }
+
+    @Test
     fun uninstallRemovesFilesAndPreferences() = timedTest {
         serveRepository()
         val store = newStore().loaded()

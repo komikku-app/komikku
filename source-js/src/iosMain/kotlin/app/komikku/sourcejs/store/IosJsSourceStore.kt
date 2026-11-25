@@ -48,6 +48,8 @@ import platform.Foundation.NSLock
 import platform.Foundation.NSLog
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.timeIntervalSince1970
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 
 /**
  * KMK: the Mangayomi JavaScript sources installed in an iOS app (docs/kmp-desktop/IOS_CI.md, "I5b"), the iOS twin of
@@ -98,7 +100,7 @@ class IosJsSourceStore(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
 
-    /** Largest files the store downloads, in bytes, and the time limit of one download. */
+    /** Largest files the store downloads, in bytes, and the time limit of one download (all its redirects). */
     data class Limits(
         val indexBytes: Long = 8L * 1024 * 1024,
         val repoInfoBytes: Long = 64L * 1024,
@@ -384,7 +386,7 @@ class IosJsSourceStore(
         download(offer(id) ?: throw JsSourceStoreException(Reason.NOT_FOUND, "No repository offers the JavaScript source $id"))
 
     /**
-     * Installs (or updates to) the text of [offer] if it still has [confirmedSha256]: downloads it, checks the hash,
+     * Installs (or updates to) the text of [offer] if it still has [confirmedSha256]: downloads it (and its icon), checks the hash,
      * loads it (reads its metadata, which runs the script) while the installed version stays in use, stores the text
      * and manifest, then swaps the new source in and stores its icon. Any failure before the manifest is written (a
      * text that does not load, a file that cannot be written) changes nothing: the installed version stays in use and
@@ -402,6 +404,8 @@ class IosJsSourceStore(
                 "The text of ${descriptor.name} changed since it was confirmed (SHA-256 $sha256, confirmed $confirmedSha256)",
             )
         }
+        // Outside the lock (it does not depend on the store's state), so a slow icon holds up no other change.
+        val icon = fetchIcon(descriptor.id, descriptor.iconUrl)
         awaitLoaded()
         return mutex.withLock {
             val extension = runtime.extension(descriptor, text)
@@ -412,7 +416,6 @@ class IosJsSourceStore(
             } catch (e: Exception) {
                 throw JsSourceStoreException(Reason.LOAD_FAILED, "${descriptor.name} does not load: ${e.message}", e)
             }
-            val icon = fetchIcon(descriptor.id, descriptor.iconUrl)
             val current = _installed.value.orEmpty()
             val previous = current.find { it.id == descriptor.id }
             val code = checkNotNull(codePath(sha256)) { "sha256Hex gave a malformed SHA-256" }
@@ -696,17 +699,22 @@ class IosJsSourceStore(
     /**
      * GET [url] into memory, at most [limit] bytes (the client is asked to stop reading above it, and the body is
      * checked again). Redirects are followed here, at most [MAX_REDIRECTS], each target checked by [allowUrl] before
-     * it is requested.
+     * it is requested. [Limits.timeoutMillis] bounds the whole download: each request gets the time left.
      */
     private suspend fun fetchBytes(url: String, limit: Long): Fetched {
         var target = checkedUrl(url)
+        val deadline = limits.timeoutMillis.takeIf { it > 0 }?.let { TimeSource.Monotonic.markNow() + it.milliseconds }
         repeat(MAX_REDIRECTS + 1) {
+            val timeLeft = deadline?.let { -it.elapsedNow().inWholeMilliseconds }
+            if (timeLeft != null && timeLeft <= 0) {
+                throw JsSourceStoreException(Reason.DOWNLOAD_FAILED, "Could not download $url: timeout")
+            }
             val request = HostHttpRequest(
                 method = "GET",
                 url = target.toString(),
                 headers = listOf("Cache-Control" to "no-cache"),
                 body = null,
-                timeoutMillis = limits.timeoutMillis,
+                timeoutMillis = timeLeft,
                 followRedirects = false,
                 maxBodyBytes = limit,
             )
