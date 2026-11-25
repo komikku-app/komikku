@@ -11,7 +11,10 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
 import io.ktor.http.content.OutgoingContent
+import io.ktor.http.takeFrom
 import io.ktor.utils.io.readBuffer
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.currentCoroutineContext
@@ -21,7 +24,6 @@ import kotlinx.io.IOException
 import kotlinx.io.readByteArray
 import platform.Foundation.NSHTTPCookieAcceptPolicy
 import platform.Foundation.NSHTTPCookieStorage
-import platform.Foundation.NSURL
 import platform.Foundation.NSURLSessionConfiguration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
@@ -38,9 +40,11 @@ import kotlin.time.TimeSource
  * - A request body as given; `POST` / `PUT` / `PATCH` / `PROPPATCH` / `REPORT` without one send an empty body, `GET` /
  *   `HEAD` with one fail (OkHttp's rules).
  * - Redirects are followed here, not by NSURLSession or Ktor's `HttpRedirect`, with OkHttp's rules: up to 20
- *   follow-ups; 300 / 301 / 302 / 303 turn a request other than `GET` / `HEAD` / `PROPFIND` into a body-less `GET`,
- *   307 / 308 keep the method and body; `Authorization` is dropped when the scheme, host or port changes; HTTPS to
- *   HTTP is followed (OkHttp's default). With [HostHttpRequest.followRedirects] `false` the redirect is returned.
+ *   follow-ups; the `Location` is resolved against the URL that was sent (as Ktor encoded it); 300 / 301 / 302 / 303
+ *   turn a request other than `GET` / `HEAD` / `PROPFIND` into a body-less `GET`, 307 / 308 keep the method and body;
+ *   `Authorization` is dropped when the scheme, host or port changes; HTTPS to HTTP is followed (OkHttp's default);
+ *   a target other than `http` / `https` is not followed. With [HostHttpRequest.followRedirects] `false` the
+ *   redirect is returned.
  * - [HostHttpRequest.timeoutMillis] bounds the whole call (all hops and the body), like OkHttp's call timeout, and
  *   fails with an [IOException] `timeout`. Without it the session's idle timeout applies (30 s for [DarwinHostHttp]'s
  *   own engine).
@@ -188,10 +192,11 @@ class DarwinHostHttp private constructor(
         val code = response.status.value
         if (code !in REDIRECT_CODES) return null
         val location = response.headers[HttpHeaders.Location] ?: return null
-        val from = NSURL.URLWithString(hop.url) ?: return null
-        val target = NSURL.URLWithString(location, relativeToURL = from)?.absoluteURL ?: return null
-        if (target.scheme?.lowercase() !in HTTP_SCHEMES) return null
-        val targetUrl = target.absoluteString ?: return null
+        // The URL that was sent, as Ktor encoded it: the script's own text may have spaces or non-ASCII characters that
+        // `NSURL` rejects on iOS 16 and older.
+        val from = response.call.request.url
+        val target = resolve(from, location) ?: return null
+        if (target.protocol.name !in HTTP_SCHEMES) return null
 
         var method = hop.method
         var body = hop.body
@@ -205,16 +210,39 @@ class DarwinHostHttp private constructor(
         if (!sameOrigin(from, target)) {
             headers = headers.filterNot { (name, _) -> name.equals(HttpHeaders.Authorization, ignoreCase = true) }
         }
-        return Hop(method, targetUrl, headers, body)
+        return Hop(method, target.toString(), headers, body)
     }
 
-    private fun sameOrigin(a: NSURL, b: NSURL): Boolean =
-        a.scheme?.lowercase() == b.scheme?.lowercase() &&
-            a.host?.lowercase() == b.host?.lowercase() &&
-            effectivePort(a) == effectivePort(b)
+    /**
+     * [location] resolved against [base] (RFC 3986, section 5.2, like OkHttp's `HttpUrl.resolve`): a reference with a
+     * scheme or an authority stands alone (no user info or port of [base]); a reference with a path or a query
+     * replaces the base's query; the fragment is the reference's; dot segments are removed (as Ktor's `HttpRedirect`
+     * does). `null` when it does not parse: OkHttp's `resolve` returns `null` then, and the redirect is the result.
+     */
+    private fun resolve(base: Url, location: String): Url? = try {
+        val reference = location.trim()
+        val builder = when {
+            schemeOf(reference) != null -> URLBuilder().takeFrom(reference)
+            reference.startsWith("//") -> URLBuilder().apply { protocol = base.protocol }.takeFrom(reference)
+            else -> URLBuilder(base).apply {
+                if (reference.substringBefore('#').isNotEmpty()) {
+                    parameters.clear()
+                    trailingQuery = false
+                }
+                encodedFragment = ""
+                takeFrom(reference)
+            }
+        }
+        if (reference.substringBefore('#').substringBefore('?').isNotEmpty()) {
+            builder.encodedPathSegments = removeDotSegments(builder.encodedPathSegments)
+        }
+        builder.build()
+    } catch (e: Exception) {
+        null
+    }
 
-    private fun effectivePort(url: NSURL): Long =
-        url.port?.longValue ?: if (url.scheme?.lowercase() == "https") 443L else 80L
+    private fun sameOrigin(a: Url, b: Url): Boolean =
+        a.protocol.name == b.protocol.name && a.host.equals(b.host, ignoreCase = true) && a.port == b.port
 
     /** The body, failing as soon as it is known to exceed [maxBytes] (declared length or bytes read). */
     private suspend fun HttpResponse.readBody(maxBytes: Long?): ByteArray {
@@ -290,6 +318,25 @@ class DarwinHostHttp private constructor(
         private fun Char.isAsciiLetter() = this in 'a'..'z' || this in 'A'..'Z'
 
         private val ASCII_WHITESPACE = charArrayOf('\t', '\n', '\u000C', '\r', ' ')
+
+        /** Ktor `HttpRedirect`'s dot-segment removal; the root is kept, so `..` cannot go above it. */
+        private fun removeDotSegments(path: List<String>): List<String> {
+            if (path.none { it == "." || it == ".." }) return path
+            val segments = if (path.firstOrNull() == "") path else listOf("") + path
+            val output = ArrayList<String>(segments.size)
+            segments.forEachIndexed { index, segment ->
+                val isLast = index == segments.lastIndex
+                when (segment) {
+                    "." -> if (isLast) output.add("")
+                    ".." -> {
+                        if (output.size > 1) output.removeAt(output.lastIndex)
+                        if (isLast) output.add("")
+                    }
+                    else -> output.add(segment)
+                }
+            }
+            return output
+        }
 
         /** NSURLSession's request idle timeout of the default engine, like the app's OkHttp read timeout. */
         const val DEFAULT_IDLE_TIMEOUT_SECONDS = 30.0

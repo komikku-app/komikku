@@ -188,6 +188,51 @@ class DarwinHostHttpTest {
     }
 
     @Test
+    fun redirectsResolveAgainstTheUrlThatWasSent() = timedTest {
+        handler = { request ->
+            when (request.url.encodedPath) {
+                "/a%20b/%C3%A9/start" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "next?q=1"))
+                "/a%20b/%C3%A9/next" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "../up dir/ü"))
+                "/a%20b/up%20dir/%C3%BC" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "/final"))
+                else -> respond(request.url.toString())
+            }
+        }
+        val response = http.execute(get("https://h.test/a b/é/start?x=1"))
+        assertEquals("https://h.test/final", response.body.decodeToString())
+        // Spaces and non-ASCII encoded, the base's query not carried over, dot segments removed.
+        assertEquals(
+            listOf(
+                "https://h.test/a%20b/%C3%A9/start?x=1",
+                "https://h.test/a%20b/%C3%A9/next?q=1",
+                "https://h.test/a%20b/up%20dir/%C3%BC",
+                "https://h.test/final",
+            ),
+            recorded.map { it.url },
+        )
+    }
+
+    @Test
+    fun redirectsToAnotherAuthorityDoNotKeepTheBasesUserOrPort() = timedTest {
+        handler = { request ->
+            when (request.url.host) {
+                "h.test" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "//other.test/x"))
+                else -> respond("other")
+            }
+        }
+        http.execute(get("https://user:pw@h.test:8443/start", listOf("Authorization" to "Bearer x")))
+        val second = recorded.last()
+        assertEquals("https://other.test/x", second.url)
+        assertNull(second.headers["Authorization"])
+    }
+
+    @Test
+    fun redirectsToOtherSchemesAreTheResult() = timedTest {
+        handler = { respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "intent://x#Intent;end")) }
+        assertEquals(302, http.execute(get("https://h.test/app")).statusCode)
+        assertEquals(1, recorded.size)
+    }
+
+    @Test
     fun stopsAfterTwentyFollowUps() = timedTest {
         handler = { respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "/loop")) }
         val error = assertFailsWith<IOException> { http.execute(get("https://h.test/loop")) }

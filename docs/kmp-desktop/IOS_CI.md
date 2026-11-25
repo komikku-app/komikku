@@ -128,13 +128,17 @@ desktop do not see Ktor.
   (declared `Content-Length` first, then at most cap + 1 bytes read) with `HttpBridge.tooLargeMessage`. A `HEAD`
   response and a 204 / 304 have an empty body and no length check (OkHttp's `promisesBody`): Ktor keeps
   `Content-Length` for `HEAD`, where it is the `GET`'s length. A `Content-Length` next to a kept `Content-Encoding`
-  (Ktor keeps both for `OPTIONS`) is the compressed length and is not checked either. Error statuses are returned. TLS is NSURLSession's default validation (no challenge handler).
+  (Ktor keeps both for `OPTIONS`) is the compressed length and is not checked either. Error statuses are returned.
+  TLS is NSURLSession's default validation (no challenge handler).
 - **Redirects are followed by `DarwinHostHttp`, not by Ktor.** Ktor's Darwin engine already disables NSURLSession's
   own redirects; Ktor's `HttpRedirect` follows only `GET` / `HEAD`, keeps the method and body on 301 / 302 / 303 and
   refuses HTTPS → HTTP. So the client runs with `followRedirects = false` and `DarwinHostHttp` applies OkHttp's
-  `RetryAndFollowUpInterceptor` rules: 300 / 301 / 302 / 303 / 307 / 308 with a `Location`, resolved by `NSURL`
-  against the request URL; up to 20 follow-ups (`Too many follow-up requests: 21`); 307 / 308 (and `PROPFIND`) keep
-  method and body, the others turn into a body-less `GET` without `Content-Type` / `Content-Length` /
+  `RetryAndFollowUpInterceptor` rules: 300 / 301 / 302 / 303 / 307 / 308 with a `Location`, resolved with Ktor's
+  `URLBuilder.takeFrom` against the URL Ktor sent (`response.call.request.url`, already percent-encoded; `NSURL`
+  returns `nil` for the script's raw text with spaces or non-ASCII on iOS 16 and older) by RFC 3986's rules (a
+  reference with a scheme or authority stands alone, a path or query replaces the base query, dot segments removed);
+  only `http` / `https` targets; up to 20 follow-ups (`Too many follow-up requests: 21`); 307 / 308 (and
+  `PROPFIND`) keep method and body, the others turn into a body-less `GET` without `Content-Type` / `Content-Length` /
   `Transfer-Encoding`; `Authorization` dropped when scheme, host or port change; HTTPS → HTTP followed (OkHttp's
   `followSslRedirects` default).
 - **Cookies: the app's `NSHTTPCookieStorage.sharedHTTPCookieStorage`.** Ktor's Darwin engine sets the session's
@@ -164,17 +168,21 @@ desktop do not see Ktor.
 
 ### Tests (`iosTest`, run on the simulator by the CI job)
 
-- `DarwinHostHttpTest` (12): the `OkHttpHostHttpTest` cases on Ktor's `MockEngine`: method / headers / body, every
+- `DarwinHostHttpTest` (18): the `OkHttpHostHttpTest` cases on Ktor's `MockEngine`: method / headers / body, every
   method, `Accept-Encoding` dropped and no added `Accept`, body rules, raw bytes, redirects followed or not (relative
-  location), OkHttp's method / header changes on 302 / 307 / cross-host, the 20 follow-up limit, the timeout, the
-  body cap (declared, streamed, exact, unbounded), cancellation reaching the engine, a source through `Client`.
-- `DarwinHostHttpServerTest` (6): the real Darwin engine against `LoopbackHttpServer`, a small HTTP/1.1 server on
+  location), OkHttp's method / header changes on 302 / 307 / cross-host, redirects from a URL with spaces and
+  non-ASCII (relative and `..` locations, the base query not carried over), a scheme-relative location to another
+  host without the base's user info or port, a non-HTTP location returned as is, the 20 follow-up limit, the
+  timeout, the body cap (declared, streamed, exact, unbounded), `HEAD` / 204 / 304 without body whatever their
+  `Content-Length`, non-HTTP URLs refused (and a catchable `http` error through `Client`), cancellation reaching the
+  engine, a source through `Client`.
+- `DarwinHostHttpServerTest` (9): the real Darwin engine against `LoopbackHttpServer`, a small HTTP/1.1 server on
   POSIX sockets and `NSThread`s inside the simulator test process, on `127.0.0.1` (App Transport Security does not
   apply to IP addresses): the session's own `Accept-Encoding`, repeated response headers, gzip decompressed with the
-  encoding headers gone, no native redirects, cookies stored and sent (also on a redirect hop), timeout and body cap,
-  cancellation of a real task. A Ktor CIO server
-  was tried first and never started in the simulator process (every start timed out, run 45544362098), so the test
-  server has no dependency.
+  encoding headers gone, no native redirects, cookies stored and sent (also on a redirect hop), a redirect from a URL
+  with a space and non-ASCII, `data:` / `file:` URLs failing before the session, a `HEAD` declaring a length above
+  the cap, timeout and body cap, cancellation of a real task. A Ktor CIO server was tried first and never started in
+  the simulator process (every start timed out, run 45544362098), so the test server has no dependency.
 - The iOS tests run in `timedTest` (a `runBlocking` with a 30 s limit), and the native test tasks log each test's
   start and result (`source-js/build.gradle.kts`), so a hang names its test in the CI log instead of stalling the job
   (the first run, 45540635477, hung silently and was cancelled).

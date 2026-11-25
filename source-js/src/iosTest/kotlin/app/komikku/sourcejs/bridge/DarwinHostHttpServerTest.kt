@@ -55,6 +55,9 @@ class DarwinHostHttpServerTest {
             "/set-cookie" -> Response(200, listOf("Set-Cookie" to "$cookie=one; Path=/"))
             "/redirect-setting-cookie" -> Response(302, listOf("Set-Cookie" to "${cookie}_hop=two; Path=/", "Location" to "/cookie"))
             "/cookie" -> Response(200, body = request.headers["cookie"].orEmpty().encodeToByteArray())
+            // What the session sent for `/dir é/start` and its relative `Location`.
+            "/dir%20%C3%A9/start" -> Response(302, listOf("Location" to "next?q=1"))
+            "/dir%20%C3%A9/next?q=1" -> Response(200, body = request.target.encodeToByteArray())
             else -> Response(404)
         }
     }
@@ -118,6 +121,12 @@ class DarwinHostHttpServerTest {
         val sentAfterRedirect = afterRedirect.body.decodeToString()
         assertEquals(200, afterRedirect.statusCode)
         assertTrue("${cookie}_hop=two" in sentAfterRedirect && "$cookie=one" in sentAfterRedirect, sentAfterRedirect)
+    }
+
+    @Test
+    fun redirectsFromAUrlWithSpacesAndNonAscii() = timedTest {
+        val response = http.execute(HostHttpRequest("GET", "$base/dir é/start", emptyList(), null))
+        assertEquals(200 to "/dir%20%C3%A9/next?q=1", response.statusCode to response.body.decodeToString())
     }
 
     @Test
