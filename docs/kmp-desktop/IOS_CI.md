@@ -1,7 +1,9 @@
 # iOS check (CI)
 
-Status: **added, never run.** Nobody has seen the job pass yet, so it is non-blocking
-(`continue-on-error: true`). PLAN.md section 8.4, step I5, should reference this page once it is
+Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
+simulator, including deep recursion on the 4 MiB JS stack. Runs #1–#2 looked green only because the job was
+non-blocking; they had one failing test (the forged-cancellation message keeps the error name on iOS), fixed in
+`d21b68cfc4`. The job now blocks (no `continue-on-error`). PLAN.md section 8.4, step I5, should reference this page once it is
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
 commits that added this page.
 
@@ -67,7 +69,7 @@ Linux / Windows builds are unchanged.
    `QuickJsEngineTest.deepRecursionIsAJsErrorNotACrash` runs with the full 4 MiB JS stack limit.
    Tests that rely on JVM-only behaviour belong in `jvmSharedTest` / `desktopTest`, not `commonTest`.
 
-Once the job has passed a few times, remove `continue-on-error` so it gates pull requests touching `source-js/`.
+The job gates pushes and pull requests that touch `source-js/` or the build setup.
 
 ## iOS engine thread (decision)
 

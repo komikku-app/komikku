@@ -43,9 +43,6 @@ jobs:
     # Apple silicon: the iOS targets are only declared on a macOS host (source-js/build.gradle.kts), and the
     # iosSimulatorArm64 tests need an arm64 Mac
     runs-on: 'macos-15'
-    # Non-blocking while nobody has seen this job pass: a failure never fails the PR or push check. Remove once it is
-    # green (docs/kmp-desktop/IOS_CI.md).
-    continue-on-error: true
     timeout-minutes: 60
 
     steps:
