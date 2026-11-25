@@ -3,6 +3,7 @@ package app.komikku.sourcejs.bridge
 import app.komikku.sourcejs.JsSourceDescriptor
 import app.komikku.sourcejs.TestHost
 import app.komikku.sourcejs.provider
+import app.komikku.sourcejs.timedTest
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -18,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.IOException
 import kotlin.test.AfterTest
@@ -63,7 +63,7 @@ class DarwinHostHttpTest {
         HostHttpRequest("GET", url, headers, null, maxBodyBytes = maxBodyBytes)
 
     @Test
-    fun sendsMethodHeadersAndBody() = runBlocking {
+    fun sendsMethodHeadersAndBody() = timedTest {
         handler = {
             respond(
                 "created",
@@ -92,7 +92,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun sendsEveryMethod() = runBlocking {
+    fun sendsEveryMethod() = timedTest {
         handler = { respond("", HttpStatusCode.NoContent) }
         val methods = listOf("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "PROPFIND")
         methods.forEach { method -> http.execute(HostHttpRequest(method, "https://h.test/$method", emptyList(), null)) }
@@ -100,7 +100,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun dropsTheSourcesAcceptEncodingAndKeepsTheRest() = runBlocking {
+    fun dropsTheSourcesAcceptEncodingAndKeepsTheRest() = timedTest {
         handler = { respond("ok") }
         http.execute(get("https://h.test/gz", listOf("Accept-Encoding" to "gzip, deflate, br", "X-A" to "1", "User-Agent" to "UA")))
         val headers = recorded.single().headers
@@ -112,7 +112,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun bodiesFollowOkHttpsRules() = runBlocking {
+    fun bodiesFollowOkHttpsRules() = timedTest {
         handler = { respond("fail", HttpStatusCode.InternalServerError) }
         // Error statuses are returned, not thrown; a POST without body sends an empty one.
         val response = http.execute(HostHttpRequest("POST", "https://h.test/p", emptyList(), null))
@@ -126,14 +126,14 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun returnsRawBytes() = runBlocking {
+    fun returnsRawBytes() = timedTest {
         val bytes = byteArrayOf(0, 1, -1, 0x7F)
         handler = { respond(bytes) }
         assertContentEquals(bytes, http.execute(get("https://h.test/b")).body)
     }
 
     @Test
-    fun followsRedirectsUnlessAskedNotTo() = runBlocking {
+    fun followsRedirectsUnlessAskedNotTo() = timedTest {
         handler = { request ->
             when (request.url.encodedPath) {
                 "/start" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "target?q=1"))
@@ -154,7 +154,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun redirectsChangeMethodAndHeadersLikeOkHttp() = runBlocking {
+    fun redirectsChangeMethodAndHeadersLikeOkHttp() = timedTest {
         handler = { request ->
             when (request.url.encodedPath) {
                 "/found" -> respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "/landing"))
@@ -188,7 +188,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun stopsAfterTwentyFollowUps() = runBlocking {
+    fun stopsAfterTwentyFollowUps() = timedTest {
         handler = { respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "/loop")) }
         val error = assertFailsWith<IOException> { http.execute(get("https://h.test/loop")) }
         assertEquals("Too many follow-up requests: 21", error.message)
@@ -196,7 +196,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun honoursTheRequestTimeout() = runBlocking {
+    fun honoursTheRequestTimeout() = timedTest {
         handler = {
             delay(5_000)
             respond("late")
@@ -208,7 +208,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun stopsReadingBodiesOverTheLimit() = runBlocking {
+    fun stopsReadingBodiesOverTheLimit() = timedTest {
         val big = "x".repeat(2048).encodeToByteArray()
         // Declared too large.
         handler = { respond(ByteReadChannel(big), HttpStatusCode.OK, headersOf(HttpHeaders.ContentLength, "2048")) }
@@ -226,7 +226,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun cancellationCancelsTheRequest() = runBlocking(Dispatchers.Default) {
+    fun cancellationCancelsTheRequest() = timedTest(Dispatchers.Default) {
         val started = CompletableDeferred<Unit>()
         val cancelled = CompletableDeferred<Unit>()
         handler = {
@@ -246,7 +246,7 @@ class DarwinHostHttpTest {
     }
 
     @Test
-    fun extensionsUseItThroughClient() = runBlocking {
+    fun extensionsUseItThroughClient() = timedTest {
         handler = {
             respond(
                 """{"results":[{"title":"Ünïcode","id":"42"}],"more":true}""",

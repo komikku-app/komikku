@@ -11,7 +11,6 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import kotlinx.coroutines.runBlocking
 import platform.Foundation.NSNumber
 import platform.Foundation.NSUserDefaults
 import kotlin.random.Random
@@ -86,7 +85,7 @@ class DefaultExtension extends MProvider {
     }
 
     @Test
-    fun getPopularRunsEndToEnd() = runBlocking {
+    fun getPopularRunsEndToEnd() = timedTest {
         val page = runtime.extension(descriptor, code).getPopular(1)
         assertEquals(
             JsMangaPage(

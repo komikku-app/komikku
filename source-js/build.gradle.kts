@@ -118,3 +118,11 @@ useQuickJsKtJvmInAndroidHostTests("androidUnitTestRuntimeOnly")
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+// iOS simulator tests: each test's start and end in the CI log, so a hanging test is named there.
+tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest>().configureEach {
+    testLogging {
+        events("started", "passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}

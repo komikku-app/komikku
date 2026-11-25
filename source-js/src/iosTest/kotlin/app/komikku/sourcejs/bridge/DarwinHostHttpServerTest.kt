@@ -1,5 +1,6 @@
 package app.komikku.sourcejs.bridge
 
+import app.komikku.sourcejs.timedTest
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -73,20 +74,22 @@ class DarwinHostHttpServerTest {
     }
 
     @BeforeTest
-    fun start() = runBlocking {
-        server = embeddedServer(CIO, port = 0, host = "127.0.0.1") { routes() }
-        server.startSuspend(wait = false)
-        base = "http://127.0.0.1:${server.engine.resolvedConnectors().first().port}"
+    fun start() = timedTest {
+        withTimeout(10_000) {
+            server = embeddedServer(CIO, port = 0, host = "127.0.0.1") { routes() }
+            server.startSuspend(wait = false)
+            base = "http://127.0.0.1:${server.engine.resolvedConnectors().first().port}"
+        }
     }
 
     @AfterTest
-    fun stop() = runBlocking {
+    fun stop() = timedTest {
         http.close()
-        server.stopSuspend(gracePeriodMillis = 0, timeoutMillis = 1_000)
+        withTimeout(10_000) { server.stopSuspend(gracePeriodMillis = 0, timeoutMillis = 1_000) }
     }
 
     @Test
-    fun sendsTheRequestAndJoinsRepeatedResponseHeaders() = runBlocking {
+    fun sendsTheRequestAndJoinsRepeatedResponseHeaders() = timedTest {
         val response = http.execute(
             HostHttpRequest(
                 method = "POST",
@@ -106,14 +109,14 @@ class DarwinHostHttpServerTest {
     }
 
     @Test
-    fun theSessionDecompressesAndTheEncodingHeadersAreGone() = runBlocking {
+    fun theSessionDecompressesAndTheEncodingHeadersAreGone() = timedTest {
         val response = http.execute(HostHttpRequest("GET", "$base/gz", listOf("Accept-Encoding" to "br"), null))
         assertEquals("décompressé", response.body.decodeToString())
         assertNull(response.headers.firstOrNull { it.first.equals("Content-Encoding", ignoreCase = true) })
     }
 
     @Test
-    fun redirectsAreFollowedOnlyWhenAsked() = runBlocking {
+    fun redirectsAreFollowedOnlyWhenAsked() = timedTest {
         val followed = http.execute(HostHttpRequest("GET", "$base/start", emptyList(), null))
         assertEquals(200 to "target", followed.statusCode to followed.body.decodeToString())
         // NSURLSession does not follow it by itself.
@@ -122,7 +125,7 @@ class DarwinHostHttpServerTest {
     }
 
     @Test
-    fun timeoutAndBodyCap() = runBlocking {
+    fun timeoutAndBodyCap() = timedTest {
         val late = assertFailsWith<IOException> {
             http.execute(HostHttpRequest("GET", "$base/slow", emptyList(), null, timeoutMillis = 300))
         }
@@ -134,7 +137,7 @@ class DarwinHostHttpServerTest {
     }
 
     @Test
-    fun cancellationEndsTheCall() = runBlocking(Dispatchers.Default) {
+    fun cancellationEndsTheCall() = timedTest(Dispatchers.Default) {
         val call = async { http.execute(HostHttpRequest("GET", "$base/slow", emptyList(), null)) }
         withTimeout(5_000) { requestSeen.await() }
         call.cancel()
