@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -45,6 +44,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import platform.Foundation.NSDate
+import platform.Foundation.NSLock
 import platform.Foundation.NSLog
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.timeIntervalSince1970
@@ -230,10 +230,19 @@ class IosJsSourceStore(
     private fun readRepositories(): Set<String> =
         repositoryDefaults.arrayForKey(REPOSITORIES_KEY)?.filterIsInstance<String>()?.toSet().orEmpty()
 
-    private fun updateRepositories(change: (Set<String>) -> Set<String>): Set<String> {
-        val urls = repositoryUrls.updateAndGet(change)
-        repositoryDefaults.setObject(urls.sorted(), forKey = REPOSITORIES_KEY)
-        return urls
+    /**
+     * Applies [change] to the stored list and saves it, under one lock (for every store of the process), so the list
+     * saved last is the newest one.
+     */
+    private fun updateRepositories(change: (Set<String>) -> Set<String>) {
+        REPOSITORY_LOCK.lock()
+        try {
+            val urls = change(repositoryUrls.value)
+            repositoryDefaults.setObject(urls.sorted(), forKey = REPOSITORIES_KEY)
+            repositoryUrls.value = urls
+        } finally {
+            REPOSITORY_LOCK.unlock()
+        }
     }
 
     /**
@@ -247,9 +256,10 @@ class IosJsSourceStore(
         val normalized = url.trim()
         checkedUrl(normalized)
         val listing = readListing(normalized)
-        // The URL first: a refresh finishing in between keeps the listings of added repositories only.
-        val urls = updateRepositories { it + normalized }
-        listings.update { if (normalized in urls) it + (normalized to listing) else it }
+        // The URL first: a refresh finishing in between keeps the listings of added repositories only. The list is
+        // read inside the update, so a removal in between is not undone.
+        updateRepositories { it + normalized }
+        listings.update { if (normalized in repositoryUrls.value) it + (normalized to listing) else it }
         checkInstalledTexts()
         return normalized
     }
@@ -283,9 +293,10 @@ class IosJsSourceStore(
                     }
                 }.awaitAll()
             }
-            // Merged into the current listings, for the repositories added now.
-            val added = repositoryUrls.value
+            // Merged into the current listings, for the repositories added now (read inside the update, so one added
+            // meanwhile keeps its listing).
             listings.update { current ->
+                val added = repositoryUrls.value
                 val merged = current.filterKeys { it in added }.toMutableMap()
                 results.forEach { (url, listing) ->
                     if (url !in added) return@forEach
@@ -743,5 +754,8 @@ class IosJsSourceStore(
         private val HTTP_SCHEMES = setOf("http", "https")
 
         private val SHA256 = Regex("[0-9a-fA-F]{64}")
+
+        /** Orders the updates of the stored repository list (shared defaults: one lock for every store). */
+        private val REPOSITORY_LOCK = NSLock()
     }
 }
