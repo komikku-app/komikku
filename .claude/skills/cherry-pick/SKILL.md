@@ -491,7 +491,10 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
      fixing. Never use `max` or `ultra` unless the user asks: each round would start many reviewers, and `ultra` is a
      billed cloud review only the user can start.
    - **Target:** `code-review` takes the current diff, a PR, a branch or a path, not a single commit. In round 1, give
-     it the branch (args `medium <branch>`) and keep only the findings on the pick's lines. From round 2 on, the
+     it the branch (args `medium <branch>`) and keep the findings on the pick's lines, plus pre-existing bugs
+     (upstream's or Komikku's) in the files and functions the pick touches; note which kind each one is. A finding in
+     another commit on the branch belongs to that commit's own review: leave it out here, and list it apart in the
+     report if it looks real. From round 2 on, the
      uncommitted fixes are the current diff (args `medium`); name the pick commit (`git show <new-hash>`) as their
      context. Always name the upstream commit the pick came from.
    - **Ask for more than correctness:** step 2's Komikku risks, step 3's adaptation rules, step 4's message rules, and
@@ -507,46 +510,70 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
      brings that no later upstream commit fixes (step 6), a step 5 check that fails on a pick the user chose to keep.
    - **Not worth fixing**, with the reason, such as: a later upstream commit fixes it (recommend picking that commit
      instead, step 6, so later picks still apply); style in upstream's own lines (changing them makes later picks
-     conflict); code the pick doesn't touch; a false positive (say why); no effect for Komikku users.
+     conflict); a false positive (say why); no effect for Komikku users.
+   - **Outside the pick's lines:** a finding in code the pick doesn't touch is judged the same way, not dropped. It is
+     worth fixing when it is a real bug for Komikku users, no upstream commit Komikku lacks fixes it, and the fix is
+     small. Search all of `mihon/main` and `tachiyomiSY/master` for such a fix, before `<hash>` as well as after it
+     (`git log -G '<the buggy line>' mihon/main -- <file>`, then its row's status); if one exists, recommend picking
+     it instead (step 6), since a Komikku fix would conflict with it later. When the fix is large or belongs to
+     another area, don't fix it here: recommend a separate PR (step 8) and say why.
    - **In the commit message:** a message can't stay uncommitted. Write the corrected message to a scratchpad file,
      report it, and use it only if the user chooses to fold.
-4. **Fix** the worth-fixing ones in the working tree. They are Komikku changes, so AGENTS.md applies in full: KMK
-   markers on every line of upstream code you change, new strings in `i18n-kmk/` (`KMR`). Don't stage or commit them.
+4. **Fix** the worth-fixing ones in the working tree, outside the pick's lines included. They are Komikku changes, so
+   AGENTS.md applies in full: KMK markers on every line of upstream code you change, new strings in `i18n-kmk/`
+   (`KMR`). Don't stage or commit them.
    Then re-run the step 5 checks that cover the files you changed (for code, always `spotlessCheck` and
    `assembleDebug`).
 5. **Repeat** 1-4 until a round finds nothing worth fixing. A finding already judged not worth fixing doesn't count
    again. If round 5 still finds new things, stop and report what is open.
-6. **Several picks:** keep each pick's fixes apart. Before the next pick, save them as
-   `<scratchpad>/review-fixes-<short-hash>.patch` (`git add -N` any new file first, then `git diff HEAD > <file>`) and
+6. **Several picks:** keep each pick's fixes apart, and within them split by the recommendation below, not by where the
+   fix is. Before the next pick, save them as two patches: `<scratchpad>/review-fixes-<short-hash>-fold.patch` for the
+   fixes recommended to fold, and `<scratchpad>/review-fixes-<short-hash>-separate.patch` for all the others (a Komikku
+   fix on the pick's lines that goes beyond upstream's change, and every fix outside them). `git add -N` any new file
+   first, then `git diff HEAD -- <files>` for each, splitting a file's hunks between the two when it has both. Then
    stash them: `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
-   (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review,
-   pop these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back
-   last, below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run
-   `git reset -q` and `git stash drop 'stash@{N}'` (a conflicted pop keeps the stash), and say so. The patch files keep
-   each pick's fixes apart for a fold.
+   (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review, pop
+   these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back last,
+   below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run `git reset -q`
+   and `git stash drop 'stash@{N}'` (a conflicted pop keeps the stash), and say so. The patch files keep each pick's
+   fixes apart, and the ones recommended to fold apart from the rest.
 
-For each fix, suggest where it should go:
+For every finding, on the pick's lines or not, give a recommendation: fix it or not, with the reason, and for a fix,
+where it should go:
 - **Fold into the pick** when it corrects the pick itself (a missed adaptation, a marker, a migration number or
   version, a rename, or part of upstream's change applied wrong), so the pick commit is what it should have been and
   builds on its own.
 - **A separate commit** when it goes beyond upstream's change (a Komikku fix for a bug upstream still has, or an
   improvement), so the pick stays close to upstream's patch (`git range-diff` stays small) and the fix is visible on
-  its own in history.
+  its own in history. A fix outside the pick's lines always goes here, never in the pick: it isn't part of upstream's
+  change, and folding it would hide it in a cherry-pick.
+- **A separate PR** (step 8) for a fix that is large, in another area, or unrelated to the branch; it isn't made
+  here.
 - **Both** when the fixes are of both kinds: fold the first kind and commit the rest separately.
 
 Then carry out the user's answer to the Report's question:
-- **Fold:** each pick gets only its own fixes. A fold puts Komikku work in the pick, so its message gains the user's
-  co-author trailer (step 4, Commit) if it doesn't have it yet: amend with `-F <file>`, not `--no-edit`.
-  - One pick, at the branch tip: `git add <files>`, then `git commit --amend --no-edit` (or `-F <file>` with the
-    corrected message).
+- **Fold:** each pick gets only its own fixes recommended to fold. The rest go in a separate commit (below) for "as
+  suggested", or stay uncommitted for "fold and leave the rest". A fold puts Komikku work in the pick, so its message
+  gains the user's co-author trailer (step 4, Commit) if it doesn't have it yet. Amend with `-F <file>`, where
+  `<file>` is the pick's message (`git log -1 --format=%B`) with the trailer added and the corrected message applied,
+  if any; use `--no-edit` only when the message already has the trailer and needs no correction.
+  - One pick, at the branch tip: stage only the fixes recommended to fold (`git add <files>`, or
+    `git apply --cached <partial patch>` for part of a file), then `git commit --amend -F <file>`. The other fixes
+    stay unstaged for the separate commit.
   - Several picks: stash all the fixes (`git stash push -u -m "review fixes, all"`), then for each pick, earliest
-    first: `git switch --detach <pick>`, `git apply -3 <its patch>`, `git commit --amend --no-edit` (or `-F <file>`),
-    `git rebase --onto HEAD <pick> <branch>`, which replays the later commits and checks out `<branch>` again. Each
-    fold rewrites the later picks, so find the next one's new hash by its subject. Git before 2.44 has no
-    `--autosquash` without `-i`, and `-i` needs an editor. Drop the stash only once every fold is done and checked.
+    first: `git switch --detach <pick>`, `git apply -3 <its -fold patch>`, `git commit --amend -F <file>` (that
+    pick's message, as above), `git rebase --onto HEAD <pick> <branch>`, which replays the later commits and checks
+    out `<branch>` again. Each fold rewrites the later picks, so find the next one's new hash by its subject. Git
+    before 2.44 has no `--autosquash` without `-i`, and `-i` needs an editor. Keep the tree clean between folds:
+    `git switch` and `git rebase` refuse or misplace uncommitted changes. Only after the last fold, apply the
+    `-separate` patches (`git apply -3`), for the separate commit (below) or to stay uncommitted for "fold and leave
+    the rest". Drop the stash only once every fold is done and checked.
 - **Separate commit:** one commit after the picks, with a Komikku subject (`fix(<area>): …`) and a body line naming
-  the pick it follows: `Follow-up to <hash> (<subject>).` It has no `(cherry picked from commit …)` line, because the
-  log would count it as part of the pick, and no `Co-Authored-By` trailer.
+  the pick it relates to: `Follow-up to <hash> (<subject>).` for fixes to the pick, and
+  `Found while reviewing the pick of <hash> (<subject>).` for fixes outside its lines, which the pick didn't cause.
+  With several picks, it takes the `-separate` patches, plus the `-fold` ones the user chose not to fold. It has no
+  `(cherry picked from commit …)` line, because the log would count it as part of the pick, and no `Co-Authored-By`
+  trailer.
 - **Both:** split the changes by file, or by hunk with `git apply --cached <partial patch>` (`git add -p` is
   interactive), then fold one part and commit the other.
 - **Nothing:** leave the fixes uncommitted.
@@ -623,12 +650,16 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the verification results;
 - the later fixes, from step 6;
 - the review, from step 7: whether `code-review` ran (at which effort) or the review was by hand, and how many
-  rounds; each fix made, with its file and line and whether to fold it, commit it separately, or both; each finding
-  not worth fixing, with its reason; and the corrected commit message, if any;
+  rounds; every finding, on the pick's lines or outside them, with its file and line, whether it is worth fixing and
+  why, and for a fix, whether to fold it, commit it separately, or leave it to a separate PR; apart, the findings
+  that belong to other commits on the branch, each with the commit it belongs to; and the corrected commit message,
+  if any;
 - which PR it belongs in, from step 8, with the reason, plus any open PR it overlaps.
 
-If step 7 left fixes or a corrected message, ask the user with AskUserQuestion what to do with them: fold them all into
-the pick, put them all in a separate commit, both (as suggested), or nothing (leave them uncommitted). Anything else
-goes in the question's free-text answer. Carry out the answer as step 7 describes.
+If step 7 left fixes or a corrected message, ask the user with AskUserQuestion what to do with them: as suggested (fold
+the ones that correct the pick, commit the rest separately), fold the ones that correct the pick and leave the rest
+uncommitted, put them all in a separate commit, or nothing (leave them all uncommitted). Fixes outside the pick's
+lines are never folded, whichever the answer. Anything else goes in the question's free-text answer. Carry out the
+answer as step 7 describes.
 
 Nothing is pushed.
