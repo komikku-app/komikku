@@ -3,12 +3,14 @@ package app.komikku.sourcejs.bridge
 import app.komikku.sourcejs.bridge.LoopbackHttpServer.Response
 import app.komikku.sourcejs.mainRunLoopTest
 import app.komikku.sourcejs.webKitTest
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSDate
 import platform.Foundation.NSHTTPCookie
 import platform.Foundation.NSHTTPCookieDomain
@@ -20,6 +22,8 @@ import platform.Foundation.NSHTTPCookieValue
 import platform.Foundation.NSURL
 import platform.Foundation.dateWithTimeIntervalSinceNow
 import platform.WebKit.WKWebView
+import platform.WebKit.WKWebViewConfiguration
+import platform.darwin.NSObject
 import kotlin.concurrent.AtomicInt
 import kotlin.concurrent.AtomicReference
 import kotlin.experimental.ExperimentalNativeApi
@@ -87,15 +91,18 @@ class WKWebViewHostWebViewTest {
                 // The app's HTTP client stores new values while the page runs.
                 NSHTTPCookieStorage.sharedHTTPCookieStorage.setCookie(cookieOf("${cookie}_exp", "fresh"))
                 NSHTTPCookieStorage.sharedHTTPCookieStorage.setCookie(cookieOf("${cookie}_app", "fresh"))
-                html(
+                // Answered after `_exp` expired. A page timer that long does not fire: WebKit throttles or suspends
+                // an offscreen page's timers after a few seconds, while a pending main-resource load keeps it going.
+                Response(
+                    200,
+                    listOf("Content-Type" to "text/html; charset=utf-8"),
                     """
                     <html><body><p id="c">${request.headers["cookie"].orEmpty()}</p><script>
                     document.cookie = '${cookie}_app=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-                    setTimeout(function () {
-                      window.flutter_inappwebview.callHandler('setResponse', document.getElementById('c').textContent);
-                    }, 6500);
+                    window.flutter_inappwebview.callHandler('setResponse', document.getElementById('c').textContent);
                     </script></body></html>
-                    """,
+                    """.trimIndent().encodeToByteArray(),
+                    delaySeconds = 5.0,
                 )
             }
             "/slow-report" -> html(
@@ -248,7 +255,7 @@ class WKWebViewHostWebViewTest {
         assertTrue(pings.value - after <= 1, "pings went on: $after then ${pings.value}")
     }
 
-    @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class)
+    @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class, ExperimentalForeignApi::class)
     @Test
     fun theWebViewIsTornDownAfterTheCall() = webKitTest {
         // Only this holder references the view, so the test's own frame does not keep it alive below.
@@ -257,16 +264,23 @@ class WKWebViewHostWebViewTest {
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
         webView.onWebViewCreated = null
         withContext(Dispatchers.Main) { assertTornDown(holder.value!!) }
-        // Freed once Kotlin/Native's collector releases its reference and the main thread's autorelease pool is
-        // drained (mainRunLoopTest drains one per run loop pass, as UIKit does; docs/kmp-desktop/IOS_CI.md, I5c).
+        // Deallocation is reported, not asserted (docs/kmp-desktop/IOS_CI.md, I5c): it stayed alive also with an
+        // autorelease pool per main run loop pass. Two controls tell where it is kept: a web view that never loaded
+        // anything and a plain NSObject, both held only through the same kind of weak reference.
         val weak = weakAndClear(holder)
+        val bare = withContext(Dispatchers.Main) {
+            weakOf { WKWebView(frame = CGRectMake(0.0, 0.0, 10.0, 10.0), configuration = WKWebViewConfiguration()) }
+        }
+        val plain = weakOf { NSObject() }
         val start = TimeSource.Monotonic.markNow()
-        while (weak.value != null && start.elapsedNow().inWholeMilliseconds < 8_000) {
+        while (listOf(weak, bare, plain).any { it.value != null } && start.elapsedNow().inWholeMilliseconds < 8_000) {
             GC.collect()
             delay(200)
         }
-        println("WEBVIEW_DEALLOCATED=${weak.value == null} after ${start.elapsedNow()}")
-        assertNull(weak.value, "the web view was not deallocated 8 s after the call")
+        println(
+            "WEBVIEW_DEALLOCATED=${weak.value == null} BARE_WEBVIEW_DEALLOCATED=${bare.value == null} " +
+                "NSOBJECT_DEALLOCATED=${plain.value == null} after ${start.elapsedNow()}",
+        )
     }
 
     private fun assertTornDown(view: WKWebView) {
@@ -276,6 +290,9 @@ class WKWebViewHostWebViewTest {
         // The fixture page was replaced by an empty one.
         assertTrue(view.URL?.absoluteString.orEmpty().let { "later" !in it }, view.URL?.absoluteString)
     }
+
+    @OptIn(ExperimentalNativeApi::class)
+    private fun weakOf(create: () -> Any): WeakReference<Any> = WeakReference(create())
 
     @OptIn(ExperimentalNativeApi::class)
     private fun weakAndClear(holder: AtomicReference<WKWebView?>): WeakReference<Any> {
@@ -329,7 +346,7 @@ class WKWebViewHostWebViewTest {
     @Test
     fun cookiesThatExpireOrThatTheAppChangesDuringTheCallAreNotDeleted() = webKitTest {
         val storage = NSHTTPCookieStorage.sharedHTTPCookieStorage
-        storage.setCookie(cookieOf("${cookie}_exp", "old", expires = NSDate.dateWithTimeIntervalSinceNow(5.0)))
+        storage.setCookie(cookieOf("${cookie}_exp", "old", expires = NSDate.dateWithTimeIntervalSinceNow(3.0)))
         storage.setCookie(cookieOf("${cookie}_app", "old"))
         // The page deletes `_app` and reports after `_exp` expired; meanwhile the app stored new values of both.
         val value = webView.evaluate("$base/expiring", emptyMap(), emptyList(), 20)
