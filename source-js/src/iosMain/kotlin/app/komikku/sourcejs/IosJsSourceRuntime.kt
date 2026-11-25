@@ -4,8 +4,10 @@ import app.komikku.sourcejs.bridge.DarwinHostHttp
 import app.komikku.sourcejs.bridge.HostHttp
 import app.komikku.sourcejs.bridge.HostLog
 import app.komikku.sourcejs.bridge.HostPreferencesProvider
+import app.komikku.sourcejs.bridge.HostWebView
 import app.komikku.sourcejs.bridge.JsHostServices
 import app.komikku.sourcejs.bridge.NSUserDefaultsHostPreferences
+import app.komikku.sourcejs.bridge.WKWebViewHostWebView
 import app.komikku.sourcejs.mihon.JsSourceIds
 import app.komikku.sourcejs.model.JsPreference
 import platform.Foundation.NSLog
@@ -21,7 +23,9 @@ import platform.Foundation.NSUserDefaults
  *   Komikku id (by default `source_<komikkuId>`, the name of the source's preference file on Android and desktop).
  *   [declaredPreferences] types the stored values once the source's `getSourcePreferences()` is known (the app's store
  *   caches its metadata); empty, every stored type is read as stored.
- * - Log: [NSLogHostLog]; crypto and DOM are the common implementations; no WebView yet.
+ * - `evaluateJavascriptViaWebview`: [WKWebViewHostWebView] (a `WKWebView` per call on the main thread, cookies
+ *   shared with the shared `NSHTTPCookieStorage`) unless [webView] is given.
+ * - Log: [NSLogHostLog]; crypto and DOM are the common implementations.
  *
  * Unlike the JVM's `MangayomiJsRuntime` there is no source adapter (Mihon's `HttpSource` is JVM-only): the app calls
  * [JsExtension] directly.
@@ -34,13 +38,14 @@ class IosJsSourceRuntime(
     private val declaredPreferences: (JsSourceDescriptor) -> List<JsPreference> = { emptyList() },
     limits: JsHostLimits = JsHostLimits(),
     log: HostLog = NSLogHostLog,
+    webView: HostWebView = WKWebViewHostWebView(),
 ) {
     private val ownedHttp: DarwinHostHttp? = if (http == null) DarwinHostHttp() else null
 
     private val preferencesProvider = HostPreferencesProvider { descriptor: JsSourceDescriptor -> preferences(descriptor) }
 
     val host = JsExtensionHost(
-        JsHostServices(http = http ?: ownedHttp!!, preferences = preferencesProvider, log = log),
+        JsHostServices(http = http ?: ownedHttp!!, preferences = preferencesProvider, log = log, webView = webView),
         limits = limits,
     )
 
