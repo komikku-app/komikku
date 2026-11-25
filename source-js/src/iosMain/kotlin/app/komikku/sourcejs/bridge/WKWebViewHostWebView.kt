@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import platform.CoreGraphics.CGRectMake
+import platform.Foundation.NSBundle
 import platform.Foundation.NSCharacterSet
 import platform.Foundation.NSError
 import platform.Foundation.NSHTTPCookie
@@ -333,15 +334,22 @@ class WKWebViewHostWebView(
         private val HTTP_SCHEMES = setOf("http", "https")
 
         /** The app's key window, or `null` without a running `UIApplication` (a test process). */
-        internal fun keyWindowOrNull(): UIView? = try {
-            // `sharedApplication` is nil before UIApplicationMain; Kotlin types it non-null, hence the catch.
-            val windows = UIApplication.sharedApplication.connectedScenes
-                .filterIsInstance<UIWindowScene>()
-                .flatMap { scene -> scene.windows.filterIsInstance<UIWindow>() }
-            windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull()
-        } catch (e: Throwable) {
-            null
+        internal fun keyWindowOrNull(): UIView? {
+            // `sharedApplication` is nil in a process that is not an app (the simulator test binary), and Kotlin types
+            // it non-null, so it is only read in an app.
+            if (!isAppProcess) return null
+            return try {
+                val windows = UIApplication.sharedApplication.connectedScenes
+                    .filterIsInstance<UIWindowScene>()
+                    .flatMap { scene -> scene.windows.filterIsInstance<UIWindow>() }
+                windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull()
+            } catch (e: Throwable) {
+                null
+            }
         }
+
+        /** Whether this process is an app (its main bundle is an `.app`), where `UIApplicationMain` runs. */
+        private val isAppProcess: Boolean by lazy { NSBundle.mainBundle.bundlePath.endsWith(".app") }
 
         private fun nsLog(message: String) {
             // The line is the format string: escape `%`.
