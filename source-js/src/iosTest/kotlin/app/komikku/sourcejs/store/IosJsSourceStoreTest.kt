@@ -44,6 +44,9 @@ class IosJsSourceStoreTest {
 
     private val tag = Random.nextLong().toULong().toString(16)
     private val root = "${NSTemporaryDirectory().trimEnd('/')}/iosjsstore-$tag"
+
+    /** A file next to [root], which `$root/code/../../sentinel-<tag>.js` names. */
+    private val sentinel = "${NSTemporaryDirectory().trimEnd('/')}/sentinel-$tag.js"
     private val repositorySuite = "app.komikku.sourcejs.test.repos.$tag"
     private val preferenceSuitePrefix = "app.komikku.sourcejs.test.store.$tag."
     private val repositoryDefaults = NSUserDefaults(suiteName = repositorySuite)
@@ -80,6 +83,7 @@ class IosJsSourceStoreTest {
     fun cleanUp() {
         stores.forEach { it.close() }
         NSFileManager.defaultManager.removeItemAtPath(root, null)
+        NSFileManager.defaultManager.removeItemAtPath(sentinel, null)
         NSUserDefaults.standardUserDefaults.removePersistentDomainForName(repositorySuite)
         usedIds.forEach {
             NSUserDefaults.standardUserDefaults.removePersistentDomainForName(preferenceSuitePrefix + JsSourceIds.komikkuId(it))
@@ -560,6 +564,42 @@ class IosJsSourceStoreTest {
         third.addRepository(REPO_URL)
         third.install(third.offer(ID)!!, sha)
         assertNull(third.item(ID).loadError)
+    }
+
+    @Test
+    fun aMalformedSha256NeverNamesAFileToDelete() = timedTest {
+        serveRepository()
+        val first = newStore().loaded()
+        first.installFixture()
+        first.close()
+        val sha = manifest().single().sha256
+        StoreFiles.writeAtomically(sentinel, "keep".encodeToByteArray())
+        val malformed = "../../sentinel-$tag"
+        fun writeMalformedRecord() = StoreFiles.writeAtomically(
+            "$root/manifest.json",
+            json.encodeToString(
+                JsSourceManifest.serializer(),
+                JsSourceManifest(sources = manifest().map { it.copy(sha256 = malformed) }),
+            ).encodeToByteArray(),
+        )
+
+        // Reinstalling over the record (its old text would be deleted) leaves the file it names alone.
+        writeMalformedRecord()
+        val second = newStore().loaded()
+        assertTrue(second.item().loadError!!.contains("malformed"))
+        second.addRepository(REPO_URL)
+        second.install(second.offer(ID)!!, sha)
+        assertEquals(sha, manifest().single().sha256)
+        assertNull(second.item().loadError)
+        assertEquals("keep", StoreFiles.readBytes(sentinel)?.decodeToString())
+        second.close()
+
+        // Uninstalling the record (its text would be deleted) too.
+        writeMalformedRecord()
+        val third = newStore().loaded()
+        third.uninstall(ID)
+        assertEquals(emptyList(), manifest())
+        assertEquals("keep", StoreFiles.readBytes(sentinel)?.decodeToString())
     }
 
     @Test

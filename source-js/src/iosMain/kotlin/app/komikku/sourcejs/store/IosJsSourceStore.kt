@@ -403,7 +403,7 @@ class IosJsSourceStore(
             val icon = fetchIcon(descriptor.id, descriptor.iconUrl)
             val current = _installed.value.orEmpty()
             val previous = current.find { it.id == descriptor.id }
-            val code = codePath(sha256)
+            val code = checkNotNull(codePath(sha256)) { "sha256Hex gave a malformed SHA-256" }
             val codeWasThere = StoreFiles.isFile(code)
             val now = clock()
             val record = InstalledJsSource(
@@ -556,8 +556,8 @@ class IosJsSourceStore(
         var metadataCached = false
         val updated = records.map { record ->
             try {
-                if (!SHA256.matches(record.sha256)) throw IOException("The SHA-256 of ${record.descriptor.name} is malformed")
-                val text = withContext(Dispatchers.IO) { StoreFiles.readBytes(codePath(record.sha256)) }?.decodeToString()
+                val code = codePath(record.sha256) ?: throw IOException("The SHA-256 of ${record.descriptor.name} is malformed")
+                val text = withContext(Dispatchers.IO) { StoreFiles.readBytes(code) }?.decodeToString()
                     ?: throw IOException("The text file of ${record.descriptor.name} is missing")
                 if (!sha256Hex(text).equals(record.sha256, ignoreCase = true)) {
                     throw IOException("The text file of ${record.descriptor.name} does not match its SHA-256")
@@ -616,12 +616,18 @@ class IosJsSourceStore(
         afterManifestWrite?.invoke()
     }
 
-    private fun codePath(sha256: String): String = "$codeDir/${sha256.lowercase()}.js"
+    /**
+     * The text file of [sha256]; `null` unless it is a SHA-256 (64 hex digits). A record's value comes from the
+     * manifest file, so it must never name another path (`../..` and [StoreFiles.delete] would remove anything).
+     */
+    private fun codePath(sha256: String): String? = if (SHA256.matches(sha256)) "$codeDir/${sha256.lowercase()}.js" else null
 
+    /** The icon file of [id] (a number, so it cannot name another path). */
     private fun iconPath(id: Long): String = "$iconDir/$id"
 
     private fun deleteUnusedCode(sha256: String, installed: List<InstalledJsSource>) {
-        if (installed.none { it.sha256.equals(sha256, ignoreCase = true) }) StoreFiles.delete(codePath(sha256))
+        if (installed.any { it.sha256.equals(sha256, ignoreCase = true) }) return
+        codePath(sha256)?.let { StoreFiles.delete(it) }
     }
 
     /** Best effort: a missing, insecure or too large icon only means no icon (`null`). */
