@@ -231,13 +231,14 @@ class IosJsSourceStore(
         repositoryDefaults.arrayForKey(REPOSITORIES_KEY)?.filterIsInstance<String>()?.toSet().orEmpty()
 
     /**
-     * Applies [change] to the stored list and saves it, under one lock (for every store of the process), so the list
-     * saved last is the newest one.
+     * Applies [change] to the stored list (read again, so changes made elsewhere are kept) and saves it, under one lock
+     * (for every store of the process), so the list saved last is the newest one.
      */
     private fun updateRepositories(change: (Set<String>) -> Set<String>) {
         REPOSITORY_LOCK.lock()
         try {
-            val urls = change(repositoryUrls.value)
+            // Read again: another store or a restored backup may have changed the stored list since.
+            val urls = change(readRepositories())
             repositoryDefaults.setObject(urls.sorted(), forKey = REPOSITORIES_KEY)
             repositoryUrls.value = urls
         } finally {

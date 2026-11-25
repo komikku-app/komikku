@@ -636,6 +636,25 @@ class IosJsSourceStoreTest {
         assertStoreFailure(Reason.NOT_FOUND) { store.downloadUpdate(ID) }
     }
 
+    @Test
+    fun aRepositoryChangeKeepsChangesMadeElsewhere() = timedTest {
+        serveRepository()
+        val other = "https://other.test/index.json"
+        http.route(other, "[]")
+        val store = newStore().loaded()
+        store.addRepository(REPO_URL)
+        // Another store (or a restored backup) adds a repository to the stored list.
+        repositoryDefaults.setObject(listOf(REPO_URL, other), forKey = IosJsSourceStore.REPOSITORIES_KEY)
+        store.removeRepository(REPO_URL)
+        assertEquals(listOf(other), storedRepositories())
+        assertEquals(listOf(other), store.repositories.first().map { it.url })
+        // Two stores on the same defaults.
+        val second = newStore().loaded()
+        second.addRepository(REPO_URL)
+        store.removeRepository("https://gone.test/index.json")
+        assertEquals(listOf(other, REPO_URL), storedRepositories())
+    }
+
     private fun storedRepositories(): List<String>? =
         repositoryDefaults.arrayForKey(IosJsSourceStore.REPOSITORIES_KEY)?.map { it as String }
 
