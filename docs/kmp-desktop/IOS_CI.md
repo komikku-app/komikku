@@ -1,7 +1,8 @@
 # iOS check (CI)
 
 Status: **green since run #4 (2026-11-25, commit `d21b68cfc4`)**: 100 `:source-js` tests pass on the iOS
-simulator, including deep recursion on the 4 MiB JS stack. Runs #1–#2 looked green only because the job was
+simulator, including deep recursion on the 4 MiB JS stack; 122 with I5a (run 45545772720, commit `eca24347e1`,
+section below). Runs #1–#2 looked green only because the job was
 non-blocking; they had one failing test (the forged-cancellation message keeps the error name on iOS), fixed in
 `d21b68cfc4`. The job now blocks (no `continue-on-error`). PLAN.md section 8.4, step I5, should reference this page once it is
 updated. PROGRESS.md's iOS bullets (iOS "not compiled", JS stack "clamped to 256 KiB") are outdated as of the
