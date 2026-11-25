@@ -109,6 +109,14 @@ class DesktopExtensionManager(
 
     private var availableSourcesData: Map<Long, StubSource> = emptyMap()
 
+    /**
+     * The extensions of the last successful store refresh ([findAvailableExtensions]), `null` before the first: the
+     * initial load sets the statuses of the entries it loads from them, so a refresh that ended before it is not lost
+     * (P23 fixes review). Written before the refresh updates the entries, read under [entriesLock].
+     */
+    @Volatile
+    private var lastAvailableExtensions: List<Extension.Available>? = null
+
     private var subLanguagesEnabledOnFirstRun = preferences.enabledLanguages().isSet()
 
     /**
@@ -132,7 +140,9 @@ class DesktopExtensionManager(
             .orEmpty()
             .filter { it.isFile && it.extension == APK_EXTENSION }
             .map { loadExtension(it) }
-        setInstalled(results.filterIsInstance<LoadResult.Success>().associate { it.extension.pkgName to it.extension })
+        val loaded = results.filterIsInstance<LoadResult.Success>().associate { it.extension.pkgName to it.extension }
+        // P23 fixes review: with the statuses of a store refresh that may have ended before this load
+        updateInstalled { _ -> lastAvailableExtensions?.let { statusesOf(loaded, it) } ?: loaded }
         setUntrusted(
             results.filterIsInstance<LoadResult.Untrusted>()
                 .associate { it.extension.pkgName to it.extension }
@@ -233,6 +243,7 @@ class DesktopExtensionManager(
         val extensions = fetched.extensions
 
         enableAdditionalSubLanguages(extensions)
+        lastAvailableExtensions = extensions
 
         // Several stores can list the same package signed by the same key: keep the newest one.
         setAvailable(
@@ -273,7 +284,6 @@ class DesktopExtensionManager(
         // P23 review fix: computed from the current entries in one atomic step, so an install / update / uninstall
         // (under the mutex) that lands meanwhile is not overwritten by a stale snapshot
         updateInstalled { current -> statusesOf(current, availableExtensions) }
-        updatePendingUpdatesCount()
     }
 
     private fun statusesOf(
@@ -413,7 +423,6 @@ class DesktopExtensionManager(
                 return@withLock false
             }
         }
-        updatePendingUpdatesCount()
         true
     }
 
@@ -447,7 +456,6 @@ class DesktopExtensionManager(
         loadedApkHashes.remove(pkgName)
         unregister(pkgName)
         runtime.pruneJarCache(loadedApkHashes.values.toSet())
-        updatePendingUpdatesCount()
     }
 
     // ---- trust -------------------------------------------------------------------------------------
@@ -462,7 +470,6 @@ class DesktopExtensionManager(
             updateUntrusted { it - extension.pkgName }
             val apk = File(apkDir, "${extension.pkgName}.$APK_EXTENSION")
             (loadExtension(apk) as? LoadResult.Success)?.let { register(it.extension.withUpdateCheck()) }
-            updatePendingUpdatesCount()
         }
     }
 
@@ -486,23 +493,19 @@ class DesktopExtensionManager(
         return if (isOutdatedComparedTo(available)) copy(hasUpdate = true) else this
     }
 
-    private fun updatePendingUpdatesCount() {
-        preferences.extensionUpdatesCount().set(installedMap.value.values.count { it.hasUpdate })
-    }
-
     /** SY: the E-Hentai extension is replaced by the built-in source when the hentai features are on. */
     private fun Extension.isBlacklisted(): Boolean =
         pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS &&
             preferences.enableSourceBlacklist().get() &&
             exhPreferences.isHentaiEnabled().get()
 
-    private fun setInstalled(map: Map<String, Extension.Installed>) = updateInstalled { map }
-
     private fun setUntrusted(map: Map<String, Extension.Untrusted>) = updateUntrusted { map }
 
     /**
      * P23 review fix: [transform] the current installed entries and publish the result (map and list) in one step, so
      * a write computed from an older snapshot cannot overwrite a newer one (the status refresh runs outside [mutex]).
+     * The pending updates count is set from the result in the same step (P23 fixes review: set after the lock, a
+     * refresh could write the count of an older snapshot after an install).
      */
     private fun updateInstalled(transform: (Map<String, Extension.Installed>) -> Map<String, Extension.Installed>) {
         synchronized(entriesLock) {
@@ -512,6 +515,7 @@ class DesktopExtensionManager(
                 installedMap.value = next
                 installedList.value = next.values.toList()
             }
+            preferences.extensionUpdatesCount().set(next.values.count { it.hasUpdate })
         }
     }
 
