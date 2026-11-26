@@ -25,6 +25,31 @@ shortcutHelper.setFilePath("./shortcuts.xml")
 android {
     namespace = "eu.kanade.tachiyomi"
 
+    val releaseKeystoreFile = providers.gradleProperty("releaseKeystoreFile").orNull
+        ?: providers.environmentVariable("RELEASE_KEYSTORE_FILE").orNull
+    val releaseKeystorePassword = providers.gradleProperty("releaseKeystorePassword").orNull
+        ?: providers.environmentVariable("RELEASE_KEYSTORE_PASSWORD").orNull
+    val releaseKeyAlias = providers.gradleProperty("releaseKeyAlias").orNull
+        ?: providers.environmentVariable("RELEASE_KEY_ALIAS").orNull
+    val releaseKeyPassword = providers.gradleProperty("releaseKeyPassword").orNull
+        ?: providers.environmentVariable("RELEASE_KEY_PASSWORD").orNull
+
+    val releaseSigningConfig = if (
+        releaseKeystoreFile != null &&
+        releaseKeystorePassword != null &&
+        releaseKeyAlias != null &&
+        releaseKeyPassword != null
+    ) {
+        signingConfigs.create("release") {
+            storeFile = file(releaseKeystoreFile)
+            storePassword = releaseKeystorePassword
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
+        }
+    } else {
+        null
+    }
+
     defaultConfig {
         applicationId = "app.komikku"
 
@@ -51,6 +76,8 @@ android {
             isShrinkResources = Config.enableCodeShrink
 
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+
+            releaseSigningConfig?.let { signingConfig = it }
 
             buildConfigField("String", "BUILD_TIME", "\"${getBuildTime(useLastCommitTime = true)}\"")
         }
@@ -79,7 +106,7 @@ android {
             applicationIdSuffix = ".beta"
 
             versionNameSuffix = debug.versionNameSuffix
-            signingConfig = debug.signingConfig
+            signingConfig = releaseSigningConfig ?: debug.signingConfig
 
             matchingFallbacks.addAll(commonMatchingFallbacks)
 
