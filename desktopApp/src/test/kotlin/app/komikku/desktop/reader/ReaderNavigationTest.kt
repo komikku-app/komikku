@@ -112,14 +112,19 @@ class ReaderNavigationTest {
 
     private fun ReaderModel.indexOf(description: String) = state.value.items.indexOfFirst { describe(it) == description }
 
+    private fun ReaderModel.item(description: String): ReaderItem = state.value.items.first { describe(it) == description }
+
     @Test
     fun `next then previous across a chapter boundary leaves the chapter of the shown page current`() = runBlocking<Unit> {
         repeat(3) {
             val reader = open(1)
             awaitCondition("chapter 2 preloaded") { reader.layout() == listOf("P1", "1.1", "1.2", "1.3", "N1", "2.1", "2.2", "2.3") }
-            // Onto chapter 2's first page and straight back to chapter 1's last page while the switch runs
-            reader.moveTo(reader.indexOf("2.1"))
-            reader.moveTo(reader.indexOf("1.3"))
+            // Onto chapter 2's first page and straight back to chapter 1's last page while the switch runs. By item,
+            // like the viewers: the switch can rebuild the items between looking up an index and moving to it (then
+            // index 3 is P2), as it did every time once the test JVM no longer set up MockK
+            val lastOfChapter1 = reader.item("1.3")
+            reader.moveToItem(reader.item("2.1"))
+            reader.moveToItem(lastOfChapter1)
             delay(300)
             reader.awaitConsistent()
             reader.current() shouldBe "1.3"
@@ -127,6 +132,22 @@ class ReaderNavigationTest {
             reader.close()
             readers.remove(reader)
         }
+    }
+
+    @Test
+    fun `back onto the previous chapter after the switch to the next one has landed makes it current again`() = runBlocking<Unit> {
+        val reader = open(1)
+        awaitCondition("chapter 2 preloaded") { reader.layout() == listOf("P1", "1.1", "1.2", "1.3", "N1", "2.1", "2.2", "2.3") }
+        val lastOfChapter1 = reader.item("1.3")
+        reader.moveToItem(reader.item("2.1"))
+        awaitCondition("chapter 2 current") { reader.currentChapterUrl() == "/chapter/2" }
+        // The switch rebuilt the items around chapter 2: chapter 1's pages come first, its last page is index 2
+        reader.layout().take(5) shouldBe listOf("1.1", "1.2", "1.3", "P2", "2.1")
+        reader.current() shouldBe "2.1"
+        reader.moveToItem(lastOfChapter1)
+        awaitCondition("chapter 1 current") { reader.currentChapterUrl() == "/chapter/1" }
+        reader.awaitConsistent()
+        reader.current() shouldBe "1.3"
     }
 
     @Test

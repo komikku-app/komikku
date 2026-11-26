@@ -487,7 +487,11 @@ class ReaderModel(
         }
     }
 
-    /** Called when [index] of [State.items] becomes the current item (page turn, scroll, slider). */
+    /**
+     * Called when [index] of [State.items] becomes the current item (page turn, scroll, slider). The index is into the
+     * items as they are when the move is applied: a chapter switch running meanwhile can rebuild them, so a caller that
+     * looked the index up earlier moves by item instead ([moveToItem], as the viewers do).
+     */
     fun moveTo(index: Int) = commit { it.copy(currentIndex = index) }
 
     /** Moves to [item] if it is in [State.items] (the webtoon list reports the item it shows on top). */
