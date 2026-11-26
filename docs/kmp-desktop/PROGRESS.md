@@ -4256,6 +4256,29 @@ Verification of the fix (`57f9178`, `--max-workers=2 --console=plain`): `ReaderN
 0 failures; after `./gradlew --stop` the full `:desktopApp:test` passed: 82 classes, 378 tests, 0 failures. CI desktop
 build started by the marker bump `2acd2ff`: run 45726638907.
 
+## Review fixes (temp directory teardown, round 2)
+
+Findings of the review of `6e9a102..250f9f1` (the round above). Kept deliberately small: this is test-teardown code.
+
+| # | Finding | Outcome | Commit |
+|---|---------|---------|--------|
+| 1 | `stopDelayedWriters()` caught `Throwable`, so the teardown's `withTimeoutOrNull` cancellation was swallowed and the remaining stops ran in a cancelled coroutine, failing at their first suspension | Fixed: each stop runs in `withContext(NonCancellable) { withTimeoutOrNull(perStop) { stop() } }` (`perStop` defaults to `DesktopInjekt.STOP_TIMEOUT`, 10 s); after the last one `currentCoroutineContext().ensureActive()` rethrows the caller's cancellation; the names of the writers whose stop did not finish are returned (`onCreatedWriter(name, stop)` now takes a name). Tests: "a cancelled caller still runs every stop to its end …" (failed first: no stop ran to its end), "a stop that does not finish in time is returned by name …" | `60b2e99` |
+| 2 | A second `init()` "starts over", but Injekt may keep created singletons | Checked by a test (init A, `DownloadCache`, stop, init B, `DownloadCache` again): the **same** instance comes back (failed first when written as "a new instance"). The patched registrar keeps created values in a private `existingValues` map with no public way to clear it, so no clearing; the `init` KDoc and the test header say that a process is not re-initialisable after a stop except for objects not created yet (production calls `init` once, each test class has its own JVM). The test now pins this behaviour | `60b2e99` |
+| 3 | `_isInitializing` reset after the scope is cancelled is invisible (public `isInitializing` is `debounce(…).stateIn(scope, …)`) | Fixed by dropping the reset; the `cancelAndJoin()` KDoc says `isInitializing` is frozen at the last value it published | `b40f628` |
+| 4 | The `closed` check of the mutating calls runs before `rootDownloadsDirMutex`, and the close does not take the mutex | KDoc weakened to what holds (smaller than re-checking inside the lock, which would still race without the close taking the mutex): a call already past its check may still finish its in-memory change, but neither notifies nor writes it, since `notifyChanges()` checks `closed` again and `updateDiskCache()` launches into the cancelled scope (a coroutine launched into a cancelled scope never runs its body) | `b40f628` |
+| 5 | Teardown comment said a timeout is harmless | Decided: fail the class. `DesktopDataDirTeardown` no longer wraps the call in its own timeout (each stop has its bound) and fails with `check` naming the writers whose stop did not finish; the comment says such a writer can still write a file into an existing folder | `60b2e99` |
+| 6 | A writer registered after the stop was stopped with unbounded `runBlocking`; `catch (e: Exception)` swallowed `InterruptedException` | Fixed: `runBlocking { withTimeoutOrNull(STOP_TIMEOUT) { stop() } }`, a stop that did not finish is logged (`xLogE`), `InterruptedException` restores the thread's interrupt flag and is logged. Test: "a writer created after the stop keeps the thread's interrupt" (failed first) | `60b2e99` |
+| 7 | `getSharedPreferences` bypasses `ensureDir()` | No change: `DesktopPreferenceStore` writes synchronously on the caller's thread (`update` → `persist` under its lock, `mkdirs()` of the parent there; `DesktopSharedPreferences.apply()` calls `commit()`), so it has no work of its own left once a call returns. A late `preferences/` re-creation would need some other background job setting a preference after the test body; that job would be the delayed writer to register, as `DownloadCache` is | — |
+
+Tests: `DesktopInjektTeardownTest` 8 (was 4; the three new ones for 1, 2, 6 were run against the old code first and
+failed; the fourth new one covers the unfinished-stop report).
+
+Verification (`--max-workers=2 --console=plain`, on `b40f628`): `spotlessApply`, `spotlessCheck`,
+`:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktop:android-compat:test`
+8 classes, 40 tests, 0 failures (module unchanged); with `--rerun` 3 times each: `DesktopInjektTeardownTest` 8 tests,
+`JsSourceBrowseUiTest` 3, `ReaderNavigationTest` 5, 0 failures; after `./gradlew --stop` the full `:desktopApp:test`
+passed: 82 classes, 382 tests, 0 failures (was 378: +4), no "did not stop within" report.
+
 ## Review fixes (P23 fixes)
 
 Findings of the review of `80d94dd..25a39cd` (the P23 review fixes), each its own commit (2 and 4 share one: same

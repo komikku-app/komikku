@@ -481,10 +481,15 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **Review fixes (temp directory teardown, round 2), 2026-11-26:** the seven findings on `6e9a102..250f9f1` are
+  handled (PROGRESS "Review fixes (temp directory teardown, round 2)"): every writer stop runs to its end under
+  `NonCancellable` with its own 10 s bound, the caller's cancellation is rethrown, unfinished stops are returned by
+  name and fail the test class; late writers bounded and keep the interrupt; `DownloadCache` KDoc says what the close
+  guarantees (no `_isInitializing` reset). Found by a test: a second `DesktopInjekt.init()` keeps the singletons
+  already created (Injekt has no public clear), now documented, not fixed. Preferences: no change (synchronous
+  writes). CI_RUN_PLACEHOLDER Next: wait for the maintainer's Mac test results; review `250f9f1..HEAD` if wanted.
 - **CI run 45726638907 is green (checked 2026-11-26):** all four package jobs passed on commit `2acd2ff`, the Linux job
-  with the full desktop tests. Newer macOS `.dmg` artifacts than the one in TESTING_MAC.md are in that run. Next:
-  `/code-review medium 6e9a102..HEAD` (the teardown review fixes and the `ReaderNavigationTest` change are unreviewed),
-  then wait for the maintainer's Mac test results.
+  with the full desktop tests. Newer macOS `.dmg` artifacts than the one in TESTING_MAC.md are in that run.
 - **Self-hosted Mac runner: parked.** The change that put the macOS jobs of `build_desktop.yml` and
   `build_ios_check.yml` on the maintainer's Mac (label `self-hosted`, fork pull requests kept on `macos-15`, docs in
   AGENTS.md / BUILDING.md) is commit `98e84f7`, kept on the branch `claude/kmp-self-hosted-mac-runner` and reverted
