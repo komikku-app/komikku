@@ -26,6 +26,14 @@
     java.lang.Object readResolve();
 }
 
+# KMK -->
+# WebView calls these from JavaScript only, which R8 can't see, so without this it strips the bridges of the Cloudflare
+# bypass and the Discord login
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+# KMK <--
+
 ##---------------Begin: proguard configuration for RxJava 1.x  ----------
 -dontwarn sun.misc.**
 
