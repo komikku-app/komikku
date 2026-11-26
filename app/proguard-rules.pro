@@ -4,6 +4,14 @@
 -keepattributes Signature
 -keep,allowshrinking class * extends uy.kohesive.injekt.api.FullTypeReference
 
+# KMK -->
+# AndroidSourceManager creates the in-app delegated sources by reflection, which R8 can't see, so without this it
+# takes them as never created, strips their code and assumes HttpSource never has a delegate
+-keep class * extends exh.source.DelegatedHttpSource {
+    <init>(eu.kanade.tachiyomi.source.online.HttpSource, android.content.Context);
+}
+# KMK <--
+
 # Keep common dependencies used in extensions
 -keep,allowoptimization class androidx.preference.** { public protected *; }
 -keep,allowoptimization class kotlin.** { public protected *; }

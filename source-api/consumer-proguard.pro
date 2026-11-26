@@ -37,6 +37,8 @@
 -keep class eu.kanade.tachiyomi.source.online.UriType$* { public protected *; }
 # LoginSource implementers return these constants from twoFactorAuth
 -keep class eu.kanade.tachiyomi.source.online.LoginSource$AuthSupport { public protected *; }
+# Extensions implement the EhBasedSource marker, which the app only checks with `is`
+-keep class eu.kanade.tachiyomi.source.online.all.EhBasedSource
 # KMK <--
 
 # Final classes and top-level functions extensions only call into
