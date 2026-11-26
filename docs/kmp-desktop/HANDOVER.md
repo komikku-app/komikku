@@ -501,8 +501,15 @@ mark the residual path in both modules.
   (PROGRESS "Review fixes (temp directory teardown)"): late writers stopped at once, compat folder getters stop
   creating folders after `stopDelayedWriters()`, `DownloadCache` closed flag and `internal` `cancelAndJoin()` (desktop:
   `stopForDesktopTeardown()`), every stop attempted, teardown timeout logged, autodetection limited to the teardown
-  (mockk's `MockKExtension` is also service-registered), push trigger on the marker file only. **To do first:** a full
-  `:desktopApp:test` (not run after these fixes) and the result of CI run 45721165455; not reviewed yet.
+  (mockk's `MockKExtension` is also service-registered), push trigger on the marker file only. Not reviewed yet.
+- **`ReaderNavigationTest` regression after those fixes, 2026-11-25, fixed:** CI run 45721165455 (Linux: 377 tests,
+  1 failed) and every local run failed `next then previous across a chapter boundary …` (`expected:<1.3> but was:<P2>`).
+  A race in the test (raw `moveTo(indexOf(…))` while the chapter switch rebuilds the items), deterministic once
+  `0e58a88` stopped autodetecting `MockKExtension` (timing); not the teardown code, not an app bug (the viewers move by
+  item). The test now moves by item, plus a regression test for the switch-landed-first order (PROGRESS "Review fixes
+  (temp directory teardown)"). State: all committed and pushed (`57f9178`); last full local `:desktopApp:test` after the
+  fix: 82 classes, 378 tests, 0 failures. **To do first:** check CI run 45726638907 (marker bump `2acd2ff`; the Linux job
+  runs the tests); the teardown fixes and this test fix are not reviewed yet.
 - **M1 — first macOS CI build (done, PROGRESS "M1 — first macOS CI build"):** `build_desktop.yml` runs on this branch
   through a temporary `push` trigger (bump `.github/desktop-build-trigger`; branch runs are always release mode `none`).
   Build to test: <https://github.com/komikku-app/komikku/actions/runs/45625758564> (first green run 45623103294; macOS arm64 + x64 `.dmg`,

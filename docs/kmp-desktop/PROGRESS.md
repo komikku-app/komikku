@@ -4228,6 +4228,34 @@ Verification (`--max-workers=2 --console=plain`): `spotlessCheck`, `:app:verifyB
 `JsSourceBrowseUiTest` with `--rerun` 5 times: 3 tests each, 0 failures. Full `:desktopApp:test`: not run in this
 session (time box); CI run 45721165455 (marker bump `a0e49c0`) runs it on Linux: macOS arm64 / x64 and Windows packages green, the Linux job (with the tests) still running when this was written.
 
+**Regression after these fixes (CI run 45721165455, Linux job: 377 tests, 1 failed; also local, also the class alone):**
+`ReaderNavigationTest > next then previous across a chapter boundary leaves the chapter of the shown page current`
+failed every time with `expected:<1.3> but was:<P2>` (line 125). Cause: a race in the test itself, made deterministic by a
+timing change. The test moved with raw indices, `moveTo(indexOf("2.1"))` then `moveTo(indexOf("1.3"))`; the first move
+starts the switch to chapter 2 on `Dispatchers.Default`, and when that switch commits between `indexOf("1.3")` (3 in the
+chapter 1 items `P1 1.1 1.2 1.3 N1 2.1 2.2 2.3`) and the move, index 3 of the rebuilt chapter 2 items
+(`1.1 1.2 1.3 P2 2.1 …`) is `P2`. An instrumented run showed exactly that: the current chapter was already
+`/chapter/2` right after `indexOf` returned. Before `0e58a88` it did not happen alone (it was the known load-sensitive
+case): with autodetection limited to `DesktopDataDirTeardown`, mockk's `MockKExtension` no longer initialises MockK (its
+agent) in every test JVM, which changed the thread timing; with the `include` line commented out the class passed
+again (one run). None of the teardown code (stopped flag, folder getters, `DownloadCache` closed flag) is involved: the
+teardown only runs after the class. The production viewers never move by a looked-up index (the webtoon list reports
+its item, `moveToItem`; the pager uses `next` / `previous` / `moveToPage`), so this was a test bug, not an app bug.
+Fix: the test moves by item (`moveToItem`, items keep their identity across rebuilds), so it holds whichever side
+of the switch the second move lands on; `ReaderModel.moveTo` documents that its index is into the items as they are
+when it is applied. New test `back onto the previous chapter after the switch to the next one has landed makes it
+current again` pins the ordering that broke (waits for the switch to chapter 2, checks the rebuilt items, moves back
+to chapter 1's last page: chapter 1 current, `1.3` shown). Other `moveTo(index)` callers in tests
+(`ReaderNeighbourChaptersTest`, `ReaderDownloadsTest`, the other `ReaderNavigationTest` cases) move with no switch
+pending; no test class calls `DesktopInjekt.init` twice except `DesktopInjektTeardownTest` (by design, each test
+inits first), and nothing uses the app after `stopDelayedWriters()` outside that test.
+
+Verification of the fix (`57f9178`, `--max-workers=2 --console=plain`): `ReaderNavigationTest` alone with `--rerun` 5 times:
+5 tests each, 0 failures (failed every run before); `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktop:android-compat:test` 8 classes, 40 tests,
+0 failures; after `./gradlew --stop` the full `:desktopApp:test` passed: 82 classes, 378 tests, 0 failures. CI desktop
+build started by the marker bump `2acd2ff`: run 45726638907.
+
 ## Review fixes (P23 fixes)
 
 Findings of the review of `80d94dd..25a39cd` (the P23 review fixes), each its own commit (2 and 4 share one: same
