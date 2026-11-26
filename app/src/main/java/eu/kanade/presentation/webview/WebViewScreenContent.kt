@@ -106,6 +106,9 @@ fun WebViewScreenContent(
     var currentUrl by remember { mutableStateOf(url) }
     var showCloudflareHelp by remember { mutableStateOf(false) }
     var isActive by remember { mutableStateOf(true) }
+    // KMK -->
+    var isRendererGone by remember { mutableStateOf(false) }
+    // KMK <--
 
     DisposableEffect(Unit) {
         onDispose { isActive = false }
@@ -162,6 +165,12 @@ fun WebViewScreenContent(
             }
 
             override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                // KMK -->
+                // The WebViews of popup windows stay alive with this client and share the renderer, so each one
+                // reports its death; close the screen only once
+                if (isRendererGone) return true
+                isRendererGone = true
+                // KMK <--
                 // Not handling it kills the app along with the page
                 logcat(LogPriority.ERROR) {
                     "WebView renderer gone: crashed=${detail.didCrash()}, " +
