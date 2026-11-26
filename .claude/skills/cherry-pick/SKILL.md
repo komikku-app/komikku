@@ -25,8 +25,8 @@ with no quotes, like `git log --format=reference`. Shorten long subjects with `�
 as `(#3248)` so the parentheses don't nest: `430b13bb81` (Adapt network implementation for TachiyomiX 1.6). This is for
 conversation only, not for commit messages or PR descriptions.
 
-**A pick commit holds only that upstream change**, plus its row(s) in `cherrypick_log.md`. Uncommitted changes that are
-already in the tree stay out of it (step 0).
+**A pick commit holds only that upstream change**, plus its row(s) in `cherrypick_log.md` and the removal of any
+`ISSUES.md` entry it fixes (step 4). Uncommitted changes that are already in the tree stay out of it (step 0).
 
 ## 0. Preflight
 
@@ -171,6 +171,12 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
   git has committed a clean pick, `git reset --hard HEAD~1`, which loses nothing when `git diff --quiet HEAD~1` is clean)
   and propose marking the row `O` with the covering commit, or `X` if it doesn't apply:
   `mark <hash> --status O --note 'covered by <hash> (<subject>)'`. Ask first.
+- **Known issues.** `ISSUES.md` (repo root) lists problems Komikku knows of and hasn't fixed, each with its file,
+  function and, under **Upstream**, the upstream commit that fixes it, if any. Find the entries this pick solves: those
+  whose **Upstream** names this commit or its other copy (`grep -n -e '<short-hash>' -e '<other-copy-short-hash>'
+  ISSUES.md`), and those about code the commit changes (`grep -n` the files and functions it touches) whose problem
+  its change removes. Read the entry's **What happens** and **Fix** against the diff to decide; naming the commit isn't
+  enough when the pick leaves out the part that fixes it. Step 4 clears them.
 
 ## 2. Will it break Komikku?
 
@@ -372,8 +378,12 @@ step 1.
   - `update` always keeps a `?` with either note, even when it finds `O` evidence: it can't see a left-out part under
     `partial_ignore_paths` (a SQLDelight migration). Picking the rest later marks the row `O` here. With any note other
     than these or `AI checked`, `update` re-checks the row and can reset it.
-- **Commit:** stage only the pick's own files and the log row, with `git add <path>` for each one. Never use
-  `git add -A`, `git add -u` or `git commit -a`.
+- **`ISSUES.md`**, in the same commit: delete each entry step 1 found the pick solves, from its `## ` heading down to
+  the next one (`ISSUES.md` says to delete an entry in the commit that fixes it), then `git add ISSUES.md`. If the pick
+  fixes only part of an entry, rewrite the entry to describe what is left, and its **Upstream** line to say what this
+  pick fixed. Leave entries the pick doesn't touch alone, even if they look stale; say so in the report instead.
+- **Commit:** stage only the pick's own files, the log row and `ISSUES.md`, with `git add <path>` for each one. Never
+  use `git add -A`, `git add -u` or `git commit -a`.
   - After a conflict: write the message to a scratchpad file (`.git/MERGE_MSG` without its `# Conflicts:` block), then
     `git commit -F <file>`.
   - After a clean pick: write its message to a scratchpad file (`git log -1 --format=%B > <file>`) and edit it there,
@@ -519,9 +529,17 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
      another area, don't fix it here: recommend a separate PR (step 8) and say why.
    - **In the commit message:** a message can't stay uncommitted. Write the corrected message to a scratchpad file,
      report it, and use it only if the user chooses to fold.
+   - **Kept in `ISSUES.md`:** a real bug left unfixed here (not worth fixing now, left to a separate PR, or waiting
+     for an upstream commit Komikku hasn't picked) gets an `ISSUES.md` entry in the file's format (**Severity**,
+     **Where**, **What happens**, **How to hit it**, **Fix**, **Upstream**), as an uncommitted change that goes
+     wherever the fixes go. A false positive, style in upstream's own lines, or a bug a later pick in this run fixes
+     gets none. Put the entry next to the entries it relates to: the same file or class first, then the same feature
+     area (extension installer, downloads, WebView, Cloudflare, sync, …) or the same upstream commit. Only an entry
+     related to none goes at the end. Name commits by hash and subject, and files and functions, not line numbers.
 4. **Fix** the worth-fixing ones in the working tree, outside the pick's lines included. They are Komikku changes, so
    AGENTS.md applies in full: KMK markers on every line of upstream code you change, new strings in `i18n-kmk/`
-   (`KMR`). Don't stage or commit them.
+   (`KMR`). A fix that solves an `ISSUES.md` entry deletes that entry in the same change, as step 4 does for a pick,
+   so the entry goes wherever the fix goes. Don't stage or commit them.
    Then re-run the step 5 checks that cover the files you changed (for code, always `spotlessCheck` and
    `assembleDebug`).
 5. **Repeat** 1-4 until a round finds nothing worth fixing. A finding already judged not worth fixing doesn't count
@@ -529,9 +547,10 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
 6. **Several picks:** keep each pick's fixes apart, and within them split by the recommendation below, not by where the
    fix is. Before the next pick, save them as two patches: `<scratchpad>/review-fixes-<short-hash>-fold.patch` for the
    fixes recommended to fold, and `<scratchpad>/review-fixes-<short-hash>-separate.patch` for all the others (a Komikku
-   fix on the pick's lines that goes beyond upstream's change, and every fix outside them). `git add -N` any new file
-   first, then `git diff HEAD -- <files>` for each, splitting a file's hunks between the two when it has both. Then
-   stash them: `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
+   fix on the pick's lines that goes beyond upstream's change, every fix outside them, and the `ISSUES.md` entries
+   added). `git add -N` any new file first, then `git diff HEAD -- <files>` for each, splitting a file's hunks between
+   the two when it has both. Then stash them:
+   `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
    (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review, pop
    these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back last,
    below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run `git reset -q`
@@ -647,6 +666,8 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the log rows marked `O` (or `?` with a `Partial` note), the rows of other commits marked `?` with a `Folded`
   note, the rows given an `Early pick` note (step 1, Earlier upstream commits it jumps ahead of), and the listed rows
   left without one;
+- the `ISSUES.md` entries the pick or its fixes cleared (by heading), any it changed and why, any entry that names
+  this commit but stays, with the reason, and the entries step 7 added, with the entry each one was placed next to;
 - the verification results;
 - the later fixes, from step 6;
 - the review, from step 7: whether `code-review` ran (at which effort) or the review was by hand, and how many

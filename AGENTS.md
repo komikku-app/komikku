@@ -236,6 +236,17 @@ To pick an upstream commit, use the `cherry-pick` skill (`.claude/skills/cherry-
 
 ---
 
+## Known issues
+
+`ISSUES.md` (repo root) lists problems in Komikku's code that are known but not fixed yet: where each one is, how to hit it, what a fix looks like, and whether upstream has fixed it.
+
+- Check it before working on an area it names, and fix an entry there when the work allows it.
+- Delete an entry in the same commit that fixes it.
+- When a review or your own work finds a problem you won't fix now, add it to `ISSUES.md` instead of leaving it only in a review, a PR or a commit message.
+- Put a new entry next to the entries it relates to (the same file or class, then the same feature area or upstream commit), not at the end of the file; only an entry related to none goes last.
+
+---
+
 ## Common issues
 
 - **Gradle OOM** – the daemon uses `-Xmx4g` (`gradle.properties`); run `./gradlew --stop` and retry.
