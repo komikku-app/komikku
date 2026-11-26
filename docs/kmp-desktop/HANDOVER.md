@@ -487,7 +487,7 @@ mark the residual path in both modules.
   name and fail the test class; late writers bounded and keep the interrupt; `DownloadCache` KDoc says what the close
   guarantees (no `_isInitializing` reset). Found by a test: a second `DesktopInjekt.init()` keeps the singletons
   already created (Injekt has no public clear), now documented, not fixed. Preferences: no change (synchronous
-  writes). CI_RUN_PLACEHOLDER Next: wait for the maintainer's Mac test results; review `250f9f1..HEAD` if wanted.
+  writes). Verified locally: full `:desktopApp:test` 82 classes, 382 tests, 0 failures; CI desktop build started by the marker bump `6f6ccbc`: run 45832027995 (not checked yet). Next: wait for the maintainer's Mac test results; review `250f9f1..HEAD` if wanted.
 - **CI run 45726638907 is green (checked 2026-11-26):** all four package jobs passed on commit `2acd2ff`, the Linux job
   with the full desktop tests. Newer macOS `.dmg` artifacts than the one in TESTING_MAC.md are in that run.
 - **Self-hosted Mac runner: parked.** The change that put the macOS jobs of `build_desktop.yml` and

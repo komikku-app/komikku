@@ -4277,7 +4277,7 @@ Verification (`--max-workers=2 --console=plain`, on `b40f628`): `spotlessApply`,
 `:app:verifyBorrowedSources`, `:app:compileDebugKotlin`, `:desktopApp:compileKotlin` pass; `:desktop:android-compat:test`
 8 classes, 40 tests, 0 failures (module unchanged); with `--rerun` 3 times each: `DesktopInjektTeardownTest` 8 tests,
 `JsSourceBrowseUiTest` 3, `ReaderNavigationTest` 5, 0 failures; after `./gradlew --stop` the full `:desktopApp:test`
-passed: 82 classes, 382 tests, 0 failures (was 378: +4), no "did not stop within" report.
+passed: 82 classes, 382 tests, 0 failures (was 378: +4), no "did not stop within" report. CI desktop build started by the marker bump `6f6ccbc`: run 45832027995.
 
 ## Review fixes (P23 fixes)
 
