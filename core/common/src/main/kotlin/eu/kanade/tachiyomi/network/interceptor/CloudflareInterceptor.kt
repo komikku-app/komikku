@@ -43,6 +43,11 @@ class CloudflareInterceptor(
     // one WebView instead of each opening their own
     private val hostLocks = ConcurrentHashMap<String, ReentrantReadWriteLock>()
 
+    // KMK -->
+    // How many times a challenge was solved, or failed, for each host. Only changed under the host's write lock.
+    private val solveAttempts = ConcurrentHashMap<String, Int>()
+    // KMK <--
+
     private val listenerScript = """
         addEventListener("message", ({data}) => {
             if (data?.source === "cloudflare-challenge") {
@@ -62,11 +67,14 @@ class CloudflareInterceptor(
         val request = chain.request()
         val lock = hostLocks.computeIfAbsent(request.url.host) { ReentrantReadWriteLock() }
 
-        val (response, clearance) = lock.read {
+        // KMK -->
+        val host = request.url.host
+        val (response, clearance, attempt) = lock.read {
             val response = chain.proceed(request)
             if (!shouldIntercept(response)) return response
-            response to clearance(request.url)
+            Triple(response, clearance(request.url), solveAttempts[host])
         }
+        // KMK <--
 
         // write releases the read hold of a request made from within another to the same host, like an extension
         // refreshing a token, which would otherwise wait on itself
@@ -75,8 +83,22 @@ class CloudflareInterceptor(
             if (isCleared(request.url, clearance)) {
                 response.close()
             } else {
+                // KMK -->
+                // Another request tried to solve it while this one waited and failed, so opening another WebView for
+                // the same challenge would only fail again after keeping every request to the host waiting
+                if (solveAttempts[host] != attempt) {
+                    response.close()
+                    throw IOException(context.stringResource(MR.strings.information_cloudflare_bypass_failure))
+                }
+                // KMK <--
                 if (!prepareWebView()) return response
-                solve(request, response, clearance)
+                // KMK -->
+                try {
+                    solve(request, response, clearance)
+                } finally {
+                    solveAttempts.merge(host, 1, Int::plus)
+                }
+                // KMK <--
             }
         }
 
