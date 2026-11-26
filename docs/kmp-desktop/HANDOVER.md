@@ -483,7 +483,7 @@ mark the residual path in both modules.
 
 - **CI run 45832027995 (commit `6f6ccbc`, teardown round 2):** Windows and both macOS jobs passed; the Linux job failed
   after 21 s on Maven Central `429 Too Many Requests` (dependency download, no test ran). Its failed job was re-run on
-  2026-11-26 15:08 UTC: check that attempt 2 is green. Locally the full `:desktopApp:test` passed on the same code (82
+  2026-11-26 15:08 UTC and attempt 2 is green on all four jobs (checked 18:08 UTC); nothing is open. Locally the full `:desktopApp:test` passed on the same code (82
   classes, 382 tests, 0 failures). No further review round is planned for the teardown code unless the flake returns.
 - **Review fixes (temp directory teardown, round 2), 2026-11-26:** the seven findings on `6e9a102..250f9f1` are
   handled (PROGRESS "Review fixes (temp directory teardown, round 2)"): every writer stop runs to its end under
