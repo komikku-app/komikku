@@ -368,7 +368,11 @@ fun WebViewScreenContent(
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
 
-                    webView.setUserAgent(headers["user-agent"] ?: defaultUserAgentProvider())
+                    // KMK -->
+                    // toWebViewHeaders keeps the source's own casing, usually "User-Agent"
+                    val userAgent = headers.entries.firstOrNull { it.key.equals("user-agent", ignoreCase = true) }?.value
+                    webView.setUserAgent(userAgent ?: defaultUserAgentProvider())
+                    // KMK <--
                 },
                 onDispose = { webView ->
                     val window = windowStack.items.find { it.webView == webView }

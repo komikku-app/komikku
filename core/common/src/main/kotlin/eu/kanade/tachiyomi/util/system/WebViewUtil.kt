@@ -152,7 +152,10 @@ fun Headers.toWebViewHeaders(): Map<String, String> {
         .filter { (name, value) ->
             isRequestHeaderSafe(name, value)
         }
-        .groupBy(keySelector = { (name, _) -> name }) { (_, value) -> value }
+        // KMK -->
+        // Header names are case-insensitive: merge the spellings of one name, as toMultimap() did
+        .groupBy(keySelector = { (name, _) -> name.lowercase(Locale.ENGLISH) }) { (_, value) -> value }
+        // KMK <--
         .mapValues { it.value.getOrNull(0).orEmpty() }
 }
 
