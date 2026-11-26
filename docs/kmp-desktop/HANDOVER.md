@@ -481,6 +481,10 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **CI run 45726638907 is green (checked 2026-11-26):** all four package jobs passed on commit `2acd2ff`, the Linux job
+  with the full desktop tests. Newer macOS `.dmg` artifacts than the one in TESTING_MAC.md are in that run. Next:
+  `/code-review medium 6e9a102..HEAD` (the teardown review fixes and the `ReaderNavigationTest` change are unreviewed),
+  then wait for the maintainer's Mac test results.
 - **Self-hosted Mac runner: parked.** The change that put the macOS jobs of `build_desktop.yml` and
   `build_ios_check.yml` on the maintainer's Mac (label `self-hosted`, fork pull requests kept on `macos-15`, docs in
   AGENTS.md / BUILDING.md) is commit `98e84f7`, kept on the branch `claude/kmp-self-hosted-mac-runner` and reverted
