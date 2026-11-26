@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.util.system.buildNotificationChannel
 import eu.kanade.tachiyomi.util.system.buildNotificationChannelGroup
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 /**
  * Class to manage the basic information of all the notifications used in the app.
@@ -102,6 +103,14 @@ object Notifications {
     // KMK <--
 
     const val CHANNEL_EXTENSIONS_UPDATE = "ext_apk_update_channel"
+    // KMK -->
+    /**
+     * Notification channel and id of the daily reminder of the titles expected to release today.
+     */
+    const val CHANNEL_RELEASE_REMINDER = "release_reminder_channel"
+    const val ID_RELEASE_REMINDER = -601
+    // KMK <--
+
     const val ID_UPDATES_TO_EXTS = -401
     const val ID_EXTENSION_INSTALLER = -402
 
@@ -201,6 +210,11 @@ object Notifications {
                     setGroup(GROUP_APK_UPDATES)
                     setName(context.stringResource(MR.strings.channel_ext_updates))
                 },
+                // KMK -->
+                buildNotificationChannel(CHANNEL_RELEASE_REMINDER, IMPORTANCE_DEFAULT) {
+                    setName(context.stringResource(KMR.strings.channel_release_reminder))
+                },
+                // KMK <--
                 // AM (DISCORD) -->
                 buildNotificationChannel(CHANNEL_DISCORD_RPC, IMPORTANCE_LOW) {
                     setName(context.getString(R.string.pref_discord_rpc))

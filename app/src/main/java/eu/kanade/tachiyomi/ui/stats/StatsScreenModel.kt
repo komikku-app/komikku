@@ -23,6 +23,8 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_C
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_READ
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibraryView
+import tachiyomi.domain.readinglog.interactor.GetReadingHeatmap
+import tachiyomi.domain.readinglog.interactor.GetReadingStreak
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.source.local.isLocal
@@ -36,6 +38,10 @@ class StatsScreenModel(
     private val getTracks: GetTracks = Injekt.get(),
     private val preferences: LibraryPreferences = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
+    // KMK -->
+    private val getReadingStreak: GetReadingStreak = Injekt.get(),
+    private val getReadingHeatmap: GetReadingHeatmap = Injekt.get(),
+    // KMK <--
     // SY -->
     private val getReadMangaNotInLibraryView: GetReadMangaNotInLibraryView = Injekt.get(),
     // SY <--
@@ -92,12 +98,22 @@ class StatsScreenModel(
                 trackerCount = loggedInTrackers.size,
             )
 
+            // KMK -->
+            val activityStatData = StatsData.Activity(
+                streak = getReadingStreak.await(),
+                heatmap = getReadingHeatmap.await(),
+            )
+            // KMK <--
+
             mutableState.update {
                 StatsScreenState.Success(
                     overview = overviewStatData,
                     titles = titlesStatData,
                     chapters = chaptersStatData,
                     trackers = trackersStatData,
+                    // KMK -->
+                    activity = activityStatData,
+                    // KMK <--
                 )
             }
             // SY -->

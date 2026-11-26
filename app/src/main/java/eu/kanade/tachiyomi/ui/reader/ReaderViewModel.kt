@@ -59,7 +59,9 @@ import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -100,12 +102,14 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaById
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.readinglog.interactor.LogReadTime
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.util.Date
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Presenter used by the activity to perform background operations.
@@ -126,6 +130,9 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
+    // KMK -->
+    private val logReadTime: LogReadTime = Injekt.get(),
+    // KMK <--
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
@@ -142,6 +149,10 @@ class ReaderViewModel @JvmOverloads constructor(
 
     private val mutableState = MutableStateFlow(State())
     val state = mutableState.asStateFlow()
+
+    // KMK -->
+    private var autoScrollTimerJob: Job? = null
+    // KMK <--
 
     private val eventChannel = Channel<Event>()
     val eventFlow = eventChannel.receiveAsFlow()
@@ -912,6 +923,9 @@ class ReaderViewModel @JvmOverloads constructor(
             val sessionReadDuration = chapterReadStartTime?.let { endTime.time - it } ?: 0
 
             upsertHistory.await(HistoryUpdate(chapterId, endTime, sessionReadDuration))
+            // KMK -->
+            readerChapter.chapter.manga_id?.let { logReadTime.await(it, sessionReadDuration) }
+            // KMK <--
             chapterReadStartTime = null
         }
     }
@@ -1147,6 +1161,18 @@ class ReaderViewModel @JvmOverloads constructor(
 
     fun toggleAutoScroll(enabled: Boolean) {
         mutableState.update { it.copy(autoScroll = enabled) }
+        // KMK -->
+        autoScrollTimerJob?.cancel()
+        autoScrollTimerJob = null
+        val minutes = readerPreferences.autoScrollSleepTimerMinutes().get()
+        if (enabled && minutes > 0) {
+            autoScrollTimerJob = viewModelScope.launch {
+                delay(minutes.minutes)
+                mutableState.update { it.copy(autoScroll = false) }
+                eventChannel.trySend(Event.AutoScrollTimerElapsed)
+            }
+        }
+        // KMK <--
     }
 
     fun setAutoScrollFrequency(frequency: String) {
@@ -1544,5 +1570,9 @@ class ReaderViewModel @JvmOverloads constructor(
             // SY <--
         ) : Event
         data class CopyImage(val uri: Uri) : Event
+
+        // KMK -->
+        data object AutoScrollTimerElapsed : Event
+        // KMK <--
     }
 }

@@ -1,5 +1,8 @@
 package eu.kanade.presentation.more.stats.data
 
+import tachiyomi.domain.readinglog.model.DayActivity
+import tachiyomi.domain.readinglog.model.StreakInfo
+
 sealed interface StatsData {
 
     data class Overview(
@@ -25,4 +28,11 @@ sealed interface StatsData {
         val meanScore: Double,
         val trackerCount: Int,
     ) : StatsData
+
+    // KMK -->
+    data class Activity(
+        val streak: StreakInfo,
+        val heatmap: List<DayActivity>,
+    ) : StatsData
+    // KMK <--
 }
