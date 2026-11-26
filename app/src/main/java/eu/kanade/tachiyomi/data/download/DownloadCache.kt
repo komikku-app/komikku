@@ -556,15 +556,17 @@ class DownloadCache(
     // KMK -->
     /**
      * Desktop teardown only (its data folder is about to be deleted, tests): closes the cache, so its public mutating
-     * calls and renewals do nothing from now on, stops its background work (renewal, the delayed disk cache write)
-     * and waits for it to end, so nothing writes into [Context.getCacheDir] afterwards. Idempotent; the cache stays
-     * readable (its last index) but never changes again. `internal`: the desktop reaches it through the `:app-shared`
-     * desktop wrapper `stopForDesktopTeardown()`; Android never calls it.
+     * calls, renewals and change notifications do nothing from now on, stops its background work (renewal, the delayed
+     * disk cache write) and waits for it to end, so nothing writes into [Context.getCacheDir] afterwards. A mutating
+     * call already past its `closed` check may still finish its change of the in-memory index (the close does not take
+     * [rootDownloadsDirMutex]), but it neither notifies nor writes it to disk. Idempotent; the cache stays readable.
+     * [isInitializing] is frozen at the last value it published: it is shared in [scope], which this cancels.
+     * `internal`: the desktop reaches it through the `:app-shared` desktop wrapper `stopForDesktopTeardown()`; Android
+     * never calls it.
      */
     internal suspend fun cancelAndJoin() {
         closed = true
         scope.coroutineContext.job.cancelAndJoin()
-        _isInitializing.value = false
     }
     // KMK <--
 }
