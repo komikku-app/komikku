@@ -330,7 +330,9 @@ class DesktopDomainModule(
         addSingletonFactory<DownloadNotificationSink> { get<DesktopDownloadEvents>() }
         // Its index is written to `cache/` a second after each change, from its own scope
         addSingletonFactory {
-            DownloadCache(app).also { cache -> DesktopInjekt.onCreatedWriter { cache.stopForDesktopTeardown() } }
+            DownloadCache(app).also { cache ->
+                DesktopInjekt.onCreatedWriter("DownloadCache") { cache.stopForDesktopTeardown() }
+            }
         }
         addSingletonFactory { DownloadManager(app) }
         addFactory { GetExcludedScanlators(get()) }
