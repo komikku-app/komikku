@@ -28,6 +28,8 @@ Features: configurable reader, downloads/offline reading, trackers (MyAnimeList,
 
 Before `git push`, confirm the current branch is not `master` or `main` (`git branch --show-current`).
 
+To open a pull request and handle its reviews and CI, use the `pull-request` skill (`.claude/skills/pull-request/SKILL.md`).
+
 ### Fork markers
 
 Every Komikku addition or modification to existing code **must** be wrapped:
