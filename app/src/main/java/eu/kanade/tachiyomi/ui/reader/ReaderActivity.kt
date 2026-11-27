@@ -980,15 +980,18 @@ class ReaderActivity : BaseActivity() {
         val defaultReaderType = manga?.defaultReaderType(
             manga.mangaType(sourceName = sourceManager.get(manga.source)?.name),
         )
-        if (
-            readerPreferences.useAutoWebtoon().get() &&
+        // KMK -->
+        val isAutoWebtoon = readerPreferences.useAutoWebtoon().get() &&
             (manga?.readingMode?.toInt() ?: ReadingMode.DEFAULT.flagValue) == ReadingMode.DEFAULT.flagValue &&
             defaultReaderType != null &&
             defaultReaderType == ReadingMode.WEBTOON.flagValue
-        ) {
+        val showReadingMode = readerPreferences.showReadingMode().get()
+        val didShowAutoWebtoonToast = showAutoWebtoonToastIfNeeded(showReadingMode, isAutoWebtoon) {
             readingModeToast?.cancel()
             readingModeToast = toast(SYMR.strings.eh_auto_webtoon_snack)
-        } else if (readerPreferences.showReadingMode().get()) {
+        }
+        // KMK <--
+        if (!didShowAutoWebtoonToast && showReadingMode) {
             // SY <--
             showReadingModeToast(viewModel.getMangaReadingMode())
         }
