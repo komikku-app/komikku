@@ -4515,6 +4515,32 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
 pass on macOS arm64. `:app:compileDebugKotlin` not run: no `app/` source changed (`AppInfo` is borrowed, checked by
 `verifyBorrowedSources`).
 
+## Review fixes (M2)
+
+Cloud session, 2026-11-27: the review of `cbdfdff..365f98a` (the M2 fixes). Six findings fixed, failing test first;
+one needs a Mac and is open in [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md) (the folder panel possibly staying
+open when the app locks).
+
+- **osascript options (`MacOsNotifier`):** the title and text followed the `-e` lines directly, so a title starting
+  with `-` ("-50kg Cinderella" in a download error, `-e`, `--`) was parsed as an option. Every argument now starts with
+  a fixed marker (`|`) that the script strips (`unmark` handler). Decision: a marker rather than a fixed first token
+  or `--`, because it holds whether osascript's option parser stops at the first non-option argument or permutes
+  (BSD `getopt_long`), which could not be checked without a Mac. Tests: `-e`, `-50kg Cinderella`, `--`, `-`.
+- **System notifications switch:** new "Show system notifications" (`desktop_system_notifications`, on by default;
+  Settings → Appearance → Display, next to the tray icon). `DesktopSystemNotifier` reads it on every notification
+  and posts nothing on any backend (osascript, tray) while it is off, returning `false`; the tray tooltip status and
+  the in-app banners are unchanged. The tray summary no longer says notifications always go through the icon.
+- **One file dialog at a time (`DesktopFileDialogs`):** `apple.awt.fileDialogForDirectories` is a global property set
+  while the folder panel is open, so a file dialog opened meanwhile (a modal dialog's event loop still runs requests)
+  picked folders. Open, save and folder dialogs share a `FileDialogGuard`; a second request returns `null` (as
+  cancelled). A flag, not a lock: the dialogs run on the event thread, so a nested request would deadlock on a lock.
+- **"Shown" means handed to the system:** KDoc on `MacOsNotifier` / its `show` and `DesktopNotifier.show`.
+- **Surrogate pairs:** truncation drops a trailing high surrogate before the ellipsis.
+- **Self-test report:** each failed check's stack trace is written to the report file before the last line
+  (`PASSED` / `FAILED`, the only one the workflow reads).
+
+Verification: see HANDOVER.md "Next session (start here)" (review fixes M2 entry).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
