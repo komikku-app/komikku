@@ -4515,6 +4515,12 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
 pass on macOS arm64. `:app:compileDebugKotlin` not run: no `app/` source changed (`AppInfo` is borrowed, checked by
 `verifyBorrowedSources`).
 
+CI run 46051450459 (commit `8ead2d9`): Windows, macOS arm64 and macOS x64 green, including the packaged self-test with
+the real extensions; Linux failed one test, `MangaCoverActionsUiTest > save, edit, save the custom cover, delete it`
+(the saved file read back empty). Not an M3 regression and not an app bug: the test waited only until the file
+existed, and the save creates it before writing the bytes. The test now waits for the whole file. The full suite also
+passed on the Mac with `-Djava.awt.headless=true` (88 classes, 403 tests), so the headless runner was ruled out first.
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
