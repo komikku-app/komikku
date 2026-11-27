@@ -72,7 +72,7 @@ class DesktopSelfTestTest {
         val outcome = DesktopSelfTest.run(checks).last()
         outcome.error shouldBe null
         // The source and the five classes of FixtureClasses.branching
-        outcome.detail shouldContain "sources 'Komikku self-test', 6 classes verified"
+        outcome.detail shouldContain "1 source(s) 'Komikku self-test', 6 classes verified"
 
         val empty = DesktopSelfTest.run(DesktopSelfTest.extensionChecks(File(dir, "none"))).last()
         empty.passed shouldBe false

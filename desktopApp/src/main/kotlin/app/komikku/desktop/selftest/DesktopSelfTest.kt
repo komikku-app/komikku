@@ -1,10 +1,13 @@
 package app.komikku.desktop.selftest
 
+import android.app.Application
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import app.cash.quickjs.QuickJs
+import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.extension.ExtensionPackageResult
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extension.LoadedExtension
+import uy.kohesive.injekt.Injekt
 import java.io.Closeable
 import java.io.File
 import java.net.URI
@@ -31,7 +34,8 @@ import javax.net.ssl.SSLContext
  * verified inside the packaged runtime (CI passes real Keiyoushi extensions; their classes failed the verifier in the
  * second macOS test build while the fixture passed).
  *
- * Deterministic and offline: temporary files only, no network, no window, no data folder. Prints one line per check
+ * Deterministic and offline: temporary files only, no network, no window, no data folder (the extension checks build
+ * the app's object graph over a temporary one). Prints one line per check
  * and writes the same lines to the report file when one is given (the Windows launcher has no console); the last line
  * is [PASSED] or [FAILED]. [main] exits with 0 only when every check passed.
  */
@@ -183,8 +187,9 @@ object DesktopSelfTest {
                 ", ${classes.size} refer to classes the desktop lacks (${missing.take(MISSING_LISTED).joinToString()}" +
                     (if (missing.size > MISSING_LISTED) ", …)" else ")")
             }.orEmpty()
-            return "${inspected.extension.pkgName} ${inspected.extension.versionName}: sources " +
-                loaded.sources.joinToString { "'${it.name}'" } + ", ${verification.verified} classes verified$unresolved"
+            val names = loaded.sources.map { it.name }.distinct().joinToString { "'$it'" }
+            return "${inspected.extension.pkgName} ${inspected.extension.versionName}: ${loaded.sources.size} source(s) " +
+                "$names, ${verification.verified} classes verified$unresolved"
         } finally {
             (loaded.classLoader as? Closeable)?.close()
         }
@@ -196,11 +201,29 @@ object DesktopSelfTest {
         ?.takeIf { it.isNotBlank() }
         ?.let(::File)
 
-    /** One check per `.apk` in [dir] ([checkExtension]); a check that fails when [dir] has none. */
+    /**
+     * One check per `.apk` in [dir] ([checkExtension]); a check that fails when [dir] has none. Real extensions resolve
+     * the app's objects from Injekt when their sources are created (`Injekt.get<Application>()`, the network helper),
+     * so the checks first build the app's graph ([DesktopInjekt]) over a temporary data folder, unless one is there.
+     */
     fun extensionChecks(dir: File): List<Check> {
         val apks = dir.listFiles { file -> file.isFile && file.extension == "apk" }.orEmpty().sortedBy { it.name }
         if (apks.isEmpty()) return listOf(Check("extensions in $dir") { error("no .apk files") })
-        return apks.map { apk -> Check("extension ${apk.name}") { work -> checkExtension(apk, work, strict = false) } }
+        return apks.map { apk ->
+            Check("extension ${apk.name}") { work ->
+                ensureAppGraph()
+                checkExtension(apk, work, strict = false)
+            }
+        }
+    }
+
+    /** Builds the app's Injekt graph over a temporary data folder (deleted on exit) when no application is registered. */
+    @Synchronized
+    private fun ensureAppGraph() {
+        if (Injekt.getInstanceOrNull<Application>(Application::class.java) != null) return
+        val dataDir = Files.createTempDirectory("komikku-selftest-data").toFile()
+        Runtime.getRuntime().addShutdownHook(Thread { dataDir.deleteRecursively() })
+        DesktopInjekt.init(dataDir)
     }
 
     /** Runs every check (each in its own temporary folder, deleted afterwards). */
