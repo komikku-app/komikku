@@ -55,10 +55,10 @@ class SetMangaChapterFlags(
                 }
                 it.setFlag(orderFlag, Manga.CHAPTER_SORT_DIR_MASK)
             } else {
-                // Set new flag with ascending order
+                // Set new flag with descending order
                 it
                     .setFlag(flag, Manga.CHAPTER_SORTING_MASK)
-                    .setFlag(Manga.CHAPTER_SORT_ASC, Manga.CHAPTER_SORT_DIR_MASK)
+                    .setFlag(Manga.CHAPTER_SORT_DESC, Manga.CHAPTER_SORT_DIR_MASK)
             }
         }
         return mangaRepository.update(
