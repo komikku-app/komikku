@@ -189,7 +189,8 @@ class MangaCoverActionsUiTest {
         val savedCustom = dir.resolve("saved-custom.jpg")
         dialogs.saveTarget = savedCustom
         onNodeWithTag("cover-save").performClick()
-        waitUntil(timeoutMillis = 15_000) { savedCustom.exists() }
+        // The file exists before its bytes are written
+        waitUntil(timeoutMillis = 15_000) { savedCustom.length() == jpeg.size.toLong() }
         savedCustom.readBytes().toList() shouldBe jpeg.toList()
         dialogs.suggested.last() shouldBe "Frieren_ Beyond.jpg"
 
