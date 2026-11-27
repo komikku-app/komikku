@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
             val result = try {
                 val jar = if (input.extension == "apk") {
                     File(tempDir, input.nameWithoutExtension + ".jar").also { jar ->
-                        val failed = DexJarConverter.convert(input, jar)
+                        val failed = DexJarConverter.convert(input, jar).failedMethods
                         if (failed.isNotEmpty()) appendLine("(${failed.size} method(s) of ${input.name} could not be translated by dex2jar)")
                     }
                 } else {

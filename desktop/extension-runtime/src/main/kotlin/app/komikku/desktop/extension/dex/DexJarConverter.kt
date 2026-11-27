@@ -2,68 +2,104 @@ package app.komikku.desktop.extension.dex
 
 import com.googlecode.d2j.Method
 import com.googlecode.d2j.dex.BaseDexExceptionHandler
-import com.googlecode.d2j.dex.Dex2jar
 import com.googlecode.d2j.node.DexMethodNode
 import org.objectweb.asm.MethodVisitor
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 
 /** Thrown when an APK's dex code cannot be converted at all. */
 class DexConversionException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
- * Converts the dex code of an APK (`classes.dex`, `classes2.dex`, …) to a jar of JVM class files
- * with dex2jar (`de.femtopedia.dex2jar:dex-translator`), and caches the result as
- * `<cacheDir>/<apk sha256>.jar`, so every APK version is converted once.
+ * Converts the dex code of an APK (`classes.dex`, `classes2.dex`, …) to a jar of verifiable JVM class files
+ * with dex2jar (`de.femtopedia.dex2jar:dex-translator`, through [DexTranslator]), [InlinedConstructors] and
+ * [StackMapFrames], and caches the result as
+ * `<cacheDir>/<apk sha256>-v<CACHE_VERSION>.jar`, so every APK version is converted once.
  *
  * Methods dex2jar cannot translate are replaced by a body that throws
  * `RuntimeException("d2j fail translate: …")` (dex2jar's own fallback); they are reported in
  * [Conversion.failedMethods] and logged by the caller.
+ *
+ * @param classPath where the classes an extension builds on (compat layer, source-api, JDK) are looked up to compute
+ * stack map frames; the parent of the extension class loaders.
  */
-class DexJarConverter(private val cacheDir: File) {
+class DexJarConverter(
+    private val cacheDir: File,
+    private val classPath: ClassLoader = DexJarConverter::class.java.classLoader,
+) {
 
     /** Result of [jarFor]. */
-    data class Conversion(val jar: File, val fromCache: Boolean, val failedMethods: List<String>)
+    data class Conversion(
+        val jar: File,
+        val fromCache: Boolean,
+        val failedMethods: List<String>,
+        /** Classes that could not be made verifiable (`name: reason`); they fail verification if they are loaded. */
+        val unverifiableClasses: List<String> = emptyList(),
+    )
+
+    /** Result of [convert]. */
+    data class Converted(val failedMethods: List<String>, val unverifiableClasses: List<String>)
 
     private val locks = ConcurrentHashMap<String, Any>()
+
+    /** The cached jar of the APK with SHA-256 [sha256] (whether it exists or not). */
+    fun cachedJar(sha256: String): File = File(cacheDir, "$sha256$CACHE_SUFFIX")
 
     /** The converted jar for [apk] (whose SHA-256 is [sha256]), converting it if it is not cached. */
     fun jarFor(apk: File, sha256: String): Conversion {
         require(sha256.matches(SHA256_PATTERN)) { "Not a SHA-256: $sha256" }
-        val target = File(cacheDir, "$sha256.jar")
+        val target = cachedJar(sha256)
         synchronized(locks.getOrPut(sha256) { Any() }) {
             if (target.isFile && target.length() > 0) return Conversion(target, fromCache = true, failedMethods = emptyList())
             cacheDir.mkdirs()
             val temp = File.createTempFile("$sha256-", ".jar.tmp", cacheDir)
             try {
-                val failed = convert(apk, temp)
+                val converted = convert(apk, temp, classPath)
                 Files.move(temp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
-                return Conversion(target, fromCache = false, failedMethods = failed)
+                return Conversion(target, fromCache = false, converted.failedMethods, converted.unverifiableClasses)
             } finally {
                 temp.delete()
             }
         }
     }
 
-    /** Deletes cached jars whose APK hash is not in [keep]. */
+    /**
+     * Deletes cached jars whose APK hash is not in [keep], and every jar of an older cache version (converted without
+     * stack map frames before version 2), so they are converted again.
+     */
     fun prune(keep: Set<String>) {
+        val kept = keep.mapTo(HashSet()) { "$it$CACHE_SUFFIX" }
         cacheDir.listFiles()
-            ?.filter { it.isFile && (it.name.endsWith(".jar.tmp") || (it.extension == "jar" && it.nameWithoutExtension !in keep)) }
+            ?.filter { it.isFile && (it.name.endsWith(".jar.tmp") || (it.extension == "jar" && it.name !in kept)) }
             ?.forEach { it.delete() }
     }
 
     companion object {
+        /**
+         * Bumped whenever converted jars change, so cached ones are converted again. 2: stack map frames and
+         * R8-inlined constructors (version 1 jars fail the JVM's verifier).
+         */
+        const val CACHE_VERSION = 2
+        private const val CACHE_SUFFIX = "-v$CACHE_VERSION.jar"
+
         private val SHA256_PATTERN = Regex("[0-9a-f]{64}")
         private val DEX_ENTRY = Regex("classes\\d*\\.dex")
 
         /**
          * Converts [input] — an APK / zip with `classes*.dex` entries, or a bare `.dex` file — to the jar
-         * [output]. Returns the methods that could not be translated.
+         * [output] of verifiable class files, with the stack map frames computed against [classPath] (see
+         * [StackMapFrames]).
          */
-        fun convert(input: File, output: File): List<String> {
+        fun convert(
+            input: File,
+            output: File,
+            classPath: ClassLoader = DexJarConverter::class.java.classLoader,
+        ): Converted {
             val failed = mutableListOf<String>()
             val handler = object : BaseDexExceptionHandler() {
                 override fun handleFileException(e: Exception) {
@@ -77,24 +113,29 @@ class DexJarConverter(private val cacheDir: File) {
             }
             val dexBytes = readDex(input)
             output.delete()
-            try {
-                Dex2jar.from(dexBytes)
-                    .withExceptionHandler(handler)
-                    .reUseReg(false)
-                    .topoLogicalSort()
-                    .skipDebug(false)
-                    .optimizeSynchronized(true)
-                    .printIR(false)
-                    .noCode(false)
-                    .skipExceptions(false)
-                    .to(output.toPath())
+            val translation = try {
+                DexTranslator.translate(dexBytes, handler)
             } catch (e: DexConversionException) {
                 throw e
             } catch (e: Exception) {
                 throw DexConversionException("dex2jar failed for ${input.name}: ${e.message}", e)
             }
-            if (!output.isFile || output.length() == 0L) throw DexConversionException("dex2jar wrote no classes for ${input.name}")
-            return failed
+            if (translation.classes.isEmpty()) throw DexConversionException("dex2jar wrote no classes for ${input.name}")
+            val classes = LinkedHashMap(translation.classes)
+            val unverifiable = try {
+                InlinedConstructors.addTo(classes, translation.inlinedConstructors) +
+                    StackMapFrames.addTo(classes, classPath)
+            } catch (e: Exception) {
+                throw DexConversionException("Could not make the classes of ${input.name} verifiable: ${e.message}", e)
+            }
+            ZipOutputStream(output.outputStream().buffered()).use { jar ->
+                for ((name, bytes) in classes) {
+                    jar.putNextEntry(ZipEntry("$name.class"))
+                    jar.write(bytes)
+                    jar.closeEntry()
+                }
+            }
+            return Converted(failed, unverifiable)
         }
 
         /**
