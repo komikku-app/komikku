@@ -3,6 +3,7 @@ package app.komikku.desktop.selftest
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldEndWith
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -53,6 +54,28 @@ class DesktopSelfTestTest {
         lines.drop(1).dropLast(1).map { it.substringAfter(" ").substringBefore(":").trim() } shouldContainExactly
             DesktopSelfTest.checks.map { it.name }
         lines.first() shouldEndWith System.getProperty("os.arch")
+    }
+
+    @Test
+    fun `checks the extension APKs of a folder and verifies every class`() {
+        DesktopSelfTest.extensionsDir(arrayOf("--self-test")) shouldBe null
+        DesktopSelfTest.extensionsDir(arrayOf("--self-test", "--self-test-extensions=/tmp/x")) shouldBe File("/tmp/x")
+        DesktopSelfTest.isRequested(arrayOf("--self-test-extensions=/tmp/x")) shouldBe false
+
+        val apks = File(dir, "apks").apply { mkdirs() }
+        File(apks, "fixture.apk").outputStream().use { out ->
+            DesktopSelfTest::class.java.getResourceAsStream(DesktopSelfTest.EXTENSION_RESOURCE)!!.use { it.copyTo(out) }
+        }
+        File(apks, "notes.txt").writeText("not an extension")
+        val checks = DesktopSelfTest.extensionChecks(apks)
+        checks.map { it.name } shouldContainExactly listOf("extension fixture.apk")
+        val outcome = DesktopSelfTest.run(checks).last()
+        outcome.error shouldBe null
+        // The source and the five classes of FixtureClasses.branching
+        outcome.detail shouldContain "sources 'Komikku self-test', 6 classes verified"
+
+        val empty = DesktopSelfTest.run(DesktopSelfTest.extensionChecks(File(dir, "none"))).last()
+        empty.passed shouldBe false
     }
 
     private fun resourceText(path: String) = DesktopSelfTest::class.java.getResourceAsStream(path)!!.readBytes().decodeToString()

@@ -11,8 +11,9 @@ import java.io.File
 
 /**
  * Writes the extension APK of the packaged app's self-test (`desktopApp/src/main/resources/app/komikku/desktop/selftest/
- * selftest-extension.apk`, run by `Komikku --self-test`, M2): one source with dex code, signed with an EC key. Not part
- * of the normal run; to regenerate it:
+ * selftest-extension.apk`, run by `Komikku --self-test`, M2): one source with dex code, signed with an EC key, and the
+ * classes of [FixtureClasses.branching] (methods that need stack map frames, an R8-style inlined constructor), which
+ * the self-test verifies. Not part of the normal run; to regenerate it:
  *
  * `KOMIKKU_WRITE_SELFTEST_APK=$PWD/desktopApp/src/main/resources/app/komikku/desktop/selftest/selftest-extension.apk
  * ./gradlew :desktop:extension-runtime:test --tests "*.SelfTestFixtureWriter"`
@@ -31,7 +32,7 @@ class SelfTestFixtureWriter {
             jar,
             mapOf(
                 SOURCE_CLASS to FixtureClasses.source(SOURCE_CLASS, id = SOURCE_ID, name = SOURCE_NAME),
-            ),
+            ) + FixtureClasses.branching(PACKAGE_PATH),
         )
         target.parentFile.mkdirs()
         FixtureApk(
@@ -44,7 +45,8 @@ class SelfTestFixtureWriter {
     }
 
     private companion object {
-        const val SOURCE_CLASS = "eu/kanade/tachiyomi/extension/all/komikkuselftest/SelfTestSource"
+        const val PACKAGE_PATH = "eu/kanade/tachiyomi/extension/all/komikkuselftest"
+        const val SOURCE_CLASS = "$PACKAGE_PATH/SelfTestSource"
         const val SOURCE_ID = 4243L
         const val SOURCE_NAME = "Komikku self-test"
     }

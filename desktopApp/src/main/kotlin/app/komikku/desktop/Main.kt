@@ -65,10 +65,12 @@ import kotlin.system.exitProcess
  * Komikku desktop entry point: boots the shared stack through Injekt ([DesktopInjekt]: preferences,
  * network, database, repositories, interactors, local source), starts the scheduler ([DesktopScheduler]) and opens
  * the main window. `--self-test[=<report file>]` runs the packaged runtime's self-test ([DesktopSelfTest], M2) instead
- * and exits.
+ * and exits; `--self-test-extensions=<folder>` adds the extension APKs in that folder to it.
  */
 fun main(args: Array<String>) {
-    if (DesktopSelfTest.isRequested(args)) exitProcess(DesktopSelfTest.main(DesktopSelfTest.reportFile(args)))
+    if (DesktopSelfTest.isRequested(args)) {
+        exitProcess(DesktopSelfTest.main(DesktopSelfTest.reportFile(args), DesktopSelfTest.extensionsDir(args)))
+    }
     DesktopLogcatLogger.install()
     // P12: the log file Settings → Advanced opens and the crash handler writing to it, installed before anything else
     // can fail (P12 review): the data folder is resolved without Injekt, so a failure inside `DesktopInjekt.init()`
