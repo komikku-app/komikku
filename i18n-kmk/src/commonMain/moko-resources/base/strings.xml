@@ -179,6 +179,7 @@
     <string name="option_label_library_update_errors">Library update errors</string>
     <string name="label_library_update_errors">Library update errors (%d)</string>
     <string name="info_empty_library_update_errors">You have no library update errors.</string>
+    <string name="library_update_error_timeout">Timed out after %d minutes while fetching updates from the source</string>
     <string name="action_scroll_to_top">Scroll to top</string>
     <string name="action_scroll_to_bottom">Scroll to bottom</string>
     <string name="action_scroll_to_previous">Scroll to previous</string>
