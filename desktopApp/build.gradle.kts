@@ -50,6 +50,9 @@ dependencies {
     implementation(projects.appShared)
     // Extensions: APK reading, dex2jar conversion, class loading (Phase 5).
     implementation(projects.desktop.extensionRuntime)
+    // Extensions use host-provided OkHttp modules like on Android (libs.bundles.okhttp): Keiyoushi's client adds
+    // okhttp3.zstd.Zstd. Native zstd-kmp library inside the jar (macOS / Linux / Windows, x64 + arm64).
+    implementation(libs.okhttp.zstd)
     // Mangayomi JavaScript sources: host + Mihon source adapter (PLAN.md 8, I3).
     implementation(projects.sourceJs)
     implementation(kotlinx.serialization.json)

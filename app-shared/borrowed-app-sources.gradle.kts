@@ -565,6 +565,11 @@ run {
     desktopCopy(
         "eu/kanade/tachiyomi/ui/browse/extension/details/ExtensionDetailsScreenModel.kt",
     )
+    // The host API extensions call (MangaDex's headers use it): version and supported image types. It uses the generated
+    // BuildConfig, hence a copy; desktop counterpart in app-shared/src/desktopMain: BuildConfig.
+    desktopCopy(
+        "eu/kanade/tachiyomi/AppInfo.kt",
+    )
 }
 
 extra["borrowedAppSources.shared"] = shared.toList()

@@ -2,6 +2,7 @@ package app.komikku.desktop.di
 
 import android.app.Application
 import app.komikku.desktop.compat.stopCreatingDataFolders
+import eu.kanade.tachiyomi.BuildConfig
 import exh.log.xLogE
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
@@ -43,12 +44,23 @@ object DesktopInjekt {
     internal val STOP_TIMEOUT = 10.seconds
 
     /**
+     * Android always sets it (`Dalvik/2.1.0 (Linux; U; Android …)`) and extensions build user agents with it (MangaDex
+     * sent "Tachiyomi null"); [init] sets it unless `-Dhttp.agent=…` did.
+     */
+    internal const val HTTP_AGENT = "http.agent"
+
+    internal fun httpAgent(): String =
+        "Komikku/${BuildConfig.VERSION_NAME} (${System.getProperty("os.name")} ${System.getProperty("os.version")}; " +
+            "${System.getProperty("os.arch")})"
+
+    /**
      * Builds the graph over [dataDir]. A second call (tests only) resets the teardown state ([stopDelayedWriters]) and
      * registers the modules again, but Injekt keeps the singletons already created: they stay bound to the first
      * [dataDir] (and stay stopped after [stopDelayedWriters]). So a process is not re-initialisable after a stop except
      * for objects not created yet; production calls this once.
      */
     fun init(dataDir: File = DesktopDirs.dataDir): Application {
+        if (System.getProperty(HTTP_AGENT) == null) System.setProperty(HTTP_AGENT, httpAgent())
         val app = Application(dataDir)
         synchronized(lock) {
             stopped = false
