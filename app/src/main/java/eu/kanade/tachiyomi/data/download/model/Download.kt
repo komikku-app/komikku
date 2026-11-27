@@ -31,6 +31,11 @@ data class Download(
     val downloadedImages: Int
         get() = pages?.count { it.status == Page.State.Ready } ?: 0
 
+    // KMK -->
+    @Transient
+    var hasCompressionError: Boolean = false
+    // KMK <--
+
     @Transient
     private val _statusFlow = MutableStateFlow(State.NOT_DOWNLOADED)
 
