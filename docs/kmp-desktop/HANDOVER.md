@@ -509,8 +509,14 @@ mark the residual path in both modules.
   blocked by its CDN, a source matter, not to be fixed; Kagane sits behind a Cloudflare challenge), Asura Scans reads a
   chapter, the native folder panel (New Folder, choose) and the library update notification (delivered as a Script
   Editor banner) work. Evidence was kept locally only. CI run 46051450459: green except one Linux test race in
-  `MangaCoverActionsUiTest` (fixed in the test; the next run is started by the trigger bump after it). Not reviewed (range `debe34e..` the M3 docs commit). Next: the
-  maintainer's re-test (TESTING_MAC.md "Re-test after M3"), then a review of the range.
+  `MangaCoverActionsUiTest` (fixed in the test; the next run is started by the trigger bump after it). The M2
+  review's open finding (folder panel left open when the app locks) is confirmed on the Mac and accepted
+  (M2_REVIEW_FINDINGS.md). The cloud session's M2 review fixes were merged in; on the Mac, their `osascript` marker
+  passes `-50kg Cinderella`, `-e`, `--` and `-` through unchanged (the old form failed with "illegal option"). After
+  the merge: gates green, `:desktopApp:test` 410, `:desktop:extension-runtime:test` 25 (1 skipped),
+  `:desktop:android-compat:test` 46, no failures; CI started by the `run 12` marker bump. Not reviewed (range
+  `debe34e..` the M3 docs commit). Next: the maintainer's re-test (TESTING_MAC.md "Re-test after M3"), then a review
+  of the range.
 - **2026-11-27: handed over to a session on the maintainer's Mac.** Start with
   [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md): APK extensions still fail to load in the packaged app
   (`VerifyError: Expecting a stackmap frame` in a dex2jar-converted class, Hiperdex; not reproduced, not fixed), and

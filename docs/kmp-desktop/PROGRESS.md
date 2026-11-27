@@ -4502,6 +4502,11 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
 - **Folder panel (works):** Settings → Data and storage → Storage location opens the native macOS panel at the current
   folder; "New Folder" asks for a name, the new folder shows and opens at once, "Open" chooses it and the setting
   shows it (`/private/tmp/…`: the panel returns the resolved path).
+- **Folder panel and the app lock (M2 review's open finding, confirmed, accepted):** after `dispose()` the modal call
+  returns and the result is dropped, but the native panel stays on screen until the user closes it (JDK's
+  `CFileDialog` cannot close it). Kept: the app's content stays hidden and nothing picked there is applied; the
+  alternatives (an Objective-C bridge, or `JFileChooser` with the M2 New Folder bug while a lock is set) cost more than
+  the leftover panel. Details in [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md).
 - **Not changed:** the colour menu bar icon (needs a designed monochrome icon); the unsigned app's first start after
   removing quarantine (a local build is not quarantined).
 - **Test:** `DesktopAppEventsTest` (the quit is answered only by `finishQuit`, once; a second request cancels the first;
@@ -4532,6 +4537,9 @@ open when the app locks).
   a fixed marker (`|`) that the script strips (`unmark` handler). Decision: a marker rather than a fixed first token
   or `--`, because it holds whether osascript's option parser stops at the first non-option argument or permutes
   (BSD `getopt_long`), which could not be checked without a Mac. Tests: `-e`, `-50kg Cinderella`, `--`, `-`.
+  Checked on the Mac afterwards (M3, macOS 27): the old form fails (`osascript: illegal option -- 5` for
+  "-50kg Cinderella", exit 2); the script with the marker returns `-50kg Cinderella`, `-e`, `--`, `-`, an empty text
+  and a plain title unchanged.
 - **System notifications switch:** new "Show system notifications" (`desktop_system_notifications`, on by default;
   Settings → Appearance → Display, next to the tray icon). `DesktopSystemNotifier` reads it on every notification
   and posts nothing on any backend (osascript, tray) while it is off, returning `false`; the tray tooltip status and

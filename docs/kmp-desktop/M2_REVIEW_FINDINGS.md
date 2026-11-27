@@ -25,3 +25,19 @@ maintainer's Mac ([`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md)).
 - **Suggested fix:** close the panel natively (for example by sending it a cancel through the native window, or by
   closing the AWT window through its peer so the `NSOpenPanel` ends its modal session), or keep `JFileChooser` (which
   `cancelSelection()` closes reliably) while a lock is configured.
+
+## Checked on the Mac (M3, 2026-11-28): confirmed, accepted
+
+- **Result:** a standalone probe on JDK 21 (macOS 27, Apple silicon) did what `whileUnlocked` does: the folder panel
+  (`FileDialog` + `apple.awt.fileDialogForDirectories`), then `dispose()` from the event thread after 3 s. The modal
+  `isVisible = true` returned at once (`file = null`, the dialog no longer displayable), so the app is not blocked and
+  drops the result as before. The native panel stayed on screen: the system window list still showed the process's
+  889 × 440 window 5 s after `dispose()`, until the probe exited. Same with the open-file dialog. JDK's
+  `CFileDialog.dispose()` has no native close (the panels are never released), and nothing else in AWT ends the
+  panel's modal run.
+- **Decision: keep the native panel, accept the leftover panel.** The lock still hides the app's content, and a folder
+  or file picked in the leftover panel is dropped (`takeUnless { locked }`); what stays possible is browsing folders,
+  which Finder on the same unlocked Mac allows anyway. Closing it natively needs an Objective-C bridge the app does not
+  have (no JNA; a helper binary for this is out of proportion). Going back to `JFileChooser` while a lock is set would
+  bring back the M2 bug (folders made with New Folder not shown) for exactly the users who set a lock. Revisit if the
+  app gains a native bridge (e.g. for notifications under its own name).
