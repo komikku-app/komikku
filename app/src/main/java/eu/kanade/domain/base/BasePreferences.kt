@@ -5,6 +5,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.util.system.GLUtil
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 
 class BasePreferences(
@@ -17,7 +18,12 @@ class BasePreferences(
         false,
     )
 
-    fun incognitoMode() = preferenceStore.getBoolean(Preference.appStateKey("incognito_mode"), false)
+    fun incognitoMode() = preferenceStore.getBoolean(
+        // KMK -->
+        VaultSession.profileKey(Preference.appStateKey("incognito_mode")),
+        // KMK <--
+        false,
+    )
 
     fun extensionInstaller() = ExtensionInstallerPreference(context, preferenceStore)
 

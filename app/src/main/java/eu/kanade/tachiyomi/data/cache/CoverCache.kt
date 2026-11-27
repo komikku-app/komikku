@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.cache
 import android.content.Context
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.vault.VaultSession
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -20,14 +21,22 @@ class CoverCache(private val context: Context) {
     companion object {
         private const val COVERS_DIR = "covers"
         private const val CUSTOM_COVERS_DIR = "covers/custom"
+        // KMK -->
+        private const val VAULT_COVERS_DIR = "private_vault/covers"
+        private const val VAULT_CUSTOM_COVERS_DIR = "private_vault/covers/custom"
+        // KMK <--
     }
 
     /**
      * Cache directory used for cache management.
      */
-    private val cacheDir = getCacheDir(COVERS_DIR)
+    // KMK -->
+    private val cacheDir = getCacheDir(if (VaultSession.isActive) VAULT_COVERS_DIR else COVERS_DIR)
 
-    private val customCoverCacheDir = getCacheDir(CUSTOM_COVERS_DIR)
+    private val customCoverCacheDir = getCacheDir(
+        if (VaultSession.isActive) VAULT_CUSTOM_COVERS_DIR else CUSTOM_COVERS_DIR,
+    )
+    // KMK <--
 
     /**
      * Returns the cover from cache.

@@ -69,6 +69,7 @@ import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
+import eu.kanade.tachiyomi.data.vault.VaultManager
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -89,6 +90,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StorageManager.Companion.allowAccessStorage
 import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
 import tachiyomi.domain.storage.service.StoragePreferences
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -127,17 +129,32 @@ object SettingsDataScreen : SearchableSettings {
         val syncPreferences = remember { Injekt.get<SyncPreferences>() }
         val syncService by syncPreferences.syncService().collectAsState()
 
-        return persistentListOf(
-            getStorageLocationPref(storagePreferences = storagePreferences),
-            Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_storage_location_info)),
+        return buildList {
+            add(getStorageLocationPref(storagePreferences = storagePreferences))
+            add(Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_storage_location_info)))
 
-            getBackupAndRestoreGroup(backupPreferences = backupPreferences),
-            getDataGroup(),
-            getExportGroup(),
-        ) +
+            // KMK -->
+            // Backups are profile-specific: the vault section is only available while the vault
+            // is the active library, and vice versa.
+            if (VaultSession.isActive) {
+                add(getPrivateVaultBackupAndRestoreGroup())
+            } else {
+                add(getBackupAndRestoreGroup(backupPreferences = backupPreferences))
+            }
+            // KMK <--
+
+            add(getDataGroup())
+            add(getExportGroup())
+
             // SY -->
-            getSyncPreferences(syncPreferences = syncPreferences, syncService = syncService)
-        // SY <--
+            // KMK -->
+            // Syncing the vault would mix it with the standard cloud data.
+            if (!VaultSession.isActive) {
+                addAll(getSyncPreferences(syncPreferences = syncPreferences, syncService = syncService))
+            }
+            // KMK <--
+            // SY <--
+        }
     }
 
     @Composable
@@ -333,6 +350,148 @@ object SettingsDataScreen : SearchableSettings {
             ),
         )
     }
+
+    // KMK -->
+    @Composable
+    private fun getPrivateVaultBackupAndRestoreGroup(): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
+        var showLockDialog by remember { mutableStateOf(false) }
+
+        val chooseRestoreBackup = rememberLauncherForActivityResult(
+            object : ActivityResultContracts.GetContent() {
+                override fun createIntent(context: Context, input: String): Intent {
+                    val intent = super.createIntent(context, input)
+                    return Intent.createChooser(intent, context.stringResource(KMR.strings.private_vault_restore))
+                }
+            },
+        ) {
+            if (it == null) {
+                context.toast(MR.strings.file_null_uri_error)
+                return@rememberLauncherForActivityResult
+            }
+            navigator.push(RestoreBackupScreen(it.toString(), isVault = true))
+        }
+
+        val chooseImportBackup = rememberLauncherForActivityResult(
+            object : ActivityResultContracts.GetContent() {
+                override fun createIntent(context: Context, input: String): Intent {
+                    val intent = super.createIntent(context, input)
+                    return Intent.createChooser(intent, context.stringResource(KMR.strings.private_vault_import))
+                }
+            },
+        ) {
+            if (it == null) {
+                context.toast(MR.strings.file_null_uri_error)
+                return@rememberLauncherForActivityResult
+            }
+            navigator.push(
+                RestoreBackupScreen(
+                    uri = it.toString(),
+                    isVault = true,
+                    titleRes = KMR.strings.private_vault_import,
+                ),
+            )
+        }
+
+        if (showLockDialog) {
+            AlertDialog(
+                onDismissRequest = { showLockDialog = false },
+                title = { Text(text = stringResource(KMR.strings.private_vault_lock)) },
+                text = { Text(text = stringResource(KMR.strings.private_vault_lock_confirm)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showLockDialog = false
+                            if (VaultManager.canSwitch(context)) {
+                                VaultManager.lock(context)
+                            } else {
+                                context.toast(KMR.strings.private_vault_job_running)
+                            }
+                        },
+                    ) {
+                        Text(text = stringResource(MR.strings.action_ok))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLockDialog = false }) {
+                        Text(text = stringResource(MR.strings.action_cancel))
+                    }
+                },
+            )
+        }
+
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.private_vault_backup_restore),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.InfoPreference(
+                    stringResource(KMR.strings.private_vault_active_info),
+                ),
+                Preference.PreferenceItem.InfoPreference(
+                    stringResource(KMR.strings.private_vault_auto_lock_info),
+                ),
+                Preference.PreferenceItem.CustomPreference(
+                    title = stringResource(KMR.strings.private_vault_backup_restore),
+                ) {
+                    BasePreferenceWidget(
+                        subcomponent = {
+                            MultiChoiceSegmentedButtonRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(intrinsicSize = IntrinsicSize.Min)
+                                    .padding(horizontal = PrefsHorizontalPadding),
+                            ) {
+                                SegmentedButton(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    checked = false,
+                                    onCheckedChange = {
+                                        navigator.push(CreateBackupScreen(isVault = true))
+                                    },
+                                    shape = SegmentedButtonDefaults.itemShape(0, 2),
+                                ) {
+                                    Text(stringResource(KMR.strings.private_vault_backup))
+                                }
+                                SegmentedButton(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    checked = false,
+                                    onCheckedChange = {
+                                        if (BackupRestoreJob.isRunning(context)) {
+                                            context.toast(MR.strings.restore_in_progress)
+                                        } else {
+                                            chooseRestoreBackup.launch("*/*")
+                                        }
+                                    },
+                                    shape = SegmentedButtonDefaults.itemShape(1, 2),
+                                ) {
+                                    Text(stringResource(KMR.strings.private_vault_restore))
+                                }
+                            }
+                        },
+                    )
+                },
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.private_vault_import),
+                    subtitle = stringResource(KMR.strings.private_vault_import_summary),
+                    onClick = {
+                        if (BackupRestoreJob.isRunning(context)) {
+                            context.toast(MR.strings.restore_in_progress)
+                        } else {
+                            chooseImportBackup.launch("*/*")
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.private_vault_lock),
+                    subtitle = stringResource(KMR.strings.private_vault_lock_summary),
+                    onClick = { showLockDialog = true },
+                ),
+                Preference.PreferenceItem.InfoPreference(
+                    stringResource(KMR.strings.private_vault_security_note),
+                ),
+            ),
+        )
+    }
+    // KMK <--
 
     @Composable
     private fun getDataGroup(): Preference.PreferenceGroup {

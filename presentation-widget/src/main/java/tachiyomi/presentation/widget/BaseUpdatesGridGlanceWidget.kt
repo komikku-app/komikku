@@ -40,6 +40,7 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.updates.interactor.GetUpdates
 import tachiyomi.domain.updates.model.UpdatesWithRelations
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.presentation.widget.components.CoverHeight
 import tachiyomi.presentation.widget.components.CoverWidth
 import tachiyomi.presentation.widget.components.LockedWidget
@@ -65,7 +66,10 @@ abstract class BaseUpdatesGridGlanceWidget(
     abstract val bottomPadding: Dp
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val locked = preferences.useAuthenticator().get()
+        // KMK -->
+        // Never expose private vault covers on the home screen.
+        val locked = preferences.useAuthenticator().get() || VaultSession.isActive
+        // KMK <--
         val containerModifier = GlanceModifier
             .fillMaxSize()
             .background(background)

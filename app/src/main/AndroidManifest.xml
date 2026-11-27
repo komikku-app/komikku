@@ -178,6 +178,15 @@
             android:exported="false"
             android:theme="@style/Theme.Tachiyomi" />
 
+        <!-- KMK -->
+        <activity
+            android:name=".ui.security.VaultUnlockActivity"
+            android:configChanges="uiMode|orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.Tachiyomi" />
+        <!-- KMK <-->
+
         <activity
             android:name=".ui.webview.WebViewActivity"
             android:configChanges="uiMode|orientation|screenSize"

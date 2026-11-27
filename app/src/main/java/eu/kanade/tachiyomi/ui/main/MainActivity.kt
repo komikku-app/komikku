@@ -70,6 +70,7 @@ import eu.kanade.presentation.more.settings.screen.browse.ExtensionStoresScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
+import eu.kanade.presentation.vault.VaultLockedScreen
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
@@ -83,6 +84,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
+import eu.kanade.tachiyomi.data.vault.VaultManager
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
@@ -94,11 +96,13 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.ui.more.WhatsNewScreen
+import eu.kanade.tachiyomi.ui.security.VaultUnlockActivity
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.updaterEnabled
 import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.debug.DebugToggles
@@ -127,6 +131,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -219,6 +224,25 @@ class MainActivity : BaseActivity() {
 
         setComposeContent {
             val context = LocalContext.current
+
+            // KMK -->
+            val vaultAuthRequired by VaultSession.requiresAuth.collectAsState()
+            if (VaultSession.isActive && vaultAuthRequired) {
+                VaultLockedScreen(
+                    onUnlock = {
+                        context.startActivity(Intent(context, VaultUnlockActivity::class.java))
+                    },
+                    onUseStandardLibrary = {
+                        if (VaultManager.canSwitch(context)) {
+                            VaultManager.lock(context)
+                        } else {
+                            context.toast(KMR.strings.private_vault_job_running)
+                        }
+                    },
+                )
+                return@setComposeContent
+            }
+            // KMK <--
 
             var incognito by remember { mutableStateOf(getIncognitoState.await(null)) }
             val downloadOnly by preferences.downloadedOnly().collectAsState()
@@ -705,7 +729,19 @@ class MainActivity : BaseActivity() {
                 // Handling opening of backup files
                 if (intent.data.toString().endsWith(".tachibk")) {
                     navigator.popUntilRoot()
-                    navigator.push(RestoreBackupScreen(intent.data.toString()))
+                    // KMK -->
+                    navigator.push(
+                        if (VaultSession.isActive) {
+                            RestoreBackupScreen(
+                                uri = intent.data.toString(),
+                                isVault = true,
+                                titleRes = KMR.strings.private_vault_import,
+                            )
+                        } else {
+                            RestoreBackupScreen(intent.data.toString())
+                        },
+                    )
+                    // KMK <--
                 }
                 // Deep link to add extension store
                 else if (intent.isAddExtensionStoreIntent()) {

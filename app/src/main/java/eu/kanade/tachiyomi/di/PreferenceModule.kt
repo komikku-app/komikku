@@ -20,6 +20,7 @@ import tachiyomi.domain.history.service.HistoryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.domain.updates.service.UpdatesPreferences
+import tachiyomi.domain.vault.service.VaultPreferences
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingletonFactory
@@ -77,6 +78,11 @@ class PreferenceModule(val app: Application) : InjektModule {
         addSingletonFactory {
             UiPreferences(get())
         }
+        // KMK -->
+        addSingletonFactory {
+            VaultPreferences(get())
+        }
+        // KMK <--
         addSingletonFactory {
             BasePreferences(app, get())
         }

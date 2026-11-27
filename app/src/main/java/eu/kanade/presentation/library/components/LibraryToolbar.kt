@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import android.content.Context
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -13,9 +14,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
@@ -23,6 +30,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
@@ -49,6 +57,10 @@ fun LibraryToolbar(
     onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior?,
     onInvalidateDownloadCache: (Context) -> Unit,
+    // KMK -->
+    isVaultActive: Boolean,
+    onTripleTapTitle: () -> Unit,
+    // KMK <--
 ) = when {
     selectedCount > 0 -> LibrarySelectionToolbar(
         selectedCount = selectedCount,
@@ -72,6 +84,10 @@ fun LibraryToolbar(
         // SY <--
         scrollBehavior = scrollBehavior,
         onInvalidateDownloadCache = onInvalidateDownloadCache,
+        // KMK -->
+        isVaultActive = isVaultActive,
+        onTripleTapTitle = onTripleTapTitle,
+        // KMK <--
     )
 }
 
@@ -92,18 +108,36 @@ private fun LibraryRegularToolbar(
     // SY <--
     scrollBehavior: TopAppBarScrollBehavior?,
     onInvalidateDownloadCache: (Context) -> Unit,
+    // KMK -->
+    isVaultActive: Boolean,
+    onTripleTapTitle: () -> Unit,
+    // KMK <--
 ) {
     val context = LocalContext.current
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     SearchToolbar(
         titleContent = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                // KMK -->
+                modifier = Modifier.tripleTapTitle(onTripleTapTitle),
+                // KMK <--
+            ) {
                 Text(
                     text = title.text,
                     maxLines = 1,
                     modifier = Modifier.weight(1f, false),
                     overflow = TextOverflow.Ellipsis,
                 )
+                // KMK -->
+                if (isVaultActive) {
+                    Pill(
+                        text = stringResource(KMR.strings.private_vault_pill),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = pillAlpha),
+                        fontSize = 12.sp,
+                    )
+                }
+                // KMK <--
                 if (title.numberOfManga != null) {
                     Pill(
                         text = "${title.numberOfManga}",
@@ -204,3 +238,30 @@ data class LibraryToolbarTitle(
     val text: String,
     val numberOfManga: Int? = null,
 )
+
+// KMK -->
+private const val TRIPLE_TAP_WINDOW_MS = 1_200L
+
+/**
+ * Hidden gesture that enters/leaves the private vault: three taps on the Library title.
+ */
+@Composable
+private fun Modifier.tripleTapTitle(onTripleTap: () -> Unit): Modifier {
+    val haptic = LocalHapticFeedback.current
+    val tapTimes = remember { mutableListOf<Long>() }
+    val currentOnTripleTap by rememberUpdatedState(onTripleTap)
+
+    return pointerInput(Unit) {
+        detectTapGestures {
+            val now = System.currentTimeMillis()
+            tapTimes.removeAll { now - it > TRIPLE_TAP_WINDOW_MS }
+            tapTimes += now
+            if (tapTimes.size >= 3) {
+                tapTimes.clear()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                currentOnTripleTap()
+            }
+        }
+    }
+}
+// KMK <--

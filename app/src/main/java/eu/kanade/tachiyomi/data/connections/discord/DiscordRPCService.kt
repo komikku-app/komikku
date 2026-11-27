@@ -30,6 +30,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -176,6 +177,10 @@ class DiscordRPCService : Service() {
         private const val STOP_SERVICE = "eu.kanade.tachiyomi.DISCORD_RPC_STOP"
 
         fun start(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
+            // KMK -->
+            // Never expose private vault titles on Discord.
+            if (VaultSession.isActive) return
+            // KMK <--
             handler.removeCallbacksAndMessages(null)
             val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
             if (connectionsPreferences.enableDiscordRPC().get()) {
@@ -215,6 +220,9 @@ class DiscordRPCService : Service() {
         }
 
         fun restart(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
+            // KMK -->
+            if (VaultSession.isActive) return
+            // KMK <--
             val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
             if (connectionsPreferences.enableDiscordRPC().get() && token.isNotBlank()) {
                 val restartIntent = Intent(context, DiscordRPCService::class.java).apply {

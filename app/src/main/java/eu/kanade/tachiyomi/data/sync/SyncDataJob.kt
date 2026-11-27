@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.vault.VaultSession
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
@@ -36,6 +37,11 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
     // KMK <--
 
     override suspend fun doWork(): Result {
+        // KMK -->
+        // Syncing the vault would mix it with the standard cloud data.
+        if (VaultSession.isActive) return Result.success()
+        // KMK <--
+
         if (tags.contains(TAG_AUTO)) {
             if (!context.isOnline()) {
                 return Result.retry()
@@ -109,6 +115,9 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         }
 
         fun startNow(context: Context, manual: Boolean = false) {
+            // KMK -->
+            if (VaultSession.isActive) return
+            // KMK <--
             val wm = context.workManager
             if (wm.isRunning(TAG_JOB)) {
                 // Already running either as a scheduled or manual job

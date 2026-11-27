@@ -9,14 +9,17 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
+import eu.kanade.tachiyomi.data.vault.VaultManager
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
 import eu.kanade.tachiyomi.ui.security.UnlockActivity
+import eu.kanade.tachiyomi.ui.security.VaultUnlockActivity
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
 import eu.kanade.tachiyomi.util.view.setSecureScreen
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import tachiyomi.domain.vault.VaultSession
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -135,6 +138,19 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
     }
 
     override fun onResume(owner: LifecycleOwner) {
+        // KMK -->
+        // Fallback for the case where the screen turned off but the process never went through
+        // a full background stop (for example on a device without a keyguard).
+        if (VaultSession.isActive) {
+            if (VaultSession.shouldEndSessionOnForeground()) {
+                VaultSession.markSessionEnding()
+                VaultManager.lock(activity)
+                return
+            }
+            VaultSession.onAppForegrounded()
+        }
+        // KMK <--
+        setVaultLock()
         setAppLock()
     }
 
@@ -142,14 +158,44 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
         val secureScreenFlow = securityPreferences.secureScreen().changes()
         val incognitoModeFlow = preferences.incognitoMode().changes()
         combine(secureScreenFlow, incognitoModeFlow) { secureScreen, incognitoMode ->
-            secureScreen == SecurityPreferences.SecureScreenMode.ALWAYS ||
+            // KMK -->
+            VaultSession.isActive ||
+                // KMK <--
+                secureScreen == SecurityPreferences.SecureScreenMode.ALWAYS ||
                 (secureScreen == SecurityPreferences.SecureScreenMode.INCOGNITO && incognitoMode)
         }
             .onEach(activity.window::setSecureScreen)
             .launchIn(activity.lifecycleScope)
     }
 
+    // KMK -->
+    private fun setVaultLock() {
+        if (!VaultSession.isActive) return
+        if (VaultSession.isSessionEnding) return
+        if (!VaultSession.requiresAuth.value) return
+        if (VaultSession.isAuthenticating) return
+        if (activity is VaultUnlockActivity) return
+
+        VaultSession.onAuthenticating()
+        try {
+            activity.startActivity(Intent(activity, VaultUnlockActivity::class.java))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+            } else {
+                @Suppress("DEPRECATION")
+                activity.overridePendingTransition(0, 0)
+            }
+        } catch (_: Exception) {
+            VaultSession.onAuthenticationDismissed()
+        }
+    }
+    // KMK <--
+
     private fun setAppLock() {
+        // KMK -->
+        // The vault prompt already used the device credential.
+        if (VaultSession.isActive) return
+        // KMK <--
         if (!securityPreferences.useAuthenticator().get()) return
         if (activity.isAuthenticationSupported()) {
             if (!SecureActivityDelegate.requireUnlock) return

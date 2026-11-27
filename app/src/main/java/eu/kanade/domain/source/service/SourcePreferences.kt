@@ -9,6 +9,7 @@ import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.core.common.preference.getLongArray
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.vault.VaultSession
 
 class SourcePreferences(
     private val preferenceStore: PreferenceStore,
@@ -21,11 +22,21 @@ class SourcePreferences(
         LibraryDisplayMode.Serializer::deserialize,
     )
 
-    fun enabledLanguages() = preferenceStore.getStringSet("source_languages", LocaleHelper.getDefaultEnabledLanguages())
+    fun enabledLanguages() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey("source_languages"),
+        // KMK <--
+        LocaleHelper.getDefaultEnabledLanguages(),
+    )
 
     fun disabledSources() = preferenceStore.getStringSet("hidden_catalogues", emptySet())
 
-    fun incognitoExtensions() = preferenceStore.getStringSet("incognito_extensions", emptySet())
+    fun incognitoExtensions() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey("incognito_extensions"),
+        // KMK <--
+        emptySet(),
+    )
 
     fun pinnedSources() = preferenceStore.getStringSet(
         // KMK -->
@@ -35,7 +46,9 @@ class SourcePreferences(
     )
 
     fun lastUsedSource() = preferenceStore.getLong(
-        Preference.appStateKey("last_catalogue_source"),
+        // KMK -->
+        VaultSession.profileKey(Preference.appStateKey("last_catalogue_source")),
+        // KMK <--
         -1,
     )
 

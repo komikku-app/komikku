@@ -23,6 +23,7 @@ import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -43,6 +44,13 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
         if (uri == null || options == null) {
             return Result.failure()
         }
+
+        // KMK -->
+        val isVaultJob = inputData.getBoolean(VAULT_KEY, false)
+        if (isVaultJob != VaultSession.isActive) {
+            return Result.failure()
+        }
+        // KMK <--
 
         // KMK -->
         backupRestoreStatus.start()
@@ -94,11 +102,15 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
             uri: Uri,
             options: RestoreOptions,
             sync: Boolean = false,
+            vault: Boolean = false,
         ) {
             val inputData = workDataOf(
                 LOCATION_URI_KEY to uri.toString(),
                 SYNC_KEY to sync,
                 OPTIONS_KEY to options.asBooleanArray(),
+                // KMK -->
+                VAULT_KEY to vault,
+                // KMK <--
             )
             val request = OneTimeWorkRequestBuilder<BackupRestoreJob>()
                 .addTag(TAG)
@@ -122,3 +134,4 @@ private const val TAG = "BackupRestore"
 private const val LOCATION_URI_KEY = "location_uri" // String
 private const val SYNC_KEY = "sync" // Boolean
 private const val OPTIONS_KEY = "options" // BooleanArray
+private const val VAULT_KEY = "vault" // Boolean

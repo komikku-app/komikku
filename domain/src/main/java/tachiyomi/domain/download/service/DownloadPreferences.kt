@@ -1,6 +1,7 @@
 package tachiyomi.domain.download.service
 
 import tachiyomi.core.common.preference.PreferenceStore
+import tachiyomi.domain.vault.VaultSession
 
 class DownloadPreferences(
     private val preferenceStore: PreferenceStore,
@@ -26,14 +27,28 @@ class DownloadPreferences(
 
     fun removeBookmarkedChapters() = preferenceStore.getBoolean("pref_remove_bookmarked", false)
 
-    fun removeExcludeCategories() = preferenceStore.getStringSet(REMOVE_EXCLUDE_CATEGORIES_PREF_KEY, emptySet())
+    fun removeExcludeCategories() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(REMOVE_EXCLUDE_CATEGORIES_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
     fun downloadNewChapters() = preferenceStore.getBoolean("download_new", false)
 
-    fun downloadNewChapterCategories() = preferenceStore.getStringSet(DOWNLOAD_NEW_CATEGORIES_PREF_KEY, emptySet())
+    fun downloadNewChapterCategories() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(DOWNLOAD_NEW_CATEGORIES_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
-    fun downloadNewChapterCategoriesExclude() =
-        preferenceStore.getStringSet(DOWNLOAD_NEW_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
+    fun downloadNewChapterCategoriesExclude() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(DOWNLOAD_NEW_CATEGORIES_EXCLUDE_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
     fun downloadNewUnreadChaptersOnly() = preferenceStore.getBoolean("download_new_unread_chapters_only", false)
 
@@ -53,10 +68,16 @@ class DownloadPreferences(
         private const val REMOVE_EXCLUDE_CATEGORIES_PREF_KEY = "remove_exclude_categories"
         private const val DOWNLOAD_NEW_CATEGORIES_PREF_KEY = "download_new_categories"
         private const val DOWNLOAD_NEW_CATEGORIES_EXCLUDE_PREF_KEY = "download_new_categories_exclude"
-        val categoryPreferenceKeys = setOf(
+
+        // KMK -->
+        private val baseCategoryPreferenceKeys = setOf(
             REMOVE_EXCLUDE_CATEGORIES_PREF_KEY,
             DOWNLOAD_NEW_CATEGORIES_PREF_KEY,
             DOWNLOAD_NEW_CATEGORIES_EXCLUDE_PREF_KEY,
         )
+
+        val categoryPreferenceKeys = baseCategoryPreferenceKeys +
+            baseCategoryPreferenceKeys.map { "$it${VaultSession.KEY_SUFFIX}" }
+        // KMK <--
     }
 }

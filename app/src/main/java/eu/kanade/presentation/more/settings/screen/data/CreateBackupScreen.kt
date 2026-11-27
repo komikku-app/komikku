@@ -26,19 +26,24 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 
-class CreateBackupScreen : Screen() {
+class CreateBackupScreen(
+    // KMK -->
+    private val isVault: Boolean = false,
+    // KMK <--
+) : Screen() {
 
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { CreateBackupScreenModel() }
+        val model = rememberScreenModel { CreateBackupScreenModel(isVault) }
         val state by model.state.collectAsState()
 
         val chooseBackupDir = rememberLauncherForActivityResult(
@@ -50,7 +55,7 @@ class CreateBackupScreen : Screen() {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
                 )
-                model.createBackup(context, it)
+                model.createBackup(context, it, isVault)
                 navigator.pop()
             }
         }
@@ -58,7 +63,11 @@ class CreateBackupScreen : Screen() {
         Scaffold(
             topBar = {
                 AppBar(
-                    title = stringResource(MR.strings.pref_create_backup),
+                    title = stringResource(
+                        // KMK -->
+                        if (isVault) KMR.strings.private_vault_backup else MR.strings.pref_create_backup,
+                        // KMK <--
+                    ),
                     navigateUp = navigator::pop,
                     scrollBehavior = it,
                 )
@@ -71,7 +80,7 @@ class CreateBackupScreen : Screen() {
                 onClickAction = {
                     if (!BackupCreateJob.isManualJobRunning(context)) {
                         try {
-                            chooseBackupDir.launch(BackupCreator.getFilename())
+                            chooseBackupDir.launch(BackupCreator.getFilename(isVault))
                         } catch (e: ActivityNotFoundException) {
                             context.toast(MR.strings.file_picker_error)
                         }
@@ -92,11 +101,15 @@ class CreateBackupScreen : Screen() {
                     }
                 }
 
-                item {
-                    SectionCard(MR.strings.label_settings) {
-                        Options(BackupOptions.settingsOptions, state, model)
+                // KMK -->
+                if (!isVault) {
+                    item {
+                        SectionCard(MR.strings.label_settings) {
+                            Options(BackupOptions.settingsOptions, state, model)
+                        }
                     }
                 }
+                // KMK <--
             }
         }
     }
@@ -120,7 +133,17 @@ class CreateBackupScreen : Screen() {
     }
 }
 
-private class CreateBackupScreenModel : StateScreenModel<CreateBackupScreenModel.State>(State()) {
+private class CreateBackupScreenModel(
+    // KMK -->
+    isVault: Boolean = false,
+    // KMK <--
+) : StateScreenModel<CreateBackupScreenModel.State>(
+    // KMK -->
+    State(
+        options = if (isVault) BackupOptions.vaultDefaults else BackupOptions(),
+    ),
+    // KMK <--
+) {
 
     fun toggle(setter: (BackupOptions, Boolean) -> BackupOptions, enabled: Boolean) {
         mutableState.update {
@@ -130,9 +153,11 @@ private class CreateBackupScreenModel : StateScreenModel<CreateBackupScreenModel
         }
     }
 
-    fun createBackup(context: Context, uri: Uri) {
-        BackupCreateJob.startNow(context, uri, state.value.options)
+    // KMK -->
+    fun createBackup(context: Context, uri: Uri, vault: Boolean = false) {
+        BackupCreateJob.startNow(context, uri, state.value.options, vault)
     }
+    // KMK <--
 
     @Immutable
     data class State(

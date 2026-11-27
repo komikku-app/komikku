@@ -56,6 +56,7 @@ import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.source.local.image.LocalCoverManager
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import uy.kohesive.injekt.api.InjektModule
@@ -109,7 +110,14 @@ class AppModule(val app: Application) : InjektModule {
                     },
                     databaseType = AndroidxSqliteDatabaseType.FileProvider(
                         app,
-                        if (encryptDatabase) CbzCrypto.DATABASE_NAME else "tachiyomi.db",
+                        // KMK -->
+                        when {
+                            VaultSession.isActive && encryptDatabase -> "tachiyomiEncryptedVault.db"
+                            VaultSession.isActive -> "tachiyomiVault.db"
+                            encryptDatabase -> CbzCrypto.DATABASE_NAME
+                            else -> "tachiyomi.db"
+                        },
+                        // KMK <--
                     ),
                     // KMK <--
                     schema = Database.Schema,

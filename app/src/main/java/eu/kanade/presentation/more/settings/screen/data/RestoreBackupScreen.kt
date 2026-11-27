@@ -24,6 +24,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
@@ -33,6 +34,7 @@ import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import kotlinx.coroutines.flow.update
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
 import tachiyomi.presentation.core.components.SectionCard
@@ -42,19 +44,27 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 class RestoreBackupScreen(
     private val uri: String,
+    // KMK -->
+    private val isVault: Boolean = false,
+    private val titleRes: StringResource = if (isVault) {
+        KMR.strings.private_vault_restore
+    } else {
+        MR.strings.pref_restore_backup
+    },
+    // KMK <--
 ) : Screen() {
 
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { RestoreBackupScreenModel(context, uri) }
+        val model = rememberScreenModel { RestoreBackupScreenModel(context, uri, isVault) }
         val state by model.state.collectAsState()
 
         Scaffold(
             topBar = {
                 AppBar(
-                    title = stringResource(MR.strings.pref_restore_backup),
+                    title = stringResource(titleRes),
                     navigateUp = navigator::pop,
                     scrollBehavior = it,
                 )
@@ -78,7 +88,10 @@ class RestoreBackupScreen(
                 if (state.canRestore) {
                     item {
                         SectionCard {
-                            RestoreOptions.options.forEach { option ->
+                            // KMK -->
+                            val options = if (isVault) RestoreOptions.vaultOptions else RestoreOptions.options
+                            // KMK <--
+                            options.forEach { option ->
                                 LabeledCheckbox(
                                     label = stringResource(option.label),
                                     checked = option.getter(state.options),
@@ -167,7 +180,16 @@ class RestoreBackupScreen(
 private class RestoreBackupScreenModel(
     private val context: Context,
     private val uri: String,
-) : StateScreenModel<RestoreBackupScreenModel.State>(State()) {
+    // KMK -->
+    private val isVault: Boolean = false,
+    // KMK <--
+) : StateScreenModel<RestoreBackupScreenModel.State>(
+    // KMK -->
+    State(
+        options = if (isVault) RestoreOptions.vaultDefaults else RestoreOptions(),
+    ),
+    // KMK <--
+) {
 
     init {
         validate(uri.toUri())
@@ -186,6 +208,9 @@ private class RestoreBackupScreenModel(
             context = context,
             uri = uri.toUri(),
             options = state.value.options,
+            // KMK -->
+            vault = isVault,
+            // KMK <--
         )
     }
 

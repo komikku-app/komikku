@@ -28,6 +28,7 @@ import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.storage.service.StorageManager
+import tachiyomi.domain.vault.VaultSession
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.TimeUnit
@@ -39,6 +40,15 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
 
     override suspend fun doWork(): Result {
         val isAutoBackup = inputData.getBoolean(IS_AUTO_BACKUP_KEY, true)
+
+        // KMK -->
+        val isVaultJob = inputData.getBoolean(VAULT_KEY, false)
+        if (isVaultJob != VaultSession.isActive) {
+            // A scheduled standard backup must never leak vault data, and a manual job must not
+            // run after the active profile changed.
+            return if (isAutoBackup) Result.success() else Result.failure()
+        }
+        // KMK <--
 
         if (isAutoBackup && BackupRestoreJob.isRunning(context)) return Result.retry()
 
@@ -114,11 +124,14 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
             }
         }
 
-        fun startNow(context: Context, uri: Uri, options: BackupOptions) {
+        fun startNow(context: Context, uri: Uri, options: BackupOptions, vault: Boolean = false) {
             val inputData = workDataOf(
                 IS_AUTO_BACKUP_KEY to false,
                 LOCATION_URI_KEY to uri.toString(),
                 OPTIONS_KEY to options.asBooleanArray(),
+                // KMK -->
+                VAULT_KEY to vault,
+                // KMK <--
             )
             val request = OneTimeWorkRequestBuilder<BackupCreateJob>()
                 .addTag(TAG_MANUAL)
@@ -147,3 +160,4 @@ private const val TAG_MANUAL = "$TAG_AUTO:manual"
 private const val IS_AUTO_BACKUP_KEY = "is_auto_backup" // Boolean
 private const val LOCATION_URI_KEY = "location_uri" // String
 private const val OPTIONS_KEY = "options" // BooleanArray
+private const val VAULT_KEY = "vault" // Boolean

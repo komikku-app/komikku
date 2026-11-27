@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.source.sourcePreferences
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.vault.VaultSession
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -44,6 +45,10 @@ class PreferenceBackupCreator(
     private fun Map<String, *>.toBackupPreferences(): List<BackupPreference> {
         return this
             .filterKeys { !Preference.isAppState(it) }
+            // KMK -->
+            // Do not leak the other profile's id-based settings into this backup.
+            .filterKeys { !VaultSession.isVaultKey(it) || VaultSession.isActive }
+            // KMK <--
             .mapNotNull { (key, value) ->
                 when (value) {
                     is Int -> BackupPreference(key, IntPreferenceValue(value))

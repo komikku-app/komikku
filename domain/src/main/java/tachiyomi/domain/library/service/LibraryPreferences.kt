@@ -9,6 +9,7 @@ import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.vault.VaultSession
 
 class LibraryPreferences(
     private val preferenceStore: PreferenceStore,
@@ -45,12 +46,16 @@ class LibraryPreferences(
     // KMK <--
 
     fun coverRatios() = preferenceStore.getStringSet(
-        Preference.appStateKey("pref_library_cover_ratios_key"),
+        // KMK -->
+        VaultSession.profileKey(Preference.appStateKey("pref_library_cover_ratios_key")),
+        // KMK <--
         emptySet(),
     )
 
     fun coverColors() = preferenceStore.getStringSet(
-        Preference.appStateKey("pref_library_cover_colors_key"),
+        // KMK -->
+        VaultSession.profileKey(Preference.appStateKey("pref_library_cover_colors_key")),
+        // KMK <--
         emptySet(),
     )
     // KMK <--
@@ -127,9 +132,19 @@ class LibraryPreferences(
         false,
     )
 
-    fun filterCategoriesInclude() = preferenceStore.getStringSet(FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY, emptySet())
+    fun filterCategoriesInclude() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
-    fun filterCategoriesExclude() = preferenceStore.getStringSet(FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
+    fun filterCategoriesExclude() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
     // KMK <--
 
     fun filterTracking(id: Int) = preferenceStore.getEnum(
@@ -162,9 +177,19 @@ class LibraryPreferences(
 
     // region Category
 
-    fun defaultCategory() = preferenceStore.getInt(DEFAULT_CATEGORY_PREF_KEY, -1)
+    fun defaultCategory() = preferenceStore.getInt(
+        // KMK -->
+        VaultSession.profileKey(DEFAULT_CATEGORY_PREF_KEY),
+        // KMK <--
+        -1,
+    )
 
-    fun lastUsedCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_category"), 0)
+    fun lastUsedCategory() = preferenceStore.getInt(
+        // KMK -->
+        VaultSession.profileKey(Preference.appStateKey("last_used_category")),
+        // KMK <--
+        0,
+    )
 
     fun categoryTabs() = preferenceStore.getBoolean("display_category_tabs", true)
 
@@ -176,9 +201,19 @@ class LibraryPreferences(
     fun showHiddenCategories() = preferenceStore.getBoolean("hide_hidden_categories", false)
     // KMK <--
 
-    fun updateCategories() = preferenceStore.getStringSet(LIBRARY_UPDATE_CATEGORIES_PREF_KEY, emptySet())
+    fun updateCategories() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(LIBRARY_UPDATE_CATEGORIES_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
-    fun updateCategoriesExclude() = preferenceStore.getStringSet(LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
+    fun updateCategoriesExclude() = preferenceStore.getStringSet(
+        // KMK -->
+        VaultSession.profileKey(LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY),
+        // KMK <--
+        emptySet(),
+    )
 
     // endregion
 
@@ -292,14 +327,24 @@ class LibraryPreferences(
         private const val FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY = "pref_filter_library_categories_exclude"
         // KMK <--
 
-        val categoryPreferenceKeys = setOf(
+        // KMK -->
+        private val baseCategoryPreferenceKeys = setOf(
             DEFAULT_CATEGORY_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY,
-            // KMK -->
             FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY,
             FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY,
-            // KMK <--
         )
+
+        // Category ids belong to a specific library database, so both the standard and the
+        // private vault variants are valid when restoring a backup.
+        val categoryPreferenceKeys = baseCategoryPreferenceKeys +
+            baseCategoryPreferenceKeys.map { "$it${VaultSession.KEY_SUFFIX}" }
+
+        fun isDefaultCategoryKey(key: String): Boolean {
+            return key == DEFAULT_CATEGORY_PREF_KEY ||
+                key == "$DEFAULT_CATEGORY_PREF_KEY${VaultSession.KEY_SUFFIX}"
+        }
+        // KMK <--
     }
 }

@@ -5,6 +5,7 @@ import exh.log.EHLogLevel.Companion.EH_LOG_LEVEL_PREF
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.domain.release.service.AppUpdatePolicy
+import tachiyomi.domain.vault.VaultSession
 
 class ExhPreferences(
     private val preferenceStore: PreferenceStore,
@@ -22,7 +23,10 @@ class ExhPreferences(
     fun isHentaiEnabled() = preferenceStore.getBoolean("eh_is_hentai_enabled", false)
 
     // KMK -->
-    fun ehIncognitoMode() = preferenceStore.getBoolean("eh_incognito_mode", false)
+    fun ehIncognitoMode() = preferenceStore.getBoolean(
+        VaultSession.profileKey("eh_incognito_mode"),
+        false,
+    )
     // KMK <--
 
     fun enableExhentai() = preferenceStore.getBoolean(Preference.privateKey("enable_exhentai"), false)

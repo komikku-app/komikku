@@ -44,6 +44,19 @@ data class BackupOptions(
         libraryEntries || categories || appSettings || extensionStores || sourceSettings || savedSearchesFeeds
 
     companion object {
+        // KMK -->
+        /**
+         * Vault backups must not carry global app configuration, because the vault shares it with
+         * the standard library and the backup could be restored into a stock Komikku install.
+         */
+        val vaultDefaults = BackupOptions(
+            appSettings = false,
+            extensionStores = false,
+            sourceSettings = false,
+            privateSettings = false,
+        )
+        // KMK <--
+
         val libraryOptions = persistentListOf(
             Entry(
                 label = MR.strings.manga,

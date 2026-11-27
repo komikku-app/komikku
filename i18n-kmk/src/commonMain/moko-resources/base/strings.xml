@@ -242,4 +242,27 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+
+    <!-- Private vault -->
+    <string name="private_vault">Private vault</string>
+    <string name="private_vault_pill">Vault</string>
+    <string name="private_vault_backup_restore">Private Vault Backup and Restore</string>
+    <string name="private_vault_active_info">The private vault is a separate library. Backups here only contain the vault, not your standard library.</string>
+    <string name="private_vault_auto_lock_info">This vault closes automatically when the app is closed, left in the background for 30 seconds, or the screen is turned off. You will be returned to your standard library.</string>
+    <string name="private_vault_locked">Private vault locked</string>
+    <string name="private_vault_unlock_hint">Unlock with your device screen lock (PIN, pattern, or password).</string>
+    <string name="private_vault_unlock">Unlock</string>
+    <string name="private_vault_use_standard_library">Use standard library</string>
+    <string name="private_vault_no_device_lock">Set a screen lock (PIN, pattern, or password) in your device settings to use the private vault.</string>
+    <string name="private_vault_enter">Enter private vault</string>
+    <string name="private_vault_enter_confirm">Switch to the private vault? The app will restart into a separate library. It closes automatically when you leave the app for 30 seconds, turn off the screen, or close the app.</string>
+    <string name="private_vault_lock">Lock private vault</string>
+    <string name="private_vault_lock_confirm">Lock the private vault and return to the standard library? The app will restart.</string>
+    <string name="private_vault_lock_summary">Return to the standard library.</string>
+    <string name="private_vault_job_running">Wait for the running backup, restore, or sync to finish first.</string>
+    <string name="private_vault_backup">Back up vault</string>
+    <string name="private_vault_restore">Restore vault</string>
+    <string name="private_vault_import">Import standard Komikku backup</string>
+    <string name="private_vault_import_summary">Restore a normal Komikku backup into this vault. App settings and extension stores are not imported.</string>
+    <string name="private_vault_security_note">The private vault is a separate database protected by your device screen lock. It follows the app\'s Encrypt database setting for at-rest encryption. Vault backups use the standard unencrypted Komikku format.</string>
 </resources>

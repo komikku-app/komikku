@@ -55,6 +55,8 @@ import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
+import eu.kanade.tachiyomi.data.vault.VaultActivityLifecycleCallbacks
+import eu.kanade.tachiyomi.data.vault.VaultManager
 import eu.kanade.tachiyomi.di.AppModule
 import eu.kanade.tachiyomi.di.PreferenceModule
 import eu.kanade.tachiyomi.di.SYPreferenceModule
@@ -91,6 +93,7 @@ import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.storage.service.StorageManager
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
 import timber.log.Timber
@@ -107,6 +110,18 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     private val privacyPreferences: PrivacyPreferences by injectLazy()
 
     private val disableIncognitoReceiver = DisableIncognitoReceiver()
+
+    // KMK -->
+    private val vaultActivityLifecycleCallbacks = VaultActivityLifecycleCallbacks()
+
+    private val vaultScreenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                VaultSession.onScreenOff()
+            }
+        }
+    }
+    // KMK <--
 
     @SuppressLint("LaunchActivityFromNotification")
     override fun onCreate() {
@@ -135,7 +150,26 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             if (packageName != process) WebView.setDataDirectorySuffix(process)
         }
 
+        // KMK -->
+        // Only the main process may consume the one-shot vault handoff. The :error_handler
+        // process must never start in the vault.
+        val isMainProcess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getProcessName() == packageName
+        } else {
+            true
+        }
+        // KMK <--
+
         Injekt.importModule(PreferenceModule(this))
+        // KMK -->
+        VaultSession.init(
+            if (isMainProcess) {
+                VaultManager.consumePendingEnter(this)
+            } else {
+                false
+            },
+        )
+        // KMK <--
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
         // KMK -->
@@ -163,6 +197,25 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         setupNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        // KMK -->
+        // The vault session ends when the screen turns off, regardless of the trigger
+        // (screen timeout, power button, cover, ...). The actual switch to the standard
+        // library happens when the app next comes to the foreground.
+        if (isMainProcess) {
+            // Record the background timestamp from the last activity's stop, before a
+            // work-profile freezer can cache the process.
+            registerActivityLifecycleCallbacks(vaultActivityLifecycleCallbacks)
+
+            // ACTION_SCREEN_OFF is a protected system broadcast, so exporting the receiver is safe.
+            ContextCompat.registerReceiver(
+                this,
+                vaultScreenOffReceiver,
+                IntentFilter(Intent.ACTION_SCREEN_OFF),
+                ContextCompat.RECEIVER_EXPORTED,
+            )
+        }
+        // KMK <--
 
         val scope = ProcessLifecycleOwner.get().lifecycleScope
 
@@ -239,8 +292,26 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     private fun initializeMigrator() {
         val preferenceStore = Injekt.get<PreferenceStore>()
         // SY -->
-        val preference = preferenceStore.getInt(Preference.appStateKey("eh_last_version_code"), 0)
+        val preference = preferenceStore.getInt(
+            // KMK -->
+            // App-level data migrations touch the active database, so each profile tracks its
+            // own version. The vault starts at the standard version so historical migrations
+            // are not replayed against a brand-new vault database.
+            if (VaultSession.isActive) {
+                Preference.appStateKey(VaultSession.profileKey("eh_last_version_code"))
+            } else {
+                Preference.appStateKey("eh_last_version_code")
+            },
+            // KMK <--
+            0,
+        )
         // SY <--
+        // KMK -->
+        if (VaultSession.isActive && !preference.isSet()) {
+            val standardVersion = preferenceStore.getInt(Preference.appStateKey("eh_last_version_code"), 0)
+            preference.set(standardVersion.get())
+        }
+        // KMK <--
         logcat { "Migration from ${preference.get()} to ${BuildConfig.VERSION_CODE}" }
         Migrator.initialize(
             old = preference.get(),

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import java.io.File
 
@@ -75,6 +76,13 @@ class StorageManager(
     }
 
     fun getDownloadsDirectory(): UniFile? {
+        // KMK -->
+        if (VaultSession.isActive) {
+            return baseDir
+                ?.createDirectory(VAULT_DIR)
+                ?.createDirectory(DOWNLOADS_PATH)
+        }
+        // KMK <--
         return baseDir?.createDirectory(DOWNLOADS_PATH)
     }
 
@@ -222,6 +230,10 @@ class StorageManager(
 private const val AUTOMATIC_BACKUPS_PATH = "autobackup"
 private const val DOWNLOADS_PATH = "downloads"
 private const val LOCAL_SOURCE_PATH = "local"
+
+// KMK -->
+private const val VAULT_DIR = "private_vault"
+// KMK <--
 
 // SY -->
 private const val LOGS_PATH = "logs"

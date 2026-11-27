@@ -7,15 +7,20 @@ import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +52,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
+import eu.kanade.tachiyomi.data.vault.VaultManager
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -74,6 +80,7 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.vault.VaultSession
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
@@ -116,6 +123,10 @@ data object LibraryTab : Tab {
         val settingsScreenModel = rememberScreenModel { LibrarySettingsScreenModel() }
         val state by screenModel.state.collectAsState()
 
+        // KMK -->
+        var showVaultDialog by remember { mutableStateOf(false) }
+        // KMK <--
+
         val snackbarHostState = remember { SnackbarHostState() }
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
@@ -142,6 +153,32 @@ data object LibraryTab : Tab {
             }
             started
         }
+
+        // KMK -->
+        if (showVaultDialog) {
+            PrivateVaultDialog(
+                vaultActive = VaultSession.isActive,
+                onDismissRequest = { showVaultDialog = false },
+                onConfirm = {
+                    showVaultDialog = false
+                    when {
+                        !VaultManager.canSwitch(context) -> {
+                            context.toast(KMR.strings.private_vault_job_running)
+                        }
+                        VaultSession.isActive -> {
+                            VaultManager.lock(context)
+                        }
+                        !VaultManager.isDeviceSecure(context) -> {
+                            context.toast(KMR.strings.private_vault_no_device_lock)
+                        }
+                        else -> {
+                            VaultManager.enter(context)
+                        }
+                    }
+                },
+            )
+        }
+        // KMK <--
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -181,7 +218,9 @@ data object LibraryTab : Tab {
                     },
                     // SY -->
                     onClickSyncExh = screenModel::openFavoritesSyncDialog.takeIf { state.showSyncExh },
-                    isSyncEnabled = state.isSyncEnabled,
+                    // KMK -->
+                    isSyncEnabled = state.isSyncEnabled && !VaultSession.isActive,
+                    // KMK <--
                     // SY <--
                     searchQuery = state.searchQuery,
                     onSearchQueryChange = screenModel::search,
@@ -191,6 +230,10 @@ data object LibraryTab : Tab {
                     },
                     // For scroll overlay when no tab
                     scrollBehavior = scrollBehavior.takeIf { !state.showCategoryTabs },
+                    // KMK -->
+                    isVaultActive = VaultSession.isActive,
+                    onTripleTapTitle = { showVaultDialog = true },
+                    // KMK <--
                 )
             },
             bottomBar = {
@@ -505,3 +548,48 @@ data object LibraryTab : Tab {
     private val requestSettingsSheetEvent = Channel<Unit>()
     private suspend fun requestOpenSettingsSheet() = requestSettingsSheetEvent.send(Unit)
 }
+
+// KMK -->
+@Composable
+private fun PrivateVaultDialog(
+    vaultActive: Boolean,
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = stringResource(
+                    if (vaultActive) KMR.strings.private_vault_lock else KMR.strings.private_vault_enter,
+                ),
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(
+                    if (vaultActive) {
+                        KMR.strings.private_vault_lock_confirm
+                    } else {
+                        KMR.strings.private_vault_enter_confirm
+                    },
+                ),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(
+                        if (vaultActive) KMR.strings.private_vault_lock else KMR.strings.private_vault_enter,
+                    ),
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(MR.strings.action_cancel))
+            }
+        },
+    )
+}
+// KMK <--

@@ -36,6 +36,39 @@ data class RestoreOptions(
             savedSearchesFeeds /* SY <-- */
 
     companion object {
+        // KMK -->
+        /**
+         * Importing a backup into the vault only restores library data. App settings, extension
+         * stores and source settings stay shared, so they must not be overwritten by the import.
+         */
+        val vaultDefaults = RestoreOptions(
+            libraryEntries = true,
+            categories = true,
+            appSettings = false,
+            extensionStores = false,
+            sourceSettings = false,
+            savedSearchesFeeds = true,
+        )
+
+        val vaultOptions = persistentListOf(
+            Entry(
+                label = MR.strings.label_library,
+                getter = RestoreOptions::libraryEntries,
+                setter = { options, enabled -> options.copy(libraryEntries = enabled) },
+            ),
+            Entry(
+                label = MR.strings.categories,
+                getter = RestoreOptions::categories,
+                setter = { options, enabled -> options.copy(categories = enabled) },
+            ),
+            Entry(
+                label = KMR.strings.saved_searches_feeds,
+                getter = RestoreOptions::savedSearchesFeeds,
+                setter = { options, enabled -> options.copy(savedSearchesFeeds = enabled) },
+            ),
+        )
+        // KMK <--
+
         val options = persistentListOf(
             Entry(
                 label = MR.strings.label_library,
