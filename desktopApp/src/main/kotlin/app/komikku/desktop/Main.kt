@@ -19,6 +19,7 @@ import app.komikku.desktop.log.DesktopLogFile
 import app.komikku.desktop.notification.DesktopNotifications
 import app.komikku.desktop.notification.DesktopTray
 import app.komikku.desktop.notification.DesktopTrayPreferences
+import app.komikku.desktop.platform.DesktopAppEvents
 import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.security.DesktopAppLock
@@ -95,11 +96,19 @@ fun main(args: Array<String>) {
     // system tray icon while there is one (KomikkuWindow installs it)
     Injekt.get<DesktopNotifications>().start(startScope)
 
-    application {
+    // Not exiting from `application`: its default `System.exit` would skip the bounded shutdown below
+    application(exitProcessOnExit = false) {
+        // Cmd+Q / Dock → Quit close the app like the window's close button (AWT would exit the JVM at once)
+        DisposableEffect(Unit) {
+            val installed = DesktopAppEvents.installQuitHandler(::exitApplication)
+            onDispose { if (installed) DesktopAppEvents.removeQuitHandler() }
+        }
         KomikkuWindow(app = app, onCloseRequest = ::exitApplication)
     }
     // The work runs on daemon threads: stop it and let it clean up before the JVM exits (bounded).
     runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
+    DesktopAppEvents.finishQuit()
+    exitProcess(0)
 }
 
 /** The main window: persisted size / position / maximized state, keyboard shortcuts, the app UI. */
@@ -117,6 +126,14 @@ fun ApplicationScope.KomikkuWindow(
         snapshotFlow { windowState.isMinimized }
             .distinctUntilChanged()
             .collect { minimized -> if (minimized) appLock.onWindowHidden() else appLock.onWindowShown() }
+    }
+    // macOS Cmd+H hides the app without minimising the window: the same for the lock
+    DisposableEffect(windowState, appLock) {
+        val listener = DesktopAppEvents.addHideListener(
+            onHidden = appLock::onWindowHidden,
+            onShown = { if (!windowState.isMinimized) appLock.onWindowShown() },
+        )
+        onDispose { listener?.close() }
     }
     val tray = remember { Injekt.get<DesktopTray>() }
     val trayIcon by remember { Injekt.get<DesktopTrayPreferences>().trayIcon() }.collectAsState()
