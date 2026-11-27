@@ -884,13 +884,13 @@ private fun CatalogueContent(
             FilterChip(
                 selected = state.mode == CatalogueScreenModel.Mode.Popular,
                 onClick = { onMode(CatalogueScreenModel.Mode.Popular) },
-                label = { Text(stringResource(MR.strings.popular)) },
+                label = { SingleLineText(stringResource(MR.strings.popular)) },
             )
             if (supportsLatest) {
                 FilterChip(
                     selected = state.mode == CatalogueScreenModel.Mode.Latest,
                     onClick = { onMode(CatalogueScreenModel.Mode.Latest) },
-                    label = { Text(stringResource(MR.strings.latest)) },
+                    label = { SingleLineText(stringResource(MR.strings.latest)) },
                 )
             }
             OutlinedTextField(
