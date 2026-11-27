@@ -90,20 +90,77 @@ def renamed_from_here(creator: str, path: str) -> bool:
     return False
 
 
+def row_target(rows: dict[str, dict], c: str) -> str:
+    """The row to note for `c`: the mihon row when `c` is SY's copy of a mihon commit, otherwise `c` itself."""
+    mihon = rows[c]["mihon"]
+    if mihon:
+        full = next((h for h in rows if h.startswith(mihon)), None)
+        if full:
+            return full
+    return c
+
+
+def traced_range(start: int, count: int, old_lines: int) -> tuple[int, int]:
+    """The old lines to trace for a hunk: the ones it changes, or for a pure insertion after line `start`, the lines on
+    either side of it."""
+    if count:
+        return start, start + count - 1
+    return max(start, 1), min(start + 1, old_lines)
+
+
+def file_hits(up: str, path: str, hits: dict[str, set[str]]) -> None:
+    """Add to `hits` the earlier commits that wrote the lines `up` changes in `path`, and the commit that created
+    `path` when it doesn't exist here."""
+    if not git("ls-tree", "HEAD", "--", path).strip():
+        creator = git("log", "-1", "--format=%H", "--diff-filter=A", f"{up}~1", "--", path).strip()
+        if creator and not renamed_from_here(creator, path):
+            hits.setdefault(creator, set()).add(path)
+    old_lines = len(git("show", f"{up}~1:{path}").splitlines())
+    hunks = git("diff", "--no-ext-diff", "-U0", f"{up}~1", up, "--", path)
+    for start, count in re.findall(r"^@@ -(\d+)(?:,(\d+))? \+", hunks, re.M):
+        first, last = traced_range(int(start), int(count or 1), old_lines)
+        if first > last:
+            continue
+        log = git("log", f"--since={SINCE}", "--format=%H", "-s", "-L", f"{first},{last}:{path}", f"{up}~1")
+        for c in re.findall(r"^[0-9a-f]{40}$", log, re.M):
+            hits.setdefault(c, set()).add(path)
+
+
+def commit_hits(up: str) -> dict[str, set[str]]:
+    """Every earlier commit that wrote lines `up` changes, with the files it wrote them in."""
+    hits: dict[str, set[str]] = {}
+    # One diff per file, reading only its hunk headers: in a combined -U0 diff a removed line starting with
+    # "-- " (an SQL comment) reads as a "--- <path>" file header
+    fields = git("diff", "--name-status", "-z", "--no-renames", f"{up}~1", up).split("\0")
+    for kind, path in zip(fields[0::2], fields[1::2]):
+        if kind == "A" or path.endswith(IGNORED):
+            continue  # A new file has no earlier lines to rewrite
+        file_hits(up, path, hits)
+    return hits
+
+
+def missing_rows(hits: dict[str, set[str]], rows: dict[str, dict], cited: set[str]) -> list[tuple]:
+    """The hits Komikku doesn't have yet, as (date, row hash, commit, files), oldest first."""
+    found = []
+    for c, paths in hits.items():
+        if c not in rows:
+            continue
+        target = row_target(rows, c)
+        # Picked in part (a Partial or Folded note): the part left out can still rewrite the lines
+        partial = rows[c]["partial"] or rows[target]["partial"]
+        if rows[target]["status"] in ("O", "X") or ({c, target} & cited and not partial):
+            continue
+        date = git("log", "-1", "--format=%ad", "--date=short", target).strip()
+        found.append((date, target, c, paths))
+    return sorted(found)
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         print(__doc__.strip(), file=sys.stderr)
         return 2
     rows = read_rows()
     cited = set(CITED_RE.findall(git("log", "HEAD", "--format=%b")))
-
-    def row_target(c: str) -> str:
-        mihon = rows[c]["mihon"]
-        if mihon:
-            full = next((h for h in rows if h.startswith(mihon)), None)
-            if full:
-                return full
-        return c
 
     to_note: dict[str, tuple[str, str]] = {}  # row hash -> (date, subject), across every commit given
     for arg in sys.argv[1:]:
@@ -112,41 +169,7 @@ def main() -> int:
             print(f"{arg}: not a commit", file=sys.stderr)
             return 1
         print(f"== {up[:10]} {git('log', '-1', '--format=%s', up).strip()}")
-        hits: dict[str, set[str]] = {}
-        # One diff per file, reading only its hunk headers: in a combined -U0 diff a removed line starting with
-        # "-- " (an SQL comment) reads as a "--- <path>" file header
-        fields = git("diff", "--name-status", "-z", "--no-renames", f"{up}~1", up).split("\0")
-        for kind, path in zip(fields[0::2], fields[1::2]):
-            if kind == "A" or path.endswith(IGNORED):
-                continue  # A new file has no earlier lines to rewrite
-            if not git("ls-tree", "HEAD", "--", path).strip():
-                creator = git("log", "-1", "--format=%H", "--diff-filter=A", f"{up}~1", "--", path).strip()
-                if creator and not renamed_from_here(creator, path):
-                    hits.setdefault(creator, set()).add(path)
-            old_lines = len(git("show", f"{up}~1:{path}").splitlines())
-            hunks = git("diff", "--no-ext-diff", "-U0", f"{up}~1", up, "--", path)
-            for start, count in re.findall(r"^@@ -(\d+)(?:,(\d+))? \+", hunks, re.M):
-                start, count = int(start), int(count or 1)
-                # A pure insertion after line `start`: trace the lines on either side of it
-                first, last = (start, start + count - 1) if count else (max(start, 1), min(start + 1, old_lines))
-                if first > last:
-                    continue
-                log = git("log", f"--since={SINCE}", "--format=%H", "-s", "-L", f"{first},{last}:{path}", f"{up}~1")
-                for c in re.findall(r"^[0-9a-f]{40}$", log, re.M):
-                    hits.setdefault(c, set()).add(path)
-
-        found = []
-        for c, paths in hits.items():
-            if c not in rows:
-                continue
-            target = row_target(c)
-            # Picked in part (a Partial or Folded note): the part left out can still rewrite the lines
-            partial = rows[c]["partial"] or rows[target]["partial"]
-            if rows[target]["status"] in ("O", "X") or ({c, target} & cited and not partial):
-                continue
-            date = git("log", "-1", "--format=%ad", "--date=short", target).strip()
-            found.append((date, target, c, paths))
-        for date, target, c, paths in sorted(found):
+        for date, target, c, paths in missing_rows(commit_hits(up), rows, cited):
             via = f" (via {c[:10]})" if target != c else ""
             subject = git("log", "-1", "--format=%s", target).strip()
             status = rows[target]["status"]
