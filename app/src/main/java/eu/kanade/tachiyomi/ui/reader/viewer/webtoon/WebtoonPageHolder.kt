@@ -15,10 +15,15 @@ import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.databinding.ReaderErrorBinding
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
+import eu.kanade.tachiyomi.ui.reader.viewer.UpscaleStatusIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.upscale.AiUpscaleCache
+import eu.kanade.tachiyomi.util.upscale.UpscalePriorityGate
+import exh.log.xLogE
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +39,8 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Holder of the webtoon reader for a single page of a chapter.
@@ -54,6 +61,10 @@ class WebtoonPageHolder(
      * Loading progress bar to indicate the current progress.
      */
     private val progressIndicator = createProgressIndicator()
+
+    // KMK -->
+    private var upscaleIndicator: UpscaleStatusIndicator? = null
+    // KMK <--
 
     /**
      * Progress bar container. Needed to keep a minimum height size of the holder, otherwise the
@@ -92,6 +103,15 @@ class WebtoonPageHolder(
         frame.onScaleChanged = { viewer.activity.hideMenu() }
     }
 
+    // KMK -->
+    private fun initUpscaleIndicator() {
+        if (upscaleIndicator == null) {
+            upscaleIndicator = UpscaleStatusIndicator(context, seedColor = seedColor, alpha = 0.40f)
+            frame.addView(upscaleIndicator)
+        }
+    }
+    // KMK <--
+
     /**
      * Binds the given [page] with this view holder, subscribing to its state.
      */
@@ -125,6 +145,12 @@ class WebtoonPageHolder(
         frame.recycle()
         progressIndicator.setProgress(0)
         progressContainer.isVisible = true
+
+        // KMK -->
+        upscaleIndicator?.destroy()
+        frame.removeView(upscaleIndicator)
+        upscaleIndicator = null
+        // KMK <--
     }
 
     /**
@@ -191,28 +217,77 @@ class WebtoonPageHolder(
     private suspend fun setImage() {
         progressIndicator.setProgress(0)
 
-        val streamFn = page?.stream ?: return
+        // KMK -->
+        upscaleIndicator?.hide()
+        val currentPage = page ?: return
+        val streamFn = currentPage.stream ?: return
+        // KMK <--
 
         try {
-            val (source, isAnimated) = withIOContext {
-                val source = streamFn().use { process(Buffer().readFrom(it)) }
-                val isAnimated = ImageUtil.isAnimatedAndSupported(source)
-                Pair(source, isAnimated)
+            val (sourceBytes, isAnimated) = withIOContext {
+                val processed = streamFn().use { process(Buffer().readFrom(it)) }
+                val isAnimated = ImageUtil.isAnimatedAndSupported(processed)
+                val bytes = processed.use { it.readByteArray() }
+                Pair(bytes, isAnimated)
             }
-            withUIContext {
-                frame.setImage(
-                    source,
-                    isAnimated,
-                    ReaderPageImageView.Config(
-                        zoomDuration = viewer.config.doubleTapAnimDuration,
-                        minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
-                        cropBorders =
-                        (viewer.config.imageCropBorders && viewer.isContinuous) ||
-                            (viewer.config.continuousCropBorders && !viewer.isContinuous),
-                    ),
-                )
-                removeErrorLayout()
+
+            // KMK -->
+            val sourceBuffer = Buffer().write(sourceBytes)
+
+            // Showing the original image to avoid blocking scrolling
+            frame.setImage(
+                sourceBuffer.peek(),
+                isAnimated,
+                ReaderPageImageView.Config(
+                    zoomDuration = viewer.config.doubleTapAnimDuration,
+                    minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
+                    cropBorders = (viewer.config.imageCropBorders && viewer.isContinuous) || (viewer.config.continuousCropBorders && !viewer.isContinuous),
+                ),
+            )
+
+            val targetWidth = context.resources.displayMetrics.widthPixels
+
+            // background upscaling in background
+            val upscalePrefs = Injekt.get<ReaderPreferences>()
+            if (upscalePrefs.aiUpscaleEnabled().get() && !isAnimated) {
+                initUpscaleIndicator()
+                upscaleIndicator?.showInProgress()
+
+                val upscaledSource = withIOContext {
+                    try {
+                        AiUpscaleCache.getOrUpscale(
+                            chapterId = currentPage.chapter.chapter.id,
+                            pageIndex = currentPage.index,
+                            source = sourceBuffer.peek(),
+                            targetWidth = targetWidth,
+                            priority = UpscalePriorityGate.Priority.VISIBLE,
+                        )
+                    } catch (e: Throwable) {
+                        xLogE("Upscaling failed for page ${currentPage.index}", e)
+                        null
+                    }
+                }
+
+                if (upscaledSource != null) {
+                    withUIContext {
+                        frame.setImage(
+                            upscaledSource,
+                            false,
+                            ReaderPageImageView.Config(
+                                zoomDuration = viewer.config.doubleTapAnimDuration,
+                                minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
+                                cropBorders = (viewer.config.imageCropBorders && viewer.isContinuous) || (viewer.config.continuousCropBorders && !viewer.isContinuous),
+                            ),
+                        )
+                        upscaleIndicator?.showSuccess()
+                    }
+                } else {
+                    withUIContext {
+                        upscaleIndicator?.showFailed()
+                    }
+                }
             }
+            // KMK <--
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
             withUIContext {
