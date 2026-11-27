@@ -21,14 +21,26 @@ class MacOsNotifierTest {
     fun `title and text are passed as arguments of a fixed script, unchanged`() {
         val title = "Komikku \"quoted\" \\ back'slash"
         val text = "2 new chapters\n\"Frieren\" & \$(rm -rf ~) `id` \\\" end"
-        MacOsNotifier.command("/usr/bin/osascript", title, text) shouldContainExactly listOf(
-            "/usr/bin/osascript",
-            "-e", "on run argv",
-            "-e", "display notification (item 2 of argv) with title (item 1 of argv)",
-            "-e", "end run",
-            title,
-            text,
-        )
+        MacOsNotifier.command("/usr/bin/osascript", title, text) shouldContainExactly
+            listOf("/usr/bin/osascript") + MacOsNotifier.SCRIPT.flatMap { listOf("-e", it) } +
+            listOf(MacOsNotifier.MARKER + title, MacOsNotifier.MARKER + text)
+        MacOsNotifier.SCRIPT.none { it.contains(title) || it.contains("Frieren") } shouldBe true
+    }
+
+    @Test
+    fun `titles and texts starting with a dash are never read as osascript options`() {
+        for (value in listOf("-e", "-50kg Cinderella", "--", "-")) {
+            val command = MacOsNotifier.command("/usr/bin/osascript", value, value)
+            val arguments = command.drop(1 + 2 * MacOsNotifier.SCRIPT.size)
+            arguments shouldContainExactly listOf(MacOsNotifier.MARKER + value, MacOsNotifier.MARKER + value)
+            arguments.none { it.startsWith("-") } shouldBe true
+            // Only the fixed script lines follow an -e
+            command.withIndex().filter { it.value == "-e" }.map { command[it.index + 1] } shouldContainExactly
+                MacOsNotifier.SCRIPT
+        }
+        // The script strips the marker before using the arguments
+        MacOsNotifier.SCRIPT.joinToString("\n").contains("text 2 thru -1 of") shouldBe true
+        MacOsNotifier.MARKER.startsWith("-") shouldBe false
     }
 
     @Test
@@ -36,6 +48,16 @@ class MacOsNotifierTest {
         MacOsNotifier.argument("a\u0000b\tc\nd\u0007", max = 100) shouldBe "abc\nd"
         MacOsNotifier.argument("x".repeat(20), max = 10) shouldBe "x".repeat(9) + "…"
         MacOsNotifier.argument("short", max = 5) shouldBe "short"
+    }
+
+    @Test
+    fun `cutting never splits a surrogate pair`() {
+        val emoji = "\uD83D\uDE00" // one character outside the BMP, two chars
+        // The cut would keep only the high surrogate: it is dropped too
+        MacOsNotifier.argument("abc$emoji" + "x".repeat(10), max = 5) shouldBe "abc…"
+        // A whole pair before the cut stays
+        MacOsNotifier.argument("ab$emoji" + "x".repeat(10), max = 5) shouldBe "ab$emoji…"
+        MacOsNotifier.argument(emoji.repeat(10), max = 4) shouldBe "$emoji…"
     }
 
     @Test
@@ -53,7 +75,7 @@ class MacOsNotifierTest {
             executor = OtherThreadExecutor(),
         )
         notifier.show(DesktopNotification(DesktopNotification.Channel.NewChapters, "Title", "Text")) shouldBe true
-        commands.single().takeLast(2) shouldContainExactly listOf("Title", "Text")
+        commands.single().takeLast(2) shouldContainExactly listOf(MacOsNotifier.MARKER + "Title", MacOsNotifier.MARKER + "Text")
         (ranOn !== caller) shouldBe true
     }
 
@@ -83,6 +105,39 @@ class MacOsNotifierTest {
         // Elsewhere: the tray (no icon here, so not shown)
         DesktopSystemNotifier(tray, null).show(notification) shouldBe false
         DesktopSystemNotifier.create(tray, macOsAvailable = false).show(notification) shouldBe false
+    }
+
+    @Test
+    fun `system notifications switched off show nothing on any backend`() {
+        val notification = DesktopNotification(DesktopNotification.Channel.NewChapters, "T", "X")
+        val tray = RecordingTray()
+        val mac = Recording()
+        var enabled = false
+        // macOS backend
+        DesktopSystemNotifier(tray, mac, enabled = { enabled }).show(notification) shouldBe false
+        mac.shown shouldBe emptyList()
+        // Tray backend (Windows / Linux)
+        DesktopSystemNotifier(tray, null, enabled = { enabled }).show(notification) shouldBe false
+        tray.shown shouldBe emptyList()
+        // The tooltip status is not a notification and stays
+        DesktopSystemNotifier(tray, null, enabled = { enabled }).status("Updating")
+        tray.statuses shouldContainExactly listOf("Updating")
+
+        // Switched on again (read on every notification): unchanged
+        enabled = true
+        DesktopSystemNotifier(tray, mac, enabled = { enabled }).show(notification) shouldBe true
+        mac.shown.single() shouldBeSameInstanceAs notification
+        DesktopSystemNotifier(tray, null, enabled = { enabled }).show(notification) shouldBe true
+        tray.shown.single() shouldBeSameInstanceAs notification
+    }
+
+    private class RecordingTray : DesktopNotifier {
+        val shown = mutableListOf<DesktopNotification>()
+        val statuses = mutableListOf<String?>()
+        override fun show(notification: DesktopNotification): Boolean = shown.add(notification)
+        override fun status(text: String?) {
+            statuses += text
+        }
     }
 
     private class Recording : DesktopNotifier {

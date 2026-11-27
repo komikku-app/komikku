@@ -22,7 +22,11 @@ data class DesktopNotification(
  */
 interface DesktopNotifier {
 
-    /** Shows [notification]; `false` when it could not be shown (no tray icon: off, unsupported or headless). */
+    /**
+     * Shows [notification]; `false` when it could not be shown (system notifications off, no tray icon: off,
+     * unsupported or headless). `true` means handed to the system: an asynchronous backend ([MacOsNotifier]) cannot
+     * tell whether the system then displayed it.
+     */
     fun show(notification: DesktopNotification): Boolean
 
     /** A short status of running work (the tray icon's tooltip: the library update's progress); `null` when idle. */

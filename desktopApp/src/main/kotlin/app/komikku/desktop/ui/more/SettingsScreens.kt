@@ -214,11 +214,17 @@ private fun appearancePreferences(): List<Preference> {
                     preference = ui.relativeTime(),
                     title = stringResource(MR.strings.pref_relative_format),
                 ),
-                // P17: the system tray icon, which shows the notifications (desktop only)
+                // P17: the system tray icon (desktop only)
                 Preference.PreferenceItem.SwitchPreference(
                     preference = remember { Injekt.get<DesktopTrayPreferences>() }.trayIcon(),
                     title = stringResource(KMR.strings.desktop_tray_icon),
                     subtitle = stringResource(KMR.strings.desktop_tray_icon_summary),
+                ),
+                // M2 review fix: system notifications on or off, on every OS (the app's own banners stay)
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = remember { Injekt.get<DesktopTrayPreferences>() }.systemNotifications(),
+                    title = stringResource(KMR.strings.desktop_system_notifications),
+                    subtitle = stringResource(KMR.strings.desktop_system_notifications_summary),
                 ),
             ),
         ),

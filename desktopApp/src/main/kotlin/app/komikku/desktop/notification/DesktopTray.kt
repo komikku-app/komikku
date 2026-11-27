@@ -16,6 +16,9 @@ import javax.swing.SwingUtilities
 /** P17: the desktop's tray setting (desktop-only key; on by default where the desktop has a tray). */
 class DesktopTrayPreferences(private val preferenceStore: PreferenceStore) {
     fun trayIcon() = preferenceStore.getBoolean("desktop_tray_icon", true)
+
+    /** M2 review fix: whether system notifications are posted at all, on every OS and backend (on by default). */
+    fun systemNotifications() = preferenceStore.getBoolean("desktop_system_notifications", true)
 }
 
 /**

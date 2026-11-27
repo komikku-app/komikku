@@ -13,10 +13,16 @@ import java.util.concurrent.TimeUnit
  * `TrayIcon.displayMessage` shows nothing, so only the in-app banner appeared after a library update.
  *
  * The title and text are passed as arguments of a fixed script (`on run argv`), never put into the script or a shell
- * command, so no text can change what runs and nothing needs escaping. Runs on its own daemon thread, never blocks
- * the caller, ends a run after [TIMEOUT_SECONDS] and drops failures silently (logged). macOS attributes these
- * notifications to Script Editor (an unsigned app cannot post under its own name without a helper) and asks for the
- * permission on the first one.
+ * command, so no text can change what runs and nothing needs escaping. Each argument starts with [MARKER], which the
+ * script strips: osascript parses its command line for options, so a title starting with `-` (a manga named
+ * "-50kg Cinderella" in a download error, or a bare `-e`) would otherwise be read as an option. The marker works
+ * whether or not osascript stops at the first non-option argument or honours `--`, neither of which is relied on.
+ *
+ * Runs on its own daemon thread, never blocks the caller, ends a run after [TIMEOUT_SECONDS] and drops failures
+ * silently (logged). [show] returning `true` therefore means "handed to the system" (queued for osascript), not
+ * "seen": macOS may still drop it (notifications denied for Script Editor, Focus mode, osascript failing). macOS
+ * attributes these notifications to Script Editor (an unsigned app cannot post under its own name without a helper)
+ * and asks for the permission on the first one.
  */
 class MacOsNotifier(
     private val osascript: File = File(OSASCRIPT),
@@ -24,6 +30,7 @@ class MacOsNotifier(
     private val executor: ExecutorService = defaultExecutor(),
 ) : DesktopNotifier {
 
+    /** `true` once queued for osascript (handed to the system, see the class comment); `false` when not queued. */
     override fun show(notification: DesktopNotification): Boolean {
         val command = command(osascript.path, notification.title, notification.text)
         return try {
@@ -46,27 +53,40 @@ class MacOsNotifier(
         const val OSASCRIPT = "/usr/bin/osascript"
         const val TIMEOUT_SECONDS = 10L
 
-        /** The whole script; the title is `item 1 of argv`, the text `item 2 of argv`. */
+        /** Put before every argument (and stripped by [SCRIPT]) so that none starts with `-`. */
+        const val MARKER = "|"
+
+        /**
+         * The whole script; the title is `item 1 of argv`, the text `item 2 of argv`, each without its first character
+         * ([MARKER]).
+         */
         val SCRIPT = listOf(
             "on run argv",
-            "display notification (item 2 of argv) with title (item 1 of argv)",
+            "display notification (my unmark(item 2 of argv)) with title (my unmark(item 1 of argv))",
             "end run",
+            "on unmark(marked)",
+            "if (length of marked) < 2 then return \"\"",
+            "return text 2 thru -1 of marked",
+            "end unmark",
         )
 
         private const val MAX_TITLE = 200
         private const val MAX_TEXT = 1000
 
-        /** The osascript command line for [title] / [text] (cleaned by [argument]). */
+        /** The osascript command line for [title] / [text] (cleaned by [argument], each after [MARKER]). */
         fun command(osascript: String, title: String, text: String): List<String> =
-            listOf(osascript) + SCRIPT.flatMap { listOf("-e", it) } + listOf(argument(title, MAX_TITLE), argument(text, MAX_TEXT))
+            listOf(osascript) + SCRIPT.flatMap { listOf("-e", it) } +
+                listOf(MARKER + argument(title, MAX_TITLE), MARKER + argument(text, MAX_TEXT))
 
         /**
          * [value] as an argument: without NUL (it would end the C string of the argument) and other control
-         * characters but line breaks, cut to [max] characters.
+         * characters but line breaks, cut to [max] characters (never between the two halves of a surrogate pair).
          */
         internal fun argument(value: String, max: Int): String {
             val clean = value.filter { it == '\n' || !it.isISOControl() }
-            return if (clean.length <= max) clean else clean.take(max - 1) + "…"
+            if (clean.length <= max) return clean
+            val cut = clean.take(max - 1)
+            return (if (cut.lastOrNull()?.isHighSurrogate() == true) cut.dropLast(1) else cut) + "…"
         }
 
         /** Whether this machine can use the backend: macOS with osascript. */
@@ -101,19 +121,28 @@ class MacOsNotifier(
  * M2: where notifications go. On macOS (with osascript) they are posted through [MacOsNotifier] whether or not the tray
  * icon is on, as Android posts its notifications without any icon setting; elsewhere through the tray icon
  * ([DesktopTray]) while it is there. The library update's progress always goes to the tray icon's tooltip.
+ *
+ * M2 review fix: nothing is posted while [enabled] is `false` (the "Show system notifications" setting,
+ * [DesktopTrayPreferences.systemNotifications], read on every notification), on every backend; [show] then returns
+ * `false`. The app's own banners do not go through here and stay.
  */
 class DesktopSystemNotifier(
-    private val tray: DesktopTray,
+    private val tray: DesktopNotifier,
     private val macOs: DesktopNotifier?,
+    private val enabled: () -> Boolean = { true },
 ) : DesktopNotifier {
 
-    override fun show(notification: DesktopNotification): Boolean = (macOs ?: tray).show(notification)
+    override fun show(notification: DesktopNotification): Boolean =
+        enabled() && (macOs ?: tray).show(notification)
 
     override fun status(text: String?) = tray.status(text)
 
     companion object {
         /** The notifier for this machine: [MacOsNotifier] on macOS when [macOsAvailable], else the tray only. */
-        fun create(tray: DesktopTray, macOsAvailable: Boolean = MacOsNotifier.available()): DesktopSystemNotifier =
-            DesktopSystemNotifier(tray, if (macOsAvailable) MacOsNotifier() else null)
+        fun create(
+            tray: DesktopTray,
+            enabled: () -> Boolean = { true },
+            macOsAvailable: Boolean = MacOsNotifier.available(),
+        ): DesktopSystemNotifier = DesktopSystemNotifier(tray, if (macOsAvailable) MacOsNotifier() else null, enabled)
     }
 }
