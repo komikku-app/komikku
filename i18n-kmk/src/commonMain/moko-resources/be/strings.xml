@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search_for_source">Пошук крыніцы</string>
+    <string name="action_source_search">Пошук у крыніцы</string>
+    <string name="action_library_search">Пошук у бібліятэцы</string>
+    <string name="action_toggle_nsfw_only">Толькі NSFW</string>
+    <string name="action_bulk_select">Рэжым масавага вылучэння</string>
+    <string name="action_faq_and_guides">ЧаПы і дапаможнікі</string>
+    <string name="action_move_up">Падняць</string>
+    <string name="action_move_down">Апусціць</string>
+    <string name="action_confirm_color">Пацвердзіць колер</string>
+    <string name="action_remove_merged">Выдаліць арыгінальныя творы з бібліятэкі?</string>
+    <string name="action_hide">Схаваць</string>
+    <string name="action_show_hidden_categories">Паказаць схаваныя катэгорыі</string>
+    <string name="action_panorama_cover">Панарамная вокладка</string>
+    <string name="action_open_folder">Адкрыць каталог</string>
+    <string name="action_clear_manga">Ачысціць твор</string>
+    <string name="action_update">Абнавіць</string>
+    <string name="action_filter_unfinished_manga">Недачытаныя творы</string>
+    <string name="action_filter_unfinished_chapter">Недачытаныя раздзелы</string>
+    <string name="action_filter_non_library_entries">Творы па-за бібліятэкай</string>
+    <string name="action_copy_to_clipboard_first_page">Скапіяваць першую старонку ў буфер абмену</string>
+    <string name="action_copy_to_clipboard_second_page">Скапіяваць другую старонку ў буфер абмену</string>
+    <string name="action_copy_to_clipboard_combined_page">Скапіяваць разворот у буфер абмену</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Паменшаныя зоны націскання</string>
+    <string name="error_opening_folder">Не ўдалося адкрыць каталог</string>
+    <string name="pref_pinch_to_zoom">Маштабаванне шчыпком</string>
+    <string name="pref_paged_disable_zoom_in">Адключыць набліжэнне</string>
+    <string name="pref_landscape_zoom_type">Рэжым набліжэння шырокіх выяў</string>
+    <string name="scale_type_double">Падвойнае набліжэнне</string>
+    <string name="pref_webtoon_scale_type">Разумнае маштабаванне на шырокіх экранах</string>
+    <string name="scale_type_16_9">16:9</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="scale_type_3_2">3:2</string>
+    <string name="pref_custom_theme_style">Уласная тэма</string>
+    <string name="pref_discord_show_discord_button_summary">Паказваць кнопку далучэння да сервера Discord</string>
+</resources>
