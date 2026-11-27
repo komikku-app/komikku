@@ -481,6 +481,11 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **2026-11-27: handed over to a session on the maintainer's Mac.** Start with
+  [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md): APK extensions still fail to load in the packaged app
+  (`VerifyError: Expecting a stackmap frame` in a dex2jar-converted class, Hiperdex; not reproduced, not fixed), and
+  the folder picker and macOS notification from M2 are unconfirmed. The recurring scheduled tasks are disabled; one
+  last cloud run (2026-11-28 02:00 UTC+7) reviews `cbdfdff..365f98a` only.
 - **M2 — fixes from the first Mac test, 2026-11-27 (PROGRESS "M2 — fixes from the first Mac test"):** the maintainer's
   four reports on the `.dmg` of run 45832027995 are fixed: (1) APK extensions failed to install (`cant find zipfs
   support`): the bundled runtime lacked `jdk.zipfs`; the module list is now `desktopApp/runtime-modules.txt` (every
