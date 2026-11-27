@@ -10,6 +10,7 @@ import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.desktop.library.desktopLibraryUpdateRunner
 import app.komikku.desktop.notification.DesktopNotifications
 import app.komikku.desktop.notification.DesktopNotifier
+import app.komikku.desktop.notification.DesktopSystemNotifier
 import app.komikku.desktop.notification.DesktopTray
 import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.platform.AwtFileDialogs
@@ -400,7 +401,8 @@ class DesktopDomainModule(
         // Notifications and the system tray (P17): Android's notifiers' texts through the tray icon, when there is one
         addSingletonFactory { DesktopTrayPreferences(get()) }
         addSingletonFactory { DesktopTray() }
-        addSingletonFactory<DesktopNotifier> { get<DesktopTray>() }
+        // M2: on macOS through osascript (the tray's notifications show nothing there), elsewhere through the tray
+        addSingletonFactory<DesktopNotifier> { DesktopSystemNotifier.create(get<DesktopTray>()) }
         addSingletonFactory {
             DesktopNotifications(
                 context = app,
