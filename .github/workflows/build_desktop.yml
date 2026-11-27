@@ -296,6 +296,9 @@ jobs:
       # on a fixture extension APK, EC crypto, charsets, locale data, the SQLite and QuickJS native libraries. The first
       # macOS test build lacked jdk.zipfs (no APK extension could be installed), which `run` and the tests could not
       # see. The report goes to a file as well, as the Windows launcher has no console.
+      # M3: real extensions too. The second macOS test build converted Keiyoushi's extensions into classes the JVM's
+      # verifier rejects (no stack map frames, R8-inlined constructors) while the fixture passed; the self-test now
+      # converts the current Hiperdex and Kagane APKs (resolved from Keiyoushi's index) and verifies every class.
       - name: Self-test the packaged app
         timeout-minutes: 10
         run: |
@@ -306,10 +309,26 @@ jobs:
             Windows) launcher="$app/Komikku/Komikku.exe" ;;
             *) launcher="$app/Komikku/bin/Komikku" ;;
           esac
+          extensions=self-test-extensions
+          rm -rf "$extensions"
+          mkdir -p "$extensions"
+          curl -fsSL --retry 3 -o "$extensions/index.pb" https://github.com/keiyoushi/extensions/raw/repo/index.pb
+          gzip -dc "$extensions/index.pb" > "$extensions/index.bin"
+          for name in en.hiperdex all.kagane; do
+            url=$(grep -a -o "https://github.com/keiyoushi/extensions/releases/download/[^/\"]*/tachiyomi-${name}-v[0-9.]*\.apk" \
+              "$extensions/index.bin" | head -n 1 || true)
+            if [ -z "$url" ]; then
+              echo "::error::No APK of $name in Keiyoushi's index"
+              exit 1
+            fi
+            echo "$url"
+            curl -fsSL --retry 3 -o "$extensions/${url##*/}" "$url"
+          done
+          rm -f "$extensions/index.pb" "$extensions/index.bin"
           report=self-test-report.txt
           rm -f "$report"
           status=0
-          "$launcher" "--self-test=$report" || status=$?
+          "$launcher" "--self-test=$report" "--self-test-extensions=$extensions" || status=$?
           if [ -f "$report" ]; then cat "$report"; else echo "::error::The self-test wrote no report"; fi
           if [ "$status" -ne 0 ] || [ "$(tail -n 1 "$report" 2>/dev/null | tr -d '\r')" != "SELF-TEST PASSED" ]; then
             echo "::error::The packaged app's self-test failed (exit code $status)"
