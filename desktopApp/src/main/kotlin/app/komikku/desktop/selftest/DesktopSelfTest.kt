@@ -298,9 +298,20 @@ object DesktopSelfTest {
         outcomes.forEach { it.error?.printStackTrace() }
         report?.let { file ->
             file.absoluteFile.parentFile?.mkdirs()
-            file.writeText(lines.joinToString("\n", postfix = "\n"))
+            file.writeText(reportText(lines, outcomes))
         }
         return if (outcomes.all { it.passed }) 0 else 1
+    }
+
+    /**
+     * M2 review fix: the report file's text: [lines] with each failed check's stack trace before the last line
+     * ([PASSED] / [FAILED], the only one the workflow reads), as the Windows launcher has no console to show them.
+     */
+    internal fun reportText(lines: List<String>, outcomes: List<Outcome>): String {
+        val traces = outcomes.mapNotNull { outcome ->
+            outcome.error?.let { "Stack trace of ${outcome.name}:\n" + it.stackTraceToString().trimEnd() }
+        }
+        return (lines.dropLast(1) + traces + lines.last()).joinToString("\n", postfix = "\n")
     }
 
     private fun resourceStream(path: String) =

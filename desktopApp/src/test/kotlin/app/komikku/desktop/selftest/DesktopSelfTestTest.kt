@@ -57,6 +57,25 @@ class DesktopSelfTestTest {
     }
 
     @Test
+    fun `the report file has the stack trace of each failed check before the last line`() {
+        val boom = IllegalStateException("boom")
+        val outcomes = listOf(
+            DesktopSelfTest.Outcome("zipfs", null, "ok"),
+            DesktopSelfTest.Outcome("extension", boom, ""),
+        )
+        val lines = listOf("Komikku self-test, Java") + outcomes.map { it.toString() } + DesktopSelfTest.FAILED
+        val text = DesktopSelfTest.reportText(lines, outcomes)
+        val reportLines = text.lines().dropLastWhile { it.isEmpty() }
+        reportLines.last() shouldBe DesktopSelfTest.FAILED
+        reportLines.take(3) shouldContainExactly lines.dropLast(1)
+        text shouldContain "Stack trace of extension:\njava.lang.IllegalStateException: boom\n\tat "
+        text shouldContain DesktopSelfTestTest::class.java.name
+        // Passing checks add nothing
+        DesktopSelfTest.reportText(lines.take(2) + DesktopSelfTest.PASSED, outcomes.take(1)) shouldBe
+            (lines.take(2) + DesktopSelfTest.PASSED).joinToString("\n", postfix = "\n")
+    }
+
+    @Test
     fun `checks the extension APKs of a folder and verifies every class`() {
         DesktopSelfTest.extensionsDir(arrayOf("--self-test")) shouldBe null
         DesktopSelfTest.extensionsDir(arrayOf("--self-test", "--self-test-extensions=/tmp/x")) shouldBe File("/tmp/x")
