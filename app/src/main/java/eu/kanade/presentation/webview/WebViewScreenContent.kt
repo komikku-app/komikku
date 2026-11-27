@@ -157,7 +157,7 @@ fun WebViewScreenContent(
                 if (url.startsWith("intent://")) return true
 
                 // Only send source headers to the source itself
-                if (request.url.host != headersHost) return false
+                if (/* KMK --> */!request.url.host.equals(headersHost, ignoreCase = true)/* KMK <-- */) return false
 
                 // Only open valid web urls
                 if (url.startsWith("http") || url.startsWith("https")) {
