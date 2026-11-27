@@ -1,5 +1,6 @@
 package android.content
 
+import android.content.pm.ApplicationInfo
 import android.content.res.Resources
 import android.os.Looper
 import java.io.File
@@ -30,6 +31,7 @@ open class ContextWrapper(base: Context?) : Context() {
     override val classLoader: ClassLoader get() = baseContext.classLoader
     override val mainLooper: Looper get() = baseContext.mainLooper
     override val mainExecutor: Executor get() = baseContext.mainExecutor
+    override val applicationInfo: ApplicationInfo get() = baseContext.applicationInfo
 
     override fun getExternalFilesDir(type: String?): File? = baseContext.getExternalFilesDir(type)
 

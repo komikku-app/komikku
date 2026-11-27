@@ -1,5 +1,6 @@
 package android.content
 
+import android.content.pm.ApplicationInfo
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
@@ -30,6 +31,13 @@ abstract class Context {
 
     open val mainExecutor: Executor
         get() = Executor { Handler(mainLooper).post(it) }
+
+    /** The package name and data folder (shared preferences live in `preferences/` there, not `shared_prefs/`). */
+    open val applicationInfo: ApplicationInfo
+        get() = ApplicationInfo().also {
+            it.packageName = packageName
+            it.dataDir = dataDir.absolutePath
+        }
 
     abstract fun getExternalFilesDir(type: String?): File?
 
