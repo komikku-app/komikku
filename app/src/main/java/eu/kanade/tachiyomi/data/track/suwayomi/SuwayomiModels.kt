@@ -89,3 +89,23 @@ public data class GetMangaUnreadChaptersData(
     @SerialName("chapters")
     public val entry: GetMangaUnreadChaptersEntry,
 )
+
+// KMK -->
+@Serializable
+public data class GetChapterIdsResult(public val data: Data) {
+    @Serializable
+    public data class Data(public val chapters: Chapters)
+
+    @Serializable
+    public data class Chapters(public val nodes: List<Node>)
+
+    @Serializable
+    public data class Node(public val id: Int, public val mangaId: Int, public val sourceOrder: Int)
+}
+
+@Serializable
+public data class GraphQLErrorsResult(public val errors: List<Error>? = null) {
+    @Serializable
+    public data class Error(public val message: String)
+}
+// KMK <--
