@@ -58,6 +58,10 @@ dependencies {
     implementation(kotlinx.serialization.protobuf)
     implementation(kotlinx.serialization.xml)
     implementation(kotlinx.serialization.xml.core.jvm)
+    // M2: the packaged app's self-test (`--self-test`) opens the bundled SQLite driver and the QuickJS engine that
+    // extensions use directly (both are on the runtime class path already, through :data and :core:common)
+    implementation(androidx.sqlite.bundled)
+    implementation(projects.core.quickjs)
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.okhttp.mockwebserver)
@@ -78,9 +82,22 @@ tasks.withType<Test>().configureEach {
     doFirst { testDataDir.deleteRecursively() }
 }
 
+/*
+ * M2: the JDK modules of the packaged app's runtime, one per line in runtime-modules.txt (`#` comments). The first Mac
+ * test build lacked jdk.zipfs, so dex2jar could not write the converted jar of any APK extension; the full JDK of
+ * `run` and the tests hid it.
+ */
+val runtimeModulesFile: File = project.file("runtime-modules.txt")
+val desktopRuntimeModules: List<String> = runtimeModulesFile.readLines()
+    .map { it.substringBefore('#').trim() }
+    .filter { it.isNotEmpty() }
+    .also { modules -> check(modules.toSet().size == modules.size) { "runtime-modules.txt lists a module twice" } }
+
 // P17: the system tray icon (`DesktopTray.ICON_RESOURCE`) is the packaging icon, not a second copy in the sources
 tasks.named<ProcessResources>("processResources") {
     from("icons/komikku.png") { into("app/komikku/desktop") }
+    // M2: the bundled runtime's module list, which the packaged app's `--self-test` checks the runtime against
+    from(runtimeModulesFile) { into("app/komikku/desktop/selftest") }
 }
 
 /*
@@ -196,32 +213,13 @@ extensions.configure<ComposeExtension> {
                 licenseFile.set(rootProject.file("LICENSE"))
 
                 /*
-                 * JDK modules of the bundled runtime (jlink). Static dependencies from jdeps over the runtime
-                 * class path (`./gradlew :desktopApp:suggestRuntimeModules`, plus a per-jar jdeps pass):
-                 * java.compiler, java.desktop, java.instrument, java.logging, java.management, java.xml,
-                 * jdk.unsupported, jdk.xml.dom. Added for code loaded at run time that jdeps cannot see:
-                 * java.net.http (jsoup's optional HttpClient path; the plugin's suggestion), jdk.crypto.ec
-                 * (TLS with EC keys / ECDHE on JDK 21), jdk.charsets (Shift_JIS / GBK / ... in archives and
-                 * pages), jdk.localedata (non-English date / number formats), jdk.accessibility (screen
-                 * readers on Windows). Extensions run in the same JVM and may need more: if a packaged build
-                 * hits NoClassDefFoundError for a java.* / jdk.* class, add the module here or switch to
-                 * `includeAllModules = true` (bigger, always complete) as a fallback.
+                 * JDK modules of the bundled runtime (jlink): the list in runtime-modules.txt (M2; why each one is
+                 * there is noted in the file). Static dependencies from jdeps (`./gradlew :desktopApp:suggestRuntimeModules`
+                 * plus a per-jar pass) are a small part of it; the rest is what code loaded at run time needs and jdeps
+                 * cannot see (service loaders, reflection, extensions). The packaged app's `--self-test` (run by
+                 * build_desktop.yml) checks the built runtime against the same file.
                  */
-                modules(
-                    "java.compiler",
-                    "java.desktop",
-                    "java.instrument",
-                    "java.logging",
-                    "java.management",
-                    "java.net.http",
-                    "java.xml",
-                    "jdk.accessibility",
-                    "jdk.charsets",
-                    "jdk.crypto.ec",
-                    "jdk.localedata",
-                    "jdk.unsupported",
-                    "jdk.xml.dom",
-                )
+                modules(*desktopRuntimeModules.toTypedArray())
 
                 // Generated from the Android launcher icon (desktopApp/icons/generate_icons.py).
                 linux {

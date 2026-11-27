@@ -1,0 +1,61 @@
+# KMK (M2): the JDK modules of the packaged app's bundled runtime (jlink), one per line; `#` starts a comment.
+# Single source of truth: desktopApp/build.gradle.kts passes them to `nativeDistributions.modules(...)`, the build
+# copies this file into the app's resources, and the packaged app's self-test (`Komikku --self-test`, run by
+# build_desktop.yml on every OS) fails when the runtime lacks one. DesktopRuntimeModulesTest keeps the required ones in.
+# Why (docs/kmp-desktop/PROGRESS.md "M2 — fixes from the first Mac test"): extensions are third-party code loaded at
+# run time and may use any java.* API, so every standard java.* module is here, plus the jdk.* modules that the app or
+# a library reaches through a service loader / reflection, which jdeps cannot see.
+
+# --- Every java.* module of Java SE (what the `java.se` aggregator requires; the aggregator itself exports nothing, so
+# a class-path app never resolves it and it is not listed) ---
+java.base
+java.compiler
+java.datatransfer
+java.desktop
+java.instrument
+java.logging
+java.management
+java.management.rmi
+java.naming
+java.net.http
+java.prefs
+java.rmi
+java.scripting
+java.security.jgss
+java.security.sasl
+java.smartcardio
+java.sql
+java.sql.rowset
+java.transaction.xa
+java.xml
+java.xml.crypto
+
+# --- jdk.* modules found by service loader / reflection ---
+# Screen readers on Windows
+jdk.accessibility
+# Extra charsets: Shift_JIS, GBK, EUC-KR, Big5 in pages and zip entry names
+jdk.charsets
+# EC keys / ECDHE for TLS (SunEC provider on JDK 21), EC-signed APKs
+jdk.crypto.ec
+# Locale data beyond English (date / number formats)
+jdk.localedata
+# com.sun.management (OperatingSystemMXBean & co.)
+jdk.management
+# JNDI DNS provider ("dns:" InitialDirContext lookups)
+jdk.naming.dns
+# Socket options (jdk.net.ExtendedSocketOptions)
+jdk.net
+# RandomGenerator.of(...) algorithms
+jdk.random
+# com.sun.security.auth (JAAS), Kerberos / GSS-API provider
+jdk.security.auth
+jdk.security.jgss
+# com.sun.net.httpserver (local servers, e.g. OAuth redirects)
+jdk.httpserver
+# sun.misc.Unsafe (Kotlin coroutines, OkHttp / Okio, serialization libraries)
+jdk.unsupported
+# org.w3c.dom.* extras for XML libraries
+jdk.xml.dom
+# The zip file system provider: dex2jar writes the converted jar through it (FileSystems.newFileSystem); missing in the
+# first macOS test build, every APK extension failed with "cant find zipfs support"
+jdk.zipfs
