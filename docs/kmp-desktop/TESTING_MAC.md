@@ -151,14 +151,19 @@ The fixes for the first test (PROGRESS.md "M2 — fixes from the first Mac test"
 The fixes of the session on the Mac (PROGRESS.md "M3 — real APK extensions on the Mac"), on a build from the branch
 after the M3 commits (the newest "Desktop builder" run of the branch, or build it yourself):
 
-1. **APK extensions:** install Hiperdex and Kagane (the ones that failed), then MangaDex → each source opens, shows
-   its popular list and reads a chapter. Extensions converted by an older build are converted again on first use. If
-   an install fails, the Extensions tab now shows why; send that text with the log.
+1. **APK extensions:** install Hiperdex and Kagane (the ones that failed), then MangaDex → each installs and its source
+   opens. Extensions converted by an older build are converted again on first use. If an install fails, the
+   Extensions tab now shows why; send that text with the log. Checked on the Mac in M3: both install and open; Hiperdex
+   lists titles and chapters but its images are blocked by its image server (403, also outside the app; a source
+   matter), and Kagane's site asks for a Cloudflare check the desktop app cannot pass on its own (use "Open in WebView"
+   and paste the cookies). Reading a chapter worked with Asura Scans, MangaDex, MangaPill and Weeb Central.
 2. **Quit:** start a library update or a backup, then quit with Cmd+Q (and once with Dock → Quit) → the app closes
    within a few seconds; the log ends without an exception and has no half-written backup.
 3. **App lock and Cmd+H:** with a PIN set, hide the app with Cmd+H and bring it back from the Dock → the lock screen
    asks for the PIN (as after minimising).
-4. **Still open from M2:** the folder panel (step 3 there) and the library update notification (step 4 there).
+4. **From M2:** the folder panel (step 3 there) and the library update notification (step 4 there) were checked on the
+   Mac in M3 and work (the notification comes from Script Editor). Glance at both once on your own profile; if no
+   banner shows, allow Script Editor in System Settings → Notifications.
 
 ## What to send back on a failure
 

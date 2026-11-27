@@ -4473,6 +4473,17 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
   (`android.graphics.ColorMatrix`), `mehgazone` (`android.text.Spannable`), the known `android.graphics` / text gap.
 - **Live reading (packaged app, network):** MangaDex, MangaPill and Weeb Central: popular list, chapter list, page
   list and the page images downloaded.
+- **Through the UI (packaged app, fresh data folder):** the Keiyoushi store (`index.pb`) added in Browse → Extensions;
+  Hiperdex and Kagane installed from its list (converted, verified, sources created, no `VerifyError`); Hiperdex's
+  catalogue, details, chapter list and page list load, its images do not: the image CDN answers 403 "Sorry, you have
+  been blocked" (Cloudflare) also to `curl`, a source / site matter, left alone at the maintainer's request. Kagane's
+  site answers every request with a Cloudflare challenge (`cf-mitigated: challenge`, also to `curl`), shown in the app
+  as the known "no built-in browser" message (P7 / P8: manual WebView cookies or a FlareSolverr service). Asura Scans,
+  installed the same way: catalogue with covers, details, and chapter 1 read (page images shown).
+- **Found, not fixed:** a page that fails to load shows only "Retry", without the cause and without a log line (the
+  Hiperdex 403 needed `curl`); the Extensions tab has no search (about 700 English / multi-language entries to
+  scroll); navigating away from a details screen logs `E/GetManga` / `E/GetChaptersByMangaId`
+  `ChildCancelledException` (normal cancellation logged as an error).
 
 ### macOS items
 
@@ -4484,9 +4495,13 @@ failure below was found by converting and loading real Keiyoushi APKs inside the
   loads the shutdown and the process ends.
 - **App lock on Cmd+H:** hiding the app (`AppHiddenListener`) locks like minimising; unhiding counts as shown only when
   the window is not minimised.
-- **Notification:** `/usr/bin/osascript` with the app's fixed script and argument texts exits 0 on macOS 27; that the
-  banner shows (Script Editor permission) was not checked by eye.
-- **Folder panel:** not opened in this session (needs clicking through the UI); left for the maintainer's re-test.
+- **Notification (works):** a library update that found a new chapter posted it through `osascript`; macOS's
+  notification daemon logged it as delivered and presented as a banner for `com.apple.ScriptEditor2`
+  (`shouldPresent: true`, `askBeforePresenting: false`; Script Editor was already allowed on this Mac, so no prompt).
+  The banner itself is outside the app's window and was not captured.
+- **Folder panel (works):** Settings → Data and storage → Storage location opens the native macOS panel at the current
+  folder; "New Folder" asks for a name, the new folder shows and opens at once, "Open" chooses it and the setting
+  shows it (`/private/tmp/…`: the panel returns the resolved path).
 - **Not changed:** the colour menu bar icon (needs a designed monochrome icon); the unsigned app's first start after
   removing quarantine (a local build is not quarantined).
 - **Test:** `DesktopAppEventsTest` (the quit is answered only by `finishQuit`, once; a second request cancels the first;

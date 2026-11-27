@@ -489,8 +489,11 @@ mark the residual path in both modules.
   classes); MangaDex, MangaPill and Weeb Central read live in the packaged app. CI's self-test now checks Hiperdex,
   Kagane, MangaDex and Weeb Central in the packaged app on every runner. A failed install shows its cause. Cmd+Q and
   the close button now run the bounded shutdown (it never ran before: Compose exited the JVM first), Cmd+H locks like
-  minimising. Not confirmed by eye: the macOS folder panel and the notification banner (TESTING_MAC.md "Re-test after
-  M3"). Not reviewed (range `debe34e..` the M3 docs commit). Next: the maintainer's re-test, then a review of the range.
+  minimising. Checked in the packaged app through the UI: Hiperdex and Kagane install and open (Hiperdex's images are
+  blocked by its CDN, a source matter, not to be fixed; Kagane sits behind a Cloudflare challenge), Asura Scans reads a
+  chapter, the native folder panel (New Folder, choose) and the library update notification (delivered as a Script
+  Editor banner) work. Evidence was kept locally only. Not reviewed (range `debe34e..` the M3 docs commit). Next: the
+  maintainer's re-test (TESTING_MAC.md "Re-test after M3"), then a review of the range.
 - **2026-11-27: handed over to a session on the maintainer's Mac.** Start with
   [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md): APK extensions still fail to load in the packaged app
   (`VerifyError: Expecting a stackmap frame` in a dex2jar-converted class, Hiperdex; not reproduced, not fixed), and
