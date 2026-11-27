@@ -49,6 +49,7 @@ import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.data.coil.getBestColor
+import eu.kanade.tachiyomi.data.cover.MangaBakaCoverUpdater
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
@@ -240,6 +241,7 @@ class MangaScreenModel(
     // KMK -->
     val useNewSourceNavigation by uiPreferences.useNewSourceNavigation().asState(screenModelScope)
     val themeCoverBased = uiPreferences.themeCoverBased().get()
+    private val mangaBakaCoverUpdater = MangaBakaCoverUpdater()
     // KMK <--
 
     val manga: Manga?
@@ -595,6 +597,15 @@ class MangaScreenModel(
             )
             // KMK -->
             launch { syncTrackers() }
+            // A refresh the user asked for also re-checks the MangaBaka cover, ignoring the usual daily wait.
+            if (manualFetch) {
+                successState?.manga?.let { manga ->
+                    launch {
+                        val message = mangaBakaMessage(mangaBakaCoverUpdater.update(manga, force = true))
+                        if (message != null) snackbarHostState.showSnackbar(message = message)
+                    }
+                }
+            }
             // KMK <--
             updateSuccessState { it.copy(isRefreshingData = false) }
         }
@@ -645,6 +656,15 @@ class MangaScreenModel(
     }
 
     // KMK -->
+    /** Only a new cover or a failure gets a message: like chapters, a refresh that finds nothing new is silent. */
+    private fun mangaBakaMessage(outcome: MangaBakaCoverUpdater.Outcome): String? = when (outcome) {
+        is MangaBakaCoverUpdater.Outcome.Updated ->
+            context.stringResource(KMR.strings.mangabaka_cover_updated, outcome.volume)
+        is MangaBakaCoverUpdater.Outcome.Failed ->
+            context.stringResource(KMR.strings.mangabaka_cover_failed, outcome.reason)
+        else -> null
+    }
+
     private suspend fun clearErrorFromDB(mangaId: Long) {
         deleteLibraryUpdateErrors.deleteMangaError(mangaIds = listOf(mangaId))
     }
