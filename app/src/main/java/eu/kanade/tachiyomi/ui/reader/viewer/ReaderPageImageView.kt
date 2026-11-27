@@ -178,7 +178,13 @@ open class ReaderPageImageView @JvmOverloads constructor(
     fun recycle() = pageView?.let {
         when (it) {
             is SubsamplingScaleImageView -> it.recycle()
-            is AppCompatImageView -> it.dispose()
+            is AppCompatImageView -> {
+                // KMK -->
+                (it.drawable as? Animatable)?.stop()
+                it.setImageDrawable(null)
+                // KMK <--
+                it.dispose()
+            }
         }
         it.isVisible = false
     }
@@ -345,7 +351,13 @@ open class ReaderPageImageView @JvmOverloads constructor(
                 isVisible = true
             }
             is BufferedSource -> {
-                if (!isWebtoon || alwaysDecodeLongStripWithSSIV) {
+                // KMK -->
+                // Animated images that are not played (e.g. an over-budget animated AVIF) must go
+                // through Coil so the platform decoder can still show their first frame; SSIV
+                // cannot decode AVIF image sequences.
+                val useCoil = ImageUtil.isAnimated(data) || (isWebtoon && !alwaysDecodeLongStripWithSSIV)
+                // KMK <--
+                if (!useCoil) {
                     setHardwareConfig(ImageUtil.canUseHardwareBitmap(data))
                     setImage(ImageSource.inputStream(data.inputStream()))
                     isVisible = true

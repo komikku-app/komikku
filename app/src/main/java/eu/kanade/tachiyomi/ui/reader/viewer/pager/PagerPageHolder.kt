@@ -237,6 +237,9 @@ class PagerPageHolder(
     }
 
     private fun process(page: ReaderPage, imageSource: BufferedSource): BufferedSource {
+        // KMK -->
+        if (ImageUtil.isAnimated(imageSource)) return imageSource
+        // KMK <--
         if (viewer.config.dualPageRotateToFit) {
             return rotateDualPage(imageSource)
         }
@@ -276,16 +279,18 @@ class PagerPageHolder(
         }
 
         if (page.fullPage) return imageSource
-        if (ImageUtil.isAnimatedAndSupported(imageSource)) {
+        // KMK -->
+        if (ImageUtil.isAnimated(imageSource)) {
             page.fullPage = true
             splitDoublePages()
             return imageSource
-        } else if (ImageUtil.isAnimatedAndSupported(imageSource2)) {
+        } else if (ImageUtil.isAnimated(imageSource2)) {
             page.isolatedPage = true
             extraPage?.fullPage = true
             splitDoublePages()
             return imageSource
         }
+        // KMK <--
 
         val imageBitmap = decodeImage(imageSource)
         if (imageBitmap == null) {
@@ -336,7 +341,9 @@ class PagerPageHolder(
 
     private fun handleWideImage(imageSource: BufferedSource): BufferedSource {
         return if (
-            !ImageUtil.isAnimatedAndSupported(imageSource) &&
+            // KMK -->
+            !ImageUtil.isAnimated(imageSource) &&
+            // KMK <--
             ImageUtil.isWideImage(imageSource) &&
             viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
             !viewer.config.imageCropBorders

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.coil
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.os.Build
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DecodeResult
@@ -16,6 +17,7 @@ import mihon.core.archive.CbzCrypto
 import mihon.core.archive.CbzCrypto.getCoverStream
 import mihon.core.archive.archiveReader
 import okio.BufferedSource
+import tachiyomi.core.common.util.system.AnimatedAvif
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.decoder.ImageDecoder
 import uy.kohesive.injekt.Injekt
@@ -86,6 +88,17 @@ class TachiyomiImageDecoder(private val resources: ImageSource, private val opti
     class Factory : Decoder.Factory {
 
         override fun create(result: SourceFetchResult, options: Options, imageLoader: ImageLoader): Decoder? {
+            // KMK -->
+            // The bundled decoder cannot read AVIF image sequences. On Android 12+ let Coil fall
+            // through to the platform decoder so an over-budget animated page still shows its
+            // first frame instead of failing here.
+            if (
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                AnimatedAvif.isAnimated(result.source.source())
+            ) {
+                return null
+            }
+            // KMK <--
             return if (options.customDecoder || isApplicable(result.source.source())) {
                 TachiyomiImageDecoder(result.source, options)
             } else {

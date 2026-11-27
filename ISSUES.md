@@ -40,3 +40,12 @@ Severity: **race** = only under a thread-timing window, **minor** = small user i
 - **What happens:** `intercept` creates an entry for every host the shared client contacts, before knowing whether a challenge happens, and nothing removes it. Every CDN and image host the app ever reaches keeps a lock object for the life of the process.
 - **Fix:** only keep state for hosts that returned a challenge (take the lock only when an entry exists, create it on the first challenge), or use a bounded or weak-valued map.
 - **Upstream:** not fixed in mihon/main.
+
+## Animated AVIF pages do not play on Android 8–11
+
+- **Severity:** minor (older Android only; Android 12+ animates them)
+- **Where:** `ImageUtil.isAnimatedAndSupported()` in `core/common/src/main/kotlin/tachiyomi/core/common/util/system/ImageUtil.kt` and `AnimatedAvifDecoderFactory` in `app/src/main/java/eu/kanade/tachiyomi/data/coil/AnimatedAvifDecoderFactory.kt`.
+- **What happens:** AVIF image sequences (motion webtoons) are decoded by Android's platform `ImageDecoder`, which only supports them from Android 12 (API 31). On Android 8–11 the bundled `tachiyomi.decoder.ImageDecoder` rejects `avis` files, so the page still shows a decode error. Animated AVIF pages above 4 MP are also shown as a static first frame so the two full-size frame buffers stay around 32 MB.
+- **How to hit it:** open a chapter with an animated AVIF page on Android 8–11, or an animated AVIF page larger than 4 MP on any version.
+- **Fix:** bundle an animated AVIF decoder (for example `io.github.awxkee:avif-coder`) or migrate to `ca.mpreg:imagedecoder`, then feed its frames to a drawable; raise the 4 MP budget if devices can afford it.
+- **Upstream:** mihon/main still classifies AVIF as static in its reader (`ImageUtil.isAnimatedAndSupported`), so it has the same limitation.

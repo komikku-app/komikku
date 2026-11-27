@@ -222,6 +222,9 @@ class WebtoonPageHolder(
     }
 
     private fun process(imageSource: BufferedSource): BufferedSource {
+        // KMK -->
+        if (ImageUtil.isAnimated(imageSource)) return imageSource
+        // KMK <--
         if (viewer.config.dualPageRotateToFit) {
             return rotateDualPage(imageSource)
         }

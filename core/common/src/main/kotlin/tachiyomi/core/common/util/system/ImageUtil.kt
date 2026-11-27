@@ -86,12 +86,53 @@ object ImageUtil {
                 Format.Webp -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
                 // Animated Heif on Android 11+
                 Format.Heif -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                // KMK -->
+                // Animated AVIF on Android 12+, limited to pages that fit the animation budget
+                Format.Avif -> {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                        (type.isAnimated || AnimatedAvif.isAnimated(source)) &&
+                        isWithinAnimatedAvifBudget(source)
+                }
+                // KMK <--
                 else -> false
             }
         } catch (_: Exception) {
             false
         }
     }
+
+    // KMK -->
+    /**
+     * Whether [source] is animated, regardless of whether the current Android version can play it.
+     */
+    fun isAnimated(source: BufferedSource): Boolean {
+        return try {
+            val type = getImageType(source.peek().inputStream()) ?: return false
+            when (type.format) {
+                Format.Gif -> true
+                Format.Webp -> type.isAnimated
+                Format.Heif -> type.isAnimated
+                Format.Avif -> type.isAnimated || AnimatedAvif.isAnimated(source)
+                else -> false
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * An animated AVIF page is decoded as one full-page drawable that keeps two ARGB_8888 frame
+     * buffers. Cap it at 4 MP (~32 MB for both buffers) and let larger pages show the static first
+     * frame instead.
+     */
+    private fun isWithinAnimatedAvifBudget(source: BufferedSource): Boolean {
+        val options = extractImageOptions(source)
+        if (options.outWidth <= 0 || options.outHeight <= 0) return true
+        return options.outWidth.toLong() * options.outHeight <= MAX_ANIMATED_AVIF_PIXELS
+    }
+
+    private const val MAX_ANIMATED_AVIF_PIXELS = 4_000_000L
+    // KMK <--
 
     private fun getImageType(stream: InputStream): tachiyomi.decoder.ImageType? {
         val bytes = ByteArray(32)
@@ -252,6 +293,11 @@ object ImageUtil {
     private fun isTallImage(imageSource: BufferedSource): Boolean {
         val options = extractImageOptions(imageSource)
 
+        // KMK -->
+        // BitmapFactory cannot read some formats on older Android versions (e.g. AVIF below 12)
+        if (options.outWidth <= 0 || options.outHeight <= 0) return false
+        // KMK <--
+
         return (options.outHeight / options.outWidth) > 3
     }
 
@@ -264,9 +310,11 @@ object ImageUtil {
         filenamePrefix: String,
     ): Boolean {
         val imageSource = imageFile.openInputStream().use { Buffer().readFrom(it) }
-        if (isAnimatedAndSupported(imageSource) || !isTallImage(imageSource)) {
+        // KMK -->
+        if (isAnimated(imageSource) || !isTallImage(imageSource)) {
             return true
         }
+        // KMK <--
 
         val bitmapRegionDecoder = getBitmapRegionDecoder(imageSource.peek().inputStream())
         if (bitmapRegionDecoder == null) {
