@@ -37,6 +37,7 @@ class DexPipelineTest {
                 packageName = "eu.kanade.tachiyomi.extension.en.dexfixture",
                 sourceClass = ".DexFixtureSource",
                 dex = FixtureClasses.dex(jar, work),
+                extraEntries = mapOf(ASSET to "greeting=hello".toByteArray()),
             ).writeSigned(apk, TestSigningKey.rsa())
         }
     }
@@ -56,6 +57,9 @@ class DexPipelineTest {
         val cached = File(runtime.jarCacheDir, "${inspected.extension.apk.sha256}-v${DexJarConverter.CACHE_VERSION}.jar")
         cached.isFile shouldBe true
         loaded.jar shouldBe cached
+        // APK entries are resources of the extension's class loader, like on Android (Keiyoushi's i18n assets)
+        loaded.classLoader.getResourceAsStream(ASSET)!!.use { it.readBytes().decodeToString() } shouldBe "greeting=hello"
+        ZipFile(cached).use { zip -> zip.getEntry("classes.dex") shouldBe null }
 
         // Second load: converted jar reused
         val modified = cached.lastModified()
@@ -76,9 +80,9 @@ class DexPipelineTest {
 
         verification.rejected.shouldBeEmpty()
         verification.unresolved.shouldBeEmpty()
-        verification.verified shouldBe 6
+        verification.verified shouldBe 7
         ZipFile(jar).use { zip ->
-            zip.entries().asSequence().filter { it.name.endsWith(".class") }.count() shouldBe 6
+            zip.entries().asSequence().filter { it.name.endsWith(".class") }.count() shouldBe 7
         }
         URLClassLoader(arrayOf(jar.toURI().toURL()), javaClass.classLoader).use { loader ->
             val branches = loader.loadClass("${PACKAGE_PATH.replace('/', '.')}.Branches")
@@ -88,9 +92,14 @@ class DexPipelineTest {
             fromHost.invoke(null, false) shouldBe 1
             fromExtension.invoke(null, true) shouldBe 3
             fromExtension.invoke(null, false) shouldBe 3
+            branches.getMethod("zeroDuration").invoke(null) shouldBe 0L
             val singleton = loader.loadClass("${PACKAGE_PATH.replace('/', '.')}.Singleton")
             singleton.getMethod("instanceValue").invoke(null) shouldBe 3
             singleton.getField("INSTANCE").get(null).javaClass shouldBe singleton
+            val derived = loader.loadClass("${PACKAGE_PATH.replace('/', '.')}.Derived")
+            val instance = derived.getConstructor(Int::class.javaPrimitiveType).newInstance(7)
+            derived.getMethod("number").invoke(instance) shouldBe 7
+            derived.getMethod("value").invoke(instance) shouldBe 3
         }
     }
 
@@ -114,5 +123,6 @@ class DexPipelineTest {
     private companion object {
         const val PACKAGE_PATH = "eu/kanade/tachiyomi/extension/en/dexfixture"
         const val SOURCE_CLASS = "$PACKAGE_PATH/DexFixtureSource"
+        const val ASSET = "assets/i18n/messages_en.properties"
     }
 }

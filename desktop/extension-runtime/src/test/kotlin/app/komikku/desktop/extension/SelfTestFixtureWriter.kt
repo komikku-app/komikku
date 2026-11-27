@@ -12,7 +12,7 @@ import java.io.File
 /**
  * Writes the extension APK of the packaged app's self-test (`desktopApp/src/main/resources/app/komikku/desktop/selftest/
  * selftest-extension.apk`, run by `Komikku --self-test`, M2): one source with dex code, signed with an EC key, and the
- * classes of [FixtureClasses.branching] (methods that need stack map frames, an R8-style inlined constructor), which
+ * classes of [FixtureClasses.branching] (methods that need stack map frames, R8-style inlined constructors), which
  * the self-test verifies. Not part of the normal run; to regenerate it:
  *
  * `KOMIKKU_WRITE_SELFTEST_APK=$PWD/desktopApp/src/main/resources/app/komikku/desktop/selftest/selftest-extension.apk

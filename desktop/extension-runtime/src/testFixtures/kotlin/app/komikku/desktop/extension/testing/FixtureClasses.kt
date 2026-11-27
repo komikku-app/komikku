@@ -101,7 +101,9 @@ object FixtureClasses {
      * subclasses `First` / `Second` and `Branches`, whose static `fromHost(Z)I` merges an `Integer` and a `Long` and
      * calls `Number.intValue()` on the result (common superclass on the host class path) and `fromExtension(Z)I`
      * merges a `First` and a `Second` and calls `Base.value()` (common superclass among the extension's classes).
-     * Also `Singleton extends Base`, built like a Kotlin `object` after R8 ([inlinedConstructorSingleton]). Written
+     * `zeroDuration()J` returns Kotlin's `Duration.ZERO` through its mangled getter `getZERO-UwyO8pc` (a '-' name).
+     * Also `Singleton extends Base`, built like a Kotlin `object` after R8 ([inlinedConstructorSingleton]), and
+     * `Derived extends First`, whose constructor calls `Object.<init>` directly ([inlinedSuperConstructor]). Written
      * without frames (dx drops them anyway); dex2jar's output of them fails verification unless frames are computed with
      * the right common superclasses and the inlined constructor is replaced.
      */
@@ -134,6 +136,15 @@ object FixtureClasses {
                     visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false)
                 }
             }
+            // A host method whose name has a '-' (Kotlin mangles getters of inline classes)
+            visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "zeroDuration", "()J", null, null).apply {
+                visitCode()
+                visitFieldInsn(Opcodes.GETSTATIC, "kotlin/time/Duration", "Companion", "Lkotlin/time/Duration\$Companion;")
+                visitMethodInsn(Opcodes.INVOKEVIRTUAL, "kotlin/time/Duration\$Companion", "getZERO-UwyO8pc", "()J", false)
+                visitInsn(Opcodes.LRETURN)
+                visitMaxs(0, 0)
+                visitEnd()
+            }
             branchingMethod("fromExtension", base, "value") { choice ->
                 val type = if (choice) first else second
                 visitTypeInsn(Opcodes.NEW, type)
@@ -148,7 +159,40 @@ object FixtureClasses {
             second to emptyClass(second, base),
             branches to branchesClass,
             "$packagePath/Singleton" to inlinedConstructorSingleton("$packagePath/Singleton", base),
+            "$packagePath/Derived" to inlinedSuperConstructor("$packagePath/Derived", first),
         )
+    }
+
+    /**
+     * `class <name> extends <superName>` (not a direct subclass of `Object`) after R8 inlined the constructors above
+     * it: `<init>(I)V` calls `Object.<init>` on `this` directly (invalid on the JVM, accepted by ART and by dx; MangaDex
+     * has these), then stores its argument in `number`, which `number()I` returns.
+     */
+    private fun inlinedSuperConstructor(name: String, superName: String): ByteArray {
+        val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_FINAL or Opcodes.ACC_SUPER, name, null, superName, null)
+        writer.visitField(Opcodes.ACC_PRIVATE or Opcodes.ACC_FINAL, "number", "I", null, null).visitEnd()
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(I)V", null, null).apply {
+            visitCode()
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitVarInsn(Opcodes.ILOAD, 1)
+            visitFieldInsn(Opcodes.PUTFIELD, name, "number", "I")
+            visitInsn(Opcodes.RETURN)
+            visitMaxs(0, 0)
+            visitEnd()
+        }
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "number", "()I", null, null).apply {
+            visitCode()
+            visitVarInsn(Opcodes.ALOAD, 0)
+            visitFieldInsn(Opcodes.GETFIELD, name, "number", "I")
+            visitInsn(Opcodes.IRETURN)
+            visitMaxs(0, 0)
+            visitEnd()
+        }
+        writer.visitEnd()
+        return writer.toByteArray()
     }
 
     /**

@@ -18,7 +18,7 @@ class DexConversionException(message: String, cause: Throwable? = null) : Except
 /**
  * Converts the dex code of an APK (`classes.dex`, `classes2.dex`, …) to a jar of verifiable JVM class files
  * with dex2jar (`de.femtopedia.dex2jar:dex-translator`, through [DexTranslator]), [InlinedConstructors] and
- * [StackMapFrames], and caches the result as
+ * [StackMapFrames], with the APK's other entries as resources, and caches the result as
  * `<cacheDir>/<apk sha256>-v<CACHE_VERSION>.jar`, so every APK version is converted once.
  *
  * Methods dex2jar cannot translate are replaced by a body that throws
@@ -89,6 +89,7 @@ class DexJarConverter(
 
         private val SHA256_PATTERN = Regex("[0-9a-f]{64}")
         private val DEX_ENTRY = Regex("classes\\d*\\.dex")
+        private val SIGNING_ENTRY = Regex("META-INF/(MANIFEST\\.MF|[^/]+\\.(SF|RSA|DSA|EC))", RegexOption.IGNORE_CASE)
 
         /**
          * Converts [input] — an APK / zip with `classes*.dex` entries, or a bare `.dex` file — to the jar
@@ -134,8 +135,31 @@ class DexJarConverter(
                     jar.write(bytes)
                     jar.closeEntry()
                 }
+                if (!isDex(input)) copyResources(input, jar)
             }
             return Converted(failed, unverifiable)
+        }
+
+        /**
+         * Copies the APK's other entries (`assets/`, Java resources) to [jar]: Android's class loader reads resources
+         * from the APK, and Keiyoushi's i18n library loads `assets/i18n/messages_<lang>.properties` through it
+         * (MangaDex). Not the dex code, the signature, the jar manifest or class files.
+         */
+        private fun copyResources(apk: File, jar: ZipOutputStream) {
+            ZipFile(apk).use { zip ->
+                for (entry in zip.entries()) {
+                    val name = entry.name
+                    if (entry.isDirectory || DEX_ENTRY.matches(name) || name.endsWith(".class") || SIGNING_ENTRY.matches(name)) continue
+                    jar.putNextEntry(ZipEntry(name))
+                    zip.getInputStream(entry).use { it.copyTo(jar) }
+                    jar.closeEntry()
+                }
+            }
+        }
+
+        private fun isDex(input: File): Boolean = input.inputStream().use { stream ->
+            val magic = ByteArray(3)
+            stream.read(magic) == 3 && magic.decodeToString() == "dex"
         }
 
         /**
