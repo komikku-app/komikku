@@ -26,10 +26,6 @@
 -keep,allowoptimization class uy.kohesive.injekt.** { public protected *; }
 -keep,allowoptimization class com.squareup.zstd.** { public protected *; }
 
-# KMK -->
--keep,allowoptimization class eu.kanade.tachiyomi.network.HttpException { public protected *; }
-# KMK <--
-
 # Debug functions
 -keep,allowoptimization class exh.debug.DebugFunctions { public *; }
 
