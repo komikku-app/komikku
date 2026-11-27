@@ -485,17 +485,17 @@ mark the residual path in both modules.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript
   argument marker, "Show system notifications" setting, one file dialog at a time, surrogate-safe truncation, "handed
-  to the system" KDoc, stack traces in the self-test report); the seventh needs a Mac and is open in
-  [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md). Last full local `:desktopApp:test` (Linux, on `18141a2`): 89
-  classes, 410 tests, 0 failures; `spotlessCheck`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass.
-  Newest green CI desktop run (the Mac build to use): see the CI line below. The recurring scheduled tasks are
-  disabled and no cloud run is scheduled. The self-hosted-runner change stays parked on
-  `claude/kmp-self-hosted-mac-runner`. The Mac session owns the open work: [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md)
-  and its own notes (the M3 entry below).
-  CI: the `run 11` build of this round (46056229846, `4db89c9`) was cancelled by the Mac session's next push; that
-  push contains this round's code merged with M3 and its run is the newest fully green one (see the M3 entry below:
-  <https://github.com/komikku-app/komikku/actions/runs/46057124295>, commit `33443c0`). Run 46051450459 (`8ead2d9`)
-  failed on Linux in `MangaCoverActionsUiTest` (a test race, fixed in the test since).
+  to the system" KDoc, stack traces in the self-test report); the seventh needed a Mac, is in
+  [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md) and was since checked and accepted by the Mac session (see there).
+  Last full local `:desktopApp:test` (Linux, on `18141a2`): 89 classes, 410 tests, 0 failures; `spotlessCheck`,
+  `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass. The recurring scheduled tasks are disabled and no
+  cloud run is scheduled. The self-hosted-runner change stays parked on `claude/kmp-self-hosted-mac-runner`. The Mac
+  session owns the open work: [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md) and its own notes (the M3 entry
+  below).
+  CI: newest green desktop run, the Mac build to use: <https://github.com/komikku-app/komikku/actions/runs/46057124295>
+  (commit `33443c0`, the Mac session's `run 12` bump on top of these fixes; all four jobs green, 2026-11-27 19:43 UTC).
+  It superseded (cancelled) this round's own run 46056229846 (`run 11`, `4db89c9`). The earlier Linux failure of
+  `MangaCoverActionsUiTest` (run 46051450459) was fixed by the Mac session (`653ca54`).
 - **M3 — real APK extensions on the Mac, 2026-11-28 (PROGRESS "M3 — real APK extensions on the Mac"):** the load
   failure is fixed: the converter writes stack map frames (ASM), retargets R8-inlined constructors, keeps `-` in member
   names and copies the APK's resources; the host has `okhttp-zstd`, `AppInfo`, `http.agent`, and the compat layer
