@@ -125,6 +125,9 @@ class DesktopExtensionManager(
      */
     private val loadedApkHashes = ConcurrentHashMap<String, String>()
 
+    /** Why the last install or load of a package failed (one line), shown by the Extensions tab ([installError]). */
+    private val installErrors = ConcurrentHashMap<String, String>()
+
     init {
         scope.launch {
             mutex.withLock { initExtensions() }
@@ -155,6 +158,7 @@ class DesktopExtensionManager(
         val extension = when (val result = runtime.inspect(apk)) {
             is ExtensionPackageResult.Rejected -> {
                 logcat(LogPriority.WARN) { "Extension ${apk.name} not loaded: ${result.reason}" }
+                failed(apk.nameWithoutExtension, result.reason)
                 return LoadResult.Error
             }
             is ExtensionPackageResult.Valid -> result.extension
@@ -180,6 +184,7 @@ class DesktopExtensionManager(
 
         if (!preferences.showNsfwSource().get() && extension.isNsfw) {
             logcat(LogPriority.WARN) { "NSFW extension ${extension.pkgName} not allowed" }
+            failed(extension.pkgName, "NSFW extension ${extension.pkgName} not allowed")
             return LoadResult.Error
         }
 
@@ -187,9 +192,11 @@ class DesktopExtensionManager(
             runtime.load(extension)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e) { "Extension load error: ${extension.name} (${extension.pkgName})" }
+            failed(extension.pkgName, e.message ?: e.toString())
             return LoadResult.Error
         }
 
+        installErrors.remove(extension.pkgName)
         val langs = loaded.sources.map { it.lang }.toSet()
         return LoadResult.Success(
             Extension.Installed(
@@ -212,6 +219,16 @@ class DesktopExtensionManager(
                 isShared = false,
             ),
         )
+    }
+
+    /**
+     * Why the last install (or load) of [pkgName] failed: the first line of the cause, e.g. the loader's error. `null`
+     * after a success or while an install of it runs.
+     */
+    fun installError(pkgName: String): String? = installErrors[pkgName]
+
+    private fun failed(pkgName: String, reason: String) {
+        installErrors[pkgName] = reason.lineSequence().first()
     }
 
     /** `TrustExtension.isTrusted` without the debug-build shortcut. */
@@ -324,6 +341,7 @@ class DesktopExtensionManager(
         val key = installKey(target)
         return flow {
             installJobs[key] = currentCoroutineContext().job
+            installErrors.remove(target.pkgName)
             emit(InstallStep.Pending)
             emit(InstallStep.Downloading)
             downloadDir.mkdirs()
@@ -343,6 +361,7 @@ class DesktopExtensionManager(
                 installJobs.remove(key)
                 if (cause != null && cause !is kotlinx.coroutines.CancellationException) {
                     logcat(LogPriority.ERROR, cause) { "Failed to install ${target.pkgName}" }
+                    failed(target.pkgName, cause.toString())
                 }
             }
             .catchToError()
@@ -377,12 +396,15 @@ class DesktopExtensionManager(
     suspend fun installApkFile(file: File, expectedPkgName: String? = null): Boolean = mutex.withLock {
         val inspected = runtime.inspect(file)
         if (inspected !is ExtensionPackageResult.Valid) {
-            logcat(LogPriority.ERROR) { "Not installing ${file.name}: ${(inspected as ExtensionPackageResult.Rejected).reason}" }
+            val reason = (inspected as ExtensionPackageResult.Rejected).reason
+            logcat(LogPriority.ERROR) { "Not installing ${file.name}: $reason" }
+            failed(expectedPkgName ?: file.nameWithoutExtension, reason)
             return@withLock false
         }
         val extension = inspected.extension
         if (expectedPkgName != null && extension.pkgName != expectedPkgName) {
             logcat(LogPriority.ERROR) { "Downloaded package ${extension.pkgName} is not $expectedPkgName" }
+            failed(expectedPkgName, "Downloaded package ${extension.pkgName} is not $expectedPkgName")
             return@withLock false
         }
         val target = File(apkDir, "${extension.pkgName}.$APK_EXTENSION")
@@ -390,10 +412,12 @@ class DesktopExtensionManager(
         if (current != null) {
             if (extension.versionCode < current.extension.versionCode) {
                 logcat(LogPriority.ERROR) { "Installed extension version is higher. Downgrading is not allowed." }
+                failed(extension.pkgName, "Installed extension version is higher. Downgrading is not allowed.")
                 return@withLock false
             }
             if (!extension.signatures.containsAll(current.extension.signatures)) {
                 logcat(LogPriority.ERROR) { "Installed extension signature is not matched." }
+                failed(extension.pkgName, "Installed extension signature is not matched.")
                 return@withLock false
             }
         }
@@ -405,6 +429,7 @@ class DesktopExtensionManager(
             target.delete()
             if (!temp.renameTo(target)) {
                 temp.delete()
+                failed(extension.pkgName, "Could not write $target")
                 return@withLock false
             }
         }

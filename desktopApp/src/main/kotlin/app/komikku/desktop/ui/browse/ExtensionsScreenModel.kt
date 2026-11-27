@@ -1,6 +1,7 @@
 package app.komikku.desktop.ui.browse
 
 import android.app.Application
+import app.komikku.desktop.extensions.DesktopExtensionManager
 import app.komikku.shared.extension.GetPlatformExtensionsByType
 import app.komikku.shared.extension.PlatformExtensionManager
 import cafe.adriel.voyager.core.model.StateScreenModel
@@ -42,7 +43,12 @@ class ExtensionsScreenModel(
         val steps: Map<String, InstallStep> = emptyMap(),
         val stores: List<ExtensionStore> = emptyList(),
         val isRefreshing: Boolean = false,
+        /** A failed install whose cause is known, shown in a dialog until dismissed. */
+        val installFailure: InstallFailure? = null,
     )
+
+    /** [name] could not be installed because of [reason] (the first line of the cause; the log has the rest). */
+    data class InstallFailure(val name: String, val reason: String)
 
     init {
         screenModelScope.launch {
@@ -79,6 +85,8 @@ class ExtensionsScreenModel(
 
     fun uninstall(extension: Extension) = manager.uninstallExtension(extension)
 
+    fun dismissInstallFailure() = mutableState.update { it.copy(installFailure = null) }
+
     fun trust(extension: Extension.Untrusted) {
         screenModelScope.launch { manager.trust(extension) }
     }
@@ -106,7 +114,12 @@ class ExtensionsScreenModel(
             }
             mutableState.update { it.copy(steps = it.steps - extension.pkgName) }
             if (last == InstallStep.Error) {
-                context.toast(context.stringResource(KMR.strings.desktop_ext_install_failed, extension.name))
+                val reason = (manager as? DesktopExtensionManager)?.installError(extension.pkgName)
+                if (reason != null) {
+                    mutableState.update { it.copy(installFailure = InstallFailure(extension.name, reason)) }
+                } else {
+                    context.toast(context.stringResource(KMR.strings.desktop_ext_install_failed, extension.name))
+                }
             }
         }
     }

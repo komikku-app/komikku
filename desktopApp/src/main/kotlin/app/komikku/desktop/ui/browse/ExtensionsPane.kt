@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
@@ -37,15 +38,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.extensions.ExtensionIconDrawable
+import app.komikku.desktop.log.DesktopLogFile
+import app.komikku.desktop.platform.DesktopBrowser
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.launch
 import mihon.domain.extension.model.ExtensionStore
 import tachiyomi.i18n.MR
@@ -119,6 +124,10 @@ fun ExtensionsPane(model: ExtensionsScreenModel) {
                 }
             }
         }
+    }
+
+    state.installFailure?.let { failure ->
+        InstallFailureDialog(failure, onDismiss = model::dismissInstallFailure)
     }
 
     if (showStores) {
@@ -241,6 +250,36 @@ internal fun ExtensionIcon(extension: Extension) {
     } else {
         AsyncImage(model = model, contentDescription = null, modifier = modifier)
     }
+}
+
+/** Why an install failed (the cause's first line, selectable) and where the log with the details is. */
+@Composable
+private fun InstallFailureDialog(failure: ExtensionsScreenModel.InstallFailure, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val logFolder = DesktopLogFile.current?.directory ?: DesktopLogFile.directoryFor(context.dataDir)
+    val folderNotOpened = stringResource(KMR.strings.desktop_folder_not_opened, logFolder.absolutePath)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.testTag("install-failure"),
+        title = { Text(stringResource(KMR.strings.desktop_ext_install_failed, failure.name)) },
+        text = {
+            SelectionContainer {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(failure.reason, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(KMR.strings.desktop_ext_install_failed_log, logFolder.absolutePath),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(MR.strings.action_ok)) } },
+        dismissButton = {
+            TextButton(onClick = { if (!DesktopBrowser.openFolder(logFolder)) context.toast(folderNotOpened) }) {
+                Text(stringResource(KMR.strings.desktop_open_log_folder))
+            }
+        },
+    )
 }
 
 /** Saved extension stores: add by index URL, remove. */

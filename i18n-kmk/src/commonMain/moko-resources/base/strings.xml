@@ -247,6 +247,7 @@
     <string name="desktop_ext_available">Available</string>
     <string name="desktop_ext_refresh">Check for extensions</string>
     <string name="desktop_ext_install_failed">Could not install %1$s</string>
+    <string name="desktop_ext_install_failed_log">The log in %1$s has the details.</string>
     <string name="desktop_ext_store_add_failed">Could not add the extension store</string>
     <string name="desktop_load_more">Load more</string>
     <string name="desktop_pref_not_set">Not set</string>

@@ -17,6 +17,8 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -222,12 +224,37 @@ class DesktopExtensionManagerTest {
     fun `refuses downgrades and other signers`(): Unit = runBlocking {
         val older = File(work, "older.apk").apply { writeBytes(fixtureApk(versionCode = 2, name = "Old", key = storeKey)) }
         manager.installApkFile(older) shouldBe false
+        // The Extensions tab shows why (M3)
+        manager.installError(pkg) shouldBe "Installed extension version is higher. Downgrading is not allowed."
 
         val otherSigner = File(work, "other-signer.apk")
             .apply { writeBytes(fixtureApk(versionCode = 9, name = "Evil", key = TestSigningKey.rsa("Someone else"))) }
         manager.installApkFile(otherSigner) shouldBe false
+        manager.installError(pkg) shouldBe "Installed extension signature is not matched."
 
         manager.installedExtensionsFlow.value.single().versionCode shouldBe 4L
+    }
+
+    @Test
+    @Order(4)
+    fun `a failed load keeps the loader's error for the Extensions tab`(): Unit = runBlocking {
+        val brokenPkg = "eu.kanade.tachiyomi.extension.en.brokenfixture"
+        val jar = File(work, "broken-${System.nanoTime()}.jar")
+        val other = brokenPkg.replace('.', '/') + "/OtherClass"
+        FixtureClasses.jar(jar, mapOf(other to FixtureClasses.emptyClass(other)))
+        val apk = File(work, "broken.apk")
+        FixtureApk(
+            packageName = brokenPkg,
+            sourceClass = ".MissingSource",
+            dex = FixtureClasses.dex(jar, work),
+        ).writeSigned(apk, storeKey)
+
+        manager.installApkFile(apk, brokenPkg) shouldBe false
+
+        manager.installError(brokenPkg)!! shouldStartWith "Extension load error: "
+        manager.installError(brokenPkg)!! shouldContain "ClassNotFoundException: $brokenPkg.MissingSource"
+        manager.installedExtensionsFlow.value.map { it.pkgName } shouldBe listOf(pkg)
+        File(dataDir, "extensions/apks/$brokenPkg.apk").delete()
     }
 
     @Test
