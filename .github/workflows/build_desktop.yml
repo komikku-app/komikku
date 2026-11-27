@@ -290,6 +290,33 @@ jobs:
             done
           fi
 
+      # KMK -->
+      # M2: the packaged app's self-test against its bundled runtime, not the build JDK (desktopApp/.../selftest/
+      # DesktopSelfTest.kt): every module of desktopApp/runtime-modules.txt is in the runtime, a zip file system, dex2jar
+      # on a fixture extension APK, EC crypto, charsets, locale data, the SQLite and QuickJS native libraries. The first
+      # macOS test build lacked jdk.zipfs (no APK extension could be installed), which `run` and the tests could not
+      # see. The report goes to a file as well, as the Windows launcher has no console.
+      - name: Self-test the packaged app
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          app=desktopApp/build/compose/binaries/main/app
+          case "$RUNNER_OS" in
+            macOS) launcher="$app/Komikku.app/Contents/MacOS/Komikku" ;;
+            Windows) launcher="$app/Komikku/Komikku.exe" ;;
+            *) launcher="$app/Komikku/bin/Komikku" ;;
+          esac
+          report=self-test-report.txt
+          rm -f "$report"
+          status=0
+          "$launcher" "--self-test=$report" || status=$?
+          if [ -f "$report" ]; then cat "$report"; else echo "::error::The self-test wrote no report"; fi
+          if [ "$status" -ne 0 ] || [ "$(tail -n 1 "$report" 2>/dev/null | tr -d '\r')" != "SELF-TEST PASSED" ]; then
+            echo "::error::The packaged app's self-test failed (exit code $status)"
+            exit 1
+          fi
+      # KMK <--
+
       # Signing hook (Windows): the Compose plugin has no Windows signing, so the installers are signed with signtool
       # (Windows SDK on the runner) from an exportable code-signing certificate (.pfx)
       - name: Sign Windows installers
