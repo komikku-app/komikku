@@ -146,6 +146,20 @@ The fixes for the first test (PROGRESS.md "M2 — fixes from the first Mac test"
    notification (from Script Editor, see step 12 above) says what was updated; also with the tray icon switched off in
    Settings. With "Hide notification content" on, it does not name titles.
 
+## Re-test after M3
+
+The fixes of the session on the Mac (PROGRESS.md "M3 — real APK extensions on the Mac"), on a build from the branch
+after the M3 commits (the newest "Desktop builder" run of the branch, or build it yourself):
+
+1. **APK extensions:** install Hiperdex and Kagane (the ones that failed), then MangaDex → each source opens, shows
+   its popular list and reads a chapter. Extensions converted by an older build are converted again on first use. If
+   an install fails, the Extensions tab now shows why; send that text with the log.
+2. **Quit:** start a library update or a backup, then quit with Cmd+Q (and once with Dock → Quit) → the app closes
+   within a few seconds; the log ends without an exception and has no half-written backup.
+3. **App lock and Cmd+H:** with a PIN set, hide the app with Cmd+H and bring it back from the Dock → the lock screen
+   asks for the PIN (as after minimising).
+4. **Still open from M2:** the folder panel (step 3 there) and the library update notification (step 4 there).
+
 ## What to send back on a failure
 
 - The log: `~/Library/Application Support/Komikku/logs/komikku.log` (and `komikku.1.log` if it is there).

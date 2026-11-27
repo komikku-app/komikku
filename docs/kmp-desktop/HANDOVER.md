@@ -481,6 +481,16 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **M3 — real APK extensions on the Mac, 2026-11-28 (PROGRESS "M3 — real APK extensions on the Mac"):** the load
+  failure is fixed: the converter writes stack map frames (ASM), retargets R8-inlined constructors, keeps `-` in member
+  names and copies the APK's resources; the host has `okhttp-zstd`, `AppInfo`, `http.agent`, and the compat layer
+  `LruCache`, `Activity`, `Bundle`, activity lifecycle callbacks and `ApplicationInfo`. 1,683 of Keiyoushi's 1,686
+  extensions convert, verify and create their sources (the 3 left need `android.graphics` / `android.icu` / text
+  classes); MangaDex, MangaPill and Weeb Central read live in the packaged app. CI's self-test now checks Hiperdex,
+  Kagane, MangaDex and Weeb Central in the packaged app on every runner. A failed install shows its cause. Cmd+Q and
+  the close button now run the bounded shutdown (it never ran before: Compose exited the JVM first), Cmd+H locks like
+  minimising. Not confirmed by eye: the macOS folder panel and the notification banner (TESTING_MAC.md "Re-test after
+  M3"). Not reviewed (range `debe34e..` the M3 docs commit). Next: the maintainer's re-test, then a review of the range.
 - **2026-11-27: handed over to a session on the maintainer's Mac.** Start with
   [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md): APK extensions still fail to load in the packaged app
   (`VerifyError: Expecting a stackmap frame` in a dex2jar-converted class, Hiperdex; not reproduced, not fixed), and

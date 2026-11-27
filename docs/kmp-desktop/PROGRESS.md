@@ -4416,6 +4416,90 @@ self-test passing with the packaged launcher on Linux, Windows, macOS arm64 and 
 permission prompt), the template tray icon (skipped), and the narrow-window look on macOS itself (tested headless on
 Linux). The maintainer's re-test list: TESTING_MAC.md "Re-test after M2".
 
+## M3 — real APK extensions on the Mac
+
+A session on the maintainer's Mac (macOS 27, Apple silicon, JDK 21) took over the open load failure
+(MAC_SESSION_HANDOVER.md) and the unconfirmed macOS items. Range `debe34e..` the M3 docs commit (first code commit
+`71db092`, last `80d70c9`).
+
+### Why the tests and the self-test missed it
+
+The self-test converted one fixture APK whose only method was straight-line code and loaded only its entry class; the
+unit tests did the same with the app's full JDK. Real extensions are R8-optimised release APKs: branching methods
+(stack map frames required) and inlined constructors, and they need host classes the fixture never touched. Every
+failure below was found by converting and loading real Keiyoushi APKs inside the packaged app.
+
+### Converter (`:desktop:extension-runtime`)
+
+- **Stack map frames:** dex2jar writes Java 8 class files without frames, so every class with a branching method failed
+  with `VerifyError: Expecting a stackmap frame` (the reported Hiperdex error). **Decision:** convert in memory with
+  dex2jar's IR pipeline, then compute frames with ASM (`COMPUTE_FRAMES`); `getCommonSuperClass` resolves against the
+  extension's own classes and the host class path without initialising classes, falling back to `java/lang/Object`.
+  Version-50 class files (old verifier) were not used: the fallback is deprecated and the frames are needed anyway.
+- **R8-inlined constructors:** R8 inlines constructors into `new T` sites and into subclass constructors, which dex2jar
+  turned into `new Object()` / `Object.<init>` on a `T` (`Bad <init> method call`, every Kotlin `object`, MangaDex).
+  `InlinedConstructors` retargets those calls to a synthesised constructor chain, also when a constructor calls an
+  indirect superclass's constructor (the ones in between were inlined).
+- **Member names:** dex2jar sanitised `-` in member names, also in references to host members, so every `HttpSource`
+  failed with `NoSuchMethodError` on Kotlin's `Duration.Companion.getZERO-UwyO8pc`. Names are kept as they are.
+- **APK resources:** Android reads class loader resources from the APK; the converted jar now carries the APK's other
+  entries (not `classes*.dex`, not the signature files). Keiyoushi's i18n library loads `assets/i18n/*.properties`
+  that way (MangaDex details failed with a `NullPointerException`).
+- **Link check:** a class implementing a newer library's interface that only forwards a method to its delegate
+  (Temple Scan's `Interceptor.Chain` wrapper) is reported as `forwardedMethods`, not as a missing host method.
+- The converted-jar cache key is `-v2`: jars converted before are converted again and the old ones pruned.
+
+### Host and compat additions
+
+- `okhttp-zstd` on the class path (Keiyoushi's client adds `okhttp3.zstd.Zstd`: every Keiyoushi source failed on its
+  first request); `eu.kanade.tachiyomi.AppInfo` borrowed as a desktop copy (MangaDex); the `http.agent` system property
+  set when unset (`Komikku/<version> (<os> <version>; <arch>)`, MangaDex builds its user agent from it).
+- `:desktop:android-compat`: `android.util.LruCache` (Kagane), `android.app.Activity`, `Bundle` and
+  `Application.ActivityLifecycleCallbacks` (kept, never called: no activities on desktop; HentaiCube, Emperor Scan,
+  LxHentai), `ApplicationInfo` and `Context.applicationInfo` (`dataDir`, `packageName`; TCB Scans).
+
+### App and CI
+
+- A failed install or load shows the first line of its cause and the log folder in the Extensions tab, not only
+  "Could not install".
+- Self-test: the fixture has branching methods and an R8-style inlined constructor; every class of a converted jar is
+  loaded and linked; a host library class missing from an extension's references fails the check (a host gap, never
+  unused bundled code); a zstd frame is decoded (native library). `--self-test-extensions=<folder>` adds one check per
+  APK in the folder, with the app's Injekt graph over a temporary data folder (extensions resolve the `Application`
+  and the network helper when their sources are created). `build_desktop.yml` downloads the current Hiperdex, Kagane,
+  MangaDex and Weeb Central APKs from Keiyoushi's index and passes them to the packaged app's self-test.
+- **Catalogue sweep (local, not in CI):** every extension of Keiyoushi's index (1,686) converted, every class verified
+  and every source created: 1,683 pass. Left: `aquellosquetraducen` (`android.icu.text.Collator`), `tenkaiscan`
+  (`android.graphics.ColorMatrix`), `mehgazone` (`android.text.Spannable`), the known `android.graphics` / text gap.
+- **Live reading (packaged app, network):** MangaDex, MangaPill and Weeb Central: popular list, chapter list, page
+  list and the page images downloaded.
+
+### macOS items
+
+- **Shutdown on quit (found broken, fixed):** Compose's `application()` exits the JVM as soon as the last window
+  closes (`exitProcessOnExit = true` by default), so `stopDesktopWork` never ran, on any OS, also with the close
+  button; and AWT's default quit handler exits at once on Cmd+Q / Dock → Quit. Now `application(exitProcessOnExit =
+  false)`, and `DesktopAppEvents.installQuitHandler` closes the app first and answers the quit with `performQuit` only
+  after the bounded shutdown (a second request cancels the first). Checked in the packaged app: an AppleScript quit
+  loads the shutdown and the process ends.
+- **App lock on Cmd+H:** hiding the app (`AppHiddenListener`) locks like minimising; unhiding counts as shown only when
+  the window is not minimised.
+- **Notification:** `/usr/bin/osascript` with the app's fixed script and argument texts exits 0 on macOS 27; that the
+  banner shows (Script Editor permission) was not checked by eye.
+- **Folder panel:** not opened in this session (needs clicking through the UI); left for the maintainer's re-test.
+- **Not changed:** the colour menu bar icon (needs a designed monochrome icon); the unsigned app's first start after
+  removing quarantine (a local build is not quarantined).
+- **Test:** `DesktopAppEventsTest` (the quit is answered only by `finishQuit`, once; a second request cancels the first;
+  hide / unhide).
+
+### Verification (M3)
+
+`spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`; full `:desktopApp:test`
+88 classes, 403 tests, 0 failures (was 86 / 396); `:desktop:extension-runtime:test` 7 classes, 25 tests and
+`:desktop:android-compat:test` 11 classes, 46 tests, 0 failures; `createDistributable` and the packaged `--self-test` with real extensions
+pass on macOS arm64. `:app:compileDebugKotlin` not run: no `app/` source changed (`AppInfo` is borrowed, checked by
+`verifyBorrowedSources`).
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:
