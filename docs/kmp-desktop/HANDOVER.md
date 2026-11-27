@@ -492,11 +492,10 @@ mark the residual path in both modules.
   disabled and no cloud run is scheduled. The self-hosted-runner change stays parked on
   `claude/kmp-self-hosted-mac-runner`. The Mac session owns the open work: [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md)
   and its own notes (the M3 entry below).
-  CI: the desktop build of this round is started by the `run 11` marker bump; until its result is recorded here, the
-  newest fully green run is <https://github.com/komikku-app/komikku/actions/runs/45938000837> (commit `9b58d72`). Run
-  46051450459 (`8ead2d9`, the Mac session's M3) has green macOS, Windows jobs but failed on Linux in one test,
-  `MangaCoverActionsUiTest > save, edit, save the custom cover, delete it` (`MangaCoverActionsUiTest.kt:147`); the
-  same test passed in the full local run above, so probably timing, not investigated (not this round's code).
+  CI: the `run 11` build of this round (46056229846, `4db89c9`) was cancelled by the Mac session's next push; that
+  push contains this round's code merged with M3 and its run is the newest fully green one (see the M3 entry below:
+  <https://github.com/komikku-app/komikku/actions/runs/46057124295>, commit `33443c0`). Run 46051450459 (`8ead2d9`)
+  failed on Linux in `MangaCoverActionsUiTest` (a test race, fixed in the test since).
 - **M3 — real APK extensions on the Mac, 2026-11-28 (PROGRESS "M3 — real APK extensions on the Mac"):** the load
   failure is fixed: the converter writes stack map frames (ASM), retargets R8-inlined constructors, keeps `-` in member
   names and copies the APK's resources; the host has `okhttp-zstd`, `AppInfo`, `http.agent`, and the compat layer
@@ -514,7 +513,9 @@ mark the residual path in both modules.
   (M2_REVIEW_FINDINGS.md). The cloud session's M2 review fixes were merged in; on the Mac, their `osascript` marker
   passes `-50kg Cinderella`, `-e`, `--` and `-` through unchanged (the old form failed with "illegal option"). After
   the merge: gates green, `:desktopApp:test` 410, `:desktop:extension-runtime:test` 25 (1 skipped),
-  `:desktop:android-compat:test` 46, no failures; CI started by the `run 12` marker bump. Not reviewed (range
+  `:desktop:android-compat:test` 46, no failures; the packaged app's `--self-test` with Hiperdex, Kagane, MangaDex
+  and Weeb Central passes on the Mac. CI run <https://github.com/komikku-app/komikku/actions/runs/46057124295>
+  (`33443c0`, `run 12`): all four Package jobs green (Windows, Linux, macOS arm64, macOS x64). Not reviewed (range
   `debe34e..` the M3 docs commit). Next: the maintainer's re-test (TESTING_MAC.md "Re-test after M3"), then a review
   of the range.
 - **2026-11-27: handed over to a session on the maintainer's Mac.** Start with

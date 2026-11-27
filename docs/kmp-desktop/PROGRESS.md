@@ -4525,6 +4525,8 @@ the real extensions; Linux failed one test, `MangaCoverActionsUiTest > save, edi
 (the saved file read back empty). Not an M3 regression and not an app bug: the test waited only until the file
 existed, and the save creates it before writing the bytes. The test now waits for the whole file. The full suite also
 passed on the Mac with `-Djava.awt.headless=true` (88 classes, 403 tests), so the headless runner was ruled out first.
+CI run 46057124295 (commit `33443c0`, the test fix merged with the cloud session's M2 review fixes): all four Package
+jobs green, including the packaged self-test with the real extensions on every runner.
 
 ## Review fixes (M2)
 
