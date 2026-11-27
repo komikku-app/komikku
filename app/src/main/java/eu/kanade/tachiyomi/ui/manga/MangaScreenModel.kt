@@ -1976,6 +1976,10 @@ class MangaScreenModel(
     fun showClearMangaDialog() {
         updateSuccessState { it.copy(dialog = Dialog.ClearManga) }
     }
+
+    fun reindexDownloads() {
+        downloadCache.invalidateCache()
+    }
     // KMK <--
 
     sealed interface State {
