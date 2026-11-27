@@ -20,6 +20,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.ToggleIncognito
+import eu.kanade.domain.source.model.BlacklistedSeriesEntry
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
@@ -29,6 +30,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.util.lang.toBlacklistNormalizedTitle
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.EH_PACKAGE
@@ -41,6 +43,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -157,6 +160,14 @@ open class BrowseSourceScreenModel(
                 listing = listing,
                 filters = source.getFilterList(),
                 toolbarQuery = query,
+                // KMK -->
+                blacklistedTitles = if (sourcePreferences.enableSeriesBlacklist().get()) {
+                    sourcePreferences.blacklistedSeries().get()
+                        .mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                },
+                // KMK <--
             )
         }
 
@@ -196,6 +207,21 @@ open class BrowseSourceScreenModel(
             .onEach {
                 if (!it) sourcePreferences.lastUsedSource().set(source.id)
                 incognitoMode.value = it
+            }
+            .launchIn(screenModelScope)
+
+        sourcePreferences.enableSeriesBlacklist().changes()
+            .combine(sourcePreferences.blacklistedSeries().changes()) { enabled, blacklist ->
+                if (enabled) {
+                    blacklist.mapTo(mutableSetOf(), BlacklistedSeriesEntry::normalizedTitle)
+                } else {
+                    emptySet()
+                }
+            }
+            .onEach { blacklistedTitles ->
+                mutableState.update {
+                    it.copy(blacklistedTitles = blacklistedTitles)
+                }
             }
             .launchIn(screenModelScope)
         // KMK <--
@@ -238,6 +264,23 @@ open class BrowseSourceScreenModel(
                     .filter { !hideInLibraryItems || !it.value.first.favorite }
             }
                 .cachedIn(ioCoroutineScope)
+                // KMK -->
+                .let { pagingFlow ->
+                    state.map { it.blacklistedTitles }
+                        .distinctUntilChanged()
+                        .flatMapLatest { titles ->
+                            if (titles.isEmpty()) {
+                                pagingFlow
+                            } else {
+                                pagingFlow.map { pagingData ->
+                                    pagingData.filter { mangaFlow ->
+                                        mangaFlow.value.first.title.toBlacklistNormalizedTitle() !in titles
+                                    }
+                                }
+                            }
+                        }
+                }
+            // KMK <--
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
@@ -533,6 +576,9 @@ open class BrowseSourceScreenModel(
         val savedSearches: ImmutableList<EXHSavedSearch> = persistentListOf(),
         val filterable: Boolean = true,
         // SY <--
+        // KMK -->
+        val blacklistedTitles: Set<String> = emptySet(),
+        // KMK <--
     ) {
         val isUserQuery get() = listing is Listing.Search && !listing.query.isNullOrEmpty()
     }

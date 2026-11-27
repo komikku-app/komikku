@@ -8,18 +8,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.GlobalSearchScreen
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
+import eu.kanade.presentation.browse.components.MangaActionsDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.util.system.toast
+import tachiyomi.domain.manga.model.Manga
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class GlobalSearchScreen(
     val searchQuery: String = "",
@@ -34,6 +43,9 @@ class GlobalSearchScreen(
         }
 
         val navigator = LocalNavigator.currentOrThrow
+        // KMK -->
+        val context = LocalContext.current
+        // KMK <--
 
         val screenModel = rememberScreenModel {
             GlobalSearchScreenModel(
@@ -51,6 +63,8 @@ class GlobalSearchScreen(
         val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
 
         val haptic = LocalHapticFeedback.current
+        val sourcePreferences = remember { Injekt.get<SourcePreferences>() }
+        var actionManga by remember { mutableStateOf<Manga?>(null) }
 
         BackHandler(enabled = bulkFavoriteState.selectionMode) {
             bulkFavoriteScreenModel.backHandler()
@@ -99,7 +113,8 @@ class GlobalSearchScreen(
                 onLongClickItem = { manga ->
                     // KMK -->
                     if (!bulkFavoriteState.selectionMode) {
-                        bulkFavoriteScreenModel.addRemoveManga(manga, haptic)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        actionManga = manga
                     } else {
                         // KMK <--
                         navigator.push(MangaScreen(manga.id, true))
@@ -111,6 +126,21 @@ class GlobalSearchScreen(
                 // KMK <--
             )
         }
+
+        // KMK -->
+        actionManga?.let { manga ->
+            MangaActionsDialog(
+                manga = manga,
+                onDismissRequest = { actionManga = null },
+                onClickFavorite = { bulkFavoriteScreenModel.addRemoveManga(manga) },
+                onClickBlacklist = {
+                    if (!sourcePreferences.addBlacklistedSeries(manga.title)) {
+                        context.toast(KMR.strings.blacklist_title_exists)
+                    }
+                },
+            )
+        }
+        // KMK <--
 
         // KMK -->
         BulkFavoriteDialogs(
