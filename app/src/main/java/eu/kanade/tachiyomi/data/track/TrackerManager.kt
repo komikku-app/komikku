@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track
 
+import eu.kanade.domain.track.service.TrackPreferences // KMK --> // KMK <--
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kavita.Kavita
@@ -11,8 +12,14 @@ import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.suwayomi.Suwayomi
 import kotlinx.coroutines.flow.combine
+import uy.kohesive.injekt.injectLazy // KMK --> // KMK <--
 
 class TrackerManager {
+
+    // KMK -->
+    private val trackPreferences: TrackPreferences by injectLazy()
+    private val trackerOrderLock = Any()
+    // KMK <--
 
     companion object {
         const val ANILIST = 2L
@@ -50,4 +57,35 @@ class TrackerManager {
     fun get(id: Long) = trackers.find { it.id == id }
 
     fun getAll(ids: Set<Long>) = trackers.filter { it.id in ids }
+
+    // KMK -->
+    fun orderedTrackers(): List<Tracker> {
+        val savedIds = trackPreferences.trackerOrder().get()
+            .split(',')
+            .mapNotNull { it.trim().toLongOrNull() }
+        if (savedIds.isEmpty()) return trackers
+
+        val trackersById = trackers.associateBy { it.id }
+        val ordered = savedIds.mapNotNull { trackersById[it] }.distinctBy { it.id }
+        val orderedIds = ordered.mapTo(mutableSetOf()) { it.id }
+        return ordered + trackers.filterNot { it.id in orderedIds }
+    }
+
+    /**
+     * Moves a single tracker in the persisted order and returns the order that was saved.
+     * Always starts from the latest stored order so simultaneous reorder screens cannot
+     * overwrite each other's changes with stale full-list snapshots.
+     */
+    fun moveTracker(movedTrackerId: Long, toIndex: Int): List<Tracker>? = synchronized(trackerOrderLock) {
+        val current = orderedTrackers().toMutableList()
+        val fromIndex = current.indexOfFirst { it.id == movedTrackerId }
+        if (fromIndex == -1 || toIndex !in current.indices) {
+            null
+        } else {
+            current.add(toIndex, current.removeAt(fromIndex))
+            trackPreferences.trackerOrder().set(current.joinToString(",") { it.id.toString() })
+            current
+        }
+    }
+    // KMK <--
 }
