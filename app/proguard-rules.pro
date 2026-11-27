@@ -150,6 +150,14 @@
 -keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
 # KMK <--
 
+# KMK -->
+# Delegated source wrappers are created through Kotlin reflection in AndroidSourceManager.
+# Keep their constructors unoptimized so KFunction.call can resolve the caller in release
+# builds instead of throwing KotlinReflectionInternalError.
+-keep class eu.kanade.tachiyomi.source.online.all.** { <init>(...); }
+-keep class eu.kanade.tachiyomi.source.online.english.EightMuses { <init>(...); }
+# KMK <--
+
 # Design library
 -dontwarn com.google.android.material.**
 -keep class com.google.android.material.** { *; }
