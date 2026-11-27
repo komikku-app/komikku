@@ -44,6 +44,7 @@ import exh.source.mangaDexSourceIds
 import exh.util.WorkerUtil
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -92,6 +93,7 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.Instant
@@ -102,6 +104,7 @@ import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalAtomicApi::class)
 class LibraryUpdateJob(private val context: Context, workerParams: WorkerParameters) :
@@ -540,8 +543,28 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             fetchDetails = libraryPreferences.autoUpdateMetadata().get(),
             fetchChapters = true,
             fetchWindow = fetchWindow,
+            // KMK -->
+            // A source that never returns (paginating forever, stuck on a socket that ignores its own timeout) would
+            // otherwise hold its source's permit forever and the library update would never finish. The timeout only
+            // bounds the source request, so it can't stop the chapter sync halfway through its database writes.
+            fetchTimeout = PER_MANGA_FETCH_TIMEOUT,
+            // KMK <--
         )
-            .getOrThrow()
+            // KMK -->
+            .getOrElse { e ->
+                // Only this manga's fetch timed out, record it as a failed update and move on
+                if (e is TimeoutCancellationException) {
+                    throw Exception(
+                        context.stringResource(
+                            KMR.strings.library_update_error_timeout,
+                            PER_MANGA_FETCH_TIMEOUT.inWholeMinutes,
+                        ),
+                        e,
+                    )
+                }
+                throw e
+            }
+        // KMK <--
 
         return if (update.manga.favorite) update.newChapters else emptyList()
     }
@@ -765,6 +788,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         private const val TAG = "LibraryUpdate"
         private const val WORK_NAME_AUTO = "LibraryUpdate-auto"
         private const val WORK_NAME_MANUAL = "LibraryUpdate-manual"
+
+        // KMK -->
+        // Upper bound for fetching a single manga from its source during a library update.
+        private val PER_MANGA_FETCH_TIMEOUT = 5.minutes
+        // KMK <--
 
         private const val ERROR_LOG_HELP_URL = "https://komikku-app.github.io/docs/guides/troubleshooting/"
 

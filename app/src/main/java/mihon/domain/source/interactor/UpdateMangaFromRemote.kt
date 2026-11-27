@@ -10,6 +10,9 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withTimeout
 import logcat.LogPriority
 import mihon.domain.source.models.RemoteMangaUpdate
 import tachiyomi.core.common.util.lang.withIOContext
@@ -23,6 +26,7 @@ import tachiyomi.domain.manga.repository.MangaRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.isLocal
 import java.time.Instant
+import kotlin.time.Duration
 
 class UpdateMangaFromRemote(
     private val sourceManager: SourceManager,
@@ -43,6 +47,9 @@ class UpdateMangaFromRemote(
      * KMK -->
      * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
      * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     *
+     * @param fetchTimeout If set, fetching from the source fails with a `TimeoutCancellationException` after this long.
+     * It only bounds the source request, never the database writes after it, so a timeout leaves nothing half-saved.
      * KMK <--
      */
     suspend operator fun invoke(
@@ -54,6 +61,9 @@ class UpdateMangaFromRemote(
         // SY -->
         throttleFunc: suspend () -> Unit = {},
         // SY <--
+        // KMK -->
+        fetchTimeout: Duration? = null,
+        // KMK <--
     ): Result<RemoteMangaUpdate> {
         val source = sourceManager.getOrStub(manga.source)
         return invoke(
@@ -68,6 +78,9 @@ class UpdateMangaFromRemote(
             // SY -->
             throttleFunc = throttleFunc,
             // SY <--
+            // KMK -->
+            fetchTimeout = fetchTimeout,
+            // KMK <--
         )
     }
 
@@ -83,6 +96,9 @@ class UpdateMangaFromRemote(
      * KMK -->
      * If [fetchChapters] is `false` and the manga has no chapters, chapters aren't synced: nothing is thrown, no new
      * chapters are returned, and the fetchInterval isn't updated even with [manualFetch].
+     *
+     * @param fetchTimeout If set, fetching from the source fails with a `TimeoutCancellationException` after this long.
+     * It only bounds the source request, never the database writes after it, so a timeout leaves nothing half-saved.
      * KMK <--
      */
     suspend operator fun invoke(
@@ -95,31 +111,38 @@ class UpdateMangaFromRemote(
         // SY -->
         throttleFunc: suspend () -> Unit = {},
         // SY <--
+        // KMK -->
+        fetchTimeout: Duration? = null,
+        // KMK <--
     ): Result<RemoteMangaUpdate> {
         return try {
             val chapters = chapterRepository.getChapterByMangaId(manga.id)
                 .sortedBy { it.sourceOrder }
-            val update = withIOContext {
-                // SY -->
-                if (source is EHentai) {
-                    source.getMangaUpdate(
-                        manga = manga.toSManga(),
-                        chapters = chapters.map(Chapter::toSChapter),
-                        fetchDetails = fetchDetails,
-                        fetchChapters = fetchChapters,
-                        throttleFunc = throttleFunc,
-                    )
-                } else {
-                    // SY <--
-                    source.getMangaUpdate(
-                        manga = manga.toSManga(),
-                        chapters = chapters.map(Chapter::toSChapter),
-                        fetchDetails = fetchDetails,
-                        fetchChapters = fetchChapters,
-                    )
-                }
-            }
             // KMK -->
+            val update = withFetchTimeout(fetchTimeout) {
+                // KMK <--
+                withIOContext {
+                    // SY -->
+                    if (source is EHentai) {
+                        source.getMangaUpdate(
+                            manga = manga.toSManga(),
+                            chapters = chapters.map(Chapter::toSChapter),
+                            fetchDetails = fetchDetails,
+                            fetchChapters = fetchChapters,
+                            throttleFunc = throttleFunc,
+                        )
+                    } else {
+                        // SY <--
+                        source.getMangaUpdate(
+                            manga = manga.toSManga(),
+                            chapters = chapters.map(Chapter::toSChapter),
+                            fetchDetails = fetchDetails,
+                            fetchChapters = fetchChapters,
+                        )
+                    }
+                }
+                // KMK -->
+            }
             val updateResult = withIOContext {
                 // KMK <--
                 awaitUpdateFromSource(manga, update.manga, manualFetch)
@@ -154,6 +177,12 @@ class UpdateMangaFromRemote(
             Result.failure(e)
         }
     }
+
+    // KMK -->
+    private suspend fun <T> withFetchTimeout(timeout: Duration?, block: suspend CoroutineScope.() -> T): T {
+        return if (timeout == null) coroutineScope(block) else withTimeout(timeout, block)
+    }
+    // KMK <--
 
     private suspend fun awaitUpdateFromSource(
         localManga: Manga,

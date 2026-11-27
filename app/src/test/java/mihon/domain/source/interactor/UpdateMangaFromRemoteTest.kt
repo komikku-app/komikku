@@ -8,18 +8,24 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import tachiyomi.domain.chapter.repository.ChapterRepository
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class UpdateMangaFromRemoteTest {
 
@@ -87,6 +93,44 @@ class UpdateMangaFromRemoteTest {
 
         mangaUpdate.captured.thumbnailUrl shouldBe NEW_SOURCE_URL
     }
+
+    // KMK -->
+    @Test
+    fun `fetch timeout fails the update without saving anything`() = runBlocking<Unit> {
+        val source = mockk<Source> {
+            coEvery { getMangaUpdate(any(), any(), any(), any()) } coAnswers { awaitCancellation() }
+        }
+
+        val result = updateMangaFromRemote(
+            source,
+            manga,
+            fetchDetails = true,
+            fetchChapters = true,
+            fetchTimeout = 50.milliseconds,
+        )
+
+        result.exceptionOrNull().shouldBeInstanceOf<TimeoutCancellationException>()
+        coVerify(exactly = 0) { mangaRepository.update(any()) }
+        coVerify(exactly = 0) { syncChaptersWithSource.await(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `fetch timeout doesn't apply to the database writes`() = runBlocking<Unit> {
+        val source = mockk<Source> {
+            coEvery { getMangaUpdate(any(), any(), false, true) } answers { SMangaUpdate(firstArg(), secondArg()) }
+        }
+
+        updateMangaFromRemote(
+            source,
+            manga,
+            fetchDetails = false,
+            fetchChapters = true,
+            fetchTimeout = 10.seconds,
+        ).isSuccess shouldBe true
+
+        coVerify(exactly = 1) { syncChaptersWithSource.await(any(), any(), any(), any(), any()) }
+    }
+    // KMK <--
 
     private companion object {
         const val SOURCE_URL = "https://source.example/cover.jpg"
