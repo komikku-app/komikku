@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">Jangan pindahkan</string>
     <string name="action_search_manually">Cari secara manual</string>
     <string name="action_migrate_now">Pindahkan sekarang</string>
@@ -34,7 +33,7 @@
     <string name="use_original_images_on">Saat ini menggunakan gambar asli</string>
     <string name="use_original_images_off">Saat ini menggunakan gambar yang telah di-resample</string>
     <string name="watched_tags">Tag yang telah dibaca</string>
-    <string name="watched_tags_summary">Membuka tampilan web ke halaman tag yang telah Anda tonton di E/ExHentai</string>
+    <string name="watched_tags_summary">Membuka tampilan web ke halaman tag yang pernah Anda tonton di E/ExHentai</string>
     <string name="watched_tags_exh">Tag yang Telah Ditonton di ExHentai</string>
     <string name="tag_filtering_threshold">Batasan Pemfilteran Tag</string>
     <string name="tag_filtering_threshhold_error">Harus diantara -9999 dan 0!</string>
@@ -263,7 +262,7 @@
     <string name="merged_already">Manga ini sudah tergabung dengan manga saat ini!</string>
     <string name="merge_duplicate">Manga gabungan ini adalah duplikat!</string>
     <!-- Manga Info Edit -->
-    <string name="reset_tags">Reset Tag</string>
+    <string name="reset_tags">Atur ulang tag</string>
     <string name="add_tag">Tambahkan Tag</string>
     <string name="title_hint">Judul: %1$s</string>
     <string name="description_hint">Deskripsi: %1$s</string>
@@ -301,7 +300,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Duplikat</string>
     <string name="redundant_extension_message">Ekstensi ini duplikat dan tak akan digunakan di dalam versi Komikku ini.</string>
-    <!-- Migration -->
     <string name="select_sources">Pilih sumber</string>
     <string name="select_none">Tak ada yang dipilih</string>
     <string name="migration">Migrasi</string>
@@ -369,7 +367,7 @@
     <string name="favorites_sync_initializing">Menginisialisasi sinkronisasi</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nSinkronisasi saat ini sedang dibatasi (untuk menghindari pemblokiran dari ExHentai) dan mungkin membutuhkan waktu lama untuk selesai.</string>
     <string name="favorites_sync_notes">IMPORTANT FAVORITES SYNC NOTES</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. Changes to category names in the app are <b>NOT</b> synced! Please <i>change the category names on ExHentai instead</i>. The category names will be copied from the ExHentai servers every sync.<br><br>2. The favorite categories on ExHentai correspond to the <b>first 10 categories in the app</b> (excluding the \'Default\' category). <i>Galleries in other categories will <b>NOT</b> be synced!</i><br><br>3. <font color=\'red\'><b>ENSURE YOU HAVE A STABLE INTERNET CONNECTION WHEN SYNC IS IN PROGRESS!</b></font> If the internet disconnects while the app is syncing, your favorites may be left in a <i>partially-synced state</i>.<br><br>4. Keep the app open while favorites are syncing. Android will close apps that are in the background sometimes and that could be bad if it happens while the app is syncing.<br><br>5. <b>Do NOT put favorites in multiple categories</b> (the app supports this). This can confuse the sync algorithm as ExHentai only allows each favorite to be in one category.<br><br>This dialog will only popup once. You can read these notes again by going to \'Settings > E-Hentai > Show favorites sync notes\'.]]></string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. Perubahan nama kategori di dalam aplikasi <b>TIDAK</b> disinkronkan! Harap <i>ubah nama kategori langsung di ExHentai</i>. Nama kategori akan disalin dari server ExHentai setiap kali sinkronisasi dilakukan.<br><br>2. Kategori favorit di ExHentai merujuk pada <b>10 kategori pertama di dalam aplikasi</b> (tidak termasuk kategori 'Default'). <i>Galeri yang berada di kategori lain <b>TIDAK</b> akan disinkronkan!</i><br><br>3. <font color=\'red\'><b>PASTIKAN KONEKSI INTERNET ANDA STABIL SAAT PROSES SINKRONISASI BERLANGSUNG!</b></font> Jika koneksi internet terputus saat aplikasi sedang melakukan sinkronisasi, daftar favorit Anda mungkin hanya tersinkronisasi sebagian.<br><br>4. Biarkan aplikasi tetap terbuka selama proses sinkronisasi favorit berlangsung. Sistem Android terkadang menutup aplikasi yang berjalan di latar belakang; hal ini dapat menyebabkan masalah jika terjadi saat aplikasi sedang melakukan sinkronisasi.<br><br>5. <b>Jangan menempatkan favorit ke dalam lebih dari satu kategori</b> (meskipun aplikasi mendukung hal tersebut). Tindakan ini dapat membingungkan algoritma sinkronisasi, karena ExHentai hanya mengizinkan setiap favorit untuk berada dalam satu kategori saja.<br><br>Pesan ini hanya akan muncul satu kali. Anda dapat membaca kembali catatan ini dengan membuka menu 'Pengaturan > E-Hentai > Tampilkan catatan sinkronisasi favorit'.]]></string>
     <string name="favorites_sync_reset">Apa kamu yakin?</string>
     <string name="favorites_sync_reset_message">Mengatur ulang status sinkronisasi dapat menyebabkan sinkronisasi berikutnya menjadi sangat lambat.</string>
     <!-- Gallery Adder -->
@@ -473,7 +471,6 @@
     <string name="manga_updates_id">Manga pembaruan id</string>
     <string name="anime_planet_id">ID Planet Anime</string>
     <string name="translated">Diterjemahkan</string>
-    <!-- Extra gallery info -->
     <string name="is_visible">Visible: %1$s</string>
     <string name="language_translated">%1$s TR</string>
     <!-- Merged manga -->
@@ -506,7 +503,6 @@
     <string name="random">Acak</string>
     <string name="mangadex_push_favorites_to_mangadex">Sinkronkan pustaka ke MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Sinkronkan manga yang bukan berasal dari MangaDex dan masukkan ke MDList.</string>
-    <!-- Scanlator filters -->
     <string name="select_scanlators">Grup pemindai yang ditampilkan</string>
     <!-- Similar -->
     <string name="similar">Mirip dengan %1$s</string>
@@ -549,7 +545,7 @@
     <string name="pref_choose_what_to_sync">Pilih apa yang akan di sinkronisasi</string>
     <string name="syncyomi">Sinkronisasi Yomi</string>
     <string name="last_synchronization">Sinkronisasi Terakhir: %1$s</string>
-    <string name="google_drive">GDrive</string>
+    <string name="google_drive">Google Drive</string>
     <string name="pref_google_drive_sign_in">Masuk</string>
     <string name="google_drive_sync_data_purged">Data sinkronisasi dihapus dari Google Drive</string>
     <string name="google_drive_sync_data_not_found">Tidak ada data sinkronisasi yang ditemukan di Google Drive</string>
@@ -602,7 +598,6 @@
     <string name="standard_zip_encryption">Enkripsi zip standar (cepat tetapi kurang aman)</string>
     <string name="center_margin_double_and_wide_page">Tambahkan ke keduanya</string>
     <string name="delete_tag">Hapus tag</string>
-    <string name="action_stop">Berhenti</string>
     <string name="relation_sequel">Sekuel</string>
     <string name="relation_alternate_story">Cerita alternatif</string>
     <string name="feed_tab_empty">Anda tidak memiliki sumber apapun di daftar konten Anda, navigasikan ke kanan atas untuk menambahkan satu</string>
@@ -669,4 +664,13 @@
     <string name="base_url">URL dasar</string>
     <string name="pref_include_chapter_url_hash">Sertakan hash URL bab</string>
     <string name="pref_include_chapter_url_hash_desc">Tambahkan enam karakter pertama dari hash MD5 URL bab ke nama file atau folder bab.</string>
+    <string name="action_stop">Berhenti</string>
+    <string name="eh_autoscroll_gestures">Gerakan gulir otomatis</string>
+    <string name="eh_autoscroll_gestures_help">Bantuan gerakan gulir otomatis</string>
+    <string name="eh_autoscroll_gestures_help_message">Autoscroll on:\n- Tap to pause or resume\n- Swipe up or down to adjust speed\n- Drag with two fingers to scroll manually\n- Swipe sideways to stop\n\nAutoscroll off:\n- Swipe sideways to start\n\nClose the reader menu to use gestures.</string>
+    <string name="eh_autoscroll_gesture_toasts">Bersulang dengan isyarat</string>
+    <string name="eh_autoscroll_gesture_toasts_help">Gerakan toast membantu</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Saat opsi ini diaktifkan, pembaca akan menampilkan pesan pop-up setelah gerakan pengguliran otomatis melakukan tindakan seperti memulai, menjeda, melanjutkan, berhenti, mengubah kecepatan, atau berpindah antar bab. Saat opsi ini diaktifkan...</string>
+    <string name="remove_merged_entries">Hapus entri dari perpustakaan</string>
+    <string name="collate_tags">Kumpulkan tag</string>
 </resources>

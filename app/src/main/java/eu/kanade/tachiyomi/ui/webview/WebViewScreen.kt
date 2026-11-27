@@ -34,6 +34,7 @@ class WebViewScreen(
             initialTitle = initialTitle,
             url = url,
             headers = screenModel.headers,
+            defaultUserAgentProvider = screenModel::defaultUserAgentProvider,
             onUrlChange = { assistUrl = it },
             onShare = { screenModel.shareWebpage(context, it) },
             onOpenInBrowser = { screenModel.openInBrowser(context, it) },

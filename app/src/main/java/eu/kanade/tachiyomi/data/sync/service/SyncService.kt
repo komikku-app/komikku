@@ -109,7 +109,7 @@ abstract class SyncService(
         }
 
         fun mangaCompositeKey(manga: BackupManga): String {
-            return "${manga.source}|${manga.url}|${manga.title.lowercase().trim()}|${manga.author?.lowercase()?.trim()}"
+            return "${manga.source}|${manga.url}"
         }
 
         // Create maps using composite keys
@@ -148,7 +148,7 @@ abstract class SyncService(
                 }
                 local != null && remote != null -> {
                     // Compare versions to decide which manga to keep
-                    if (local.version >= remote.version) {
+                    /* KMK --> */ val merged = /* KMK <-- */ if (local.version >= remote.version) {
                         logcat(LogPriority.DEBUG, logTag) {
                             "Keeping local version of ${local.title} with merged chapters."
                         }
@@ -163,6 +163,27 @@ abstract class SyncService(
                         updateCategories(remote, remoteCategoriesMapByOrder)
                         remote
                     }
+                    // KMK -->
+                    // A library update bumps the version of an entry without touching its library state, so the
+                    // version alone can undo an add or a removal made later on the other device. Take the
+                    // library state from the side that changed it last.
+                    val (other, otherCategoriesMap) = if (merged === local) {
+                        remote to remoteCategoriesMapByOrder
+                    } else {
+                        local to localCategoriesMapByOrder
+                    }
+                    if ((other.favoriteModifiedAt ?: 0L) > (merged.favoriteModifiedAt ?: 0L)) {
+                        logcat(LogPriority.DEBUG, logTag) {
+                            "Taking the library state of ${merged.title} from the side that changed it last."
+                        }
+                        merged.favorite = other.favorite
+                        merged.favoriteModifiedAt = other.favoriteModifiedAt
+                        merged.dateAdded = other.dateAdded
+                        updateCategories(other, otherCategoriesMap)
+                        merged.categories = other.categories
+                    }
+                    merged
+                    // KMK <--
                 }
                 else -> null // No manga found for key
             }
@@ -203,7 +224,7 @@ abstract class SyncService(
         val logTag = "MergeChapters"
 
         fun chapterCompositeKey(chapter: BackupChapter): String {
-            return "${chapter.url}|${chapter.name}|${chapter.chapterNumber}"
+            return chapter.url
         }
 
         val localChapterMap = localChapters.associateBy { chapterCompositeKey(it) }

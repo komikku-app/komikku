@@ -25,8 +25,8 @@ with no quotes, like `git log --format=reference`. Shorten long subjects with `�
 as `(#3248)` so the parentheses don't nest: `430b13bb81` (Adapt network implementation for TachiyomiX 1.6). This is for
 conversation only, not for commit messages or PR descriptions.
 
-**A pick commit holds only that upstream change**, plus its row(s) in `cherrypick_log.md`. Uncommitted changes that are
-already in the tree stay out of it (step 0).
+**A pick commit holds only that upstream change**, plus its row(s) in `cherrypick_log.md` and the removal of any
+`ISSUES.md` entry it fixes (step 4). Uncommitted changes that are already in the tree stay out of it (step 0).
 
 ## 0. Preflight
 
@@ -53,7 +53,9 @@ already in the tree stay out of it (step 0).
      about such a commit can't go in the log (`mark` finds no row), so give it in the report.
 4. Read the row's **Notes** whatever its status. They can hold a decision made earlier for this commit, such as
    "fold in … from …" or "don't pick just for …". Follow it as part of this pick and say that you did. If a note
-   contradicts the request, ask.
+   contradicts the request, ask. Read the other copy's row too (an `↳ tachiyomiSY` row's mihon row), since notes
+   usually sit on the mihon row. An `Early pick <date>:` note names a later upstream commit already picked here whose
+   lines this commit rewrites: step 3 carries its change over.
 5. Not already on this branch: `git log --oneline --grep=<full-hash> master..HEAD` is empty.
 6. If tracked files already have uncommitted changes, staged or not, list them, stash them with
    `git stash push -m "unrelated to <short-hash>"` and note the stash's commit (`git rev-parse refs/stash`).
@@ -89,9 +91,9 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
     (`MetadataSource`, `UrlImportableSource`, …) that mihon's `6dfa10ffac` doesn't have, and only SY's copy applies to
     `master` cleanly.
   - When picking SY's copy, bring back the parts of mihon's commit that SY left out and that apply here, such as the
-    `CHANGELOG.md` entry (SY has no changelog): `git diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, as
-    `c290472012` (Add option for bookmarked chapters to download dropdown) did. Step 4 has the message rules for an SY
-    copy.
+    `CHANGELOG.md` entry (SY has no changelog):
+    `git diff --no-color --no-ext-diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, as `c290472012` (Add
+    option for bookmarked chapters to download dropdown) did. Step 4 has the message rules for an SY copy.
 - Sort the touched files:
   - **Present here:** adapt them (step 3).
   - **Gone here** (Komikku removed it, or never had it, such as `fastlane/`): drop it.
@@ -107,8 +109,44 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
   - **Strings:** `i18n/` (`MR`) for mihon, `i18n-sy/` (`SYMR`) for SY. Translation commits from Weblate also change
     non-base locales; that is the only kind of pick that may (AGENTS.md "Internationalization").
 - For each file present here, see how ours already differs from upstream's parent: `git diff <hash>~1 HEAD -- <file>`.
-  Every difference is SY code (`// SY`, `// EXH`), Komikku code (`// KMK`), or something upstream has and Komikku
-  dropped or reworked on purpose. Keep all of them. `git log --oneline -5 -- <file>` shows why a line is ours.
+  Every difference is SY code (`// SY`, `// EXH`), Komikku code (`// KMK`), something upstream has and Komikku
+  dropped or reworked on purpose, or a later upstream commit picked early (below). Keep all of them, except Komikku
+  code that step 3 finds upstream now covers. `git log --oneline -5 -- <file>` shows why a line is ours.
+- **Later upstream commits picked early.** Komikku can already have an upstream commit that comes after this one
+  upstream, such as a fix picked before the refactor it follows. List the later upstream commits that touch this
+  commit's files, new ones included, on both upstreams (step 6's `<range>`), and keep the ones picked here:
+
+  ```bash
+  git log --reverse --format=%H <range> -- <files it touched, including new ones> | while read -r c; do
+    git log --format="%h (%s) carries ${c:0:10}" --grep="$c" HEAD
+  done
+  ```
+
+  Git keeps such a pick's change only where this commit leaves its lines alone. Where this commit moves, deletes or
+  rewrites them, the early pick's lines conflict and taking upstream's side drops them, and code moved into a new file
+  arrives in its older form, with no conflict at all. Example: mihon `553762fae8` (Fix reading history being double
+  counted) was picked into `MangaRestorer`, but upstream it comes after `306befb214` (Restrict raw
+  database access to the data module), which moves `restoreHistory` into a new `RestoreRepositoryImpl` without the
+  fix. SY picked them in the same order and its copy `09228c00cc` lost the fix. Step 3 carries such a change over.
+- **Earlier upstream commits it jumps ahead of.** The other side of the same problem: this pick can change lines that
+  earlier upstream commits, not picked here yet, wrote or rewrote upstream. Each of them rewrites those lines when it
+  is picked later, and loses this pick's change there. List them. When the commit has a copy on the other upstream (a
+  mihon row with a `↳ tachiyomiSY` row), give both hashes, whichever copy you pick: Komikku's files follow SY's, so
+  SY's history finds commits mihon's misses (mihon `553762fae8` alone finds only `306befb214`). A commit with no
+  copy, such as an SY-only one, takes just its own hash:
+
+  ```bash
+  python3 .claude/skills/cherry-pick/find_rewriters.py <hash> [<other-copy-hash>]
+  ```
+
+  It traces the lines the commit changes back with `git log -L`, and also lists the commit that created a file it
+  changes when that file doesn't exist here (not a rename, which git follows). It leaves out commits without a row and
+  commits Komikku has: an `O` / `X` row, or a `cherry picked from` line on `HEAD` unless the row has a `Partial` or
+  `Folded` note (the part left out can still rewrite those lines). It prints the row to note: the mihon row for SY's
+  copy of a mihon commit. They are no prerequisites as long as the lines they rewrite exist here
+  (Prerequisites, below, covers code that doesn't), so they don't stop the pick; step 4 notes their rows so whoever
+  picks them later keeps this change. Example: for `553762fae8` (Fix reading history being double counted) and its SY
+  copy, it lists `306befb214`, and mihon `8e0c911f93` and `c114028a33` through their SY copies.
 - **Prerequisites.** Do this before picking, for every part you would keep:
   - **Context:** if the diff's context refers to code that doesn't exist here, find the earlier upstream commits that
     added it: `git log --oneline -10 <hash>~ -- <file>` lists the last commits that touched the file upstream before
@@ -133,6 +171,12 @@ with `AI checked`, which is reserved for review verdicts. A commit with no row g
   git has committed a clean pick, `git reset --hard HEAD~1`, which loses nothing when `git diff --quiet HEAD~1` is clean)
   and propose marking the row `O` with the covering commit, or `X` if it doesn't apply:
   `mark <hash> --status O --note 'covered by <hash> (<subject>)'`. Ask first.
+- **Known issues.** `ISSUES.md` (repo root) lists problems Komikku knows of and hasn't fixed, each with its file,
+  function and, under **Upstream**, the upstream commit that fixes it, if any. Find the entries this pick solves: those
+  whose **Upstream** names this commit or its other copy (`grep -n -e '<short-hash>' -e '<other-copy-short-hash>'
+  ISSUES.md`), and those about code the commit changes (`grep -n` the files and functions it touches) whose problem
+  its change removes. Read the entry's **What happens** and **Fix** against the diff to decide; naming the commit isn't
+  enough when the pick leaves out the part that fixes it. Step 4 clears them.
 
 ## 2. Will it break Komikku?
 
@@ -182,6 +226,36 @@ that commit. Otherwise the pick stays in progress.
 Resolve conflicts by keeping upstream's code and layout, so later picks still apply, together with everything step 1
 found that is ours. Change only what this list covers:
 
+- **Komikku's own code in a conflict.** When our side of a conflict holds Komikku's own lines, don't take either side
+  blindly. Komikku's own lines are usually a `// KMK` block. Unmarked lines count too when the commit that added them
+  is Komikku's, such as work from before the markers: no upstream branch contains it
+  (`git branch -r --contains <commit>` lists neither `mihon/main` nor `tachiyomiSY/master`; Komikku shares SY's
+  history, so SY's own commits are here too) and it has no `cherry picked from` line. Check whether that change is
+  still needed with upstream's new code:
+  - **Why it exists:** find the commit that added it, with `git log -S '<distinctive line>' -- <file>`, or
+    `git log -L <first>,<last>:<file> HEAD` with the line numbers of HEAD's version (`git show HEAD:<file>`), not of
+    the working file, whose conflict markers and upstream lines shift them. Read its message and PR, and what it
+    fixed or added.
+  - **What upstream does there now:** whether this commit (or an earlier upstream one it builds on) fixes the same bug
+    or adds the same behavior, makes the change wrong (it relies on code upstream removed or reworked), or leaves it
+    untouched.
+  - **Who else relies on it:** `git grep` the names the block defines or changes, so dropping or reshaping it doesn't
+    break other Komikku code.
+
+  Then decide, and record each decision for the report:
+  - **Still needed** (upstream doesn't do what it does): keep it, adapted to upstream's new code, inside KMK markers;
+    add them around unmarked Komikku code the resolution changes (AGENTS.md "Fork markers"). This is the usual case.
+  - **Covered by upstream** (upstream now does the same, and keeping ours would duplicate or fight it): take
+    upstream's side and drop ours, once you've checked that upstream covers every case ours handled. Dropping
+    Komikku code drops Komikku behavior (step 2, Komikku features), so ask the user first unless ours is only an
+    earlier copy of the same fix.
+  - **Unsure:** keep ours, adapted, and say why in the report.
+
+  Clean merges can hit Komikku code too: git doesn't flag upstream lines landing right next to a KMK block, or
+  upstream changing code a KMK block relies on. In each file the pick touches, list the markers (`grep -n 'KMK' <file>`)
+  and read the staged diff with enough context to reach them (`git diff --cached -U15 <base> -- <file>`; the default
+  3 lines of context hide a marker a few lines away), asking the same questions of every hunk near a KMK block.
+
 - **Fork markers** (AGENTS.md "Fork markers"): upstream's own lines go in unwrapped. Every line Komikku has to change
   or add to make the pick fit is wrapped in `// KMK -->` … `// KMK <--` (`-- KMK -->` in `.sq` / `.sqm`, inline
   `/* KMK --> */ … /* KMK <-- */` inside an expression). Keep `// SY` and `// EXH` blocks intact; a change inside one
@@ -213,7 +287,19 @@ found that is ours. Change only what this list covers:
   `komikku-app.github.io`, GitHub `komikku-app/komikku`). Copy them from current files; never type them from memory.
   Package names stay: Komikku keeps `mihon.*` and `tachiyomi.*` packages.
 - **Parts SY's copy left out** (step 1, Which copy to pick): when picking SY's copy, apply them from mihon's commit with
-  `git diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, the `CHANGELOG.md` entry included.
+  `git diff --no-color --no-ext-diff <mihon-hash>~1 <mihon-hash> -- <file> | git apply -3`, the `CHANGELOG.md` entry
+  included.
+- **Upstream commits picked early** (step 1): where this commit moves, deletes or rewrites their lines, take upstream's
+  side there like any other conflict, then bring each one's change back where this commit puts the code. Take it from
+  the later upstream commit itself, which upstream wrote for the new layout:
+  `git diff --no-color --no-ext-diff <later>~1 <later> -- <files this pick adds or rewrites> | git apply -3` (plain
+  output even when the user's config colors diffs). Upstream commits between the two
+  that Komikku doesn't have yet can stop it applying; then port the change by hand, keeping this pick's version of the
+  lines those commits change. The carried lines are upstream's, so they go in unwrapped; the early pick's own `// KMK`
+  adaptations follow the rest of the file's Komikku code. Check the result: every line the later commit adds to those
+  files (`git diff --no-color <later>~1 <later> -- <file>`) is in the staged file (`git show :<file>`), not in the
+  staged diff, which leaves out the lines this pick doesn't touch. A line that a commit in between changed shows in
+  its ported form; say which.
 - **Gone files:** remove them with `git rm`, including modify/delete conflicts. These and the adaptations above are the
   only things you change without asking. Leaving out any other part needs the user's OK first (step 1, Prerequisites).
 
@@ -252,9 +338,12 @@ step 1.
   `Fixes mihonapp/mihon#3051` in `c237b645aa`). Drop a `# Conflicts:` block that SY committed in its message. If the pick
   folds in a change from another upstream commit (a Notes plan, or something the user approved), add one line to the
   end of the body, before the `(cherry picked from commit …)` lines, naming that commit by hash and PR, e.g.
-  `Also includes <change> from upstream <hash> (mihonapp/mihon#N).` Don't hard-wrap it.
-- **`(cherry picked from commit …)` lines** end the body, with the full hashes. A mihon pick ends with mihon's line. A
-  pick of SY's copy ends with two lines, with nothing between them: mihon's next to last and SY's last.
+  `Also includes <change> from upstream <hash> (mihonapp/mihon#N).` Don't hard-wrap it. For an upstream commit picked
+  early and carried over by step 3, write `Keeps <change> from upstream <hash>, picked earlier as <pick-hash>.`
+  instead.
+- **`(cherry picked from commit …)` lines** end the body, with the full hashes, followed only by the user's co-author
+  trailer when the pick needs one (Commit, below). A mihon pick ends with mihon's line. A pick of SY's copy ends with
+  two lines, with nothing between them: mihon's next to last and SY's last.
 
   ```
   (cherry picked from commit <mihon-full-hash>)
@@ -274,16 +363,50 @@ step 1.
     whole commit.
   - When the pick folds in part of another upstream commit (Body, above) and that commit has more to pick later, mark
     its row `--status '?' --note 'Folded <YYYY-MM-DD>: <part> into the pick of <hash>.'`.
+  - For each row under `== Rows to note` in step 1's `find_rewriters.py` output (each row once, though both copies'
+    lists can name it), add a note, without `--status`:
+    `--note 'Early pick <YYYY-MM-DD>: <hash> (<subject>) is already here and this commit rewrites the lines it changed
+    in <file> (<function or block>). Keep its change (cherry-pick skill step 3).'`, where `<hash>` is the upstream
+    commit being picked (mihon's for SY's copy). Name it by its upstream hash, not by the pick's, which changes on
+    every amend or rebase. `mark` appends to a row that already has notes, and `update` keeps them.
+  - If `== Rows to note` counts more than five, don't note them all on your own: a pick far ahead of upstream can list
+    dozens, mostly broad refactors Komikku may never pick (SY's `7af7a1c136` lists about 20), and each note is a row
+    the pick commit touches, so branches picking nearby commits conflict on `cherrypick_log.md`. Before committing,
+    show the list with what each one rewrites, and ask with AskUserQuestion which to note: all of them, only the ones
+    that rewrite the same function or block as this pick (your pick, named), or none. Say in the report which rows were
+    left without a note.
   - `update` always keeps a `?` with either note, even when it finds `O` evidence: it can't see a left-out part under
     `partial_ignore_paths` (a SQLDelight migration). Picking the rest later marks the row `O` here. With any note other
     than these or `AI checked`, `update` re-checks the row and can reset it.
-- **Commit:** stage only the pick's own files and the log row, with `git add <path>` for each one. Never use
-  `git add -A`, `git add -u` or `git commit -a`.
+- **`ISSUES.md`**, in the same commit: delete each entry step 1 found the pick solves, from its `## ` heading down to
+  the next one (`ISSUES.md` says to delete an entry in the commit that fixes it), then `git add ISSUES.md`. If the pick
+  fixes only part of an entry, rewrite the entry to describe what is left, and its **Upstream** line to say what this
+  pick fixed. Leave entries the pick doesn't touch alone, even if they look stale; say so in the report instead.
+- **Commit:** stage only the pick's own files, the log row and `ISSUES.md`, with `git add <path>` for each one. Never
+  use `git add -A`, `git add -u` or `git commit -a`.
   - After a conflict: write the message to a scratchpad file (`.git/MERGE_MSG` without its `# Conflicts:` block), then
     `git commit -F <file>`.
   - After a clean pick: write its message to a scratchpad file (`git log -1 --format=%B > <file>`) and edit it there,
     add the log row, then `git commit --amend -F <file>`.
-  - No `Co-Authored-By` trailer: the commit is upstream's.
+  - **Co-author trailer.** Never add a `Co-Authored-By` trailer for Claude. Add one for the user when the pick holds
+    Komikku work beyond resolving conflicts:
+    - **Ported by hand:** upstream's file or code doesn't exist here, so its change is rewritten into other code, as
+      `a6ee4bc596` (Fix library range selection crash across categories) went from upstream's `LibraryViewModel` into
+      our `LibraryScreenModel`.
+    - **Komikku changes folded in:** step 7's fixes folded into the pick, or a change from another upstream commit
+      (Body, above).
+
+    A conflict resolved in place (the code is the same, only nearby Komikku lines are in the way) and step 3's routine
+    adaptations (fork markers, migration numbers, strings, URLs, gone files) don't count. Take the name and email from
+    `git config user.name` and `git config user.email`; never type them from memory or write them into this skill. Put
+    the trailer on the message's last line, only once, separated from the `(cherry picked from commit …)` lines by one
+    blank line (add it if the message doesn't end with one):
+
+    ```
+    (cherry picked from commit <full-hash>)
+
+    Co-authored-by: <name> <email>
+    ```
   - Check that the commit holds only the expected files: `git show --stat HEAD`.
   - Leave step 0's stash where it is; it comes back at the end of step 7.
 - **Signature:** commits are GPG-signed automatically (`commit.gpgsign`), so `git log -1 --format='%h %G?'` must show
@@ -350,6 +473,9 @@ copy of a mihon commit):
   driver creation from `8c480c6355` (Switch to AndroidX bundled sqlite driver) a synchronized singleton, five days
   later; Komikku picked both.
 
+A candidate already picked here (its row is `O`) is one of step 1's early picks, not a fix to recommend: say that
+step 3 carried its change over, or that this commit leaves its lines alone.
+
 For each fix, give its hash, date and title, the bug it fixes, its status in `cherrypick_log.md`, and whether it
 applies on its own or needs earlier commits (name them). Don't pick them; recommend an order.
 
@@ -368,13 +494,17 @@ Review every pick once it passes step 5, fix what is worth fixing, and repeat un
 fixes stay **uncommitted**: never amend them into the pick or commit them yourself. The user decides where they go
 (Report).
 
-1. **Run the review** with Claude Code's built-in `code-review` skill (Skill tool), at `low` or `medium` effort each
-   round. If it isn't in this session's skill list, say so and review by hand for correctness and the checks below.
+1. **Run the review** with Claude Code's built-in `code-review` skill (Skill tool), at `medium` effort each round,
+   however small the pick (`low` reads only the diff, so it misses callers and removed behavior). If it isn't in this
+   session's skill list, say so and review by hand for correctness and the checks below.
    - **Never pass `--fix`.** It applies every finding, its cleanups included, and this step decides what is worth
      fixing. Never use `max` or `ultra` unless the user asks: each round would start many reviewers, and `ultra` is a
      billed cloud review only the user can start.
    - **Target:** `code-review` takes the current diff, a PR, a branch or a path, not a single commit. In round 1, give
-     it the branch (args `medium <branch>`) and keep only the findings on the pick's lines. From round 2 on, the
+     it the branch (args `medium <branch>`) and keep the findings on the pick's lines, plus pre-existing bugs
+     (upstream's or Komikku's) in the files and functions the pick touches; note which kind each one is. A finding in
+     another commit on the branch belongs to that commit's own review: leave it out here, and list it apart in the
+     report if it looks real. From round 2 on, the
      uncommitted fixes are the current diff (args `medium`); name the pick commit (`git show <new-hash>`) as their
      context. Always name the upstream commit the pick came from.
    - **Ask for more than correctness:** step 2's Komikku risks, step 3's adaptation rules, step 4's message rules, and
@@ -390,45 +520,79 @@ fixes stay **uncommitted**: never amend them into the pick or commit them yourse
      brings that no later upstream commit fixes (step 6), a step 5 check that fails on a pick the user chose to keep.
    - **Not worth fixing**, with the reason, such as: a later upstream commit fixes it (recommend picking that commit
      instead, step 6, so later picks still apply); style in upstream's own lines (changing them makes later picks
-     conflict); code the pick doesn't touch; a false positive (say why); no effect for Komikku users.
+     conflict); a false positive (say why); no effect for Komikku users.
+   - **Outside the pick's lines:** a finding in code the pick doesn't touch is judged the same way, not dropped. It is
+     worth fixing when it is a real bug for Komikku users, no upstream commit Komikku lacks fixes it, and the fix is
+     small. Search all of `mihon/main` and `tachiyomiSY/master` for such a fix, before `<hash>` as well as after it
+     (`git log -G '<the buggy line>' mihon/main -- <file>`, then its row's status); if one exists, recommend picking
+     it instead (step 6), since a Komikku fix would conflict with it later. When the fix is large or belongs to
+     another area, don't fix it here: recommend a separate PR (step 8) and say why.
    - **In the commit message:** a message can't stay uncommitted. Write the corrected message to a scratchpad file,
      report it, and use it only if the user chooses to fold.
-4. **Fix** the worth-fixing ones in the working tree. They are Komikku changes, so AGENTS.md applies in full: KMK
-   markers on every line of upstream code you change, new strings in `i18n-kmk/` (`KMR`). Don't stage or commit them.
+   - **Kept in `ISSUES.md`:** a real bug left unfixed here (not worth fixing now, left to a separate PR, or waiting
+     for an upstream commit Komikku hasn't picked) gets an `ISSUES.md` entry in the file's format (**Severity**,
+     **Where**, **What happens**, **How to hit it**, **Fix**, **Upstream**), as an uncommitted change that goes
+     wherever the fixes go. A false positive, style in upstream's own lines, or a bug a later pick in this run fixes
+     gets none. Put the entry next to the entries it relates to: the same file or class first, then the same feature
+     area (extension installer, downloads, WebView, Cloudflare, sync, …) or the same upstream commit. Only an entry
+     related to none goes at the end. Name commits by hash and subject, and files and functions, not line numbers.
+4. **Fix** the worth-fixing ones in the working tree, outside the pick's lines included. They are Komikku changes, so
+   AGENTS.md applies in full: KMK markers on every line of upstream code you change, new strings in `i18n-kmk/`
+   (`KMR`). A fix that solves an `ISSUES.md` entry deletes that entry in the same change, as step 4 does for a pick,
+   so the entry goes wherever the fix goes. Don't stage or commit them.
    Then re-run the step 5 checks that cover the files you changed (for code, always `spotlessCheck` and
    `assembleDebug`).
 5. **Repeat** 1-4 until a round finds nothing worth fixing. A finding already judged not worth fixing doesn't count
    again. If round 5 still finds new things, stop and report what is open.
-6. **Several picks:** keep each pick's fixes apart. Before the next pick, save them as
-   `<scratchpad>/review-fixes-<short-hash>.patch` (`git add -N` any new file first, then `git diff HEAD > <file>`) and
-   stash them: `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
-   (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review,
-   pop these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back
-   last, below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run
-   `git reset -q` and `git stash drop 'stash@{N}'` (a conflicted pop keeps the stash), and say so. The patch files keep
-   each pick's fixes apart for a fold.
+6. **Several picks:** keep each pick's fixes apart, and within them split by the recommendation below, not by where the
+   fix is. Before the next pick, save them as two patches: `<scratchpad>/review-fixes-<short-hash>-fold.patch` for the
+   fixes recommended to fold, and `<scratchpad>/review-fixes-<short-hash>-separate.patch` for all the others (a Komikku
+   fix on the pick's lines that goes beyond upstream's change, every fix outside them, and the `ISSUES.md` entries
+   added). `git add -N` any new file first, then `git diff HEAD -- <files>` for each, splitting a file's hunks between
+   the two when it has both. Then stash them:
+   `git stash push -u -m "review fixes for <short-hash>" -- <the fixed files>`, noting each stash's commit
+   (`git rev-parse refs/stash`). The next pick then starts from a clean tree (step 0). After the last pick's review, pop
+   these stashes oldest first, each by its commit as in step 0 (step 0's own `unrelated to …` stash comes back last,
+   below), so all the fixes are uncommitted in the working tree. If a pop conflicts, keep both sides, run `git reset -q`
+   and `git stash drop 'stash@{N}'` (a conflicted pop keeps the stash), and say so. The patch files keep each pick's
+   fixes apart, and the ones recommended to fold apart from the rest.
 
-For each fix, suggest where it should go:
+For every finding, on the pick's lines or not, give a recommendation: fix it or not, with the reason, and for a fix,
+where it should go:
 - **Fold into the pick** when it corrects the pick itself (a missed adaptation, a marker, a migration number or
   version, a rename, or part of upstream's change applied wrong), so the pick commit is what it should have been and
   builds on its own.
 - **A separate commit** when it goes beyond upstream's change (a Komikku fix for a bug upstream still has, or an
   improvement), so the pick stays close to upstream's patch (`git range-diff` stays small) and the fix is visible on
-  its own in history.
+  its own in history. A fix outside the pick's lines always goes here, never in the pick: it isn't part of upstream's
+  change, and folding it would hide it in a cherry-pick.
+- **A separate PR** (step 8) for a fix that is large, in another area, or unrelated to the branch; it isn't made
+  here.
 - **Both** when the fixes are of both kinds: fold the first kind and commit the rest separately.
 
 Then carry out the user's answer to the Report's question:
-- **Fold:** each pick gets only its own fixes.
-  - One pick, at the branch tip: `git add <files>`, then `git commit --amend --no-edit` (or `-F <file>` with the
-    corrected message).
+- **Fold:** each pick gets only its own fixes recommended to fold. The rest go in a separate commit (below) for "as
+  suggested", or stay uncommitted for "fold and leave the rest". A fold puts Komikku work in the pick, so its message
+  gains the user's co-author trailer (step 4, Commit) if it doesn't have it yet. Amend with `-F <file>`, where
+  `<file>` is the pick's message (`git log -1 --format=%B`) with the trailer added and the corrected message applied,
+  if any; use `--no-edit` only when the message already has the trailer and needs no correction.
+  - One pick, at the branch tip: stage only the fixes recommended to fold (`git add <files>`, or
+    `git apply --cached <partial patch>` for part of a file), then `git commit --amend -F <file>`. The other fixes
+    stay unstaged for the separate commit.
   - Several picks: stash all the fixes (`git stash push -u -m "review fixes, all"`), then for each pick, earliest
-    first: `git switch --detach <pick>`, `git apply -3 <its patch>`, `git commit --amend --no-edit` (or `-F <file>`),
-    `git rebase --onto HEAD <pick> <branch>`, which replays the later commits and checks out `<branch>` again. Each
-    fold rewrites the later picks, so find the next one's new hash by its subject. Git before 2.44 has no
-    `--autosquash` without `-i`, and `-i` needs an editor. Drop the stash only once every fold is done and checked.
+    first: `git switch --detach <pick>`, `git apply -3 <its -fold patch>`, `git commit --amend -F <file>` (that
+    pick's message, as above), `git rebase --onto HEAD <pick> <branch>`, which replays the later commits and checks
+    out `<branch>` again. Each fold rewrites the later picks, so find the next one's new hash by its subject. Git
+    before 2.44 has no `--autosquash` without `-i`, and `-i` needs an editor. Keep the tree clean between folds:
+    `git switch` and `git rebase` refuse or misplace uncommitted changes. Only after the last fold, apply the
+    `-separate` patches (`git apply -3`), for the separate commit (below) or to stay uncommitted for "fold and leave
+    the rest". Drop the stash only once every fold is done and checked.
 - **Separate commit:** one commit after the picks, with a Komikku subject (`fix(<area>): …`) and a body line naming
-  the pick it follows: `Follow-up to <hash> (<subject>).` It has no `(cherry picked from commit …)` line, because the
-  log would count it as part of the pick, and no `Co-Authored-By` trailer.
+  the pick it relates to: `Follow-up to <hash> (<subject>).` for fixes to the pick, and
+  `Found while reviewing the pick of <hash> (<subject>).` for fixes outside its lines, which the pick didn't cause.
+  With several picks, it takes the `-separate` patches, plus the `-fold` ones the user chose not to fold. It has no
+  `(cherry picked from commit …)` line, because the log would count it as part of the pick, and no `Co-Authored-By`
+  trailer.
 - **Both:** split the changes by file, or by hunk with `git apply --cached <partial patch>` (`git add -p` is
   interactive), then fold one part and commit the other.
 - **Nothing:** leave the fixes uncommitted.
@@ -494,20 +658,29 @@ Name every commit as `<hash>` (<subject>). For each picked commit, report:
 - the Komikku verdict from step 2: safe, safe after the adaptation (say which), or would break it (not picked, or kept
   only after the user confirmed);
 - any Notes plan from step 0 that you carried out;
-- the new hash and subject, and whether it is signed;
+- the new hash and subject, whether it is signed, and whether it carries the user's co-author trailer and why;
 - every line that differs from upstream's patch and why (`git range-diff <hash>~1..<hash> <new>~1..<new>` shows them),
   KMK blocks included;
-- the log rows marked `O` (or `?` with a `Partial` note), and the rows of other commits marked `?` with a `Folded`
-  note;
+- each conflict (or clean merge) in Komikku's own code from step 3: the commit that added it, what it does, and
+  whether it was kept as is, adapted or dropped, with the reason (and, for a drop, that the user agreed);
+- the log rows marked `O` (or `?` with a `Partial` note), the rows of other commits marked `?` with a `Folded`
+  note, the rows given an `Early pick` note (step 1, Earlier upstream commits it jumps ahead of), and the listed rows
+  left without one;
+- the `ISSUES.md` entries the pick or its fixes cleared (by heading), any it changed and why, any entry that names
+  this commit but stays, with the reason, and the entries step 7 added, with the entry each one was placed next to;
 - the verification results;
 - the later fixes, from step 6;
 - the review, from step 7: whether `code-review` ran (at which effort) or the review was by hand, and how many
-  rounds; each fix made, with its file and line and whether to fold it, commit it separately, or both; each finding
-  not worth fixing, with its reason; and the corrected commit message, if any;
+  rounds; every finding, on the pick's lines or outside them, with its file and line, whether it is worth fixing and
+  why, and for a fix, whether to fold it, commit it separately, or leave it to a separate PR; apart, the findings
+  that belong to other commits on the branch, each with the commit it belongs to; and the corrected commit message,
+  if any;
 - which PR it belongs in, from step 8, with the reason, plus any open PR it overlaps.
 
-If step 7 left fixes or a corrected message, ask the user with AskUserQuestion what to do with them: fold them all into
-the pick, put them all in a separate commit, both (as suggested), or nothing (leave them uncommitted). Anything else
-goes in the question's free-text answer. Carry out the answer as step 7 describes.
+If step 7 left fixes or a corrected message, ask the user with AskUserQuestion what to do with them: as suggested (fold
+the ones that correct the pick, commit the rest separately), fold the ones that correct the pick and leave the rest
+uncommitted, put them all in a separate commit, or nothing (leave them all uncommitted). Fixes outside the pick's
+lines are never folded, whichever the answer. Anything else goes in the question's free-text answer. Carry out the
+answer as step 7 describes.
 
 Nothing is pushed.

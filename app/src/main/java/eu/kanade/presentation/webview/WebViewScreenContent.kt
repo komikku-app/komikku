@@ -3,8 +3,12 @@ package eu.kanade.presentation.webview
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.os.Message
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,6 +24,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import cafe.adriel.voyager.core.stack.mutableStateStackOf
 import com.kevinnzou.web.AccompanistWebChromeClient
 import com.kevinnzou.web.AccompanistWebViewClient
@@ -48,8 +54,12 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.getHtml
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import eu.kanade.tachiyomi.util.system.setUserAgent
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -70,6 +80,7 @@ fun WebViewScreenContent(
     onNavigateUp: () -> Unit,
     initialTitle: String?,
     url: String,
+    defaultUserAgentProvider: () -> String,
     onShare: (String) -> Unit,
     onOpenInBrowser: (String) -> Unit,
     onClearCookies: (String) -> Unit,
@@ -95,6 +106,16 @@ fun WebViewScreenContent(
 
     var currentUrl by remember { mutableStateOf(url) }
     var showCloudflareHelp by remember { mutableStateOf(false) }
+    var isActive by remember { mutableStateOf(true) }
+    // KMK -->
+    var isRendererGone by remember { mutableStateOf(false) }
+    // KMK <--
+
+    DisposableEffect(Unit) {
+        onDispose { isActive = false }
+    }
+
+    val headersHost = remember { url.toUri().host }
 
     val webClient = remember {
         object : AccompanistWebViewClient() {
@@ -135,6 +156,9 @@ fun WebViewScreenContent(
                 // Ignore intents urls
                 if (url.startsWith("intent://")) return true
 
+                // Only send source headers to the source itself
+                if (/* KMK --> */!request.url.host.equals(headersHost, ignoreCase = true)/* KMK <-- */) return false
+
                 // Only open valid web urls
                 if (url.startsWith("http") || url.startsWith("https")) {
                     if (url != view?.url) {
@@ -144,6 +168,23 @@ fun WebViewScreenContent(
                 }
 
                 return false
+            }
+
+            override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                // KMK -->
+                // The WebViews of popup windows stay alive with this client and share the renderer, so each one
+                // reports its death; close the screen only once
+                if (isRendererGone) return true
+                isRendererGone = true
+                // KMK <--
+                // Not handling it kills the app along with the page
+                logcat(LogPriority.ERROR) {
+                    "WebView renderer gone: crashed=${detail.didCrash()}, " +
+                        "priority=${detail.rendererPriorityAtExit()}, url=$currentUrl"
+                }
+                view.context.toast(MR.strings.information_webview_crashed, Toast.LENGTH_LONG)
+                onNavigateUp()
+                return true
             }
         }
     }
@@ -162,6 +203,36 @@ fun WebViewScreenContent(
                     return true
                 }
                 return false
+            }
+
+            override fun onJsAlert(view: WebView, url: String?, message: String?, result: JsResult): Boolean {
+                if (!isActive) {
+                    result.confirm()
+                    return true
+                }
+                return super.onJsAlert(view, url, message, result)
+            }
+
+            override fun onJsConfirm(view: WebView, url: String?, message: String?, result: JsResult): Boolean {
+                if (!isActive) {
+                    result.cancel()
+                    return true
+                }
+                return super.onJsConfirm(view, url, message, result)
+            }
+
+            override fun onJsPrompt(
+                view: WebView,
+                url: String?,
+                message: String?,
+                defaultValue: String?,
+                result: JsPromptResult,
+            ): Boolean {
+                if (!isActive) {
+                    result.cancel()
+                    return true
+                }
+                return super.onJsPrompt(view, url, message, defaultValue, result)
             }
         }
     }
@@ -303,9 +374,11 @@ fun WebViewScreenContent(
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
 
-                    headers["user-agent"]?.let {
-                        webView.settings.userAgentString = it
-                    }
+                    // KMK -->
+                    // toWebViewHeaders keeps the source's own casing, usually "User-Agent"
+                    val userAgent = headers.entries.firstOrNull { it.key.equals("user-agent", ignoreCase = true) }?.value
+                    webView.setUserAgent(userAgent ?: defaultUserAgentProvider())
+                    // KMK <--
                 },
                 onDispose = { webView ->
                     val window = windowStack.items.find { it.webView == webView }

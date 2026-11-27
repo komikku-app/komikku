@@ -22,7 +22,7 @@
         <item quantity="other">%d개 항목 이동됨</item>
     </plurals>
     <plurals name="num_pages">
-        <item quantity="other">%1$d 페이지</item>
+        <item quantity="other">%1$d페이지</item>
     </plurals>
     <plurals name="browse_language_and_pages">
         <item quantity="other">%2$s, %1$d 페이지</item>
@@ -50,5 +50,14 @@
     </plurals>
     <plurals name="row_count">
         <item quantity="other">%d 행</item>
+    </plurals>
+    <plurals name="num_favorites">
+        <item quantity="other">즐겨찾기 %1$s</item>
+    </plurals>
+    <plurals name="num_views">
+        <item quantity="other">조회수 %1$s</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="other">선택한 항목 %d개 대상</item>
     </plurals>
 </resources>

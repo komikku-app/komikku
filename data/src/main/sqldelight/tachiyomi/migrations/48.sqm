@@ -1,0 +1,14 @@
+-- KMK -->
+-- An UPDATE OF trigger fires whenever the column is in the SET list, and the shared mangas update names favorite
+-- on every call, so any update, a library refresh included, moved favorite_modified_at. Sync relies on it to tell
+-- which device changed an entry's library state last, so only move it when favorite actually changes.
+DROP TRIGGER IF EXISTS update_last_favorited_at_mangas;
+CREATE TRIGGER update_last_favorited_at_mangas
+AFTER UPDATE OF favorite ON mangas
+WHEN old.favorite <> new.favorite
+BEGIN
+  UPDATE mangas
+  SET favorite_modified_at = strftime('%s', 'now')
+  WHERE _id = new._id;
+END;
+-- KMK <--

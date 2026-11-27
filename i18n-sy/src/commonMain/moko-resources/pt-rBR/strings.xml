@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">Não migrar</string>
     <string name="action_search_manually">Pesquisar manualmente</string>
     <string name="action_migrate_now">Migrar agora</string>
@@ -277,7 +276,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Redundante</string>
     <string name="redundant_extension_message">Esta extensão é redundante e não será usada nesta versão do Komikku.</string>
-    <!-- Migration -->
     <string name="select_sources">Selecionar fontes</string>
     <string name="select_none">Selecionar nenhum</string>
     <string name="migration">Migração</string>
@@ -344,7 +342,7 @@
     <string name="favorites_sync_initializing">Iniciando sincronização</string>
     <string name="favorites_sync_processing_throttle">%1$s\n\nSincronização está sendo limitada (para evitar ser banido do ExHentai) e pode levar muito tempo para ser concluída.</string>
     <string name="favorites_sync_notes">NOTAS DE SINCRONIZAÇÃO DE FAVORITOS IMPORTANTES</string>
-    <string name="favorites_sync_notes_message"><![CDATA[1. Mudanças do nome de categorias no app <b>NÃO</b> são sincronizadas! Por favor <i>mude os nomes das categorias no ExHentai</i>. Os nomes das categorias serão copiados dos servidores ExHentai a cada sincronização.<br><br>2. As categorias favoritas no ExHentai correspondem às <b>primeiras 10 categorias no app</b> (excluindo a categoria \'Padrão\'). <i>Galerias em outras categorias <b>NÃO</b> serão sincronizadas!</i><br><br>3. <font color=\'red\'><b>GARANTA DE TER UMA CONEXÃO DE INTERNET ESTÁVEL DURANTE A SINCRONIZAÇÃO!</b></font> Se a Internet desconectar durante a sincronização, seus favoritos podem ser deixados num <i>estado parcialmente sincronizado</i>.<br><br>4. Mantenha o app aberto durante a sincronização dos favoritos. O Android fecha apps em segundo plano às vezes, o que pode ser ruim se ocorrer enquanto o app estiver sincronizando.<br><br>5. <b>NÃO coloque favoritos em várias categorias</b> (no app, que suporta isso). Isto pode confundir o algoritmo de sincronização, pois o ExHentai permite pôr os favoritos numa só categoria.<br><br>Este diálogo será exibido só uma vez. Você pode ler estas notas de novo em \'Configurações > E-Hentai > Mostrar notas de sincronização de favoritos\'.]]></string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. Mudanças do nome de categorias no app <b>NÃO</b> são sincronizadas! Por favor <i>mude os nomes das categorias no ExHentai</i>. Os nomes das categorias serão copiados dos servidores ExHentai a cada sincronização.<br><br>2. As categorias favoritas no ExHentai correspondem às <b>primeiras 10 categorias no app</b> (excluindo a categoria \'Padrão\'). <i>Galerias em outras categorias <b>NÃO</b> serão sincronizadas!</i><br><br>3. <font color=\'red\'><b>GARANTA QUE TENHA UMA CONEXÃO DE INTERNET ESTÁVEL DURANTE A SINCRONIZAÇÃO!</b></font> Se a Internet desconectar durante a sincronização, seus favoritos podem ser deixados num <i>estado parcialmente sincronizado</i>.<br><br>4. Mantenha o app aberto durante a sincronização dos favoritos. O Android fecha apps em segundo plano às vezes, o que pode ser ruim se ocorrer enquanto o app estiver sincronizando.<br><br>5. <b>NÃO coloque favoritos em várias categorias</b> (o app suporta isso). Isto pode confundir o algoritmo de sincronização, pois o ExHentai permite pôr os favoritos numa só categoria.<br><br>Este diálogo será exibido só uma vez. Você pode ler estas notas de novo em \'Configurações > E-Hentai > Mostrar notas de sincronização de favoritos\'.]]></string>
     <string name="favorites_sync_reset">Tem certeza?</string>
     <string name="favorites_sync_reset_message">Reiniciar o estado de sincronização pode tornar sua próxima sincronização extremamente lenta.</string>
     <!-- Gallery Adder -->
@@ -448,7 +446,6 @@
     <string name="manga_updates_id">Id do Manga Updates</string>
     <string name="anime_planet_id">Id do Anime Planet</string>
     <string name="translated">Traduzido</string>
-    <!-- Extra gallery info -->
     <string name="is_visible">Visível: %1$s</string>
     <string name="language_translated">%1$s TR</string>
     <!-- Merged manga -->
@@ -477,7 +474,6 @@
     <string name="random">Aleatório</string>
     <string name="mangadex_push_favorites_to_mangadex">Sincronizar mangás da bilioteca ao MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Sincroniza qualquer mangá não monitorado no MdList como Lendo.</string>
-    <!-- Scanlator filters -->
     <string name="select_scanlators">Grupos de scanlator a mostrar</string>
     <!-- Similar -->
     <string name="similar">Similar a %1$s</string>
@@ -627,8 +623,8 @@
     <string name="feed_delete">Excluir item do feed?</string>
     <string name="feed_add">Adicionar %1$s ao feed?</string>
     <string name="delete_tag">Excluir tag</string>
-    <string name="action_stop">Parar</string>
     <string name="rec_services_to_search">Serviços de recomendação para busca</string>
+    <string name="too_many_in_feed">Muitas fontes no seu feed, não é possível adicionar mais de 10</string>
     <string name="rec_hide_library_entries">Ocultar resultados já existentes em sua biblioteca</string>
     <string name="scan_qr_code">Escanear um código QR</string>
     <string name="rec_search">Encontre recomendações comuns</string>
@@ -668,4 +664,18 @@
     <string name="data_saver_stop_exclude">Parar de excluir da economia de dados</string>
     <string name="rec_processing_state">Processando entrada %1$d de %2$d</string>
     <string name="base_url">Url base</string>
+    <string name="action_stop">Pare</string>
+    <string name="eh_autoscroll_gestures_help_message">Rolagem automática ativada:\n• Toque para pausar ou retomar\n• Deslize para cima ou para baixo para ajustar a velocidade\n• Arraste com dois dedos para rolar manualmente\n• Deslize para os lados para parar\n\nRolagem automática desativada:\n• Deslize para os lados para iniciar\n\nFeche o menu de leitura para usar gestos.</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Quando esta opção está ativada, o leitor exibe mensagens flutuantes (toast) após os gestos de rolagem automática executarem ações como iniciar, pausar, retomar, parar, alterar a velocidade ou navegar pelo capítulo. Quando esta opção está desativada, os gestos continuam funcionando da mesma forma, mas essas mensagens informativas não são exibidas.</string>
+    <string name="entry_description">Descrição</string>
+    <string name="entry_tags">Tags</string>
+    <string name="total_views">Visualizações totais</string>
+    <string name="total_downloads">Downloads totais</string>
+    <string name="merge_duplicate_chapters">Capítulos duplicados</string>
+    <string name="merge_dedupe_keep_all">Manter tudo</string>
+    <string name="merge_dedupe_priority">Prioridade</string>
+    <string name="merge_dedupe_most">Mais</string>
+    <string name="merge_dedupe_highest">Mais alto</string>
+    <string name="merge_dedupe_keep_all_summary">Mostre todos os capítulos de cada entrada, ordenados pela prioridade da entrada.</string>
+    <string name="merge_drag_to_set_priority">Segure para definir prioridade</string>
 </resources>

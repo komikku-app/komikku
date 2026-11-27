@@ -12,6 +12,8 @@ Pull requests are welcome!
 If you're interested in taking on [an open issue](https://github.com/komikku-app/komikku/issues), please comment on it so others are aware.
 You do not need to ask for permission nor an assignment.
 
+[ISSUES.md](ISSUES.md) lists known problems in the code that nobody has fixed yet, each with where it is, how to hit it and what a fix looks like. It's a good place to start, and if you fix one, remove its entry in the same pull request.
+
 ## Prerequisites
 
 Before you start, please note that the ability to use following technologies is **required** and that existing contributors will not actively teach them to you.

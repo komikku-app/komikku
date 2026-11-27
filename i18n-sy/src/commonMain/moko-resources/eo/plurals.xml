@@ -40,4 +40,20 @@
         <item quantity="one">%1$d paĝo</item>
         <item quantity="other">%1$d paĝoj</item>
     </plurals>
+    <plurals name="cleanup_done">
+        <item quantity="one">Senrubigo finita. Forigis %d dosierujo</item>
+        <item quantity="other">Senrubigo finita. Forigis %d dosierujoj</item>
+    </plurals>
+    <plurals name="eh_retry_toast">
+        <item quantity="one">Reprovas %1$d malsukcesan paĝon…</item>
+        <item quantity="other">Reprovas %1$d malsukcesajn paĝojn…</item>
+    </plurals>
+    <plurals name="num_favorites">
+        <item quantity="one">%1$s plej ŝatata</item>
+        <item quantity="other">%1$s plej ŝatataj</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="one">Por %d elektita elemento</item>
+        <item quantity="other">Por %d elektitaj elementoj</item>
+    </plurals>
 </resources>

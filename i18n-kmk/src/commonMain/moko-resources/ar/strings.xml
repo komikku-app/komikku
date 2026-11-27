@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_source_search">البحث داخل المصدر</string>
-    <string name="action_toggle_nsfw_only">تبديل NSFW فقط</string>
-    <string name="action_bulk_select">وضع التحديد بالجملة</string>
+    <string name="action_toggle_nsfw_only">تشغيل NSFW فقط</string>
+    <string name="action_bulk_select">وضع التحديد الجماعي</string>
     <string name="action_faq_and_guides">الأسئلة الشائعة والأدلة</string>
     <string name="download_cache_renew_interval">الفاصل الزمني لتجديد التحميل</string>
     <string name="download_cache_renew_interval_manual">دليل</string>
@@ -37,7 +37,7 @@
     <string name="pref_theme_cover_based_style_monochrome">أحادية</string>
     <string name="pref_theme_cover_based_style_fidelity">التلاعب</string>
     <string name="pref_theme_cover_based_style_content">محتوى</string>
-    <string name="action_search_for_source">البحث عن مصدر</string>
+    <string name="action_search_for_source">البحث عن مصادر</string>
     <string name="action_library_search">البحث في المكتبة</string>
     <string name="theme_cloudflare">Cloudflare</string>
     <string name="theme_cottoncandy">حلوى القطن</string>
@@ -196,7 +196,15 @@
     <string name="pref_discord_show_download_button">إظهار زر التحميل</string>
     <string name="pref_discord_show_discord_button_summary">يعرض زرًا للانضمام إلى خادم ديسكورد</string>
     <string name="pref_discord_incognito">وضع التخفي ديسكورد</string>
-    <string name="discord_status_using">باستخدام:</string>
+    <string name="discord_status_using">باستخدام</string>
     <string name="sponsor_me">إدعمني</string>
     <string name="discord_status_description">%1$s %2$s</string>
+    <string name="action_clear_manga">إزالة المانجا</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">استخدم البحث الذكي</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">في حال تفعيل هذه الخاصية، يتم اختيار أفضل نتيجة مطابقة تلقائيًا. خلاف ذلك، يتم عرض جميع نتائج البحث للاختيار اليدوي.</string>
+    <string name="job_failed_schedule_update_check">فشل تحديد موعد تحديث المكتبة التلقائي: %s</string>
+    <string name="job_failed_schedule_backup_check">فشل تحديد موعد النسخ الاحتياطي التلقائي: %s</string>
+    <string name="show_chapters_titles_title">عرض عناوين الفصول</string>
+    <string name="pref_discord_configuration">افتح لتكوين ديسكورد RPC</string>
+    <string name="pref_discord_show_timestamp_summary">عرض وقت النشاط</string>
 </resources>

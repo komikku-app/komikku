@@ -1,8 +1,16 @@
 -dontobfuscate
 
--keep,allowoptimization class eu.kanade.**
--keep,allowoptimization class tachiyomi.**
--keep,allowoptimization class mihon.**
+# Injekt reads the injected type from the generic superclass of its type tokens
+-keepattributes Signature
+-keep,allowshrinking class * extends uy.kohesive.injekt.api.FullTypeReference
+
+# KMK -->
+# AndroidSourceManager creates the in-app delegated sources by reflection, which R8 can't see, so without this it
+# takes them as never created, strips their code and assumes HttpSource never has a delegate
+-keep class * extends exh.source.DelegatedHttpSource {
+    <init>(eu.kanade.tachiyomi.source.online.HttpSource, android.content.Context);
+}
+# KMK <--
 
 # Keep common dependencies used in extensions
 -keep,allowoptimization class androidx.preference.** { public protected *; }
@@ -25,6 +33,14 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+# KMK -->
+# WebView calls these from JavaScript only, which R8 can't see, so without this it strips the bridges of the Cloudflare
+# bypass and the Discord login
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+# KMK <--
 
 ##---------------Begin: proguard configuration for RxJava 1.x  ----------
 -dontwarn sun.misc.**
@@ -128,6 +144,12 @@
 # Firebase
 -keep class com.google.firebase.installations.** { *; }
 -keep interface com.google.firebase.installations.** { *; }
+
+# Methods called by Shizuku only
+-keepclassmembers class mihon.app.shizuku.ShellInterface {
+    public <init>();
+    public void destroy();
+}
 
 # Google Drive
 -keep class com.google.api.services.** { *; }

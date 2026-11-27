@@ -54,9 +54,9 @@
     <string name="open_debug_menu">فتح قائمة التصحيح</string>
     <string name="starting_cleanup">بدء عملية التنظيف</string>
     <string name="clean_up_downloaded_chapters">مسح الفصول التي تم تنزيلها</string>
-    <string name="delete_unused_chapters">حذف مجلدات الفصل غير الموجودة والتي تم تنزيلها جزئيًا وقراءتها</string>
+    <string name="delete_unused_chapters">حذف مجلدات الفصول غير الموجودة، و المنزلة جزئياً، و المقروءة</string>
     <string name="no_folders_to_cleanup">لا يوجد مجلدات لمسحها</string>
-    <string name="clean_orphaned_downloads">مسح الفصول المحذوفة</string>
+    <string name="clean_orphaned_downloads">تنظيف المهجورة</string>
     <string name="clean_read_downloads">مسح الفصول المقروءة</string>
     <string name="clean_read_entries_not_in_library">مسح الدخلات الغير موجودة في المكتبة</string>
     <string name="data_saver">توفير البيانات</string>
@@ -312,7 +312,7 @@
     <string name="action_share_combined_page">مشاركة الصفحة المدمجة</string>
     <string name="automatic_can_still_switch">أثناء استخدام تخطيط الصفحة التلقائي، لا يزال بإمكانك التبديل بين التخطيطات أثناء القراءة دون تجاوز هذا الإعداد</string>
     <string name="eh_auto_webtoon_snack">قراءة بأسلوب الويب تون</string>
-    <string name="double_pages">صفحات مزدوجة</string>
+    <string name="double_pages">الصفحات المزدوجة</string>
     <string name="automatic_orientation">تلقائي (على أساس الاتجاه)</string>
     <string name="invert_double_pages">عكس الصفحات المزدوجة</string>
     <string name="pref_center_margin_summary">أدخل فاصل لاستيعاب المساحة الميتة على الأجهزة القابلة للطي.</string>
@@ -387,7 +387,7 @@
     <string name="redundant_extension_message">هذا المصدر زائد عن الحاجة ولن يتم استخدامه داخل هذا الإصدار من Komikku.</string>
     <string name="select_sources">حدد المصادر</string>
     <string name="select_none">لا تختر شيء</string>
-    <string name="migration">النقل</string>
+    <string name="migration">الترحيل</string>
     <string name="skip_pre_migration">تخطي ما قبل النقل</string>
     <string name="match_enabled_sources">مطابقة المصادر المُمكنة</string>
     <string name="pre_migration_skip_toast">لإظهار هذه الشاشة مرة أخرى، انتقل إلى الإعدادات -&gt; المكتبة.</string>
@@ -457,7 +457,7 @@
     <string name="manga_updates_id">معرف Manga updates</string>
     <string name="delete_merged_entry">هل أنت متأكد؟</string>
     <string name="translated">مُتَرْجَم</string>
-    <string name="author">الكاتب</string>
+    <string name="author">المؤلِّف</string>
     <string name="japanese_title">العنوان الياباني</string>
     <string name="english_title">العنوان الإنجليزي</string>
     <string name="uploader_capital">تم كتابة المُحمل بأحرف كبيرة</string>
@@ -482,7 +482,7 @@
     <string name="average_rating">متوسط التقييم</string>
     <string name="last_update_check">التحقق من آخر تحديث</string>
     <string name="path">مسار</string>
-    <string name="artist">فنان</string>
+    <string name="artist">الرسَّام</string>
     <string name="group">مجموعة</string>
     <string name="cover_image_file_type">نوع ملف صورة الغلاف</string>
     <string name="url">الرابط</string>

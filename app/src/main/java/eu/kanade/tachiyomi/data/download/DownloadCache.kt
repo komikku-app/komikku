@@ -117,6 +117,16 @@ class DownloadCache(
                         val diskCache = diskCacheFile.inputStream().use {
                             ProtoBuf.decodeFromByteArray<RootDirectory>(it.readBytes())
                         }
+                        // KMK -->
+                        // The disk cache stores a folder shared by several source ids once per id, so link
+                        // those ids to one copy again, as renewCache does
+                        val sourceDirsByUri = diskCache.sourceDirs.values
+                            .mapNotNull { sourceDir -> sourceDir.dir?.uri?.let { it to sourceDir } }
+                            .toMap()
+                        diskCache.sourceDirs = diskCache.sourceDirs.mapValues { (_, sourceDir) ->
+                            sourceDir.dir?.uri?.let { sourceDirsByUri[it] } ?: sourceDir
+                        }
+                        // KMK <--
                         rootDownloadsDir = diskCache
                         lastRenew = System.currentTimeMillis()
                     }
@@ -177,7 +187,8 @@ class DownloadCache(
     fun getTotalDownloadCount(): Int {
         renewCache()
 
-        return rootDownloadsDir.sourceDirs.values.sumOf { sourceDir ->
+        // The disk index stores a folder shared by several ids once per id
+        return rootDownloadsDir.sourceDirs.values.distinctBy { it.dir?.uri }.sumOf { sourceDir ->
             sourceDir.mangaDirs.values.sumOf { mangaDir ->
                 mangaDir.chapterDirs.size
             }
@@ -422,20 +433,21 @@ class DownloadCache(
             }
             // SY <--
 
-            val sourceMap = sources.associate { provider.getSourceDirName(it).lowercase() to it.id }
+            // A stored stub can share its name with an installed source, so a folder can belong to several ids
+            val sourceIdsByDirName = sources.groupBy({ provider.getSourceDirName(it).lowercase() }, { it.id })
 
             rootDownloadsDirMutex.withLock {
                 val updatedRootDir = RootDirectory(storageManager.getDownloadsDirectory())
 
                 updatedRootDir.sourceDirs = updatedRootDir.dir?.listFiles().orEmpty()
                     .filter { it.isDirectory && !it.name.isNullOrBlank() }
-                    .mapNotNull { dir ->
-                        val sourceId = sourceMap[dir.name!!.lowercase()]
-                        sourceId?.let { it to SourceDirectory(dir) }
+                    .flatMap { dir ->
+                        val sourceDir = SourceDirectory(dir)
+                        sourceIdsByDirName[dir.name!!.lowercase()].orEmpty().map { it to sourceDir }
                     }
                     .toMap()
 
-                updatedRootDir.sourceDirs.values.map { sourceDir ->
+                updatedRootDir.sourceDirs.values.distinct().map { sourceDir ->
                     async {
                         sourceDir.mangaDirs = sourceDir.dir?.listFiles().orEmpty()
                             .filter { it.isDirectory && !it.name.isNullOrBlank() }
