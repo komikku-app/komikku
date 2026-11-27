@@ -1,6 +1,7 @@
 package app.komikku.desktop.platform
 
 import app.komikku.desktop.updater.DesktopOs
+import exh.log.xLogW
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 
@@ -36,10 +38,15 @@ interface DesktopFileDialogs {
  *
  * P16 review fix: these are windows of their own, outside the app lock's gate, so a chooser open when the app locks
  * (after the main window was minimised and shown again) is closed as cancelled, and none opens while [locked].
+ *
+ * M2 review fix: one dialog at a time ([guard]); one asked for while another is showing returns `null` (as cancelled).
+ * macOS's folder switch ([MAC_FOLDER_DIALOG_PROPERTY]) is a global system property set while the folder panel is
+ * open, so a file dialog opened meanwhile (a modal dialog's event loop still runs other requests) would pick folders.
  */
 class AwtFileDialogs(
     private val locked: StateFlow<Boolean> = MutableStateFlow(false),
     private val os: DesktopOs = DesktopOs.current(),
+    private val guard: FileDialogGuard = FileDialogGuard(),
 ) : DesktopFileDialogs {
 
     override fun saveFile(title: String, directory: File?, suggestedName: String): File? = onEdt {
@@ -92,11 +99,34 @@ class AwtFileDialogs(
         }
     }
 
-    private fun <T> onEdt(block: () -> T): T {
-        if (SwingUtilities.isEventDispatchThread()) return block()
-        var result: Result<T>? = null
-        SwingUtilities.invokeAndWait { result = runCatching(block) }
+    /** Runs [block] (one dialog) on the event thread, unless another dialog is showing ([guard]: then `null`). */
+    private fun onEdt(block: () -> File?): File? {
+        val guarded = { guard.exclusive(block) }
+        if (SwingUtilities.isEventDispatchThread()) return guarded()
+        var result: Result<File?>? = null
+        SwingUtilities.invokeAndWait { result = runCatching(guarded) }
         return result!!.getOrThrow()
+    }
+}
+
+/** M2 review fix: lets one file dialog show at a time, from any thread; see [AwtFileDialogs]. */
+class FileDialogGuard {
+    private val showing = AtomicBoolean(false)
+
+    /** Whether a dialog is showing. */
+    val isShowing: Boolean get() = showing.get()
+
+    /** Runs [show] unless another dialog is showing (then `null`, as if cancelled). */
+    fun <T> exclusive(show: () -> T?): T? {
+        if (!showing.compareAndSet(false, true)) {
+            xLogW("File dialog not opened: another one is showing")
+            return null
+        }
+        try {
+            return show()
+        } finally {
+            showing.set(false)
+        }
     }
 }
 

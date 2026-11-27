@@ -86,6 +86,9 @@ writer, and PROGRESS.md for how the converter was built and which extensions it 
 
 ## Still to confirm on the Mac (fixed blind in M2, never seen running)
 
+Open finding of the M2 review, to check on the Mac: [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md) (the folder
+panel possibly staying open when the app locks).
+
 1. **Folder picker:** Settings → downloads folder should open the native macOS folder panel, and a folder made with
    "New Folder" should show at once.
 2. **Notification:** a library update with new chapters should post a system notification through `osascript`,

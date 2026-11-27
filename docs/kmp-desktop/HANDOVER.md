@@ -481,6 +481,22 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
+  Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
+  The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript
+  argument marker, "Show system notifications" setting, one file dialog at a time, surrogate-safe truncation, "handed
+  to the system" KDoc, stack traces in the self-test report); the seventh needs a Mac and is open in
+  [`M2_REVIEW_FINDINGS.md`](M2_REVIEW_FINDINGS.md). Last full local `:desktopApp:test` (Linux, on `18141a2`): 89
+  classes, 410 tests, 0 failures; `spotlessCheck`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin` pass.
+  Newest green CI desktop run (the Mac build to use): see the CI line below. The recurring scheduled tasks are
+  disabled and no cloud run is scheduled. The self-hosted-runner change stays parked on
+  `claude/kmp-self-hosted-mac-runner`. The Mac session owns the open work: [`MAC_SESSION_HANDOVER.md`](MAC_SESSION_HANDOVER.md)
+  and its own notes (the M3 entry below).
+  CI: the desktop build of this round is started by the `run 11` marker bump; until its result is recorded here, the
+  newest fully green run is <https://github.com/komikku-app/komikku/actions/runs/45938000837> (commit `9b58d72`). Run
+  46051450459 (`8ead2d9`, the Mac session's M3) has green macOS, Windows jobs but failed on Linux in one test,
+  `MangaCoverActionsUiTest > save, edit, save the custom cover, delete it` (`MangaCoverActionsUiTest.kt:147`); the
+  same test passed in the full local run above, so probably timing, not investigated (not this round's code).
 - **M3 — real APK extensions on the Mac, 2026-11-28 (PROGRESS "M3 — real APK extensions on the Mac"):** the load
   failure is fixed: the converter writes stack map frames (ASM), retargets R8-inlined constructors, keeps `-` in member
   names and copies the APK's resources; the host has `okhttp-zstd`, `AppInfo`, `http.agent`, and the compat layer
