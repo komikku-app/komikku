@@ -276,10 +276,10 @@ jobs:
         run: |
           set -euo pipefail
           # KMK -->
-          # Linux: the app image directory for the .tar.gz is createDistributable's (no AppImage target, see
-          # desktopApp/build.gradle.kts); the DEB / RPM tasks build it anyway, named here so it is always there
-          tasks=(:desktopApp:packageDistributionForCurrentOS)
-          if [ "$RUNNER_OS" = Linux ]; then tasks+=(:desktopApp:createDistributable); fi
+          # The app image directory (createDistributable): on Linux packed as the .tar.gz (no AppImage target, see
+          # desktopApp/build.gradle.kts), on every OS started by the self-test below. The DMG / DEB / RPM tasks build it
+          # anyway; the MSI / EXE tasks do not (M2: the first self-test run on Windows found no launcher)
+          tasks=(:desktopApp:packageDistributionForCurrentOS :desktopApp:createDistributable)
           ./gradlew "${tasks[@]}" -Penable-updater
           # KMK <--
           if [ -n "$KOMIKKU_MAC_NOTARIZATION_APPLE_ID" ]; then
