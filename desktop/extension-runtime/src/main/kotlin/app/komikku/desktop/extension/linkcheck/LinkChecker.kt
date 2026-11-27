@@ -19,12 +19,17 @@ data class MemberRef(val owner: String, val name: String, val descriptor: String
 /**
  * What [LinkChecker] found: references from the checked classes to classes / methods / fields that
  * the host class path does not have, each with the checked classes that reference it.
+ *
+ * [forwardedMethods] are missing methods only called by a method of the same signature in a class implementing their
+ * owner: a delegating wrapper compiled against a newer library (Temple Scan's `Interceptor.Chain` wrapper forwards the
+ * chain methods of a newer OkHttp). The host's library never calls them, so they are not counted as missing.
  */
 data class LinkCheckReport(
     val checkedClasses: Int,
     val missingClasses: Map<String, Set<String>>,
     val missingMethods: Map<MemberRef, Set<String>>,
     val missingFields: Map<MemberRef, Set<String>>,
+    val forwardedMethods: Map<MemberRef, Set<String>> = emptyMap(),
 ) {
     val isClean: Boolean get() = missingClasses.isEmpty() && missingMethods.isEmpty() && missingFields.isEmpty()
 
@@ -99,6 +104,7 @@ class LinkChecker(
         val missingClasses = sortedMapOf<String, MutableSet<String>>()
         val missingMethods = sortedMapOf<MemberRef, MutableSet<String>>()
         val missingFields = sortedMapOf<MemberRef, MutableSet<String>>()
+        val forwardedMethods = sortedMapOf<MemberRef, MutableSet<String>>()
 
         fun classExists(name: String): Boolean = name in local || host(name) != null
 
@@ -117,7 +123,7 @@ class LinkChecker(
             }
         }
 
-        fun checkMember(owner: String, name: String, descriptor: String, isMethod: Boolean, user: String) {
+        fun checkMember(owner: String, name: String, descriptor: String, isMethod: Boolean, user: String, caller: String? = null) {
             if (owner.startsWith("[")) {
                 checkDescriptor(owner, user)
                 return
@@ -130,7 +136,14 @@ class LinkChecker(
             }
             val found = resolve(owner, local, localMembers) { members -> (if (isMethod) members.first else members.second).contains(name + descriptor) }
             if (!found) {
-                val target = if (isMethod) missingMethods else missingFields
+                val forwarded = isMethod && caller == name + descriptor && user != owner && isSubtype(user, owner, local)
+                val target = if (forwarded) {
+                    forwardedMethods
+                } else if (isMethod) {
+                    missingMethods
+                } else {
+                    missingFields
+                }
                 target.getOrPut(MemberRef(owner, name, descriptor)) { sortedSetOf() } += user
             }
         }
@@ -165,6 +178,7 @@ class LinkChecker(
                     ): MethodVisitor {
                         checkDescriptor(descriptor, user)
                         exceptions?.forEach { checkClass(it, user) }
+                        val caller = name + descriptor
                         return object : MethodVisitor(Opcodes.ASM9) {
                             override fun visitTypeInsn(opcode: Int, type: String) = checkClass(type, user)
 
@@ -172,7 +186,7 @@ class LinkChecker(
                                 checkMember(owner, name, descriptor, isMethod = false, user = user)
 
                             override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) =
-                                checkMember(owner, name, descriptor, isMethod = true, user = user)
+                                checkMember(owner, name, descriptor, isMethod = true, user = user, caller = caller)
 
                             override fun visitInvokeDynamicInsn(name: String, descriptor: String, bsm: Handle, vararg bsmArgs: Any?) {
                                 checkDescriptor(descriptor, user)
@@ -203,7 +217,28 @@ class LinkChecker(
             )
         }
 
-        return LinkCheckReport(readers.size, missingClasses, missingMethods, missingFields)
+        return LinkCheckReport(readers.size, missingClasses, missingMethods, missingFields, forwardedMethods)
+    }
+
+    /** Whether [name] is [type] or extends / implements it (local classes first, then host). */
+    private fun isSubtype(name: String, type: String, local: Map<String, ClassReader>): Boolean {
+        val queue = ArrayDeque(listOf(name))
+        val seen = HashSet<String>()
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst()
+            if (current == type) return true
+            if (!seen.add(current)) continue
+            val reader = local[current]
+            if (reader != null) {
+                reader.superName?.let(queue::add)
+                queue.addAll(reader.interfaces)
+            } else {
+                val hostClass = host(current) ?: continue
+                hostClass.superName?.let(queue::add)
+                queue.addAll(hostClass.interfaces)
+            }
+        }
+        return false
     }
 
     /** Searches [owner], its superclasses and superinterfaces (local first, then host) for a member. */

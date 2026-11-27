@@ -298,7 +298,9 @@ jobs:
       # see. The report goes to a file as well, as the Windows launcher has no console.
       # M3: real extensions too. The second macOS test build converted Keiyoushi's extensions into classes the JVM's
       # verifier rejects (no stack map frames, R8-inlined constructors) while the fixture passed; the self-test now
-      # converts the current Hiperdex and Kagane APKs (resolved from Keiyoushi's index) and verifies every class.
+      # converts the current Hiperdex, Kagane, MangaDex and Weeb Central APKs (resolved from Keiyoushi's index), verifies
+      # every class and fails on classes the host libraries lack (MangaDex: constructors R8 inlined into subclasses,
+      # assets read through the class loader, eu.kanade.tachiyomi.AppInfo).
       - name: Self-test the packaged app
         timeout-minutes: 10
         run: |
@@ -314,7 +316,7 @@ jobs:
           mkdir -p "$extensions"
           curl -fsSL --retry 3 -o "$extensions/index.pb" https://github.com/keiyoushi/extensions/raw/repo/index.pb
           gzip -dc "$extensions/index.pb" > "$extensions/index.bin"
-          for name in en.hiperdex all.kagane; do
+          for name in en.hiperdex all.kagane all.mangadex en.weebcentral; do
             url=$(grep -a -o "https://github.com/keiyoushi/extensions/releases/download/[^/\"]*/tachiyomi-${name}-v[0-9.]*\.apk" \
               "$extensions/index.bin" | head -n 1 || true)
             if [ -z "$url" ]; then

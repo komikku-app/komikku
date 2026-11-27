@@ -87,6 +87,36 @@ class LinkCheckerTest {
     }
 
     @Test
+    fun `a wrapper forwarding a method of a newer library is not a missing method`() {
+        val chain = "okhttp3/Interceptor\$Chain"
+        val wrapper = "eu/kanade/tachiyomi/extension/en/linkfixture/ChainWrapper"
+        val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT, wrapper, null, "java/lang/Object", arrayOf(chain))
+        writer.visitField(Opcodes.ACC_PUBLIC or Opcodes.ACC_FINAL, "chain", "L$chain;", null, null).visitEnd()
+        // getDns(): forwards to the wrapped chain (OkHttp 5.3 has no Chain.getDns); misuse(): calls it itself
+        for (method in listOf("getDns", "misuse")) {
+            writer.visitMethod(Opcodes.ACC_PUBLIC, method, "()Lokhttp3/Dns;", null, null).apply {
+                visitCode()
+                visitVarInsn(Opcodes.ALOAD, 0)
+                visitFieldInsn(Opcodes.GETFIELD, wrapper, "chain", "L$chain;")
+                visitMethodInsn(Opcodes.INVOKEINTERFACE, chain, "getDns", "()Lokhttp3/Dns;", true)
+                visitInsn(Opcodes.ARETURN)
+                visitMaxs(0, 0)
+                visitEnd()
+            }
+        }
+        writer.visitEnd()
+        val jar = File(dir, "wrapper.jar")
+        FixtureClasses.jar(jar, mapOf(wrapper to writer.toByteArray()))
+
+        val report = LinkChecker().check(jar)
+
+        val getDns = MemberRef(chain, "getDns", "()Lokhttp3/Dns;")
+        report.forwardedMethods.keys shouldContainExactly setOf(getDns)
+        report.missingMethods.keys shouldContainExactly setOf(getDns)
+    }
+
+    @Test
     fun `clean jar`() {
         val jar = File(dir, "clean.jar")
         FixtureClasses.jar(jar, mapOf(helper to FixtureClasses.classCalling(helper, "java/lang/Thread", "yield", "()V")))

@@ -7,6 +7,11 @@ import app.komikku.desktop.di.DesktopInjekt
 import app.komikku.desktop.extension.ExtensionPackageResult
 import app.komikku.desktop.extension.ExtensionRuntime
 import app.komikku.desktop.extension.LoadedExtension
+import app.komikku.desktop.extension.linkcheck.LinkChecker
+import okhttp3.zstd.Zstd
+import okio.Buffer
+import okio.ByteString.Companion.decodeHex
+import okio.buffer
 import uy.kohesive.injekt.Injekt
 import java.io.Closeable
 import java.io.File
@@ -54,6 +59,28 @@ object DesktopSelfTest {
     const val EXTENSION_SOURCE_ID = 4243L
 
     private const val MISSING_LISTED = 3
+
+    /** `printf 'komikku zstd' | zstd`: OkHttp's Zstd (extensions' clients add it) decodes through the native library. */
+    private const val ZSTD_FRAME = "28b52ffd0458610000" + "6b6f6d696b6b75207a737464" + "74dd316c"
+
+    /** Packages of the Android API the compat layer implements in part: a member missing there is a known gap. */
+    private val COMPAT_PREFIXES = listOf("android/", "androidx/", "dalvik/", "com/google/android/")
+
+    /**
+     * Packages of the libraries the app hosts for extensions (they compile against them, `compileOnly`): a class
+     * missing there is a host gap, never unused bundled code (the third macOS test build lacked `okhttp3.zstd.Zstd`).
+     */
+    private val HOST_PREFIXES = listOf(
+        "eu/kanade/tachiyomi/",
+        "okhttp3/",
+        "okio/",
+        "org/jsoup/",
+        "rx/",
+        "uy/kohesive/injekt/",
+        "kotlin/",
+        "kotlinx/serialization/",
+        "app/cash/quickjs/",
+    )
 
     class Check(val name: String, val run: (File) -> String)
 
@@ -153,6 +180,12 @@ object DesktopSelfTest {
                 }
             }
         },
+        Check("zstd (native library)") {
+            val frame = Buffer().write(ZSTD_FRAME.decodeHex())
+            val text = Zstd.decompress(frame).buffer().use { it.readUtf8() }
+            check(text == "komikku zstd") { "decompressed '$text'" }
+            "decompressed '$text'"
+        },
         Check("QuickJS (native library)") {
             QuickJs.create().use { js ->
                 val result = js.evaluate("[1, 2, 3].map(x => x * 2).join(',')")
@@ -182,6 +215,19 @@ object DesktopSelfTest {
                 "${verification.rejected.size} class(es) fail verification, first: ${verification.rejected.first()}"
             }
             check(!strict || verification.unresolved.isEmpty()) { "unresolved classes ${verification.unresolved}" }
+            // Members are resolved when first called, so a missing one only shows in the link check: one of a host
+            // library class (not an Android compat class) is a conversion or library mismatch, never a compat gap
+            val links = LinkChecker().check(loaded.jar)
+            check(!strict || links.isClean) { links.format("fixture") }
+            val hostGaps = links.missingClasses.keys.filter { name -> HOST_PREFIXES.any(name::startsWith) }
+            check(hostGaps.isEmpty()) {
+                "${hostGaps.size} class(es) the host libraries lack: ${hostGaps.take(MISSING_LISTED).joinToString()}"
+            }
+            val brokenMembers = (links.missingMethods.keys + links.missingFields.keys)
+                .filterNot { member -> COMPAT_PREFIXES.any(member.owner::startsWith) || member.owner in links.missingClasses }
+            check(brokenMembers.isEmpty()) {
+                "${brokenMembers.size} reference(s) to members the host libraries lack, first: ${brokenMembers.first()}"
+            }
             val unresolved = verification.unresolved.takeIf { it.isNotEmpty() }?.let { classes ->
                 val missing = classes.map { it.substringAfter(": ") }.distinct()
                 ", ${classes.size} refer to classes the desktop lacks (${missing.take(MISSING_LISTED).joinToString()}" +
