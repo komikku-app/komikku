@@ -171,7 +171,13 @@ class CloudflareInterceptor(
                     object {
                         @Suppress("unused")
                         @JavascriptInterface
-                        fun postMessage(event: String) = onChallengeEvent(event)
+                        fun postMessage(event: String) {
+                            // KMK -->
+                            // WebView calls this on its JavaBridge thread: handle the event on the main thread, as
+                            // the isolated-world listener does, so onPageFinished sees what it sets
+                            executor.execute { onChallengeEvent(event) }
+                            // KMK <--
+                        }
                     },
                     "mihon",
                 )
