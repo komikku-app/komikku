@@ -15,9 +15,10 @@ The workflow **Desktop builder** (`.github/workflows/build_desktop.yml`) package
 While the port is on the branch `claude/kmp-multiplatform-support`, a run starts when a push to that branch changes
 `.github/desktop-build-trigger` (bump the counter in it); branch runs never touch a release.
 
-**Build to test:** <https://github.com/komikku-app/komikku/actions/runs/45625758564> (commit `a1d10c5`, all four jobs
-green; the first green run was <https://github.com/komikku-app/komikku/actions/runs/45623103294>, without the P23
-review fixes). Later runs of the branch are listed under Actions → "Desktop builder" → filter by branch.
+**Build to test:** <https://github.com/komikku-app/komikku/actions/runs/45938000837> (commit `9b58d72`, the M2 fixes
+for the first Mac test, all four jobs green including the packaged app's self-test; see [Re-test after
+M2](#re-test-after-m2)). The build of the first test was run 45832027995. Later runs of the branch are listed under
+Actions → "Desktop builder" → filter by branch.
 
 1. Open the run on GitHub (Actions → "Desktop builder" → the run), scroll to **Artifacts** (you must be signed in to
    download them).
@@ -124,9 +125,26 @@ Updates / History / Browse / More).
 9. **Download:** download a chapter → it shows in the download queue and finishes; read it with Wi-Fi off.
 10. **Backup:** More → Settings → Data and storage → create a backup (a Save dialog appears) → restore it (an Open dialog) → the library is the same.
 11. **Settings:** change the theme and a reader setting; choose another downloads folder (a folder chooser appears); relaunch: the changes are kept.
-12. **Tray / notifications:** with the tray icon on (Settings), Komikku has an icon in the menu bar; its menu opens the window and quits; a library update shows a notification.
+12. **Tray / notifications:** with the tray icon on (Settings), Komikku has an icon in the menu bar; its menu opens the window and quits. A library update shows a macOS notification (with the tray icon on or off). It comes from **Script Editor**, not Komikku: the app posts it through `osascript`, as an unsigned app cannot post under its own name without a helper. macOS asks once whether Script Editor may send notifications; if nothing appears, allow it in System Settings → Notifications → Script Editor.
 13. **App lock:** set a PIN in More → Settings → Security and privacy → lock now / minimise with the yellow window button and click the Dock icon → the lock screen asks for the PIN.
 14. **Quit / relaunch:** quit with Cmd+Q, start again → library, downloads and settings are still there, and the log shows no exception at the end of the previous run.
+
+## Re-test after M2
+
+The fixes for the first test (PROGRESS.md "M2 — fixes from the first Mac test"), on the build linked under
+[Getting the build](#getting-the-build):
+
+1. **APK extension:** Browse → Extensions → install an extension (e.g. the one that failed before) → it installs, and
+   its source shows under Browse → Sources and opens. The log has no `cant find zipfs support`.
+2. **Narrow window:** make the window as narrow as it goes (it stops at 480 points) on Browse: the tab titles stay on
+   one line (cut with "…" if needed) and the tab row scrolls sideways; on Library the search field and its bar keep
+   their height (placeholder and a long typed query on one line). Also glance at Updates, History, a source's
+   catalogue, global search and Settings → search.
+3. **Folder picker:** Settings → downloads folder → the macOS folder panel opens (not the Java one); make a folder with
+   **New Folder** inside it → it shows at once and can be chosen; the setting shows the new folder.
+4. **Library update notification:** start a library update (Library → Update library) → when it ends, a macOS
+   notification (from Script Editor, see step 12 above) says what was updated; also with the tray icon switched off in
+   Settings. With "Hide notification content" on, it does not name titles.
 
 ## What to send back on a failure
 

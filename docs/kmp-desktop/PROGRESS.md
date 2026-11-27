@@ -4302,6 +4302,120 @@ Verification (`--max-workers=2 --console=plain`, on `cd5e31d`): targeted `Cookie
 `:desktop:android-compat:test` 7 classes, 37 tests, 0 failures (was 36: +1); `spotlessCheck` passes. The CI run on
 `a1d10c5` (Desktop builder, Linux job, run 45625758564) ran `:desktopApp:test` again: green. Skipped (time): none.
 
+## M2 — fixes from the first Mac test
+
+The maintainer tested the macOS `.dmg` of CI run 45832027995 (the packaged app with its bundled runtime) and reported
+four problems. Each is fixed in its own commits (range `cbdfdff..` the M2 docs commit).
+
+### 1. APK extensions could not be installed (blocker)
+
+- **Report:** `ExtensionLoadException: Could not convert …: dex2jar failed for ….apk: cant find zipfs support`.
+- **Cause:** the jlink'd runtime of the packaged app had an explicit module list without `jdk.zipfs`; dex2jar writes the
+  converted jar through the zip file system provider (`FileSystems.newFileSystem`). `./gradlew :desktopApp:run` and
+  every test use the full build JDK, so nothing saw it.
+- **Audit:** `:desktopApp:suggestRuntimeModules` suggests `java.base, java.instrument, java.management, java.net.http,
+  jdk.unsupported, jdk.xml.dom` (all were in the old list); jdeps cannot see service-loaded / reflective needs. Those
+  were checked by hand: zip FS (dex2jar), extra charsets (`jdk.charsets`), SunEC (`jdk.crypto.ec`, TLS with ECDHE / EC
+  keys on JDK 21, EC-signed APKs), locale data (`jdk.localedata`), JNDI DNS (`jdk.naming.dns`), `sun.misc.Unsafe`
+  (`jdk.unsupported`), `com.sun.management` (`jdk.management`), JAAS / Kerberos (`jdk.security.auth`,
+  `jdk.security.jgss`), `com.sun.net.httpserver`, `jdk.net`, `jdk.random`. Extensions are third-party code that may
+  use any `java.*` API, so every standard `java.*` module is in (`java.sql`, `java.naming`, `java.scripting`,
+  `java.prefs`, `java.rmi`, `java.security.jgss` / `sasl`, `java.smartcardio`, `java.xml.crypto`, …; `java.se` itself is
+  an aggregator that exports nothing, a class-path app never resolves it, so it is not listed).
+- **Decision: a widened explicit list, not `includeAllModules = true`.** Runtime size measured with jlink on Linux x64
+  (JDK 21, `--strip-debug --no-header-files --no-man-pages`): old list 116 MB, new list 121 MB (+5 MB),
+  `includeAllModules` 162 MB (+46 MB: jdk.compiler, jdk.jshell, jdk.hotspot.agent, jdk.jdi, jlink / jpackage, …, none
+  of which an extension needs). `:desktopApp:createDistributable` on Linux with the new list: runtime
+  `lib/runtime` 122 MB, app jars 152 MB, app image 274 MB.
+- **Fix:** the list is `desktopApp/runtime-modules.txt` (one module per line, why each is there), read by
+  `desktopApp/build.gradle.kts` for `nativeDistributions.modules(...)` and copied into the resources.
+- **CI check (new):** `Komikku --self-test[=<report file>]` (`DesktopSelfTest`) runs in the packaged app, before
+  anything else in `main`, headless and offline, and exits non-zero on a failure: every module of the list is in the
+  runtime's boot layer; a zip file system is written and read; a signed fixture extension APK (one source with dex
+  code, EC signing key, `selftest-extension.apk` in the resources, made by `SelfTestFixtureWriter` in
+  `:desktop:extension-runtime`) is inspected, converted with dex2jar and its source instantiated; EC / ECDSA / ECDH /
+  X25519 and an ECDHE cipher suite; Shift_JIS, EUC-JP, GBK, GB18030, Big5, EUC-KR, windows-1251 round trips; Japanese /
+  French month names; the bundled SQLite driver (`SELECT sqlite_version()`); the QuickJS engine. `build_desktop.yml`
+  runs the packaged launcher with it after packaging on all four runners (report written to a file too, as the
+  Windows launcher has no console) and fails unless the last line is `SELF-TEST PASSED`.
+  `createDistributable` now runs on every runner: the Windows MSI / EXE tasks do not build the app image, so the first
+  run of the step found no launcher there (run 45936439938; macOS arm64 passed in that run).
+- **Checked failing first:** a jlink runtime of the new list without `jdk.zipfs`, with the app jars: the self-test
+  fails with the reported error (`dex2jar failed for selftest-extension.apk: cant find zipfs support`), plus the
+  missing module and `Provider "jar" not found`; the real Linux app image passes all eight checks.
+- **Tests:** `DesktopSelfTestTest` (the list keeps a required set and every `java.*` module of the build JDK, the
+  argument parsing, every check passes on the build JDK and the report ends with `SELF-TEST PASSED`). The first run
+  found two mistakes in the checks themselves (`java.se` is never resolved; 画 is not in Big5).
+
+### 2. Narrow window: titles wrapped and bars grew
+
+- **Cause:** Browse used a fixed `PrimaryTabRow` with plain `Text` titles; the search fields' placeholders and the
+  Library bar's text buttons were plain `Text` too (`singleLine` on a text field does not apply to its placeholder), so
+  in a narrow window they wrapped and the bars grew (Library search field: 200 px instead of 57 px at 480 dp).
+- **Fix:** `ui/components/SingleLine.kt`: `SingleLineText` (one line, ellipsis) and `AdaptiveTabRow` (the fixed tab row
+  while every tab fits at an equal width — widest title measured with the tab text style plus Material's 16 dp padding
+  per side — otherwise a `PrimaryScrollableTabRow` that scrolls sideways, titles one line). Browse uses
+  `AdaptiveTabRow`; every search field placeholder (Library, catalogue, source feed, Feed's add dialog, global search
+  and the migration search that uses it, settings search, migration config, Browse → Migrate) and the Updates /
+  History top bar titles, the Library bar's "Update category" / "Update library" and the catalogue's Popular / Latest
+  chips use `SingleLineText`. Global search's filter chips already scroll sideways. The Library
+  category tabs and the Browse sub-screens' `BrowseScaffold` titles were already single-line; More has no bar.
+- **Minimum window size:** already there (`DesktopWindowPreferences.MIN_WIDTH` × `MIN_HEIGHT`, 480 × 360, the AWT window's `minimumSize`);
+  kept: with the fixes the bars hold at that width.
+- **Test:** `NarrowWindowUiTest` (the whole app, headless): the Library search field has the same height at 480 dp as
+  at 1200 dp (empty and with a long query; failed first: 200 vs 57 px), the Browse tab row is the fixed one at 1200 dp,
+  the scrollable one at 480 dp, with the same height; `tabsFitEqually`'s rule.
+
+### 3. The folder picker did not show folders created after it opened
+
+- **Cause:** folders were chosen with Swing's `JFileChooser` on every OS; it does not refresh. Files were already picked
+  with AWT's `FileDialog` (native) everywhere, so only folders change.
+- **Fix:** `AwtFileDialogs.chooseDirectory` on macOS opens AWT's `FileDialog` with `apple.awt.fileDialogForDirectories`
+  set only while it is open and then restored (`withSystemProperty`): the standard macOS folder panel, with New Folder
+  and live updates. Windows and Linux keep `JFileChooser` (no native folder dialog without JNA or a helper). The
+  choice is `folderDialogKind(DesktopOs)`. Closing an open chooser when the app locks works as before (`whileUnlocked`,
+  the panel is disposed).
+- **Test:** `FolderDialogSelectionTest` (OS → dialog, the property set only inside and restored, also on failure). The
+  panel itself cannot open headless: not verified without a Mac.
+
+### 4. No system notification on macOS after a library update
+
+- **Cause:** notifications went only through `TrayIcon.displayMessage`, which shows nothing on current macOS.
+- **Fix:** `MacOsNotifier` runs `/usr/bin/osascript` with a fixed script (`on run argv` / `display notification (item 2
+  of argv) with title (item 1 of argv)`) and the title and text as its arguments. **Decision:** the texts are never put
+  into the script or a shell command, so nothing needs AppleScript escaping and no text can change what runs (instead
+  of escaping quotes / backslashes into a script string); control characters but line breaks are dropped (a NUL would
+  cut the argument), lengths capped. One daemon thread with a queue of 16, a 10 s timeout per run
+  (`destroyForcibly`), failures logged with `xLogW` and otherwise ignored; `show` never blocks.
+- **Backend selection (decision):** `DesktopSystemNotifier` posts through `MacOsNotifier` on macOS whenever
+  `/usr/bin/osascript` is executable, **whether or not the tray icon is on**, as Android posts notifications without an
+  icon setting; elsewhere through the tray icon as before. The library update's progress stays in the tray tooltip.
+  "Hide notification content" and the app-lock rule are applied before any backend (`DesktopNotifications`,
+  unchanged).
+- macOS attributes the notifications to Script Editor (an unsigned app cannot post under its own name without a
+  helper app) and needs notification permission for it (TESTING_MAC.md).
+- **Template tray icon: skipped.** `apple.awt.enableTemplateImages` is read once when AWT's macOS tray class loads and
+  needs a monochrome glyph; the app has only the full-colour launcher icon, and a silhouette of it is a filled square.
+  Needs a designed monochrome icon first.
+- **Tests:** `MacOsNotifierTest` (command line with quotes, backslashes, `$(…)`, backticks and newlines passed
+  unchanged; argument cleaning; runs off the caller's thread, a failure is swallowed; a full queue reports `false`;
+  backend selection by OS / osascript, tray fallback).
+
+### Verification (M2)
+
+`--max-workers=2 --console=plain`: `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`,
+`:desktopApp:compileKotlin`, `:desktop:extension-runtime:test` pass; `:app:compileDebugKotlin` not run (no `app/` or
+shared module changed). After `./gradlew --stop`, the full `:desktopApp:test` on `5e9af6b` (the last code commit): 86
+classes, 396 tests, 0 failures (was 82 / 382: `DesktopSelfTestTest` 4, `NarrowWindowUiTest` 3,
+`FolderDialogSelectionTest` 2, `MacOsNotifierTest` 5). Locally `createDistributable` on Linux and the packaged
+`Komikku --self-test`: all eight checks pass. CI: run 45938000837 (commit `9b58d72`) green on all four jobs, the
+self-test passing with the packaged launcher on Linux, Windows, macOS arm64 and macOS x64; artifacts
+`Komikku-desktop-macos-ARM64-9b58d72…`, `…-macos-X64-…`, `…-windows-X64-…`, `…-linux-X64-…`.
+
+**Not verifiable without a Mac:** the macOS folder panel, the osascript notification (Script Editor attribution,
+permission prompt), the template tray icon (skipped), and the narrow-window look on macOS itself (tested headless on
+Linux). The maintainer's re-test list: TESTING_MAC.md "Re-test after M2".
+
 ## Remaining parity gaps
 
 What Android has and the desktop app does not (yet), roughly by user impact:

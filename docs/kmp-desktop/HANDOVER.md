@@ -481,6 +481,20 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **M2 — fixes from the first Mac test, 2026-11-27 (PROGRESS "M2 — fixes from the first Mac test"):** the maintainer's
+  four reports on the `.dmg` of run 45832027995 are fixed: (1) APK extensions failed to install (`cant find zipfs
+  support`): the bundled runtime lacked `jdk.zipfs`; the module list is now `desktopApp/runtime-modules.txt` (every
+  `java.*` module plus the service-loaded `jdk.*` ones; 121 MB runtime vs 116 MB before and 162 MB with
+  `includeAllModules`), and the packaged app has a headless `--self-test` that CI runs with the packaged launcher on all
+  four runners (modules, zip FS, dex2jar on a fixture APK, EC crypto, charsets, locale data, SQLite, QuickJS);
+  (2) narrow window: Browse tabs one line and scrollable when they do not fit (`AdaptiveTabRow`), search placeholders
+  and bar labels one line (`SingleLineText`), minimum window size 480 × 360 kept; (3) macOS folder chooser is the
+  native panel (`FileDialog` + `apple.awt.fileDialogForDirectories`), Windows / Linux keep `JFileChooser`; (4) macOS
+  notifications through `osascript` (fixed `on run argv` script, texts as arguments), used on macOS whether or not the
+  tray icon is on. Template tray icon skipped (needs a monochrome icon). CI: run 45938000837 (commit `9b58d72`) green on all four jobs, the self-test passing on Linux, Windows, macOS arm64 and x64; artifacts `Komikku-desktop-{macos-ARM64,macos-X64,windows-X64,linux-X64}-9b58d72…` (TESTING_MAC.md "Build to test" points there). The first self-test run (45936439938) failed on Windows only because the MSI / EXE tasks do not build the app image; `createDistributable` now runs on every runner. Verified locally:
+  `spotlessApply`, `spotlessCheck`, `:app:verifyBorrowedSources`, `:desktopApp:compileKotlin`, `:desktop:extension-runtime:test`, targeted tests, then after `--stop` the full `:desktopApp:test` on `5e9af6b` (the last code commit): 86 classes, 396 tests, 0 failures (was 82 / 382). `:app:compileDebugKotlin` not run: no `app/` or shared module changed. Not verifiable without a Mac: the folder panel, the notification (Script Editor attribution and
+  permission), the narrow-window look on macOS; the maintainer's re-test list is TESTING_MAC.md "Re-test after M2".
+  Not reviewed yet (range `cbdfdff..` the M2 docs commit). Next: the maintainer's re-test, then a review of the range.
 - **CI run 45832027995 (commit `6f6ccbc`, teardown round 2):** Windows and both macOS jobs passed; the Linux job failed
   after 21 s on Maven Central `429 Too Many Requests` (dependency download, no test ran). Its failed job was re-run on
   2026-11-26 15:08 UTC and attempt 2 is green on all four jobs (checked 18:08 UTC); nothing is open. Locally the full `:desktopApp:test` passed on the same code (82
