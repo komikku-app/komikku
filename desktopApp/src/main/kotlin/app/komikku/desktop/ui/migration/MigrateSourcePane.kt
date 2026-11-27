@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.CoverImage
 import app.komikku.desktop.ui.browse.BrowseScaffold
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.tabs.SourceIcons
 import app.komikku.shared.jssource.MangayomiSourceStore
@@ -174,7 +175,7 @@ fun MigrateSourcePane(
             OutlinedTextField(
                 value = state.searchQuery.orEmpty(),
                 onValueChange = model::search,
-                placeholder = { Text(stringResource(KMR.strings.action_search_for_source)) },
+                placeholder = { SingleLineText(stringResource(KMR.strings.action_search_for_source)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).testTag("migrate-sources-search"),
             )

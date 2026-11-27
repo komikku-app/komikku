@@ -44,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.CoverImage
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.ui.relativeTimeSpanString
@@ -168,7 +169,7 @@ data object UpdatesScreen : Screen() {
         val lastUpdated by remember { Injekt.get<LibraryPreferences>().lastUpdatedTimestamp() }.collectAsState()
         Column(Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(stringResource(MR.strings.label_recent_updates)) },
+                title = { SingleLineText(stringResource(MR.strings.label_recent_updates)) },
                 actions = {
                     IconButton(onClick = { runner.start(LibraryUpdateRunner.Target.All) }, modifier = Modifier.testTag("update-library")) {
                         Icon(Icons.Outlined.Refresh, contentDescription = stringResource(MR.strings.action_update_library))
@@ -245,7 +246,7 @@ data object HistoryScreen : Screen() {
         var confirmClear by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(stringResource(MR.strings.label_recent_manga)) },
+                title = { SingleLineText(stringResource(MR.strings.label_recent_manga)) },
                 actions = {
                     IconButton(onClick = { confirmClear = true }, modifier = Modifier.testTag("clear-history")) {
                         Icon(Icons.Outlined.DeleteSweep, contentDescription = stringResource(MR.strings.pref_clear_history))

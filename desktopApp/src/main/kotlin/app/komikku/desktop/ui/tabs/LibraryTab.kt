@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.GlobalSearchScreen
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.migration.MigrationConfigScreen
 import app.komikku.desktop.ui.more.CategoriesScreen
@@ -183,7 +184,7 @@ private fun LibraryPages(
                     OutlinedTextField(
                         value = state.query,
                         onValueChange = onQueryChange,
-                        placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+                        placeholder = { SingleLineText(stringResource(MR.strings.action_search_hint)) },
                         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                         singleLine = true,
                         modifier = Modifier.weight(1f).testTag("library-search"),
@@ -221,13 +222,13 @@ private fun LibraryPages(
                             if (!started) context.toast(MR.strings.update_already_running)
                         },
                         modifier = Modifier.testTag("update-category"),
-                    ) { Text(stringResource(MR.strings.action_update_category)) }
+                    ) { SingleLineText(stringResource(MR.strings.action_update_category)) }
                     TextButton(
                         onClick = {
                             if (!runner.start(LibraryUpdateRunner.Target.All)) context.toast(MR.strings.update_already_running)
                         },
                         modifier = Modifier.testTag("update-library-all"),
-                    ) { Text(stringResource(MR.strings.action_update_library)) }
+                    ) { SingleLineText(stringResource(MR.strings.action_update_library)) }
                 }
             }
             LibraryUpdateBanner(runner)

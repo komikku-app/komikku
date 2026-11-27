@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.browse.BrowseScaffold
+import app.komikku.desktop.ui.components.SingleLineText
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -138,7 +139,7 @@ class MigrationConfigScreen(internal val mangaIds: Collection<Long>) : Screen() 
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text(stringResource(KMR.strings.action_search_for_source)) },
+                    placeholder = { SingleLineText(stringResource(KMR.strings.action_search_for_source)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).testTag("migration-config-search"),
                 )

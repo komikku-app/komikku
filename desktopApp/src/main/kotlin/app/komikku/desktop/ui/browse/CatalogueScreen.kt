@@ -67,6 +67,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.komikku.desktop.ui.CoverImage
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.migration.MigrationListScreen
 import app.komikku.desktop.webview.WebViewDialogs
@@ -895,7 +896,7 @@ private fun CatalogueContent(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+                placeholder = { SingleLineText(stringResource(MR.strings.action_search_hint)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),

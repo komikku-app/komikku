@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -211,7 +212,7 @@ private fun SourceFeedSearchField(onSearch: (String) -> Unit) {
     OutlinedTextField(
         value = query,
         onValueChange = { query = it },
-        placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+        placeholder = { SingleLineText(stringResource(MR.strings.action_search_hint)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),

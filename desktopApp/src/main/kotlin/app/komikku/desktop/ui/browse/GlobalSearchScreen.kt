@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.ui.components.SingleLineText
 import app.komikku.desktop.ui.manga.MangaDetailsScreen
 import app.komikku.desktop.ui.tabs.SourceIcons
 import app.komikku.shared.jssource.JsSourceLabel
@@ -192,7 +193,7 @@ internal fun GlobalSearchToolbar(
                 OutlinedTextField(
                     value = state.searchQuery.orEmpty(),
                     onValueChange = onChangeSearchQuery,
-                    placeholder = { Text(stringResource(MR.strings.action_search_hint)) },
+                    placeholder = { SingleLineText(stringResource(MR.strings.action_search_hint)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { onSearch() }),

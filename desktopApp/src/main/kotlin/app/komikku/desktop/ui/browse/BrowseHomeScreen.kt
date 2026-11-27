@@ -2,8 +2,6 @@ package app.komikku.desktop.ui.browse
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import app.komikku.desktop.ui.components.AdaptiveTabRow
 import app.komikku.desktop.ui.migration.MigrateSourcePane
 import app.komikku.shared.jssource.JsSourcesScreenModel
 import app.komikku.shared.jssource.MangayomiSourceStore
@@ -55,25 +54,21 @@ data object BrowseHomeScreen : Screen() {
         var selectedName by rememberSaveable { mutableStateOf(tabs.first().name) }
         val selected = tabs.firstOrNull { it.name == selectedName } ?: tabs.first()
         Column(modifier = Modifier.fillMaxSize()) {
-            PrimaryTabRow(selectedTabIndex = tabs.indexOf(selected)) {
-                tabs.forEach { tab ->
-                    Tab(
-                        selected = tab == selected,
-                        onClick = { selectedName = tab.name },
-                        text = {
-                            Text(
-                                when (tab) {
-                                    BrowseTab.Sources -> stringResource(MR.strings.label_sources)
-                                    BrowseTab.Feed -> stringResource(SYMR.strings.feed)
-                                    BrowseTab.Extensions -> stringResource(MR.strings.label_extensions)
-                                    BrowseTab.Migrate -> stringResource(MR.strings.label_migration)
-                                    BrowseTab.JsSources -> stringResource(KMR.strings.js_sources)
-                                },
-                            )
-                        },
-                    )
-                }
-            }
+            // M2: one line per title; scrolls sideways when the window is too narrow for every tab
+            AdaptiveTabRow(
+                titles = tabs.map { tab ->
+                    when (tab) {
+                        BrowseTab.Sources -> stringResource(MR.strings.label_sources)
+                        BrowseTab.Feed -> stringResource(SYMR.strings.feed)
+                        BrowseTab.Extensions -> stringResource(MR.strings.label_extensions)
+                        BrowseTab.Migrate -> stringResource(MR.strings.label_migration)
+                        BrowseTab.JsSources -> stringResource(KMR.strings.js_sources)
+                    }
+                },
+                selectedIndex = tabs.indexOf(selected),
+                onSelect = { selectedName = tabs[it].name },
+                tabTestTag = { "browse-tab-${tabs[it].name}" },
+            )
             when (selected) {
                 BrowseTab.Sources -> SourcesPane(sourcesModel)
                 BrowseTab.Feed -> FeedTab()
