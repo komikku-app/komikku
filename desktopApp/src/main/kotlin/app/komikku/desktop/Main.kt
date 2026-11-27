@@ -22,6 +22,7 @@ import app.komikku.desktop.notification.DesktopTrayPreferences
 import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.security.DesktopAppLock
+import app.komikku.desktop.selftest.DesktopSelfTest
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
@@ -58,13 +59,16 @@ import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.awt.Dimension
+import kotlin.system.exitProcess
 
 /**
  * Komikku desktop entry point: boots the shared stack through Injekt ([DesktopInjekt]: preferences,
  * network, database, repositories, interactors, local source), starts the scheduler ([DesktopScheduler]) and opens
- * the main window.
+ * the main window. `--self-test[=<report file>]` runs the packaged runtime's self-test ([DesktopSelfTest], M2) instead
+ * and exits.
  */
-fun main() {
+fun main(args: Array<String>) {
+    if (DesktopSelfTest.isRequested(args)) exitProcess(DesktopSelfTest.main(DesktopSelfTest.reportFile(args)))
     DesktopLogcatLogger.install()
     // P12: the log file Settings → Advanced opens and the crash handler writing to it, installed before anything else
     // can fail (P12 review): the data folder is resolved without Injekt, so a failure inside `DesktopInjekt.init()`
