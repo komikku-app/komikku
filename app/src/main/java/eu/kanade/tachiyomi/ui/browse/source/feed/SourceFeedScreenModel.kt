@@ -155,7 +155,9 @@ open class SourceFeedScreenModel(
     }
 
     private suspend fun hasTooManyFeeds(): Boolean {
-        return countFeedSavedSearchBySourceId.await(source.id) > MaxFeedItems
+        // KMK -->
+        return countFeedSavedSearchBySourceId.await(source.id) >= MaxFeedItems
+        // KMK <--
     }
 
     fun createFeed(savedSearchId: Long) {
