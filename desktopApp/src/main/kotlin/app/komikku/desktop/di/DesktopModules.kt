@@ -401,8 +401,9 @@ class DesktopDomainModule(
         // Notifications and the system tray (P17): Android's notifiers' texts through the tray icon, when there is one
         addSingletonFactory { DesktopTrayPreferences(get()) }
         addSingletonFactory { DesktopTray() }
-        // M2: on macOS through osascript (the tray's notifications show nothing there), elsewhere through the tray;
-        // none at all while "Show system notifications" is off (M2 review fix)
+        // M2: on macOS through osascript (the tray's notifications show nothing there), on Linux through notify-send /
+        // gdbus (no tray on stock GNOME), on Windows through the tray; none at all while "Show system notifications"
+        // is off (M2 review fix)
         addSingletonFactory<DesktopNotifier> {
             val systemNotifications = get<DesktopTrayPreferences>().systemNotifications()
             DesktopSystemNotifier.create(get<DesktopTray>(), enabled = { systemNotifications.get() })

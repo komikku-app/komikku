@@ -118,8 +118,9 @@ class MacOsNotifier(
 }
 
 /**
- * M2: where notifications go. On macOS (with osascript) they are posted through [MacOsNotifier] whether or not the tray
- * icon is on, as Android posts its notifications without any icon setting; elsewhere through the tray icon
+ * M2: where notifications go. On macOS (with osascript) they are posted through [MacOsNotifier] and on Linux (with
+ * notify-send or gdbus) through [LinuxNotifier], whether or not the tray icon is on, as Android posts its notifications
+ * without any icon setting; elsewhere (Windows, where the tray's balloon is a real toast) through the tray icon
  * ([DesktopTray]) while it is there. The library update's progress always goes to the tray icon's tooltip.
  *
  * M2 review fix: nothing is posted while [enabled] is `false` (the "Show system notifications" setting,
@@ -128,21 +129,34 @@ class MacOsNotifier(
  */
 class DesktopSystemNotifier(
     private val tray: DesktopNotifier,
-    private val macOs: DesktopNotifier?,
+    /** The system's own notification service ([MacOsNotifier], [LinuxNotifier]); `null`: the tray. */
+    private val system: DesktopNotifier?,
     private val enabled: () -> Boolean = { true },
 ) : DesktopNotifier {
 
     override fun show(notification: DesktopNotification): Boolean =
-        enabled() && (macOs ?: tray).show(notification)
+        enabled() && (system ?: tray).show(notification)
 
     override fun status(text: String?) = tray.status(text)
 
     companion object {
-        /** The notifier for this machine: [MacOsNotifier] on macOS when [macOsAvailable], else the tray only. */
+        /**
+         * The notifier for this machine ([os]): [MacOsNotifier] on macOS when [macOsAvailable], [linux] on Linux (falling
+         * back to the tray; `null` without notify-send and gdbus), else the tray only.
+         */
         fun create(
             tray: DesktopTray,
             enabled: () -> Boolean = { true },
-            macOsAvailable: Boolean = MacOsNotifier.available(),
-        ): DesktopSystemNotifier = DesktopSystemNotifier(tray, if (macOsAvailable) MacOsNotifier() else null, enabled)
+            os: DesktopOs = DesktopOs.current(),
+            macOsAvailable: Boolean = MacOsNotifier.available(os),
+            linux: (fallback: DesktopNotifier) -> DesktopNotifier? = { LinuxNotifier.create(it) },
+        ): DesktopSystemNotifier {
+            val system = when {
+                macOsAvailable -> MacOsNotifier()
+                os == DesktopOs.Linux -> linux(tray)
+                else -> null
+            }
+            return DesktopSystemNotifier(tray, system, enabled)
+        }
     }
 }

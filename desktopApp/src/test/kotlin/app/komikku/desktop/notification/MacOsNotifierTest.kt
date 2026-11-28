@@ -104,7 +104,7 @@ class MacOsNotifierTest {
         mac.shown.single() shouldBeSameInstanceAs notification
         // Elsewhere: the tray (no icon here, so not shown)
         DesktopSystemNotifier(tray, null).show(notification) shouldBe false
-        DesktopSystemNotifier.create(tray, macOsAvailable = false).show(notification) shouldBe false
+        DesktopSystemNotifier.create(tray, os = DesktopOs.Windows, macOsAvailable = false).show(notification) shouldBe false
     }
 
     @Test
