@@ -661,12 +661,49 @@ jobs:
           persist-credentials: false
           sparse-checkout: .github/scripts
 
+      # KMK -->
+      # Each artifact into its own folder, not merged: only the artifacts the `package` matrix uploads are taken, so an
+      # artifact another job of this run uploaded under a similar name can never replace an installer. A new `package`
+      # runner must be added to `expected` below.
       - name: Download packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: Komikku-desktop-*-${{ github.sha }}
-          path: release-assets
-          merge-multiple: true
+          path: downloaded-packages
+
+      - name: Take the package artifacts
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          expected=(linux-X64 windows-X64 macos-ARM64 macos-X64)
+          for dir in downloaded-packages/*/; do
+            name=$(basename "$dir")
+            known=false
+            for entry in "${expected[@]}"; do
+              if [ "$name" = "Komikku-desktop-$entry-$SHA" ]; then known=true; fi
+            done
+            if [ "$known" != true ]; then
+              echo "::error::Unexpected artifact $name (not uploaded by the package matrix)"
+              exit 1
+            fi
+          done
+          mkdir -p release-assets
+          for entry in "${expected[@]}"; do
+            dir="downloaded-packages/Komikku-desktop-$entry-$SHA"
+            if [ ! -d "$dir" ]; then
+              echo "::error::Missing artifact Komikku-desktop-$entry-$SHA"
+              exit 1
+            fi
+            for file in "$dir"/*; do
+              if [ -e "release-assets/$(basename "$file")" ]; then
+                echo "::error::$(basename "$file") is in two artifacts"
+                exit 1
+              fi
+              mv "$file" release-assets/
+            done
+          done
+      # KMK <--
 
       - name: Check names and checksums
         working-directory: release-assets
