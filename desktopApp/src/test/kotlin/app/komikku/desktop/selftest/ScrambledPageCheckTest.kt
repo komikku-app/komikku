@@ -20,8 +20,11 @@ import java.io.ByteArrayOutputStream
  */
 class ScrambledPageCheckTest {
 
-    /** GigaViewer's page interceptor, re-stated: draw the image, then each block of the 4 x 4 grid transposed. */
-    private val gigaViewerInterceptor = Interceptor { chain ->
+    /**
+     * GigaViewer's page interceptor, re-stated: draw the image, then each block of the 4 x 4 grid transposed; with
+     * [dx] / [dy], every block lands that many pixels off (an arithmetic slip the check must catch).
+     */
+    private fun gigaViewerInterceptor(dx: Int = 0, dy: Int = 0) = Interceptor { chain ->
         val response = chain.proceed(chain.request())
         if (chain.request().url.fragment != "scramble") return@Interceptor response
         val image = BitmapFactory.decodeStream(response.body.byteStream())!!
@@ -33,7 +36,7 @@ class ScrambledPageCheckTest {
         for (e in 0 until 16) {
             val dst = (e % 4) * 4 + e / 4
             val src = Rect((e % 4) * blockWidth, (e / 4) * blockHeight, 0, 0).apply { set(left, top, left + blockWidth, top + blockHeight) }
-            val to = Rect((dst % 4) * blockWidth, (dst / 4) * blockHeight, 0, 0).apply { set(left, top, left + blockWidth, top + blockHeight) }
+            val to = Rect((dst % 4) * blockWidth + dx, (dst / 4) * blockHeight + dy, 0, 0).apply { set(left, top, left + blockWidth, top + blockHeight) }
             canvas.drawBitmap(image, src, to, null)
         }
         image.recycle()
@@ -44,8 +47,20 @@ class ScrambledPageCheckTest {
 
     @Test
     fun `a page unscrambled by the extension's interceptor passes`() {
-        val client = OkHttpClient.Builder().addInterceptor(gigaViewerInterceptor).build()
-        ScrambledPageCheck.check(client, ScrambledPageCheck.GIGAVIEWER) shouldContain "GigaViewer page unscrambled"
+        val client = OkHttpClient.Builder().addInterceptor(gigaViewerInterceptor()).build()
+        val report = ScrambledPageCheck.check(client, ScrambledPageCheck.GIGAVIEWER)
+        println(report)
+        report shouldContain "GigaViewer page unscrambled"
+    }
+
+    @Test
+    fun `a page whose blocks land a pixel off fails, though the page as a whole is close`() {
+        for ((dx, dy) in listOf(1 to 0, 0 to 1, -1 to 0, 0 to -1)) {
+            val client = OkHttpClient.Builder().addInterceptor(gigaViewerInterceptor(dx, dy)).build()
+            val message = shouldThrow<IllegalStateException> { ScrambledPageCheck.check(client, ScrambledPageCheck.GIGAVIEWER) }.message
+            println("off by $dx,$dy: $message")
+            message shouldContain "came back wrong: the block at"
+        }
     }
 
     @Test
@@ -56,9 +71,13 @@ class ScrambledPageCheckTest {
 
     @Test
     fun `the GigaViewer scheme is a transposition, its own inverse`() {
-        val page = ScrambledPageCheck.page(ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT)
         val scheme = ScrambledPageCheck.GIGAVIEWER
+        val regions = scheme.regions(ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT)
+        val page = ScrambledPageCheck.page(ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT, scheme.blocks(ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT))
         scheme.scramble(scheme.scramble(page, ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT), ScrambledPageCheck.WIDTH, ScrambledPageCheck.HEIGHT) shouldBe page
+        // The blocks and the margin cover the page once
+        regions.sumOf { it.width * it.height } shouldBe ScrambledPageCheck.WIDTH * ScrambledPageCheck.HEIGHT
+        regions.size shouldBe 18
         ScrambledPageCheck.schemes.keys shouldBe setOf("eu.kanade.tachiyomi.extension.ja.shonenjumpplus")
     }
 }
