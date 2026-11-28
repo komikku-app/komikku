@@ -6,7 +6,9 @@ KMK: first smoke test of the packaged Windows app (docs/kmp-desktop/WINDOWS_LINU
 never the default one), waits for the window, takes screenshots (.NET screen capture), switches the top-level tabs
 with Ctrl+2…5 and Ctrl+1 (user32 key events), minimizes the window and starts the launcher a second time on the same
 data folder (the single-instance lock must show the running window and end that start with exit code 0), closes the
-window (WM_CLOSE), checks that the process ends with exit code 0 and that the log has no exception, then uninstalls. The app is driven only from outside (window system and
+window (WM_CLOSE), checks that the process ends with exit code 0 and that the log has no exception, runs the
+launcher's notification self-test (--self-test-notify, the temporary tray icon) on a data folder of its own, then
+uninstalls. The app is driven only from outside (window system and
 keyboard shortcuts).
 
   desktop_smoke_windows.ps1 -Packages <packages dir> -Output <output dir>
@@ -465,6 +467,56 @@ function Test-SecondInstance {
     }
 }
 
+# The installed launcher's notification self-test (`--self-test=<report> --self-test-notify`) on a data folder of its
+# own: on Windows it shows the tray balloon through the app's temporary tray icon (the tray setting off), holds it 8 s
+# and removes the icon. Windows does not say whether the toast appeared, so screenshots\notify-<n>.png are taken while
+# it runs (logs\notify.txt, notify-stdout.log, notify-stderr.log)
+function Test-Notification {
+    $data = Join-Path $Work 'komikku-smoke-notify-data'
+    Remove-Item -LiteralPath $data -Recurse -Force -ErrorAction SilentlyContinue
+    if ($data.Contains(' ')) { Fail 'Notification through the temporary tray icon' "'$data' contains a space"; return }
+    New-Item -ItemType Directory -Path $data | Out-Null
+    # In the data folder: Start-Process does not quote an argument with a space, and that folder has none
+    $report = Join-Path $data 'notify.txt'
+    $env:JAVA_TOOL_OPTIONS = "-Dkomikku.dataDir=$data"
+    try {
+        $test = Start-Process -FilePath $Launcher -WorkingDirectory $data -PassThru `
+            -ArgumentList @("--self-test=$report", '--self-test-notify') `
+            -RedirectStandardOutput (Join-Path $Logs 'notify-stdout.log') `
+            -RedirectStandardError (Join-Path $Logs 'notify-stderr.log')
+        $null = $test.Handle
+    } finally {
+        Remove-Item Env:JAVA_TOOL_OPTIONS -ErrorAction SilentlyContinue
+    }
+    $startedAt = [DateTime]::UtcNow
+    $shots = 0
+    while (-not $test.WaitForExit(3000) -and (Get-Elapsed $startedAt) -lt 120) {
+        if ($shots -lt 10) { $shots++; Save-Desktop (Join-Path $Screens "notify-$shots.png") }
+    }
+    if (-not $test.HasExited) {
+        Stop-Process -Id $test.Id -Force -ErrorAction SilentlyContinue
+        $test.WaitForExit(10000) | Out-Null
+        Fail 'Notification through the temporary tray icon' 'the self-test still ran after 120 s (logs\notify-stderr.log)'
+        return
+    }
+    $test.WaitForExit()
+    $line = 'none'
+    if (Test-Path -LiteralPath $report) {
+        Copy-Item -LiteralPath $report -Destination (Join-Path $Logs 'notify.txt')
+        $match = Select-String -LiteralPath $report -Pattern '^(OK  |FAIL) system notification: ' -CaseSensitive | Select-Object -First 1
+        if ($match) { $line = $match.Line }
+    }
+    if ($test.ExitCode -eq 0 -and $line.StartsWith('OK   system notification: ')) {
+        Pass 'Notification through the temporary tray icon' "exit code 0; $($line.Substring(26)); screenshots\notify-1..$shots.png"
+    } else {
+        Fail 'Notification through the temporary tray icon' "exit code $($test.ExitCode), report line '$line' (logs\notify.txt)"
+    }
+    if (Test-Path -LiteralPath $report) {
+        $other = @(Select-String -LiteralPath $report -Pattern '^FAIL ' -CaseSensitive | Where-Object { $_.Line -notmatch 'system notification' })
+        if ($other.Count -gt 0) { Info 'Other self-test checks that failed' (($other | ForEach-Object Line) -join ' / ') }
+    }
+}
+
 # Waits for a visible top-level window titled exactly "Komikku"; sets Window. 'found', 'timeout' or 'ended'.
 function Wait-AppWindow {
     $script:Window = [IntPtr]::Zero
@@ -694,7 +746,6 @@ try {
     # --- Second start ---------------------------------------------------------------------------------------------
 
     Test-SecondInstance
-    Info 'Notification without a tray icon' 'not observed yet: needs the tray icon switched off and a notification-raising action'
 
     # --- Close ----------------------------------------------------------------------------------------------------
 
@@ -766,6 +817,10 @@ try {
     } else {
         Pass 'Default data folder untouched' "$defaultData (existed before: $defaultDataExisted)"
     }
+
+    # --- Notification ---------------------------------------------------------------------------------------------
+
+    Test-Notification
 } catch [System.OperationCanceledException] {
     # Stop-Smoke: the failure is recorded already
 } catch {
