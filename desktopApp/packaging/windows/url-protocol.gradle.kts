@@ -94,8 +94,9 @@ tasks.named { it in setOf("packageMsi", "packageExe", "packageReleaseMsi", "pack
         jpackageTemp.deleteRecursively()
         @Suppress("UNCHECKED_CAST")
         val javaHome = (property("javaHome") as Property<String>).get()
-        val jpackage = File(javaHome, "bin").listFiles { file -> file.nameWithoutExtension == "jpackage" }
-            ?.singleOrNull() ?: error("$name: no jpackage in $javaHome/bin")
+        // bin also holds jpackage.dll on Windows
+        val jpackage = listOf("jpackage.exe", "jpackage").map { File(javaHome, "bin/$it") }
+            .firstOrNull { it.isFile } ?: error("$name: no jpackage in $javaHome/bin")
         val wix = (property("wixToolsetDir") as DirectoryProperty).orNull?.asFile
         val process = ProcessBuilder(jpackage.path, "@${argsFile.path}").redirectErrorStream(true).apply {
             if (wix != null) environment()["PATH"] = wix.path + File.pathSeparator + (System.getenv("PATH") ?: "")
