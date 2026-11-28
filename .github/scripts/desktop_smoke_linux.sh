@@ -103,6 +103,16 @@ collect_logs() {
   (cd "$data" && find . -maxdepth 3 | LC_ALL=C sort) > "$dest/data-folder-files.txt"
 }
 
+# The installed menu entries of the package (jpackage names it <package>-<app name>.desktop)
+menu_entry_name=komikku-Komikku.desktop
+menu_entries() {
+  local dir
+  for dir in /usr/share/applications /usr/local/share/applications; do
+    [ -e "$dir/$menu_entry_name" ] && echo "$dir/$menu_entry_name"
+  done
+  return 0
+}
+
 # Also after a failure that stopped the run, as long as the package was installed
 uninstall() {
   if sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y -q komikku > "$out/logs/apt-remove.log" 2>&1 \
@@ -110,6 +120,13 @@ uninstall() {
     pass "Uninstall (apt-get remove)" "launcher removed"
   else
     fail "Uninstall (apt-get remove)" "apt-get failed or $launcher is still there (logs/apt-remove.log)"
+  fi
+  local left
+  left=$(menu_entries | tr '\n' ' ')
+  if [ -z "$left" ]; then
+    pass "Menu entry removed" "no $menu_entry_name left"
+  else
+    fail "Menu entry removed" "still there: $left"
   fi
   if [ -n "$data" ] && [ -d "$data" ]; then info "Data folder after uninstall" "kept"; fi
 }
@@ -408,15 +425,12 @@ echo "::endgroup::"
 
 # --- Install --------------------------------------------------------------------------------------------------------
 
-# The package's post-install script (jpackage's) registers the menu entry with xdg-desktop-menu, which exits with 3
-# ("No writable system menu directory found") and fails the install when /usr/share/applications does not exist
-# (run 46120905511). A desktop system has that folder; the runner's server image may not.
+# The runner's server image has no menu folders, unlike a desktop system: the package's post-install script must
+# install the menu entry anyway (run 46120905511 failed there before desktopApp/packaging/linux/postinst)
 { ls -ld /usr/share/applications /usr/local/share/applications; sudo env | grep '^XDG_' || true; } \
   > "$out/logs/menu-folders.log" 2>&1
-if [ ! -d /usr/share/applications ]; then
-  sudo mkdir -p /usr/share/applications
-  info "Menu folder" "/usr/share/applications was missing on the runner and was created, as a desktop system has it"
-fi
+info "Menu folders before install" "$(ls -d /usr/share/applications /usr/local/share/applications 2> /dev/null \
+  | tr '\n' ' ')"
 # apt resolves the package's Depends, which is a check of its own
 if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q "${debs[0]}" > "$out/logs/apt-install.log" 2>&1; then
   installed=yes
@@ -440,8 +454,14 @@ if [ -n "$desktop_file" ]; then
 else
   fail "Menu entry in the package" "no .desktop file in dpkg -L komikku (installed-files.txt)"
 fi
-menu_entry=$(find /usr/share/applications -maxdepth 1 -iname '*komikku*.desktop' 2> /dev/null | head -n 1)
-info "Menu entry registered" "${menu_entry:-none in /usr/share/applications}"
+# xdg-desktop-menu puts it into the first menu folder of XDG_DATA_DIRS it can write; without one, postinst copies it to
+# /usr/share/applications
+menu_entry=$(menu_entries | head -n 1)
+if [ -n "$menu_entry" ]; then
+  pass "Menu entry installed" "$menu_entry"
+else
+  fail "Menu entry installed" "no $menu_entry_name in /usr/share/applications or /usr/local/share/applications"
+fi
 
 default_data="${XDG_DATA_HOME:-$HOME/.local/share}/komikku"
 default_data_existed=no
