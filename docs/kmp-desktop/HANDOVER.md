@@ -508,7 +508,20 @@ mark the residual path in both modules.
   | Test and release engineer | Opus 5.5, high | D steps 1–2: `windows-2022` test job, packaged-app smoke test on `ubuntu-24.04` / `windows-2022`; owns `build_desktop.yml` |
   | Shared-code engineer | Opus 5.5, high | one running instance per data folder (ANSWER 005 item 4) |
   | Windows and Linux engineer | Opus 5.5, high | Linux notifications without a tray (ANSWER 005 item 3); the `--ui-smoke` design (`UI_SMOKE_DESIGN.md`, item 5) |
-  | iOS engineer | Opus 5.5, high | track E options report (`IOS_APP_OPTIONS.md`); then keeps the iOS checks green |
+  | iOS engineer | Opus 5.5, high | track E options report (`IOS_OPTIONS.md`); then keeps the iOS checks green |
+- **Where each track's state is (INSTRUCTION 006; a new session resumes from these, it does not restart):**
+  - A1–A3, the #2023 check, the two unchecked `master` items: [`UPSTREAM_AUDIT.md`](UPSTREAM_AUDIT.md) (status line
+    at its top). A4, the merge of `master`: not started.
+  - B, the review of the M3 range and of the iOS session's commits: [`REVIEW_M3.md`](REVIEW_M3.md),
+    [`REVIEW_IOS.md`](REVIEW_IOS.md).
+  - C1, the on-device pass of the packaged macOS app: [`MAC_ON_DEVICE_PASS.md`](MAC_ON_DEVICE_PASS.md). C2, the
+    menu-bar template icon: the commits touching `desktopApp/.../notification/MacTrayIcon.kt`.
+  - D: the plan and its CI notes in [`WINDOWS_LINUX_TEST_PLAN.md`](WINDOWS_LINUX_TEST_PLAN.md); the CI jobs in the
+    commits touching `.github/workflows/build_desktop.yml` and `.github/scripts/desktop_smoke_*`; Linux notifications
+    in the commits touching `desktopApp/.../notification/`; the `--ui-smoke` design in
+    [`UI_SMOKE_DESIGN.md`](UI_SMOKE_DESIGN.md).
+  - One instance per data folder (ANSWER 005 item 4): the commits touching `desktopApp/.../instance/`.
+  - E, the iOS options report: [`IOS_OPTIONS.md`](IOS_OPTIONS.md).
 - **Open pull requests into `master` (Android bug fixes; the maintainer reviews and merges):**
   <https://github.com/komikku-app/komikku/pull/2023> — 12 fixes found during the port (ATLAS_INSTRUCTIONS.md,
   DECISION 004).
