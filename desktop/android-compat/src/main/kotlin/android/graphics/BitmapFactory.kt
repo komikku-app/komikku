@@ -9,7 +9,8 @@ import java.io.InputStream
 /**
  * android-compat: `android.graphics.BitmapFactory` with Skia's codecs (JPEG, PNG, WebP, GIF's first frame, BMP) to
  * [Bitmap.Config.ARGB_8888], premultiplied, without applying EXIF orientation (as on Android). A bitmap is immutable
- * unless [Options.inMutable]; data that does not decode gives `null`, like Android.
+ * unless [Options.inMutable]; data that does not decode gives `null` and a cut-off image the part that decoded, like
+ * Android.
  */
 object BitmapFactory {
 
@@ -41,7 +42,7 @@ object BitmapFactory {
             unsupported("android.graphics.BitmapFactory", "decode(inPreferredConfig = $config)")
         }
         val codec = try {
-            Codec.makeFromData(Data.makeFromBytes(data, offset, length))
+            Data.makeFromBytes(data, offset, length).use { Codec.makeFromData(it) }
         } catch (_: IllegalArgumentException) {
             return null
         }
@@ -49,6 +50,12 @@ object BitmapFactory {
             val skia = NativeBitmaps.allocate(it.width, it.height)
             try {
                 it.readPixels(skia, 0)
+            } catch (e: IllegalArgumentException) {
+                // A cut-off image keeps the rows that decoded (the rest transparent), as Android's kIncompleteInput
+                if (e.message?.startsWith(INCOMPLETE_INPUT) != true) {
+                    skia.close()
+                    return null
+                }
             } catch (_: Exception) {
                 skia.close()
                 return null
@@ -56,4 +63,7 @@ object BitmapFactory {
             Bitmap.wrap(skia, mutable = opts?.inMutable == true)
         }
     }
+
+    /** How Skia's codec reports a cut-off image whose decoded part it kept. */
+    private const val INCOMPLETE_INPUT = "Incomplete input"
 }

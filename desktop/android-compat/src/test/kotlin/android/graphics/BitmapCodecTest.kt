@@ -8,6 +8,7 @@ import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -74,6 +75,47 @@ class BitmapCodecTest {
         withClue("max") { TestImages.maxChannelDifference(actual, colors) shouldBeLessThan 5 }
         withClue("mean") { TestImages.meanChannelDifference(actual, colors) shouldBeLessThan 1.0 }
         decoded.recycle()
+    }
+
+    @Test
+    fun `a JPEG's EXIF orientation is not applied, like BitmapFactory`() {
+        val colors = TestImages.smooth(40, 20)
+        val plain = TestImages.jpeg(colors, 40, 20)
+        // An APP1 segment right after SOI: Exif, big-endian TIFF, one IFD entry Orientation (0x0112) = 6 (rotate 90)
+        val exif = byteArrayOf(0xff.toByte(), 0xe1.toByte(), 0, 34) + "Exif".toByteArray() + byteArrayOf(0, 0) +
+            byteArrayOf('M'.code.toByte(), 'M'.code.toByte(), 0, 42, 0, 0, 0, 8) +
+            byteArrayOf(0, 1, 0x01, 0x12, 0, 3, 0, 0, 0, 1, 0, 6, 0, 0, 0, 0, 0, 0)
+        val rotated = plain.copyOfRange(0, 2) + exif + plain.copyOfRange(2, plain.size)
+        org.jetbrains.skia.Data.makeFromBytes(rotated).use { data ->
+            org.jetbrains.skia.Codec.makeFromData(data).use { it.encodedOrigin } shouldBe org.jetbrains.skia.EncodedOrigin.RIGHT_TOP
+        }
+
+        val decoded = BitmapFactory.decodeByteArray(rotated, 0, rotated.size)!!
+
+        decoded.getWidth() shouldBe 40
+        decoded.getHeight() shouldBe 20
+        val stored = BitmapFactory.decodeByteArray(plain, 0, plain.size)!!
+        decoded.argb() shouldBe stored.argb()
+        decoded.recycle()
+        stored.recycle()
+    }
+
+    @Test
+    fun `a cut-off JPEG decodes the part that arrived, like Android`() {
+        val size = 256
+        val jpeg = TestImages.jpeg(TestImages.smooth(size, size), size, size)
+        val full = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size)!!.let { it.argb().also { _ -> it.recycle() } }
+
+        val partial = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size * 6 / 10)!!
+
+        partial.getWidth() shouldBe size
+        partial.getHeight() shouldBe size
+        val topRows = size * 32
+        val bottomRow = size * (size - 1)
+        partial.argb().copyOfRange(0, topRows) shouldBe full.copyOfRange(0, topRows)
+        partial.getPixel(0, size - 1) shouldBe 0
+        full[bottomRow] shouldNotBe 0
+        partial.recycle()
     }
 
     @Test
