@@ -164,6 +164,12 @@ the trigger and the marker file when the port reaches master.
 - **Jobs:** `plan` (`contents: read`: decides the mode and tag and, in a release mode, checks that the release tag
   points to the run's commit), `package` (`contents: read`; one job per runner: `ubuntu-24.04` x64, `windows-2022`
   x64, `macos-15` arm64, `macos-15-intel` x64), `release` (`contents: write`; only when the mode is not `none`).
+- **Non-blocking jobs** (`continue-on-error`; `release` never depends on them): `windows-test` runs `:desktopApp:test`
+  on `windows-2022` and uploads the test report when it fails; `smoke` installs the `package` job's `.deb` / `.msi` on
+  `ubuntu-24.04` (Xvfb + openbox) and `windows-2022`, starts the installed app on a fresh data folder, takes
+  screenshots, switches the tabs with Ctrl+1…5, closes it and checks a clean exit and the log
+  (`.github/scripts/desktop_smoke_linux.sh` / `desktop_smoke_windows.ps1`; how to read its artifact
+  `desktop-smoke-<os>-X64-<sha>`: the comment above the job in the workflow).
 - **Concurrency:** no workflow-level group. A newer run of the same ref cancels an older run's `package` job per runner
   (that older run then ends cancelled); the `release` job has its own group per release tag that never cancels, so an
   upload in progress always finishes and two runs for one tag upload one after the other (of several runs waiting for
