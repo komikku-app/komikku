@@ -502,18 +502,20 @@ mark the residual path in both modules.
   | Role | Model, effort | Now on |
   |------|---------------|--------|
   | Forge, Delivery Lead | Opus 5.5, high | planning, integration, the thread, pushes, PROGRESS.md / HANDOVER.md |
-  | Upstream integrator | Opus 5.5, high | A1 / A3, the #2023 check and the two unchecked `master` items (`MASTER_AUDIT.md`); later A4, the merge |
-  | Reviewer | Opus 5.5, high | track B (`M3_REVIEW_FINDINGS.md`, `IOS_REVIEW_FINDINGS.md`); then every later step |
+  | Upstream integrator | Opus 5.5, high | A1 / A3 and the #2023 check done (`UPSTREAM_AUDIT.md`); now the three Android fix patches (`android-fixes/`); A4 waits for Atlas's answer to the A3 question |
+  | Reviewer | Opus 5.5, high | track B done (`REVIEW_M3.md`, `REVIEW_IOS.md`); now the instance lock, Linux notifications and the new CI jobs (`REVIEW_STEP_D1.md`) |
   | macOS engineer | Opus 5.5, high | C2 menu-bar template icon; C1 screen pass of the packaged app (`MAC_ON_DEVICE_PASS.md`) and its macOS fixes; the only role that drives the screen |
-  | Test and release engineer | Opus 5.5, high | D steps 1–2: `windows-2022` test job, packaged-app smoke test on `ubuntu-24.04` / `windows-2022`; owns `build_desktop.yml` |
+  | Test and release engineer | Opus 5.5, high | D steps 1–2 committed (Windows test job, smoke test); now the containment of the review's CI supply-chain finding and the results of desktop run 46117892032; owns `build_desktop.yml` |
   | Shared-code engineer | Opus 5.5, high | one running instance per data folder (ANSWER 005 item 4) |
   | Windows and Linux engineer | Opus 5.5, high | Linux notifications without a tray (ANSWER 005 item 3); the `--ui-smoke` design (`UI_SMOKE_DESIGN.md`, item 5) |
-  | iOS engineer | Opus 5.5, high | track E options report (`IOS_OPTIONS.md`); then keeps the iOS checks green |
+  | iOS engineer | Opus 5.5, high | track E done (`IOS_OPTIONS.md`); stopped until the maintainer decides (ANSWER 007); keeps the iOS checks green |
 - **Where each track's state is (INSTRUCTION 006; a new session resumes from these, it does not restart):**
   - A1–A3, the #2023 check, the two unchecked `master` items: [`UPSTREAM_AUDIT.md`](UPSTREAM_AUDIT.md) (status line
     at its top). A4, the merge of `master`: not started.
   - B, the review of the M3 range and of the iOS session's commits: [`REVIEW_M3.md`](REVIEW_M3.md),
-    [`REVIEW_IOS.md`](REVIEW_IOS.md).
+    [`REVIEW_IOS.md`](REVIEW_IOS.md) (done; fixes being routed). Reviews of later steps: `REVIEW_STEP_*.md`.
+  - Android fix patches for `master` (ANSWER 003): [`android-fixes/`](android-fixes/), prepared in a local checkout
+    of `master` that is never pushed.
   - C1, the on-device pass of the packaged macOS app: [`MAC_ON_DEVICE_PASS.md`](MAC_ON_DEVICE_PASS.md). C2, the
     menu-bar template icon: the commits touching `desktopApp/.../notification/MacTrayIcon.kt`.
   - D: the plan and its CI notes in [`WINDOWS_LINUX_TEST_PLAN.md`](WINDOWS_LINUX_TEST_PLAN.md); the CI jobs in the
