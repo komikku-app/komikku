@@ -34,6 +34,20 @@ class TrackPreferences(
 
     fun trackToken(tracker: Tracker) = preferenceStore.getString(Preference.privateKey("track_token_${tracker.id}"), "")
 
+    // KMK -->
+    /**
+     * PKCE code verifier of the login in progress in the browser, until its code exchange. Stored rather than
+     * kept in memory, so the login still completes when the app process is killed while the browser is open.
+     *
+     * App state rather than private: private preferences go into backups and sync when the user includes
+     * private settings, and a sync restoring another device's verifier during a login would fail it.
+     */
+    fun trackPkceCodeVerifier(tracker: Tracker) = preferenceStore.getString(
+        Preference.appStateKey("track_pkce_code_verifier_${tracker.id}"),
+        "",
+    )
+    // KMK <--
+
     fun anilistScoreType() = preferenceStore.getString("anilist_score_type", Anilist.POINT_10)
 
     fun autoUpdateTrack() = preferenceStore.getBoolean("pref_auto_update_manga_sync_key", true)

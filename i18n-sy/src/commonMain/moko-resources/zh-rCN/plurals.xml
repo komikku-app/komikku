@@ -12,7 +12,6 @@
     <plurals name="pref_tag_sorting_desc">
         <item quantity="other">%1$d 个标签在排序列表中。 这在书架中增加了一个选项，以基于优先级的标签列表进行排序，这意味着作品将以你想要的标签优先的方式进行排序。</item>
     </plurals>
-
     <plurals name="migrate_entry">
         <item quantity="other">迁移 %1$d%2$s 作品？</item>
     </plurals>
@@ -22,17 +21,14 @@
     <plurals name="entry_migrated">
         <item quantity="other">%d 个作品已迁移</item>
     </plurals>
-
     <!-- Extra gallery info -->
     <plurals name="num_pages">
         <item quantity="other">%1$d 页</item>
     </plurals>
-
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
         <item quantity="other">%2$s %1$d 页</item>
     </plurals>
-
     <!-- Humanize time -->
     <plurals name="humanize_year">
         <item quantity="other">%1$d 年前</item>

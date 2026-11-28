@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -91,17 +92,26 @@ fun SourcesSearchBox(
     focusRequester: FocusRequester = remember { FocusRequester() },
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
 ) {
+    // State-based text field so the cursor/selection handles can be dragged
+    val textFieldState = rememberSearchTextFieldState(
+        query = searchQuery,
+        onQueryChange = onChangeSearchQuery,
+    )
+    val isEmpty = textFieldState.text.isEmpty()
+
     val searchAndClearFocus: () -> Unit = f@{
-        if (searchQuery.isNullOrBlank()) return@f
+        if (textFieldState.text.isBlank()) return@f
         focusManager.clearFocus()
         keyboardController?.hide()
     }
     val onClickClearSearch: () -> Unit = {
+        textFieldState.clearText()
         onChangeSearchQuery("")
         focusRequester.requestFocus()
         keyboardController?.show()
     }
     val onClickCloseSearch: () -> Unit = {
+        textFieldState.clearText()
         onChangeSearchQuery("")
         focusManager.clearFocus()
         keyboardController?.hide()
@@ -110,8 +120,7 @@ fun SourcesSearchBox(
     var isFocused by remember { mutableStateOf(false) }
 
     BasicTextField(
-        value = searchQuery ?: "",
-        onValueChange = onChangeSearchQuery,
+        state = textFieldState,
         modifier = modifier
             .onGloballyPositioned(onGloballyPositioned)
             .fillMaxWidth()
@@ -124,12 +133,12 @@ fun SourcesSearchBox(
             color = MaterialTheme.colorScheme.onBackground,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
-        singleLine = true,
+        onKeyboardAction = { searchAndClearFocus() },
+        lineLimits = TextFieldLineLimits.SingleLine,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             TextFieldDefaults.DecorationBox(
-                value = searchQuery ?: "",
+                value = textFieldState.text.toString(),
                 innerTextField = innerTextField,
                 enabled = true,
                 singleLine = true,
@@ -146,13 +155,13 @@ fun SourcesSearchBox(
                 },
                 leadingIcon = {
                     SearchBoxLeadingIcon(
-                        isSearching = isFocused || !searchQuery.isNullOrBlank(),
+                        isSearching = isFocused || textFieldState.text.isNotBlank(),
                         onClickCloseSearch = onClickCloseSearch,
                     )
                 },
                 trailingIcon = {
                     SearchBoxTrailingIcon(
-                        isEmpty = searchQuery.isNullOrEmpty(),
+                        isEmpty = isEmpty,
                         onClickClearSearch = onClickClearSearch,
                     )
                 },

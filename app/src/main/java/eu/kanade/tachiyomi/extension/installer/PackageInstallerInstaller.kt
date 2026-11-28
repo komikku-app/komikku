@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.extension.installer
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,8 @@ import eu.kanade.tachiyomi.util.lang.use
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.getUriSize
 import exh.log.xLogE
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 
 class PackageInstallerInstaller(private val service: Service) : Installer(service) {
 
@@ -23,6 +26,11 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
 
     private val packageActionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            // KMK -->
+            // Abandoning a committed session still reports it, after the queue has moved on
+            val reportedSessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
+            if (reportedSessionId != -1 && reportedSessionId != activeSession?.second) return
+            // KMK <--
             when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                     val userAction = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
@@ -42,11 +50,25 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
                         }
                     if (userAction == null) {
                         xLogE("Fatal error for $intent")
+                        // KMK -->
+                        activeSession?.let { (_, sessionId) ->
+                            runCatching { packageInstaller.abandonSession(sessionId) }
+                        }
+                        // KMK <--
                         continueQueue(InstallStep.Error)
                         return
                     }
                     userAction.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    service.startActivity(userAction)
+                    try {
+                        service.startActivity(userAction)
+                    } catch (e: ActivityNotFoundException) {
+                        // Some devices have the system installer's confirmation screen disabled or removed
+                        logcat(LogPriority.WARN, e) { "Nothing can confirm the install" }
+                        activeSession?.let { (_, sessionId) ->
+                            runCatching { packageInstaller.abandonSession(sessionId) }
+                        }
+                        continueQueue(InstallStep.Error)
+                    }
                 }
                 PackageInstaller.STATUS_FAILURE_ABORTED -> {
                     continueQueue(InstallStep.Idle)
@@ -57,6 +79,10 @@ class PackageInstallerInstaller(private val service: Service) : Installer(servic
         }
     }
 
+    // KMK -->
+    // Written wherever the queue runs and read by the receiver on the main thread
+    @Volatile
+    // KMK <--
     private var activeSession: Pair<Entry, Int>? = null
 
     // Always ready

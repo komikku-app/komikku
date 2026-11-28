@@ -96,6 +96,10 @@ class SmartSearchMerge(
                 )
                 .copyFrom(originalManga.toSManga())
                 .copy(
+                    // KMK -->
+                    // Keep the cover the user sees, like `ogTitle` above (toSManga() now carries the source cover)
+                    ogThumbnailUrl = originalManga.thumbnailUrl,
+                    // KMK <--
                     favorite = true,
                     lastUpdate = originalManga.lastUpdate,
                     viewerFlags = originalManga.viewerFlags,

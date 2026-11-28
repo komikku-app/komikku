@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="cleanup_done">
-        <item quantity="one">クリーンアップが終了しました。%d フォルダーを消去しました</item>
-        <item quantity="other">クリーンアップが終了しました。%d フォルダーを消去しました</item>
+        <item quantity="other">クリーンアップが完了しました。%d 個のフォルダーを消去しました</item>
     </plurals>
     <plurals name="num_lock_times">
         <item quantity="one">%d ロック時間</item>

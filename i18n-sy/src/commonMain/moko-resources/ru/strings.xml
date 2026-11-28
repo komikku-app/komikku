@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">Не переносить</string>
     <string name="action_search_manually">Искать вручную</string>
     <string name="action_migrate_now">Перенести сейчас</string>
@@ -353,7 +352,7 @@
     <!-- Entry Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
     <string name="add_tag">Добавить тэг</string>
-    <string name="reset_info">Сбросить сведенья</string>
+    <string name="reset_info">Сбросить сведения</string>
     <string name="title_hint">Название: %1$s</string>
     <string name="description_hint">Описание: %1$s</string>
     <string name="author_hint">Автор: %1$s</string>
@@ -403,7 +402,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Komikku.</string>
-    <!-- Migration -->
     <string name="select_sources">Выберите источники</string>
     <string name="select_none">Ничего не выбрано</string>
     <string name="migration">Перенос</string>
@@ -424,7 +422,6 @@
     <string name="no_chapters_found_for_migration">Глав не найдено. Эта серия не может быть использована для переноса</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить перенос?</string>
-    <string name="action_stop">Остановить</string>
     <string name="skipping_">(Исключая %1$d)</string>
     <!-- Library -->
     <!-- Library Actions -->
@@ -470,7 +467,7 @@
     <string name="favorites_sync_waiting_for_start">Ожидание начала синхронизации</string>
     <string name="favorites_sync_gallery_in_multiple_categories">Галерея %1$s находится более чем в одной категории (%2$s)!</string>
     <string name="favorites_sync_initializing">Инициализация синхронизации</string>
-    <string name="favorites_sync_processing_throttle">%1$s\n\nСинхронизация в настоящее время регулируется (Чтобы избежать блокировки на ExHentai). Выполнение синхронизации может занять много времени</string>
+    <string name="favorites_sync_processing_throttle">%1$s\n\nСинхронизация в настоящее время регулируется (Чтобы избежать блокировки на ExHentai). Выполнение синхронизации может занять много времени.</string>
     <string name="favorites_sync_notes">ЗАМЕТКИ О СИНХРОНИЗАЦИИ ИЗБРАННОГО</string>
     <string name="favorites_sync_notes_message">
         <![CDATA[1. Изменения в названиях категорий в приложении <b>НЕ</b> синхронизируются! Пожалуйста, <i>вместо этого измените названия категорий на ExHentai</i>. Имена категорий будут копироваться с серверов ExHentai при каждой синхронизации.<br><br>2. Любимые категории на ExHentai соответствуют <b>первым 10 категориям в приложении</b> (За исключением категории «По умолчанию»). <i>Галереи в других категориях <b>НЕ</b> будут синхронизированы!</i><br><br>3. <font color=\'red\'><b>УБЕДИТЕСЬ, ЧТО У ВАС ЕСТЬ СТАБИЛЬНОЕ ПОДКЛЮЧЕНИЕ К ИНТЕРНЕТУ ВО ВРЕМЯ СИНХРОНИЗАЦИИ!</b></font> Если интернет отключится во время синхронизации приложения, ваши избранные могут остаться в <i>частично синхронизированном состоянии</i>.<br><br>4. Держите приложение открытым во время синхронизации избранного. Android иногда закрывает приложения, которые находятся в фоне, и это может обернуться плохим исходом, если это произойдет во время синхронизации приложения.<br><br>5. <b>НЕ помещайте избранное в несколько категорий</b> (Приложение поддерживает это). Это может сбить с толку алгоритм синхронизации, поскольку ExHentai позволяет избранному быть только в одной категории.<br><br>Это диалоговое окно появится только один раз. Вы можете прочитать эти заметки ещё раз, перейдя по (Настройки → E-Hentai → Показать заметки о синхронизации избранного).]]>
@@ -584,7 +581,6 @@
     <string name="manga_updates_id">MangaUpdates ID</string>
     <string name="anime_planet_id">Anime-Planet ID</string>
     <string name="translated">Переведено</string>
-    <!-- Extra gallery info -->
     <string name="is_visible">Не скрыто: %1$s</string>
     <string name="language_translated">%1$s</string>
     <!-- Merged entry -->
@@ -616,9 +612,8 @@
     <string name="mangadex_follows">Отслеживание MangaDex</string>
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку (MangaDex)</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList серию как прочитанную на MangaDex.</string>
     <string name="community_recommendations">Рекомендации сообщества</string>
-    <!-- Scanlator filters -->
     <string name="select_scanlators">Группы переводчиков</string>
     <!-- Similar -->
     <string name="similar">Похожее на %1$s</string>
@@ -668,7 +663,7 @@
     <string name="entry_not_tracked">Введённая запись не является сервисом отслеживания.</string>
     <string name="favorites_sync_unable_to_add_to_remote">Невозможно добавить галерею на удалённый сервер: \'%1$s\' (GID: %2$s)!</string>
     <string name="similar_titles">Похожие имена</string>
-    <string name="rec_hide_library_entries">Скрыть серии которые находятся в библиотеке</string>
+    <string name="rec_hide_library_entries">Скрыть серии в библиотеке</string>
     <string name="rec_group_tracker">Рекомендации по службам отслеживания</string>
     <string name="rec_search_short">Найти рекомендации</string>
     <string name="rec_error_title">Ошибка поиска</string>
@@ -690,4 +685,34 @@
     <string name="final_chapter">Последняя глава</string>
     <string name="pref_include_chapter_url_hash">Включать URL-хэш главы</string>
     <string name="pref_include_chapter_url_hash_desc">Добавить первые шесть символов хеша MD5 из URL-адреса главы к имени файла или папки главы.</string>
+    <string name="action_stop">Остановить</string>
+    <string name="eh_autoscroll_gestures">Жесты автоподкрутки</string>
+    <string name="eh_autoscroll_gestures_help">Помощь с жестами автоподкрутки</string>
+    <string name="eh_autoscroll_gestures_help_message">Автоподкрутка включена:\n- Нажать на экран для включения или выключения\n- Пролистнуть вверх или вниз для настройки скорости\n- Сведите два пальца в жесте для ручного пролистывания\n- Проведите жестом в бок чтобы остановить\n\nАвтоподкрутка выключена:\n- Проведите жестом в бок чтобы начать\n\nЗакройте меню читалки чтобы использовать жесты.</string>
+    <string name="eh_autoscroll_gesture_toasts">Всплывающее меню жестов</string>
+    <string name="eh_autoscroll_gesture_toasts_help">Помощь с всплывающим меню жестов</string>
+    <string name="eh_autoscroll_gesture_toasts_help_message">Когда эта опция включена, в читалке будут показываться всплывающие уведомления после того, как жесты автопрокрутки выполнят какое-либо действие, например \"запуск, пауза, продолжить, остановить, изменение скорости или продвижение по главе\". Когда эта опция выключена, жесты по-прежнему будут работать, но всплывающие уведомления не будут показываться.</string>
+    <string name="remove_merged_entries">Удалить серии из библиотеки</string>
+    <string name="entry_description">Описание</string>
+    <string name="entry_tags">Тэги</string>
+    <string name="source_value_hint">Источник: %1$s</string>
+    <string name="action_sort_feed">Сортировать ленту</string>
+    <string name="rec_search_in">Искать в</string>
+    <string name="rec_sources_summary">Источник каждой серии</string>
+    <string name="rec_trackers_summary">Ваши сервисы отслеживания в которые вы вошли</string>
+    <string name="total_views">Общие просмотры</string>
+    <string name="total_downloads">Общие загрузки</string>
+    <string name="disowned">Без автора</string>
+    <string name="merge_duplicate_chapters">Дубликаты глав</string>
+    <string name="merge_dedupe_keep_all">Оставить все</string>
+    <string name="merge_dedupe_priority">Приоритет</string>
+    <string name="merge_dedupe_most">Большинство</string>
+    <string name="merge_dedupe_highest">Наивысший</string>
+    <string name="merge_dedupe_keep_all_summary">Показывать все главы из всех серий, отсортировав по приоритету серий.</string>
+    <string name="merge_dedupe_priority_summary">Показывать каждую главу один раз, используя самую верхнюю запись, в которой она встречается.</string>
+    <string name="merge_dedupe_most_summary">Показывать только главы из серии с наибольшим количеством глав.</string>
+    <string name="merge_dedupe_highest_summary">Показывать только главы из серии с самым высоким номером главы.</string>
+    <string name="merge_info_source">Информация об источнике</string>
+    <string name="merge_drag_to_set_priority">Перетащить, чтобы задать приоритет</string>
+    <string name="collate_tags">Объединить тэги</string>
 </resources>

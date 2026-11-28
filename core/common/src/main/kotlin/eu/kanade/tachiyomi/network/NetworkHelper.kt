@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.network
 
 import android.content.Context
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
+import eu.kanade.tachiyomi.network.interceptor.MangaDexUserAgentInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import exh.log.EHLogLevel
@@ -50,7 +51,9 @@ import kotlin.random.Random
                 ),
             )
             .addInterceptor(UncaughtExceptionInterceptor())
-            .addInterceptor(UserAgentInterceptor(::defaultUserAgentProvider))
+            // KMK -->
+            .addUserAgentInterceptors(::defaultUserAgentProvider)
+        // KMK <--
 
         // KMK -->
         if (EHLogLevel.isExtraLogging()) {
@@ -200,6 +203,17 @@ import kotlin.random.Random
     companion object {
         // KMK -->
         private const val MAX_RETRY = 5
+
+        /**
+         * Adds the User-Agent interceptors in the order the shared client needs: [MangaDexUserAgentInterceptor]
+         * first, because MangaDex challenges the default browser User-Agent and [UserAgentInterceptor] only fills
+         * in a User-Agent that is still missing.
+         */
+        internal fun OkHttpClient.Builder.addUserAgentInterceptors(
+            defaultUserAgentProvider: () -> String,
+        ): OkHttpClient.Builder = this
+            .addInterceptor(MangaDexUserAgentInterceptor())
+            .addInterceptor(UserAgentInterceptor(defaultUserAgentProvider))
         // KMK <--
     }
 }

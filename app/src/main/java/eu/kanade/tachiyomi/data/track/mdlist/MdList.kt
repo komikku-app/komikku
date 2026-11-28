@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.network.MangaDexAuthInterceptor
+import exh.md.network.MangaDexSessionNotifier
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import kotlinx.collections.immutable.toImmutableList
@@ -37,7 +38,15 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
         get() = cachedMdex ?: MdUtil.getEnabledMangaDex()?.also { cachedMdex = it }
     // KMK <--
 
-    val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
+    // KMK -->
+    val sessionNotifier = MangaDexSessionNotifier()
+
+    val interceptor = MangaDexAuthInterceptor(
+        trackPreferences,
+        this,
+        onSessionRejected = { sessionNotifier.notifySessionExpired() },
+    )
+    // KMK <--
 
     override fun getLogo() = R.drawable.brand_mangadex
 
@@ -166,7 +175,12 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
 
     override fun logout() {
         super.logout()
-        trackPreferences.trackToken(this).delete()
+        // KMK -->
+        // Clear the interceptor's in-memory credentials too (it also deletes the stored token), so a stale token
+        // is neither kept in use nor saved again by a later refresh.
+        interceptor.setAuth(null)
+        sessionNotifier.dismiss()
+        // KMK <--
     }
 
     override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
@@ -176,7 +190,10 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
             TrackMangaMetadata(
                 remoteId = 0,
                 title = manga.title,
-                thumbnailUrl = manga.thumbnail_url, // Doesn't load the actual cover because of Refer header
+                // KMK -->
+                // Loaded as a plain URL; MangaDexUserAgentInterceptor gives it a User-Agent MangaDex doesn't block.
+                thumbnailUrl = manga.thumbnail_url,
+                // KMK <--
                 description = manga.description,
                 authors = manga.author,
                 artists = manga.artist,

@@ -2,12 +2,14 @@ package tachiyomi.domain.history.interactor
 
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
+import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.GetMergedChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.history.repository.HistoryRepository
 import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.model.Manga
 import kotlin.math.max
 
 class GetNextChapters(
@@ -17,6 +19,9 @@ class GetNextChapters(
     // SY <--
     private val getManga: GetManga,
     private val historyRepository: HistoryRepository,
+    // KMK -->
+    private val getChapter: GetChapter,
+    // KMK <--
 ) {
 
     suspend fun await(onlyUnread: Boolean = true): List<Chapter> {
@@ -67,6 +72,18 @@ class GetNextChapters(
     ): List<Chapter> {
         val chapters = await(mangaId, onlyUnread)
         val currChapterIndex = chapters.indexOfFirst { it.id == fromChapterId }
+        // KMK -->
+        if (currChapterIndex == -1) {
+            // Only unread chapters drop a read chapter too, so look for it among all the filtered chapters
+            val filteredChapters = if (onlyUnread) await(mangaId, onlyUnread = false) else chapters
+            val fromChapterIndex = filteredChapters.indexOfFirst { it.id == fromChapterId }
+            if (fromChapterIndex != -1) {
+                val nextChapterIds = filteredChapters.drop(fromChapterIndex + 1).mapTo(HashSet()) { it.id }
+                return chapters.filter { it.id in nextChapterIds }
+            }
+            getChaptersAfterHiddenChapter(mangaId, fromChapterId, chapters, filteredChapters)?.let { return it }
+        }
+        // KMK <--
         val nextChapters = chapters.subList(max(0, currChapterIndex), chapters.size)
 
         if (onlyUnread) {
@@ -77,10 +94,93 @@ class GetNextChapters(
         // - The current chapter if it isn't completely read
         // - The chapters after the current chapter if the current one is completely read
         val fromChapter = chapters.getOrNull(currChapterIndex)
+        // KMK -->
+        // Resume from the first unread chapter when the current one can't be found, e.g. it was deleted
+        if (currChapterIndex == -1) {
+            // An E-Hentai manga's chapters are versions of the gallery, so only the latest one is worth resuming
+            if (getManga.await(mangaId)?.isEhBasedManga() == true) return chapters.takeLast(1).filterNot { it.read }
+            return nextChapters.dropWhile { it.read }
+        }
+        // KMK <--
         return if (fromChapter != null && !fromChapter.read) {
             nextChapters
         } else {
             nextChapters.drop(1)
         }
     }
+
+    // KMK -->
+    /**
+     * Handles a [fromChapterId] that the chapter filters hide, e.g. a chapter whose scanlator was excluded or that the
+     * bookmark filter hides. Returns the chapters of [chapters] that sort after it, plus other scanlators' copies of it
+     * (same chapter number) when it isn't completely read.
+     *
+     * [filteredChapters] holds all the filtered chapters, which [fromChapterId] is missing from. It is empty when the
+     * query failed (only unread [chapters] come from the same list) or every chapter is filtered out.
+     *
+     * Returns null to keep the default behavior when the chapter can't be found or [filteredChapters] is empty.
+     */
+    private suspend fun getChaptersAfterHiddenChapter(
+        mangaId: Long,
+        fromChapterId: Long,
+        chapters: List<Chapter>,
+        filteredChapters: List<Chapter>,
+    ): List<Chapter>? {
+        val fromChapter = getChapter.await(fromChapterId) ?: return null
+        if (filteredChapters.isEmpty()) return null
+        val manga = getManga.await(mangaId) ?: return null
+
+        val storedSourceOrders = if (manga.source == MERGED_SOURCE_ID) {
+            getMergedChaptersByMangaId.await(mangaId, dedupe = false, applyFilter = true)
+                .associate { it.id to it.sourceOrder }
+        } else {
+            emptyMap()
+        }
+        return HiddenChapterOrder(manga, fromChapter, storedSourceOrders).chaptersAfter(chapters)
+    }
+    // KMK <--
 }
+
+// KMK -->
+/**
+ * Places chapters relative to [fromChapter], a chapter that the filters hide from [manga]'s chapter list.
+ * [storedSourceOrders] holds a merged manga's stored source order, which deduping can rewrite.
+ */
+private class HiddenChapterOrder(
+    manga: Manga,
+    private val fromChapter: Chapter,
+    private val storedSourceOrders: Map<Long, Long>,
+) {
+    private val isMerged = manga.source == MERGED_SOURCE_ID
+    private val isSourceSort = manga.sorting == Manga.CHAPTER_SORTING_SOURCE
+    private val chapterSort = getChapterSort(manga, sortDescending = false)
+
+    fun chaptersAfter(chapters: List<Chapter>): List<Chapter> {
+        val nextChapters = chapters.filter(::isAfter)
+
+        // Order tied chapters the same way. A merged manga sorted by source order keeps its merged order.
+        if (isMerged && isSourceSort) return nextChapters
+        val resultSort = Comparator(chapterSort).thenBy { it.chapterNumber }
+        return nextChapters.sortedWith(if (isMerged) resultSort else resultSort.thenByDescending { it.sourceOrder })
+    }
+
+    /**
+     * Other scanlators' copies of [fromChapter] (same chapter number) count as after it when it isn't completely read.
+     * Ties (e.g. unknown upload dates) are broken by chapter number, then by source order. Chapters still tied can't be
+     * placed after it.
+     */
+    private fun isAfter(chapter: Chapter): Boolean {
+        if (chapter.isRecognizedNumber && chapter.chapterNumber == fromChapter.chapterNumber) return !fromChapter.read
+        var order = if (isSourceSort) compareSourceOrder(chapter) else chapterSort(chapter, fromChapter)
+        if (order == 0) order = chapter.chapterNumber.compareTo(fromChapter.chapterNumber)
+        if (order == 0 && !isSourceSort) order = compareSourceOrder(chapter)
+        return order > 0
+    }
+
+    /** Compares the stored source order, which lists the first chapter last and only compares within one entry. */
+    private fun compareSourceOrder(chapter: Chapter): Int {
+        if (chapter.mangaId != fromChapter.mangaId) return 0
+        return fromChapter.sourceOrder.compareTo(storedSourceOrders[chapter.id] ?: chapter.sourceOrder)
+    }
+}
+// KMK <--

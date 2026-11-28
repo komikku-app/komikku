@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_source_search">Bron zoeken</string>
+    <string name="action_source_search">Zoeken in bron</string>
     <string name="action_toggle_nsfw_only">Alleen NSFW in-/uitschakelen</string>
     <string name="action_bulk_select">Bulk selectiemodus</string>
     <string name="action_faq_and_guides">FAQ en handleidingen</string>
@@ -11,7 +11,7 @@
     <string name="download_cache_renew_interval_6hour">6 uur</string>
     <string name="download_cache_renew_interval_12hour">12 uur</string>
     <string name="download_cache_renew_interval_24hour">1 dag</string>
-    <string name="download_cache_renew_interval_info">Indien ingesteld op \"handmatig\", verververs manga of gebruik de \"Ongevalideer downloads index\" actie in \"Geavanceerd\"</string>
+    <string name="download_cache_renew_interval_info">Indien op \"handmatig\" ingesteld, ververs iedere manga of gebruik de optie \"Reindex downloads\" onder \"Geavanceerd\"</string>
     <string name="pref_clean_invalid_downloads">Ongeldige downloads opschonen</string>
     <string name="pref_clean_invalid_downloads_summary">Zoek en verwijder alle downloads, bestanden, mappen die niet worden opgeslagen in uw bibliotheek</string>
     <string name="invalid_downloads_cleaned">Ongeldige downloads opgeschoond</string>
@@ -170,4 +170,33 @@
     <string name="active_account">Actieve account</string>
     <string name="pref_category_connections">Verbindingen</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
+    <string name="action_clear_manga">Wis manga</string>
+    <string name="action_filter_unfinished_manga">Onvoltooide manga</string>
+    <string name="action_filter_unfinished_chapter">Onvoltooid hoofstuk</string>
+    <string name="action_filter_non_library_entries">Item buiten bibliotheek</string>
+    <string name="pref_viewer_nav_smaller_tap_zone">Kleinere tapzones</string>
+    <string name="error_opening_folder">Openen folder mislukt</string>
+    <string name="pref_paged_disable_zoom_in">Zoom-in uitschakelen</string>
+    <string name="pref_landscape_zoom_type">Zoommodus voor brede afbeeldingen</string>
+    <string name="scale_type_double">Dubbele zoom</string>
+    <string name="pref_webtoon_scale_type">Smart scale voor brede schermen</string>
+    <string name="pref_smart_scale_long_strip_gap">Smart scale toepassen op lange strips met kloven</string>
+    <string name="scale_type_20_9">20:9</string>
+    <string name="scale_type_4_3">4:3</string>
+    <string name="pref_show_empty_categories_search">Toon lege categorieën bij zoeken/filteren</string>
+    <string name="pref_fetch_manga_metadata_on_add">Haal metadata op bij toevoegen aan bibliotheek</string>
+    <string name="pref_fetch_manga_metadata_on_add_description">Automatisch metadata van nieuwe manga ophalen bij toevoegen aan bibliotheek</string>
+    <string name="pref_fetch_manga_chapters_on_add">Hoofdstukken ophalen bij toevoegen aan bibliotheek</string>
+    <string name="pref_fetch_manga_chapters_on_add_description">Automatisch hoofdstukken van nieuwe manga ophalen bij toevoegen aan bibliotheek</string>
+    <string name="pref_track_on_add_library">Open trackmenu bij toevoegen aan bibliotheek</string>
+    <string name="pref_webdav_url">WebDAV Server URL</string>
+    <string name="pref_webdav_url_summ">Voer WebDAV server address in</string>
+    <string name="pref_webdav_username_summ">Voer WebDAV-account username in</string>
+    <string name="pref_webdav_password_summ">Voer WebDAV-account wachtwoord in</string>
+    <string name="pref_webdav_folder">WebDAV-data folder</string>
+    <string name="pref_webdav_folder_summ">De app zal data opslaan in deze folder</string>
+    <string name="downloaded_data">Gedownloade data</string>
+    <string name="chapters_from_database">Hoofstukken &amp; Geschiedenis uit Database</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Gebruik smart search</string>
+    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">Indien ingeschakeld, wordt automatisch het best matchende resultaat gekozen. Zo niet, worden alle resultaten getoond voor handmatig selecteren.</string>
 </resources>

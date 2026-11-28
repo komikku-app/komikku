@@ -57,4 +57,5 @@
     <string name="action_hide">छुपाएं</string>
     <string name="action_allow_all_duplicate_manga">सभी की अनुमति दें</string>
     <string name="action_update">अद्यतन</string>
+    <string name="login_failed">लॉग इन विफल रहा</string>
 </resources>

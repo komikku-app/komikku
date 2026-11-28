@@ -210,4 +210,8 @@
     <string name="pref_fetch_manga_metadata_on_add_description">Автоматически загружать обложку, описание и другую информацию при добавлении манги в библиотеку</string>
     <string name="pref_fetch_manga_chapters_on_add">Получать главы при добавлении</string>
     <string name="pref_fetch_manga_chapters_on_add_description">Автоматически обновлять список глав при добавлении манги в библиотеку</string>
+    <string name="mangadex_session_expired_notification_text">Необходимо снова войти в MangaDex, чтобы продолжать синхронизацию данных.</string>
+    <string name="ext_update_signature_mismatch">%1$s невозможно обновить: обновление подписано ключом, отличным от текущего</string>
+    <string name="ext_store_signing_key_changed">Репозиторий расширений %1$s теперь указывает на %2$s, но его ключи не совпадают, и провести обновление невозможно. Если вы доверяете новому репозиторию, удалите %1$s и добавьте его снова.</string>
+    <string name="mangadex_session_expired_notification_title">Сессия MangaDex просрочилась</string>
 </resources>

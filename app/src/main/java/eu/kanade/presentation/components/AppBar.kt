@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Home
@@ -49,7 +50,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -319,10 +322,20 @@ fun SearchToolbar(
     onClickCloseSearch: () -> Unit = { onChangeSearchQuery(null) },
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
+    // KMK -->
+    // The state-based BasicTextField doesn't take a VisualTransformation (no caller used it).
+    // visualTransformation: VisualTransformation = VisualTransformation.None,
+    // KMK <--
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val focusRequester = remember { FocusRequester() }
+    // KMK -->
+    // State-based text field so the cursor/selection handles can be dragged
+    val textFieldState = rememberSearchTextFieldState(
+        query = searchQuery,
+        onQueryChange = onChangeSearchQuery,
+    )
+    // KMK <--
 
     AppBar(
         modifier = modifier,
@@ -331,18 +344,41 @@ fun SearchToolbar(
 
             val keyboardController = LocalSoftwareKeyboardController.current
             val focusManager = LocalFocusManager.current
+            // KMK -->
+            val inputModeManager = LocalInputModeManager.current
+            // KMK <--
 
             val searchAndClearFocus: () -> Unit = f@{
-                if (searchQuery.isBlank()) return@f
-                onSearch(searchQuery)
+                // KMK -->
+                // if (searchQuery.isBlank()) return@f
+                // onSearch(searchQuery)
+                val currentQuery = textFieldState.text.toString()
+                if (currentQuery.isBlank()) return@f
+                // Make sure the latest text reached the caller before searching (the text collector
+                // may send the same value again, which is harmless)
+                if (currentQuery != searchQuery) onChangeSearchQuery(currentQuery)
+                onSearch(currentQuery)
+                // KMK <--
                 focusManager.clearFocus()
                 keyboardController?.hide()
-                focusManager.moveFocus(FocusDirection.Next)
+                // KMK -->
+                // Only a hardware Enter (keyboard input mode) leaves focus on the back button after clearFocus,
+                // which moveFocus avoids. In touch mode nothing is focused, so Next lands on this field and
+                // re-opens the soft keyboard.
+                if (inputModeManager.inputMode == InputMode.Keyboard) {
+                    // KMK <--
+                    focusManager.moveFocus(FocusDirection.Next)
+                    // KMK -->
+                }
+                // KMK <--
             }
 
             BasicTextField(
-                value = searchQuery,
-                onValueChange = onChangeSearchQuery,
+                // KMK -->
+                // value = searchQuery,
+                // onValueChange = onChangeSearchQuery,
+                state = textFieldState,
+                // KMK <--
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -355,18 +391,33 @@ fun SearchToolbar(
                     fontSize = 18.sp,
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
-                singleLine = true,
+                // KMK -->
+                // keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
+                // singleLine = true,
+                onKeyboardAction = { searchAndClearFocus() },
+                lineLimits = TextFieldLineLimits.SingleLine,
+                // KMK <--
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
-                visualTransformation = visualTransformation,
+                // KMK -->
+                // visualTransformation = visualTransformation,
+                // KMK <--
                 interactionSource = interactionSource,
-                decorationBox = { innerTextField ->
+                // KMK -->
+                // decorationBox = { innerTextField ->
+                decorator = { innerTextField ->
+                    // KMK <--
                     TextFieldDefaults.DecorationBox(
-                        value = searchQuery,
+                        // KMK -->
+                        // value = searchQuery,
+                        value = textFieldState.text.toString(),
+                        // KMK <--
                         innerTextField = innerTextField,
                         enabled = true,
                         singleLine = true,
-                        visualTransformation = visualTransformation,
+                        // KMK -->
+                        // visualTransformation = visualTransformation,
+                        visualTransformation = VisualTransformation.None,
+                        // KMK <--
                         interactionSource = interactionSource,
                         placeholder = {
                             Text(
@@ -388,7 +439,14 @@ fun SearchToolbar(
         navigateUp = if (searchQuery == null) navigateUp else onClickCloseSearch,
         actions = {
             key("search") {
-                val onClick = { onChangeSearchQuery("") }
+                // KMK -->
+                // val onClick = { onChangeSearchQuery("") }
+                val onClick = {
+                    // Clear the field right away instead of waiting for the query to come back
+                    textFieldState.clearText()
+                    onChangeSearchQuery("")
+                }
+                // KMK <--
 
                 if (!searchEnabled) {
                     // Don't show search action
@@ -412,7 +470,10 @@ fun SearchToolbar(
                             )
                         }
                     }
-                } else if (searchQuery.isNotEmpty()) {
+                    // KMK -->
+                    // } else if (searchQuery.isNotEmpty()) {
+                } else if (textFieldState.text.isNotEmpty()) {
+                    // KMK <--
                     TooltipBox(
                         positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                         tooltip = {

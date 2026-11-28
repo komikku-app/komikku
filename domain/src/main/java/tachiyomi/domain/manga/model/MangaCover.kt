@@ -36,7 +36,12 @@ data class MangaCover(
     var vibrantCoverColor: Int?
         get() = vibrantCoverColorMap[mangaId]
         set(value) {
-            vibrantCoverColorMap[mangaId] = value
+            // ConcurrentHashMap can't hold null, and a missing entry already reads as null
+            if (value != null) {
+                vibrantCoverColorMap[mangaId] = value
+            } else {
+                vibrantCoverColorMap.remove(mangaId)
+            }
         }
 
     /**
@@ -72,8 +77,10 @@ data class MangaCover(
         /**
          * [vibrantCoverColorMap] store color generated while browsing library.
          * It always empty at beginning each time app starts, then add more color while browsing.
+         *
+         * It's read & written from the main thread and several IO threads at once, so it must be thread-safe.
          */
-        val vibrantCoverColorMap: HashMap<Long, Int?> = hashMapOf()
+        val vibrantCoverColorMap = ConcurrentHashMap<Long, Int>()
 
         /**
          * [dominantCoverColorMap] stores favorite manga's cover & text's color as a joined string in Prefs.

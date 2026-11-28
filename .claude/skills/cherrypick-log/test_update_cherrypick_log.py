@@ -181,7 +181,7 @@ class CarryOverTest(unittest.TestCase):
         self.assertEqual(m.carry_over("", note, "?"), ("", note))
         self.assertEqual(m.carry_over("?", note, "O"), ("O", note))
 
-    def test_partial_pick_kept_unless_strong_evidence(self):
+    def test_partial_pick_always_kept(self):
         for note in (
             "Partial 2026-10-31: picked without removing `className`",
             "Folded 2026-11-02: github_utils.py into the pick of bec637b61c.",
@@ -189,7 +189,8 @@ class CarryOverTest(unittest.TestCase):
         ):
             self.assertEqual(m.carry_over("?", note, ""), ("?", note))
             self.assertEqual(m.carry_over("?", note, "?"), ("?", note))
-            self.assertEqual(m.carry_over("?", note, "O"), ("O", note))
+            # O evidence can't see a left-out part under partial_ignore_paths (e.g. a migration).
+            self.assertEqual(m.carry_over("?", note, "O"), ("?", note))
 
     def test_partial_note_only_keeps_a_question_mark(self):
         note = "Partial 2026-10-31: picked without x"

@@ -171,7 +171,7 @@
     <string name="discord_accounts">Akun Discord</string>
     <string name="active_account">Akun Aktif</string>
     <string name="no_accounts_found">Tidak ada akun yang ditemukan</string>
-    <string name="login_failed">Gagal masuk</string>
+    <string name="login_failed">Gagal login</string>
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">Menggunakan</string>
     <string name="discord_status_browsing">Menjelajah</string>

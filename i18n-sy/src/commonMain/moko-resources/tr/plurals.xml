@@ -37,8 +37,8 @@
         <item quantity="other">%2$s %1$d sayfa</item>
     </plurals>
     <plurals name="cleanup_done">
-        <item quantity="one">Temizleme tamamlandı. %d klasör kaldırıldı</item>
-        <item quantity="other">Temizleme tamamlandı. %d klasörleri kaldırıldı</item>
+        <item quantity="one">Temizleme bitti. %d klasör kaldırıldı</item>
+        <item quantity="other">Temizleme bitti. %d klasör kaldırıldı</item>
     </plurals>
     <plurals name="entry_migrated">
         <item quantity="one">%d girdi taşındı</item>
@@ -67,5 +67,17 @@
     <plurals name="humanize_second">
         <item quantity="one">%1$d saniye önce</item>
         <item quantity="other">%1$d saniye önce</item>
+    </plurals>
+    <plurals name="num_favorites">
+        <item quantity="one">%1$s favori</item>
+        <item quantity="other">%1$s favori</item>
+    </plurals>
+    <plurals name="num_views">
+        <item quantity="one">%1$s görüntüleme</item>
+        <item quantity="other">%1$s görüntüleme</item>
+    </plurals>
+    <plurals name="rec_selected_entries">
+        <item quantity="one">Seçili %d girdi için</item>
+        <item quantity="other">Seçili %d girdi için</item>
     </plurals>
 </resources>
