@@ -609,6 +609,19 @@ try {
         Stop-Smoke 'Launcher installed' "no Komikku.exe in $($candidates -join '; ') (logs\install.log)"
     }
     Pass 'Launcher installed' $Launcher
+    # komikku:// links (tracker logins redirect there): the per-user install registers the scheme for this user
+    # (desktopApp/packaging/windows/url-protocol.gradle.kts)
+    $schemeKey = 'HKCU:\Software\Classes\komikku'
+    $commandKey = "$schemeKey\shell\open\command"
+    # RegistryKey.GetValue gives $null for a missing value, which StrictMode allows
+    $schemeCommand = if (Test-Path -LiteralPath $commandKey) { (Get-Item -LiteralPath $commandKey).GetValue('') } else { $null }
+    $urlProtocol = (Test-Path -LiteralPath $schemeKey) -and ($null -ne (Get-Item -LiteralPath $schemeKey).GetValue('URL Protocol'))
+    $expectedCommand = "`"$Launcher`" `"%1`""
+    if ($urlProtocol -and ($schemeCommand -eq $expectedCommand)) {
+        Pass 'komikku:// handler registered' $schemeCommand
+    } else {
+        Fail 'komikku:// handler registered' "open command '$schemeCommand', expected '$expectedCommand' (HKCU\Software\Classes\komikku)"
+    }
     Get-ChildItem -LiteralPath (Split-Path -Parent $Launcher) -Recurse -Name |
         Set-Content -LiteralPath (Join-Path $Output 'installed-files.txt') -Encoding utf8
     $shortcutRoots = @(
@@ -841,6 +854,11 @@ try {
                 Pass 'Uninstall (msiexec /x)' 'launcher removed'
             } else {
                 Fail 'Uninstall (msiexec /x)' "exit code $($uninstall.ExitCode), launcher still there: $launcherLeft (logs\uninstall.log)"
+            }
+            if (Test-Path -LiteralPath 'HKCU:\Software\Classes\komikku') {
+                Fail 'komikku:// handler removed' 'HKCU\Software\Classes\komikku is still there'
+            } else {
+                Pass 'komikku:// handler removed' 'no HKCU\Software\Classes\komikku'
             }
             if ($script:Data -and (Test-Path -LiteralPath $script:Data)) { Info 'Data folder after uninstall' 'kept' }
         } catch {

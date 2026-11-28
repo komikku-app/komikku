@@ -128,6 +128,13 @@ uninstall() {
   else
     fail "Menu entry removed" "still there: $left"
   fi
+  local handler
+  handler=$(xdg-mime query default x-scheme-handler/komikku 2> /dev/null || true)
+  if [ -z "$handler" ]; then
+    pass "komikku:// handler removed" "xdg-mime query default finds none"
+  else
+    fail "komikku:// handler removed" "still $handler"
+  fi
   if [ -n "$data" ] && [ -d "$data" ]; then info "Data folder after uninstall" "kept"; fi
 }
 
@@ -411,7 +418,10 @@ fi
 echo "::group::Install the test tools"
 # notify-send (libnotify-bin), gdbus (libglib2.0-bin), dbus-run-session (dbus-daemon) and dbus-monitor (dbus-bin) for
 # the notification self-tests; not dunst yet, see "Notifications" below
-tools=(xvfb openbox xdotool wmctrl imagemagick x11-utils libnotify-bin libglib2.0-bin dbus-daemon dbus-bin)
+# desktop-file-utils: update-desktop-database, which the package's scripts run so that komikku:// links find the app, as
+# on a desktop system
+tools=(xvfb openbox xdotool wmctrl imagemagick x11-utils libnotify-bin libglib2.0-bin dbus-daemon dbus-bin
+  desktop-file-utils)
 if { sudo apt-get update -q \
   && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends "${tools[@]}"; } \
   > "$out/logs/apt-tools.log" 2>&1; then
@@ -461,6 +471,20 @@ if [ -n "$menu_entry" ]; then
   pass "Menu entry installed" "$menu_entry"
 else
   fail "Menu entry installed" "no $menu_entry_name in /usr/share/applications or /usr/local/share/applications"
+fi
+# komikku:// links (tracker logins redirect there): the entry declares the scheme and passes the link on, and the
+# desktop database the package's scripts refresh maps the scheme to it (what browsers ask, through xdg-open / GIO)
+if [ -n "$menu_entry" ] && grep -qx 'MimeType=x-scheme-handler/komikku;' "$menu_entry" \
+  && grep -Eq '^Exec=.* %u$' "$menu_entry"; then
+  pass "Menu entry opens komikku:// links" "MimeType=x-scheme-handler/komikku; and %u in Exec"
+else
+  fail "Menu entry opens komikku:// links" "no MimeType=x-scheme-handler/komikku; or no %u in Exec of ${menu_entry:-the entry}"
+fi
+scheme_handler=$(xdg-mime query default x-scheme-handler/komikku 2> /dev/null || true)
+if [ "$scheme_handler" = "$menu_entry_name" ]; then
+  pass "komikku:// handler (xdg-mime query default)" "$scheme_handler"
+else
+  fail "komikku:// handler (xdg-mime query default)" "'$scheme_handler', expected $menu_entry_name"
 fi
 
 default_data="${XDG_DATA_HOME:-$HOME/.local/share}/komikku"

@@ -162,6 +162,13 @@ unsigned_path() {
   else
     fail "Menu entry installed without menu folders" "no $entry_name in /usr/share/applications or /usr/local/share/applications"
   fi
+  # komikku:// links (tracker logins redirect there): the packaged entry declares the scheme and passes the link on
+  if box grep -qx 'MimeType=x-scheme-handler/komikku;' "/opt/komikku/lib/$entry_name" \
+    && box grep -Eq '^Exec=.* %u$' "/opt/komikku/lib/$entry_name"; then
+    pass "Menu entry opens komikku:// links" "MimeType=x-scheme-handler/komikku; and %u in Exec"
+  else
+    fail "Menu entry opens komikku:// links" "no MimeType=x-scheme-handler/komikku; or no %u in Exec of /opt/komikku/lib/$entry_name"
+  fi
 
   # --- Upgrade --------------------------------------------------------------------------------------------------------
 
