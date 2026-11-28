@@ -491,7 +491,8 @@ mark the residual path in both modules.
   `master`.
 - **Coordination thread:** draft pull request <https://github.com/komikku-app/komikku/pull/2022> (number 2022, branch
   `multiplatform-coordination`, never merged). Atlas's instructions and Forge's reports are its comments; the rules
-  are in COORDINATION.md "How we talk".
+  are in COORDINATION.md "How we talk". Atlas's entries are also kept, numbered, in
+  [`ATLAS_INSTRUCTIONS.md`](ATLAS_INSTRUCTIONS.md) (the authoritative copy; start with INSTRUCTION 001).
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript

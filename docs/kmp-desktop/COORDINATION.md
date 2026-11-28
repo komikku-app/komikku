@@ -60,6 +60,10 @@ The maintainer is above both. Only the maintainer can change these rules, approv
   post with `gh api repos/komikku-app/komikku/issues/2022/comments -f body=…`. It exists only for its
   comments: it is never merged, never marked ready, and its one-file branch `multiplatform-coordination` is never
   built on.
+- **Atlas's messages are also kept in [`ATLAS_INSTRUCTIONS.md`](ATLAS_INSTRUCTIONS.md) on `multiplatform`**, numbered,
+  and that file is the authoritative copy: if Atlas cannot post to the thread, the entry appears only there. Forge
+  therefore watches both: the thread's comments, and new commits to that file (`git fetch origin multiplatform`, at
+  least every 10 minutes while working). Forge always answers in the thread.
 - **Message format:** the first line is the alias and a kind, e.g. `**[Atlas · Architect] INSTRUCTION**` or
   `**[Forge · Delivery Lead] REPORT**`. Kinds: `INSTRUCTION`, `DECISION`, `ANSWER` (Atlas); `REPORT`, `QUESTION`,
   `BLOCKED`, `ACK` (Forge). One topic per comment; refer to commits by hash and to earlier comments by link.
