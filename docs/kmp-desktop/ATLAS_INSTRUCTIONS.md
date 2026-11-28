@@ -211,3 +211,100 @@ once with lease, and post the old and new head; I then reset my clone to the new
 
 Add to your pre-push check the author and committer fields too: they must be the maintainer's usual commit identity,
 nothing else.
+
+## ANSWER 009 — A3 and the first merge of `master` (2026-11-28)
+
+Audit read (`UPSTREAM_AUDIT.md`, `42e3f32`). This is the kind of report I need; thank you for re-checking the
+`merge-tree` result.
+
+**Points 1, 2 and 3: approved.**
+
+1. **Yes: resolve `LibraryScreenModel`, `SourceFilterDialog`, `CloudflareInterceptor` and `WebViewInterceptor` in
+   `master`'s favour, for good,** and keep our versions for desktop only, in desktop source sets. This reverses the
+   earlier decisions to share that code with Android, and that is intended: those decisions were made when this
+   branch still carried Android. The rule from now on, which goes beyond these four files: **on `multiplatform`, a
+   file that `master` owns should be byte-identical to `master`'s unless it is on the short list of borrowing hooks
+   and build files.** Every merge of `master` is a chance to move one more file back onto that rule. Conditions:
+   - each desktop-only copy gets a header comment naming the `master` file it follows and the `master` commit it was
+     last synced to, and UPSTREAM_AUDIT.md keeps the list, so a later merge shows at a glance which copies to re-sync;
+   - where desktop and Android must behave the same (filter rows, Cloudflare detection), a desktop test pins the
+     behaviour, written from `master`'s code, including `master`'s filter fix that our shared rows lack;
+   - `MdList` / `MangaDexSessionNotifier`: solve it on the desktop side (a desktop counterpart or a desktop copy), not
+     by editing `master`'s file; desktop Cloudflare detection follows `master`'s `cf-mitigated` check in the same merge.
+2. **Merge now, before #2023 lands**, at Opus 5.5 high, in the separate checkout, reaching `multiplatform` only after
+   the gates and the desktop suite are green and CI has built it. Report the conflicts and each resolution in
+   PROGRESS.md as COORDINATION.md says. When #2023 is merged into `master`, the following merge puts the feed,
+   manga-edit, Migrate-tab and app-lock code back to `master`'s shape under the same rule.
+3. **Move the desktop job out of `build_pull_request.yml`** into the desktop workflow, and return that file to
+   `master`'s content.
+
+**Point 4 goes to the maintainer** (JavaScript sources and the QuickJS switch on Android). My recommendation to him:
+decide whether Android should have JavaScript sources at all. If yes, it becomes a feature pull request into
+`master` prepared from a patch like the fixes; if no, the Android wiring comes off this branch. Either way the
+Android code here ends up equal to `master`. Until he answers, leave that code as it is and keep it out of the merge's
+"resolve in `master`'s favour" list.
+
+**Point 5: agreed**, leave those as they are for now.
+
+**#2023:**
+- The missed `MdList` fix and the two newly confirmed bugs: send the three patches as planned; Atlas's team adds
+  them to #2023 as further commits while it is unmerged, or opens a second pull request if it has been merged.
+- Your notes on fixes 6, 9 and 10 are in my report to the maintainer; he reviews that pull request himself.
+- The footer in its description is added by the service Atlas's session posts through; an edit from this side puts
+  it back. I am telling the maintainer.
+
+## ANSWER 010 — track B, the review findings and their design questions (2026-11-28)
+
+Reports read (`REVIEW_M3.md`, `REVIEW_IOS.md`). Routing of the three mediums to the Shared-code engineer, failing
+test first: agreed. Order: the path traversal first (it deletes outside the extensions folder), then the converter,
+then the image formats (`getSupportedImageMimeTypes()` lists exactly what the desktop reader decodes, from one
+source of truth shared with the reader).
+
+**The high finding and design point 3 — real extensions in CI.** Decision:
+- **No job that holds a signing secret, or that produces an artifact a user installs, ever downloads or runs
+  third-party code.** The `package` job's self-test uses only the fixture built from this repository.
+- Real extensions are checked in a **separate job with no secrets** (`permissions: contents: read`, no `needs` from
+  `release`, its own runner): a small fixed set, each fetched from the Keiyoushi repository **by commit hash and
+  verified by SHA-256** before anything is loaded; a mismatch fails the job without running the file. The list
+  (package, commit, hash) lives in one file in this repository and is bumped by a reviewed commit. No APKs are
+  committed to this repository.
+- The breadth check against the live index runs on a schedule, non-blocking, in the same kind of secret-less job,
+  and writes a report; it never gates a build or a release.
+- Path names: a package name is accepted only if it matches a Java package pattern, and every path built from it is
+  resolved and checked to stay inside the extensions folder, on install, load and uninstall.
+
+**iOS findings: fix them now.** They are defects in existing code under track B, not new iOS app work; ANSWER 007
+restricts only the latter. Design point 4, the web views: **no pool.** Per-call isolation of cookies and storage is
+a property I want to keep. Find why the view is retained (the usual cause is the content controller holding its
+message handler strongly, or a delegate cycle; use a weak proxy, remove handlers and delegates, stop loading on
+completion), and make the CI test **assert** deallocation instead of printing it. If it cannot be freed after a real
+investigation, come back with what you found before choosing a pool. The two lows: fix both; the WebKit step fails on
+a non-zero exit status and counts tests from the report, not from a constant.
+
+**Design point 1 — the Android compat layer. Policy from now on:**
+- A registry file next to the layer lists every compat class with: which extensions (or how many) need it, and its
+  kind: *type only* (exists so classes link), *no-op* (calls are accepted and do nothing, stated in its KDoc), or
+  *real behaviour*. A class not in the registry fails a test.
+- **A new *real behaviour* class needs my approval** (`QUESTION` with the number of extensions that need it and the
+  size). *Type only* and *no-op* classes you add yourselves, with the registry entry.
+- A member that cannot work on desktop and would silently mislead throws one named exception
+  (`UnsupportedOnDesktop`, carrying the class and member); the extension loader turns it into a visible
+  "unsupported on desktop: needs …" state. Lifecycle callbacks registered at start-up are *no-op* by design: they are
+  accepted and never invoked, and the registry says so.
+- **`ApplicationInfo.dataDir` and every other path handed to an extension point into a per-extension folder**
+  (`extensions-data/<package>/`), never the app's data folder. Extensions are trusted code today, but we do not hand
+  them the map.
+- The scheduled breadth job above also reports which `android.*` classes the catalogue references and how many
+  extensions each blocks; that report, not individual failures, drives what gets added.
+
+**Design point 2 — the extensions that still fail.** Your order is approved: measure first with the link check over
+the whole catalogue, including references inside method bodies; then `Collator` (on `java.text.Collator`) and
+`Spannable` as far as it is cheap; then the "unsupported" state in the Extensions tab, which I want regardless of the
+numbers; and bring me the numbers before any `android.graphics` work. Correct "1,683 of 1,686" in HANDOVER.md and
+PROGRESS.md to what the measurement shows: "create their sources" is not "work".
+
+**Design point 5 — Ktor in `master`'s catalog.** Move every entry that only the non-Android platforms use out of
+`gradle/libs.versions.toml` into a new catalog file `master` does not have (`gradle/multiplatform.versions.toml`),
+registered with one `// KMK` line in `settings.gradle.kts`; record that line under "Changes to files owned by
+master" and return `libs.versions.toml` to `master`'s content. Do it together with the merge of `master`, so the
+catalog is touched once.
