@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="browse_language_and_pages">
-        <item quantity="one">%2$s %1$d पेज</item>
-        <item quantity="other">%2$s %1$d पेजहरु</item>
+        <item quantity="one">%2$s, %1$d पृष्ठ</item>
+        <item quantity="other">%2$s, %1$d पृष्ठहरू</item>
     </plurals>
     <plurals name="humanize_year">
-        <item quantity="one">%1$d बर्ष आगधि</item>
-        <item quantity="other">%1$d बर्षहरु आगधि</item>
+        <item quantity="one">%1$d वर्ष अघि</item>
+        <item quantity="other">%1$d वर्ष अघि</item>
     </plurals>
     <plurals name="humanize_month">
-        <item quantity="one">%1$d महिना आगधि</item>
-        <item quantity="other">%1$d महिनाहरु आगधि</item>
+        <item quantity="one">%1$d महिना अघि</item>
+        <item quantity="other">%1$d महिना अघि</item>
     </plurals>
     <plurals name="humanize_week">
-        <item quantity="one">%1$d हप्ताआगधि</item>
-        <item quantity="other">%1$d हप्ताहरु आगधि</item>
+        <item quantity="one">%1$d हप्ता अघि</item>
+        <item quantity="other">%1$d हप्ता अघि</item>
     </plurals>
     <plurals name="humanize_day">
-        <item quantity="one">%1$d दिन आगधि</item>
-        <item quantity="other">%1$d दिनहरु आगधि</item>
+        <item quantity="one">%1$d दिन अघि</item>
+        <item quantity="other">%1$d दिन अघि</item>
     </plurals>
     <plurals name="humanize_hour">
-        <item quantity="one">%1$d घण्टा आगधि</item>
-        <item quantity="other">%1$d घण्टाहरु आगधि</item>
+        <item quantity="one">%1$d घण्टा अघि</item>
+        <item quantity="other">%1$d घण्टा अघि</item>
     </plurals>
     <plurals name="humanize_minute">
-        <item quantity="one">%1$d मिनेट आगधि</item>
-        <item quantity="other">%1$d मिनेटहरु आगधि</item>
+        <item quantity="one">%1$d मिनेट अघि</item>
+        <item quantity="other">%1$d मिनेट अघि</item>
     </plurals>
     <plurals name="humanize_second">
-        <item quantity="one">%1$d सेकेन्ड आगधि</item>
-        <item quantity="other">%1$d सेकेन्डहरु आगधि</item>
+        <item quantity="one">%1$d सेकेन्ड अघि</item>
+        <item quantity="other">%1$d सेकेन्ड अघि</item>
+    </plurals>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d पृष्ठ</item>
+        <item quantity="other">%1$d पृष्ठहरू</item>
     </plurals>
 </resources>

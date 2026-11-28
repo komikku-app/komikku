@@ -3,11 +3,14 @@ package eu.kanade.tachiyomi.data.sync
 import android.content.Context
 import android.net.Uri
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.sync.models.SyncSettings
 import eu.kanade.tachiyomi.data.backup.create.BackupCreator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.data.backup.models.Backup
+import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
@@ -19,6 +22,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import logcat.logcat
+import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.Chapters
 import tachiyomi.data.DatabaseHandler
@@ -184,14 +188,26 @@ class SyncManager(
         }
 
         val (filteredFavorites, nonFavorites) = filterFavoritesAndNonFavorites(remoteBackup)
-        updateNonFavorites(nonFavorites)
+        // KMK -->
+        // Removals from the library are library entries too, which this device may not sync
+        if (syncOptions.libraryEntries) {
+            updateNonFavorites(nonFavorites)
+        }
+        // KMK <--
 
         val newSyncData = backup.copy(
-            backupManga = filteredFavorites,
+            // KMK -->
+            backupManga = filteredFavorites.onEach { it.dropPartsNotSynced(syncOptions) },
+            // KMK <--
             backupCategories = remoteBackup.backupCategories,
             backupSources = remoteBackup.backupSources,
-            backupPreferences = remoteBackup.backupPreferences,
-            backupSourcePreferences = remoteBackup.backupSourcePreferences,
+            // KMK -->
+            // The remote device may sync private settings even when this one doesn't
+            backupPreferences = remoteBackup.backupPreferences.withoutPrivate(syncOptions),
+            backupSourcePreferences = remoteBackup.backupSourcePreferences.map {
+                it.copy(prefs = it.prefs.withoutPrivate(syncOptions))
+            },
+            // KMK <--
             backupExtensionStores = remoteBackup.backupExtensionStores,
 
             // SY -->
@@ -219,10 +235,14 @@ class SyncManager(
                 backupUri,
                 sync = true,
                 options = RestoreOptions(
-                    appSettings = true,
-                    sourceSettings = true,
-                    libraryEntries = true,
-                    extensionStores = true,
+                    // KMK -->
+                    libraryEntries = syncOptions.libraryEntries,
+                    categories = syncOptions.categories,
+                    appSettings = syncOptions.appSettings,
+                    extensionStores = syncOptions.extensionStores,
+                    sourceSettings = syncOptions.sourceSettings,
+                    savedSearchesFeeds = syncOptions.savedSearchesFeeds,
+                    // KMK <--
                 ),
             )
 
@@ -232,6 +252,31 @@ class SyncManager(
             logcat(LogPriority.ERROR) { "Failed to write sync data to file" }
         }
     }
+
+    // KMK -->
+    private fun List<BackupPreference>.withoutPrivate(syncOptions: SyncSettings): List<BackupPreference> {
+        return if (syncOptions.privateSettings) this else filterNot { Preference.isPrivate(it.key) }
+    }
+
+    /**
+     * Drops the parts of a remote entry that this device doesn't sync, so restoring it
+     * doesn't overwrite them with the remote device's copy.
+     */
+    private fun BackupManga.dropPartsNotSynced(syncOptions: SyncSettings) {
+        if (!syncOptions.chapters) chapters = emptyList()
+        if (!syncOptions.tracking) tracking = emptyList()
+        if (!syncOptions.history) history = emptyList()
+        if (!syncOptions.customInfo) {
+            customTitle = null
+            customArtist = null
+            customAuthor = null
+            customDescription = null
+            customGenre = null
+            customStatus = 0
+            customThumbnailUrl = null
+        }
+    }
+    // KMK <--
 
     private fun writeSyncDataToCache(context: Context, backup: Backup): Uri? {
         val cacheFile = File(context.cacheDir, "tachiyomi_sync_data.proto.gz")
@@ -280,6 +325,13 @@ class SyncManager(
             return true
         }
 
+        // KMK -->
+        // The merge can take the library state from the other side without changing the version
+        if (localManga.favorite != remoteManga.favorite) {
+            return true
+        }
+        // KMK <--
+
         if (localCategories.toSet() != remoteManga.categories.toSet()) {
             return true
         }
@@ -322,13 +374,13 @@ class SyncManager(
         val elapsedTimeMillis = measureTimeMillis {
             val databaseManga = getAllMangaFromDB()
             val localMangaMap = databaseManga.associateBy {
-                Triple(it.source, it.url, it.title)
+                Pair(it.source, it.url)
             }
 
             logcat(LogPriority.DEBUG, logTag) { "Starting to filter favorites and non-favorites from backup data." }
 
             backup.backupManga.forEach { remoteManga ->
-                val compositeKey = Triple(remoteManga.source, remoteManga.url, remoteManga.title)
+                val compositeKey = Pair(remoteManga.source, remoteManga.url)
                 val localManga = localMangaMap[compositeKey]
                 when {
                     // Checks if the manga is in favorites and needs updating or adding
@@ -366,14 +418,20 @@ class SyncManager(
     private suspend fun updateNonFavorites(nonFavorites: List<BackupManga>) {
         val localMangaList = getAllMangaFromDB()
 
-        val localMangaMap = localMangaList.associateBy { Triple(it.source, it.url, it.title) }
+        val localMangaMap = localMangaList.associateBy { Pair(it.source, it.url) }
 
         nonFavorites.forEach { nonFavorite ->
-            val key = Triple(nonFavorite.source, nonFavorite.url, nonFavorite.title)
+            val key = Pair(nonFavorite.source, nonFavorite.url)
             localMangaMap[key]?.let { localManga ->
                 if (localManga.favorite != nonFavorite.favorite) {
                     val updatedManga = localManga.copy(favorite = nonFavorite.favorite)
                     mangaRestorer.updateManga(updatedManga)
+                    // KMK -->
+                    // Keep the synced time of the library change rather than the one the trigger stamps
+                    nonFavorite.favoriteModifiedAt?.let {
+                        handler.await { mangasQueries.setFavoriteModifiedAt(it, localManga.id) }
+                    }
+                    // KMK <--
                 }
             }
         }

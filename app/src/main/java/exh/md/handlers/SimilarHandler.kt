@@ -1,5 +1,6 @@
 package exh.md.handlers
 
+import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.dto.RelationListDto
@@ -18,7 +19,10 @@ class SimilarHandler(
 ) {
 
     suspend fun getSimilar(manga: SManga): MetadataMangasPage {
-        val similarDto = withIOContext { similarService.getSimilarManga(MdUtil.getMangaId(manga.url)) }
+        // KMK -->
+        val similarDto = withIOContext { nullOn404 { similarService.getSimilarManga(MdUtil.getMangaId(manga.url)) } }
+            ?: return emptyPage()
+        // KMK <--
         return similarDtoToMangaListPage(similarDto)
     }
 
@@ -43,7 +47,10 @@ class SimilarHandler(
     }
 
     suspend fun getRelated(manga: SManga): MetadataMangasPage {
-        val relatedListDto = withIOContext { service.relatedManga(MdUtil.getMangaId(manga.url)) }
+        // KMK -->
+        val relatedListDto = withIOContext { nullOn404 { service.relatedManga(MdUtil.getMangaId(manga.url)) } }
+            ?: return emptyPage()
+        // KMK <--
         return relatedDtoToMangaListPage(relatedListDto)
     }
 
@@ -70,4 +77,23 @@ class SimilarHandler(
             },
         )
     }
+
+    // KMK -->
+    /**
+     * Runs a similar/related lookup for one title, returning null on HTTP 404. similarmanga.com answers 404 for
+     * titles it has no data for, which is common: it only means there is nothing to show, and must not hide the
+     * results of the other lookup. Only the lookup itself is wrapped, so a 404 from the follow-up
+     * [MangaDexService.viewMangas] call still propagates.
+     */
+    private inline fun <T> nullOn404(block: () -> T): T? {
+        return try {
+            block()
+        } catch (e: HttpException) {
+            if (e.code != 404) throw e
+            null
+        }
+    }
+
+    private fun emptyPage() = MetadataMangasPage(emptyList(), false, emptyList())
+    // KMK <--
 }

@@ -239,4 +239,5 @@
     <string name="library_group_updates_global">Завжди запускати глобальні оновлення</string>
     <string name="library_group_updates_all_but_ungrouped">Глобальні оновлення тільки для групи «Не групувати». Інші групи використовують оновлення категорій</string>
     <string name="library_group_updates_all">Постійно запускати оновлення категорій</string>
+    <string name="pref_include_chapter_url_hash_desc">Додати перші шість символів хеша MD5 з URL-адреси розділу до назви файлу або папки розділу.</string>
 </resources>

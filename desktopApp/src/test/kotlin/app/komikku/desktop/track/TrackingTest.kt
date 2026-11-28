@@ -89,10 +89,12 @@ class TrackingTest {
     @Test
     @Order(1)
     fun `oauth authorize urls build on desktop`() {
-        MyAnimeListApi.authUrl().toString().let {
+        val myAnimeList = Injekt.get<TrackerManager>().myAnimeList
+        MyAnimeListApi.authUrl(Injekt.get(), myAnimeList).toString().let {
             it shouldStartWith "https://myanimelist.net/v1/oauth2/authorize"
             it shouldContain "client_id="
-            it shouldContain "code_challenge="
+            // The verifier of this login is stored for the code exchange (MAL's plain method: challenge = verifier)
+            it shouldContain "code_challenge=" + Injekt.get<TrackPreferences>().trackPkceCodeVerifier(myAnimeList).get()
         }
         AnilistApi.authUrl().toString() shouldContain "response_type=token"
         DesktopTrackerLogin.method(Injekt.get<TrackerManager>().myAnimeList).let { (it as TrackerLoginMethod.OAuthPaste).host } shouldBe "myanimelist-auth"

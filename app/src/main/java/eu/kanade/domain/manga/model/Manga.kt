@@ -45,8 +45,13 @@ fun Manga.toSManga(): SManga = SManga.create().also {
     it.description = ogDescription
     it.genre = ogGenre.orEmpty().joinToString()
     it.status = ogStatus.toInt()
+    // KMK -->
+    // Hand the source's own cover URL to sources, like the other fields above. The user's custom
+    // cover URL must not leak into the SManga: callers such as UpdateMangaFromRemote write
+    // `thumbnail_url` back to the DB `thumbnail_url` (source) column.
+    it.thumbnail_url = ogThumbnailUrl
+    // KMK <--
     // SY <--
-    it.thumbnail_url = thumbnailUrl
     it.initialized = initialized
     it.memo = memo
 }

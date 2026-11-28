@@ -24,9 +24,11 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 
 ### Changed
 - Don't use GMS to detect if GMS is available ([@leodyversemilla07](https://github.com/leodyversemilla07)) ([#3525](https://github.com/mihonapp/mihon/pull/3525))
+- Update default user agent to Chrome 149 ([@AntsyLich](https://github.com/AntsyLich)) ([#3678](https://github.com/mihonapp/mihon/pull/3678))
 
 ### Improved
 - Show usernames in Tracking settings ([@MajorTanya](https://github.com/MajorTanya)) ([#3533](https://github.com/mihonapp/mihon/pull/3533))
+- Spoof `Sec-CH-UA` client hints in WebView to match the user agent ([@AntsyLich](https://github.com/AntsyLich)) ([#3678](https://github.com/mihonapp/mihon/pull/3678))
 
 ### Fixed
 - Fix Shikimori tracking not working ([@MajorTanya](https://github.com/MajorTanya)) ([#3497](https://github.com/mihonapp/mihon/pull/3497))
@@ -36,6 +38,19 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Fix chapter's `memo` field not being updated for existing chapters ([@cuong-tran](https://github.com/cuong-tran)) ([#3538](https://github.com/mihonapp/mihon/pull/3538))
 - Fix app not reading `tachiyomix.extensionLib` extension metadata ([@AntsyLich](https://github.com/AntsyLich)) ([#3545](https://github.com/mihonapp/mihon/pull/3545), [#3559](https://github.com/mihonapp/mihon/pull/3559))
 - Fix reader navigator slider steps not updating after changing chapter ([@AntsyLich](https://github.com/AntsyLich)) ([#3549](https://github.com/mihonapp/mihon/pull/3549))
+- Fixed `X-Requested-With` spoofing leaking to unrelated callers ([@AntsyLich](https://github.com/AntsyLich)) ([#3678](https://github.com/mihonapp/mihon/pull/3678))
+- Fixed the app closing when WebView's page process crashed ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed Kitsu login and other requests that send data failing with "Failed to bypass Cloudflare" ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed slowdowns and running out of memory when many requests to a site hit a Cloudflare challenge at once ([@tigeryu8900](https://github.com/tigeryu8900), [@AntsyLich](https://github.com/AntsyLich))
+- Fix MyAnimeList error for list entries with partial start/finish reading dates by setting those dates to either Jan 1st or 1st of the month ([@MajorTanya](https://github.com/MajorTanya)) ([#3573](https://github.com/mihonapp/mihon/pull/3573))
+- Fixed entries being incorrectly marked as duplicates when tracked with some trackers ([@Secozzi](https://github.com/Secozzi)) ([#4008](https://github.com/mihonapp/mihon/pull/4008))
+- Fixed a crash on launch on some Samsung devices running Android 9 to 11 ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed a crash when updating an extension while others were installing ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed a crash when a back gesture was still in progress as the reader or a dialog closed ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed tracker start date being off by a day when adding tracking to an entry with read history in some timezones ([@hazptr](https://github.com/hazptr)) ([#4049](https://github.com/mihonapp/mihon/pull/4049))
+- Fixed a crash when opening the filters of a source with an invalid filter ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed a crash when installing an extension on a device where the system installer can't ask for confirmation ([@AntsyLich](https://github.com/AntsyLich))
+- Fixed extension installation with shizuku installer ([@NGB-Was-Taken](https://github.com/NGB-Was-Taken)) ([#3676](https://github.com/mihonapp/mihon/pull/3676))
 
 ## [v0.20.0] - 2026-06-27
 ### Added

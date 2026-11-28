@@ -40,6 +40,9 @@ CREATE INDEX idx_mangas_source ON mangas(source);
 
 CREATE TRIGGER update_last_favorited_at_mangas
 AFTER UPDATE OF favorite ON mangas
+-- KMK -->
+WHEN old.favorite <> new.favorite
+-- KMK <--
 BEGIN
   UPDATE mangas
   SET favorite_modified_at = strftime('%s', 'now')
@@ -127,6 +130,7 @@ track_dupes AS (
     INNER JOIN manga_sync S2
     ON S1.sync_id = S2.sync_id
     AND S1.remote_id = S2.remote_id
+    AND S1.remote_id != 0
     AND S1.manga_id != S2.manga_id
     WHERE S1.manga_id = :id
 ),
@@ -170,6 +174,13 @@ ORDER BY next_update ASC;
 resetViewerFlags:
 UPDATE mangas
 SET viewer = 0;
+
+-- KMK -->
+setFavoriteModifiedAt:
+UPDATE mangas
+SET favorite_modified_at = :favoriteModifiedAt
+WHERE _id = :mangaId;
+-- KMK <--
 
 resetIsSyncing:
 UPDATE mangas

@@ -87,9 +87,10 @@ class ImageUtilTest {
         }.toByteArray()
         val tmpDir = UniFile.fromFile(dir)!!
 
-        // 10 000 px tall: headless optimal height = 2 × 2160 → 3 parts, original deleted
+        // 10 000 px tall with parts of at most 2 × 2160 rows (no screen) → 3 parts, original deleted. The height is
+        // passed in: the three-argument call uses the connected screens' height, which differs per machine.
         dir.resolve("001.png").writeBytes(png(100, 10_000))
-        ImageUtil.splitTallImage(tmpDir, tmpDir.findFile("001.png")!!, "001") shouldBe true
+        ImageUtil.splitTallImage(tmpDir, tmpDir.findFile("001.png")!!, "001", optimalImageHeight = 2 * 2160) shouldBe true
         val parts = dir.list()!!.sorted()
         parts shouldBe listOf("001__001.jpg", "001__002.jpg", "001__003.jpg")
         parts.sumOf { ImageIO.read(dir.resolve(it)).height } shouldBe 10_000
@@ -99,5 +100,12 @@ class ImageUtilTest {
         dir.resolve("002.png").writeBytes(png(100, 300))
         ImageUtil.splitTallImage(tmpDir, tmpDir.findFile("002.png")!!, "002") shouldBe true
         dir.resolve("002.png").exists() shouldBe true
+    }
+
+    @Test
+    fun `parts are twice as tall as the tallest screen, or as a 2160 px one without a screen`() {
+        ImageUtil.optimalImageHeight(emptyList()) shouldBe 4320
+        ImageUtil.optimalImageHeight(listOf(1080, 1440)) shouldBe 2880
+        ImageUtil.optimalImageHeight(listOf(3384)) shouldBe 6768
     }
 }

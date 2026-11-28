@@ -1680,6 +1680,12 @@ class MangaScreenModel(
 
             val newChapters = successState.processedChapters.toMutableList().apply {
                 val firstSelection = none { it.selected }
+                // KMK -->
+                // The list can change between two selections (reload, filter, sort), so read the first and last
+                // selected index from it rather than trusting the ones stored at the last selection
+                selectedPositions[0] = indexOfFirst { it.selected }
+                selectedPositions[1] = indexOfLast { it.selected }
+                // KMK <--
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.id, selected)
 

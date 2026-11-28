@@ -32,6 +32,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
+import eu.kanade.presentation.library.ResetInfoMangaDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.library.components.SyncFavoritesConfirmDialog
@@ -86,7 +87,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 data object LibraryTab : Tab {
-    @Suppress("unused")
     private fun readResolve(): Any = LibraryTab
 
     override val options: TabOptions
@@ -276,7 +276,10 @@ data object LibraryTab : Tab {
                     onClickCleanTitles = screenModel::cleanTitles.takeIf { state.showCleanTitles },
                     onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
                     onClickAddToMangaDex = screenModel::syncMangaToDex.takeIf { state.showAddToMangadex },
-                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
+                    // KMK -->
+                    // onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
+                    onClickResetInfo = screenModel::openResetInfoMangaDialog.takeIf { state.showResetInfo },
+                    // KMK <--
                     // SY <--
                 )
             },
@@ -386,6 +389,14 @@ data object LibraryTab : Tab {
                     },
                 )
             }
+            // KMK -->
+            is LibraryScreenModel.Dialog.ResetInfoManga -> {
+                ResetInfoMangaDialog(
+                    onDismissRequest = onDismissRequest,
+                    onConfirm = { screenModel.resetInfo(dialog.manga.map(Manga::id)) },
+                )
+            }
+            // KMK <--
             // SY -->
             LibraryScreenModel.Dialog.SyncFavoritesWarning -> {
                 SyncFavoritesWarningDialog(

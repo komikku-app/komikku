@@ -348,13 +348,12 @@ run {
         "eu/kanade/presentation/more/settings/widget/TriStateListDialog.kt",
     )
 
-    // Library filter / sort / text search (8.5): LibraryFilterSort.kt holds the logic moved out of
-    // LibraryScreenModel, the SY query parser it uses, the library settings model (filter toggles, sort,
-    // display mode) and their helpers. No desktop counterparts needed.
+    // Library filter / sort / text search (8.5): the SY query parser the desktop copy LibraryFilterSort.kt
+    // (app-shared/src/desktopMain) uses, the library settings model (filter toggles, sort, display mode) and their
+    // helpers. No desktop counterparts needed.
     desktopCopy(
         "eu/kanade/core/preference/PreferenceMutableState.kt",
         "eu/kanade/core/util/CollectionUtils.kt",
-        "eu/kanade/tachiyomi/ui/library/LibraryFilterSort.kt",
         "eu/kanade/tachiyomi/ui/library/LibraryItem.kt",
         "eu/kanade/tachiyomi/ui/library/LibrarySettingsScreenModel.kt",
         "exh/search/MultiWildcard.kt",
@@ -383,10 +382,9 @@ run {
     shared(
         "eu/kanade/domain/source/interactor/GetExhSavedSearch.kt",
         "eu/kanade/presentation/browse/components/BrowseSourceDialogs.kt",
-        // The filter rows of Android's filter sheet (SourceFilterItems.kt, moved out of SourceFilterDialog.kt) and SY's
-        // auto-complete filter row they use; the desktop catalogue's filter panel shows them (P13 review fixes).
+        // SY's auto-complete filter row, used by Android's filter sheet and by the desktop copy of its filter rows
+        // (SourceFilterItems.kt in app-shared/src/desktopMain) in the desktop catalogue's filter panel (P13).
         "eu/kanade/tachiyomi/ui/browse/source/browse/AutoCompleteItem.kt",
-        "eu/kanade/tachiyomi/ui/browse/source/browse/SourceFilterItems.kt",
     )
 
     // Enabled-sources query (uses `:source-local`, a desktop-only dependency of `:app-shared`), source
@@ -401,17 +399,16 @@ run {
         "eu/kanade/tachiyomi/ui/browse/source/globalsearch/SearchScreenModel.kt",
     )
 
-    // Library grouping, selection and batch actions (P2): LibraryActions.kt holds the selection / batch-action logic
-    // moved out of LibraryScreenModel (grouping moved into LibraryFilterSort.kt above), the cover helper it uses, and
-    // the change-category and remove dialogs with their helpers. Desktop counterpart in app-shared/src/desktopMain:
-    // CategoryExtensions (`visualName`; the Android file's two `stringResource` imports are ambiguous on desktop).
+    // Library grouping, selection and batch actions (P2): the cover helper the desktop copy LibraryActions.kt
+    // (app-shared/src/desktopMain) uses, and the change-category and remove dialogs with their helpers. Desktop
+    // counterpart in app-shared/src/desktopMain: CategoryExtensions (`visualName`; the Android file's two
+    // `stringResource` imports are ambiguous on desktop).
     desktopCopy(
         "eu/kanade/core/preference/CheckboxState.kt",
         "eu/kanade/presentation/category/components/CategoryDialogs.kt",
         "eu/kanade/presentation/components/DownloadDropdownMenu.kt",
         "eu/kanade/presentation/components/DropdownMenu.kt",
         "eu/kanade/presentation/library/DeleteLibraryMangaDialog.kt",
-        "eu/kanade/tachiyomi/ui/library/LibraryActions.kt",
         "eu/kanade/tachiyomi/util/MangaExtensions.kt",
     )
 
@@ -431,7 +428,8 @@ run {
     // The MangaDex delegate (P4) with its API layer and the MDList tracker it logs in / syncs through (replaces the
     // desktop MDList stub). Not borrowed: MangaDexLoginActivity (the desktop logs in through Settings → Tracking, an
     // OAuth paste handed to the MangaDex source's login, `DesktopTrackerLogin`), the follows / similar screens and their
-    // paging sources.
+    // paging sources. Desktop counterpart in app-shared/src/desktopMain: MangaDexSessionNotifier (logs instead of
+    // notifying).
     desktopCopy(
         "eu/kanade/tachiyomi/data/track/mdlist/MdList.kt",
         "eu/kanade/tachiyomi/source/online/all/MangaDex.kt",

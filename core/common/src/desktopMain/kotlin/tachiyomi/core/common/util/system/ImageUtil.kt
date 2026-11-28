@@ -71,6 +71,14 @@ object ImageUtil {
         tmpDir: UniFile,
         imageFile: UniFile,
         filenamePrefix: String,
+    ): Boolean = splitTallImage(tmpDir, imageFile, filenamePrefix, optimalImageHeight)
+
+    /** [splitTallImage] with parts of at most [optimalImageHeight] rows instead of the screens' height. */
+    internal fun splitTallImage(
+        tmpDir: UniFile,
+        imageFile: UniFile,
+        filenamePrefix: String,
+        optimalImageHeight: Int,
     ): Boolean {
         val bytes = imageFile.openInputStream().use { it.readBytes() }
         val detected = detect(bytes.copyOf(min(bytes.size, HEADER_SIZE)))
@@ -131,17 +139,19 @@ object ImageUtil {
         }
     }
 
-    /** Android: twice the display's maximum height; desktop: twice the tallest screen (headless: 2 × 2160). */
-    private val optimalImageHeight: Int by lazy {
-        val screenHeight = runCatching {
-            if (GraphicsEnvironment.isHeadless()) {
-                null
-            } else {
-                GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.maxOfOrNull { it.displayMode.height }
-            }
-        }.getOrNull() ?: 2160
-        screenHeight * 2
-    }
+    /** Android: twice the display's maximum height; desktop: [optimalImageHeight] of the connected screens. */
+    private val optimalImageHeight: Int by lazy { optimalImageHeight(screenHeights()) }
+
+    /** Twice the tallest of [screenHeights]; 2 × 2160 without a screen (headless). */
+    internal fun optimalImageHeight(screenHeights: List<Int>): Int = (screenHeights.maxOrNull() ?: 2160) * 2
+
+    private fun screenHeights(): List<Int> = runCatching {
+        if (GraphicsEnvironment.isHeadless()) {
+            emptyList()
+        } else {
+            GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.map { it.displayMode.height }
+        }
+    }.getOrDefault(emptyList())
 
     enum class ImageType(val mime: String, val extension: String) {
         AVIF("image/avif", "avif"),

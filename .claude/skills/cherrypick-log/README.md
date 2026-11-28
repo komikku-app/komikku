@@ -133,8 +133,9 @@ warnings) but carries only 14 of its 21 files. So the script compares files: the
 the files changed by every target commit that cites it.
 
 - Only files outside the upstream's `exclude_only_paths` and `partial_ignore_paths`, and inside its
-  `partial_check_paths` (when set), count. Komikku sets `partial_ignore_paths` on mihon to `CHANGELOG.md` (Komikku never
-  takes mihon's changelog entries, which about 300 mihon commits since 2024 add) and
+  `partial_check_paths` (when set), count. Komikku sets `partial_ignore_paths` on mihon to `CHANGELOG.md` (about 300
+  mihon commits since 2024 add an entry; Komikku's picks keep it only sometimes, 117 of 153 so far, and a pick without
+  it leaves out no code) and
   `data/src/main/sqldelight/tachiyomi/migrations/` (Komikku numbers its migrations differently, so mihon's `9.sqm` is
   another file here and the pick adds a new migration instead).
 - A file the target branch had at the same path before the first citing commit counts as picked only when the citing
@@ -184,11 +185,13 @@ templates). Their note is `AI checked <date>: omitted - version bump only (<file
   `AI checked` note, or once you change its status (e.g. to `X`). Only the stale script note is removed then.
 - Empty and `?` rows are checked again. An empty or `?` row whose Notes contain `AI checked` keeps that AI verdict
   unless new `O` evidence appears.
-- A `?` set by hand for a partial pick, with a `Partial <YYYY-MM-DD>:` or `Folded <YYYY-MM-DD>:` note, is kept the same
-  way: unless `O` evidence appears. Use `Partial` when you picked only part of a commit, and `Folded` when you folded a
-  part of it into the pick of another commit. Detection only sees whole files and the commits citing a hash, so it
-  would reset such a row to empty, e.g. while the pick is still on a branch, or when nothing cites the commit. The date
-  is required; other notes don't count.
+- A `?` set by hand (or by the `cherry-pick` skill) for a partial pick, with a `Partial <YYYY-MM-DD>:` or
+  `Folded <YYYY-MM-DD>:` note, is always kept, even when `O` evidence appears. Use `Partial` when you picked only part
+  of a commit, and `Folded` when you folded a part of it into the pick of another commit. Detection only sees whole
+  files and the commits citing a hash, so it would reset such a row to empty, e.g. while the pick is still on a branch,
+  or when nothing cites the commit. It can't see a left-out part under `partial_ignore_paths` either (a SQLDelight
+  migration), so the pick's own citation would look like `O` evidence. Once the rest is picked, mark the row `O` by
+  hand (`mark <hash> --status O`; the `cherry-pick` skill does this). The date is required; other notes don't count.
 - Notes are always kept, and new upstream commits are added in their place in the order.
 - If a commit is no longer reachable from its upstream branch (force-push), it moves to a **Gone from upstream** section
   and keeps its status and notes. Delete it by hand once you no longer need it.
@@ -238,7 +241,7 @@ python3 -m unittest discover -s .claude/skills/cherrypick-log -p 'test_*.py'
 
 The tests in `test_update_cherrypick_log.py` cover revert-chain flags (including when a chain gets longer and the older `X` omissions), releasing
 the script's own flags (including notes with escaped characters and user text), manual `X` pins, the rerun status rules
-(`carry_over`: manual status kept, AI verdict and a `Partial`/`Folded` `?` kept unless `O` evidence appears), the path
+(`carry_over`: manual status kept, AI verdict kept unless `O` evidence appears, a `Partial`/`Folded` `?` always kept), the path
 filters (path matching, modules, config checks, and `Builder.build` dropping path-only commits, keeping repo-wide ones
 and keeping a copy of a dropped one), the order (copies above their originals, secondary-only commits above older
 copies or at the bottom), and partial picks (which files count, ignored paths, a package moved for this repo, a file

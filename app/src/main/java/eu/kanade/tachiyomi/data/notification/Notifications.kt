@@ -23,6 +23,10 @@ object Notifications {
     const val CHANNEL_COMMON = "common_channel"
     const val ID_DOWNLOAD_IMAGE = 2
 
+    // KMK -->
+    const val ID_MANGADEX_SESSION_EXPIRED = -801
+    // KMK <--
+
     /**
      * Notification channel and ids used by the library updater.
      */

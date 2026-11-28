@@ -489,6 +489,16 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    override fun reportFullyDrawn() {
+        try {
+            super.reportFullyDrawn()
+        } catch (e: SecurityException) {
+            // Some Samsung Android 9 to 11 builds deny the platform's fully drawn broadcast
+            // and the report only feeds startup metrics, so it shouldn't crash the app
+            logcat(LogPriority.WARN, e)
+        }
+    }
+
     @Composable
     private fun HandleOnNewIntent(context: Context, navigator: Navigator) {
         LaunchedEffect(Unit) {
@@ -664,6 +674,10 @@ class MainActivity : BaseActivity() {
             Constants.SHORTCUT_LIBRARY_UPDATE_ERRORS -> {
                 navigator.popUntilRoot()
                 HomeScreen.Tab.More(toDownloads = false, toLibraryUpdateErrors = true)
+            }
+            Constants.SHORTCUT_MANGADEX_SETTINGS -> {
+                navigator.popUntilRoot()
+                HomeScreen.Tab.More(toDownloads = false, toMangadexSettings = true)
             }
             // KMK <--
             Intent.ACTION_SEARCH, Intent.ACTION_SEND, "com.google.android.gms.actions.SEARCH_ACTION" -> {

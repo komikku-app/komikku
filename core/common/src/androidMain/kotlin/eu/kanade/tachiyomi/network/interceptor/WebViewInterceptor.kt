@@ -8,9 +8,9 @@ import android.widget.Toast
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import eu.kanade.tachiyomi.util.system.setUserAgent
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.DelicateCoroutinesApi
-import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -56,21 +56,26 @@ abstract class WebViewInterceptor(
             return response
         }
 
-        if (!WebViewUtil.supportsWebView(context)) {
-            launchUI {
-                context.toast(MR.strings.information_webview_required, Toast.LENGTH_LONG)
-            }
-            return response
-        }
-        initWebView
+        if (!prepareWebView()) return response
 
         return intercept(chain, request, response)
     }
 
-    fun parseHeaders(headers: Headers): Map<String, String> {
-        // KMK --> shared with the desktop interceptor (src/main CloudflareChallenge.kt), unchanged
-        return CloudflareChallenge.browserHeaders(headers)
-        // KMK <--
+    /**
+     * Returns whether a WebView can be used, initializing it if so.
+     */
+    // KMK -->
+    @OptIn(DelicateCoroutinesApi::class)
+    // KMK <--
+    protected fun prepareWebView(): Boolean {
+        if (!WebViewUtil.supportsWebView(context)) {
+            launchUI {
+                context.toast(MR.strings.information_webview_required, Toast.LENGTH_LONG)
+            }
+            return false
+        }
+        initWebView
+        return true
     }
 
     fun CountDownLatch.awaitFor30Seconds() {
@@ -81,10 +86,7 @@ abstract class WebViewInterceptor(
         return WebView(context).apply {
             setDefaultSettings()
             // Avoid sending empty User-Agent, Chromium WebView will reset to default if empty
-            settings.userAgentString = request.header("User-Agent") ?: defaultUserAgentProvider()
+            setUserAgent(request.header("User-Agent") ?: defaultUserAgentProvider())
         }
     }
 }
-
-// KMK --> isRequestHeaderSafe and unsafeHeaderNames moved to src/main CloudflareChallenge.kt
-// KMK <--

@@ -28,6 +28,8 @@ Features: configurable reader, downloads/offline reading, trackers (MyAnimeList,
 
 Before `git push`, confirm the current branch is not `master` or `main` (`git branch --show-current`).
 
+To open a pull request and handle its reviews and CI, use the `pull-request` skill (`.claude/skills/pull-request/SKILL.md`).
+
 ### Fork markers
 
 Every Komikku addition or modification to existing code **must** be wrapped:
@@ -230,11 +232,24 @@ Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):
 - `?` rows are reviewed with the `cherrypick-log` skill.
 - `X` means "won't pick". The maintainer sets it by hand, and the skill sets it for version-bump-only commits.
 - Commits that cancel each other out (revert chains the fork has none of) are flagged `?` by the script with a `Cancels out (script):` note, for review.
-- A `cherry picked from commit` marker only counts as `O` when the citing commits carry all of the upstream commit's files that apply here (mihon's `CHANGELOG.md` and SQLDelight migrations are ignored); otherwise the row is a partial pick (`?`). A hand-set `?` with a `Partial <date>:` / `Folded <date>:` note is kept on reruns.
+- A `cherry picked from commit` marker only counts as `O` when the citing commits carry all of the upstream commit's files that apply here (mihon's `CHANGELOG.md` and SQLDelight migrations are ignored); otherwise the row is a partial pick (`?`). A hand-set `?` with a `Partial <date>:` / `Folded <date>:` note is always kept on reruns, so mark it `O` by hand once the rest is picked.
 - Pre-2024 rows at the end come from a one-off pass and may be deleted by hand.
 - Never hand-edit columns other than Status and Notes; use the script's `mark` command.
 
 Rules, commands and the porting guide: `.claude/skills/cherrypick-log/README.md`.
+
+To pick an upstream commit, use the `cherry-pick` skill (`.claude/skills/cherry-pick/SKILL.md`): it checks prerequisites and what the pick could break in Komikku (extensions, database migrations, backups, preferences), adapts it (KMK markers, migration numbers, strings), marks its row `O` in the same commit and verifies the result. It then reviews each pick with the built-in `code-review` skill (without `--fix`), fixes what is worth fixing without committing, and asks whether to fold the fixes into the pick or commit them separately.
+
+---
+
+## Known issues
+
+`ISSUES.md` (repo root) lists problems in Komikku's code that are known but not fixed yet: where each one is, how to hit it, what a fix looks like, and whether upstream has fixed it.
+
+- Check it before working on an area it names, and fix an entry there when the work allows it.
+- Delete an entry in the same commit that fixes it.
+- When a review or your own work finds a problem you won't fix now, add it to `ISSUES.md` instead of leaving it only in a review, a PR or a commit message.
+- Put a new entry next to the entries it relates to (the same file or class, then the same feature area or upstream commit), not at the end of the file; only an entry related to none goes last.
 
 ---
 

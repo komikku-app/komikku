@@ -26,6 +26,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.preferencektx)
+            implementation(androidx.webkit)
 
             implementation(libs.image.decoder)
 
@@ -85,8 +86,9 @@ dependencies {
     api(kotlinx.serialization.json)
     api(kotlinx.serialization.json.okio)
 
-    // KMK --> moved to androidMain (Android-only AAR)
+    // KMK --> moved to androidMain (Android-only AARs)
     // api(libs.preferencektx)
+    // implementation(androidx.webkit)
     // KMK <--
 
     implementation(libs.jsoup)

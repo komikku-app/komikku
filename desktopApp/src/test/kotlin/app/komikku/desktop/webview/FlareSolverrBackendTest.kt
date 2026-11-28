@@ -103,7 +103,7 @@ class FlareSolverrBackendTest {
                 if ("cf_clearance=solved" in request.headers["Cookie"].orEmpty() && request.headers["User-Agent"] == SOLVER_UA) {
                     MockResponse.Builder().code(200).body("manga list").build()
                 } else {
-                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare")
+                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare").addHeader("cf-mitigated", "challenge")
                         .body(DesktopCloudflareInterceptorTest.CHALLENGE_BODY).build()
                 }
         }

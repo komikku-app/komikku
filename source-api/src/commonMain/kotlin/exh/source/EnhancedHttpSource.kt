@@ -208,6 +208,35 @@ class EnhancedHttpSource(
      */
     override fun getFilterList() = source().getFilterList()
 
+    // KMK -->
+    override val supportsRelatedMangas get() = source().supportsRelatedMangas
+
+    override val disableRelatedMangasBySearch get() = source().disableRelatedMangasBySearch
+
+    override val disableRelatedMangas get() = source().disableRelatedMangas
+
+    override suspend fun fetchRelatedMangaList(manga: SManga) = source().fetchRelatedMangaList(manga)
+
+    override suspend fun getRelatedMangaList(
+        manga: SManga,
+        exceptionHandler: (Throwable) -> Unit,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) = source().getRelatedMangaList(manga, exceptionHandler, pushResults)
+
+    override suspend fun getRelatedMangaListByExtension(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) = source().getRelatedMangaListByExtension(manga, pushResults)
+
+    override suspend fun getRelatedMangaListBySearch(
+        manga: SManga,
+        pushResults: suspend (relatedManga: Pair<String, List<SManga>>, completed: Boolean) -> Unit,
+    ) = source().getRelatedMangaListBySearch(manga, pushResults)
+
+    override fun String.stripKeywordForRelatedMangas() =
+        with(source()) { this@stripKeywordForRelatedMangas.stripKeywordForRelatedMangas() }
+    // KMK <--
+
     fun source(): HttpSource {
         return if (Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
             enhancedSource

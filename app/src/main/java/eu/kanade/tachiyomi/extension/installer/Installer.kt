@@ -24,6 +24,8 @@ abstract class Installer(private val service: Service) {
     private val extensionManager: ExtensionManager by injectLazy()
 
     private var waitingInstall = AtomicReference<Entry?>(null)
+
+    // Guarded by itself: cancellation comes from any thread, not only main
     // KMK -->
     private val queue = Collections.synchronizedSet(mutableSetOf<Entry>())
     // KMK <--
@@ -100,17 +102,17 @@ abstract class Installer(private val service: Service) {
         if (!ready) {
             return
         }
-        if (queue.isEmpty()) {
-            service.stopSelf()
-            return
-        }
-        val nextEntry = queue.first()
-        if (waitingInstall.compareAndSet(null, nextEntry)) {
+        val nextEntry = synchronized(queue) {
+            if (queue.isEmpty()) {
+                service.stopSelf()
+                return
+            }
+            if (!waitingInstall.compareAndSet(null, queue.first())) return
             // KMK -->
-            queue.remove(nextEntry)
+            queue.first().also { queue.remove(it) }
             // KMK <--
-            processEntry(nextEntry)
         }
+        processEntry(nextEntry)
     }
 
     /**
@@ -119,8 +121,8 @@ abstract class Installer(private val service: Service) {
     @CallSuper
     open fun onDestroy() {
         LocalBroadcastManager.getInstance(service).unregisterReceiver(cancelReceiver)
-        queue.forEach { extensionManager.updateInstallStep(it.downloadId, InstallStep.Error) }
-        queue.clear()
+        val remaining = synchronized(queue) { queue.toList().also { queue.clear() } }
+        remaining.forEach { extensionManager.updateInstallStep(it.downloadId, InstallStep.Error) }
         waitingInstall.store(null)
     }
 

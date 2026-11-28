@@ -15,16 +15,19 @@ import tachiyomi.presentation.core.components.TextItem
 import tachiyomi.presentation.core.components.TriStateItem
 
 /*
- * KMK: the rows of a source's filter list, moved out of SourceFilterDialog.kt (Android's filter sheet) unchanged so
- * the desktop catalogue's filter panel shows the same rows (a `shared` borrowed source, see
- * app-shared/borrowed-app-sources.gradle.kts). One change: a select without options shows its name only, a state
- * outside its options shows the first one (SelectItem would throw on either).
+ * KMK: desktop-only copy. Follows `master`'s app/src/main/java/eu/kanade/tachiyomi/ui/browse/source/browse/
+ * SourceFilterDialog.kt (`FilterItem` and the tri-state conversions below it), last synced to `master` 15610e67e4
+ * (docs/kmp-desktop/UPSTREAM_AUDIT.md lists the desktop copies to re-sync at each merge of `master`).
+ *
+ * The rows of a source's filter list, for the desktop catalogue's filter panel. The body is `master`'s, markers
+ * included, so a re-sync is a plain diff; only the name and visibility differ (`private fun FilterItem`).
  */
 
 /** One filter of a source's [eu.kanade.tachiyomi.source.model.FilterList]; [onUpdate] after its state changed. */
 @Composable
-fun SourceFilterItem(filter: Filter<*>, onUpdate: () -> Unit, startExpanded: Boolean) {
+fun SourceFilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, startExpanded: Boolean /* SY <-- */) {
     when (filter) {
+        // SY -->
         is Filter.AutoComplete -> {
             AutoCompleteItem(
                 name = filter.name,
@@ -38,6 +41,7 @@ fun SourceFilterItem(filter: Filter<*>, onUpdate: () -> Unit, startExpanded: Boo
                 onUpdate()
             }
         }
+        // SY <--
         is Filter.Header -> {
             HeadingItem(filter.name)
         }
@@ -72,23 +76,21 @@ fun SourceFilterItem(filter: Filter<*>, onUpdate: () -> Unit, startExpanded: Boo
             }
         }
         is Filter.Select<*> -> {
-            if (filter.values.isEmpty()) {
-                HeadingItem(filter.name)
-            } else {
-                SelectItem(
-                    label = filter.name,
-                    options = filter.values,
-                    selectedIndex = filter.state.takeIf { it in filter.values.indices } ?: 0,
-                ) {
-                    filter.state = it
-                    onUpdate()
-                }
+            SelectItem(
+                label = filter.name,
+                options = filter.values,
+                selectedIndex = filter.state,
+            ) {
+                filter.state = it
+                onUpdate()
             }
         }
         is Filter.Sort -> {
             CollapsibleBox(
                 heading = filter.name,
+                // SY -->
                 startExpanded = startExpanded,
+                // SY <--
             ) {
                 Column {
                     filter.values.mapIndexed { index, item ->
@@ -117,12 +119,14 @@ fun SourceFilterItem(filter: Filter<*>, onUpdate: () -> Unit, startExpanded: Boo
         is Filter.Group<*> -> {
             CollapsibleBox(
                 heading = filter.name,
+                // SY -->
                 startExpanded = startExpanded,
+                // SY <--
             ) {
                 Column {
                     filter.state
                         .filterIsInstance<Filter<*>>()
-                        .map { SourceFilterItem(filter = it, onUpdate = onUpdate, startExpanded = startExpanded) }
+                        .map { SourceFilterItem(filter = it, onUpdate = onUpdate /* SY --> */, startExpanded /* SY <-- */) }
                 }
             }
         }
@@ -134,7 +138,7 @@ private fun Int.toTriStateFilter(): TriState {
         Filter.TriState.STATE_IGNORE -> TriState.DISABLED
         Filter.TriState.STATE_INCLUDE -> TriState.ENABLED_IS
         Filter.TriState.STATE_EXCLUDE -> TriState.ENABLED_NOT
-        else -> throw IllegalStateException("Unknown TriState state: $this")
+        else -> TriState.DISABLED
     }
 }
 

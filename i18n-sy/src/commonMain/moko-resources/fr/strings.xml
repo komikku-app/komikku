@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Actions -->
     <string name="action_skip_entry">Ne pas migrer</string>
     <string name="action_search_manually">Rechercher manuellement</string>
     <string name="action_migrate_now">Migrer maintenant</string>
@@ -158,7 +157,6 @@
     <string name="biometric_lock_time_conflicts">Un temps de verrouillage entre en conflit avec celui qui existe déjà !</string>
     <string name="biometric_lock_start_time">Entrez l\'heure de début</string>
     <string name="biometric_lock_end_time">Entrez l\'heure de fin</string>
-    <!-- Reader Settings -->
 <!--        <string name="download_threads">Download threads</string>-->
     <string name="download_threads_summary">Des valeurs plus élevées peuvent accélérer considérablement le téléchargement des images, mais peuvent également déclencher des Bannissement. La valeur recommandée est 2 ou 3. La valeur actuelle est : %s</string>
     <string name="aggressively_load_pages">Charger les pages de manière agressive</string>
@@ -227,7 +225,6 @@
     <!-- Extension section -->
     <string name="ext_redundant">Redondante</string>
     <string name="redundant_extension_message">Cette extension est redondante et ne sera pas utilisée dans cette version de Komikku.</string>
-    <!-- Migration -->
     <string name="select_sources">Sélectionnez les sources</string>
     <string name="select_none">Ne rien sélectionner</string>
     <string name="migration">Migration</string>
@@ -662,7 +659,6 @@
     <string name="rec_initializing">Initialisation</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Synchronise toutes les séries non suivies par MdList vers MangaDex en tant que lecture en cours.</string>
     <string name="similar_titles">Titres similaires</string>
-    <string name="select_scanlators">Groupes de scantrad à afficher</string>
     <string name="pref_include_chapter_url_hash">Inclure le hash de l\'URL du chapitre</string>
     <string name="pref_include_chapter_url_hash_desc">Ajoutez les six premiers caractères du hachage MD5 de l\'URL du chapitre au nom du fichier ou du dossier du chapitre.</string>
     <string name="filename">Nom du fichier</string>

@@ -95,7 +95,9 @@ python3 $P mark <hash> --status none --note "AI checked YYYY-MM-DD: not found - 
 - Keep notes to one line. Mention the evidence (target commit hash, file, or search done).
 - When the user (not the AI review) picked only part of a commit, or folded part of it into the pick of another
   commit, record it as `--status '?' --note "Partial YYYY-MM-DD: picked without <what>"` or
-  `--note "Folded YYYY-MM-DD: <what> into the pick of <hash>"`. `update` keeps such a `?` (README "Rerunning").
+  `--note "Folded YYYY-MM-DD: <what> into the pick of <hash>"`. `update` always keeps such a `?`, so mark it `O` by hand
+  once the rest is picked (README "Rerunning"). The
+  `cherry-pick` skill (`.claude/skills/cherry-pick/SKILL.md`) writes these when it makes a pick.
 
 ## 5. Clean the log: omit version-bump-only commits
 
