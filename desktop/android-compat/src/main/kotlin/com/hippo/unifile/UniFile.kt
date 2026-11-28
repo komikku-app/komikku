@@ -2,6 +2,7 @@ package com.hippo.unifile
 
 import android.content.Context
 import android.net.Uri
+import app.komikku.desktop.compat.FileUris
 import app.komikku.desktop.compat.unsupported
 import java.io.File
 import java.io.IOException
@@ -98,7 +99,7 @@ abstract class UniFile internal constructor(
         @JvmStatic
         fun fromUri(context: Context?, uri: Uri?): UniFile? {
             if (uri == null) return null
-            if (isFileUri(uri)) return uri.path?.let { FileUniFile(null, File(it)) }
+            if (isFileUri(uri)) return FileUris.file(uri)?.let { FileUniFile(null, it) }
             if (context == null) return null
             return uriHandlers.firstNotNullOfOrNull { it.fromUri(context, uri) }
         }

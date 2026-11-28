@@ -1,5 +1,6 @@
 package android.net
 
+import app.komikku.desktop.compat.FileUris
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -227,9 +228,10 @@ abstract class Uri internal constructor() : Comparable<Uri> {
         @JvmStatic
         fun parse(uriString: String): Uri = StringUri.parse(uriString)
 
-        /** `file://` URI of the absolute path of [file]. */
+        /** `file://` URI of the absolute path of [file] (on Windows `file:///C%3A/…`, [FileUris.uriPath]). */
         @JvmStatic
-        fun fromFile(file: File): Uri = HierarchicalUri("file", "", encode(file.absolutePath, "/"), null, null)
+        fun fromFile(file: File): Uri =
+            HierarchicalUri("file", "", encode(FileUris.uriPath(file.absolutePath), "/"), null, null)
 
         /** Opaque URI from decoded parts. */
         @JvmStatic

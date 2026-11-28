@@ -1,5 +1,6 @@
 package android.net
 
+import app.komikku.desktop.compat.FileUris
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -114,8 +115,8 @@ class UriTest {
         val file = File("/tmp/some dir/ä.cbz")
         val uri = Uri.fromFile(file)
         uri.scheme shouldBe "file"
-        uri.toString() shouldBe "file://" + Uri.encode(file.absolutePath, "/")
-        uri.path shouldBe file.absolutePath
+        uri.toString() shouldBe "file://" + Uri.encode(FileUris.uriPath(file.absolutePath), "/")
+        uri.path shouldBe FileUris.uriPath(file.absolutePath)
         uri.encodedAuthority shouldBe ""
     }
 

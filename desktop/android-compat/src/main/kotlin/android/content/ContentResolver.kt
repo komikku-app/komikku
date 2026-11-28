@@ -2,6 +2,7 @@ package android.content
 
 import android.net.Uri
 import android.webkit.MimeTypeMap
+import app.komikku.desktop.compat.FileUris
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -36,7 +37,7 @@ open class ContentResolver(
 
     private fun Uri.requireFile(): File {
         if (scheme != SCHEME_FILE) throw FileNotFoundException("android-compat: only file URIs are supported, got $this")
-        return File(path ?: throw FileNotFoundException("android-compat: no path in $this"))
+        return FileUris.file(this) ?: throw FileNotFoundException("android-compat: no path in $this")
     }
 
     companion object {
