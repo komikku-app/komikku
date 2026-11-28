@@ -532,7 +532,7 @@ mark the residual path in both modules.
   - A4, the first merge of `master` (approved in ANSWER 009): not started; it runs in a separate local checkout on a
     local branch and reaches `multiplatform` only when green.
 - **Open pull requests into `master` (Android bug fixes; the maintainer reviews and merges):**
-  <https://github.com/komikku-app/komikku/pull/2023> — 12 fixes found during the port (ATLAS_INSTRUCTIONS.md,
+  <https://github.com/komikku-app/komikku/pull/2023> — 15 fixes found during the port (ATLAS_INSTRUCTIONS.md,
   DECISION 004).
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
