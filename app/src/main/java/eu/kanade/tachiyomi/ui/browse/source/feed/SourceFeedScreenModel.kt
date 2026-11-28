@@ -201,7 +201,12 @@ open class SourceFeedScreenModel(
                 },
                 SourceFeedUI.Browse(null),
             ) + feedSavedSearch
-                .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
+                // KMK -->
+                // Skip a row whose saved search is gone instead of crashing on it
+                .mapNotNull { feed ->
+                    savedSearches[feed.savedSearch]?.let { SourceFeedUI.SourceSavedSearch(feed, it, null) }
+                }
+            // KMK <--
             )
             .toImmutableList()
     }
