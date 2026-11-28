@@ -15,6 +15,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import app.komikku.desktop.di.DesktopInjekt
+import app.komikku.desktop.instance.DesktopSingleInstance
 import app.komikku.desktop.log.DesktopLogFile
 import app.komikku.desktop.notification.DesktopNotifications
 import app.komikku.desktop.notification.DesktopTray
@@ -60,13 +61,15 @@ import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.awt.Dimension
+import javax.swing.SwingUtilities
 import kotlin.system.exitProcess
 
 /**
  * Komikku desktop entry point: boots the shared stack through Injekt ([DesktopInjekt]: preferences,
  * network, database, repositories, interactors, local source), starts the scheduler ([DesktopScheduler]) and opens
  * the main window. `--self-test[=<report file>]` runs the packaged runtime's self-test ([DesktopSelfTest], M2) instead
- * and exits; `--self-test-extensions=<folder>` adds the extension APKs in that folder to it.
+ * and exits; `--self-test-extensions=<folder>` adds the extension APKs in that folder to it. One instance runs per data
+ * folder ([DesktopSingleInstance]).
  */
 fun main(args: Array<String>) {
     if (DesktopSelfTest.isRequested(args)) {
@@ -77,6 +80,9 @@ fun main(args: Array<String>) {
     // can fail (P12 review): the data folder is resolved without Injekt, so a failure inside `DesktopInjekt.init()`
     // reaches the uncaught-exception handler and ends up in the file
     val dataDir = DesktopDirs.dataDir
+    // One running instance per data folder: another start on it asks this one to show its window and exits. Checked
+    // before the log file, which belongs to the running instance, and before `DesktopInjekt.init()` opens the database
+    val singleInstance = DesktopSingleInstance.ensure(dataDir)
     DesktopLogFile.install(DesktopLogFile.directoryFor(dataDir))
     val app = DesktopInjekt.init(dataDir)
     // SY's log level, once the preferences are there (applied at once when it changes)
@@ -103,10 +109,11 @@ fun main(args: Array<String>) {
             val installed = DesktopAppEvents.installQuitHandler(::exitApplication)
             onDispose { if (installed) DesktopAppEvents.removeQuitHandler() }
         }
-        KomikkuWindow(app = app, onCloseRequest = ::exitApplication)
+        KomikkuWindow(app = app, onCloseRequest = ::exitApplication, singleInstance = singleInstance)
     }
     // The work runs on daemon threads: stop it and let it clean up before the JVM exits (bounded).
     runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
+    singleInstance.close()
     DesktopAppEvents.finishQuit()
     exitProcess(0)
 }
@@ -116,6 +123,7 @@ fun main(args: Array<String>) {
 fun ApplicationScope.KomikkuWindow(
     app: Application,
     onCloseRequest: () -> Unit,
+    singleInstance: DesktopSingleInstance? = null,
 ) {
     val windowPreferences = remember { Injekt.get<DesktopWindowPreferences>() }
     val windowState = rememberPersistedWindowState(windowPreferences)
@@ -163,6 +171,19 @@ fun ApplicationScope.KomikkuWindow(
                 )
             }
             onDispose { tray.remove() }
+        }
+        // Another start on this data folder asked for the window (on the instance's thread)
+        DisposableEffect(singleInstance, window) {
+            singleInstance?.onShowRequest = {
+                SwingUtilities.invokeLater {
+                    windowState.isMinimized = false
+                    window.isVisible = true
+                    window.toFront()
+                    window.requestFocus()
+                    DesktopSingleInstance.requestForeground()
+                }
+            }
+            onDispose { singleInstance?.onShowRequest = null }
         }
         KomikkuApp(
             context = app,
