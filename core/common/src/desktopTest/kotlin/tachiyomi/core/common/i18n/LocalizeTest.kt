@@ -47,6 +47,14 @@ class LocalizeTest {
     }
 
     @Test
+    fun `context-free helpers keep the backslashes of their arguments`() {
+        val path = """C:\Users\me\AppData\Roaming\Komikku"""
+
+        stringResource(MR.strings.pref_relative_format_summary, path, "b") shouldBe "\"$path\" instead of \"b\""
+        pluralStringResource(MR.plurals.lock_after_mins, 3, path) shouldBe "After $path minutes"
+    }
+
+    @Test
     fun `follows the moko locale`() {
         StringDesc.localeType = StringDesc.LocaleType.Custom("fr")
         stringResource(MR.strings.label_library) shouldBe "Bibliothèque"
