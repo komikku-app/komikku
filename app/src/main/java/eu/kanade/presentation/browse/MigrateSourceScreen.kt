@@ -194,7 +194,9 @@ private fun MigrateSourceList(
                         .filter {
                             !filterObsoleteSource ||
                                 (
-                                    it.first.installedExtension?.isObsolete != false &&
+                                    // Not installed, or an obsolete extension: not a built-in source such as the
+                                    // merged source, which has no extension either
+                                    (it.first.isStub || it.first.installedExtension?.isObsolete == true) &&
                                         (!isHentaiEnabled || it.first.id !in eHentaiSourceIds)
                                     )
                         },
