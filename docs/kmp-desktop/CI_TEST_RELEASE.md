@@ -1,4 +1,4 @@
-Status: Test and release engineer — done: run 46120905511 read, Linux smoke install fixed, R.2 fixed (15/15 repeated runs), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes (3934443c74, e10450b554, 30f75ccd5b), macOS smoke design note — left: the next CI run's Windows test, Windows and Linux smoke results; Forge to decide on the two master-owned files (HttpPageLoader in 0a77c5bc21, ChapterCache.close patch); the product bugs listed below (other owners)
+Status: Test and release engineer — done: run 46120905511 read, R.2 fixed (15/15) and sent to master as a patch (ANSWER 015), ANSWER 013 signing and pinning, Linux notification smoke, compat tests on Windows, Windows test teardown fixes, ChapterCache reflection in one helper behind a test, MangayomiSourceStoreTest flake fixed (20/20), Linux smoke without the menu folder workaround, macOS smoke design note — left: the next CI run (Windows tests, Linux notification and menu entry rows), the product bugs listed below (other owners)
 
 # Desktop CI: test and release notes
 
@@ -58,10 +58,10 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
   Gradle test JVM with `--rerun --max-workers=2`, two busy loops beside it): the whole reader test package
   (`app.komikku.desktop.reader.*`, 48 tests incl. `ReaderWidePagesUiTest` and `HttpPageLoaderRaceTest`) **15 of 15
   passed**. Gates on that tree: `:app:spotlessCheck`, `:desktopApp:spotlessCheck`, `:app:verifyBorrowedSources` passed.
-- The same race exists on Android (`master`). `HttpPageLoader.kt` is master's file, and `0a77c5bc21` (pushed before
-  the "master-owned files stay identical" rule) makes `origin/multiplatform` differ from `origin/master` there. Forge to
-  decide: send it to `master` as an Android-fix patch (`.git/forge/scratch/r2/httppageloader-race.patch`, the
-  `HttpPageLoader` part of the commit) or move the fix elsewhere.
+- The same race exists on Android (`master`). ANSWER 015: it goes to `master` as
+  `docs/kmp-desktop/android-fixes/httppageloader-race.patch` (for #2023), with a new unit test
+  (`HttpPageLoaderTest`, failed before the fix, 5 of 5 after); it stays on `multiplatform` meanwhile, listed as a
+  temporary difference in UPSTREAM_AUDIT.md 7.2.
 
 ## ANSWER 013 (signing and what CI downloads)
 
@@ -99,7 +99,7 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
 
 | Group | Tests | Cause | Fix |
 |---|---|---|---|
-| Teardown: open database and chapter cache | 36 classes (`executionError`, `Failed to close extension context`) | `@TempDir` deletion: `databases/tachiyomi.db{,-shm,-wal}` and `cache/chapter_disk_cache/journal` still open (the Injekt graph's SQLite driver and `ChapterCache`'s `DiskLruCache`); Linux and macOS delete open files, Windows does not | `DesktopInjekt.onOpened` / `closeOpenFiles()`: the DI module registers the database driver, the network cache, the chapter cache (its private `diskCache` closed by reflection: `ChapterCache` is master's file and must stay identical; Android-fix patch adding `ChapterCache.close()` in `.git/forge/scratch/r2/chaptercache-close.patch`, for Forge) and the Coil disk cache when they are created; `DesktopDataDirTeardown` closes them after stopping the writers. A location already deleted is skipped (`e10450b554`) |
+| Teardown: open database and chapter cache | 36 classes (`executionError`, `Failed to close extension context`) | `@TempDir` deletion: `databases/tachiyomi.db{,-shm,-wal}` and `cache/chapter_disk_cache/journal` still open (the Injekt graph's SQLite driver and `ChapterCache`'s `DiskLruCache`); Linux and macOS delete open files, Windows does not | `DesktopInjekt.onOpened` / `closeOpenFiles()`: the DI module registers the database driver, the network cache, the chapter cache (its private `diskCache` closed by reflection: `ChapterCache` is master's file and must stay identical; ANSWER 015: all of it in `ChapterCacheReflection`, behind `ChapterCacheReflectionTest`, `c3c4df0f7f`) and the Coil disk cache when they are created; `DesktopDataDirTeardown` closes them after stopping the writers. A location already deleted is skipped (`e10450b554`) |
 | Teardown: network cache outside Injekt | `DesktopNetworkTest` (2), `DesktopWebViewTest` (2), `DesktopCloudflareInterceptorTest`, `FlareSolverrBackendTest` | their own `DesktopServices` / `NetworkHelper`: `network_cache/journal` open | the tests close `client.cache` after use (`3934443c74`) |
 | Teardown: Coil disk cache | `JsSourceBrowseUiTest`, `ExtensionsUiTest` (with others) | `cache/image_cache/journal` open | registered in `KomikkuApp`'s image loader factory (`e10450b554`) |
 | Child process log | `DesktopSingleInstanceTest` "two data folders run side by side" | the child JVM's stderr went to `child-0.log` in `@TempDir`, still locked at deletion | the child's stderr is read through a pipe into memory (and shown when an awaited line is missing) (`30f75ccd5b`) |
@@ -124,6 +124,43 @@ answer within two seconds" (busy dialog path) and `DesktopExtensionManagerTest` 
 
 `DesktopNetworkTest` with other tests' cookies (Forge 14:41 (b)): the master merge already clears the shared cookie
 store before each test in that class; left to the merge, not changed here.
+
+## `MangayomiSourceStoreTest` "uninstall removes the source and its files" (fixed, `0517ff5675`)
+
+- **Failure** (run 46129485116, Linux `package`, 1 of 477): Gradle's line 322 is the `runBlocking` call (coroutine
+  stack trace recovery); the HTML report has the real line, 326: `store.sources.value.shouldBeEmpty()` right after
+  `store.uninstall(ID)`, "List should be empty but has 1 elements, first being: Fixture JS".
+- **Cause (test):** `MangayomiSourceStore.sources` is `combine(loaded, showNsfw).stateIn(scope)`: it follows a change
+  of the loaded sources on the store's scope (`Dispatchers.IO`), after `uninstall` returned, not before. The test read
+  `.value` at once; it usually passed because nothing else was running. Not the ordered tests sharing state: nothing
+  else writes the loaded sources after the first load. Shown deterministically with a scratch test (not committed)
+  whose store scope runs on one thread kept busy during `uninstall`: `installed` was already empty, `sources.value`
+  still held the source, and it emptied once the thread was free. No product caller reads `sources.value` (the source
+  managers collect the flow).
+- **Fix:** the test waits for the expected list (`sourcesWhere`, at most 5 s, as the class already did after the
+  first install and the NSFW switch) after install, update and uninstall; the same race was in three more reads (the
+  update's new source, the NSFW update, the update after the storage failure). Nothing was relaxed: each check still
+  requires the same list.
+- **Repeated runs** (`.git/forge/gradlew-locked`, JDK 21, fresh test JVM each with `--rerun`, two busy loops beside
+  it): **20 of 20 passed** (16 tests each). `:desktopApp:spotlessCheck` passed.
+
+## ANSWER 015 (master-owned files) and the Linux menu entry
+
+- **`HttpPageLoader`:** `docs/kmp-desktop/android-fixes/httppageloader-race.patch` (README entry), made from local
+  branch `fix/httppageloader-race` on `origin/master` `15610e67e4` in a temporary worktree: the file is
+  byte-identical to `multiplatform`'s; new `HttpPageLoaderTest` (MockK chapter cache with one writer per key). Before
+  the fix it failed (`Ready` with the image not cached), after it 5 of 5 passed; `spotlessApply`, `spotlessCheck`,
+  `:app:compileDebugKotlin` passed there; `git am --3way` on a clean `origin/master` gives the same tree.
+  UPSTREAM_AUDIT.md 7.2 lists it as a temporary difference.
+- **`ChapterCache`:** `c3c4df0f7f`: `ChapterCacheReflection` is the only reflection into it (the teardown close and
+  the reader race test's lock); `ChapterCacheReflectionTest` fails naming the field when master renames, removes or
+  retypes it, and checks that the close really closes the disk cache. Note for Forge: the race test's use (holding the
+  cache's lock) is test set-up, not teardown; it goes through the helper too.
+- **Linux smoke (`d776182683`, Forge 16:47):** the workaround `fd0807e357` is gone; the job records the menu folders
+  before the install and checks that `komikku-Komikku.desktop` is installed after it (in `/usr/share/applications`,
+  where postinst copies it without menu folders, or `/usr/local/share/applications`, where `xdg-desktop-menu` puts it
+  when that folder exists) and gone after the removal. Checked with `bash -n` only; the next CI run is the first real
+  one.
 
 ## macOS smoke job (design only, not built)
 
