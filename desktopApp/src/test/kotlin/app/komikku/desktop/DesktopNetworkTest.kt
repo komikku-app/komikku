@@ -1,6 +1,7 @@
 package app.komikku.desktop
 
 import android.app.Application
+import android.webkit.CookieManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.network.await
@@ -43,6 +44,8 @@ class DesktopNetworkTest {
 
     @BeforeEach
     fun start() {
+        // The cookie store is process-wide: other test classes (DesktopWebViewTest) leave cookies for localhost
+        CookieManager.getInstance().removeAllCookies(null)
         server.start()
     }
 
@@ -90,6 +93,7 @@ class DesktopNetworkTest {
             MockResponse.Builder()
                 .code(403)
                 .addHeader("Server", "cloudflare")
+                .addHeader("cf-mitigated", "challenge")
                 .body("<html><div id=\"challenge-error-title\"></div></html>")
                 .build(),
         )

@@ -29,7 +29,8 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * KMK: desktop Cloudflare interceptor, the counterpart of Android's WebView one (src/androidMain) on a
- * [BrowserBackend] (P7). The same detection ([CloudflareChallenge.isChallenge]) decides what a challenge is; then, like
+ * [BrowserBackend] (P7). Android's detection (`cf-mitigated: challenge` from Cloudflare, the desktop copy
+ * [CloudflareChallenge.isChallenge]) decides what a challenge is; then, like
  * Android, the old `cf_clearance` is removed, a browser loads the page with the request's headers and User-Agent until
  * a new `cf_clearance` is set (30 s by default), the browser's cookies go into the shared cookie jar and the request is
  * sent once more; that response is returned whatever it is.

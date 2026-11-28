@@ -79,7 +79,7 @@ class WebViewUiTest {
                 if ("cf_clearance=abc" in request.headers["Cookie"].orEmpty()) {
                     MockResponse.Builder().code(200).body("ok").build()
                 } else {
-                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare")
+                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare").addHeader("cf-mitigated", "challenge")
                         .body(DesktopCloudflareInterceptorTest.CHALLENGE_BODY).build()
                 }
         }

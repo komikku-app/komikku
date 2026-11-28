@@ -118,7 +118,7 @@ class DesktopWebViewTest {
                 return if ("cf_clearance=abc" in cookie && request.headers["User-Agent"] == BROWSER_UA) {
                     MockResponse.Builder().code(200).body("ok").build()
                 } else {
-                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare")
+                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare").addHeader("cf-mitigated", "challenge")
                         .body(DesktopCloudflareInterceptorTest.CHALLENGE_BODY).build()
                 }
             }
@@ -165,7 +165,7 @@ class DesktopWebViewTest {
                 if ("cf_clearance=abc" in request.headers["Cookie"].orEmpty() && request.headers["User-Agent"] == BROWSER_UA) {
                     MockResponse.Builder().code(200).body("ok").build()
                 } else {
-                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare")
+                    MockResponse.Builder().code(403).addHeader("Server", "cloudflare").addHeader("cf-mitigated", "challenge")
                         .body(DesktopCloudflareInterceptorTest.CHALLENGE_BODY).build()
                 }
         }
@@ -306,7 +306,7 @@ class DesktopWebViewTest {
         session.interactive shouldBe true
         session.until shouldBe BrowserCondition.UntilClosed
         session.userAgent shouldBe SOURCE_UA
-        session.headers shouldBe mapOf("Referer" to "https://example.org/")
+        session.headers shouldBe mapOf("referer" to "https://example.org/")
         session.timeout shouldBe DesktopWebView.INTERACTIVE_TIMEOUT
         services.network.cookieJar.get(url).map { it.name } shouldContainExactly listOf("login")
     }
