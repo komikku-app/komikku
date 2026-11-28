@@ -758,8 +758,12 @@ jobs:
   # each run on a session bus of its own with dbus-monitor: without a notification service (must fail), then with dunst
   # the plain self-test (no notification), notify-send and gdbus; on Windows the same self-test through the temporary
   # tray icon. On Linux also the .rpm in a Fedora container: installed without menu folders, upgraded twice and erased,
-  # with the menu entry checked after each step (nothing graphical). Scripts: .github/scripts/desktop_smoke_linux.sh,
-  # desktop_smoke_rpm.sh and desktop_smoke_windows.ps1.
+  # with the menu entry checked after each step (nothing graphical). Then, on Linux, Windows and macOS (macos-15 runs
+  # only this), the app's own UI smoke mode (`--ui-smoke`, UI_SMOKE_DESIGN.md) on the installed .deb, the .msi
+  # unpacked as an administrative image and the .app copied from the .dmg: a fixed script through the real window on a
+  # temporary data folder, offline; rows for its exit code, report result, failing step and network attempts. Scripts:
+  # .github/scripts/desktop_smoke_linux.sh, desktop_smoke_rpm.sh, desktop_smoke_windows.ps1, desktop_ui_smoke.sh (Linux,
+  # macOS) and desktop_ui_smoke.ps1.
   # Non-blocking (`continue-on-error`), and `release` must keep depending only on `package` until this job has been
   # green on ten consecutive runs (ATLAS_INSTRUCTIONS.md, ANSWER 005).
   #
@@ -781,6 +785,9 @@ jobs:
   #   logs/notify.txt, notify-std*.log, screenshots/notify-<n>.png  Windows: the self-test report and the screen
   #                              every 3 s while it ran (the balloon of the temporary tray icon)
   #   rpm/summary.md, rpm/logs/  Linux: the RPM test's table and its rpm / dnf / rpmrebuild output
+  #   ui-smoke/summary.md        the UI smoke's table; ui-smoke/report/ the mode's report folder (report.txt,
+  #                              report.json, 01-library.png … 13-close.png, komikku.log, last-frame-accessibility.txt);
+  #                              ui-smoke/std*.log the launcher's output (a refusal's reason)
   #   logs/install.log, apt-*.log, menu-folders.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt
   #                              as they apply
   # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with
@@ -798,9 +805,12 @@ jobs:
             asset-os: linux
           - os: 'windows-2022'
             asset-os: windows
+          # The UI smoke only (no install smoke test on macOS yet)
+          - os: 'macos-15'
+            asset-os: macos
     runs-on: ${{ matrix.os }}
     continue-on-error: true
-    timeout-minutes: 45
+    timeout-minutes: 60
     concurrency:
       group: ${{ github.workflow }}-smoke-${{ github.ref }}-${{ matrix.os }}
       cancel-in-progress: true
@@ -838,6 +848,69 @@ jobs:
         timeout-minutes: 20
         shell: pwsh
         run: ./.github/scripts/desktop_smoke_windows.ps1 -Packages packages -Output smoke-output
+
+      # The UI smoke steps run also when the smoke test above failed: they do not depend on it. The Linux smoke test
+      # uninstalls the .deb, so it is installed again here
+      - name: Install the app for the UI smoke (Linux)
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        run: |
+          set -euo pipefail
+          debs=(packages/*.deb)
+          mkdir -p smoke-output/ui-smoke
+          if ! sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q "./${debs[0]}" > smoke-output/ui-smoke/apt-install.log 2>&1; then
+            tail -n 40 smoke-output/ui-smoke/apt-install.log
+            exit 1
+          fi
+          # The whole list through grep (no -m 1: dpkg would get SIGPIPE, which pipefail turns into a failure)
+          launchers=$(dpkg -L "$(dpkg-deb -f "${debs[0]}" Package)" | grep '/bin/Komikku$')
+          echo "KOMIKKU_LAUNCHER=${launchers%%$'\n'*}" >> "$GITHUB_ENV"
+
+      - name: Unpack the app for the UI smoke (macOS)
+        if: ${{ !cancelled() && runner.os == 'macOS' }}
+        run: |
+          set -euo pipefail
+          dmgs=(packages/*.dmg)
+          mount="$RUNNER_TEMP/komikku-dmg"
+          app="$RUNNER_TEMP/komikku-app"
+          mkdir -p "$mount" "$app"
+          # `yes` accepts a licence agreement, should the image carry one
+          hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "$mount" "${dmgs[0]}" < <(yes)
+          ditto "$mount/Komikku.app" "$app/Komikku.app"
+          hdiutil detach "$mount"
+          echo "KOMIKKU_LAUNCHER=$app/Komikku.app/Contents/MacOS/Komikku" >> "$GITHUB_ENV"
+
+      # An administrative installation only unpacks the MSI's files into a folder (nothing is registered)
+      - name: Unpack the app for the UI smoke (Windows)
+        if: ${{ !cancelled() && runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          $msi = @(Get-ChildItem -LiteralPath packages -Filter '*.msi' -File)
+          if ($msi.Count -ne 1) { throw "expected one .msi, found $($msi.Count)" }
+          $app = Join-Path $env:RUNNER_TEMP 'komikku-ui-smoke-app'
+          $log = Join-Path $env:RUNNER_TEMP 'msi-extract.log'
+          $process = Start-Process msiexec.exe -Wait -PassThru `
+            -ArgumentList @('/a', "`"$($msi[0].FullName)`"", '/qn', "TARGETDIR=`"$app`"", '/l*v', "`"$log`"")
+          if ($process.ExitCode -ne 0) {
+            Get-Content -LiteralPath $log -Tail 60 -ErrorAction SilentlyContinue
+            throw "msiexec /a exited with $($process.ExitCode)"
+          }
+          $launcher = Get-ChildItem -LiteralPath $app -Filter 'Komikku.exe' -File -Recurse | Select-Object -First 1
+          if (-not $launcher) { throw 'no Komikku.exe in the administrative image' }
+          "KOMIKKU_LAUNCHER=$($launcher.FullName)" >> $env:GITHUB_ENV
+
+      # Also when the install or unpack step failed: the table then says that the launcher is missing
+      - name: UI smoke (Linux, macOS)
+        if: ${{ !cancelled() && runner.os != 'Windows' }}
+        timeout-minutes: 12
+        run: .github/scripts/desktop_ui_smoke.sh "${KOMIKKU_LAUNCHER:-not installed}" smoke-output/ui-smoke
+
+      - name: UI smoke (Windows)
+        if: ${{ !cancelled() && runner.os == 'Windows' }}
+        timeout-minutes: 12
+        shell: pwsh
+        run: |
+          $launcher = if ($env:KOMIKKU_LAUNCHER) { $env:KOMIKKU_LAUNCHER } else { 'not unpacked' }
+          ./.github/scripts/desktop_ui_smoke.ps1 -Launcher $launcher -Output smoke-output/ui-smoke
 
       - name: Upload screenshots and logs
         if: always()
