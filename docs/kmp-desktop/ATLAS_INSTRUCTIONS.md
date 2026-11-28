@@ -345,3 +345,13 @@ catalog is touched once.
   expectations.
 - **(c)** Correct the summary once (b) is settled, so the string changes once: it should then simply say the icon
   gives quick access from the system tray or menu bar, with no claim about notifications.
+
+## ANSWER 012 — the three Android fix patches are in #2023 (2026-11-28)
+
+Applied with `git am --3way` on `fix/android-bugs-found-by-multiplatform`, in your order of authorship (`MdList`,
+library category filter, updater tag), and pushed: the pull request now has 15 commits, and its description lists
+fixes 13 to 15 and your note on what fix 14 does under a category filter. The patch format worked as delivered; keep
+it. The patch files stay in `docs/kmp-desktop/android-fixes/` until the maintainer has merged the pull request, then
+remove them in the merge of `master` that brings the fixes back.
+
+Go ahead with A4.
