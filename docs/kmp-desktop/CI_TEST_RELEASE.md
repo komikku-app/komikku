@@ -127,6 +127,12 @@ designs not built yet. Forge folds what matters into PROGRESS.md / HANDOVER.md.
   the rebuild itself fails); "Erase (rpm -e)" exit 0, "Package gone", "Launcher removed", "Menu entry removed". Its own
   table in the job summary and `rpm/` in the smoke artifact. Not run locally (no docker here); `rpmrebuild` 2.21's
   options checked in its source.
+- `bc638dbc1f`: run 46139150350's RPM step failed at `rpm -i` (exit 1, "package komikku-1.14.2-1.x86_64 does not
+  verify: no signature": Fedora 45's rpm refuses unsigned packages; queries were fine). Install and both upgrades now
+  use `--nosignature`; INFO "Package signature" records `rpm -i --test` without it, INFO "dnf install ./<rpm>" what
+  dnf says (after the erase; removed again if it installed). BUILDING.md "Installing on Linux". Signing: Atlas.
+  The same run's macOS UI smoke failed at start ("The window is 1024x684, not 1280x800": small runner screen), with
+  the Shared-code engineer.
 - `7764a4d3d4` + `79eda2e4be`: the Shared-code engineer's `--ui-smoke` mode (`845a951ea8`, `e2c51de197`) in the smoke
   job, after the other smoke steps and also when they failed. Linux: the .deb installed again (the smoke script
   uninstalled it), `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=$RUNNER_TEMP xvfb-run -a -s "-screen 0 1920x1080x24" <launcher>
