@@ -163,16 +163,19 @@ fun ApplicationScope.KomikkuWindow(
         }
         // P17: the optional tray icon (no-op without a system tray); it brings this window back and can quit
         DisposableEffect(trayIcon, window) {
+            val showWindow = {
+                windowState.isMinimized = false
+                window.isVisible = true
+                window.toFront()
+                window.requestFocus()
+            }
+            // Also with the setting off: a notification's temporary icon opens the window too
+            tray.setOpenAction(showWindow)
             if (trayIcon) {
                 tray.install(
                     openText = KMR.strings.desktop_tray_open.localized(),
                     exitText = KMR.strings.desktop_tray_exit.localized(),
-                    onOpen = {
-                        windowState.isMinimized = false
-                        window.isVisible = true
-                        window.toFront()
-                        window.requestFocus()
-                    },
+                    onOpen = showWindow,
                     onExit = onCloseRequest,
                 )
             }
