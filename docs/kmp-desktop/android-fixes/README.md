@@ -1,4 +1,4 @@
-Status: Upstream integrator — done: release tag patch, library category filter patch — left: MdList patch
+Status: Upstream integrator — done: release tag, library category filter and MdList patches — left: nothing
 
 # Android fixes for `master`
 
@@ -64,3 +64,29 @@ and the patch's tests. The new tests were written before the fix.
   Composable and is covered by the compile only.
 - **Gates:** `:app:testDebugUnitTest --tests '…LibraryScreenModelStateTest'` 4 tests, 0 failed; `spotlessApply`,
   `spotlessCheck`, `:app:compileDebugKotlin` successful.
+
+## `mdlist-missing-source.patch`
+
+`fix(mdlist): Look up a missing MangaDex source again instead of until a restart`
+
+- **Bug:** `MdList` held `MdUtil.getEnabledMangaDex()` in a `by lazy`, so a `null` (no enabled MangaDex source at
+  the first use) was kept for the whole session.
+- **On Android:** sources load asynchronously (`AndroidSourceManager` collects the installed extensions in a
+  coroutine), so MDList used before MangaDex is loaded at startup (a library update refreshing tracks, for
+  example), or before MangaDex is installed or enabled, fails with "Mangadex not enabled" on every refresh, search
+  and metadata lookup until the app restarts.
+- **Fix:** a `null` is no longer cached; a found source still is. The change is the same text as the `multiplatform`
+  branch's commit `7aee688539` (comment included), so merging `master` into `multiplatform` after this patch needs
+  no resolution in that block.
+- **Test:** a new case in `app/src/test/.../track/mdlist/MdListTest.kt`: `getEnabledMangaDex()` returns `null` and
+  then a source; the first `refresh` throws `MangaDexNotFoundException`, the next two reach the source, and the source
+  is looked up twice in all (kept once found). Before the fix the second `refresh` threw `MangaDexNotFoundException`
+  (the cached `null`).
+- **Reproduced on `master`:** by the unit test; not run on a device.
+- **Gates:** `:app:testDebugUnitTest --tests '…MdListTest'` 2 tests, 0 failed; `spotlessApply`, `spotlessCheck`,
+  `:app:compileDebugKotlin` successful.
+
+## Local branches
+
+The commits are on local branches of the `master` checkout used for the gates (never pushed):
+`fix/app-release-odd-tag`, `fix/library-update-category-filter`, `fix/mdlist-missing-source`.

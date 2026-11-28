@@ -1,0 +1,112 @@
+From e8a08744a1b27a524d069bc65c4f066625e5df12 Mon Sep 17 00:00:00 2001
+From: Cuong-Tran <16017808+cuong-tran@users.noreply.github.com>
+Date: Sat, 28 Nov 2026 14:14:52 +0700
+Subject: [PATCH] fix(mdlist): Look up a missing MangaDex source again instead
+ of until a restart
+
+MdList cached MdUtil.getEnabledMangaDex() with by lazy, null included.
+Sources load asynchronously, so a first use before MangaDex was loaded,
+or before it was installed or enabled, left MDList refresh, search and
+metadata failing with "Mangadex not enabled" until the app restarted.
+A null is no longer cached; a found source still is.
+---
+ .../tachiyomi/data/track/mdlist/MdList.kt     |  9 ++++-
+ .../tachiyomi/data/track/mdlist/MdListTest.kt | 37 +++++++++++++++++++
+ 2 files changed, 45 insertions(+), 1 deletion(-)
+
+diff --git a/app/src/main/java/eu/kanade/tachiyomi/data/track/mdlist/MdList.kt b/app/src/main/java/eu/kanade/tachiyomi/data/track/mdlist/MdList.kt
+index 2c48d84004..bc2ec0e9f2 100644
+--- a/app/src/main/java/eu/kanade/tachiyomi/data/track/mdlist/MdList.kt
++++ b/app/src/main/java/eu/kanade/tachiyomi/data/track/mdlist/MdList.kt
+@@ -29,7 +29,14 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
+             .toImmutableList()
+     }
+ 
+-    private val mdex by lazy { MdUtil.getEnabledMangaDex() }
++    // KMK -->
++    // Cached like `by lazy` once found, but a `null` is not cached: sources still loading (the desktop loads them
++    // asynchronously) or MangaDex installed / enabled later kept MDList unusable until a restart
++    @Volatile
++    private var cachedMdex: eu.kanade.tachiyomi.source.online.all.MangaDex? = null
++    private val mdex: eu.kanade.tachiyomi.source.online.all.MangaDex?
++        get() = cachedMdex ?: MdUtil.getEnabledMangaDex()?.also { cachedMdex = it }
++    // KMK <--
+ 
+     // KMK -->
+     val sessionNotifier = MangaDexSessionNotifier()
+diff --git a/app/src/test/java/eu/kanade/tachiyomi/data/track/mdlist/MdListTest.kt b/app/src/test/java/eu/kanade/tachiyomi/data/track/mdlist/MdListTest.kt
+index ca17e7f584..e1cc9f2679 100644
+--- a/app/src/test/java/eu/kanade/tachiyomi/data/track/mdlist/MdListTest.kt
++++ b/app/src/test/java/eu/kanade/tachiyomi/data/track/mdlist/MdListTest.kt
+@@ -1,18 +1,28 @@
+ package eu.kanade.tachiyomi.data.track.mdlist
+ 
++import eu.kanade.domain.source.service.SourcePreferences
+ import eu.kanade.domain.track.service.TrackPreferences
++import eu.kanade.tachiyomi.data.database.models.Track
+ import eu.kanade.tachiyomi.data.track.TrackerManager
+ import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
++import eu.kanade.tachiyomi.source.online.all.MangaDex
+ import exh.md.network.MangaDexSessionNotifier
+ import exh.md.utils.MdUtil
++import io.kotest.assertions.throwables.shouldThrow
+ import io.kotest.matchers.shouldBe
++import io.mockk.coEvery
++import io.mockk.coVerify
+ import io.mockk.every
+ import io.mockk.just
++import io.mockk.mockk
+ import io.mockk.mockkConstructor
++import io.mockk.mockkObject
+ import io.mockk.runs
+ import io.mockk.spyk
+ import io.mockk.unmockkConstructor
++import io.mockk.unmockkObject
+ import io.mockk.verify
++import kotlinx.coroutines.test.runTest
+ import okhttp3.OkHttpClient
+ import okhttp3.Protocol
+ import okhttp3.Request
+@@ -23,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach
+ import org.junit.jupiter.api.Test
+ import tachiyomi.core.common.preference.InMemoryPreferenceStore
+ import tachiyomi.core.common.preference.InMemoryPreferenceStore.InMemoryPreference
++import tachiyomi.domain.source.service.SourceManager
+ import uy.kohesive.injekt.Injekt
+ import uy.kohesive.injekt.api.InjektScope
+ import uy.kohesive.injekt.api.addSingleton
+@@ -104,6 +115,32 @@ class MdListTest {
+         verify(exactly = 1) { anyConstructed<MangaDexSessionNotifier>().dismiss() }
+     }
+ 
++    // KMK -->
++    @Test
++    fun `a missing MangaDex source is looked up again on the next use, a found one is kept`() = runTest {
++        // Resolved by the default arguments of MdUtil.getEnabledMangaDex(), whose result is stubbed below
++        Injekt.addSingleton(mockk<SourcePreferences>())
++        Injekt.addSingleton(mockk<SourceManager>())
++        val mangaDex = mockk<MangaDex>()
++        coEvery { mangaDex.fetchTrackingInfo(any()) } returns Track.create(TrackerManager.MDLIST)
++        val track = Track.create(TrackerManager.MDLIST).apply { tracking_url = "${MdUtil.baseUrl}/title/id" }
++        mockkObject(MdUtil)
++        try {
++            // Not installed, not enabled or not loaded yet at the first use; there at the second
++            every { MdUtil.getEnabledMangaDex(any(), any()) } returnsMany listOf(null, mangaDex)
++
++            shouldThrow<MdList.MangaDexNotFoundException> { mdList.refresh(track) }
++            mdList.refresh(track)
++            mdList.refresh(track)
++
++            verify(exactly = 2) { MdUtil.getEnabledMangaDex(any(), any()) }
++            coVerify(exactly = 2) { mangaDex.fetchTrackingInfo(track.tracking_url) }
++        } finally {
++            unmockkObject(MdUtil)
++        }
++    }
++    // KMK <--
++
+     /** Sends a request through [MdList.interceptor] and returns it as it reached the network. */
+     private fun sendThroughInterceptor(): Request {
+         var sent: Request? = null
+
+base-commit: 15610e67e4a13e20f104bc515923ddcdc6a92fdc
