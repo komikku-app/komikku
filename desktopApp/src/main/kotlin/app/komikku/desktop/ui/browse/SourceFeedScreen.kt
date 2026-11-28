@@ -47,8 +47,8 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.SourceFeedRow
 import eu.kanade.tachiyomi.ui.browse.feed.fetchSourceFeedPage
@@ -126,7 +126,7 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
                 }
             },
             actions = {
-                if (source !is CatalogueSource) return@BrowseScaffold
+                if (source == null) return@BrowseScaffold
                 if (bulkState.selectionMode) {
                     BulkSelectionActions(
                         state = bulkState,
@@ -168,7 +168,7 @@ class SourceFeedScreen(private val sourceId: Long) : Screen() {
                 }
             },
         ) {
-            if (source !is CatalogueSource) {
+            if (source == null) {
                 EmptyScreen(stringRes = KMR.strings.desktop_source_not_installed)
                 return@BrowseScaffold
             }
@@ -310,7 +310,7 @@ class SourceFeedScreenModel(
     )
 
     val source = sourceManager.get(sourceId)
-    private val catalogueSource = source as? CatalogueSource
+    private val catalogueSource: Source? = source
 
     // Same as Android's: up to five rows load at a time, on Dispatchers.IO's threads
     private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
@@ -342,7 +342,7 @@ class SourceFeedScreenModel(
      * Follows the source's feed rows and builds the rows on each change; the first build reloads every row when
      * [reloadFirst]. A failure to read them (a database error) shows the error state and ends this subscription.
      */
-    private fun subscribe(source: CatalogueSource, reloadFirst: Boolean) {
+    private fun subscribe(source: Source, reloadFirst: Boolean) {
         subscription = screenModelScope.launch {
             var reload = reloadFirst
             getFeedSavedSearchBySourceId.subscribe(sourceId)
@@ -374,7 +374,7 @@ class SourceFeedScreenModel(
         }
     }
 
-    private suspend fun buildRows(source: CatalogueSource, feeds: List<FeedSavedSearch>, reload: Boolean) = buildMutex.withLock {
+    private suspend fun buildRows(source: Source, feeds: List<FeedSavedSearch>, reload: Boolean) = buildMutex.withLock {
         try {
             lastFeeds = feeds
             val savedSearches = withIOContext { getSavedSearchBySourceIdFeed.await(sourceId) }
@@ -410,7 +410,7 @@ class SourceFeedScreenModel(
         else -> this == other
     }
 
-    private suspend fun loadRow(source: CatalogueSource, row: SourceFeedRow) {
+    private suspend fun loadRow(source: Source, row: SourceFeedRow) {
         val (results, error) = try {
             val page = withContext(coroutineDispatcher) { fetchSourceFeedPage(source, row, filterSerializer) }.mangas
             val manga = withIOContext {

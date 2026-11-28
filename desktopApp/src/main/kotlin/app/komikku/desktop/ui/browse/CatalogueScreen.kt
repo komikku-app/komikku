@@ -87,7 +87,6 @@ import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -216,7 +215,7 @@ class CatalogueScreen(
                     )
                     return@BrowseScaffold
                 }
-                if (source is CatalogueSource) {
+                if (source != null) {
                     if (migrationList == null) {
                         BulkSelectionButton(isRunning = bulkState.isRunning, onClick = { bulkModel.toggleSelectionMode() })
                     }
@@ -250,7 +249,7 @@ class CatalogueScreen(
                 }
             },
         ) {
-            if (source !is CatalogueSource) {
+            if (source == null) {
                 EmptyScreen(stringRes = KMR.strings.desktop_source_not_installed)
             } else {
                 Row(modifier = Modifier.fillMaxSize()) {
@@ -396,7 +395,7 @@ class CatalogueScreenModel(
     }
 
     val source: Source? = sourceManager.get(sourceId)
-    private val catalogueSource = source as? CatalogueSource
+    private val catalogueSource: Source? = source
 
     /** Android's "expand all filters" preference (`UiPreferences.expandFilters`). */
     val startExpanded: Boolean = uiPreferences.expandFilters().get()
@@ -543,7 +542,7 @@ class CatalogueScreenModel(
      * Opens with a saved search (a feed row), like Android's `BrowseSourceScreenModel` with `savedSearch`: its query
      * with its filters, the source's defaults when they no longer load; popular when it is gone or fails.
      */
-    private fun openSavedSearch(source: CatalogueSource, savedSearchId: Long) {
+    private fun openSavedSearch(source: Source, savedSearchId: Long) {
         applyJob = screenModelScope.launch {
             val (defaults, search) = sourceCall {
                 source.getFilterList() to getExhSavedSearch.awaitOne(savedSearchId, source::getFilterList)
@@ -709,7 +708,7 @@ class CatalogueScreenModel(
     }
 
     /** The source's filter list with [applied]'s states carried over (Android's saved search deserialisation). */
-    private fun freshFilters(source: CatalogueSource, applied: FilterList?): FilterList {
+    private fun freshFilters(source: Source, applied: FilterList?): FilterList {
         val filters = source.getFilterList()
         if (applied != null) {
             runCatching { filterSerializer.deserialize(filters, filterSerializer.serialize(applied)) }
@@ -718,7 +717,7 @@ class CatalogueScreenModel(
         return filters
     }
 
-    private fun filterListOrEmpty(source: CatalogueSource): FilterList = try {
+    private fun filterListOrEmpty(source: Source): FilterList = try {
         source.getFilterList()
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
