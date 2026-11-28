@@ -370,6 +370,50 @@ function Start-App([int] $Attempt, [string] $RenderApi = '') {
 
 function Get-Elapsed([DateTime] $Since) { [int](([DateTime]::UtcNow - $Since).TotalSeconds) }
 
+# Error lines the app log may have for a reason outside the app, each with its reason. Any other error-level line or
+# stack-trace line fails the log check; a line matching an entry (and the stack trace under it) is reported as INFO.
+# The same list is in desktop_smoke_linux.sh.
+$AllowedErrors = @(
+    @{
+        Pattern = 'E/DesktopAppUpdateChecker: Unable to check for an app update$'
+        Reason = 'the CI package has the update check on (-Penable-updater) and its unauthenticated GitHub API call from a shared runner can fail or hit the rate limit (REVIEW_STEP_D1.md 3.1); the smoke test does not cover the update check'
+    }
+)
+$LogLine = '^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3} '
+
+# Error-level lines and stack-trace lines (the log writes a throwable's stack trace under its message) of $Files as
+# "<file>:<line>:<text>": Problems (a list), Allowed (allow-list index -> list of the matching error lines)
+function Get-LogProblems([string[]] $Files) {
+    $problems = [System.Collections.Generic.List[string]]::new()
+    $allowed = @{}
+    foreach ($file in $Files) {
+        $name = Split-Path -Leaf $file
+        $number = 0
+        $skipping = $false
+        foreach ($line in [IO.File]::ReadLines($file)) {
+            $number++
+            if ($line -cmatch $LogLine) {
+                $skipping = $false
+                if ($line -cnotmatch "${LogLine}E/") { continue }
+                $index = -1
+                for ($i = 0; $i -lt $AllowedErrors.Count; $i++) {
+                    if ($line -cmatch $AllowedErrors[$i].Pattern) { $index = $i; break }
+                }
+                if ($index -ge 0) {
+                    $skipping = $true
+                    if (-not $allowed.Contains($index)) { $allowed[$index] = [System.Collections.Generic.List[string]]::new() }
+                    $allowed[$index].Add("${name}:${number}:$line")
+                } else {
+                    $problems.Add("${name}:${number}:$line")
+                }
+            } elseif (-not $skipping -and $line -cmatch '^\s+at \S|^Caused by:') {
+                $problems.Add("${name}:${number}:$line")
+            }
+        }
+    }
+    [pscustomobject]@{ Problems = $problems; Allowed = $allowed }
+}
+
 # Minimizes the window and starts the launcher once more on the same data folder: DesktopSingleInstance must make that
 # start ask the running app to show its window and end with exit code 0, without a second window
 function Test-SecondInstance {
@@ -470,18 +514,22 @@ try {
     $sums = @(Get-ChildItem -LiteralPath $Packages -Filter '*-SHA256SUMS.txt' -File)
     $artifactFiles = (Get-ChildItem -LiteralPath $Packages -Name) -join ' '
     if ($sums.Count -ne 1) { Stop-Smoke 'Package checksums' "expected one *-SHA256SUMS.txt in the artifact, found: $artifactFiles" }
+    $msis = @(Get-ChildItem -LiteralPath $Packages -Filter '*.msi' -File)
+    if ($msis.Count -ne 1) { Stop-Smoke 'Package' "expected one .msi in the artifact, found: $artifactFiles" }
+    $Msi = $msis[0].FullName
     $mismatches = @()
+    $verified = @()
     foreach ($line in Get-Content -LiteralPath $sums[0].FullName) {
         if ($line -notmatch '^([0-9a-fA-F]{64}) [ *](.+)$') { continue }
         $file = Join-Path $Packages $Matches[2]
         $actual = if (Test-Path -LiteralPath $file) { (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash } else { 'missing' }
-        if ($actual -ne $Matches[1].ToUpperInvariant()) { $mismatches += $Matches[2] }
+        if ($actual -eq $Matches[1].ToUpperInvariant()) { $verified += $Matches[2] } else { $mismatches += $Matches[2] }
     }
     if ($mismatches.Count -gt 0) { Stop-Smoke 'Package checksums' "mismatch or missing: $($mismatches -join ', ')" }
-    Pass 'Package checksums' $sums[0].Name
-    $msis = @(Get-ChildItem -LiteralPath $Packages -Filter '*.msi' -File)
-    if ($msis.Count -ne 1) { Stop-Smoke 'Package' "expected one .msi in the artifact, found: $artifactFiles" }
-    $Msi = $msis[0].FullName
+    # Like `sha256sum -c`: a sums file with no readable line verifies nothing; the installed .msi must be among them
+    if ($verified.Count -eq 0) { Stop-Smoke 'Package checksums' "no line of $($sums[0].Name) could be read" }
+    if ($msis[0].Name -cnotin $verified) { Stop-Smoke 'Package checksums' "$($msis[0].Name) is not listed in $($sums[0].Name)" }
+    Pass 'Package checksums' "$($sums[0].Name): $($verified.Count) file(s) verified, $($msis[0].Name) among them"
 
     # --- Install --------------------------------------------------------------------------------------------------
 
@@ -595,6 +643,8 @@ try {
     }
 
     $previous = $startShot
+    $moreShot = $null
+    $libraryShot = $null
     $number = 2
     foreach ($step in @(@(2, 'updates'), @(3, 'history'), @(4, 'browse'), @(5, 'more'), @(1, 'library'))) {
         $key = $step[0]
@@ -621,12 +671,23 @@ try {
         } else {
             Fail "Ctrl+$key ($name) changes the window" "only $(Format-Percent $changed $pixels) % of the pixels, settled: $($script:Settled)"
         }
+        if ($name -eq 'more') { $moreShot = $shot }
+        if ($name -eq 'library') { $libraryShot = $shot }
         $previous = $shot
     }
-    if ($previous -ne $startShot -and (Test-Path -LiteralPath $previous) -and (Test-Path -LiteralPath $startShot)) {
-        $changed = Get-DiffPixels $startShot $previous
-        if ($changed -ge 0) {
-            Info 'Library after Ctrl+1 against the first screenshot' "$(Format-Percent $changed ([long]$script:ShotWidth * $script:ShotHeight)) % of the pixels differ"
+    # Relative, as empty screens differ little in absolute terms: Ctrl+1 must lead back to the start screen (the
+    # library), so its screenshot is closer to the first one than to the More screen it came from
+    if ($libraryShot -and $moreShot -and (Test-Path -LiteralPath $libraryShot) -and (Test-Path -LiteralPath $moreShot)) {
+        $pixels = [long]$script:ShotWidth * $script:ShotHeight
+        $toStart = Get-DiffPixels $startShot $libraryShot
+        $toMore = Get-DiffPixels $moreShot $libraryShot
+        $detail = "$(Format-Percent $toStart $pixels) % of the pixels differ from the first screenshot, $(Format-Percent $toMore $pixels) % from the More screen"
+        if ($toStart -lt 0 -or $toMore -lt 0) {
+            Fail 'Library after Ctrl+1 looks like the start screen' 'the screenshots could not be compared'
+        } elseif ($toStart -lt $toMore) {
+            Pass 'Library after Ctrl+1 looks like the start screen' $detail
+        } else {
+            Fail 'Library after Ctrl+1 looks like the start screen' $detail
         }
     }
 
@@ -680,18 +741,20 @@ try {
         } else {
             Fail 'Log: no uncaught exception' $uncaught[0].Line
         }
-        # Error-level lines and stack-trace lines (the log writes a throwable's stack trace under its message)
-        $problems = @(Select-String -LiteralPath $logFiles -CaseSensitive `
-                -Pattern '^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3} E/', '^\s+at \S', '^Caused by:')
-        [IO.File]::WriteAllLines((Join-Path $Output 'log-problems.txt'),
-            [string[]] @($problems | ForEach-Object { "$($_.Filename):$($_.LineNumber):$($_.Line)" }))
+        $scan = Get-LogProblems @($logFiles)
+        $problems = $scan.Problems
+        [IO.File]::WriteAllLines((Join-Path $Output 'log-problems.txt'), [string[]] @($problems))
+        foreach ($index in $scan.Allowed.Keys) {
+            $lines = $scan.Allowed[$index]
+            Info "Log: allowed error ($($lines.Count) time(s))" "$($lines[0]) - allowed because $($AllowedErrors[$index].Reason)"
+        }
         if ($problems.Count -eq 0) {
-            Pass 'Log: no error or stack trace'
+            Pass 'Log: no error or stack trace' 'apart from the allowed ones above, if any'
         } else {
             Write-Host '::group::Errors and stack traces in the log (log-problems.txt)'
-            $problems | Select-Object -First 60 | ForEach-Object { Write-Host $_.Line }
+            $problems | Select-Object -First 60 | ForEach-Object { Write-Host $_ }
             Write-Host '::endgroup::'
-            Fail 'Log: no error or stack trace' "$($problems.Count) line(s), first: $($problems[0].Line)"
+            Fail 'Log: no error or stack trace' "$($problems.Count) line(s), first: $($problems[0])"
         }
         $tray = @(Select-String -LiteralPath $logFiles -Pattern 'System tray' -CaseSensitive | Select-Object -First 3 | ForEach-Object Line)
         Info 'System tray lines in the log' $(if ($tray.Count -gt 0) { $tray -join ' / ' } else { 'none (no tray error logged)' })

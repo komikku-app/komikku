@@ -715,8 +715,10 @@ jobs:
 
   # Track D, step 2 (WINDOWS_LINUX_TEST_PLAN.md, section 4): installs what `package` built on a fresh runner, starts the
   # installed app on a fresh data folder (-Dkomikku.dataDir, never the default one), waits for its window, takes
-  # screenshots, switches the top-level tabs with Ctrl+2…5 and Ctrl+1, closes the window and checks a clean exit and a
-  # log without exceptions, then uninstalls. Driven only from outside (window system, keyboard shortcuts); Linux on Xvfb
+  # screenshots, switches the top-level tabs with Ctrl+2…5 and Ctrl+1, minimizes the window and starts the launcher
+  # again on the same data folder (the single-instance lock must restore the window and end that start with exit code
+  # 0), closes the window and checks a clean exit and a log without errors (apart from an allow-list in the scripts,
+  # each entry with its reason), then uninstalls. Driven only from outside (window system, keyboard shortcuts); Linux on Xvfb
   # with openbox. Scripts: .github/scripts/desktop_smoke_linux.sh and desktop_smoke_windows.ps1.
   # Non-blocking (`continue-on-error`), and `release` must keep depending only on `package` until this job has been
   # green on ten consecutive runs (ATLAS_INSTRUCTIONS.md, ANSWER 005).
@@ -726,10 +728,13 @@ jobs:
   #   summary.md                 the same table
   #   screenshots/01-start.png   the window's content after start, then 02-ctrl2-updates … 06-ctrl1-library.png after
   #                              each shortcut (each one taken once the screen stopped changing); 01-start-screen.png is
-  #                              the whole screen; no-window-<n>.png / close-timeout.png only when that went wrong
+  #                              the whole screen; 07-second-start-screen.png the whole screen after the second start;
+  #                              no-window-<n>.png / close-timeout.png / second-start-timeout.png only when that went
+  #                              wrong
   #   logs/data-<n>/komikku.log  the app's own log of attempt n (debug level), with the data folder's file list
-  #   logs/app-std*-<n>.log      the launcher's stdout / stderr (empty on Windows if the GUI launcher drops them)
-  #   log-problems.txt           every error-level and stack-trace line of the app log
+  #   logs/app-std*-<n>.log      the launcher's stdout / stderr (empty on Windows if the GUI launcher drops them);
+  #                              logs/second-start-std*.log the same for the second start
+  #   log-problems.txt           every error-level and stack-trace line of the app log that is not allow-listed
   #   logs/install.log, apt-*.log, uninstall.log, xvfb.log, openbox.log, windows-<n>.txt, jstack.txt  as they apply
   # Attempt 2 exists only when no window appeared with Skiko's default renderer and the app was started again with
   # SKIKO_RENDER_API=SOFTWARE; that is a finding even when attempt 2 passes.

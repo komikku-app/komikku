@@ -39,6 +39,13 @@ second_timeout=30
 settled_max=5
 changed_min=10
 
+# Error lines the app log may have for a reason outside the app, as "<extended regular expression>|<reason>". Any
+# other error-level line or stack-trace line fails the log check; a line matching an entry (and the stack trace under
+# it) is reported as INFO. The same list is in desktop_smoke_windows.ps1.
+allowed_errors=(
+  'E/DesktopAppUpdateChecker: Unable to check for an app update$|the CI package has the update check on (-Penable-updater) and its unauthenticated GitHub API call from a shared runner can fail or hit the rate limit (REVIEW_STEP_D1.md 3.1); the smoke test does not cover the update check'
+)
+
 failures=0
 rows=()
 app_pid=""
@@ -307,6 +314,41 @@ second_start() {
   running "$app_pid" || fail "First instance still running after the second start"
 }
 
+# scan_log <file>...: the error-level and stack-trace lines (the log writes a throwable's stack trace under its
+# message) as "P<tab><file>:<line>:<text>", and those an allowed_errors entry matches (the error line only; its stack
+# trace is skipped) as "A<tab><entry number><tab><file>:<line>:<text>"
+scan_log() {
+  local patterns
+  patterns=$(printf '%s\n' "${allowed_errors[@]%%|*}")
+  awk -v patterns="$patterns" '
+    BEGIN {
+      count = split(patterns, allow, "\n")
+      stamp = "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9][.][0-9][0-9][0-9] "
+    }
+    FNR == 1 {
+      skipping = 0
+      name = FILENAME
+      sub(/.*\//, "", name)
+    }
+    $0 ~ stamp {
+      skipping = 0
+      if ($0 !~ (stamp "E/")) next
+      for (i = 1; i <= count; i++) {
+        if (allow[i] != "" && $0 ~ allow[i]) {
+          print "A\t" i "\t" name ":" FNR ":" $0
+          skipping = 1
+          next
+        }
+      }
+      print "P\t" name ":" FNR ":" $0
+      next
+    }
+    /^[ \t]+at [^ ]/ || /^Caused by:/ {
+      if (!skipping) print "P\t" name ":" FNR ":" $0
+    }
+  ' "$@"
+}
+
 # Records why no window appeared and ends that attempt
 no_window() {
   local result=$1 name=$2 code
@@ -459,6 +501,8 @@ else
 fi
 
 previous=$start_shot
+more_shot=""
+library_shot=""
 number=2
 for step in "2 updates" "3 history" "4 browse" "5 more" "1 library"; do
   key=${step%% *}
@@ -484,12 +528,23 @@ for step in "2 updates" "3 history" "4 browse" "5 more" "1 library"; do
   else
     fail "Ctrl+$key ($name) changes the window" "only $(percent "$changed" "$pixels") % of the pixels, settled: $settled"
   fi
+  [ "$name" = more ] && more_shot=$shot
+  [ "$name" = library ] && library_shot=$shot
   previous=$shot
 done
-if [ -f "$previous" ] && [ "$previous" != "$start_shot" ] && [ -f "$start_shot" ]; then
-  changed=$(diff_pixels "$start_shot" "$previous")
-  if [ "$changed" -ge 0 ]; then
-    info "Library after Ctrl+1 against the first screenshot" "$(percent "$changed" "$((WIDTH * HEIGHT))") % of the pixels differ"
+# Relative, as empty screens differ little in absolute terms: Ctrl+1 must lead back to the start screen (the library),
+# so its screenshot is closer to the first one than to the More screen it came from
+if [ -f "$library_shot" ] && [ -f "$more_shot" ] && [ -f "$start_shot" ]; then
+  to_start=$(diff_pixels "$start_shot" "$library_shot")
+  to_more=$(diff_pixels "$more_shot" "$library_shot")
+  pixels=$((WIDTH * HEIGHT))
+  detail="$(percent "$to_start" "$pixels") % of the pixels differ from the first screenshot, $(percent "$to_more" "$pixels") % from the More screen"
+  if [ "$to_start" -lt 0 ] || [ "$to_more" -lt 0 ]; then
+    fail "Library after Ctrl+1 looks like the start screen" "the screenshots could not be compared"
+  elif [ "$to_start" -lt "$to_more" ]; then
+    pass "Library after Ctrl+1 looks like the start screen" "$detail"
+  else
+    fail "Library after Ctrl+1 looks like the start screen" "$detail"
   fi
 fi
 
@@ -542,11 +597,17 @@ if [ "${#logs[@]}" -gt 0 ]; then
   else
     fail "Log: no uncaught exception" "$(printf '%s\n' "$uncaught" | head -n 1)"
   fi
-  # Error-level lines and stack-trace lines (the log writes a throwable's stack trace under its message)
-  grep -n -E '^[0-9-]{10} [0-9:.]{12} E/|^[[:space:]]+at [^ ]|^Caused by:' "${logs[@]}" > "$out/log-problems.txt"
+  scan_log "${logs[@]}" > "$tmp/log-scan.txt"
+  grep '^P' "$tmp/log-scan.txt" | cut -f 2- > "$out/log-problems.txt"
+  for entry in $(seq 1 "${#allowed_errors[@]}"); do
+    matches=$(awk -F '\t' -v entry="$entry" '$1 == "A" && $2 == entry' "$tmp/log-scan.txt")
+    [ -n "$matches" ] || continue
+    info "Log: allowed error ($(printf '%s\n' "$matches" | wc -l) time(s))" \
+      "$(printf '%s\n' "$matches" | head -n 1 | cut -f 3-) - allowed because ${allowed_errors[$((entry - 1))]#*|}"
+  done
   problems=$(wc -l < "$out/log-problems.txt")
   if [ "$problems" -eq 0 ]; then
-    pass "Log: no error or stack trace"
+    pass "Log: no error or stack trace" "apart from the allowed ones above, if any"
   else
     echo "::group::Errors and stack traces in the log (log-problems.txt)"
     head -n 60 "$out/log-problems.txt"
