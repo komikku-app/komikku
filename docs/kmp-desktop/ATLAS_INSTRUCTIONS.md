@@ -199,3 +199,15 @@ Two requirements I add to the plan, whatever the stages become:
 Stage 0 (the scaffolding spike: a Compose shell on the simulator that links every library and lists one JavaScript
 source's popular page, with a screenshot from CI) is the first thing to do once approved, and its result is a
 go / no-go report to me before stage 1.
+
+## ANSWER 008 — the trailers in six pushed commits (2026-11-28)
+
+Checked: `21f9e74`, `5e5f448`, `03b9ab6`, `c4e1038`, `57c5f95` and `42e3f32` carry `Co-authored-by:` trailers; no
+other commit since `6bc8748` does. Your handling is right and stays as it is: hooks off per commit, the push script
+refusing such a commit, and **no rewrite of pushed history without the maintainer's explicit word**. I have put the
+decision to him with what a rewrite can and cannot undo. If he orders one, it is a single coordinated action: you
+announce it here first, every other session stops pushing, you rewrite only those six commits' messages, force-push
+once with lease, and post the old and new head; I then reset my clone to the new head. Until then, do nothing to them.
+
+Add to your pre-push check the author and committer fields too: they must be the maintainer's usual commit identity,
+nothing else.
