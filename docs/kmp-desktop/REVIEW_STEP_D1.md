@@ -1,6 +1,18 @@
 # Review of step D1 (instance lock, Linux notifications, new desktop CI jobs)
 
-Status: Reviewer — done: step 1 (one instance per data folder) — left: step 2 (Linux notifications), step 3 (CI jobs)
+Status: Reviewer — done: steps 1, 2 and 3 reviewed up to `f28941bc1f` — left: re-check the fixes and the first run
+of the new CI jobs (46117892032) when the owners report
+
+## Summary
+
+| Step | Owner | High | Medium | Low |
+|------|-------|------|--------|-----|
+| 1. One instance per data folder | Shared-code engineer | 0 | 1 | 3 |
+| 2. Linux notifications without a tray | Windows and Linux engineer | 0 | 0 | 3 |
+| 3. New desktop CI jobs | Test and release engineer | 0 | 1 | 4 |
+
+Medium: 1.1 (a start during the running instance's shutdown exits and nothing runs), 3.1 (any error line, such as a
+failed update check on the runner, fails the smoke test).
 
 Code review, high effort, 2026-11-28. Reviewer role; the owning roles fix. Reviewed against the committed state of
 `origin/multiplatform` at `f28941bc1f` (the commits of `03b9ab6..f28941bc1f`); file and line numbers are at that
@@ -112,3 +124,205 @@ be locked (finding 1.3).
   so the 2 s hold in practice); any `IOException` is "no answer".
 - Tests run the second start in a real child JVM (the lock is per process), with timeouts on every wait and the
   children killed in `@AfterEach`.
+
+## Step 2: Linux notifications without a tray (Windows and Linux engineer)
+
+**Range reviewed:** `835fc05288` feat(kmp): Add a Linux notifier through notify-send or gdbus, `6014c403e1` feat(kmp):
+Post Linux notifications without a tray icon, `ea59fe89c4` test(kmp): Test the Linux notifier's commands, fallbacks and
+timeouts, `88021f40b9` docs(kmp): Describe the Linux notification checks for the smoke test. Last commit of this role
+covered: `88021f40b9` (nothing newer from it on `origin/multiplatform` at `f28941bc1f`).
+
+**Specification check (ANSWER 005 item 3):** the "Show system notifications" setting governs, the tray icon is
+separate: met (`DesktopSystemNotifier.show` checks `enabled()` first, the Linux notifier is chosen whatever the tray
+setting; tested both ways). `notify-send` when on the `PATH`, otherwise `gdbus call` to
+`org.freedesktop.Notifications`: met (`gdbus` is also tried after a failed `notify-send`, which is a sensible
+extension). As arguments, never through a shell string: met (`ProcessBuilder(List)`, absolute executable from the
+`PATH`, relative `PATH` entries skipped). Time-limited: met (10 s, then `destroyForcibly`). Never blocking the caller:
+met (one daemon worker, bounded queue; a full queue goes to the tray at once). Silent fallback to the tray message and
+then to nothing: met (logged as warnings only). No new library: met. Windows keeps the tray message: met (tested).
+
+### 2.1 Low: without a notification service each notification costs up to 20 s and the queue falls minutes behind
+
+- **File, line:** `desktopApp/src/main/kotlin/app/komikku/desktop/notification/LinuxNotifier.kt` lines 60–75
+  (`post`), 80 (`TIMEOUT_SECONDS = 10`), 125–144 (`gdbusCommand`, no `--timeout`), 219–225 (one worker, queue 16).
+- **Problem:** on a session where `org.freedesktop.Notifications` is not answering (no daemon, a hung daemon, D-Bus
+  activation that stalls, a minimal window manager), every notification waits for `notify-send` to be killed at 10 s,
+  then for `gdbus` (whose own D-Bus timeout is 25 s) to be killed at 10 s, before the tray fallback. With one worker,
+  a burst (library update result, several download errors, backup) is shown by the tray minutes late, and the first
+  16 are delayed while later ones overflow straight to the tray, out of order. Nothing remembers that the service is
+  missing. Not blocking and no data risk, so low.
+- **Proposed fix:** pass `--timeout 5` to `gdbus call`; after a command times out (not after a plain non-zero exit),
+  skip that command for a while (for example ten minutes, or until the next app start) so later notifications go
+  straight to the next one or the tray. Test with the existing fake runner: a timed-out runner is not called again for
+  the next notification.
+- **Owner:** Windows and Linux engineer. **Design-level:** no.
+
+### 2.2 Low: notification markup entities show literally on servers without `body-markup`
+
+- **File, line:** `desktopApp/src/main/kotlin/app/komikku/desktop/notification/LinuxNotifier.kt` lines 26–27,
+  150–152 (`body`).
+- **Problem:** the body is always entity-escaped (`&` → `&amp;`). The Desktop Notifications specification makes
+  markup a server capability (`body-markup` from `GetCapabilities`); a server without it shows the text as sent, so
+  a title like "Kaguya & Shirogane" or "Re:Zero <Ex>" arrives as `&amp;` / `&lt;Ex&gt;`. Most current servers (GNOME
+  Shell, KDE Plasma, dunst, xfce4-notifyd, mako) advertise it; minimal or older ones do not.
+- **Proposed fix:** ask `GetCapabilities` once (`gdbus call … --method org.freedesktop.Notifications.GetCapabilities`,
+  time-limited like the rest) on the worker thread and escape only when `body-markup` is listed; or accept and note
+  it in the test plan's section 5 as a known limitation. Either is fine; record the choice.
+- **Owner:** Windows and Linux engineer. **Design-level:** no.
+
+### 2.3 Low: the escaping is checked only against hand-written models of GLib, not the real tools
+
+- **File, line:** `desktopApp/src/test/kotlin/app/komikku/desktop/notification/LinuxNotifierTest.kt` lines 320–392
+  (`parseGVariantString`, `gStrcompress`); `docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md` section 5 (runs A–D, not
+  implemented in `.github/scripts/desktop_smoke_linux.sh`, which records "Notifications: not observed yet").
+- **Problem:** the GVariant text and `g_strcompress` handling were read correctly by this review (GLib's string
+  parser accepts `\uXXXX` / `\UXXXXXXXX`, `g_strcompress` turns `\\` into `\`, `--` ends GLib option parsing), but the
+  unit tests compare against the author's own re-implementation of those parsers, so a shared misreading would pass.
+  Section 5 describes the real check (dbus-monitor + dunst under `dbus-run-session`, runs with and without
+  `notify-send`), and it is the only proof on a real `gdbus`.
+- **Proposed fix:** implement section 5 runs A and B in the Linux smoke test (the trigger question in section 5 item 4
+  is open; until there is an in-app trigger, the script can call the exact command lines the unit test pins, with the
+  awkward strings of `GVariant strings are ASCII and parse back to the text`, and compare what `dbus-monitor` sees).
+- **Owner:** Test and release engineer (workflow and script), with the Windows and Linux engineer's command lines.
+  **Design-level:** no (the in-app trigger in section 5 item 4 is a question for Forge / Atlas).
+
+### Step 2: checked and found fine
+
+- No shell anywhere: `notify-send` gets `--app-name=Komikku`, `--`, summary, body; a title starting with `-` is after
+  `--`. `gdbus` arguments are double-quoted GVariant strings (never starting with `-`), typed numbers and empty
+  containers (`uint32 0`, `@as []`, `@a{sv} {}`, `int32 -1`) matching `Notify(susssasa{sv}i)`.
+- GVariant escaping: `"` and `\` escaped, line break as `\n`, everything outside printable ASCII as `\u` / `\U`, so
+  the argument is plain ASCII whatever the JVM's argument encoding; control characters other than line breaks are
+  removed before (shared `MacOsNotifier.argument`), lone surrogates become U+FFFD, the cut never splits a pair or an
+  entity. `notify-send`'s body backslashes are doubled after the entity escaping (entities have no backslash);
+  the summary, which `notify-send` does not expand, is left alone. Empty summary becomes "Komikku" (notify-send
+  refuses an empty one).
+- Process handling: output discarded (no full pipe can stall the child), exit code 0 means posted, a hang is killed
+  and waited for (tested with a real child process and its pid checked dead).
+- Executor: `ThreadPoolExecutor(0, 1, 30 s, queue 16)` starts its one daemon worker on demand (core size 0 with a
+  queue still starts a worker), rejects when full; the rejection and a throwing runner or fallback are caught.
+- "Hide notification content" and the locked app: unchanged; titles are removed in `DesktopNotifications` before any
+  notifier sees them, so the Linux path inherits it.
+- macOS: `MacOsNotifier` itself is unchanged; only `DesktopSystemNotifier` was generalised (`macOs` → `system`), and
+  `create` still picks `MacOsNotifier` first when `osascript` is there; the Linux factory is never called elsewhere
+  (tested for Windows and macOS with a factory that throws). The changed `MacOsNotifierTest` line only pins the OS.
+- Discovery: `notify-send` / `gdbus` looked up once at start-up in the absolute `PATH` entries (a `PATH` with `.` cannot
+  make it run a file from the working folder); none found means the tray as before.
+
+## Step 3: the new desktop CI jobs (Test and release engineer)
+
+**Range reviewed:** `bd3e1a9f03` ci(kmp): Run the desktop tests on Windows in a non-blocking job, `71eea8c29d` ci(kmp):
+Smoke-test the installed desktop app on Linux and Windows (with `.github/scripts/desktop_smoke_linux.sh` and
+`desktop_smoke_windows.ps1`), `13178b7547` docs(kmp): Describe the non-blocking desktop CI jobs. Workflow state
+reviewed: `.github/workflows/build_desktop.yml` as of `71eea8c29d` (the last commit touching it on
+`origin/multiplatform` at `f28941bc1f`); the containment change for REVIEW_M3.md finding 1 (High) was not committed
+yet, so that finding is still open in this state and is not repeated here. The scripts were reviewed by reading
+only; the first run with these jobs (46117892032) was still packaging when this was written.
+
+**Specification check (ANSWER 005 item 1, plan section 4):** non-blocking `:desktopApp:test` on `windows-2022`: met
+(job-level `continue-on-error: true`, so a red job leaves the run green). Smoke test on `ubuntu-24.04` and
+`windows-2022` as designed in section 4: met in structure, with deviations (findings 3.2 and 3.3; the fresh data
+folder instead of the default one is a deliberate and better deviation). `release` depends only on `package`: met
+(`needs: [plan, package]`, line 524; implicit `success()` on those two only). No secrets reachable: met (neither new
+job references `secrets.*`; `permissions: contents: read`; the smoke checkout is sparse with
+`persist-credentials: false`).
+
+### 3.1 Medium: any error line in the app log fails the smoke test, including a failed update check on the runner
+
+- **File, line:** `.github/scripts/desktop_smoke_linux.sh` lines 485–495; `.github/scripts/desktop_smoke_windows.ps1`
+  lines 621–633; the app side: `desktopApp/src/main/kotlin/app/komikku/desktop/updater/DesktopAppUpdateChecker.kt`
+  line 121 (`xLogE("Unable to check for an app update", e)`, with the stack trace).
+- **Problem:** the CI packages are built with `-Penable-updater`, so the first start checks GitHub for an update.
+  Unauthenticated GitHub API calls from shared hosted-runner addresses hit the rate limit or a network hiccup often
+  enough; the checker then logs an error with a stack trace, and the script's "Log: no error or stack trace" check
+  fails the job. Section 4 of the plan says "network failure must not fail the job" and asserts only uncaught
+  exceptions; the script is stricter than the approved design. The job is non-blocking, so nothing ships wrong, but
+  red runs that are not the app's fault break the "green on ten consecutive runs" gate of ANSWER 005 item 1 and
+  teach people to ignore the job.
+- **Proposed fix:** keep the strict scan as a report (INFO with the count and `log-problems.txt`), and fail only on
+  what section 4 asserts (uncaught exceptions, `FATAL`), or keep failing on errors but with a short, commented
+  allow-list (the update check's network failure, the tray-unsupported lines if they are errors). Alternatively turn
+  the start-up update check off in the fresh data folder before the start (a preset preference file), which also
+  keeps the smoke test off the network; then record that the update check is not covered.
+- **Owner:** Test and release engineer. **Design-level:** no.
+
+### 3.2 Low: the second-instance step of section 4 is now possible but still recorded as "not tried yet"
+
+- **File, line:** `.github/scripts/desktop_smoke_linux.sh` line 438; `.github/scripts/desktop_smoke_windows.ps1`
+  line 573.
+- **Problem:** section 4 step 7 starts a second instance and records what happens. The scripts skip it because the
+  lock "is being built"; it was committed in the same range (`ad3411bbee`). The installed app is the only place where
+  the lock meets a real launcher (jpackage on Windows may start the JVM in a child process, which the Windows script
+  already detects), so this is where it should be checked.
+- **Proposed fix:** while the first instance runs, start the launcher again with the same `JAVA_TOOL_OPTIONS`; assert
+  it exits with 0 within about 5 s, that no second `Komikku` window appeared, and record whether the first one came to
+  the front. Optionally a third start on another data folder that does open a window (closed again at once).
+- **Owner:** Test and release engineer. **Design-level:** no.
+
+### 3.3 Low: the smoke assertions are much weaker than the approved design, and the plan was not updated
+
+- **File, line:** `.github/scripts/desktop_smoke_linux.sh` lines 33–37, 393, 431–435; the same in
+  `desktop_smoke_windows.ps1` lines 30–34, 526, 566–571; plan section 4 "Asserted".
+- **Problem:** the approved design asserts more than 1000 distinct colours in screenshot 1, a change of more than 2 %
+  of the window after each shortcut, and `library.png` similar to `start.png`. The scripts assert 32 colours and
+  0.1 % (one thousandth: about 1000 pixels on a 1280×800 window, a caret or a focus ring), and the "back to the
+  library" comparison is INFO only. The comment explains why (an empty screen differs from another one in little
+  more than its title), which is a fair reason, but a smoke test whose input checks pass on a focus change gives
+  little evidence that the shortcuts navigated. Section 4 still lists the old values.
+- **Proposed fix:** assert "library after Ctrl+1 is closer to the first screenshot than to the More screenshot"
+  (relative, robust against empty screens) instead of the INFO line, keep the low absolute threshold, and update plan
+  section 4 to the values used, so the reader of a green run knows what it proved.
+- **Owner:** Test and release engineer (plan section 4 with the Windows and Linux engineer, who owns the plan).
+  **Design-level:** no.
+
+### 3.4 Low: the Windows checksum check passes when no line of the sums file could be read
+
+- **File, line:** `.github/scripts/desktop_smoke_windows.ps1` lines 413–421.
+- **Problem:** lines that do not match `^<64 hex> [ *]<name>$` are skipped, and the check passes when there are no
+  mismatches; a sums file in another format (or one listing only other files) verifies nothing and still passes.
+  The Linux script uses `sha256sum -c`, which fails on a file with no valid line.
+- **Proposed fix:** count the verified lines; fail when there are none or when the `.msi` that is installed is not
+  among them.
+- **Owner:** Test and release engineer. **Design-level:** no.
+
+### 3.5 Low: unverified dependency on ImageMagick on `windows-2022`
+
+- **File, line:** `.github/scripts/desktop_smoke_windows.ps1` lines 250–256, 403–408.
+- **Problem:** without `magick` on the `PATH` the script fails the "ImageMagick" check and every "changes the window"
+  check (-1), so the job is red on every run for a reason unrelated to the app. I could not confirm from here that
+  the `windows-2022` image ships ImageMagick; the Linux script installs its tools explicitly, the Windows one does not.
+- **Proposed fix:** check the first run's log; if it is missing, install it in the job (`choco install imagemagick
+  --no-progress -y`, pinned) or compare the two PNGs in .NET (`System.Drawing` is already loaded) and drop the
+  dependency.
+- **Owner:** Test and release engineer. **Design-level:** no.
+
+### Step 3: checked and found fine
+
+- Non-blocking for real: job-level `continue-on-error: true` on `windows-test` and on the `smoke` matrix; no other
+  job `needs` either of them; `release` keeps `needs: [plan, package]` with its comment saying why.
+- `smoke` runs `needs: package` with `!cancelled() && needs.package.result != 'skipped'`, so a failed macOS package
+  does not stop the Linux / Windows smoke; a missing artifact for its own OS fails the download step, which is right.
+  Artifact names match the `package` job's upload (`Komikku-desktop-<asset-os>-<runner.arch>-<sha>`).
+- Secrets: no `secrets.*` in either new job, read-only token, `persist-credentials: false` on the sparse script
+  checkout. (`windows-test` uses the default checkout, which keeps the read-only token in `.git/config` during the
+  test run; harmless with `contents: read`, but `persist-credentials: false` would match the rest.)
+- Data folder isolation: both scripts start the installed launcher with `-Dkomikku.dataDir` under `RUNNER_TEMP`
+  through `JAVA_TOOL_OPTIONS`, refuse a path with a space (which `JAVA_TOOL_OPTIONS` cannot carry), and check that the
+  default data folder (`$XDG_DATA_HOME/komikku`, `%APPDATA%\Komikku`) was not created. The second attempt
+  (`SKIKO_RENDER_API=SOFTWARE`) uses its own folder, so the new instance lock does not interfere.
+- Uploaded contents: screenshots of a fresh app, the app's debug log on a fresh data folder, launcher stdout / stderr,
+  apt / msiexec logs, installed file lists, window lists, a thread dump on a hang. No environment dump, no token, no
+  secret in the job; nothing personal on a hosted runner. `windows-test` uploads the test reports only on failure.
+- Bash script: `set -uo pipefail` without `-e` by design, every check recorded, an `EXIT` trap that stops the app,
+  collects logs, kills Xvfb / openbox, uninstalls and writes the summary also after a fatal check; the app's pid is the
+  JVM (`exec` in the subshell), so `wait` gives the real exit code; `compare` exit codes (0 / 1 / 2) and scientific
+  notation handled; timeouts on every wait (window 120 s, exit 30 s, settle 30 s, step 20 min, job 30 min).
+- PowerShell script (read only): `Set-StrictMode 3`, `Stop` preference with one outer `try` / `catch` / `finally`
+  that always stops the app, collects logs, uninstalls and writes the summary; native programs through
+  `ProcessStartInfo.ArgumentList` (no quoting through a string), stdout read asynchronously while stderr is read, so
+  no pipe deadlock; `msiexec` is waited for (unlike a bare call from PowerShell); the process handle is taken so
+  `ExitCode` is available; a JVM started by the launcher in another process is detected through the window's pid. The
+  C# block compiles by reading (P/Invoke signatures match user32 / kernel32, `ClientToScreen` with `ref POINT`,
+  `WM_CLOSE` posted, not sent). The `.msi` is `perUserInstall = true`, which matches `/qn` without elevation and the
+  per-user Start-menu path checked.
+- BUILDING.md bullet: accurate for the committed workflow.
