@@ -39,6 +39,9 @@ import javax.net.ssl.SSLContext
  * verified inside the packaged runtime (CI passes real Keiyoushi extensions; their classes failed the verifier in the
  * second macOS test build while the fixture passed).
  *
+ * `--self-test-notify[=<backend>]` adds the [NOTIFY_CHECK] check: one fixed notification through the OS's system
+ * notifier, passed when the backend accepted it ([NotificationSelfTest]; opt-in, as it shows a notification).
+ *
  * Deterministic and offline: temporary files only, no network, no window, no data folder (the extension checks build
  * the app's object graph over a temporary one). Prints one line per check
  * and writes the same lines to the report file when one is given (the Windows launcher has no console); the last line
@@ -48,6 +51,10 @@ object DesktopSelfTest {
 
     const val ARGUMENT = "--self-test"
     const val EXTENSIONS_ARGUMENT = "--self-test-extensions"
+
+    /** With [ARGUMENT]: posts one notification through the system notifier as well ([NotificationSelfTest]). */
+    const val NOTIFY_ARGUMENT = "--self-test-notify"
+    const val NOTIFY_CHECK = "system notification"
     const val PASSED = "SELF-TEST PASSED"
     const val FAILED = "SELF-TEST FAILED"
 
@@ -272,6 +279,19 @@ object DesktopSelfTest {
         DesktopInjekt.init(dataDir)
     }
 
+    /**
+     * `--self-test-notify[=<backend>]`: the notification check, or `null` (the plain self-test shows nothing). Like
+     * [EXTENSIONS_ARGUMENT] it only adds to [ARGUMENT].
+     */
+    fun notification(args: Array<String>): NotificationSelfTest? =
+        args.lastOrNull { it == NOTIFY_ARGUMENT || it.startsWith("$NOTIFY_ARGUMENT=") }
+            ?.let { NotificationSelfTest(backend = it.substringAfter('=', "").ifEmpty { null }) }
+
+    fun notificationCheck(test: NotificationSelfTest): Check = Check(NOTIFY_CHECK) { test.run() }
+
+    /** The self-test [args] ask for ([reportFile], [extensionsDir], [notification]); returns the exit code. */
+    fun main(args: Array<String>): Int = main(reportFile(args), extensionsDir(args), notification(args))
+
     /** Runs every check (each in its own temporary folder, deleted afterwards). */
     fun run(extra: List<Check> = emptyList()): List<Outcome> = (checks + extra).map { check ->
         val dir = Files.createTempDirectory("komikku-selftest").toFile()
@@ -285,11 +305,18 @@ object DesktopSelfTest {
     }
 
     /**
-     * Runs the checks (with the APKs in [extensions], if given), prints them (and writes them to [report]); returns
-     * the exit code.
+     * Runs the checks (with the APKs in [extensions] and the [notification] check, if given), prints them (and writes
+     * them to [report]); returns the exit code.
      */
-    fun main(report: File?, extensions: File? = null): Int {
-        val outcomes = run(extensions?.let(::extensionChecks).orEmpty())
+    fun main(
+        report: File?,
+        extensions: File? = null,
+        notification: NotificationSelfTest? = null,
+    ): Int {
+        val outcomes = run(
+            extensions?.let(::extensionChecks).orEmpty() +
+                listOfNotNull(notification?.let(::notificationCheck)),
+        )
         val runtime = "Java ${System.getProperty("java.runtime.version")} (${System.getProperty("java.home")}), " +
             "${System.getProperty("os.name")} ${System.getProperty("os.arch")}"
         val lines = listOf("Komikku self-test, $runtime") + outcomes.map { it.toString() } +
@@ -309,7 +336,8 @@ object DesktopSelfTest {
      */
     internal fun reportText(lines: List<String>, outcomes: List<Outcome>): String {
         val traces = outcomes.mapNotNull { outcome ->
-            outcome.error?.let { "Stack trace of ${outcome.name}:\n" + it.stackTraceToString().trimEnd() }
+            // One line separator in the file (Windows writes stack traces with \r\n)
+            outcome.error?.let { "Stack trace of ${outcome.name}:\n" + it.stackTraceToString().trimEnd().lines().joinToString("\n") }
         }
         return (lines.dropLast(1) + traces + lines.last()).joinToString("\n", postfix = "\n")
     }
