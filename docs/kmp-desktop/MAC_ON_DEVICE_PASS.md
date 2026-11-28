@@ -15,7 +15,7 @@ testable** (why).
 ## Build under test
 
 Run 1 (2026-11-28): `Komikku.app` from `:desktopApp:createDistributable` on `4b8ca53b7e` (it contains the template
-icon, `3a21a859b6`) plus other roles' uncommitted work in the shared tree at that moment (compat-layer `Uri` / `UniFile`
+icon, `c3dc567f16`) plus other roles' uncommitted work in the shared tree at that moment (compat-layer `Uri` / `UniFile`
 changes, `DesktopExtensionManager`, backup service), built with JDK 21 (the default JDK of this Mac is 27, whose
 `jlink` lacks `jdk.random`: `createRuntimeImage` fails with "Module jdk.random not found" unless `JAVA_HOME` points to
 JDK 21; the lock wrapper does not set it). macOS 27.2.1, Apple silicon, one 1920 × 1080 display at 1x, light
@@ -123,7 +123,14 @@ after the unlock.
 
 ## Fixed during the pass
 
-None yet (the template icon of C2 was finished before the pass: `3a21a859b6`).
+None yet (the template icon of C2 was finished before the pass: `c3dc567f16`).
+
+## Unit tests
+
+`:desktopApp:test` on this Mac after the last change (shared tree at `2ee84bfca1` plus other roles' uncommitted work):
+461 tests, 459 passed, 1 skipped, 1 failed. The failure is `DesktopSingleInstanceTest` "a second start logs under the
+single-instance tag" (expected tag `SingleInstance`, got `Companion`), a new test another role had written but not
+yet committed in the shared tree; it is not part of this pass.
 
 ## System prompts for the maintainer
 
