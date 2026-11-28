@@ -5,6 +5,9 @@ name: Desktop builder
 # (never published by this workflow, never touching other assets). Signing / notarization run only when their secrets
 # are set. Branch runs so far build only (release mode none; first green runs 45623103294 and 45625758564); the release
 # jobs have not attached to a release yet. See docs/kmp-desktop/BUILDING.md "Release pipeline" and "Signing".
+# KMK -->
+# A non-blocking job never holds up a release: the desktop tests on Windows (`windows-test`).
+# KMK <--
 
 on:
   workflow_dispatch:
@@ -229,8 +232,8 @@ jobs:
           echo "DESKTOP_VERSION=$version" >> "$GITHUB_ENV"
           echo "DESKTOP_ARCH=$arch" >> "$GITHUB_ENV"
 
-      # Unit + headless UI tests run on Linux only (as in the PR workflow's desktop job); they have not
-      # been tried on Windows / macOS, which only package.
+      # Unit + headless UI tests run on Linux only here (as in the PR workflow's desktop job); Windows runs them in the
+      # non-blocking `windows-test` job below, macOS only packages.
       - name: Test desktop app
         if: runner.os == 'Linux'
         run: ./gradlew :desktopApp:test --max-workers=2
@@ -388,8 +391,58 @@ jobs:
           path: release-assets/
           if-no-files-found: error
 
+  # KMK -->
+  # Track D, step 1 (docs/kmp-desktop/WINDOWS_LINUX_TEST_PLAN.md): the desktop unit + headless UI tests on Windows,
+  # where they had never run. Non-blocking (`continue-on-error`): a failure marks this job red but neither fails the
+  # run nor holds up `release`, which depends only on `package`. The HTML report and the JUnit XML are uploaded when the
+  # tests fail.
+  windows-test:
+    name: Desktop tests (windows-2022, non-blocking)
+    runs-on: 'windows-2022'
+    continue-on-error: true
+    timeout-minutes: 90
+    concurrency:
+      group: ${{ github.workflow }}-windows-test-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+
+      - name: Test desktop app
+        id: desktop_tests
+        run: ./gradlew :desktopApp:test --max-workers=2
+
+      - name: Upload test report
+        if: failure() && steps.desktop_tests.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-test-report-windows-2022-${{ github.sha }}
+          path: |
+            desktopApp/build/reports/tests/test
+            desktopApp/build/test-results/test
+          retention-days: 14
+  # KMK <--
+
   release:
     name: Attach to release ${{ needs.plan.outputs.tag }}
+    # KMK -->
+    # Never on `windows-test` while it is non-blocking (ATLAS_INSTRUCTIONS.md, ANSWER 005)
+    # KMK <--
     needs:
       - plan
       - package
