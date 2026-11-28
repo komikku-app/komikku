@@ -1,0 +1,170 @@
+From 5121c252105886c6c74ff48bc79b8569d0b0c96e Mon Sep 17 00:00:00 2001
+From: Cuong-Tran <16017808+cuong-tran@users.noreply.github.com>
+Date: Sat, 28 Nov 2026 14:06:05 +0700
+Subject: [PATCH] fix(updater): Skip a release whose tag is not a version
+ instead of failing the update check
+
+A tag without a number ("nightly"), a preview tag with a dot ("r12.4")
+or a shorter tag equal so far ("v1.0" against "v1.0.1") threw in
+isNewVersion, which runs over every release, so one such release made
+the whole check fail and no update was offered. Such a tag now counts as
+not newer, and a missing version part counts as 0.
+---
+ .../interactor/GetApplicationRelease.kt       |  20 +++-
+ .../interactor/GetApplicationReleaseTest.kt   | 103 ++++++++++++++++++
+ 2 files changed, 118 insertions(+), 5 deletions(-)
+
+diff --git a/domain/src/main/java/tachiyomi/domain/release/interactor/GetApplicationRelease.kt b/domain/src/main/java/tachiyomi/domain/release/interactor/GetApplicationRelease.kt
+index 7bf8753a53..227889695d 100644
+--- a/domain/src/main/java/tachiyomi/domain/release/interactor/GetApplicationRelease.kt
++++ b/domain/src/main/java/tachiyomi/domain/release/interactor/GetApplicationRelease.kt
+@@ -85,20 +85,30 @@ class GetApplicationRelease(
+         return if (isPreview) {
+             // Preview builds: based on releases in "komikku-app/komikku-preview" repo
+             // tagged as something like "r1234"
+-            newVersion.toInt() > commitCount
++            // KMK -->
++            // A tag that is not a commit count is not a newer build; throwing would fail the whole check
++            newVersion.toIntOrNull()?.let { it > commitCount } ?: false
++            // KMK <--
+         } else {
+             // Release builds: based on releases in "komikku-app/komikku" repo
+             // tagged as something like "v0.1.2"
+             val oldVersion = versionName.replace("[^\\d.]".toRegex(), "")
+ 
+-            val newSemVer = newVersion.split(".").map { it.toInt() }
+-            val oldSemVer = oldVersion.split(".").map { it.toInt() }
++            // KMK -->
++            // A tag that is not a version is not newer, and a missing part counts as 0 ("v1.0" is "v1.0.0"):
++            // throwing here would fail the whole check, valid releases included
++            val newSemVer = newVersion.split(".").map { it.toIntOrNull() ?: return false }
++            val oldSemVer = oldVersion.split(".").map { it.toIntOrNull() ?: return false }
++            // KMK <--
+ 
+             oldSemVer.mapIndexed { index, i ->
+-                if (newSemVer[index] > i) {
++                // KMK -->
++                val newPart = newSemVer.getOrElse(index) { 0 }
++                if (newPart > i) {
+                     return true
+                 }
+-                if (newSemVer[index] < i) return false
++                if (newPart < i) return false
++                // KMK <--
+             }
+ 
+             false
+diff --git a/domain/src/test/java/tachiyomi/domain/release/interactor/GetApplicationReleaseTest.kt b/domain/src/test/java/tachiyomi/domain/release/interactor/GetApplicationReleaseTest.kt
+index bddb163f92..71c8c9d6d6 100644
+--- a/domain/src/test/java/tachiyomi/domain/release/interactor/GetApplicationReleaseTest.kt
++++ b/domain/src/test/java/tachiyomi/domain/release/interactor/GetApplicationReleaseTest.kt
+@@ -150,4 +150,107 @@ class GetApplicationReleaseTest {
+         coVerify(exactly = 0) { releaseService.releaseNotes(any()) }
+         result shouldBe GetApplicationRelease.Result.NoNewUpdate
+     }
++
++    // KMK -->
++    @Test
++    fun `When a release has a tag without a version expect it skipped and the valid update found`() = runTest {
++        every { preference.get() } returns 0
++        every { preference.set(any()) }.answers { }
++
++        val valid = Release(
++            "v2.0.0",
++            "info",
++            "http://example.com/release_link",
++            "http://example.com/release_link.apk",
++        )
++        val releases = listOf(
++            Release(
++                "nightly",
++                "info",
++                "http://example.com/release_link",
++                "http://example.com/release_link.apk",
++            ),
++            valid,
++        )
++
++        coEvery { releaseService.releaseNotes(any()) } returns releases
++
++        val result = getApplicationRelease.await(
++            GetApplicationRelease.Arguments(
++                isFoss = false,
++                isPreview = false,
++                commitCount = 0,
++                versionName = "v1.0.0",
++                repository = "test",
++            ),
++        )
++
++        result shouldBe GetApplicationRelease.Result.NewUpdate(listOf(valid).getLatest()!!)
++    }
++
++    @Test
++    fun `When a release tag has fewer parts and is equal so far expect no new update`() = runTest {
++        every { preference.get() } returns 0
++        every { preference.set(any()) }.answers { }
++
++        val releases = listOf(
++            Release(
++                "v1.0",
++                "info",
++                "http://example.com/release_link",
++                "http://example.com/release_link.apk",
++            ),
++        )
++
++        coEvery { releaseService.releaseNotes(any()) } returns releases
++
++        val result = getApplicationRelease.await(
++            GetApplicationRelease.Arguments(
++                isFoss = false,
++                isPreview = false,
++                commitCount = 0,
++                versionName = "v1.0.1",
++                repository = "test",
++            ),
++        )
++
++        result shouldBe GetApplicationRelease.Result.NoNewUpdate
++    }
++
++    @Test
++    fun `When a preview release tag is not a commit count expect it skipped`() = runTest {
++        every { preference.get() } returns 0
++        every { preference.set(any()) }.answers { }
++
++        val valid = Release(
++            "r2000",
++            "info",
++            "http://example.com/release_link",
++            "http://example.com/release_link.apk",
++        )
++        val releases = listOf(
++            Release(
++                "r12.4",
++                "info",
++                "http://example.com/release_link",
++                "http://example.com/release_link.apk",
++            ),
++            valid,
++        )
++
++        coEvery { releaseService.releaseNotes(any()) } returns releases
++
++        val result = getApplicationRelease.await(
++            GetApplicationRelease.Arguments(
++                isFoss = false,
++                isPreview = true,
++                commitCount = 1000,
++                versionName = "",
++                repository = "test",
++            ),
++        )
++
++        result shouldBe GetApplicationRelease.Result.NewUpdate(listOf(valid).getLatest()!!)
++    }
++    // KMK <--
+ }
+
+base-commit: 15610e67e4a13e20f104bc515923ddcdc6a92fdc

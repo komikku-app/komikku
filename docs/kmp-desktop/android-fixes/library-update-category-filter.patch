@@ -1,0 +1,124 @@
+From 16708e7178424c5097599d4a608c487f97ca1da4 Mon Sep 17 00:00:00 2001
+From: Cuong-Tran <16017808+cuong-tran@users.noreply.github.com>
+Date: Sat, 28 Nov 2026 14:08:43 +0700
+Subject: [PATCH] fix(library): Stop updating only the Default category when
+ refreshing under a category filter
+
+A category filter with included categories shows the library as one
+ungrouped page, but State.groupType kept the preference (by default
+BY_DEFAULT). Pulling to refresh or "Update category" then sent that page's
+placeholder category (id 0) as a real category, so the library update
+ran only on the Default category. The state now exposes the grouping
+actually shown, and the refresh uses it, so it starts the same update
+as any ungrouped page.
+---
+ .../ui/library/LibraryScreenModel.kt          |  9 ++++
+ .../kanade/tachiyomi/ui/library/LibraryTab.kt | 10 ++--
+ .../ui/library/LibraryScreenModelStateTest.kt | 53 +++++++++++++++++++
+ 3 files changed, 69 insertions(+), 3 deletions(-)
+ create mode 100644 app/src/test/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModelStateTest.kt
+
+diff --git a/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt b/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt
+index 84fabf8f93..76be7ca4f1 100644
+--- a/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt
++++ b/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModel.kt
+@@ -1761,6 +1761,15 @@ class LibraryScreenModel(
+ 
+         val activeCategory: Category? = displayedCategories.getOrNull(coercedActiveCategoryIndex)
+ 
++        // KMK -->
++        /**
++         * The grouping shown: a category filter with included categories shows one ungrouped page, whatever
++         * [groupType] (the preference) says.
++         */
++        val effectiveGroupType: Int =
++            if (filterCategory && includedCategories.isNotEmpty()) LibraryGroup.UNGROUPED else groupType
++        // KMK <--
++
+         val isLibraryEmpty = libraryData.favorites.isEmpty()
+ 
+         val selectionMode = selection.isNotEmpty()
+diff --git a/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryTab.kt b/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryTab.kt
+index f1ed6b06e1..fae9c62bb8 100644
+--- a/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryTab.kt
++++ b/app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryTab.kt
+@@ -120,11 +120,15 @@ data object LibraryTab : Tab {
+ 
+         val onClickRefresh: (Category?) -> Boolean = { category ->
+             // SY -->
++            // KMK -->
++            // The grouping shown, not the preference: under a category filter the page is ungrouped
++            val groupType = state.effectiveGroupType
++            // KMK <--
+             val started = LibraryUpdateJob.startNow(
+                 context = context,
+-                category = if (state.groupType == LibraryGroup.BY_DEFAULT) category else null,
+-                group = state.groupType,
+-                groupExtra = when (state.groupType) {
++                category = if (/* KMK --> */ groupType /* KMK <-- */ == LibraryGroup.BY_DEFAULT) category else null,
++                group = /* KMK --> */ groupType /* KMK <-- */,
++                groupExtra = when (/* KMK --> */ groupType /* KMK <-- */) {
+                     LibraryGroup.BY_DEFAULT -> null
+                     LibraryGroup.BY_SOURCE, LibraryGroup.BY_TRACK_STATUS -> category?.id?.toString()
+                     LibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
+diff --git a/app/src/test/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModelStateTest.kt b/app/src/test/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModelStateTest.kt
+new file mode 100644
+index 0000000000..53b1d7e2ab
+--- /dev/null
++++ b/app/src/test/java/eu/kanade/tachiyomi/ui/library/LibraryScreenModelStateTest.kt
+@@ -0,0 +1,53 @@
++package eu.kanade.tachiyomi.ui.library
++
++import io.kotest.matchers.shouldBe
++import kotlinx.collections.immutable.persistentSetOf
++import org.junit.jupiter.api.Test
++import tachiyomi.domain.library.model.LibraryGroup
++
++class LibraryScreenModelStateTest {
++
++    @Test
++    fun `A category filter with included categories shows the library ungrouped`() {
++        val state = LibraryScreenModel.State(
++            groupType = LibraryGroup.BY_DEFAULT,
++            filterCategory = true,
++            includedCategories = persistentSetOf(5L),
++        )
++
++        state.effectiveGroupType shouldBe LibraryGroup.UNGROUPED
++    }
++
++    @Test
++    fun `A category filter overrides any grouping`() {
++        val state = LibraryScreenModel.State(
++            groupType = LibraryGroup.BY_SOURCE,
++            filterCategory = true,
++            includedCategories = persistentSetOf(5L),
++        )
++
++        state.effectiveGroupType shouldBe LibraryGroup.UNGROUPED
++    }
++
++    @Test
++    fun `Without a category filter the preference's grouping is used`() {
++        val state = LibraryScreenModel.State(
++            groupType = LibraryGroup.BY_SOURCE,
++            filterCategory = false,
++            includedCategories = persistentSetOf(5L),
++        )
++
++        state.effectiveGroupType shouldBe LibraryGroup.BY_SOURCE
++    }
++
++    @Test
++    fun `A category filter without included categories keeps the preference's grouping`() {
++        val state = LibraryScreenModel.State(
++            groupType = LibraryGroup.BY_DEFAULT,
++            filterCategory = true,
++            includedCategories = persistentSetOf(),
++        )
++
++        state.effectiveGroupType shouldBe LibraryGroup.BY_DEFAULT
++    }
++}
+
+base-commit: 15610e67e4a13e20f104bc515923ddcdc6a92fdc

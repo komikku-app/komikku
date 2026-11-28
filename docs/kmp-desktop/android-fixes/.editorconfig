@@ -1,0 +1,3 @@
+# Blank context lines in a patch are a single space: trimming them breaks `git am`
+[*.patch]
+trim_trailing_whitespace = false
