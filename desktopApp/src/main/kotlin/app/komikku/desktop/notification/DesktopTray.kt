@@ -30,11 +30,14 @@ class DesktopTrayPreferences(private val preferenceStore: PreferenceStore) {
  *
  * The icon opens the window (click, or "Open Komikku" in its menu) and offers "Exit"; clicking a notification opens the
  * window too (where the platform reports such clicks). Its tooltip shows [status] (the library update's progress).
+ * On macOS the icon is a monochrome template image ([MacTrayIcon]) that follows a light or dark menu bar; elsewhere it
+ * is the colour launcher icon.
  *
- * [traySupported] is injected for tests (a headless test cannot create a `TrayIcon` at all).
+ * [traySupported] and [macOs] are injected for tests (a headless test cannot create a `TrayIcon` at all).
  */
 class DesktopTray(
     private val traySupported: () -> Boolean = { !GraphicsEnvironment.isHeadless() && SystemTray.isSupported() },
+    private val macOs: Boolean = MacTrayIcon.isMacOs(),
 ) : DesktopNotifier {
 
     @Volatile
@@ -53,6 +56,8 @@ class DesktopTray(
     @Synchronized
     fun install(openText: String, exitText: String, onOpen: () -> Unit, onExit: () -> Unit): Boolean {
         if (icon != null) return true
+        // Before the first `SystemTray.add`, where AWT's macOS tray class reads it once
+        if (macOs) MacTrayIcon.enableTemplateImages()
         val supported = try {
             traySupported()
         } catch (e: Throwable) {
@@ -66,8 +71,10 @@ class DesktopTray(
                 addSeparator()
                 add(MenuItem(exitText).apply { addActionListener { onExit() } })
             }
-            val trayIcon = TrayIcon(trayImage(), tooltip, menu).apply {
-                isImageAutoSize = true
+            val template = usesTemplateImage()
+            val trayIcon = TrayIcon(trayImage(template), tooltip, menu).apply {
+                // The template image keeps its 18 points: auto-size would stretch it to the bar's height and blur it
+                isImageAutoSize = !template
                 // A click on the icon (Windows: double click) or on a notification
                 addActionListener { onOpen() }
             }
@@ -120,7 +127,16 @@ class DesktopTray(
         }
     }
 
-    private fun trayImage(): Image = DesktopTray::class.java.getResource(ICON_RESOURCE)
+    /**
+     * Whether the icon is the macOS template image: not when [MacTrayIcon.TEMPLATE_IMAGES_PROPERTY] was set to false on
+     * the command line, as macOS would then draw the black glyph untinted, unreadable on a dark menu bar.
+     */
+    internal fun usesTemplateImage(): Boolean = macOs && MacTrayIcon.templateImagesEnabled
+
+    internal fun trayImage(template: Boolean = usesTemplateImage()): Image =
+        if (template) MacTrayIcon.image() else colourImage()
+
+    private fun colourImage(): Image = DesktopTray::class.java.getResource(ICON_RESOURCE)
         ?.let { Toolkit.getDefaultToolkit().getImage(it) }
         // The packaged icon is missing (a test class path): a plain square, still something to click
         ?: BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB).apply {
