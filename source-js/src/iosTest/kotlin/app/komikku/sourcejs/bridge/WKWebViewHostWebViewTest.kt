@@ -23,7 +23,6 @@ import platform.Foundation.NSURL
 import platform.Foundation.dateWithTimeIntervalSinceNow
 import platform.WebKit.WKWebView
 import platform.WebKit.WKWebViewConfiguration
-import platform.darwin.NSObject
 import kotlin.concurrent.AtomicInt
 import kotlin.concurrent.AtomicReference
 import kotlin.experimental.ExperimentalNativeApi
@@ -255,32 +254,30 @@ class WKWebViewHostWebViewTest {
         assertTrue(pings.value - after <= 1, "pings went on: $after then ${pings.value}")
     }
 
-    @OptIn(ExperimentalNativeApi::class, NativeRuntimeApi::class, ExperimentalForeignApi::class)
+    @OptIn(ExperimentalForeignApi::class)
     @Test
-    fun theWebViewIsTornDownAfterTheCall() = webKitTest {
-        // Only this holder references the view, so the test's own frame does not keep it alive below.
-        val holder = AtomicReference<WKWebView?>(null)
-        webView.onWebViewCreated = { holder.value = it }
+    fun theWebViewIsTornDownAndFreedAfterEachCall() = webKitTest(timeoutMillis = 45_000) {
+        // Only this holder references the views, so the test's own frame does not keep them alive below.
+        val holder = AtomicReference(emptyList<WKWebView>())
+        webView.onWebViewCreated = { created -> holder.update { it + created } }
+        // A value the page reports from its timer, one a script reports, and a timeout.
         assertEquals("later", webView.evaluate("$base/later", emptyMap(), emptyList(), 20))
+        val report = "window.flutter_inappwebview.callHandler('setResponse', document.getElementById('v').textContent)"
+        assertEquals("from page", webView.evaluate("$base/page", emptyMap(), listOf(report), 20))
+        assertEquals("", webView.evaluate("$base/silent", emptyMap(), emptyList(), 1))
         webView.onWebViewCreated = null
-        withContext(Dispatchers.Main) { assertTornDown(holder.value!!) }
-        // Deallocation is reported, not asserted (docs/kmp-desktop/IOS_CI.md, I5c): it stayed alive also with an
-        // autorelease pool per main run loop pass. Two controls tell where it is kept: a web view that never loaded
-        // anything and a plain NSObject, both held only through the same kind of weak reference.
-        val weak = weakAndClear(holder)
+        withContext(Dispatchers.Main) { holder.value.forEach { assertTornDown(it) } }
+        val views = weakAndClear(holder)
+        assertEquals(3, views.size)
+        // The control: a web view that never loaded anything, measured the same way.
         val bare = withContext(Dispatchers.Main) {
             weakOf { WKWebView(frame = CGRectMake(0.0, 0.0, 10.0, 10.0), configuration = WKWebViewConfiguration()) }
         }
-        val plain = weakOf { NSObject() }
         val start = TimeSource.Monotonic.markNow()
-        while (listOf(weak, bare, plain).any { it.value != null } && start.elapsedNow().inWholeMilliseconds < 8_000) {
-            GC.collect()
-            delay(200)
-        }
-        println(
-            "WEBVIEW_DEALLOCATED=${weak.value == null} BARE_WEBVIEW_DEALLOCATED=${bare.value == null} " +
-                "NSOBJECT_DEALLOCATED=${plain.value == null} after ${start.elapsedNow()}",
-        )
+        val freed = awaitFreed(views + bare)
+        println("WEBVIEW_DEALLOCATED=${freed.dropLast(1)} BARE_WEBVIEW_DEALLOCATED=${freed.last()} after ${start.elapsedNow()}")
+        assertTrue(freed.last(), "the control web view is still alive: the measurement does not work")
+        assertEquals(List(views.size) { true }, freed.dropLast(1), "web views still alive ${start.elapsedNow()} after their calls")
     }
 
     private fun assertTornDown(view: WKWebView) {
@@ -288,16 +285,37 @@ class WKWebViewHostWebViewTest {
         assertNull(view.superview)
         assertTrue(view.configuration.userContentController.userScripts.isEmpty())
         // The fixture page was replaced by an empty one.
-        assertTrue(view.URL?.absoluteString.orEmpty().let { "later" !in it }, view.URL?.absoluteString)
+        assertTrue(view.URL?.absoluteString.orEmpty().let { base !in it }, view.URL?.absoluteString)
     }
+
+    /**
+     * Collects garbage until every object of [weak] is deallocated or [timeoutMillis] passed, and returns whether each
+     * one was. Reading a weak reference makes a new strong reference to the Objective-C object, and Kotlin/Native keeps
+     * a frame's references until the frame returns: read in this loop's own frame, the last read would keep the object
+     * alive through every `GC.collect()`. So each read runs in a block of its own on the main thread, where the
+     * reference it made is released after the next collection.
+     */
+    @OptIn(NativeRuntimeApi::class)
+    private suspend fun awaitFreed(weak: List<WeakReference<Any>>, timeoutMillis: Long = 8_000): List<Boolean> {
+        val start = TimeSource.Monotonic.markNow()
+        while (true) {
+            val freed = weak.map { isFreed(it) }
+            if (freed.all { it } || start.elapsedNow().inWholeMilliseconds >= timeoutMillis) return freed
+            GC.collect()
+            delay(200)
+        }
+    }
+
+    @OptIn(ExperimentalNativeApi::class)
+    private suspend fun isFreed(weak: WeakReference<Any>): Boolean = withContext(Dispatchers.Main) { weak.value == null }
 
     @OptIn(ExperimentalNativeApi::class)
     private fun weakOf(create: () -> Any): WeakReference<Any> = WeakReference(create())
 
     @OptIn(ExperimentalNativeApi::class)
-    private fun weakAndClear(holder: AtomicReference<WKWebView?>): WeakReference<Any> {
-        val weak = WeakReference<Any>(holder.value!!)
-        holder.value = null
+    private fun weakAndClear(holder: AtomicReference<List<WKWebView>>): List<WeakReference<Any>> {
+        val weak = holder.value.map { WeakReference<Any>(it) }
+        holder.value = emptyList()
         return weak
     }
 
