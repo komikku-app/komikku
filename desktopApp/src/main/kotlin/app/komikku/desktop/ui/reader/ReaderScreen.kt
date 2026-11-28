@@ -59,6 +59,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.komikku.desktop.security.DesktopAppLock
 import app.komikku.shared.reader.image.PageFit
 import app.komikku.shared.reader.image.PixelSize
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
@@ -129,8 +130,12 @@ fun ReaderScreen(request: ReaderLauncher.Request, onClose: () -> Unit) {
         }
     }
 
-    // Keep keyboard focus on the reader (chrome buttons take it when clicked and lose it when hidden).
-    LaunchedEffect(menuVisible, settingsVisible, state.bookmarked) { focusRequester.requestFocus() }
+    // Keep keyboard focus on the reader (chrome buttons take it when clicked and lose it when hidden; the lock screen's
+    // PIN field takes it while locked).
+    val appLocked by remember { Injekt.get<DesktopAppLock>().locked }.collectAsState()
+    LaunchedEffect(menuVisible, settingsVisible, state.bookmarked, appLocked) {
+        if (!appLocked) focusRequester.requestFocus()
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
