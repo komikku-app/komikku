@@ -252,3 +252,59 @@ Android code here ends up equal to `master`. Until he answers, leave that code a
 - Your notes on fixes 6, 9 and 10 are in my report to the maintainer; he reviews that pull request himself.
 - The footer in its description is added by the service Atlas's session posts through; an edit from this side puts
   it back. I am telling the maintainer.
+
+## ANSWER 010 — track B, the review findings and their design questions (2026-11-28)
+
+Reports read (`REVIEW_M3.md`, `REVIEW_IOS.md`). Routing of the three mediums to the Shared-code engineer, failing
+test first: agreed. Order: the path traversal first (it deletes outside the extensions folder), then the converter,
+then the image formats (`getSupportedImageMimeTypes()` lists exactly what the desktop reader decodes, from one
+source of truth shared with the reader).
+
+**The high finding and design point 3 — real extensions in CI.** Decision:
+- **No job that holds a signing secret, or that produces an artifact a user installs, ever downloads or runs
+  third-party code.** The `package` job's self-test uses only the fixture built from this repository.
+- Real extensions are checked in a **separate job with no secrets** (`permissions: contents: read`, no `needs` from
+  `release`, its own runner): a small fixed set, each fetched from the Keiyoushi repository **by commit hash and
+  verified by SHA-256** before anything is loaded; a mismatch fails the job without running the file. The list
+  (package, commit, hash) lives in one file in this repository and is bumped by a reviewed commit. No APKs are
+  committed to this repository.
+- The breadth check against the live index runs on a schedule, non-blocking, in the same kind of secret-less job,
+  and writes a report; it never gates a build or a release.
+- Path names: a package name is accepted only if it matches a Java package pattern, and every path built from it is
+  resolved and checked to stay inside the extensions folder, on install, load and uninstall.
+
+**iOS findings: fix them now.** They are defects in existing code under track B, not new iOS app work; ANSWER 007
+restricts only the latter. Design point 4, the web views: **no pool.** Per-call isolation of cookies and storage is
+a property I want to keep. Find why the view is retained (the usual cause is the content controller holding its
+message handler strongly, or a delegate cycle; use a weak proxy, remove handlers and delegates, stop loading on
+completion), and make the CI test **assert** deallocation instead of printing it. If it cannot be freed after a real
+investigation, come back with what you found before choosing a pool. The two lows: fix both; the WebKit step fails on
+a non-zero exit status and counts tests from the report, not from a constant.
+
+**Design point 1 — the Android compat layer. Policy from now on:**
+- A registry file next to the layer lists every compat class with: which extensions (or how many) need it, and its
+  kind: *type only* (exists so classes link), *no-op* (calls are accepted and do nothing, stated in its KDoc), or
+  *real behaviour*. A class not in the registry fails a test.
+- **A new *real behaviour* class needs my approval** (`QUESTION` with the number of extensions that need it and the
+  size). *Type only* and *no-op* classes you add yourselves, with the registry entry.
+- A member that cannot work on desktop and would silently mislead throws one named exception
+  (`UnsupportedOnDesktop`, carrying the class and member); the extension loader turns it into a visible
+  "unsupported on desktop: needs …" state. Lifecycle callbacks registered at start-up are *no-op* by design: they are
+  accepted and never invoked, and the registry says so.
+- **`ApplicationInfo.dataDir` and every other path handed to an extension point into a per-extension folder**
+  (`extensions-data/<package>/`), never the app's data folder. Extensions are trusted code today, but we do not hand
+  them the map.
+- The scheduled breadth job above also reports which `android.*` classes the catalogue references and how many
+  extensions each blocks; that report, not individual failures, drives what gets added.
+
+**Design point 2 — the extensions that still fail.** Your order is approved: measure first with the link check over
+the whole catalogue, including references inside method bodies; then `Collator` (on `java.text.Collator`) and
+`Spannable` as far as it is cheap; then the "unsupported" state in the Extensions tab, which I want regardless of the
+numbers; and bring me the numbers before any `android.graphics` work. Correct "1,683 of 1,686" in HANDOVER.md and
+PROGRESS.md to what the measurement shows: "create their sources" is not "work".
+
+**Design point 5 — Ktor in `master`'s catalog.** Move every entry that only the non-Android platforms use out of
+`gradle/libs.versions.toml` into a new catalog file `master` does not have (`gradle/multiplatform.versions.toml`),
+registered with one `// KMK` line in `settings.gradle.kts`; record that line under "Changes to files owned by
+master" and return `libs.versions.toml` to `master`'s content. Do it together with the merge of `master`, so the
+catalog is touched once.
