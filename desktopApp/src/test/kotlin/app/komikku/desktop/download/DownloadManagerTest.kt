@@ -109,7 +109,8 @@ class DownloadManagerTest {
         path.parentFile.parentFile.parentFile.name shouldBe "downloads"
         val names = chapterDir.listFiles()!!.map { it.name!! }
         names shouldContainAll listOf("001.png", "002.png", "003.png", "ComicInfo.xml")
-        chapterDir.findFile("ComicInfo.xml")!!.openInputStream().reader().readText().let {
+        // Closed: an open file keeps Windows from deleting the chapter in `pending deletion …`
+        chapterDir.findFile("ComicInfo.xml")!!.openInputStream().reader().use { it.readText() }.let {
             it shouldContain "<Title>Chapter 1</Title>"
             it shouldContain "<Series>Download manga</Series>"
         }

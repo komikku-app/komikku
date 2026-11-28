@@ -330,6 +330,18 @@ class DesktopSingleInstanceTest {
             process.inputStream.bufferedReader().forEachLine { queue.put(it) }
         }
 
+        /**
+         * The child's log (stderr), kept in memory: a log file in the test's temporary folder was still locked when
+         * JUnit deleted it on Windows (CI run 46120905511).
+         */
+        private val errors = StringBuffer()
+
+        init {
+            thread(isDaemon = true, name = "single instance child log") {
+                process.errorStream.bufferedReader().forEachLine { errors.append(it).append('\n') }
+            }
+        }
+
         /** What an exited child printed that was not awaited yet. */
         fun remainingOutput(): List<String> {
             reader.join(TimeUnit.SECONDS.toMillis(CHILD_TIMEOUT_S))
@@ -340,7 +352,7 @@ class DesktopSingleInstanceTest {
             val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(CHILD_TIMEOUT_S)
             while (true) {
                 val line = queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS)
-                    ?: error("The child did not print $expected (printed $lines)")
+                    ?: error("The child did not print $expected (printed $lines; its log:\n$errors)")
                 lines += line
                 if (line == expected) return
             }
@@ -365,9 +377,7 @@ class DesktopSingleInstanceTest {
             "@${argFile.path}",
             SingleInstanceChild::class.java.name,
             dataDir.path,
-        )
-            .redirectError(File(tempDir, "child-$index.log"))
-            .start()
+        ).start()
         return Child(process).also { children += it }
     }
 
