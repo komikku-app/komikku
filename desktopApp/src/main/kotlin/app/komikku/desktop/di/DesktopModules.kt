@@ -19,6 +19,7 @@ import app.komikku.desktop.scheduler.DesktopSchedulerPreferences
 import app.komikku.desktop.scheduler.desktopScheduler
 import app.komikku.desktop.security.DesktopAppLock
 import app.komikku.desktop.source.DesktopSourceManager
+import app.komikku.desktop.track.DesktopMangaDexSessionNotice
 import app.komikku.desktop.track.DesktopReaderTrackerHook
 import app.komikku.desktop.ui.reader.ReaderLauncher
 import app.komikku.desktop.updater.DesktopAppUpdateChecker
@@ -84,6 +85,7 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.util.system.toast
+import exh.md.network.MangaDexSessionNotice
 import exh.pref.DelegateSourcePreferences
 import exh.search.SearchEngine
 import kotlinx.serialization.json.Json
@@ -408,6 +410,8 @@ class DesktopDomainModule(
             val systemNotifications = get<DesktopTrayPreferences>().systemNotifications()
             DesktopSystemNotifier.create(get<DesktopTray>(), enabled = { systemNotifications.get() })
         }
+        // REVIEW_A4.md 3.1: the borrowed MdList's "MangaDex session expired" notice
+        addSingletonFactory<MangaDexSessionNotice> { DesktopMangaDexSessionNotice(app, get()) }
         addSingletonFactory {
             DesktopNotifications(
                 context = app,
