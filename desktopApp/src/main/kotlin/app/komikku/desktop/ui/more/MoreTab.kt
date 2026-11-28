@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import app.komikku.desktop.ui.download.DownloadQueueScreen
-import app.komikku.shared.navigation.AppNavigatorHost
+import app.komikku.desktop.ui.navigation.RegisteredNavigatorHost
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
@@ -59,7 +59,7 @@ data object MoreTab : Tab {
 
     @Composable
     override fun Content() {
-        AppNavigatorHost(screen = MoreHomeScreen)
+        RegisteredNavigatorHost(screen = MoreHomeScreen)
     }
 }
 

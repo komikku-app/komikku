@@ -25,6 +25,7 @@ import app.komikku.desktop.scheduler.DesktopScheduler
 import app.komikku.desktop.scheduler.stopDesktopWork
 import app.komikku.desktop.security.DesktopAppLock
 import app.komikku.desktop.selftest.DesktopSelfTest
+import app.komikku.desktop.smoke.UiSmoke
 import app.komikku.desktop.ui.DesktopTheme
 import app.komikku.desktop.ui.DesktopToastHost
 import app.komikku.desktop.ui.HomeShell
@@ -72,6 +73,8 @@ import kotlin.system.exitProcess
  * notification through the system notifier. One instance runs per data folder ([DesktopSingleInstance]).
  */
 fun main(args: Array<String>) {
+    // `--ui-smoke=<report folder>`: this start on a new temporary data folder, driven by a fixed script ([UiSmoke])
+    val smoke = UiSmoke.startIfRequested(args)
     if (DesktopSelfTest.isRequested(args)) {
         exitProcess(DesktopSelfTest.main(args))
     }
@@ -85,6 +88,7 @@ fun main(args: Array<String>) {
     val singleInstance = DesktopSingleInstance.ensure(dataDir)
     DesktopLogFile.start(dataDir, BuildConfig.VERSION_NAME)
     val app = DesktopInjekt.init(dataDir)
+    smoke?.onInjektReady()
     // SY's log level, once the preferences are there (applied at once when it changes)
     val startScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     Injekt.get<ExhPreferences>().logLevel(BuildConfig.DEBUG).changes()
@@ -117,7 +121,7 @@ fun main(args: Array<String>) {
     runBlocking { stopDesktopWork(scheduler, Injekt.get(), Injekt.get()) }
     singleInstance.close()
     DesktopAppEvents.finishQuit()
-    exitProcess(0)
+    exitProcess(smoke?.finish() ?: 0)
 }
 
 /** The main window: persisted size / position / maximized state, keyboard shortcuts, the app UI. */

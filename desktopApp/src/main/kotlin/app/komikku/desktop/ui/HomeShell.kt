@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import app.komikku.desktop.ui.more.MoreTab
+import app.komikku.desktop.ui.navigation.LocalNavigatorRegistry
 import app.komikku.desktop.ui.tabs.BrowseTab
 import app.komikku.desktop.ui.tabs.HistoryTab
 import app.komikku.desktop.ui.tabs.LibraryTab
@@ -35,6 +36,7 @@ val homeTabs: List<Tab> = listOf(LibraryTab, UpdatesTab, HistoryTab, BrowseTab, 
 @Composable
 fun HomeShell(shortcuts: DesktopShortcuts? = null) {
     TabNavigator(LibraryTab) { tabNavigator ->
+        LocalNavigatorRegistry.current.registerTabs(tabNavigator)
         if (shortcuts != null) {
             DisposableEffect(shortcuts, tabNavigator) {
                 shortcuts.handler = { action ->

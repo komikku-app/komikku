@@ -5,7 +5,7 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import app.komikku.desktop.ui.browse.BrowseHomeScreen
-import app.komikku.shared.navigation.AppNavigatorHost
+import app.komikku.desktop.ui.navigation.RegisteredNavigatorHost
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.util.Tab
 import tachiyomi.i18n.MR
@@ -27,6 +27,6 @@ data object BrowseTab : Tab {
 
     @Composable
     override fun Content() {
-        AppNavigatorHost(screen = BrowseHomeScreen)
+        RegisteredNavigatorHost(screen = BrowseHomeScreen)
     }
 }

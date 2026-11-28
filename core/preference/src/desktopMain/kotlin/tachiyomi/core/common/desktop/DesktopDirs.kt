@@ -29,7 +29,8 @@ object DesktopDirs {
     /** Directory holding one JSON file per preference store. */
     val preferencesDir: File by lazy { dataDir.resolve("preferences").ensureDir() }
 
-    internal fun resolveDataDir(
+    /** The data folder for these values, without creating it ([override]: the `komikku.dataDir` property). */
+    fun resolveDataDir(
         osName: String,
         userHome: String,
         override: String?,
