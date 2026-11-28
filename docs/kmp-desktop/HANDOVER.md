@@ -481,6 +481,27 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **2026-11-28 ~21:00 (UTC+7): paused for API credit.** Everything is committed and pushed; no team member is
+  running (the roster's "Now on" column below is older than this entry). Resume with:
+  1. **Desktop run 46149598387** (`77901f0b62`): first real package build of the `komikku://` registration. Run
+     46147854767 failed on it (`jpackage.exe` lookup on Windows, jpackage's empty `MimeType=` on Linux; fixed in
+     `77901f0b62` / `3da39e0312`). If it is green, the Windows installer, `.deb` and RPM smoke rows for the scheme
+     have their first proof; then add the smoke row that starts `Komikku "komikku://myanimelist-auth?code=test"`
+     against the running app (Windows and Linux engineer's follow-up).
+  2. **Reviewer pass, not done yet:** the tracker login redirect (`0f237fab87`, `074a5ad7b3`, the scheme registration
+     `73df1e5997`, `9b6d50ab64`, `df6d4c512e`, fixes `3da39e0312`, `77901f0b62`) and the `--ui-smoke` `08-details`
+     fix (`dc2ff502c9`). Open issues found so far: PROGRESS.md "Open issues: tracker login redirects" (AniList has no
+     PKCE; MDList's `tachiyomisy://` is registered on macOS only).
+  3. **Maintainer's real MyAnimeList login** on macOS with the packaged app from that run (Safari asks once to open
+     Komikku); the fake-code delivery was checked on this Mac (cold start, warm start, second start, dialog open /
+     closed).
+  4. **macOS on-device pass** of the packaged app (`MAC_ON_DEVICE_PASS.md`): the `android.graphics` pages
+     (Tonari no Young Jump, Magazine Pocket; graphics review fixes `11c3d56546`…`3750769607`, response at the end of
+     `REVIEW_GRAPHICS.md`) and the new login. Needs the screen unlocked.
+  5. Graphics review leftovers (optional): asking for a GC when native bitmap memory grows; the four Info items in
+     `REVIEW_GRAPHICS.md`.
+  - Commit messages corrected after pushing: PROGRESS.md "Commit message corrections".
+
 - **2026-11-28: new set-up, read [`COORDINATION.md`](COORDINATION.md) first.** The branch is now `multiplatform`
   (renamed from `claude/kmp-multiplatform-support`; older entries below still use the old name). It is the permanent
   branch for every platform other than Android; Android stays on `master`, which is merged in regularly. Work is
