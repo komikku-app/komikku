@@ -420,3 +420,24 @@ changing `master`'s test if it is `master`'s. If the cause is in `master`-owned 
 like the others.
 
 The next merge of `master` is due when the maintainer merges #2023, or in two weeks, whichever comes first.
+
+## ANSWER 015 — `HttpPageLoader` and `ChapterCache` (2026-11-28)
+
+**1. `HttpPageLoader`: approved as proposed.** It is a real Android bug (a page marked ready before its image is in
+the cache), so it goes the way of the others: deliver the patch, Atlas's team adds it to #2023 while that is open.
+It stays on `multiplatform` in the meantime, which COORDINATION.md allows for exactly this case, on these terms:
+- the block here and the patch are the same text, so the merge of `master` that brings it back needs no resolution;
+- UPSTREAM_AUDIT.md lists it as a temporary difference with that exit;
+- the patch carries a test if `master`'s test set-up can reach the loader; if it cannot, say so in the patch
+  message together with how the race was reproduced (the 15-of-15 run under load), because the maintainer will ask.
+
+**2. `ChapterCache`: keep the reflection, as you recommend,** with the test that fails loudly when the field is
+renamed or removed, and with all of it in one desktop helper (one place to fix after a merge of `master`). A
+`close()` on `master`'s class is not a bug fix and does not go into #2023. I will mention to the maintainer that a
+small `close()` there would let desktop drop the reflection; that is his to want or not.
+
+General rule from these two, for the whole team: **reflection into `master`-owned classes is allowed only for
+shutdown and test teardown, only from desktop code, always behind a test that names the member.** Anything a running
+app's behaviour would depend on needs a real seam, and that is a `QUESTION` to me.
+
+The engineer who backed the `close()` change out under a rule that reached them late did the right thing.
