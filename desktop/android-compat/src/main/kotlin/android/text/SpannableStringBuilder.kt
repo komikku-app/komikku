@@ -1,10 +1,12 @@
 package android.text
 
 /**
- * android-compat: `android.text.SpannableStringBuilder` as plain mutable text; spans are not
- * supported on desktop.
+ * android-compat: `android.text.SpannableStringBuilder` as plain mutable text; spans are dropped
+ * ([setSpan] and [removeSpan] are no-ops, see [Spannable]).
  */
-open class SpannableStringBuilder(text: CharSequence = "") : Editable, Spanned {
+open class SpannableStringBuilder(text: CharSequence = "") :
+    Editable,
+    Spannable {
 
     private val builder = StringBuilder(text)
 
@@ -32,6 +34,10 @@ open class SpannableStringBuilder(text: CharSequence = "") : Editable, Spanned {
         apply { builder.append(text, start, end) }
 
     override fun append(text: Char): SpannableStringBuilder = apply { builder.append(text) }
+
+    override fun setSpan(what: Any?, start: Int, end: Int, flags: Int) = Unit
+
+    override fun removeSpan(what: Any?) = Unit
 
     override fun toString(): String = builder.toString()
 
