@@ -74,8 +74,8 @@ class CatalogueCheckTest {
                 className to FixtureClasses.source(className, 1L, "Fixture", constructorCall = constructorCall),
                 "$className\$Unused" to FixtureClasses.classCalling(
                     "$className\$Unused",
-                    "android/graphics/BitmapFactory",
-                    "decodeNothing",
+                    "android/hardware/Camera",
+                    "open",
                     "()V",
                 ),
             ),
@@ -99,7 +99,7 @@ class CatalogueCheckTest {
         val looping = report(apk("eu.kanade.tachiyomi.extension.en.looping", "android/os/Looper" to "loop"))
         val plain = report(apk("eu.kanade.tachiyomi.extension.en.plain"))
 
-        looping shouldContain "android.graphics.BitmapFactory  <- "
+        looping shouldContain "android.hardware.Camera  <- "
         // The missing class is only referenced in a method body: the classes still link
         looping shouldContain "Verification: 2 verified, 0 rejected, 0 unresolved"
         looping shouldContain "Sources: unsupported on desktop: needs android.os.Looper.loop()"
@@ -114,7 +114,7 @@ class CatalogueCheckTest {
         summary shouldContain "| Sources created | 1 of 2 |"
         summary shouldContain "| Sources not created: unsupported on desktop | 1 |"
         summary shouldContain "| Reference a missing `android.*` class anywhere | 2 |"
-        summary shouldContain "| `android.graphics.BitmapFactory` | 2 | 1 | eu.kanade.tachiyomi.extension.en.looping.apk, " +
+        summary shouldContain "| `android.hardware.Camera` | 2 | 1 | eu.kanade.tachiyomi.extension.en.looping.apk, " +
             "eu.kanade.tachiyomi.extension.en.plain.apk |"
         summary shouldContain "| `android.os.Looper` | 1 |"
     }

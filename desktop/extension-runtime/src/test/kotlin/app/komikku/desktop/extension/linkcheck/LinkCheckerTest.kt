@@ -40,10 +40,7 @@ class LinkCheckerTest {
             visitMethodInsn(Opcodes.INVOKEVIRTUAL, user, "getName", "()Ljava/lang/String;", false)
             visitInsn(Opcodes.POP)
             // Missing class
-            visitInsn(Opcodes.ACONST_NULL)
-            visitInsn(Opcodes.ICONST_0)
-            visitInsn(Opcodes.ICONST_0)
-            visitMethodInsn(Opcodes.INVOKESTATIC, "android/graphics/BitmapFactory", "decodeByteArray", "([BII)Landroid/graphics/Bitmap;", false)
+            visitMethodInsn(Opcodes.INVOKESTATIC, "android/hardware/Camera", "open", "()Landroid/hardware/Camera\$Parameters;", false)
             visitInsn(Opcodes.POP)
             // Missing method on an existing class
             visitMethodInsn(Opcodes.INVOKESTATIC, "android/util/Base64", "doesNotExist", "()V", false)
@@ -77,13 +74,13 @@ class LinkCheckerTest {
         val report = LinkChecker().check(jar)
 
         report.checkedClasses shouldBe 2
-        report.missingClasses.keys shouldContainExactly setOf("android/graphics/Bitmap", "android/graphics/BitmapFactory")
-        report.missingClasses.getValue("android/graphics/BitmapFactory") shouldContainExactly setOf(user)
+        report.missingClasses.keys shouldContainExactly setOf("android/hardware/Camera", "android/hardware/Camera\$Parameters")
+        report.missingClasses.getValue("android/hardware/Camera") shouldContainExactly setOf(user)
         report.missingMethods.keys shouldContainExactly setOf(MemberRef("android/util/Base64", "doesNotExist", "()V"))
         report.missingFields.keys shouldContainExactly setOf(MemberRef("android/os/Build", "NO_SUCH_FIELD", "Ljava/lang/String;"))
         report.isClean shouldBe false
         report.format("fixture.jar") shouldContain
-            "android.graphics.BitmapFactory  <- eu.kanade.tachiyomi.extension.en.linkfixture.LinkFixture"
+            "android.hardware.Camera  <- eu.kanade.tachiyomi.extension.en.linkfixture.LinkFixture"
     }
 
     @Test
