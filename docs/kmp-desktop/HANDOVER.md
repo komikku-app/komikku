@@ -489,6 +489,9 @@ mark the residual path in both modules.
   (link in the next entry). The earlier separate Mac and iOS sessions are parked. Priorities: macOS solid → review the
   unreviewed work → Windows and Linux → a first iOS app → remaining Android parity; plus the standing task of merging
   `master`.
+- **Coordination thread:** draft pull request <https://github.com/komikku-app/komikku/pull/2022> (number 2022, branch
+  `multiplatform-coordination`, never merged). Atlas's instructions and Forge's reports are its comments; the rules
+  are in COORDINATION.md "How we talk".
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript

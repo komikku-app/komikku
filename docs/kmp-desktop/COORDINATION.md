@@ -54,8 +54,10 @@ The maintainer is above both. Only the maintainer can change these rules, approv
 
 ## How we talk
 
-- **The thread:** the draft pull request "Multiplatform coordination thread (do not merge)" on
-  `komikku-app/komikku`. Its number and link are in HANDOVER.md "Next session (start here)". It exists only for its
+- **The thread:** the draft pull request "Multiplatform coordination thread (do not merge)",
+  <https://github.com/komikku-app/komikku/pull/2022> (number 2022). Read its comments with
+  `gh api "repos/komikku-app/komikku/issues/2022/comments?per_page=100"` (add `&since=<ISO time>` for new ones) and
+  post with `gh api repos/komikku-app/komikku/issues/2022/comments -f body=…`. It exists only for its
   comments: it is never merged, never marked ready, and its one-file branch `multiplatform-coordination` is never
   built on.
 - **Message format:** the first line is the alias and a kind, e.g. `**[Atlas · Architect] INSTRUCTION**` or
