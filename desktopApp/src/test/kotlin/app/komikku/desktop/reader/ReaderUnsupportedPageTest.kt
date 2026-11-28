@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import app.komikku.desktop.compat.UnsupportedOnDesktop
+import app.komikku.desktop.extension.testing.FixtureClasses
 import app.komikku.desktop.ui.reader.ReaderPageSlot
 import app.komikku.desktop.ui.reader.UnsupportedPage
 import eu.kanade.tachiyomi.network.HttpException
@@ -26,13 +27,15 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.i18n.kmk.KMR
 import java.io.IOException
+import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * ANSWER 017: a page whose extension draws it from text (Keiyoushi's text-interceptor library: `StaticLayout`,
  * `TextPaint`, `Typeface`, `Paint`'s text members) shows the reader's "unsupported" state saying so, without a retry
- * button and without being loaded again each time it is shown; another missing Android class or member is named. Any
- * other failure keeps the error with its retry.
+ * button and without being loaded again each time it is shown; another missing Android class or member (a class
+ * like `RectF`, a member like `Canvas.drawPath`, REVIEW_GRAPHICS 4.1) is named the same way. Any other failure keeps
+ * the error with its retry.
  */
 @OptIn(ExperimentalTestApi::class)
 class ReaderUnsupportedPageTest {
@@ -43,6 +46,45 @@ class ReaderUnsupportedPageTest {
         return shouldThrow<IOException> {
             runBlocking { client.newCall(Request.Builder().url("https://example.invalid/page.png").build()).await() }
         }
+    }
+
+    /**
+     * Runs a generated class's static `touch()`, which calls static `()V` [method] of the compat layer's [owner]
+     * (internal name): the call fails with the JVM's own linkage error for a member the compat class lacks.
+     */
+    private fun callMissing(owner: String, method: String): Nothing {
+        val name = "fixture/Calls${owner.substringAfterLast('/')}${method.replaceFirstChar(Char::uppercase)}"
+        val bytes = FixtureClasses.classCalling(name, owner, method, "()V")
+        val loader = object : ClassLoader(javaClass.classLoader) {
+            fun define(): Class<*> = defineClass(name.replace('/', '.'), bytes, 0, bytes.size)
+        }
+        try {
+            loader.define().getMethod("touch").invoke(null)
+        } catch (e: InvocationTargetException) {
+            throw e.targetException
+        }
+        error("$owner.$method exists")
+    }
+
+    @Test
+    fun `a member a compat class lacks is named at page time, text members as text drawing`() {
+        UnsupportedPage.of(fetchError { callMissing("android/graphics/Canvas", "drawPath") }) shouldBe
+            UnsupportedPage.Missing("android.graphics.Canvas.drawPath()")
+        UnsupportedPage.of(fetchError { callMissing("android/graphics/Paint", "setTypeface") }) shouldBe
+            UnsupportedPage.TextDrawing("android.graphics.Paint.setTypeface()")
+        UnsupportedPage.of(fetchError { callMissing("android/graphics/Paint", "getFontMetrics") }) shouldBe
+            UnsupportedPage.TextDrawing("android.graphics.Paint.getFontMetrics()")
+        // The JVM's message for the member with its parameters (as the generated call above shows it, with types)
+        val matrix = "'void android.graphics.Canvas.drawBitmap(android.graphics.Bitmap, android.graphics.Matrix, " +
+            "android.graphics.Paint)'"
+        UnsupportedPage.of(fetchError { throw NoSuchMethodError(matrix) }) shouldBe
+            UnsupportedPage.Missing("android.graphics.Canvas.drawBitmap(Bitmap, Matrix, Paint)")
+        UnsupportedPage.of(fetchError { throw NoClassDefFoundError("android/graphics/RectF") }) shouldBe
+            UnsupportedPage.Missing("android.graphics.RectF")
+        UnsupportedPage.of(fetchError { Paint().setTextSize(1f).let { error("text size set") } }) shouldBe
+            UnsupportedPage.TextDrawing("android.graphics.Paint.setTextSize")
+
+        UnsupportedPage.of(fetchError { throw NoSuchMethodError("'void com.example.Helper.run()'") }) shouldBe null
     }
 
     @Test
@@ -102,6 +144,19 @@ class ReaderUnsupportedPageTest {
         setContent { ReaderPageSlot(page, maxWidth = 800, colorFilter = null, onRetry = {}) { Text("image") } }
 
         onNodeWithText(stringResource(KMR.strings.desktop_page_needs_unsupported, "android.graphics.Point")).assertExists()
+        onNodeWithTag("page-retry").assertDoesNotExist()
+        waitForIdle()
+        loader.loads.get() shouldBe 0
+    }
+
+    @Test
+    fun `a page that needs a member a compat class lacks names it, with no retry`() = runDesktopComposeUiTest {
+        val (page, loader) = failedPage(fetchError { callMissing("android/graphics/Canvas", "drawPath") })
+        setContent { ReaderPageSlot(page, maxWidth = 800, colorFilter = null, onRetry = {}) { Text("image") } }
+
+        onNodeWithText(stringResource(KMR.strings.desktop_page_needs_unsupported, "android.graphics.Canvas.drawPath()"))
+            .assertExists()
+        onNodeWithTag("page-unsupported").assertExists()
         onNodeWithTag("page-retry").assertDoesNotExist()
         waitForIdle()
         loader.loads.get() shouldBe 0
