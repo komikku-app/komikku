@@ -34,6 +34,12 @@ object DesktopInjekt {
     /** The delayed writers into the data folder created so far; under [lock]. */
     private val writers = ArrayList<Writer>()
 
+    /** A file in the data folder that a singleton keeps open ([onOpened]). */
+    private class OpenFile(val name: String, val location: File, val close: () -> Unit)
+
+    /** The [OpenFile]s of the singletons created so far; under [lock]. */
+    private val openFiles = ArrayList<OpenFile>()
+
     /** Set by [stopDelayedWriters], reset by [init]: a writer created in between is stopped at once. Under [lock]. */
     private var stopped = false
 
@@ -91,6 +97,36 @@ object DesktopInjekt {
         } catch (e: Exception) {
             xLogE("Could not stop data folder writer $name created after the teardown", e)
         }
+    }
+
+    /**
+     * A singleton that keeps files at [location] in the data folder open (the database, a disk cache's journal) was
+     * created; [close] releases them. Only [closeOpenFiles] calls it: the process ending releases them in normal use.
+     */
+    internal fun onOpened(name: String, location: File, close: () -> Unit) {
+        synchronized(lock) { openFiles += OpenFile(name, location, close) }
+    }
+
+    /**
+     * Closes the files [onOpened] registered so far, after [stopDelayedWriters] (tests: before their temporary data
+     * folder is deleted, which Windows refuses while a file in it is open). One whose location is gone is skipped (a
+     * test deleted that data folder already; the database cannot even close there). Every close is attempted; the first
+     * failure is rethrown at the end (the others added as suppressed). Those singletons are unusable after this. Not
+     * called in normal use.
+     */
+    fun closeOpenFiles() {
+        var failure: Throwable? = null
+        while (true) {
+            val file = synchronized(lock) { openFiles.removeLastOrNull() } ?: break
+            if (!file.location.exists()) continue
+            try {
+                file.close()
+            } catch (e: Throwable) {
+                val error = IllegalStateException("Could not close ${file.name} (${file.location})", e)
+                failure?.addSuppressed(error) ?: run { failure = error }
+            }
+        }
+        failure?.let { throw it }
     }
 
     /**

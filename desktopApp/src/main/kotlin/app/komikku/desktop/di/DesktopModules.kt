@@ -193,7 +193,11 @@ class DesktopAppModule(
     override fun InjektRegistrar.registerInjectables() {
         addSingleton(app)
 
-        addSingletonFactory<SqlDriver> { DesktopDatabase.createDriver(databaseFile) }
+        addSingletonFactory<SqlDriver> {
+            DesktopDatabase.createDriver(databaseFile).also {
+                DesktopInjekt.onOpened("database", databaseFile, it::close)
+            }
+        }
         addSingletonFactory<Database> { DesktopDatabase.createDatabase(get()) }
         addSingletonFactory<DatabaseHandler> { DesktopDatabase.createHandler(get(), get()) }
 
@@ -221,7 +225,11 @@ class DesktopAppModule(
             DesktopCloudflare.installHostState(get())
             // P8: a FlareSolverr-compatible service, when its address is set, solves challenges automatically.
             get<FlareSolverrBackend>()
-            NetworkHelper(app, get())
+            NetworkHelper(app, get()).also { network ->
+                DesktopInjekt.onOpened("network cache", File(app.cacheDir, "network_cache")) {
+                    network.client.cache?.close()
+                }
+            }
         }
         addSingletonFactory { DesktopCloudflarePreferences(get()) }
         addSingletonFactory { DesktopCloudflare.installBackend(get()) }
@@ -430,7 +438,11 @@ class DesktopDomainModule(
         addFactory { SyncChapterProgressWithTrack(get(), get(), get()) }
 
         // Reader (7.x)
-        addSingletonFactory { ChapterCache(app, get(), get()) }
+        addSingletonFactory {
+            ChapterCache(app, get(), get()).also {
+                DesktopInjekt.onOpened("chapter cache", File(app.cacheDir, "chapter_disk_cache")) { it.closeDiskCache() }
+            }
+        }
         addSingletonFactory { ReaderLauncher() }
         addSingletonFactory<ReaderTrackerHook> { DesktopReaderTrackerHook(app, get(), get()) }
         addFactory {
@@ -443,4 +455,13 @@ class DesktopDomainModule(
             )
         }
     }
+}
+
+/**
+ * Closes the chapter cache's disk cache (its journal stays open otherwise). [ChapterCache] is master's and has no
+ * `close()`; until an Android-fix patch adds one, this reaches its private `diskCache` field.
+ */
+private fun ChapterCache.closeDiskCache() {
+    val field = ChapterCache::class.java.getDeclaredField("diskCache").apply { isAccessible = true }
+    (field.get(this) as java.io.Closeable).close()
 }

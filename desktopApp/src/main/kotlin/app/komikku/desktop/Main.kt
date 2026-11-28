@@ -218,7 +218,11 @@ fun KomikkuApp(
             sourceManager = Injekt.get<SourceManager>(),
             cacheDir = context.cacheDir,
             coverCache = Injekt.get<CoverCache>(),
-        )
+        ).also { loader ->
+            DesktopInjekt.onOpened("image cache", context.cacheDir.resolve("image_cache")) {
+                loader.diskCache?.shutdown()
+            }
+        }
     }
     CompositionLocalProvider(LocalContext provides context) {
         DesktopTheme {

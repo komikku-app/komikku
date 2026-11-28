@@ -10,7 +10,9 @@ import org.junit.jupiter.api.extension.ExtensionContext
  * methods, and before JUnit deletes the class's `@TempDir` that [DesktopInjekt.init] was given, stops the app's delayed
  * writers into it and waits for them ([DesktopInjekt.stopDelayedWriters]). Without this the download index's
  * write a second after the last change could recreate `cache/` while the folder is deleted (`DirectoryNotEmptyException`
- * on its root, CI run 45655979842). Classes that boot [DesktopInjekt] are `PER_CLASS` and run in their own JVM.
+ * on its root, CI run 45655979842). Then closes the files the app's singletons keep open there (the database, the
+ * chapter and network caches; [DesktopInjekt.closeOpenFiles]): Windows does not delete an open file (CI run
+ * 46120905511). Classes that boot [DesktopInjekt] are `PER_CLASS` and run in their own JVM.
  *
  * Each stop is bounded by [DesktopInjekt.STOP_TIMEOUT]. A writer whose stop did not finish fails the class, naming it:
  * the folder getters no longer create folders, but such a writer can still write a file into a folder that exists, so
@@ -20,6 +22,7 @@ class DesktopDataDirTeardown : AfterAllCallback {
 
     override fun afterAll(context: ExtensionContext) {
         val unfinished = runBlocking { DesktopInjekt.stopDelayedWriters() }
+        DesktopInjekt.closeOpenFiles()
         check(unfinished.isEmpty()) {
             "DesktopDataDirTeardown: the data folder writer(s) ${unfinished.joinToString()} of ${context.displayName} " +
                 "did not stop within ${DesktopInjekt.STOP_TIMEOUT} and may still write into its data folder"
