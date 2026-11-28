@@ -481,6 +481,14 @@ mark the residual path in both modules.
 
 ## Next session (start here)
 
+- **2026-11-28: new set-up, read [`COORDINATION.md`](COORDINATION.md) first.** The branch is now `multiplatform`
+  (renamed from `claude/kmp-multiplatform-support`; older entries below still use the old name). It is the permanent
+  branch for every platform other than Android; Android stays on `master`, which is merged in regularly. Work is
+  directed by the Architect (alias **Atlas**, cloud session, runs at 20:00 / 01:00 / 06:00 UTC+7) and carried out by
+  the Delivery Lead (alias **Forge**, on the maintainer's Mac) and its team; they talk in the coordination thread
+  (link in the next entry). The earlier separate Mac and iOS sessions are parked. Priorities: macOS solid → review the
+  unreviewed work → Windows and Linux → a first iOS app → remaining Android parity; plus the standing task of merging
+  `master`.
 - **Cold start after a pause (cloud session, review fixes M2, 2026-11-27):** read this entry first, whatever the pause.
   Branch `claude/kmp-multiplatform-support`, HEAD = the "Review fixes (M2)" docs commit (last code commit `18141a2`).
   The six fixable findings of the review of `cbdfdff..365f98a` are fixed (PROGRESS "Review fixes (M2)": osascript

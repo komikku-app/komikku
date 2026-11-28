@@ -166,6 +166,8 @@ Reference: `domain/src/main/java/tachiyomi/domain/category/interactor/HideCatego
 
 Desktop app (`:desktopApp`, Compose Multiplatform): run, test, package and its CI in `docs/kmp-desktop/BUILDING.md`.
 
+**Branch `multiplatform`:** the long-lived branch for every platform other than Android (desktop, iOS). Android stays on `master`; `master` is merged into `multiplatform` regularly, never the other way round. Roles, rules and how the agents on that branch coordinate: `docs/kmp-desktop/COORDINATION.md` (read it before working there).
+
 Build types (`applicationIdSuffix`): `debug` (`.dev`), `release`, `releaseTest` (`.rt`), `foss` (`.foss`), `preview` (`.beta`, CI default), `benchmark` (`.benchmark`).
 
 Gradle `-P` flags (`buildSrc/src/main/kotlin/mihon/buildlogic/BuildConfig.kt`):

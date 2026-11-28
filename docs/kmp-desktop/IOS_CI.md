@@ -25,7 +25,7 @@ Workflow `.github/workflows/build_ios_check.yml`, one job on `macos-15` (GitHub-
 The task names are the Kotlin Multiplatform plugin's conventions; they were checked with
 `./gradlew -Pios-targets :source-js:tasks --all` (Kotlin 2.4.20).
 
-It runs on `workflow_dispatch`, on pull requests, and on pushes to `master` and `claude/kmp-multiplatform-support`
+It runs on `workflow_dispatch`, on pull requests, and on pushes to `master` and `multiplatform`
 (never on tags), when they touch `source-js/**`, the build setup (`gradle/**`, `buildSrc/**`, `settings.gradle.kts`,
 `build.gradle.kts`, `gradle.properties`, `.github/.java-version`) or the workflow file. No signing, no secrets, no app (`:iosApp` is I6, an IPA is I7). Test reports are uploaded as
 `ios-test-report-<sha>` when the job fails.
@@ -33,7 +33,7 @@ It runs on `workflow_dispatch`, on pull requests, and on pushes to `master` and 
 ## Running it
 
 ```bash
-gh workflow run build_ios_check.yml --ref claude/kmp-multiplatform-support
+gh workflow run build_ios_check.yml --ref multiplatform
 gh run list --workflow build_ios_check.yml --limit 3
 gh run watch <run-id>
 ```

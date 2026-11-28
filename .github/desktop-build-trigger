@@ -1,3 +1,3 @@
-# KMK: a push to claude/kmp-multiplatform-support that changes this file starts build_desktop.yml (temporary
+# KMK: a push to multiplatform that changes this file starts build_desktop.yml (temporary
 # bring-up trigger, see the workflow). Bump the counter below to start a new run.
 run 12

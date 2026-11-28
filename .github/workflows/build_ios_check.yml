@@ -19,7 +19,7 @@ on:
   push:
     branches:
       - master
-      - claude/kmp-multiplatform-support
+      - multiplatform
     paths:
       - 'source-js/**'
       - 'gradle/**'

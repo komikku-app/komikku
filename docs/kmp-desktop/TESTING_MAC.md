@@ -12,7 +12,7 @@ Status of the CI build: see [Getting the build](#getting-the-build) (the green r
 ### a) From CI (no build tools needed)
 
 The workflow **Desktop builder** (`.github/workflows/build_desktop.yml`) packages the app on GitHub's macOS runners.
-While the port is on the branch `claude/kmp-multiplatform-support`, a run starts when a push to that branch changes
+While the port is on the branch `multiplatform`, a run starts when a push to that branch changes
 `.github/desktop-build-trigger` (bump the counter in it); branch runs never touch a release.
 
 **Build to test:** <https://github.com/komikku-app/komikku/actions/runs/45938000837> (commit `9b58d72`, the M2 fixes
@@ -45,7 +45,7 @@ Artifacts are kept for 90 days (GitHub's default); after that, start a new run.
   ```bash
   git clone https://github.com/komikku-app/komikku.git   # or, in an existing clone: git fetch origin
   cd komikku
-  git checkout claude/kmp-multiplatform-support          # existing clone: git checkout -B claude/kmp-multiplatform-support origin/claude/kmp-multiplatform-support
+  git checkout multiplatform          # existing clone: git checkout -B multiplatform origin/multiplatform
   ```
 
 - Run it straight from the sources (no packaging, no Gatekeeper prompt; the first build downloads about 1 GB):

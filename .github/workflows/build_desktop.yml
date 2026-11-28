@@ -39,7 +39,7 @@ on:
     # to test them). Branch pushes never release (`plan` forces mode none). Remove this trigger (and the marker file)
     # when the port reaches master.
     branches:
-      - claude/kmp-multiplatform-support
+      - multiplatform
     paths:
       - '.github/desktop-build-trigger'
     # KMK <--
